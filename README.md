@@ -85,7 +85,7 @@ mvn exec:exec "-Dexec.args=-classpath %classpath org.opensilex.dev.Install" -Dex
 
 ## With Netbeans
 
-Just right-click on org.opensilex.dev.Install class in opensilex-dev-tools projet and select "run"
+Just right-click on ```org.opensilex.dev.Install``` class in opensilex-dev-tools projet and select "run" or "debug"
 
 # Start OpenSILEX
 
@@ -97,9 +97,9 @@ cd opensilex-dev/opensilex-debug
 mvn exec:exec "-Dexec.args=-classpath %classpath org.opensilex.dev.StartServer" -Dexec.executable=java org.codehaus.mojo:exec-maven-plugin:1.6.0:exec
 ```
 
-## With Netbeans
+## With Netbeans
 
-Just right-click on org.opensilex.dev.StartServer class in opensilex-dev-tools projet and select "run" or "debug"
+Just right-click on ```org.opensilex.dev.StartServer``` class in opensilex-dev-tools projet and select "run" or "debug"
 
 # Start OpenSILEX with Vue.js Application
 
@@ -111,15 +111,15 @@ cd opensilex-dev/opensilex-debug
 mvn exec:exec "-Dexec.args=-classpath %classpath org.opensilex.dev.StartServerWithFront" -Dexec.executable=java org.codehaus.mojo:exec-maven-plugin:1.6.0:exec
 ```
 
-## With Netbeans
+## With Netbeans
 
-Just right-click on org.opensilex.dev.StartServerWithFront class in opensilex-dev-tools projet and select "run" or "debug"
+Just right-click on ```org.opensilex.dev.StartServerWithFront``` class in opensilex-dev-tools projet and select "run" or "debug"
 
 # Access to OpenSilex
 
 If you use the default configuration, you can now access the OpenSILEX API at: [http://localhost:8666/](http://localhost:8666/)
 If you start server with Vue.js, you can access the main application at: [http://localhost:8666/app](http://localhost:8666/app)
 
-Default Super Admin user is created with login: ```admin@opensilex.org`` and password: ```admin``` which will give you access to all web services
+Default Super Admin user is created with login: ```admin@opensilex.org``` and password: ```admin``` which will give you access to all web services
 
 

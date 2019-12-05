@@ -52,7 +52,9 @@ mvn install
 # Setup configuration
 
 Edit ```<BASE_DIR>/opensilex-dev/opensilex-dev-tools/src/main/resources/config/opensilex.yml```
+
 Be careful if you change host and port of databases as you will have to update docker-compose configuration file accordingly.
+
 Be sure to configure properly read and write rights for your user on configured folders.
 
 The only mandatory options to setup are:

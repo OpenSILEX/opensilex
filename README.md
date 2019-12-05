@@ -78,32 +78,30 @@ sudo docker-compose up -d
 
 # Initialize system data
 
-## By command line
+## With Netbeans
+
+Right-click on opensilex-dev project and select "Open Required Projects" --> "Open All Projects"
+
+Then right-click on ```org.opensilex.dev.Install``` class in opensilex-dev-tools projet and select "run" or "debug"
+
+## With command line
+
 ```
 cd <BASE_DIR>
 cd opensilex-dev/opensilex-dev-tools
-mvn exec:exec "-Dexec.args=-classpath %classpath org.opensilex.dev.Install" -Dexec.executable=java org.codehaus.mojo:exec-maven-plugin:1.6.0:exec
+mvn "-Dexec.args=-classpath %classpath:../opensilex:../opensilex-core:../opensilex-front:../phis-ws/phis2-ws org.opensilex.dev.Install" -Dexec.executable=/usr/bin/java  org.codehaus.mojo:exec-maven-plugin:1.6.0:exec
 ```
 
-## With Netbeans
 
-Just right-click on ```org.opensilex.dev.Install``` class in opensilex-dev-tools projet and select "run" or "debug"
+# Start OpenSILEX development server with Netbeans
 
-# Start OpenSILEX
+## For webservices only
 
-## By command line
+Right-click on ```org.opensilex.dev.StartServer``` class in opensilex-dev-tools projet and select "run" or "debug"
 
-```
-cd <BASE_DIR>
-cd opensilex-dev/opensilex-debug
-mvn exec:exec "-Dexec.args=-classpath %classpath org.opensilex.dev.StartServer" -Dexec.executable=java org.codehaus.mojo:exec-maven-plugin:1.6.0:exec
-```
+## For webservices and Vue.js hot reload server
 
-## With Netbeans
-
-Just right-click on ```org.opensilex.dev.StartServer``` class in opensilex-dev-tools projet and select "run" or "debug"
-
-# Start OpenSILEX with Vue.js Application
+Right-click on ```org.opensilex.dev.StartServerWithFront``` class in opensilex-dev-tools projet and select "run" or "debug"
 
 ## By command line
 
@@ -117,11 +115,19 @@ mvn exec:exec "-Dexec.args=-classpath %classpath org.opensilex.dev.StartServerWi
 
 Just right-click on ```org.opensilex.dev.StartServerWithFront``` class in opensilex-dev-tools projet and select "run" or "debug"
 
-# Access to OpenSilex
+# Access to OpenSilex & tools
 
 If you use the default configuration, you can now access the OpenSILEX API at: [http://localhost:8666/](http://localhost:8666/)
-If you start server with Vue.js, you can access the main application at: [http://localhost:8666/app](http://localhost:8666/app)
+
+If you start server with Vue.js, the hot reload server tell you on which port it's accessible.
 
 Default Super Admin user is created with login: ```admin@opensilex.org``` and password: ```admin``` which will give you access to all web services
 
+RDF4J workbench is accessible by default at: [http://localhost:8667/rdf4j-workbench](http://localhost:8667/rdf4j-workbench)
+
+MongoDB run is accessible on port 8669
+
+PGAdmin is accessible by default at: [http://localhost:8670/](http://localhost:8670/)
+- PGAdmin default user: admin@opensilex.org
+- PGAdmin default password: opensilex
 

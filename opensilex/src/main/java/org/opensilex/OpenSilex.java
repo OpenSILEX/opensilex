@@ -119,7 +119,7 @@ public class OpenSilex {
     /**
      * Store reference to shutdown hook to avoid duplication on reset
      */
-    private Thread SHUTDOWN_HOOK;
+    private static Thread SHUTDOWN_HOOK;
     /**
      * <pre>
      * Main method to setup Opensilex instance based on command line arguments,

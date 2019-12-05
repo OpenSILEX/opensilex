@@ -46,6 +46,7 @@ public class PropertiesFileManager {
     final static Logger LOGGER = LoggerFactory.getLogger(PropertiesFileManager.class.getName());
     private static RDF4JConfig rdf4jConfig;
     private static MongoDBConfig mongoConfig;
+    private static String storageBasePath;
 
     /**
      * Lit le fichier de configuration et retourne un objet Proprietes
@@ -137,12 +138,14 @@ public class PropertiesFileManager {
     public static void setOpensilexConfigs(
         PhisWsConfig phisConfig,
         RDF4JConfig rdf4jConfig,
-        MongoDBConfig mongoConfig
+        MongoDBConfig mongoConfig,
+        String storageBasePath
     ) {
         PropertiesFileManager.phisConfig = phisConfig;
         PropertiesFileManager.rdf4jConfig = rdf4jConfig;
         PropertiesFileManager.mongoConfig = mongoConfig;
         PropertiesFileManager.pgConfig = phisConfig.postgreSQL();
+        PropertiesFileManager.storageBasePath = storageBasePath;
     }
     
     /**
@@ -206,7 +209,7 @@ public class PropertiesFileManager {
                 value = phisConfig.uploadFileServerPassword();
                 break;
             case "uploadFileServerDirectory":
-                value = phisConfig.uploadFileServerDirectory();
+                value = storageBasePath;
                 break;
             case "layerFileServerDirectory":
                 value = phisConfig.layerFileServerDirectory();

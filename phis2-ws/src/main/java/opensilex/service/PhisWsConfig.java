@@ -49,11 +49,6 @@ public interface PhisWsConfig extends ModuleConfig {
     String uploadFileServerPassword();
 
     @ConfigDescription(
-            value = "Direectory for sftp file upload"
-    )
-    String uploadFileServerDirectory();
-
-    @ConfigDescription(
             value = "Directory to store layers"
     )
     String layerFileServerDirectory();

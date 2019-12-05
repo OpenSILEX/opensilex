@@ -41,11 +41,12 @@ import org.opensilex.server.security.AuthenticationService;
 import org.opensilex.server.security.SecurityContextProxy;
 import org.opensilex.server.user.dal.UserModel;
 import org.opensilex.sparql.SPARQLService;
-import org.opensilex.utils.ClassInfo;
+import org.opensilex.utils.ClassUtils;
 
 /**
- * Authentication request filter.
- * Filters web service requests according to the header and other parameters.
+ * Authentication request filter. Filters web service requests according to the
+ * header and other parameters.
+ *
  * @update [Arnaud Charleroy] Oct. 2016: BrAPI v1
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
@@ -57,17 +58,16 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 
     @Context
     private ResourceInfo resourceInfo;
-        
+
     @Inject
-    @Named("authentication")
     AuthenticationService authentication;
 
     @Inject
-    @Named("sparql")
     SPARQLService sparql;
-    
+
     /**
      * Filters the session token.
+     *
      * @param requestContext
      * @throws IOException
      */
@@ -79,19 +79,18 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
                         new Status("You cannot access this resource.", StatusCodeMsg.ERR,
                                 "Invalid token")))
                 .type(MediaType.APPLICATION_JSON).build();
-        
-        
+
         final UriInfo uriInfo = requestContext.getUriInfo();
         final String resourcePath = uriInfo.getPath();
         // Swagger.json and token authorized
-        String resourceClassProject = ClassInfo.getProjectIdFromClass(resourceInfo.getResourceClass());
-        
-        if (resourcePath != null 
+        String resourceClassProject = ClassUtils.getProjectIdFromClass(resourceInfo.getResourceClass());
+
+        if (resourcePath != null
                 && !requestContext.getMethod().equals(HttpMethod.OPTIONS)
                 && (resourceClassProject.isEmpty() || resourceClassProject.equals("phis2ws"))
-                && !resourcePath.contains("token") 
-                && !resourcePath.contains("calls") 
-                && !resourcePath.contains("hello") 
+                && !resourcePath.contains("token")
+                && !resourcePath.contains("calls")
+                && !resourcePath.contains("hello")
                 && !resourcePath.contains("swagger.json")
                 && !(resourceInfo.getResourceClass() == DataResourceService.class && resourceInfo.getResourceMethod().getName().equals("getDataFile"))) {
             // Get request headers
@@ -100,9 +99,9 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
                 throw new WebApplicationException(accessDenied);
             }
             // Fetch authorization header
-            
+
             String authorization = requestContext.getHeaderString(GlobalWebserviceValues.AUTHORIZATION_PROPERTY);
-            
+
             // If no authorization information present; block access
             if (authorization == null || authorization.isEmpty()) {
                 throw new WebApplicationException(accessDenied);
@@ -117,7 +116,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 
             //Get session id
             String userToken = authorization.replace("Bearer ", "");
-            
+
             try {
                 URI userURI = authentication.decodeTokenUserURI(userToken);
                 UserModel user = sparql.getByURI(UserModel.class, userURI);
@@ -132,10 +131,10 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
                 throw new WebApplicationException(accessDenied);
             } catch (Throwable ex) {
                 throw new WebApplicationException(
-                    Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                            .entity(new ErrorResponse(ex))
-                            .type(MediaType.APPLICATION_JSON)
-                            .build());
+                        Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                                .entity(new ErrorResponse(ex))
+                                .type(MediaType.APPLICATION_JSON)
+                                .build());
             }
         }
     }

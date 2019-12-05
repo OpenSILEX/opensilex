@@ -20,11 +20,11 @@ Note: the ```<BASE_DIR>``` variable referenced in this documentation is the root
 # Check your installated softwares
 
 Following commands should work from everywhere in your system without errors:
-```java --version```
-```mvn --version```
-```git --version```
-```docker --version```
-```docker-compose --version```
+`java --version`
+`mvn --version`
+`git --version`
+`docker --version`
+`docker-compose --version`
 
 # Download sources
 

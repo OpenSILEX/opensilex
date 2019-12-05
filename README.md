@@ -62,7 +62,7 @@ The only mandatory options to setup are:
 - phisws.uploadFileServerUsername: Name of your Linux user running the application
 - phisws.uploadFileServerPassword: Password of your Linux user running the application
 
-For usage with phis-webapp you should also configure these options (if your app is not installed in /var/www/html:
+For usage with phis-webapp you should also configure these options if your app is not installed in /var/www/html:
 - layerFileServerDirectory: Folder to store layer files used by phis-webapp
 - layerFileServerAddress: Base uri for accessing layerFileServerDirectory folder through apache
 - uploadImageServerDirectory: Folder to store images files used by phis-webapp

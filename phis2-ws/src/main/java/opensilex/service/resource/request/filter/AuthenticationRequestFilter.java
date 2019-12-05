@@ -15,7 +15,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Priority;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
@@ -44,9 +43,8 @@ import org.opensilex.sparql.SPARQLService;
 import org.opensilex.utils.ClassUtils;
 
 /**
- * Authentication request filter. Filters web service requests according to the
- * header and other parameters.
- *
+ * Authentication request filter.
+ * Filters web service requests according to the header and other parameters.
  * @update [Arnaud Charleroy] Oct. 2016: BrAPI v1
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
@@ -80,6 +78,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
                                 "Invalid token")))
                 .type(MediaType.APPLICATION_JSON).build();
 
+        
         final UriInfo uriInfo = requestContext.getUriInfo();
         final String resourcePath = uriInfo.getPath();
         // Swagger.json and token authorized

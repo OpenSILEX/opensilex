@@ -10,7 +10,6 @@ import org.opensilex.core.ontology.OntologyReference;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.server.validation.Required;
 
-
 public class MethodUpdateDTO {
 
     @Required
@@ -35,6 +34,7 @@ public class MethodUpdateDTO {
     public void setComment(String comment) {
         this.comment = comment;
     }
+
     public List<OntologyReference> getRelations() {
         return relations;
     }
@@ -44,16 +44,12 @@ public class MethodUpdateDTO {
     }
 
     public MethodModel newModel() {
-        return updateModel(new MethodModel());
+        return defineModel(new MethodModel());
     }
 
-    public MethodModel updateModel(MethodModel model) {
-        if (getLabel() != null) {
-            model.setLabel(getLabel());
-        }
-        if (getComment() != null) {
-            model.setComment(getComment());
-        }
+    public MethodModel defineModel(MethodModel model) {
+        model.setLabel(getLabel());
+        model.setComment(getComment());
 
         return model;
     }

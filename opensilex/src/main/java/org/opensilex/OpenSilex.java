@@ -30,7 +30,7 @@ import org.opensilex.module.base.BaseModule;
 import org.opensilex.module.dependencies.DependencyManager;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
-import org.opensilex.utils.ClassInfo;
+import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.LogFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,9 +54,6 @@ import org.slf4j.LoggerFactory;
  */
 public class OpenSilex {
 
-    /**
-     * Logger
-     */
     private final static Logger LOGGER = LoggerFactory.getLogger(OpenSilex.class);
 
     /**
@@ -115,6 +112,15 @@ public class OpenSilex {
     public final static String DEBUG_ARG_KEY = "DEBUG";
 
     /**
+     * Store startup args for reset
+     */
+    private static String[] SETUP_ARGS;
+    
+    /**
+     * Store reference to shutdown hook to avoid duplication on reset
+     */
+    private Thread SHUTDOWN_HOOK;
+    /**
      * <pre>
      * Main method to setup Opensilex instance based on command line arguments,
      * using the following algorithm:
@@ -157,6 +163,8 @@ public class OpenSilex {
      * @return The command line arguments array without the Opensilex parameters
      */
     public static String[] setup(String[] args) {
+        SETUP_ARGS = args;
+        
         // Init remaining arguments list to return
         List<String> cliArgsList = new ArrayList<>();
 
@@ -272,7 +280,7 @@ public class OpenSilex {
             root.setLevel(Level.DEBUG);
             LogFilter.forceDebug();
         }
-        
+
         LOGGER.debug("Creating OpenSilex instance");
         LOGGER.debug("Base directory:" + baseDirectory.toFile().getAbsolutePath());
         LOGGER.debug("Configuration profile: " + profileId);
@@ -317,7 +325,7 @@ public class OpenSilex {
                 // Load new logger configuration file
                 JoranConfigurator configurator = new JoranConfigurator();
                 configurator.setContext(loggerContext);
-                try ( InputStream configStream = FileUtils.openInputStream(logConfigFile)) {
+                try (InputStream configStream = FileUtils.openInputStream(logConfigFile)) {
                     configurator.doConfigure(configStream);
                 }
             } catch (JoranException | IOException ex) {
@@ -398,7 +406,7 @@ public class OpenSilex {
     private void init() throws Exception {
         LOGGER.debug("Load modules with dependencies");
         DependencyManager dependencyManager = new DependencyManager(
-                ClassInfo.getPomFile(OpenSilex.class, "org.opensilex", "opensilex")
+                ClassUtils.getPomFile(OpenSilex.class, "org.opensilex", "opensilex")
         );
         moduleManager.loadModulesWithDependencies(dependencyManager, baseDirectory);
 
@@ -412,18 +420,26 @@ public class OpenSilex {
         moduleManager.registerServices(serviceManager);
 
         // Add hook to clean modules on shutdown
-        Runtime.getRuntime().addShutdownHook(new Thread() {
+        if (SHUTDOWN_HOOK != null) {
+            Runtime.getRuntime().removeShutdownHook(SHUTDOWN_HOOK);
+        }
+        SHUTDOWN_HOOK = new Thread() {
             @Override
             public void run() {
                 LOGGER.debug("Clean modules");
                 moduleManager.clean();
             }
-        });
+        };
+        Runtime.getRuntime().addShutdownHook(SHUTDOWN_HOOK);
 
         LOGGER.debug("Initialize modules");
         moduleManager.init();
     }
 
+    public void reset() {
+        moduleManager.clean();
+        setup(SETUP_ARGS);
+    }
     /**
      * Give public access to module iterator
      *
@@ -431,6 +447,13 @@ public class OpenSilex {
      */
     public Iterable<OpenSilexModule> getModules() {
         return moduleManager.getModules();
+    }
+
+    /**
+     * Run install method for every modules
+     */
+    public void install() throws Exception {
+        moduleManager.install();
     }
 
     /**
@@ -456,7 +479,7 @@ public class OpenSilex {
     public List<OpenSilexModule> getModulesByProjectId(String projectId) {
         List<OpenSilexModule> modules = new ArrayList<>();
         moduleManager.forEachModule((OpenSilexModule m) -> {
-            String moduleClass = ClassInfo.getProjectIdFromClass(m.getClass());
+            String moduleClass = ClassUtils.getProjectIdFromClass(m.getClass());
             if (moduleClass.equals(projectId)) {
                 modules.add(m);
             }

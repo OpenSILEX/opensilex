@@ -47,6 +47,10 @@ public interface BaseConfig extends ModuleConfig {
     )
     public String baseURI();
     
+    @ConfigDescription(
+        value = "Default file storage directory"
+    )
+    public String storageBasePath();
     
     @ConfigDescription(
             value = "Big data source"

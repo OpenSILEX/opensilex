@@ -228,7 +228,7 @@ public abstract class OpenSilexModule {
         return null;
     }
 
-    public void install() {
+    public void install() throws Exception {
         LOGGER.info("Nothing to install for module class: " + getClass().getCanonicalName());
     }
 

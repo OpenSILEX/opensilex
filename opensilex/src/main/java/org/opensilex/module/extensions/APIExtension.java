@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 import javax.ws.rs.Path;
 import org.opensilex.server.rest.RestApplication;
-import org.opensilex.utils.ClassInfo;
+import org.opensilex.utils.ClassUtils;
 
 /**
  *
@@ -41,7 +41,7 @@ public interface APIExtension {
      */
     public default Set<String> apiPackages() {
         Set<String> packageSet = new HashSet<>();
-        Set<Class<?>> classes = ClassInfo.getAnnotatedClasses(Path.class);
+        Set<Class<?>> classes = ClassUtils.getAnnotatedClasses(Path.class);
         classes.forEach((Class<?> clazz) -> {
             packageSet.add(clazz.getPackage().getName());
         });

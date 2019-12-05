@@ -26,7 +26,6 @@ import org.opensilex.service.ServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  *
  * @author Vincent Migot
@@ -42,12 +41,12 @@ public class ModuleManager {
         List<URL> readDependencies = ModuleManager.readDependenciesList(baseDirectory);
         if (readDependencies.size() == 0) {
             List<URL> modulesUrl = ModuleManager.listModulesURLs(baseDirectory);
-            List<URL> dependencies = loadModulesWithDependencies(dependencyManager,modulesUrl);
+            List<URL> dependencies = loadModulesWithDependencies(dependencyManager, modulesUrl);
             ModuleManager.writeDependenciesList(baseDirectory, dependencies);
         } else {
             registerDependencies(readDependencies);
         }
-    }            
+    }
 
     private static List<URL> readDependenciesList(Path baseDirectory) {
         try {
@@ -225,7 +224,6 @@ public class ModuleManager {
     }
 
     public void loadConfigs(ConfigManager configManager) {
-//        this.configManager = configManager;
         for (OpenSilexModule module : getModules()) {
             String configId = module.getConfigId();
             Class<? extends ModuleConfig> configClass = module.getConfigClass();
@@ -246,5 +244,16 @@ public class ModuleManager {
         }
 
         throw new ModuleNotFoundException(moduleClass);
+    }
+
+    public void install() throws Exception {
+        for (OpenSilexModule module : getModules()) {
+            try {
+                module.install();
+            } catch (Exception ex) {
+                LOGGER.error("Fail to install module: " + module.getClass().getCanonicalName(), ex);
+                throw ex;
+            }
+        }
     }
 }

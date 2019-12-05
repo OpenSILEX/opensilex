@@ -10,7 +10,6 @@ import org.opensilex.core.ontology.OntologyReference;
 import org.opensilex.core.variable.dal.QualityModel;
 import org.opensilex.server.validation.Required;
 
-
 public class QualityUpdateDTO {
 
     @Required
@@ -35,6 +34,7 @@ public class QualityUpdateDTO {
     public void setComment(String comment) {
         this.comment = comment;
     }
+
     public List<OntologyReference> getRelations() {
         return relations;
     }
@@ -44,16 +44,12 @@ public class QualityUpdateDTO {
     }
 
     public QualityModel newModel() {
-        return updateModel(new QualityModel());
+        return defineModel(new QualityModel());
     }
 
-    public QualityModel updateModel(QualityModel model) {
-        if (getLabel() != null) {
-            model.setLabel(getLabel());
-        }
-        if (getComment() != null) {
-            model.setComment(getComment());
-        }
+    public QualityModel defineModel(QualityModel model) {
+        model.setLabel(getLabel());
+        model.setComment(getComment());
 
         return model;
     }

@@ -9,6 +9,7 @@ import org.opensilex.module.extensions.APIExtension;
 import java.util.*;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.module.OpenSilexModule;
+import org.opensilex.sparql.SPARQLService;
 
 /**
  *
@@ -35,12 +36,5 @@ public class BaseModule extends OpenSilexModule implements APIExtension {
 
         return list;
     }
-
-    @Override
-    public void init() throws Exception {
-        
-    }
-    
-    
 
 }

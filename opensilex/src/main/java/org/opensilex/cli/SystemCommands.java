@@ -28,7 +28,7 @@ import org.opensilex.OpenSilex;
 import org.opensilex.cli.help.HelpPrinterCommand;
 import org.opensilex.module.ModuleUpdate;
 import org.opensilex.module.OpenSilexModule;
-import org.opensilex.utils.ClassInfo;
+import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
@@ -150,7 +150,7 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
 
             Map<String, LocalDateTime> existingUpdatesByModules = new HashMap<>();
             ServiceLoader.load(ModuleUpdate.class, Thread.currentThread().getContextClassLoader()).forEach((ModuleUpdate update) -> {
-                String updateProjectId = ClassInfo.getProjectIdFromClass(update.getClass());
+                String updateProjectId = ClassUtils.getProjectIdFromClass(update.getClass());
                 if (!updateProjectId.isEmpty()) {
                     if (existingUpdatesByModules.containsKey(updateProjectId)) {
                         if (existingUpdatesByModules.get(updateProjectId).isBefore(update.getDate())) {
@@ -164,7 +164,7 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
 
             for (OpenSilexModule module : OpenSilex.getInstance().getModules()) {
                 Class<?> moduleClass = module.getClass();
-                String moduleProjectId = ClassInfo.getProjectIdFromClass(moduleClass);
+                String moduleProjectId = ClassUtils.getProjectIdFromClass(moduleClass);
                 if (!moduleProjectId.isEmpty()) {
                     try {
                         if (moduleNames.size() == 0 || moduleNames.contains(moduleProjectId)) {
@@ -218,7 +218,7 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
             ServiceLoader.load(ModuleUpdate.class, Thread.currentThread().getContextClassLoader())
                     .forEach((ModuleUpdate update) -> {
                         // Get the related module id of the update
-                        String moduleId = ClassInfo.getProjectIdFromClass(update.getClass());
+                        String moduleId = ClassUtils.getProjectIdFromClass(update.getClass());
 
                         if (!moduleId.isEmpty()) {
                             // Flag to determine if the update must be ignored or not

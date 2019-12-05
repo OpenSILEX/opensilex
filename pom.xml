@@ -20,9 +20,6 @@
     </properties>
       
     <modules>
-        <!-- Maven Plugin module -->
-
-    
         <!-- Main modules -->
         <module>opensilex-parent</module>
         <module>opensilex</module>
@@ -36,7 +33,8 @@
         <!-- Development module -->
         <module>opensilex-dev-tools</module>
         
-                <module>opensilex-swagger-codegen-maven-plugin</module>
+        <!-- Maven Plugin module -->
+        <module>opensilex-swagger-codegen-maven-plugin</module>
     </modules>
     
     <dependencies>

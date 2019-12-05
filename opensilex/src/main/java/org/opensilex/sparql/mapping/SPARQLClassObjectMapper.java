@@ -33,7 +33,7 @@ import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.URIGenerator;
-import org.opensilex.utils.ClassInfo;
+import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +58,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     public static void initialize() throws SPARQLInvalidClassDefinitionException {
         if (SPARQL_CLASSES_LIST == null) {
-            SPARQL_CLASSES_LIST = ClassInfo.getAnnotatedClasses(SPARQLResource.class);
+            SPARQL_CLASSES_LIST = ClassUtils.getAnnotatedClasses(SPARQLResource.class);
 
             for (Class<?> sparqlModelClass : SPARQL_CLASSES_LIST) {
                 SPARQLClassObjectMapper<?> sparqlObjectMapper = new SPARQLClassObjectMapper<>((Class<? extends SPARQLResourceModel>) sparqlModelClass);
@@ -131,7 +131,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public Class<?> getGenericListFieldType(Field f) {
-        return ClassInfo.getGenericTypeFromClass(f.getClass());
+        return ClassUtils.getGenericTypeFromClass(f.getClass());
     }
 
     public T createInstance(URI uri, SPARQLService service) throws Exception {
@@ -186,14 +186,14 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         for (Field field : classAnalizer.getDataListPropertyFields()) {
             Method setter = classAnalizer.getSetterFromField(field);
 
-            SPARQLProxyListData<?> proxy = new SPARQLProxyListData<>(getDefaultGraph(), uri, classAnalizer.getDataListPropertyByField(field), ClassInfo.getGenericTypeFromField(field), classAnalizer.isReverseRelation(field), service);
+            SPARQLProxyListData<?> proxy = new SPARQLProxyListData<>(getDefaultGraph(), uri, classAnalizer.getDataListPropertyByField(field), ClassUtils.getGenericTypeFromField(field), classAnalizer.isReverseRelation(field), service);
             setter.invoke(instance, proxy.getInstance());
         }
 
         for (Field field : classAnalizer.getObjectListPropertyFields()) {
             Method setter = classAnalizer.getSetterFromField(field);
 
-            Class<? extends SPARQLResourceModel> model = (Class<? extends SPARQLResourceModel>) ClassInfo.getGenericTypeFromField(field);
+            Class<? extends SPARQLResourceModel> model = (Class<? extends SPARQLResourceModel>) ClassUtils.getGenericTypeFromField(field);
             SPARQLProxyListObject<? extends SPARQLResourceModel> proxy = new SPARQLProxyListObject<>(getDefaultGraph(), uri, classAnalizer.getObjectListPropertyByField(field), model, classAnalizer.isReverseRelation(field), service);
             setter.invoke(instance, proxy.getInstance());
         }

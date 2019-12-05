@@ -24,7 +24,7 @@ import org.apache.jasper.servlet.JasperInitializer;
 import org.apache.tomcat.JarScanType;
 import org.opensilex.OpenSilex;
 import org.opensilex.module.extensions.ServerExtension;
-import org.opensilex.utils.ClassInfo;
+import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.fs.FileStorageService;
@@ -114,7 +114,7 @@ public class Server extends Tomcat {
         try {
             Context context = addWebapp(name, new File(".").getAbsolutePath());
             WebResourceRoot resource = new StandardRoot(context);
-            File jarFile = ClassInfo.getJarFile(moduleClass);
+            File jarFile = ClassUtils.getJarFile(moduleClass);
             if (jarFile.isFile()) {
                 resource.createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR, contextPath, jarFile.getCanonicalPath(), null, baseDirectory);
 

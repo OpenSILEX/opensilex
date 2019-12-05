@@ -8,6 +8,7 @@ package org.opensilex.core.variable.dal;
 import java.net.URI;
 import java.util.List;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.expr.Expr;
 import org.opensilex.sparql.SPARQLQueryHelper;
 import org.opensilex.sparql.SPARQLService;
@@ -15,7 +16,6 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
-
 
 /**
  *
@@ -41,8 +41,8 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         Expr labelFilter = SPARQLQueryHelper.regexFilter(BaseVariableModel.LABEL_FIELD, labelPattern);
         Expr commentFilter = SPARQLQueryHelper.regexFilter(BaseVariableModel.COMMENT_FIELD, commentPattern);
 
-        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
-
+        SPARQLDeserializer<URI> sparqlURI = SPARQLDeserializers.getForClass(URI.class);
+        
         return sparql.searchWithPagination(
                 objectClass,
                 (SelectBuilder select) -> {
@@ -53,16 +53,16 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                         select.addFilter(commentFilter);
                     }
                     if (entity != null) {
-                        select.addWhereValueVar(VariableModel.ENTITY_FIELD_NAME, uriDeserializer.getNode(entity));
+                        select.addWhereValueVar(VariableModel.ENTITY_FIELD_NAME, sparqlURI.getNode(entity));
                     }
                     if (quality != null) {
-                        select.addWhereValueVar(VariableModel.QUALITY_FIELD_NAME, uriDeserializer.getNode(quality));
+                        select.addWhereValueVar(VariableModel.QUALITY_FIELD_NAME, sparqlURI.getNode(quality));
                     }
                     if (method != null) {
-                        select.addWhereValueVar(VariableModel.METHOD_FIELD_NAME, uriDeserializer.getNode(method));
+                        select.addWhereValueVar(VariableModel.METHOD_FIELD_NAME, sparqlURI.getNode(method));
                     }
                     if (unit != null) {
-                        select.addWhereValueVar(VariableModel.UNIT_FIELD_NAME, uriDeserializer.getNode(unit));
+                        select.addWhereValueVar(VariableModel.UNIT_FIELD_NAME, sparqlURI.getNode(unit));
                     }
                 },
                 orderByList,

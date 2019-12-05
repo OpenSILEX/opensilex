@@ -33,6 +33,8 @@ import org.opensilex.server.user.dal.UserModel;
  */
 public class AuthenticationService implements Service {
 
+    public final static String DEFAULT_AUTHENTICATION_SERVICE = "authentication";
+        
     private static final int PASSWORD_HASH_COMPLEXITY = 12;
     private static final long TOKEN_VALIDITY_DURATION = 1;
     private static final TemporalUnit TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.HOURS;

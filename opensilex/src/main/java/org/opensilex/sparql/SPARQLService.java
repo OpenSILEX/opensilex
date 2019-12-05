@@ -68,6 +68,8 @@ public class SPARQLService implements SPARQLConnection, Service {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLService.class);
 
+    public final static String DEFAULT_SPARQL_SERVICE = "sparql";
+    
     private final SPARQLConnection connection;
 
     private final URI baseURI;

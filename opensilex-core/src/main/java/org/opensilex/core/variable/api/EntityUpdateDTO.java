@@ -44,20 +44,14 @@ public class EntityUpdateDTO {
     }
 
     public EntityModel newModel() {
-        EntityModel model = updateModel(new EntityModel());
-        
-        // TODO add relations
+        EntityModel model = defineModel(new EntityModel());
         
         return model;
     }
 
-    public EntityModel updateModel(EntityModel model) {
-        if (getLabel() != null) {
-            model.setLabel(getLabel());
-        }
-        if (getComment() != null) {
-            model.setComment(getComment());
-        }
+    public EntityModel defineModel(EntityModel model) {
+        model.setLabel(getLabel());
+        model.setComment(getComment());
 
         return model;
     }

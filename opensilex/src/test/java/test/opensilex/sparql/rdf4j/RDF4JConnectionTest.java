@@ -29,21 +29,6 @@ public class RDF4JConnectionTest extends SPARQLServiceTest {
 
         SPARQLService localService = new SPARQLService(new RDF4JConnection(repository.getConnection()));
 
-//        RDF4JConfig cfg = new RDF4JConfig() {
-//            @Override
-//            public String serverURI() {
-//                return "http://localhost:8080/rdf4j-server";
-//            }
-//
-//            @Override
-//            public String repository() {
-//                return "tu";
-//            }
-//
-//        };
-//
-//        SPARQLService localService = new SPARQLService(new RDF4JConnection(cfg));
-
         SPARQLServiceTest.initialize(localService);
     }
 }

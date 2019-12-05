@@ -7,6 +7,7 @@ package org.opensilex.server.user.api;
 
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.Email;
+import org.opensilex.server.user.dal.UserModel;
 import org.opensilex.server.validation.Required;
 
 
@@ -73,5 +74,4 @@ public class UserCreationDTO {
     public void setAdmin(boolean admin) {
         this.admin = admin;
     }
-
 }

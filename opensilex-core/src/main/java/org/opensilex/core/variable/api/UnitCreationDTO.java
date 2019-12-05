@@ -8,7 +8,6 @@ package org.opensilex.core.variable.api;
 import java.net.URI;
 import org.opensilex.core.variable.dal.UnitModel;
 
-
 /**
  *
  * @author vidalmor
@@ -24,13 +23,11 @@ public class UnitCreationDTO extends UnitUpdateDTO {
     public void setUri(URI uri) {
         this.uri = uri;
     }
-    
-    public UnitModel updateModel(UnitModel model) {
-        model = super.updateModel(model);
-        if (getUri() != null) {
-            model.setUri(getUri());
-        }
-        
+
+    public UnitModel defineModel(UnitModel model) {
+        model = super.defineModel(model);
+        model.setUri(getUri());
+
         return model;
     }
 }

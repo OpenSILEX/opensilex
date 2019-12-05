@@ -3,11 +3,11 @@ version: "3.5"
 services:
    rdf4j:
       container_name: opensilex-rdf4j
-      image: eclipse/rdf4j-workbench:amd64-3.0.0-testing
+      image: eclipse/rdf4j-workbench:amd64-3.0.2-testing
       networks:
          - backend
       ports:
-         - "8080:8080"
+         - "8667:8080"
       restart: always         
       volumes:
          - rdf4j_data:/var/rdf4j
@@ -16,11 +16,11 @@ services:
          
    mongodb:
       container_name: opensilex-mongodb
-      image: 'mongo:4.2.0-bionic'
+      image: 'mongo:4.2.1-bionic'
       networks:
          - backend
       ports:
-         - "27017:27017"
+         - "8668:27017"
       restart: always         
       volumes:
          - mongodb_data:/data/db
@@ -31,7 +31,7 @@ services:
       networks:
          - backend
       ports:
-         - "5432:5432"
+         - "8669:5432"
       restart: always
       environment:
         POSTGRES_USER: opensilex
@@ -45,7 +45,7 @@ services:
       networks:
          - backend
       ports:
-         - "5433:80"
+         - "8670:80"
       restart: always
       environment:
         PGADMIN_DEFAULT_EMAIL: admin@opensilex.org

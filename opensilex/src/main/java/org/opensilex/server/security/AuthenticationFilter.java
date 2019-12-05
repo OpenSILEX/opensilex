@@ -40,11 +40,9 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     ResourceInfo resourceInfo;
 
     @Inject
-    @Named("authentication")
     AuthenticationService authentication;
 
     @Inject
-    @Named("sparql")
     SPARQLService sparql;
 
     @Override

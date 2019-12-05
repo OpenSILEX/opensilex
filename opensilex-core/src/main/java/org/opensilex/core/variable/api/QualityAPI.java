@@ -83,7 +83,7 @@ public class QualityAPI implements RestApplicationAPI {
 
         QualityModel model = dao.get(uri);
         if (model != null) {
-            dao.update(dto.updateModel(model));
+            dao.update(dto.defineModel(model));
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
         } else {
             return new ErrorResponse(

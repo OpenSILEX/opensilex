@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import test.opensilex.sparql.model.A;
 import test.opensilex.sparql.model.B;
 import test.opensilex.sparql.model.TEST_ONTOLOGY;

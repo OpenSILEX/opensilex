@@ -5,7 +5,7 @@
 //******************************************************************************
 package org.opensilex.service;
 
-import org.opensilex.utils.ClassInfo;
+import org.opensilex.utils.ClassUtils;
 
 /**
  *
@@ -30,11 +30,11 @@ public interface Service {
     }
 
     public static boolean isConfigurable(Class<? extends Service> serviceClass) {
-        return ClassInfo.getConstructorWithParameterImplementing(serviceClass, ServiceConfig.class) != null;
+        return ClassUtils.getConstructorWithParameterImplementing(serviceClass, ServiceConfig.class) != null;
     }
 
     public static boolean isConnectable(Class<? extends Service> serviceClass) {
-        return ClassInfo.getConstructorWithParameterImplementing(serviceClass, ServiceConnection.class) != null;
+        return ClassUtils.getConstructorWithParameterImplementing(serviceClass, ServiceConnection.class) != null;
     }
 
     public static ServiceConfig getDefaultConfig(Class<? extends Service> serviceClass) {

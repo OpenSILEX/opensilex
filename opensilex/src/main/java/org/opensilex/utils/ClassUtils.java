@@ -36,9 +36,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author vincent
  */
-public class ClassInfo {
+public class ClassUtils {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ClassInfo.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(ClassUtils.class);
 
     public static boolean isPrimitive(Class<?> type) {
         return type.isPrimitive()
@@ -89,7 +89,7 @@ public class ClassInfo {
     public static Class<?> getGenericTypeFromField(Field field) {
         if (isGenericType(field.getGenericType())) {
             ParameterizedType parameterized = (ParameterizedType) field.getGenericType();
-            return (Class<?>) ClassInfo.getGenericTypeParameter(parameterized);
+            return (Class<?>) ClassUtils.getGenericTypeParameter(parameterized);
         }
 
         return null;
@@ -99,7 +99,7 @@ public class ClassInfo {
         if (isGenericType(clazz)) {
             Type type = (Type) clazz;
             ParameterizedType parameterized = (ParameterizedType) type;
-            return (Class<?>) ClassInfo.getGenericTypeParameter(parameterized);
+            return (Class<?>) ClassUtils.getGenericTypeParameter(parameterized);
         }
 
         return null;
@@ -151,6 +151,27 @@ public class ClassInfo {
 
     public static File getPomFile(Class<?> clazz, String groupId, String artifactId) throws IOException {
         return getPomFile(getJarFile(clazz), groupId, artifactId);
+    }
+
+    public static File getFileFromJar(File jarFile, String filePath) throws IOException {
+        ZipFile zipFile = new ZipFile(jarFile);
+        ZipEntry entry = zipFile.getEntry(filePath);;
+
+        InputStream pomStream = zipFile.getInputStream(entry);
+        File temp = File.createTempFile("opensilex-temp.", ".temp");
+        temp.deleteOnExit();
+        FileOutputStream out = new FileOutputStream(temp);
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        //read from is to buffer
+        while ((bytesRead = pomStream.read(buffer)) != -1) {
+            out.write(buffer, 0, bytesRead);
+        }
+        pomStream.close();
+        out.flush();
+        out.close();
+        zipFile.close();
+        return temp;
     }
 
     public static File getPomFile(File jarFile, String groupId, String artifactId) throws IOException {
@@ -225,7 +246,7 @@ public class ClassInfo {
         String projectId = classFromProject.getPackage().getImplementationTitle();
         if (projectId == null) {
             try {
-                File pom = ClassInfo.getPomFile(classFromProject);
+                File pom = ClassUtils.getPomFile(classFromProject);
                 MavenXpp3Reader reader = new MavenXpp3Reader();
                 Model model = reader.read(new FileReader(pom));
                 projectId = model.getArtifactId();
@@ -270,7 +291,7 @@ public class ClassInfo {
             LOGGER.debug("Annoted class found: " + annotation.getCanonicalName() + " in " + c.getCanonicalName());
             classMap.put(c.getCanonicalName(), c);
         });
-        
+
         return classMap;
     }
 }

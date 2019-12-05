@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-import org.opensilex.utils.ClassInfo;
+import org.opensilex.utils.ClassUtils;
 
 public class SwaggerAPIGenerator {
 
@@ -25,7 +25,7 @@ public class SwaggerAPIGenerator {
 
         swagger = ctx.getSwagger();
 
-        Map<String, Class<?>> availableAPI = ClassInfo.getAnnotatedClassesMap(Api.class);
+        Map<String, Class<?>> availableAPI = ClassUtils.getAnnotatedClassesMap(Api.class);
 
         Set<Class<?>> classes = new HashSet<>(availableAPI.values());
         if (classes.size() > 0) {
@@ -48,7 +48,7 @@ public class SwaggerAPIGenerator {
         
         Set<Class<?>> classes = new HashSet<>();
 
-        Map<String, Class<?>> availableAPI = ClassInfo.getAnnotatedClassesMap(Api.class);
+        Map<String, Class<?>> availableAPI = ClassUtils.getAnnotatedClassesMap(Api.class);
 
         if (source != null) {
             Path sourcePath = Paths.get(source);

@@ -29,7 +29,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.URIGenerator;
-import org.opensilex.utils.ClassInfo;
+import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +78,7 @@ public class SPARQLClassAnalyzer {
         this.objectClass = objectClass;
 
         LOGGER.debug("Determine RDF Type for class: " + objectClass.getName());
-        SPARQLResource resourceAnnotation = ClassInfo.findClassAnnotationRecursivly(objectClass, SPARQLResource.class);
+        SPARQLResource resourceAnnotation = ClassUtils.findClassAnnotationRecursivly(objectClass, SPARQLResource.class);
         if (resourceAnnotation == null) {
             throw new SPARQLInvalidClassDefinitionException(objectClass, "annotation not found: " + SPARQLResource.class.getCanonicalName());
         }
@@ -112,7 +112,7 @@ public class SPARQLClassAnalyzer {
         }
 
         LOGGER.debug("Process fields annotations");
-        for (Field field : ClassInfo.getClassFieldsRecursivly(objectClass)) {
+        for (Field field : ClassUtils.getClassFieldsRecursivly(objectClass)) {
             field.setAccessible(true);
             SPARQLProperty sProperty = field.getAnnotation(SPARQLProperty.class);
 
@@ -166,9 +166,9 @@ public class SPARQLClassAnalyzer {
 
         LOGGER.debug("Analyse field type for: " + field.getName());
         Type fieldType = field.getGenericType();
-        if (ClassInfo.isGenericType(fieldType)) {
+        if (ClassUtils.isGenericType(fieldType)) {
             ParameterizedType parameterizedType = (ParameterizedType) fieldType;
-            if (ClassInfo.isGenericList(parameterizedType)) {
+            if (ClassUtils.isGenericList(parameterizedType)) {
                 Class<?> genericParameter = (Class<?>) parameterizedType.getActualTypeArguments()[0];
                 LOGGER.debug("Field " + field.getName() + " is a list of: " + genericParameter.getName());
                 if (SPARQLDeserializers.existsForClass(genericParameter)) {

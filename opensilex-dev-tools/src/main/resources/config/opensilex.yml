@@ -1,22 +1,32 @@
 opensilex:
+    baseURI: http://www.opensilex.org/
+    storageBasePath: <TO CONFIGURE>
     sparql:
         rdf4j:
-            serverURI: http://localhost:8080/rdf4j-server/
+            serverURI: http://localhost:8667/rdf4j-server/
             repository: opensilex
     
     bigData:
         mongodb:
+            host: localhost
+            port: 8668
             database: opensilex
     
 phisws:
+    postgreSQL:
+        host: localhost
+        port: 8669
+        database: opensilex
+        username: opensilex
+        password: opensilex
+        
     ontologyBaseURI: http://www.phenome-fppn.fr/
     vocabulary: http://www.phenome-fppn.fr/vocabulary/2017#
     infrastructure: opensilex
     
     uploadFileServerIP: localhost
-    uploadFileServerUsername: vincent
-    uploadFileServerPassword: pic3.14
-    uploadFileServerDirectory: /home/vincent/opensilex/docs
+    uploadFileServerUsername: <TO CONFIGURE>
+    uploadFileServerPassword: <TO CONFIGURE>
     
     layerFileServerDirectory: /var/www/html/layers
     layerFileServerAddress: http://localhost/layers
@@ -24,7 +34,3 @@ phisws:
     uploadImageServerDirectory: /var/www/html/images
     imageFileServerDirectory: http://localhost/images
         
-    postgreSQL:
-        database: opensilex
-        username: opensilex
-        password: opensilex

@@ -42,7 +42,7 @@ import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
 import org.eclipse.aether.util.filter.PatternExclusionsDependencyFilter;
-import org.opensilex.utils.ClassInfo;
+import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -200,13 +200,13 @@ public class DependencyManager {
     public List<URL> loadModulesDependencies(List<URL> jarModulesURLs) throws IOException, DependencyResolutionException, ModelBuildingException {
         List<URL> dependenciesUrl = new ArrayList<>();
         for (URL jarURL : jarModulesURLs) {
-            File pom = ClassInfo.getPomFile(jarURLToFile(jarURL));
+            File pom = ClassUtils.getPomFile(jarURLToFile(jarURL));
             registerPom(pom);
         }
 
         for (URL jarURL : jarModulesURLs) {
             File jarFile = jarURLToFile(jarURL);
-            dependenciesUrl.addAll(loadDependencies(ClassInfo.getPomFile(jarFile), true));
+            dependenciesUrl.addAll(loadDependencies(ClassUtils.getPomFile(jarFile), true));
         }
 
         return dependenciesUrl;

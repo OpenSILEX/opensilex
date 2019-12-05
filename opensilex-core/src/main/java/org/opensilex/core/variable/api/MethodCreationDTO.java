@@ -23,13 +23,11 @@ public class MethodCreationDTO extends MethodUpdateDTO {
     public void setUri(URI uri) {
         this.uri = uri;
     }
-    
-    public MethodModel updateModel(MethodModel model) {
-        model = super.updateModel(model);
-        if (getUri() != null) {
-            model.setUri(getUri());
-        }
-        
+
+    public MethodModel defineModel(MethodModel model) {
+        model = super.defineModel(model);
+        model.setUri(getUri());
+
         return model;
     }
 }

@@ -83,7 +83,7 @@ public class VariableAPI implements RestApplicationAPI {
 
         VariableModel variable = dao.get(uri);
         if (variable != null) {
-            dao.update(variableDTO.updateModel(variable));
+            dao.update(variableDTO.defineModel(variable));
             return new ObjectUriResponse(Response.Status.OK, variable.getUri()).getResponse();
         } else {
             return new ErrorResponse(

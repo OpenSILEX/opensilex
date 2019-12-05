@@ -10,7 +10,6 @@ import org.opensilex.core.ontology.OntologyReference;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.server.validation.Required;
 
-
 public class UnitUpdateDTO {
 
     @Required
@@ -35,6 +34,7 @@ public class UnitUpdateDTO {
     public void setComment(String comment) {
         this.comment = comment;
     }
+
     public List<OntologyReference> getRelations() {
         return relations;
     }
@@ -44,16 +44,12 @@ public class UnitUpdateDTO {
     }
 
     public UnitModel newModel() {
-        return updateModel(new UnitModel());
+        return defineModel(new UnitModel());
     }
 
-    public UnitModel updateModel(UnitModel model) {
-        if (getLabel() != null) {
-            model.setLabel(getLabel());
-        }
-        if (getComment() != null) {
-            model.setComment(getComment());
-        }
+    public UnitModel defineModel(UnitModel model) {
+        model.setLabel(getLabel());
+        model.setComment(getComment());
 
         return model;
     }

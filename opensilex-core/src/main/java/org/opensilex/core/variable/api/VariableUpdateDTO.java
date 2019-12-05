@@ -16,7 +16,6 @@ import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.server.validation.Required;
 
-
 public class VariableUpdateDTO {
 
     @Required
@@ -95,28 +94,16 @@ public class VariableUpdateDTO {
     }
 
     public VariableModel newModel() {
-        return updateModel(new VariableModel());
+        return defineModel(new VariableModel());
     }
 
-    public VariableModel updateModel(VariableModel model) {
-        if (getLabel() != null) {
-            model.setLabel(getLabel());
-        }
-        if (getComment() != null) {
-            model.setComment(getComment());
-        }
-        if (getEntity() != null) {
-            model.setEntity(new EntityModel(getEntity()));
-        }
-        if (getQuality() != null) {
-            model.setQuality(new QualityModel(getQuality()));
-        }
-        if (getMethod() != null) {
-            model.setMethod(new MethodModel(getMethod()));
-        }
-        if (getUnit() != null) {
-            model.setUnit(new UnitModel(getUnit()));
-        }
+    public VariableModel defineModel(VariableModel model) {
+        model.setLabel(getLabel());
+        model.setComment(getComment());
+        model.setEntity(new EntityModel(getEntity()));
+        model.setQuality(new QualityModel(getQuality()));
+        model.setMethod(new MethodModel(getMethod()));
+        model.setUnit(new UnitModel(getUnit()));
 
         return model;
     }

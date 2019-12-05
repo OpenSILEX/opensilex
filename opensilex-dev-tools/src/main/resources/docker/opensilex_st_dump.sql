@@ -98,28 +98,6 @@ CREATE TABLE public.at_group_users (
     group_uri character varying(200) NOT NULL
 );
 
-
---
--- Name: at_project_project; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.at_project_project (
-    uri_project character varying(300) NOT NULL,
-    uri_parent_project character varying(300) NOT NULL
-);
-
-
---
--- Name: at_project_users; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.at_project_users (
-    project_uri character varying(300) NOT NULL,
-    users_email character varying(255) NOT NULL,
-    type character varying(300) NOT NULL
-);
-
-
 --
 -- Name: at_trial_project; Type: TABLE; Schema: public; Owner: -
 --
@@ -150,28 +128,6 @@ CREATE TABLE public."group" (
     level character varying(200),
     description text,
     uri character varying(200) NOT NULL
-);
-
-
---
--- Name: project; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.project (
-    uri character varying(300) NOT NULL,
-    name character varying(200) NOT NULL,
-    acronyme character varying(200),
-    subproject_type character varying(200),
-    financial_support character varying(200),
-    financial_name character varying(200),
-    date_start date NOT NULL,
-    date_end date,
-    keywords character varying(500),
-    description text,
-    objective character varying(256),
-    parent_project character varying(300),
-    website character varying(300),
-    type character varying(100)
 );
 
 
@@ -232,31 +188,6 @@ CREATE TABLE public.users (
 ALTER TABLE ONLY public.agronomical_object
     ADD CONSTRAINT agronomical_object_pkey PRIMARY KEY (uri);
 
-
---
--- Name: at_project_project_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.at_project_project
-    ADD CONSTRAINT at_project_project_pkey PRIMARY KEY (uri_project, uri_parent_project);
-
-
---
--- Name: at_project_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.at_project_users
-    ADD CONSTRAINT at_project_users_pkey PRIMARY KEY (project_uri, users_email, type);
-
-
---
--- Name: at_trial_project_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.at_trial_project
-    ADD CONSTRAINT at_trial_project_pkey PRIMARY KEY (project_uri, trial_uri);
-
-
 --
 -- Name: at_trial_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
@@ -287,14 +218,6 @@ ALTER TABLE ONLY public.at_group_trial
 
 ALTER TABLE ONLY public.at_group_users
     ADD CONSTRAINT pk_group_users PRIMARY KEY (group_uri, users_email);
-
-
---
--- Name: project_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.project
-    ADD CONSTRAINT project_pkey PRIMARY KEY (uri);
 
 
 --
@@ -346,38 +269,6 @@ ALTER TABLE ONLY public.at_group_users
 
 
 --
--- Name: at_project_project_uri_parent_project_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.at_project_project
-    ADD CONSTRAINT at_project_project_uri_parent_project_fkey FOREIGN KEY (uri_parent_project) REFERENCES public.project(uri);
-
-
---
--- Name: at_project_project_uri_project_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.at_project_project
-    ADD CONSTRAINT at_project_project_uri_project_fkey FOREIGN KEY (uri_project) REFERENCES public.project(uri);
-
-
---
--- Name: at_project_users_users_email_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.at_project_users
-    ADD CONSTRAINT at_project_users_users_email_fkey FOREIGN KEY (users_email) REFERENCES public.users(email);
-
-
---
--- Name: at_trial_project_trial_uri_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.at_trial_project
-    ADD CONSTRAINT at_trial_project_trial_uri_fkey FOREIGN KEY (trial_uri) REFERENCES public.trial(uri);
-
-
---
 -- Name: at_trial_users_trial_uri_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -391,15 +282,6 @@ ALTER TABLE ONLY public.at_trial_users
 
 ALTER TABLE ONLY public.at_trial_users
     ADD CONSTRAINT at_trial_users_users_email_fkey FOREIGN KEY (users_email) REFERENCES public.users(email);
-
-
---
--- Name: SCHEMA public; Type: ACL; Schema: -; Owner: -
---
-
-REVOKE ALL ON SCHEMA public FROM PUBLIC;
-GRANT ALL ON SCHEMA public TO PUBLIC;
-
 
 --
 -- PostgreSQL database dump complete

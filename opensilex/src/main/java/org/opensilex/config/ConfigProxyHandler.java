@@ -22,7 +22,7 @@ import java.util.Map;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceConfig;
 import org.opensilex.service.ServiceConnection;
-import org.opensilex.utils.ClassInfo;
+import org.opensilex.utils.ClassUtils;
 import org.slf4j.LoggerFactory;
 
 
@@ -58,18 +58,18 @@ public class ConfigProxyHandler implements InvocationHandler {
     private Object nodeToObject(Type type, String key, JsonNode node, Method method) throws InvalidConfigException {
         Object result;
 
-        if (ClassInfo.isGenericType(type)) {
+        if (ClassUtils.isGenericType(type)) {
             ParameterizedType genericReturnType = (ParameterizedType) type;
             Type genericParameter = genericReturnType.getActualTypeArguments()[0];
 
             try {
                 Class<?> returnTypeClass = (Class<?>) genericReturnType.getRawType();
-                if (ClassInfo.isList(returnTypeClass)) {
+                if (ClassUtils.isList(returnTypeClass)) {
                     result = getList(genericParameter, node.at(key), method);
-                } else if (ClassInfo.isMap(returnTypeClass)) {
+                } else if (ClassUtils.isMap(returnTypeClass)) {
                     Type genericValueParameter = genericReturnType.getActualTypeArguments()[1];
                     result = getMap(genericValueParameter, node.at(key), method);
-                } else if (ClassInfo.isClass(returnTypeClass)) {
+                } else if (ClassUtils.isClass(returnTypeClass)) {
                     result = getClassDefinition(node.at(key), method);
                 } else {
                     throw new InvalidConfigException(
@@ -92,11 +92,11 @@ public class ConfigProxyHandler implements InvocationHandler {
             }
         } else {
             Class<?> returnTypeClass = (Class<?>) type;
-            if (ClassInfo.isPrimitive(returnTypeClass)) {
+            if (ClassUtils.isPrimitive(returnTypeClass)) {
                 result = getPrimitive(returnTypeClass.getCanonicalName(), node.at(key), method);
             } else if (Service.class.isAssignableFrom(returnTypeClass)) {
                 result = getService((Class<? extends Service>) returnTypeClass, node.at(key), method);
-            } else if (ClassInfo.isInterface(returnTypeClass)) {
+            } else if (ClassUtils.isInterface(returnTypeClass)) {
                 result = getInterface(returnTypeClass, key, node);
             } else {
 
@@ -425,7 +425,7 @@ public class ConfigProxyHandler implements InvocationHandler {
                     }
 
                     if (!connectionConfigClass.equals(Class.class) && !connectionConfigID.trim().equals("")) {
-                        Constructor<? extends ServiceConnection> constructorWithConfig = ClassInfo.getConstructorWithParameterImplementing(connectionClass, connectionConfigClass);
+                        Constructor<? extends ServiceConnection> constructorWithConfig = ClassUtils.getConstructorWithParameterImplementing(connectionClass, connectionConfigClass);
                         if (constructorWithConfig == null) {
                             try {
                                 connection = connectionClass.getConstructor().newInstance();
@@ -452,7 +452,7 @@ public class ConfigProxyHandler implements InvocationHandler {
                     }
 
                     try {
-                        Constructor<T> constructorWithConnection = ClassInfo.getConstructorWithParameterImplementing(implementation, ServiceConnection.class);
+                        Constructor<T> constructorWithConnection = ClassUtils.getConstructorWithParameterImplementing(implementation, ServiceConnection.class);
                         if (constructorWithConnection != null) {
                             instance = (T) constructorWithConnection.newInstance(connection);
                         } else {

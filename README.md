@@ -76,9 +76,14 @@ cd opensilex-dev/opensilex-dev-tools/src/main/resources/docker
 sudo docker-compose up -d
 ```
 
+Docker containers will be automatically started on your machine startup.
+
+You can change the "restart" parameter in "docker-compose.yml" file if you don't want this behavior 
+but you will have to run the preious command after each restart manually.
+
 # Initialize system data
 
-## With Netbeans
+## With Netbeans
 
 Right-click on opensilex-dev project and select "Open Required Projects" --> "Open All Projects"
 
@@ -95,7 +100,7 @@ mvn "-Dexec.args=-classpath %classpath:../opensilex:../opensilex-core:../opensil
 
 # Start OpenSILEX development server with Netbeans
 
-## For webservices only
+## For web services only
 
 Right-click on ```org.opensilex.dev.StartServer``` class in opensilex-dev-tools projet and select "run" or "debug"
 
@@ -103,25 +108,15 @@ Right-click on ```org.opensilex.dev.StartServer``` class in opensilex-dev-tools 
 
 Right-click on ```org.opensilex.dev.StartServerWithFront``` class in opensilex-dev-tools projet and select "run" or "debug"
 
-## By command line
-
-```
-cd <BASE_DIR>
-cd opensilex-dev/opensilex-debug
-mvn exec:exec "-Dexec.args=-classpath %classpath org.opensilex.dev.StartServerWithFront" -Dexec.executable=java org.codehaus.mojo:exec-maven-plugin:1.6.0:exec
-```
-
-## With Netbeans
-
-Just right-click on ```org.opensilex.dev.StartServerWithFront``` class in opensilex-dev-tools projet and select "run" or "debug"
-
 # Access to OpenSilex & tools
 
 If you use the default configuration, you can now access the OpenSILEX API at: [http://localhost:8666/](http://localhost:8666/)
 
 If you start server with Vue.js, the hot reload server tell you on which port it's accessible.
 
-Default Super Admin user is created with login: ```admin@opensilex.org``` and password: ```admin``` which will give you access to all web services
+Default Super Admin user which will give you access to all web services is created with:
+- login: admin@opensilex.org
+- password: admin 
 
 RDF4J workbench is accessible by default at: [http://localhost:8667/rdf4j-workbench](http://localhost:8667/rdf4j-workbench)
 

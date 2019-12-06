@@ -15,7 +15,7 @@ import org.opensilex.module.extensions.ServerExtension;
  *
  * @author vincent
  */
-public class FrontModule extends OpenSilexModule implements ServerExtension, APIExtension, FrontExtension {
+public class FrontModule extends OpenSilexModule implements ServerExtension, APIExtension {
 
     @Override
     public Class<? extends ModuleConfig> getConfigClass() {

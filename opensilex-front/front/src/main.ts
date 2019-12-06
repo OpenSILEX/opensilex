@@ -4,8 +4,8 @@ import "reflect-metadata"
 import Vue from 'vue'
 import App from './App.vue'
 import { FrontConfigDTO, FrontService } from './lib'
-import { ModuleLoader } from './models/ModuleLoader'
-import { ModuleFrontVuePlugin } from './models/ModuleFrontVuePlugin'
+import { ModuleLoader } from './modules/ModuleLoader'
+import { ModuleFrontVuePlugin } from './modules/ModuleFrontVuePlugin'
 import router from './router'
 import store from './store'
 
@@ -43,21 +43,22 @@ frontService.getConfig()
   .then(function (config: FrontConfigDTO) {
     console.log(config);
 
-    moduleLoader.loadComponentModules([
-      "opensilex#test"
+    moduleLoader.loadModules([
+      "opensilex"
     ]).then(function () {
       const securityService = frontPlugin.getService<SecurityService>("SecurityService");
       console.log(securityService);
       securityService.getAccestList();
+
+      // TODO Check user access and rights
+
+      new Vue({
+        router,
+        store,
+        render: h => h(App)
+      }).$mount('#app')
+
       document.getElementById('opensilex-loader').style.visibility = 'hidden';
     }).catch(console.error);
-
-    // TODO Check user
-
-    new Vue({
-      router,
-      store,
-      render: h => h(App)
-    }).$mount('#app')
   })
   .catch(console.error);

@@ -9,8 +9,19 @@ package org.opensilex.dev;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.monitor.FileAlterationListener;
+import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
+import org.apache.commons.io.monitor.FileAlterationMonitor;
+import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.opensilex.*;
 import org.opensilex.cli.*;
+import org.opensilex.front.api.FrontAPI;
+import org.opensilex.module.OpenSilexModule;
+import org.opensilex.utils.ClassUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -18,14 +29,19 @@ import org.opensilex.cli.*;
  */
 public class StartServerWithFront {
 
-    public static void main(String[] args) throws IOException {
+    private final static Logger LOGGER = LoggerFactory.getLogger(StartServerWithFront.class);
 
-        String nodeBin = "node";
+    private static Path currentDirectory;
+    private static String nodeBin = "node";
+    private static CountDownLatch countDownLatch;
+
+    public static void main(String[] args) throws IOException, Exception {
+
         if (isWindows()) {
             nodeBin += ".exe";
         }
         // Define current directory to launch node.js processes
-        Path currentDirectory = Paths.get(System.getProperty("user.dir"));
+        currentDirectory = Paths.get(System.getProperty("user.dir"));
         String configFile = currentDirectory.resolve("./src/main/resources/config/opensilex.yml").toFile().getCanonicalPath();
         OpenSilex.setup(new HashMap<String, String>() {
             {
@@ -35,38 +51,115 @@ public class StartServerWithFront {
             }
         });
 
-        // Start process to automatically rebuild front modular app
-        List<String> appPluginBuilderArgs = new ArrayList<>();
-        appPluginBuilderArgs.add(currentDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
-        appPluginBuilderArgs.add(currentDirectory.resolve("../opensilex-front/front/build-debug.js").toFile().getCanonicalPath());
+        Map<String, Process> moduleProcesses = new HashMap<>();
+        Set<String> moduleToBuild = new HashSet<>();
+        OpenSilex opensilex = OpenSilex.getInstance();
+        for (OpenSilexModule module : opensilex.getModules()) {
+            String projectId = ClassUtils.getProjectIdFromClass(module.getClass());
+            if (module.fileExists(FrontAPI.getModuleFrontLibFilePath(projectId))) {
+                if (!moduleToBuild.contains(projectId)) {
+                    moduleToBuild.add(projectId);
+                }
+            }
+        }
 
-        Set<String> modulesPluginBuilderArgs = new HashSet<>();
-//        OpenSilex.getInstance().getModulesImplementingInterface(AngularExtension.class).forEach((AngularExtension extension) -> {
-//            String moduleProjectId = ClassInfo.getProjectIdFromClass(extension.getClass());
-//            if (!moduleProjectId.isEmpty()) {
-//                modulesPluginBuilderArgs.add("--module=" + moduleProjectId);
-//            }
-//        });
-        appPluginBuilderArgs.addAll(modulesPluginBuilderArgs);
+        LOGGER.debug("build front modules");
+        countDownLatch = new CountDownLatch(moduleToBuild.size());
 
-        ProcessBuilder pluginBuilder = new ProcessBuilder(appPluginBuilderArgs);
+        for (String projectId : moduleToBuild) {
+            moduleProcesses.put(projectId, createFrontModuleBuilder(projectId));
+        }
 
-        pluginBuilder.directory(currentDirectory.resolve("../opensilex-front/front").toFile());
-        pluginBuilder.inheritIO();
-        Process pluginBuilderProcess = pluginBuilder.start();
+        countDownLatch.await();
+        LOGGER.debug("start front server");
+        Process frontProcess = createFrontServer();
 
         // Add hook to clean node.js processes on shutdown
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
-                pluginBuilderProcess.destroy();
+                frontProcess.destroy();
+                for (Process process : moduleProcesses.values()) {
+                    process.destroy();
+                }
             }
         });
 
+        LOGGER.debug("start back server");
         MainCommand.run(new String[]{
             "server",
             "start"
         });
 
+    }
+
+    private static Process createFrontServer() throws IOException {
+        List<String> args = new ArrayList<>();
+        args.add(currentDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
+        args.add(currentDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
+        args.add("run");
+        args.add("serve");
+        ProcessBuilder frontBuilder = new ProcessBuilder(args);
+        frontBuilder.directory(currentDirectory.resolve("../opensilex-front/front").toFile());
+        frontBuilder.inheritIO();
+        return frontBuilder.start();
+    }
+
+    private static Process createFrontModuleBuilder(String moduleId) throws Exception {
+        List<String> args = new ArrayList<>();
+        args.add(currentDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
+        args.add(currentDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
+        args.add("run");
+        args.add("serve");
+        ProcessBuilder frontBuilder = new ProcessBuilder(args);
+
+        String modulePath = moduleId;
+        if (moduleId.equals("phis2ws")) {
+            modulePath = "phis-ws/phis2-ws";
+        }
+
+        Path moduleDirectory = currentDirectory.resolve("../" + modulePath + "/front");
+        frontBuilder.directory(moduleDirectory.toFile());
+        frontBuilder.inheritIO();
+
+        Path targetDirectory = currentDirectory.resolve("../" + modulePath + "/target/classes/front");
+        String filename = moduleId + ".umd.min.js";
+
+        FileAlterationObserver observer = new FileAlterationObserver(moduleDirectory.resolve("dist").toFile().getCanonicalPath());
+        FileAlterationMonitor monitor = new FileAlterationMonitor(200);
+        FileAlterationListener listener = new FileAlterationListenerAdaptor() {
+            @Override
+            public void onFileCreate(File file) {
+                if (file.getName().equals(filename)) {
+                    LOGGER.debug("File created: " + file.getName());
+                    countDownLatch.countDown();
+                }
+            }
+
+            @Override
+            public void onFileDelete(File file) {
+            }
+
+            @Override
+            public void onFileChange(File file) {
+                if (file.getName().equals(filename)) {
+                    LOGGER.debug("File changed: " + file.getName());
+                    try {
+                        FileUtils.copyFile(moduleDirectory.resolve("dist/" + filename).toFile(), targetDirectory.resolve(filename).toFile());
+                        String pseudoScript = "export default { \"last-dev-update\": " + System.currentTimeMillis() + "};";
+                        PrintWriter prw = new PrintWriter(currentDirectory.resolve("../opensilex-front/front/src/opensilex.dev.ts").toFile());
+                        prw.println(pseudoScript);
+                        prw.close();
+                    } catch (IOException ex) {
+                        LOGGER.error("Error while copying lib file: " + filename, ex);
+                    }
+                }
+            }
+        };
+        observer.addListener(listener);
+        monitor.addObserver(observer);
+        monitor.start();
+
+        return frontBuilder.start();
     }
 
     public static boolean isWindows() {

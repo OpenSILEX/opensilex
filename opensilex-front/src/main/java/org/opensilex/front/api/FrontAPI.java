@@ -94,26 +94,26 @@ public class FrontAPI implements RestApplicationAPI {
         if (modules.size() > 0) {
             OpenSilexModule module = modules.get(0);
 
-            String fileName = moduleId + ".umd.min.js";
-            
-            String filePath = FRONT_EXTENSIONS_DIRECTORY + fileName;
+            String filePath = getModuleFrontLibFilePath(moduleId);
+
             if (module.fileExists(filePath)) {
 
-                EntityTag etag = new EntityTag(Hashing.sha256().hashUnencodedChars(module.getClass().getName() + "_" + fileName + "_" + module.getLastModified(filePath).toString()).toString());
+                EntityTag etag = new EntityTag(Hashing.sha256().hashUnencodedChars(module.getClass().getName() + "_" + getModuleFrontLibFileName(moduleId) + "_" + module.getLastModified(filePath).toString()).toString());
 
                 ResponseBuilder builder = request.evaluatePreconditions(etag);
 
                 CacheControl cc = new CacheControl();
                 cc.setPrivate(true);
                 cc.setNoTransform(true);
-                cc.setMaxAge(31536000);
+                cc.setMaxAge(0);
+                cc.setMustRevalidate(true);
 
                 if (builder == null) {
                     return Response
                             .ok(module.getFileInputStream(filePath), "application/javascript")
                             .cacheControl(cc)
                             .tag(etag)
-                            .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                            .header("Content-Disposition", "attachment; filename=\"" + getModuleFrontLibFileName(moduleId) + "\"")
                             .build();
                 } else {
                     return builder
@@ -127,6 +127,14 @@ public class FrontAPI implements RestApplicationAPI {
         }
 
         throw new NotFoundException("No Vue JS extension found for module: " + moduleId);
+    }
+
+    public static String getModuleFrontLibFilePath(String moduleId) {
+        return FRONT_EXTENSIONS_DIRECTORY + getModuleFrontLibFileName(moduleId);
+    }
+
+    public static String getModuleFrontLibFileName(String moduleId) {
+        return moduleId + ".umd.min.js";
     }
 
 }

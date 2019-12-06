@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "serve": "vue-cli-service build --target lib --formats umd-min src/index.ts --mode development --watch",
+        "serve": "vue-cli-service build --target lib --formats umd-min src/index.ts --mode production --watch",
         "build": "vue-cli-service build --target lib --formats umd-min src/index.ts --mode production",
         "lint": "vue-cli-service lint",
         "check:outdated": "yarn outdated || cd ."

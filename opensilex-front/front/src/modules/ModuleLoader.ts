@@ -19,6 +19,22 @@ export class ModuleLoader {
     this.baseUri = baseUri;
   }
 
+  public loadModules(modules: Array<string>) {
+    let promises: Array<Promise<any>> = [];
+    for (let i in modules) {
+      let moduleName = modules[i];
+
+      if (!this.loadedModules[moduleName]) {
+        let moduleUri = this.baseUri + "/front/extension/" + moduleName + ".js";
+        this.loadedModules[moduleName] = this.loadOpenSilexExtension(moduleName, moduleUri);
+      }
+
+      promises.push(this.loadedModules[moduleName])
+    }
+
+    return Promise.all(promises);
+  }
+
   public loadComponentModules(components: Array<string>) {
     let componentByModuleMap = {};
 
@@ -47,7 +63,7 @@ export class ModuleLoader {
 
   public loadOpenSilexExtension(name, url) {
     if (window[name]) return window[name];
-  
+
     window[name] = new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.async = true;
@@ -61,7 +77,7 @@ export class ModuleLoader {
       script.src = url;
       document.head.appendChild(script);
     });
-  
+
     return window[name];
   }
 

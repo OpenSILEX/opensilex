@@ -126,3 +126,46 @@ PGAdmin is accessible by default at: [http://localhost:8670/](http://localhost:8
 - PGAdmin default user: admin@opensilex.org
 - PGAdmin default password: opensilex
 
+# Other maven build profiles and options
+
+## Skip unit and integration tests
+
+Avoid to do it be could be usefull if you need to rebuild very often at some point.
+
+```
+mvn install -DskipTests=true
+```
+
+## Skip Vue js build parts
+
+This could be usefull if you work only on web services to speed up build.
+
+```
+mvn install -DskipFrontBuild=true
+```
+
+## Generate documentation
+
+Make sure the environment variable ```JAVA_HOME``` is defined.
+
+```
+cd <BASE_DIR>/opensilex-dev
+mvn site -Pwith-test-report
+```
+
+## Generate documentation with security report audit
+
+This buid may be very very very long because it as to download a lot of stuff from internet (OWASP report).
+
+You should better configure it periodicaly on a automated platform.
+
+```
+mvn site -Pwith-test-report -Pwith-security-check
+```
+
+## Special profile for eclipse
+
+If you are using eclipse you may need to enable this profile to avoid build errors
+```
+mvn install -Pfor-eclipse
+```

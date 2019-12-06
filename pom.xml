@@ -16,7 +16,7 @@
     </parent>
       
     <properties>
-        <skip.front.build>true</skip.front.build>
+        <skipFrontBuild>true</skipFrontBuild>
     </properties>
       
     <modules>

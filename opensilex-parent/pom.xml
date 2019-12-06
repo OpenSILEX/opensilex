@@ -19,7 +19,7 @@
         <!-- generated doc site output directory -->
         <generated.doc.site.directory>${maven.multiModuleProjectDirectory}/../opensilex-site-doc</generated.doc.site.directory>
         <!-- flag to disable Front build -->
-        <skip.front.build>false</skip.front.build>
+        <skipFrontBuild>false</skipFrontBuild>
         
         <node.version>v12.13.1</node.version>
         <yarn.version>v1.19.2</yarn.version>
@@ -521,7 +521,7 @@
                                 <goal>java</goal>
                             </goals>
                             <configuration>
-                                <skip>${skip.front.build}</skip>
+                                <skip>${skipFrontBuild}</skip>
                                 <mainClass>org.opensilex.utils.SwaggerAPIGenerator</mainClass>
                                 <arguments>
                                     <argument>${project.basedir}/src/main/java/</argument>
@@ -539,7 +539,7 @@
                     <version>${revision}</version>
                     
                     <configuration>
-                        <skip>${skip.front.build}</skip>
+                        <skip>${skipFrontBuild}</skip>
                     </configuration>
                     
                     <executions>
@@ -571,7 +571,7 @@
                     <version>${frontend.maven.plugin.version}</version>
                         
                     <configuration>
-                        <skip>${skip.front.build}</skip>
+                        <skip>${skipFrontBuild}</skip>
                         <nodeVersion>${node.version}</nodeVersion>
                         <yarnVersion>${yarn.version}</yarnVersion>
                         <installDirectory>../.node</installDirectory>
@@ -740,7 +740,7 @@
                             <goal>clean</goal>
                         </goals>
                         <configuration>
-                            <skip>${skip.front.build}</skip>
+                            <skip>${skipFrontBuild}</skip>
                             <filesets>
                                 <fileset>
                                     <directory>front/src/lib</directory>

@@ -130,7 +130,7 @@ PGAdmin is accessible by default at: [http://localhost:8670/](http://localhost:8
 
 ## Skip unit and integration tests
 
-Avoid to do it be could be usefull if you need to rebuild very often at some point.
+Avoid to do it, but it could be usefull if you need to rebuild very often at some point.
 
 ```
 mvn install -DskipTests=true

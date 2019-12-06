@@ -1,9 +1,9 @@
 {
-    "name": "opensilex-core",
+    "name": "phis2ws",
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "serve": "vue-cli-service serve",
+        "serve": "vue-cli-service build --target lib --formats umd-min src/index.ts --mode development --watch",
         "build": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vue-cli-service build --mode production --target lib --formats umd-min src/index.ts",
         "lint": "vue-cli-service lint",
         "check:outdated": "npm outdated || cd ."

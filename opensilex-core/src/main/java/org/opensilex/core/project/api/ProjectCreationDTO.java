@@ -8,7 +8,6 @@ package org.opensilex.core.project.api;
 import java.net.URI;
 import org.opensilex.core.project.dal.ProjectModel;
 
-
 /**
  *
  * @author vidalmor
@@ -24,13 +23,11 @@ public class ProjectCreationDTO extends ProjectUpdateDTO {
     public void setUri(URI uri) {
         this.uri = uri;
     }
-    
+
     public ProjectModel updateModel(ProjectModel model) {
         model = super.updateModel(model);
-        if (getUri() != null) {
-            model.setUri(getUri());
-        }
-        
+        model.setUri(getUri());
+
         return model;
     }
 }

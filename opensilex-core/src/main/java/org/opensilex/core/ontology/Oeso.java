@@ -9,7 +9,6 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.opensilex.sparql.utils.Ontology;
 
-
 /**
  *
  * @author vincent
@@ -37,12 +36,12 @@ public class Oeso {
      * Vocabulary namespace
      */
     public static final Resource NAMESPACE = Ontology.resource(NS);
-    
+
     // ---- COMMON PROPERTIES ----
     public static final Property startDate = Ontology.property(NS, "startDate");
     public static final Property endDate = Ontology.property(NS, "endDate");
-    public static final Property hasKeyword = Ontology.property(NS, "hasKeyword");    
-    
+    public static final Property hasKeyword = Ontology.property(NS, "hasKeyword");
+
     // ---- VARIABLES ----
     public static final Resource Variable = Ontology.resource(NS, "Variable");
     public static final Resource Entity = Ontology.resource(NS, "Entity");
@@ -57,14 +56,24 @@ public class Oeso {
 
     // ---- PROJECTS ----
     public static final Resource Project = Ontology.resource(NS, "Project");
-    
+
     public static final Property hasShortname = Ontology.property(NS, "hasShortname");
     public static final Property hasObjective = Ontology.property(NS, "hasObjective");
 
     public static final Property hasAdministrativeContact = Ontology.property(NS, "hasAdministrativeContact");
     public static final Property hasCoordinator = Ontology.property(NS, "hasCoordinator");
     public static final Property hasScientificContact = Ontology.property(NS, "hasScientificContact");
-    
+
     public static final Property hasRelatedProject = Ontology.property(NS, "hasRelatedProject");
-    
+
+    // ---- EXPERIMENTS ----
+    public static final Resource Experiment = Ontology.resource(NS, "Experiment");
+
+    public static final Property hasProject = Ontology.property(NS, "hasProject");
+    public static final Property hasStartDate = Ontology.property(NS, "hasStartDate");
+    public static final Property hasEndDate = Ontology.property(NS, "hasEndDate");
+    public static final Property hasScientificSupervisor = Ontology.property(NS, "hasScientificSupervisor");
+    public static final Property hasTechnicalSupervisor = Ontology.property(NS, "hasTechnicalSupervisor");
+    public static final Property hasGroup = Ontology.property(NS, "hasGroup");
+
 }

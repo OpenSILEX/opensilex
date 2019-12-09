@@ -44,7 +44,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         SPARQLDeserializer<URI> sparqlURI = SPARQLDeserializers.getForClass(URI.class);
         
         return sparql.searchWithPagination(
-                objectClass,
+                VariableModel.class,
                 (SelectBuilder select) -> {
                     if (labelFilter != null) {
                         select.addFilter(labelFilter);

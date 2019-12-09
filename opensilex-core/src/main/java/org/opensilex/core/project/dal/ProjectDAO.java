@@ -13,20 +13,18 @@ import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
-
 /**
  *
  * @author vidalmor
  */
-public class ProjectDAO  {
-    
- protected final SPARQLService sparql;
-    
-    
+public class ProjectDAO {
+
+    protected final SPARQLService sparql;
+
     public ProjectDAO(SPARQLService sparql) {
         this.sparql = sparql;
     }
-    
+
     public ProjectModel create(ProjectModel instance) throws Exception {
         sparql.create(instance);
         return instance;
@@ -47,7 +45,7 @@ public class ProjectDAO  {
 
     public ListWithPagination<ProjectModel> search(List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         SPARQLClassObjectMapper<ProjectModel> mapper = SPARQLClassObjectMapper.getForClass(ProjectModel.class);
-        
+
         return sparql.searchWithPagination(
                 ProjectModel.class,
                 (SelectBuilder select) -> {
@@ -58,5 +56,4 @@ public class ProjectDAO  {
                 pageSize
         );
     }
-    
 }

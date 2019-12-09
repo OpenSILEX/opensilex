@@ -36,7 +36,7 @@ Following commands should work from everywhere in your system without errors:
 
 ```
 cd <BASE_DIR>
-git clone --recurse-submodules https://github.com/vincentmigot/opensilex-dev.git
+git clone --recurse-submodules https://github.com/OpenSILEX/opensilex-dev.git
 cd opensilex-dev/phis-ws
 git pull origin modularity
 cd ..

@@ -120,7 +120,7 @@ Default Super Admin user which will give you access to all web services is creat
 
 RDF4J workbench is accessible by default at: [http://localhost:8667/rdf4j-workbench](http://localhost:8667/rdf4j-workbench)
 
-MongoDB run is accessible on port 8669
+MongoDB is accessible on port 8669
 
 PGAdmin is accessible by default at: [http://localhost:8670/](http://localhost:8670/)
 - PGAdmin default user: admin@opensilex.org

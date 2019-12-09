@@ -1,0 +1,36 @@
+$defaultColorLight: #FEFEFD;
+$defaultColorDark: #303633;
+$errorColor: #D00;
+$highlightColorLight: #FDD865;
+$highlightColorDark: #000;
+$highlightBackgroundColorLight: #B9DAE6;
+$highlightBackgroundColorDark: #303633;
+// default colors
+.theme-wrapper {
+    --defaultColorLight: #{$defaultColorLight};
+    --defaultColorDark: #{$defaultColorDark};
+    --errorColor: #{$errorColor};
+    --highlightColorLight: #{$highlightColorLight};
+    --highlightColorDark: #{$highlightColorDark};
+    --highlightBackgroundColorLight: #{$highlightBackgroundColorLight};
+    --highlightBackgroundColorDark: #{$defaultColorDark};
+    --linkColor: #{$defaultColorDark};
+    --linkHighlightColor: #{$highlightColorDark};
+}
+
+// pass variables into a sass map
+$variables: ( //
+--defaultColorLight: var(--defaultColorLight), //
+--defaultColorDark: var(--defaultColorDark), //
+--errorColor: var(--errorColor), //
+--highlightColorLight: var(--highlightColorLight), //
+--highlightColorDark: var(--highlightColorDark), //
+--highlightBackgroundColorLight: var(--highlightBackgroundColorLight), //
+--highlightBackgroundColorDark: var(--highlightBackgroundColorDark), //
+--linkColor: var(--linkColor), //
+--linkHighlightColor: var(--linkHighlightColor) //
+);
+// Function to get sass variable by name
+@function getVar($variable) {
+    @return map-get($variables, $variable);
+}

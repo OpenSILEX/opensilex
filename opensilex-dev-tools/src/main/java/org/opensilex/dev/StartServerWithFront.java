@@ -93,6 +93,11 @@ public class StartServerWithFront {
     }
 
     private static Process createFrontServer() throws IOException {
+        Path targetDirectory = currentDirectory.resolve("../opensilex-front/target/classes/front");
+        if (!targetDirectory.toFile().exists()) {
+            Files.createDirectories(targetDirectory);
+        }
+
         List<String> args = new ArrayList<>();
         args.add(currentDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
         args.add(currentDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
@@ -122,6 +127,9 @@ public class StartServerWithFront {
         frontBuilder.inheritIO();
 
         Path targetDirectory = currentDirectory.resolve("../" + modulePath + "/target/classes/front");
+        if (!targetDirectory.toFile().exists()) {
+            Files.createDirectories(targetDirectory);
+        }
         String filename = moduleId + ".umd.min.js";
 
         FileAlterationObserver observer = new FileAlterationObserver(moduleDirectory.resolve("dist").toFile().getCanonicalPath());

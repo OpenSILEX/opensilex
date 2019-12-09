@@ -1,5 +1,4 @@
 import { ModuleComponentDefinition } from './ModuleComponentDefinition';
-import { Container } from 'inversify';
 import { FrontService } from '@/lib';
 import Vue from 'vue';
 
@@ -35,20 +34,20 @@ export class ModuleLoader {
     return Promise.all(promises);
   }
 
-  public loadComponentModules(components: Array<string>) {
+  public loadComponentModules(components: Array<ModuleComponentDefinition>) {
     let componentByModuleMap = {};
 
     let promises: Array<Promise<any>> = [];
 
     for (let i in components) {
-      let componentDef = ModuleComponentDefinition.fromString(components[i]);
+      let componentDef = components[i];
       let moduleName = componentDef.getModule();
 
       if (!componentByModuleMap[moduleName]) {
         componentByModuleMap[moduleName] = [];
       }
 
-      componentByModuleMap[moduleName].push(componentDef.getName());
+      [moduleName].push(componentDef.getName());
 
       if (!this.loadedModules[moduleName]) {
         let moduleUri = this.baseUri + "/front/extension/" + moduleName + ".js";

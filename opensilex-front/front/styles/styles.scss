@@ -1,0 +1,155 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import 'theme';
+* {
+    box-sizing: border-box;
+    font-family: "Avenir Next", Avenir, Arial, Helvetica, sans-serif;
+}
+
+html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-size: 14px;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    min-width: 350px;
+}
+
+
+/* Style the list inside the menu */
+
+nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#page-wrapper {
+    min-height: 100vh;
+    flex-direction: column;
+    display: -webkit-flex;
+    display: flex;
+    margin: auto;
+}
+
+
+/* Style the header */
+
+header {
+    padding: 5px 30px;
+    text-align: center;
+    font-size: 35px;
+    color: white;
+    display: flex;
+}
+
+#header-content {
+    max-width: 1600px;
+    margin: auto;
+    display: flex;
+    width: 100%;
+}
+
+#header-content .header-logo {
+    width: 70%;
+    text-align: left;
+}
+
+#header-content .header-login {
+    width: 30%;
+    text-align: right;
+}
+
+
+/* Container for flexboxes */
+
+section#content-wrapper {
+    display: -webkit-flex;
+    display: flex;
+    margin: 0 auto;
+    height: 100%;
+    flex-grow: 1;
+    width: 100%;
+}
+
+
+/* Style the content */
+
+main {
+    padding: 15px;
+    width: 100%;
+}
+
+
+/* Style the footer */
+
+footer {
+    padding: 15px;
+    text-align: center;
+}
+
+
+/* Responsive layout - makes the menu and the content (inside the section) sit on top of each other instead of next to each other */
+
+@media (max-width: 600px) {
+    section#content-wrapper {
+        -webkit-flex-direction: column;
+        flex-direction: column;
+    }
+    #content-wrapper>nav {
+        position: absolute;
+        width: 100%;
+        z-index: 888;
+    }
+}
+
+#loading-bar .bar {
+    height: 8px !important;
+    background: -webkit-linear-gradient(180deg, rgb(83, 129, 52) 0%, rgba(255, 255, 255, 0) 60%) !important;
+    background: -o-linear-gradient(180deg, rgb(83, 129, 52) 0%, rgba(255, 255, 255, 0) 60%) !important;
+    background: -moz-linear-gradient(180deg, rgb(83, 129, 52) 0%, rgba(255, 255, 255, 0) 60%) !important;
+    background: linear-gradient(180deg, rgb(83, 129, 52) 0%, rgba(255, 255, 255, 0) 60%) !important;
+}
+
+.control-label.required:after {
+    color: getVar(--errorColor);
+    content: "*";
+    margin-left: 3px;
+}
+
+
+/* CUSTOM SIXTINE CSS */
+
+// @font-face {
+//     font-family: 'Eras Light ITC';
+//     font-style: normal;
+//     font-weight: normal;
+//     src: url("../assets/fonts/eras-light/eras-light.eot"); /* IE9 Compat Modes */
+//     src: local("Eras Light ITC"),
+//         url("../assets/fonts/eras-light/eras-light.otf") format("opentype"), /* Open Type Font */
+//         url("../assets/fonts/eras-light/eras-light.svg") format("svg"), /* Legacy iOS */
+//         url("../assets/fonts/eras-light/eras-light.ttf") format("truetype"), /* Safari, Android, iOS */
+//         url("../assets/fonts/eras-light/eras-light.woff") format("woff"), /* Modern Browsers */
+//         url("../assets/fonts/eras-light/eras-light.woff2") format("woff2"); /* Modern Browsers */
+// }
+header,
+footer {
+    background-color: getVar(--highlightBackgroundColorLight);
+    color: getVar(--defaultColorDark);
+}
+
+main {
+    background-color: getVar(--defaultColorLight);
+    color: getVar(--defaultColorDark);
+}
+
+nav {
+    padding: 15px;
+    background-color: getVar(--highlightBackgroundColorDark);
+    color: getVar(--defaultColorLight);
+}

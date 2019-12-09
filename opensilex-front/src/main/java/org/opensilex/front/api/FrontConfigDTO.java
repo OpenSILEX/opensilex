@@ -5,18 +5,26 @@
  */
 package org.opensilex.front.api;
 
+import javax.validation.constraints.NotNull;
+
 public class FrontConfigDTO {
 
+    @NotNull
     String homeComponent;
     
+    @NotNull
     String notFoundComponent;
     
+    @NotNull
     String headerComponent;
 
+    @NotNull
     String loginComponent;
 
+    @NotNull
     String menuComponent;
     
+    @NotNull
     String footerComponent;
 
     public String getHomeComponent() {

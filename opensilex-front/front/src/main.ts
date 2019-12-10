@@ -111,17 +111,5 @@ frontService.getConfig()
 
       document.getElementById('opensilex-loader').style.visibility = 'hidden';
     }).catch(manageError);
-
-    // moduleLoader.loadModules([
-    //   "opensilex"
-    // ]).then(function () {
-    //   const securityService = frontPlugin.getService<SecurityService>("SecurityService");
-    //   console.log(securityService);
-    //   securityService.getAccestList();
-
-    // TODO Check user access and rights
-
-
-    // }).catch(manageError);
   })
   .catch(manageError);

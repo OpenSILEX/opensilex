@@ -85,7 +85,6 @@ export default class DefaultLoginComponent extends Vue {
         password: this.form.password
       })
       .then(function(sucess: HttpResponse<any>) {
-        console.log(sucess.response);
         let user = new User();
         user.setToken(sucess.response.result);
         self.$store.commit("login", user);

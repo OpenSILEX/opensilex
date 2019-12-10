@@ -41,7 +41,7 @@ public @interface ConfigDescription {
 
     String defaultString() default "";
 
-    String[] defaultList() default {};
+    String[] defaultList() default  {};
 
     String[] defaultMap() default {};
 

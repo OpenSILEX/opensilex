@@ -5,16 +5,17 @@
  */
 package org.opensilex.front.api;
 
+import java.util.List;
 import javax.validation.constraints.NotNull;
 
 public class FrontConfigDTO {
 
     @NotNull
     String homeComponent;
-    
+
     @NotNull
     String notFoundComponent;
-    
+
     @NotNull
     String headerComponent;
 
@@ -23,9 +24,15 @@ public class FrontConfigDTO {
 
     @NotNull
     String menuComponent;
-    
+
     @NotNull
     String footerComponent;
+
+    @NotNull
+    List<MenuItemDTO> menu;
+
+    @NotNull
+    List<RouteDTO> routes;
 
     public String getHomeComponent() {
         return homeComponent;
@@ -73,6 +80,22 @@ public class FrontConfigDTO {
 
     public void setLoginComponent(String loginComponent) {
         this.loginComponent = loginComponent;
+    }
+
+    public List<MenuItemDTO> getMenu() {
+        return menu;
+    }
+
+    public void setMenu(List<MenuItemDTO> menu) {
+        this.menu = menu;
+    }
+
+    public List<RouteDTO> getRoutes() {
+        return routes;
+    }
+
+    public void setRoutes(List<RouteDTO> routes) {
+        this.routes = routes;
     }
 
 }

@@ -44,7 +44,6 @@ public class FrontAPI implements RestApplicationAPI {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(FrontAPI.class);
 
-    private final static String FRONT_EXTENSIONS_DIRECTORY = "front/";
     @Inject
     OpenSilex app;
 
@@ -64,16 +63,8 @@ public class FrontAPI implements RestApplicationAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getConfig() throws Exception {
 
-        FrontConfigDTO config = new FrontConfigDTO();
-
-        FrontConfig frontConfig = frontModule.getConfig(FrontConfig.class);
-        config.setHomeComponent(frontConfig.homeComponent());
-        config.setNotFoundComponent(frontConfig.notFoundComponent());
-        config.setHeaderComponent(frontConfig.headerComponent());
-        config.setLoginComponent(frontConfig.loginComponent());
-        config.setMenuComponent(frontConfig.menuComponent());
-        config.setFooterComponent(frontConfig.footerComponent());
-
+        FrontConfigDTO config = frontModule.getConfigDTO();
+        
         return Response.ok().entity(config).build();
     }
 
@@ -130,7 +121,7 @@ public class FrontAPI implements RestApplicationAPI {
     }
 
     public static String getModuleFrontLibFilePath(String moduleId) {
-        return FRONT_EXTENSIONS_DIRECTORY + getModuleFrontLibFileName(moduleId);
+        return FrontModule.FRONT_EXTENSIONS_DIRECTORY + getModuleFrontLibFileName(moduleId);
     }
 
     public static String getModuleFrontLibFileName(String moduleId) {

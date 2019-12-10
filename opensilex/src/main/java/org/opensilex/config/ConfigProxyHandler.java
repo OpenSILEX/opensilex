@@ -311,7 +311,11 @@ public class ConfigProxyHandler implements InvocationHandler {
         if (value.isMissingNode()) {
             ConfigDescription annotation = method.getAnnotation(ConfigDescription.class);
             if (annotation != null) {
-                currentValue = yamlMapper.readTree("- " + String.join("\n- ", annotation.defaultList()));
+                if (annotation.defaultList().length > 0) {
+                    currentValue = yamlMapper.readTree("- " + String.join("\n- ", annotation.defaultList()));
+                } else {
+                    currentValue = yamlMapper.readTree("[]");
+                }
             }
         }
 

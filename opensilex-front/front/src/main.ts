@@ -5,7 +5,6 @@ import Vue from 'vue'
 import App from './App.vue'
 import { FrontConfigDTO, FrontService } from './lib'
 import { OpenSilexVuePlugin } from './plugin/OpenSilexVuePlugin'
-import router from './router'
 import store from './store'
 
 // Initialize cookie management library
@@ -80,6 +79,8 @@ frontService.getConfig()
     let loginDefinition: ModuleComponentDefinition = ModuleComponentDefinition.fromString(config.loginComponent);
     let menuDefinition: ModuleComponentDefinition = ModuleComponentDefinition.fromString(config.menuComponent);
     let notFoundDefinition: ModuleComponentDefinition = ModuleComponentDefinition.fromString(config.notFoundComponent);
+    
+    store.commit("setConfig", config);
 
     frontPlugin.loadComponentModules([
       footerDefinition,
@@ -94,6 +95,8 @@ frontService.getConfig()
       store.commit("login", user);
 
       // Init routing
+      let router = store.state.router;
+
       new Vue({
         router,
         store,

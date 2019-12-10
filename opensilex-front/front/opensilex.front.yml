@@ -1,0 +1,42 @@
+menu: 
+  - id: security
+    label: Security
+    children:
+      - id: users
+        label: Users
+        route: 
+          path: /users
+          component: opensilex#UserList
+          access: []
+      - id: groups
+        label: Groups
+        route: 
+          path: /groups
+          component: opensilex#GroupList
+          access: []
+      - id: profiles
+        label: Profiles
+        route: 
+          path: /profiles
+          component: opensilex#ProfileList
+          access: []
+
+routes:
+  - path: /user/{uri}/view
+    component: opensilex#UserView
+    access: []
+  - path: /user/{uri}/edit
+    component: opensilex#UserEdit
+    access: []
+  - path: /group/{uri}/view
+    component: opensilex#GroupView
+    access: []
+  - path: /group/{uri}/edit
+    component: opensilex#GroupEdit
+    access: []
+  - path: /profile/{uri}/view
+    component: opensilex#ProfileView
+    access: []
+  - path: /profile/{uri}/edit
+    component: opensilex#ProfileEdit
+    access: []

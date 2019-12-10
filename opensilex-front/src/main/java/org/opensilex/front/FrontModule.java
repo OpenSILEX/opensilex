@@ -5,17 +5,27 @@
  */
 package org.opensilex.front;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.opensilex.OpenSilex;
+import org.opensilex.config.ConfigManager;
+import org.opensilex.front.api.FrontConfigDTO;
+import org.opensilex.front.api.MenuItemDTO;
+import org.opensilex.front.api.RouteDTO;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.module.OpenSilexModule;
 import org.opensilex.module.extensions.APIExtension;
 import org.opensilex.server.Server;
 import org.opensilex.module.extensions.ServerExtension;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author vincent
  */
 public class FrontModule extends OpenSilexModule implements ServerExtension, APIExtension {
+
+    private final static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(FrontModule.class);
 
     @Override
     public Class<? extends ModuleConfig> getConfigClass() {
@@ -26,9 +36,61 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
     public String getConfigId() {
         return "opensilex-front";
     }
-    
+
     @Override
     public void initServer(Server server) {
         server.initApp("/app", "/", "/front", FrontModule.class);
+    }
+
+    public final static String FRONT_EXTENSIONS_DIRECTORY = "front/";
+    public static final String FRONT_CONFIG_FILE = "opensilex.front.yml";
+    public static final String FRONT_CONFIG_PATH = FRONT_EXTENSIONS_DIRECTORY + FRONT_CONFIG_FILE;
+
+    private FrontConfigDTO config = null;
+
+    public FrontConfigDTO getConfigDTO() {
+        if (this.config == null || OpenSilex.getInstance().isDev()) {
+            FrontConfig frontConfig = getConfig(FrontConfig.class);
+
+            FrontConfigDTO config = new FrontConfigDTO();
+
+            config.setHomeComponent(frontConfig.homeComponent());
+            config.setNotFoundComponent(frontConfig.notFoundComponent());
+            config.setHeaderComponent(frontConfig.headerComponent());
+            config.setLoginComponent(frontConfig.loginComponent());
+            config.setMenuComponent(frontConfig.menuComponent());
+            config.setFooterComponent(frontConfig.footerComponent());
+
+            List<MenuItemDTO> globalMenu = new ArrayList<>();
+            List<RouteDTO> globalRoutes = new ArrayList<>();
+
+            for (OpenSilexModule m : OpenSilex.getInstance().getModules()) {
+                try {
+                    if (m.fileExists(FRONT_CONFIG_PATH)) {
+                        ConfigManager cfg = new ConfigManager();
+                        cfg.addSource(m.getFileInputStream(FRONT_CONFIG_PATH));
+                        FrontModuleConfig frontModuleConfig = cfg.loadConfig("", FrontModuleConfig.class);
+                        for (MenuItem menuItem : frontModuleConfig.menu()) {
+                            MenuItemDTO menuDTO = MenuItemDTO.fromModel(menuItem);
+                            globalMenu.add(menuDTO);
+                        }
+
+                        for (Route route : frontModuleConfig.routes()) {
+                            RouteDTO routeDTO = RouteDTO.fromModel(route);
+                            globalRoutes.add(routeDTO);
+                        }
+                    }
+                } catch (Exception ex) {
+                    LOGGER.warn("Error will loading front configuration opensilex.front.yml for: " + m.getClass().getCanonicalName(), ex);
+                }
+            }
+
+            config.setMenu(globalMenu);
+            config.setRoutes(globalRoutes);
+            
+            this.config = config;
+        }
+        
+        return this.config;
     }
 }

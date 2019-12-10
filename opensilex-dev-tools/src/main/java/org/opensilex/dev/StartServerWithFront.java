@@ -17,6 +17,7 @@ import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.opensilex.*;
 import org.opensilex.cli.*;
+import org.opensilex.front.FrontModule;
 import org.opensilex.front.api.FrontAPI;
 import org.opensilex.module.OpenSilexModule;
 import org.opensilex.utils.ClassUtils;
@@ -92,11 +93,14 @@ public class StartServerWithFront {
 
     }
 
-    private static Process createFrontServer() throws IOException {
+    private static Process createFrontServer() throws Exception {
         Path targetDirectory = currentDirectory.resolve("../opensilex-front/target/classes/front");
         if (!targetDirectory.toFile().exists()) {
             Files.createDirectories(targetDirectory);
         }
+
+        Path moduleDirectory = currentDirectory.resolve("../opensilex-front/front");
+        createConfigMonitor(moduleDirectory, targetDirectory);
 
         List<String> args = new ArrayList<>();
         args.add(currentDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
@@ -106,6 +110,7 @@ public class StartServerWithFront {
         ProcessBuilder frontBuilder = new ProcessBuilder(args);
         frontBuilder.directory(currentDirectory.resolve("../opensilex-front/front").toFile());
         frontBuilder.inheritIO();
+
         return frontBuilder.start();
     }
 
@@ -167,7 +172,51 @@ public class StartServerWithFront {
         monitor.addObserver(observer);
         monitor.start();
 
+        createConfigMonitor(moduleDirectory, targetDirectory);
         return frontBuilder.start();
+    }
+
+    public static void createConfigMonitor(Path moduleDirectory, Path targetDirectory) throws Exception {
+        File configFile = moduleDirectory.resolve(FrontModule.FRONT_CONFIG_FILE).toFile();
+        if (configFile.exists()) {
+            copyConfig(configFile, targetDirectory);
+            FileAlterationObserver configObserver = new FileAlterationObserver(configFile.getCanonicalPath());
+            FileAlterationMonitor configMonitor = new FileAlterationMonitor(200);
+
+            FileAlterationListener configListener = new FileAlterationListenerAdaptor() {
+                @Override
+                public void onFileCreate(File file) {
+                    LOGGER.debug("File created: " + file.getName());
+                    copyConfig(configFile, targetDirectory);
+                }
+
+                @Override
+                public void onFileDelete(File file) {
+                }
+
+                @Override
+                public void onFileChange(File file) {
+                    LOGGER.debug("File changed: " + file.getName());
+                    copyConfig(configFile, targetDirectory);
+                }
+
+            };
+            configObserver.addListener(configListener);
+            configMonitor.addObserver(configObserver);
+            configMonitor.start();
+        }
+    }
+
+    private static void copyConfig(File configFile, Path targetDirectory) {
+        try {
+            FileUtils.copyFile(configFile, targetDirectory.resolve(FrontModule.FRONT_CONFIG_FILE).toFile());
+            String pseudoScript = "export default { \"last-dev-update\": " + System.currentTimeMillis() + "};";
+            PrintWriter prw = new PrintWriter(currentDirectory.resolve("../opensilex-front/front/src/opensilex.dev.ts").toFile());
+            prw.println(pseudoScript);
+            prw.close();
+        } catch (IOException ex) {
+            LOGGER.error("Error while copying config file: " + configFile.getName(), ex);
+        }
     }
 
     public static boolean isWindows() {

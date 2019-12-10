@@ -901,6 +901,45 @@
             </build>
         </profile>
 
+        <profile>
+            <id>with-vue-config</id>
+            <activation>
+                <file>
+                    <exists>front/opensilex.front.yml</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <version>${maven.resources.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>Copy Vue application configuration files</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipFrontBuild}</skip>
+                                    <overwrite>true</overwrite>
+                                    <outputDirectory>${basedir}/target/classes/front</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>front</directory>
+                                            <includes>
+                                                <include>opensilex.front.yml</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
         <!-- Profile which enable OWASP security check for libraries, could be VERY slow -->
         <profile>
             <id>with-security-check</id>

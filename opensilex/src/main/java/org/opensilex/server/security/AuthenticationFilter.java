@@ -12,7 +12,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import javax.annotation.Priority;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;

@@ -40,11 +40,11 @@
         <jena.query.builder.version>3.13.1</jena.query.builder.version>
         <data.nucleus.version>5.2.2</data.nucleus.version>
         <data.nucleus.jdo.version>3.2.0-m12</data.nucleus.jdo.version>
-        <data.nucleus.jta.version>5.10.0.Final</data.nucleus.jta.version>
+        <data.nucleus.jta.version>5.10.1.Final</data.nucleus.jta.version>
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
         <bytebuddy.version>1.10.4</bytebuddy.version>
         <java.jwt.version>3.8.3</java.jwt.version>
-        <picocli.version>4.1.1</picocli.version>
+        <picocli.version>4.1.2</picocli.version>
         <bcript.version>0.9.0</bcript.version>
         <commons.io.version>2.6</commons.io.version>
         <logback.version>1.2.3</logback.version>

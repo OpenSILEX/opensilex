@@ -4,21 +4,36 @@ import "reflect-metadata"
 import Vue from 'vue'
 import App from './App.vue'
 import { FrontConfigDTO, FrontService } from './lib'
-import { ModuleLoader } from './modules/ModuleLoader'
-import { ModuleFrontVuePlugin } from './modules/ModuleFrontVuePlugin'
+import { OpenSilexVuePlugin } from './plugin/OpenSilexVuePlugin'
 import router from './router'
 import store from './store'
 
+// Initialize cookie management library
+import VueCookies from 'vue-cookies'
+Vue.use(VueCookies);
+
 // Load default components
 import components from './components';
-for (let componentName in  components) {
+for (let componentName in components) {
   Vue.component(componentName, components[componentName]);
 }
+
+// Initialise bootstrap
+import BootstrapVue from 'bootstrap-vue'
+Vue.use(BootstrapVue);
+
+// Initialise font awesome
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faPowerOff } from '@fortawesome/free-solid-svg-icons'
+library.add(faPowerOff)
+Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 // Import and assignation to enable auto rebuild on ws library change
 import * as LATEST_UPDATE from "./opensilex.dev";
 import HttpResponse from 'opensilex/HttpResponse'
-import { ModuleComponentDefinition } from './modules/ModuleComponentDefinition'
+import { ModuleComponentDefinition } from './plugin/ModuleComponentDefinition'
+import { User } from './users/User'
 Vue.prototype.LATEST_UPDATE = LATEST_UPDATE.default
 
 // Allow access to global "document" variable
@@ -43,7 +58,7 @@ if (window["webpackHotUpdate"]) {
 }
 
 // Enable Vue front plugin manager for OpenSilex API
-let frontPlugin = new ModuleFrontVuePlugin(baseApi);
+let frontPlugin = new OpenSilexVuePlugin(baseApi);
 Vue.use(frontPlugin);
 
 // Define global error manager
@@ -66,8 +81,7 @@ frontService.getConfig()
     let menuDefinition: ModuleComponentDefinition = ModuleComponentDefinition.fromString(config.menuComponent);
     let notFoundDefinition: ModuleComponentDefinition = ModuleComponentDefinition.fromString(config.notFoundComponent);
 
-    let moduleLoader = new ModuleLoader(DEV_BASE_API_PATH, frontService);
-    moduleLoader.loadComponentModules([
+    frontPlugin.loadComponentModules([
       footerDefinition,
       headerDefinition,
       homeDefinition,
@@ -76,9 +90,10 @@ frontService.getConfig()
       notFoundDefinition
     ]).then(function () {
       // Check user login
+      let user: User = User.fromCookie();
+      store.commit("login", user);
 
       // Init routing
-
       new Vue({
         router,
         store,
@@ -89,8 +104,9 @@ frontService.getConfig()
             loginComponentDef: loginDefinition,
             menuComponentDef: menuDefinition
           }
-          
-        })
+
+        },
+        )
       }).$mount('#app')
 
       document.getElementById('opensilex-loader').style.visibility = 'hidden';
@@ -103,7 +119,7 @@ frontService.getConfig()
     //   console.log(securityService);
     //   securityService.getAccestList();
 
-      // TODO Check user access and rights
+    // TODO Check user access and rights
 
 
     // }).catch(manageError);

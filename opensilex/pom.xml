@@ -102,7 +102,7 @@
                             <arguments>--network-timeout 1000000 install</arguments>
                             <workingDirectory>../</workingDirectory>
                         </configuration>
-                        <phase>generate-sources</phase>
+                        <phase>initialize</phase>
                     </execution>
                     
                     <execution>
@@ -113,8 +113,9 @@
                         </goals>
 
                         <configuration>
+                            <skip>${skipOutdated}</skip>
                             <arguments>run check:outdated</arguments>
-                             <workingDirectory>../</workingDirectory>
+                            <workingDirectory>../</workingDirectory>
                         </configuration>
                     </execution>
                             
@@ -126,8 +127,9 @@
                         </goals>
 
                         <configuration>
+                            <skip>${skipFrontAudit}</skip>
                             <arguments>audit</arguments>
-                             <workingDirectory>../</workingDirectory>
+                            <workingDirectory>../</workingDirectory>
                         </configuration>
                     </execution>
                     

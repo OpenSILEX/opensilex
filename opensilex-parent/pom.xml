@@ -18,9 +18,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- generated doc site output directory -->
         <generated.doc.site.directory>${maven.multiModuleProjectDirectory}/../opensilex-site-doc</generated.doc.site.directory>
-        <!-- flag to disable Front build -->
+        <!-- variation build flags -->
         <skipFrontBuild>false</skipFrontBuild>
-        
+        <skipFrontAudit>true</skipFrontAudit>
+        <skipOutdated>true</skipOutdated>
+
         <node.version>v12.13.1</node.version>
         <yarn.version>v1.19.2</yarn.version>
         <!-- Java supported version -->
@@ -479,6 +481,10 @@
                     <artifactId>versions-maven-plugin</artifactId>
                     <version>${versions.maven.plugin.version}</version>
               
+                    <configuration>
+                        <skip>${skipOutdated}</skip>
+                    </configuration>
+                    
                     <executions>
                         <execution>
                             <phase>generate-resources</phase>
@@ -516,12 +522,12 @@
                     <version>${maven.exec.plugin.version}</version>
                     <executions>
                         <execution>
-                            <phase>process-classes</phase>
+                            <phase>compile</phase>
                             <goals>
                                 <goal>java</goal>
                             </goals>
                             <configuration>
-                                <skip>${skipFrontBuild}</skip>
+<!--                                <skip>${skipFrontBuild}</skip>-->
                                 <mainClass>org.opensilex.utils.SwaggerAPIGenerator</mainClass>
                                 <arguments>
                                     <argument>${project.basedir}/src/main/java/</argument>
@@ -544,7 +550,7 @@
                     
                     <executions>
                         <execution>
-                            <phase>process-classes</phase>
+                            <phase>compile</phase>
                             <goals>
                                 <goal>generate</goal>
                             </goals>
@@ -578,8 +584,17 @@
                         <workingDirectory>front</workingDirectory>
                     </configuration>
                 </plugin>
-                
+                <plugin>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>${maven.site.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${maven.resources.plugin.version}</version>
+                </plugin>
             </plugins>
+
+          
         </pluginManagement>
         
         <plugins>
@@ -814,7 +829,7 @@
                         <executions>
                             <execution>
                                 <id>install Vue application dependencies</id>
-                                <phase>prepare-package</phase>
+                                <phase>generate-sources</phase>
                                 <goals>
                                     <goal>yarn</goal>
                                 </goals>
@@ -825,8 +840,8 @@
                             </execution>
                             
                             <execution>
-                                <id>build typescript defintion</id>
-                                <phase>prepare-package</phase>
+                                <id>build typescript definition</id>
+                                <phase>process-classes</phase>
                                 <goals>
                                     <goal>yarn</goal>
                                 </goals>
@@ -839,7 +854,7 @@
                             
                             <execution>
                                 <id>build Vue application</id>
-                                <phase>prepare-package</phase>
+                                <phase>process-classes</phase>
                                 <goals>
                                     <goal>yarn</goal>
                                 </goals>
@@ -857,6 +872,7 @@
                                 </goals>
 
                                 <configuration>
+                                    <skip>${skipOutdated}</skip>
                                     <arguments>run check:outdated</arguments>
                                 </configuration>
                             </execution>
@@ -869,6 +885,7 @@
                                 </goals>
 
                                 <configuration>
+                                    <skip>${skipFrontAudit}</skip>
                                     <arguments>audit</arguments>
                                 </configuration>
                             </execution>
@@ -882,7 +899,7 @@
                         <executions>
                             <execution>
                                 <id>Copy Vue application dist files</id>
-                                <phase>package</phase>
+                                <phase>process-sources</phase>
                                 <goals>
                                     <goal>copy-resources</goal>
                                 </goals>
@@ -891,6 +908,24 @@
                                     <resources>
                                         <resource>
                                             <directory>front/dist</directory>
+                                        </resource>
+                                        <resource>
+                                            <directory>front/WEB-INF</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>Copy Vue tomcat configuration</id>
+                                <phase>process-sources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/classes/front/WEB-INF</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>front/WEB-INF</directory>
                                         </resource>
                                     </resources>
                                 </configuration>
@@ -916,7 +951,7 @@
                         <executions>
                             <execution>
                                 <id>Copy Vue application configuration files</id>
-                                <phase>package</phase>
+                                <phase>process-sources</phase>
                                 <goals>
                                     <goal>copy-resources</goal>
                                 </goals>
@@ -943,6 +978,9 @@
         <!-- Profile which enable OWASP security check for libraries, could be VERY slow -->
         <profile>
             <id>with-security-check</id>
+            <properties>
+                <skipFrontAudit>false</skipFrontAudit>
+            </properties>
             <build>
                 <plugins>
                     <plugin>

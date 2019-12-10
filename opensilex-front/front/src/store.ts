@@ -1,47 +1,24 @@
 import Vue from 'vue'
 import Vuex, { Store } from 'vuex'
-import { User } from '@/users/User'
+import { User } from '@/models/User'
 import VueRouter, { Route } from 'vue-router';
-import { FrontConfigDTO } from './lib';
+import { FrontConfigDTO, RouteDTO, MenuItemDTO } from './lib';
+import { OpenSilexVuePlugin } from './models/OpenSilexVuePlugin';
+import { ModuleComponentDefinition } from './models/ModuleComponentDefinition';
+import { OpenSilexRouter } from './models/OpenSilexRouter';
 
 Vue.use(Vuex)
 Vue.use(VueRouter)
 
 let expireTimeout: any = undefined;
 let loaderCount: number = 0;
-let frontConfig: FrontConfigDTO;
-
-const computeMenuRoutes = (user: User) => {
-  let routes: Array<Route> = [];
-
-  if (frontConfig != undefined) {
-    
-  }
-
-  return routes;
-};
-const createRouter = (user: User) => {
-  let routes = computeMenuRoutes(user);
-
-  return new VueRouter({
-    mode: 'history',
-    routes: routes
-  })
-}
-
-const router: any = createRouter(User.ANONYMOUS());
-
-const resetRouter = (user: User) => {
-  const newRouter: any = createRouter(user);
-  router.matcher = newRouter.matcher;
-}
-
 
 export default new Vuex.Store({
   state: {
     user: User.ANONYMOUS(),
     loaderVisible: false,
-    router: router
+    openSilexRouter: new OpenSilexRouter(),
+    menu: {}
   },
   mutations: {
     login(state, user: User) {
@@ -56,7 +33,8 @@ export default new Vuex.Store({
       }, user.getExpirationMs());
 
       state.user = user;
-      resetRouter(state.user);
+      state.openSilexRouter.resetRouter(state.user);
+      state.menu = state.openSilexRouter.getMenu();
     },
     logout(state) {
       if (expireTimeout != undefined) {
@@ -65,10 +43,11 @@ export default new Vuex.Store({
       }
 
       state.user = User.logout();
-      resetRouter(state.user);
+      state.openSilexRouter.resetRouter(state.user);
+      state.menu = state.openSilexRouter.getMenu();
     },
     setConfig(state, config: FrontConfigDTO) {
-      frontConfig = config;
+      state.openSilexRouter.setConfig(config);
     },
     showLoader(state) {
       if (loaderCount == 0) {

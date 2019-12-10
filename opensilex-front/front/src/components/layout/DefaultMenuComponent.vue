@@ -35,14 +35,12 @@ ul {
   padding: 0;
 }
 
-
 nav {
-    padding: 15px;
-    min-height: 100%;
-    background-color: getVar(--highlightBackgroundColorDark);
-    color: getVar(--defaultColorLight);
+  padding: 15px;
+  min-height: 100%;
+  background-color: getVar(--highlightBackgroundColorDark);
+  color: getVar(--defaultColorLight);
 }
-
 
 /**
  * Responsive hamburger hide/show menu
@@ -142,6 +140,10 @@ nav {
 
   nav {
     z-index: 888;
+    position: absolute;
+    height: auto;
+    min-height: 0;
+    width: 100%;
   }
 }
 </style>

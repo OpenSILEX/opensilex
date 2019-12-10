@@ -18,6 +18,7 @@ import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.util.IOTools;
+import org.apache.catalina.valves.rewrite.RewriteValve;
 import org.apache.catalina.webresources.StandardRoot;
 import org.apache.commons.io.FileUtils;
 import org.apache.jasper.servlet.JasperInitializer;
@@ -71,7 +72,7 @@ public class Server extends Tomcat {
         setPort(port);
         setHostname(host);
         getHost().setAppBase(baseDir);
-
+        
         getServer().setParentClassLoader(Thread.currentThread().getContextClassLoader());
 
         initApp("", "/", "/webapp", getClass());
@@ -110,7 +111,7 @@ public class Server extends Tomcat {
      * module
      * @param moduleClass Class of the module where the application belong
      */
-    public void initApp(String name, String contextPath, String baseDirectory, Class<?> moduleClass) {
+    public Context initApp(String name, String contextPath, String baseDirectory, Class<?> moduleClass) {
         try {
             Context context = addWebapp(name, new File(".").getAbsolutePath());
             WebResourceRoot resource = new StandardRoot(context);
@@ -124,9 +125,11 @@ public class Server extends Tomcat {
             } else {
                 resource.createWebResourceSet(WebResourceRoot.ResourceSetType.PRE, contextPath, jarFile.getCanonicalPath(), null, baseDirectory);
             }
-
+            
             context.getServletContext().setAttribute("opensilex", instance);
             context.setResources(resource);
+            
+            return context;
 
         } catch (IOException ex) {
             if (name.equals("")) {
@@ -134,6 +137,8 @@ public class Server extends Tomcat {
             }
             LOGGER.error("Can't initialize application:" + name, ex);
         }
+        
+        return null;
     }
 
     /**

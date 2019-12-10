@@ -30,7 +30,7 @@ import {
   Vue as VueBaseClass,
   Prop
 } from "vue-property-decorator";
-import { ModuleComponentDefinition } from "./plugin/ModuleComponentDefinition";
+import { ModuleComponentDefinition } from "./models/ModuleComponentDefinition";
 import { VueConstructor, Component } from "vue";
 
 @ComponentAnnotation
@@ -154,6 +154,10 @@ main {
 
 #header-content .header-login {
   width: 30%;
+  text-align: right;
+}
+#header-content .header-login *{
+text-align: initial;
 }
 
 section#content-wrapper {
@@ -175,5 +179,10 @@ main {
     -webkit-flex-direction: column;
     flex-direction: column;
   }
+
+  #header-content .header-login {
+  text-align: left;
+}
+
 }
 </style>

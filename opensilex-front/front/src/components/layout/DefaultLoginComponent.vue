@@ -2,7 +2,7 @@
   <div>
     <a id="logout" href="#" @click="logout" ><span>Logout: {{user.getFirstName()}}</span>&nbsp;<font-awesome-icon icon="power-off" size="lg"/></a>
     <div class="fullmodal" v-if="!user.isLoggedIn()">
-      <b-form @submit="onSubmit" class="fullmodal-form">
+      <b-form @submit="onLogin" class="fullmodal-form">
         <h2>Welcome to opensilex</h2>
         <b-form-group
           id="login-group"
@@ -44,9 +44,9 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { SecurityService } from "opensilex/index";
-import { OpenSilexVuePlugin } from "../../plugin/OpenSilexVuePlugin";
+import { OpenSilexVuePlugin } from "../../models/OpenSilexVuePlugin";
 import HttpResponse from "opensilex/HttpResponse";
-import { User } from "../../users/User";
+import { User } from "../../models/User";
 
 @Component
 export default class DefaultLoginComponent extends Vue {
@@ -74,7 +74,7 @@ export default class DefaultLoginComponent extends Vue {
     this.$store.commit("logout");
   }
 
-  onSubmit(event) {
+  onLogin(event) {
     event.preventDefault();
     this.$store.commit("showLoader");
     var self = this;

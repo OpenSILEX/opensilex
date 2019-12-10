@@ -67,7 +67,7 @@
                 <version>${frontend.maven.plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>build typescript defintion</id>
+                        <id>build typescript definition</id>
                         <phase>none</phase>
                     </execution>
                 </executions>

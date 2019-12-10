@@ -22,8 +22,6 @@ export class OpenSilexVuePlugin {
         ApiServiceBinder.with(this.container);
     }
 
-    private loadedModules: Array<string> = [];
-
     getService<T>(id: string): T {
         let idParts = id.split("#");
         if (idParts.length == 1) {
@@ -41,6 +39,8 @@ export class OpenSilexVuePlugin {
         }
 
     }
+
+    private loadedModules: Array<string> = [];
 
     private loadingModules = {
         "opensilex-front": Promise.resolve(null)
@@ -62,28 +62,23 @@ export class OpenSilexVuePlugin {
     }
 
     public loadComponentModules(components: Array<ModuleComponentDefinition>) {
-        let componentByModuleMap = {};
-
         let promises: Array<Promise<any>> = [];
 
         for (let i in components) {
-            let componentDef = components[i];
-            let moduleName = componentDef.getModule();
-
-            if (!componentByModuleMap[moduleName]) {
-                componentByModuleMap[moduleName] = [];
-            }
-
-            [moduleName].push(componentDef.getName());
-
-            if (!this.loadingModules[moduleName]) {
-                this.loadingModules[moduleName] = this.loadModule(moduleName);
-            }
-
-            promises.push(this.loadingModules[moduleName])
+            promises.push(this.loadComponentModule(components[i]))
         }
 
         return Promise.all(promises);
+    }
+
+    public loadComponentModule(componentDef: ModuleComponentDefinition) {
+        let moduleName = componentDef.getModule();
+
+        if (!this.loadingModules[moduleName]) {
+            this.loadingModules[moduleName] = this.loadModule(moduleName);
+        }
+
+        return this.loadingModules[moduleName];
     }
 
     public loadModule(name) {

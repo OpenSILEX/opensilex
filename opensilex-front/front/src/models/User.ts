@@ -124,19 +124,20 @@ export class User {
     }
 
     public isAdmin() {
-        return this.token;
+        return this.admin;
     }
 
-    public setAdmin() {
-        return this.token == "";
+    public setAdmin(admin: boolean) {
+        this.admin = admin;
     }
 
     public isLoggedIn() {
         return this.loggedIn;
     }
 
-    public hasAccess(...access) {
+    public hasAccess(...access): boolean {
         // check in accessLisy
+        return this.isAdmin() || false;
     }
 
     public getTokenData(key: string) {

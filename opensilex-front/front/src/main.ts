@@ -1,21 +1,24 @@
 /// <reference path="../../../opensilex/front/types/opensilex.d.ts" />
-import { SecurityService } from 'opensilex/index'
+/**
+ * CHANGE THIS VARIABLE IF NEEDED TO CHANGE API ENDPOINT
+ */
+const DEV_BASE_API_PATH = "http://localhost:8666/rest";
+
 import "reflect-metadata"
 import Vue from 'vue'
+
+// Local imports
 import App from './App.vue'
 import { FrontConfigDTO, FrontService } from './lib'
-import { OpenSilexVuePlugin } from './plugin/OpenSilexVuePlugin'
+import HttpResponse from './lib/HttpResponse'
+import { User } from './models/User'
+import { ModuleComponentDefinition } from './models/ModuleComponentDefinition'
+import { OpenSilexVuePlugin } from './models/OpenSilexVuePlugin'
 import store from './store'
 
 // Initialize cookie management library
 import VueCookies from 'vue-cookies'
 Vue.use(VueCookies);
-
-// Load default components
-import components from './components';
-for (let componentName in components) {
-  Vue.component(componentName, components[componentName]);
-}
 
 // Initialise bootstrap
 import BootstrapVue from 'bootstrap-vue'
@@ -28,11 +31,14 @@ import { faPowerOff } from '@fortawesome/free-solid-svg-icons'
 library.add(faPowerOff)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
+// Load default components
+import components from './components';
+for (let componentName in components) {
+  Vue.component(componentName, components[componentName]);
+}
+
 // Import and assignation to enable auto rebuild on ws library change
 import * as LATEST_UPDATE from "./opensilex.dev";
-import HttpResponse from 'opensilex/HttpResponse'
-import { ModuleComponentDefinition } from './plugin/ModuleComponentDefinition'
-import { User } from './users/User'
 Vue.prototype.LATEST_UPDATE = LATEST_UPDATE.default
 
 // Allow access to global "document" variable
@@ -42,8 +48,6 @@ declare var document: any;
 Vue.config.productionTip = false
 
 // Initialize service API container
-const DEV_BASE_API_PATH = "http://localhost:8666/rest";
-
 let baseApi = DEV_BASE_API_PATH;
 if (window["webpackHotUpdate"]) {
   console.warn(
@@ -53,7 +57,7 @@ if (window["webpackHotUpdate"]) {
   );
 } else {
   let splitURI = window.location.href.split("/");
-  baseApi = splitURI[0] + "//" + splitURI[2] + "/rest/"
+  baseApi = splitURI[0] + "//" + splitURI[2] + "/rest"
 }
 
 // Enable Vue front plugin manager for OpenSilex API
@@ -95,7 +99,7 @@ frontService.getConfig()
       store.commit("login", user);
 
       // Init routing
-      let router = store.state.router;
+      let router = store.state.openSilexRouter.getRouter();
 
       new Vue({
         router,

@@ -7,6 +7,8 @@ package org.opensilex.front;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.catalina.Context;
+import org.apache.catalina.valves.rewrite.RewriteValve;
 import org.opensilex.OpenSilex;
 import org.opensilex.config.ConfigManager;
 import org.opensilex.front.api.FrontConfigDTO;
@@ -39,7 +41,8 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
 
     @Override
     public void initServer(Server server) {
-        server.initApp("/app", "/", "/front", FrontModule.class);
+        Context appContext = server.initApp("/app", "/", "/front", FrontModule.class);
+        appContext.getPipeline().addValve(new RewriteValve());
     }
 
     public final static String FRONT_EXTENSIONS_DIRECTORY = "front/";

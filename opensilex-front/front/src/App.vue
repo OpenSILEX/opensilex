@@ -15,6 +15,12 @@
     <footer>
       <component v-bind:is="footerComponent"></component>
     </footer>
+    <div id="loader" v-bind:class="{'visible':isLoaderVisible}">
+      <div class="lds-ripple">
+        <div></div>
+        <div></div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -43,8 +49,8 @@ export default class App extends VueBaseClass {
     return this.$store.state.user;
   }
 
-  get menuVisible() {
-    return this.$store.state.menuVisible;
+  get isLoaderVisible() {
+    return this.$store.state.loaderVisible;
   }
 
   beforeMount() {
@@ -58,6 +64,60 @@ export default class App extends VueBaseClass {
 
 <style lang="scss">
 @import "../styles/styles";
+
+#loader {
+  display: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 32000;
+  background-color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+#loader .lds-ripple {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: auto;
+}
+#loader .lds-ripple div {
+  position: absolute;
+  border: 4px solid #000;
+  opacity: 1;
+  border-radius: 50%;
+  animation: lds-ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+#loader .lds-ripple div:nth-child(2) {
+  animation-delay: -0.5s;
+}
+@keyframes lds-ripple {
+  0% {
+    top: 36px;
+    left: 36px;
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    top: 0px;
+    left: 0px;
+    width: 72px;
+    height: 72px;
+    opacity: 0;
+  }
+}
+
+#loader.visible {
+  display: block;
+}
 
 #page-wrapper {
   min-height: 100vh;
@@ -77,8 +137,8 @@ header {
 }
 
 main {
-    background-color: getVar(--defaultColorLight);
-    color: getVar(--defaultColorDark);
+  background-color: getVar(--defaultColorLight);
+  color: getVar(--defaultColorDark);
 }
 
 #header-content {

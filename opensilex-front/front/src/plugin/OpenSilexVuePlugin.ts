@@ -116,14 +116,6 @@ export class OpenSilexVuePlugin {
         return this.container;
     }
 
-    public showLoader() {
-
-    }
-
-    public hideLoader() {
-
-    }
-
     install(Vue, options) {
         Vue.prototype.$opensilex = this;
         Vue.$opensilex = this;

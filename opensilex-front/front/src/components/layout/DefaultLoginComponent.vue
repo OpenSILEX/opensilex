@@ -76,7 +76,7 @@ export default class DefaultLoginComponent extends Vue {
 
   onSubmit(event) {
     event.preventDefault();
-    this.$opensilex.showLoader();
+    this.$store.commit("showLoader");
     var self = this;
     this.$opensilex
       .getService<SecurityService>("opensilex#SecurityService")
@@ -93,7 +93,7 @@ export default class DefaultLoginComponent extends Vue {
         // TODO 
         console.error("TODO: Invalid credentials", arguments);
       })
-      .then(this.$opensilex.hideLoader);
+      .then(() => self.$store.commit("hideLoader"));
   }
 }
 </script>

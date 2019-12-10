@@ -36,9 +36,12 @@ public class AuthenticationService implements Service {
     public final static String DEFAULT_AUTHENTICATION_SERVICE = "authentication";
         
     private static final int PASSWORD_HASH_COMPLEXITY = 12;
+    
     private static final long TOKEN_VALIDITY_DURATION = 1;
     private static final TemporalUnit TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.HOURS;
-
+//    private static final long TOKEN_VALIDITY_DURATION = 10;
+//    private static final TemporalUnit TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.SECONDS;
+    
     private static final String TOKEN_ISSUER = "opensilex";
 
     // JWT claim key definitions: https://www.iana.org/assignments/jwt/jwt.xhtml

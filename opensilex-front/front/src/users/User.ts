@@ -73,6 +73,10 @@ export class User {
         return user;
     }
 
+    public getExpirationMs() {
+        return (this.expire * 1000 - Date.now());
+    }
+
     public getToken() {
         return this.token;
     }
@@ -90,7 +94,8 @@ export class User {
         this.accessList = this.getTokenData(User.CLAIM_ACCESS_LIST);
         this.loggedIn = true;
 
-        this.expire = this.getTokenData(User.CLAIM_EXPIRE);
+        this.expire = parseInt(this.getTokenData(User.CLAIM_EXPIRE));
+
         $cookies.set(User.COOKIE_NAME, token, this.expire + "s", "/", undefined, secure);
     }
 

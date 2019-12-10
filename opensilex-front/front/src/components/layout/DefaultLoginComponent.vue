@@ -136,6 +136,7 @@ export default class DefaultLoginComponent extends Vue {
   vertical-align: text-bottom;
   font-size: 24px;
 }
+
 @media (max-width: 600px) {
   #logout > span{
     display: none;

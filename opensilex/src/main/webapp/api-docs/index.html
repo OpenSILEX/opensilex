@@ -33,18 +33,26 @@
         <!-- <script src='../webjars/swagger-ui/2.2.10-1/lang/ru.js' type='text/javascript'></script> -->
         <!-- <script src='../webjars/swagger-ui/2.2.10-1/lang/en.js' type='text/javascript'></script> -->
 
+        <style>
+            #jsonLink {
+                text-align: right;
+                top: 20px;
+                position: relative;
+            }
+        </style>
+
         <script type="text/javascript">
             // ES6 String.prototype.endsWith polyfill
             // @see: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith
             if (!String.prototype.endsWith) {
-                String.prototype.endsWith = function(search, this_len) {
+                String.prototype.endsWith = function (search, this_len) {
                     if (this_len === undefined || this_len > this.length) {
                         this_len = this.length;
                     }
                     return this.substring(this_len - search.length, this_len) === search;
                 };
             }
-            
+
             $(function () {
                 // add by Arnaud Charleroy to mask swagger search bar
                 var url = window.location.search.match(/url=([^&]+)/);
@@ -66,7 +74,7 @@
                 // @see https://github.com/swagger-api/swagger-ui/issues/3358
                 // The only line of code changed compare to original version in swagger-ui is indicated by the next SILEX:warning tag
                 Handlebars.unregisterHelper('renderTextParam');
-                Handlebars.registerHelper('renderTextParam', function(param) {
+                Handlebars.registerHelper('renderTextParam', function (param) {
                     var result, type = 'text', idAtt = '';
                     var paramType = param.type || param.schema && param.schema.type || '';
                     var isArray = paramType.toLowerCase() === 'array' || param.allowMultiple;
@@ -75,19 +83,19 @@
                     var valueId = Handlebars.Utils.escapeExpression(param.valueId);
                     paramType = Handlebars.Utils.escapeExpression(paramType);
 
-                    var dataVendorExtensions = Object.keys(param).filter(function(property) {
+                    var dataVendorExtensions = Object.keys(param).filter(function (property) {
                         // filter X-data- properties
                         return property.match(/^X-data-/i) !== null;
-                    }).reduce(function(result, property) {
+                    }).reduce(function (result, property) {
                         // remove X- from property name, so it results in html attributes like data-foo='bar'
                         return result += ' ' + property.substring(2, property.length) + '=\'' + param[property] + '\'';
                     }, '');
 
-                    if(param.format && param.format === 'password') {
+                    if (param.format && param.format === 'password') {
                         type = 'password';
                     }
 
-                    if(valueId) {
+                    if (valueId) {
                         idAtt = ' id=\'' + valueId + '\'';
                     }
 
@@ -97,29 +105,29 @@
                     // Original line:
                     // if (defaultValue) {
                     if (defaultValue || defaultValue === 0) {
-                    //\SILEX:warning
-                      defaultValue = sanitizeHtml(defaultValue);
+                        //\SILEX:warning
+                        defaultValue = sanitizeHtml(defaultValue);
                     } else {
-                      defaultValue = '';
+                        defaultValue = '';
                     }
 
-                    if(isArray) {
+                    if (isArray) {
                         result = '<textarea class=\'body-textarea' + (param.required ? ' required' : '') + '\' name=\'' + name + '\'' + idAtt + dataVendorExtensions;
                         result += ' placeholder=\'Provide multiple values in new lines' + (param.required ? ' (at least one required).' : '.') + '\'>';
                         result += defaultValue + '</textarea>';
                     } else {
                         var parameterClass = 'parameter';
-                        if(param.required) {
-                          parameterClass += ' required';
+                        if (param.required) {
+                            parameterClass += ' required';
                         }
                         result = '<input class=\'' + parameterClass + '\' minlength=\'' + (param.required ? 1 : 0) + '\'';
-                        result += ' name=\'' + name +'\' placeholder=\'' + (param.required ? '(required)' : '') + '\'' + idAtt + dataVendorExtensions;
+                        result += ' name=\'' + name + '\' placeholder=\'' + (param.required ? '(required)' : '') + '\'' + idAtt + dataVendorExtensions;
                         result += ' type=\'' + type + '\' value=\'' + defaultValue + '\'/>';
                     }
                     return new Handlebars.SafeString(result);
                 });
                 //\SILEX:warning
-                
+
                 hljs.configure({
                     highlightSizeThreshold: 5000
                 });
@@ -134,11 +142,11 @@
                     supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
                     onComplete: function (swaggerApi, swaggerUi) {
                         // Replace footer uri note 
-                        $(".footer h4").contents().filter(function() {
+                        $(".footer h4").contents().filter(function () {
                             return this.nodeType == 3;
                         }).get(1).replaceWith(
-                            document.createTextNode( ": " + rootPath + ", " )
-                        );
+                                document.createTextNode(": " + rootPath + ", ")
+                                );
 
                         if (typeof initOAuth == "function") {
                             initOAuth({
@@ -154,19 +162,19 @@
                         if (window.SwaggerTranslator) {
                             window.SwaggerTranslator.translate();
                         }
-                        
-                         // Modif AC masquer les mots de passe
-                        setTimeout(function (){
+
+                        // Modif AC masquer les mots de passe
+                        setTimeout(function () {
                             $("[name='password']").prop("type", "password");
-                        },2000);
-                        
+                        }, 2000);
+
                         // Swagger UI Hack for file metadata example
                         var metadataInput = $("#data_postDataFile_content .operation-params tr:first input");
                         var metadataAreaAttributes = {
                             "class": "body-textarea required"
                         };
                         var metadataAreaValue = "";
-                        $.each(metadataInput.get(0).attributes, function(index, data) {
+                        $.each(metadataInput.get(0).attributes, function (index, data) {
                             if (data.nodeName != "class" && data.nodeName != "type" && data.nodeName != "value") {
                                 metadataAreaAttributes[data.nodeName] = data.value;
                             } else if (data.nodeName == "value") {
@@ -174,10 +182,10 @@
                             }
                         });
                         metadataInput.replaceWith($("<textarea>" + metadataAreaValue + "</textarea>", metadataAreaAttributes));
-                        
+
                         var metadataExample = $("#data_postDataFile_content .operation-params tr:first td:last");
                         var fileDescriptionExample = '{\n'
-                                +'  "rdfType": "http://www.opensilex.org/vocabulary/oeso#HemisphericalImage",\n'
+                                + '  "rdfType": "http://www.opensilex.org/vocabulary/oeso#HemisphericalImage",\n'
                                 + '  "date": "2017-06-15T10:51:00+0200",\n'
                                 + '  "provenanceUri": "http://www.phenome-fppn.fr/mtp/2018/pv181515071552",\n'
                                 + '  "concernedItems": [{\n'
@@ -188,11 +196,11 @@
                                 + '    "sensorUri": "http://www.phenome-fppn.fr/diaphen/2018/s18001"\n'
                                 + '  }\n'
                                 + '}';
-                        
+
                         metadataExample.addClass("model-signature");
                         metadataExample.html('<pre>' + fileDescriptionExample + '</pre>');
-                        
-                        metadataExample.click(function() {
+
+                        metadataExample.click(function () {
                             var textArea = $("#data_postDataFile_content .operation-params tr:first textarea");
                             if (textArea.val() == "") {
                                 textArea.val(fileDescriptionExample);
@@ -208,21 +216,21 @@
                     operationsSorter: 'alpha',
                     showRequestHeaders: false,
                     showMutatedRequest: true,
-                    requestInterceptor: function() {
+                    requestInterceptor: function () {
                         if (!this.url.endsWith("swagger.json")) {
                             var baseUrl = this.url;
                             this.url = baseUrl.replace(hostPath, rootPath);
                         }
-                        return this; 
-                    }, 
-                    responseInterceptor: function(response) {
+                        return this;
+                    },
+                    responseInterceptor: function (response) {
                         // Check if response match BrAPI token
                         if (response && response.url && response.body && response.url.endsWith("/brapi/v1/token")) {
                             try {
                                 // Extract token from reponse
                                 var responseValues = JSON.parse(this.statusText);
                                 var token = responseValues.access_token;
-                                
+
                                 // Set token value prefixed by 'Bearer ' to all input named 'Authorization'
                                 $("input[name='Authorization']").val("Bearer " + token);
                             } catch (error) {
@@ -230,7 +238,7 @@
                                 console.error("Token response not handle correctly !", error);
                             }
                         }
-                        
+
                         return this;
                     }
                 });
@@ -252,15 +260,16 @@
 
             <div class="swagger-ui-wrap">
                 <a id="logo" href="http://swagger.io"><img class="logo__img" alt="swagger" height="30" width="30" src="../webjars/swagger-ui/2.2.10-1/images/logo_small.png" /><span class="logo__title">swagger</span></a>
-<!--                <form id='api_selector'>
-                    <div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text" readonly /></div>
-                    <div id='auth_container'></div>
-                    <div class='input'><a id="explore" class="header__btn" href="#" data-sw-translate>Explore</a></div>
-                </form>-->
+                <!--                <form id='api_selector'>
+                                    <div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text" readonly /></div>
+                                    <div id='auth_container'></div>
+                                    <div class='input'><a id="explore" class="header__btn" href="#" data-sw-translate>Explore</a></div>
+                                </form>-->
             </div>
         </div>
 
         <div id="message-bar" class="swagger-ui-wrap" data-sw-translate>&nbsp;</div>
+        <div id="jsonLink" class="swagger-ui-wrap"><a href="../rest/swagger.json">Access to swagger.json</a></div>
         <div id="swagger-ui-container" class="swagger-ui-wrap"></div>
     </body>
 </html>

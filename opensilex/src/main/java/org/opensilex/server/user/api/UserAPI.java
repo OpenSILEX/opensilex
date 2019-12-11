@@ -38,7 +38,7 @@ public class UserAPI implements RestApplicationAPI {
 
     @Inject
     private SPARQLService sparql;
-
+    
     @Inject
     private AuthenticationService authentication;
 

@@ -72,11 +72,12 @@ public class Server extends Tomcat {
         setPort(port);
         setHostname(host);
         getHost().setAppBase(baseDir);
-        
+
         getServer().setParentClassLoader(Thread.currentThread().getContextClassLoader());
 
-        initApp("", "/", "/webapp", getClass());
-
+        Context appContext = initApp("", "/", "/webapp", getClass());
+        appContext.getPipeline().addValve(new RewriteValve());
+        
         instance.getModulesImplementingInterface(ServerExtension.class).forEach((ServerExtension extension) -> {
             extension.initServer(this);
         });
@@ -125,10 +126,10 @@ public class Server extends Tomcat {
             } else {
                 resource.createWebResourceSet(WebResourceRoot.ResourceSetType.PRE, contextPath, jarFile.getCanonicalPath(), null, baseDirectory);
             }
-            
+
             context.getServletContext().setAttribute("opensilex", instance);
             context.setResources(resource);
-            
+
             return context;
 
         } catch (IOException ex) {
@@ -137,7 +138,7 @@ public class Server extends Tomcat {
             }
             LOGGER.error("Can't initialize application:" + name, ex);
         }
-        
+
         return null;
     }
 
@@ -187,7 +188,8 @@ public class Server extends Tomcat {
 
     /**
      * Enable GZIP compression for current Tomcat service connector
-     * @param connector 
+     *
+     * @param connector
      */
     private void enableGzip(Connector connector) {
         connector.setProperty("compression", "on");

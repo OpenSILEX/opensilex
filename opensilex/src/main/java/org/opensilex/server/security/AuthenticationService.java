@@ -34,14 +34,14 @@ import org.opensilex.server.user.dal.UserModel;
 public class AuthenticationService implements Service {
 
     public final static String DEFAULT_AUTHENTICATION_SERVICE = "authentication";
-        
+
     private static final int PASSWORD_HASH_COMPLEXITY = 12;
-    
-    private static final long TOKEN_VALIDITY_DURATION = 1;
-    private static final TemporalUnit TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.HOURS;
+
+    private static final long TOKEN_VALIDITY_DURATION = 30;
+    private static final TemporalUnit TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.MINUTES;
 //    private static final long TOKEN_VALIDITY_DURATION = 10;
 //    private static final TemporalUnit TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.SECONDS;
-    
+
     private static final String TOKEN_ISSUER = "opensilex";
 
     // JWT claim key definitions: https://www.iana.org/assignments/jwt/jwt.xhtml
@@ -71,11 +71,11 @@ public class AuthenticationService implements Service {
         return BCrypt.verifyer().verify(password.getBytes(), passwordHash.getBytes()).verified;
     }
 
-    public String generateToken(UserModel user) {
-        return generateToken(user, null);
+    public void generateToken(UserModel user) {
+        generateToken(user, null);
     }
 
-    public String generateToken(UserModel user, List<String> accessList) {
+    public void generateToken(UserModel user, List<String> accessList) {
         Date issuedDate = new Date();
         Date expirationDate = Date.from(issuedDate.toInstant().plus(TOKEN_VALIDITY_DURATION, TOKEN_VALIDITY_DURATION_UNIT));
         JWTCreator.Builder tokenBuilder = JWT.create()
@@ -93,8 +93,40 @@ public class AuthenticationService implements Service {
         if (accessList != null) {
             tokenBuilder.withArrayClaim(CLAIM_ACCESS_LIST, accessList.toArray(new String[accessList.size()]));
         }
-        
-        return tokenBuilder.sign(algoRSA);
+
+        user.setToken(tokenBuilder.sign(algoRSA));
+    }
+
+    public void renewToken(UserModel user) {
+        if (user.getToken() == null) {
+            
+        }
+        JWTVerifier verifier = JWT.require(algoRSA)
+                .withIssuer(TOKEN_ISSUER)
+                .build();
+
+        DecodedJWT jwt = verifier.verify(user.getToken());
+
+        Date issuedDate = new Date();
+        Date expirationDate = Date.from(issuedDate.toInstant().plus(TOKEN_VALIDITY_DURATION, TOKEN_VALIDITY_DURATION_UNIT));
+        JWTCreator.Builder tokenBuilder = JWT.create()
+                .withIssuer(TOKEN_ISSUER)
+                .withSubject(jwt.getSubject())
+                .withIssuedAt(issuedDate)
+                .withExpiresAt(expirationDate)
+                .withClaim(CLAIM_FIRST_NAME, jwt.getClaim(CLAIM_FIRST_NAME).toString())
+                .withClaim(CLAIM_LAST_NAME, jwt.getClaim(CLAIM_LAST_NAME).toString())
+                .withClaim(CLAIM_EMAIL, jwt.getClaim(CLAIM_EMAIL).toString())
+                .withClaim(CLAIM_FULL_NAME, jwt.getClaim(CLAIM_FULL_NAME).toString())
+                // custom claim
+                .withClaim(CLAIM_IS_ADMIN, jwt.getClaim(CLAIM_IS_ADMIN).toString());
+
+        String[] access = jwt.getClaim(CLAIM_ACCESS_LIST).asArray(String.class);
+        if (access.length > 0) {
+            tokenBuilder.withArrayClaim(CLAIM_ACCESS_LIST, access);
+        }
+
+        user.setToken(tokenBuilder.sign(algoRSA));
     }
 
     public URI decodeTokenUserURI(String tokenValue) throws JWTVerificationException, URISyntaxException {
@@ -107,12 +139,26 @@ public class AuthenticationService implements Service {
         return new URI(jwt.getSubject());
     }
 
-    public static long getExpiresInSec() {
+    public String[] decodeTokenAccessList(String tokenValue) {
+        JWTVerifier verifier = JWT.require(algoRSA)
+                .withIssuer(TOKEN_ISSUER)
+                .build();
+
+        DecodedJWT jwt = verifier.verify(tokenValue);
+
+        return jwt.getClaim(CLAIM_ACCESS_LIST).asArray(String.class);
+    }
+
+    public long getExpiresInSec() {
         return TOKEN_VALIDITY_DURATION * TOKEN_VALIDITY_DURATION_UNIT.getDuration().getSeconds();
     }
-    
+
     public UserModel getCurrentUser(SecurityContext securityContext) {
         return (UserModel) securityContext.getUserPrincipal();
+    }
+
+    public long getExpireInMs() {
+        return getExpiresInSec() * 1000;
     }
 
 }

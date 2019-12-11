@@ -10,11 +10,14 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;
@@ -23,8 +26,7 @@ import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.exceptions.UnauthorizedException;
 import org.opensilex.server.exceptions.UnexpectedErrorException;
 import org.opensilex.server.security.dal.SecurityAccessDAO;
-import org.opensilex.server.user.dal.UserDAO;
-import org.opensilex.sparql.SPARQLService;
+import org.opensilex.server.user.UserRegistryService;
 import org.opensilex.server.user.dal.UserModel;
 
 /**
@@ -33,7 +35,7 @@ import org.opensilex.server.user.dal.UserModel;
  */
 @Provider
 @Priority(Priorities.AUTHENTICATION)
-public class AuthenticationFilter implements ContainerRequestFilter {
+public class AuthenticationFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     @Context
     ResourceInfo resourceInfo;
@@ -42,8 +44,10 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     AuthenticationService authentication;
 
     @Inject
-    SPARQLService sparql;
+    UserRegistryService registry;
 
+    public static final String TOKEN_RENEW_RESPONSE_HEADER = "opensilex-renew-token";
+    
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         Method apiMethod = resourceInfo.getResourceMethod();
@@ -59,15 +63,22 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                 }
 
                 try {
-                    URI userURI = authentication.decodeTokenUserURI(tokenValue.replace(ApiProtected.TOKEN_PARAMETER_PREFIX, ""));
-                    UserDAO userDAO = new UserDAO(sparql, authentication);
-                    UserModel user = userDAO.getByURI(userURI);
+                    String token = tokenValue.replace(ApiProtected.TOKEN_PARAMETER_PREFIX, "");
+                    URI userURI = authentication.decodeTokenUserURI(token);
+
+                    UserModel user;
+                    if (registry.hasUserURI(userURI)) {
+                        user = registry.getUserByUri(userURI);
+                    } else {
+                        throw new ForbiddenException("User not found with URI: " + userURI);
+                    }
 
                     if (!user.isAdmin()) {
-                        SecurityAccessDAO securityDao = new SecurityAccessDAO(sparql);
-                        String accessId = securityDao.getSecurityAccessIdFromMethod(apiMethod, requestContext.getMethod());
+                        String accessId = SecurityAccessDAO.getSecurityAccessIdFromMethod(apiMethod, requestContext.getMethod());
 
-                        if (!securityDao.checkUserAccess(user, accessId)) {
+                        String[] accessList = authentication.decodeTokenAccessList(user.getToken());
+                        boolean hasAccess = Arrays.stream(accessList).anyMatch(accessId::equals);
+                        if (!hasAccess) {
                             throw new ForbiddenException("You don't have credentials to access this API");
                         }
                     }
@@ -87,6 +98,16 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                 }
 
             }
+        }
+    }
+
+    @Override
+    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
+        UserModel user = (UserModel) requestContext.getSecurityContext().getUserPrincipal();
+        if (user != null) {
+            authentication.renewToken(user);
+            registry.addUser(user, authentication.getExpireInMs());
+            responseContext.getHeaders().add(TOKEN_RENEW_RESPONSE_HEADER, user.getToken());
         }
     }
 }

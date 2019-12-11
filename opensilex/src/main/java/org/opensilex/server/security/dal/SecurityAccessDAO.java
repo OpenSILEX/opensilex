@@ -45,7 +45,7 @@ public class SecurityAccessDAO {
         this.sparql = sparql;
     }
     
-    public String getSecurityAccessIdFromMethod(Method method, String httpMethodString) {
+    public static String getSecurityAccessIdFromMethod(Method method, String httpMethodString) {
         Path classPath = method.getDeclaringClass().getAnnotation(Path.class);
         Path methodPath = method.getAnnotation(Path.class);
         

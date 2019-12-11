@@ -61,7 +61,7 @@ public class UserDAO {
 
         return user;
     }
-
+    
     public boolean authenticate(UserModel user, String password) throws Exception {
         return (user != null && authentication.checkPassword(password, user.getPasswordHash()));
     }

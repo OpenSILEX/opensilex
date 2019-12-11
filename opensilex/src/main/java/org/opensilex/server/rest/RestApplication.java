@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class is the main entry point of OpenSILEX application It extends Jersey
- * ResourceConfig with main API entry point /rest
+ * ResourceConfig with main API entry point
  *
  * see: https://jersey.github.io/
  */

@@ -48,18 +48,20 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
     )
     private InternetAddress email;
     public static final String EMAIL_FIELD = "email";
-    
+
     @SPARQLProperty(
             ontology = SecurityOntology.class,
             property = "hasPasswordHash"
     )
     private String passwordHash;
-    
-        @SPARQLProperty(
+
+    @SPARQLProperty(
             ontology = SecurityOntology.class,
             property = "isAdmin"
     )
     private Boolean admin = Boolean.FALSE;
+
+    private String token;
 
     public String getFirstName() {
         return firstName;
@@ -100,12 +102,19 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
     public void setAdmin(Boolean admin) {
         this.admin = admin;
     }
-    
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
     @Override
     public String getName() {
         return getFirstName() + " " + getLastName() + " <" + getEmail().toString() + ">";
     }
-
 
     @Override
     public String[] getUriSegments(UserModel instance) {

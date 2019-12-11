@@ -24,15 +24,18 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.RestApplicationAPI;
 import org.opensilex.server.security.ApiProtected;
 import org.opensilex.server.security.AuthenticationService;
 import org.opensilex.server.security.dal.SecurityAccessDAO;
+import org.opensilex.server.user.UserRegistryService;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.server.user.dal.UserDAO;
 import org.opensilex.server.user.dal.UserModel;
@@ -47,6 +50,9 @@ public class SecurityAPI implements RestApplicationAPI {
      * Logger
      */
     private final static Logger LOGGER = LoggerFactory.getLogger(SecurityAPI.class);
+
+    @Inject
+    private UserRegistryService userRegistry;
 
     @Inject
     private SPARQLService sparql;
@@ -84,7 +90,9 @@ public class SecurityAPI implements RestApplicationAPI {
 
         if (userDAO.authenticate(user, authenticationDTO.getPassword())) {
             List<String> accessList = userDAO.getAccessList(user.getUri());
-            return new SingleObjectResponse<String>(authentication.generateToken(user, accessList)).getResponse();
+            authentication.generateToken(user, accessList);
+            userRegistry.addUser(user, authentication.getExpireInMs());
+            return new SingleObjectResponse<String>(user.getToken()).getResponse();
         } else {
             return new ErrorResponse(Status.FORBIDDEN, "Invalid credentials", "User does not exists or password is invalid").getResponse();
         }
@@ -96,8 +104,11 @@ public class SecurityAPI implements RestApplicationAPI {
     @ApiResponses({
         @ApiResponse(code = 200, message = "User sucessfully logout"),})
     @ApiProtected
-    public Response logout(@ApiParam(hidden = true) @HeaderParam(ApiProtected.HEADER_NAME) String userToken) {
-        // TODO should implement a proper blacklist mechanism in AuthenticationService
+    public Response logout(
+            @ApiParam(hidden = true) @HeaderParam(ApiProtected.HEADER_NAME) String userToken,
+            @Context SecurityContext securityContext
+    ) {
+        userRegistry.removeUser(authentication.getCurrentUser(securityContext));
         return Response.ok().build();
     }
 
@@ -112,7 +123,7 @@ public class SecurityAPI implements RestApplicationAPI {
             SecurityAccessDAO securityDAO = new SecurityAccessDAO(sparql);
             accessMap = securityDAO.getSecurityAccessMap();
         }
-        
+
         return Response.ok().entity(accessMap).build();
     }
 

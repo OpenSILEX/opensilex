@@ -11,6 +11,7 @@ import org.opensilex.config.ConfigDescription;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.server.security.AuthenticationService;
 import org.opensilex.fs.FileStorageService;
+import org.opensilex.server.user.UserRegistryService;
 import org.opensilex.sparql.SPARQLService;
 
 /**
@@ -43,16 +44,16 @@ public interface BaseConfig extends ModuleConfig {
     public String defaultLanguage();
 
     @ConfigDescription(
-        value = "Platform base URI",
-        defaultString = OpenSilex.BASE_PREFIX_URI
+            value = "Platform base URI",
+            defaultString = OpenSilex.BASE_PREFIX_URI
     )
     public String baseURI();
-    
+
     @ConfigDescription(
-        value = "Default file storage directory"
+            value = "Default file storage directory"
     )
     public String storageBasePath();
-    
+
     @ConfigDescription(
             value = "Big data source"
     )
@@ -73,4 +74,8 @@ public interface BaseConfig extends ModuleConfig {
     )
     public FileStorageService fs();
 
+    @ConfigDescription(
+            value = "User registry"
+    )
+    public UserRegistryService userRegistry();
 }

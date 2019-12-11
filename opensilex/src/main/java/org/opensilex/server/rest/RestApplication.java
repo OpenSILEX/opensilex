@@ -125,6 +125,7 @@ public class RestApplication extends ResourceConfig {
         BeanConfig beanConfig = new BeanConfig();
         beanConfig.setVersion(app.getModulesByProjectId("opensilex").get(0).getOpenSilexVersion());
         beanConfig.setResourcePackage(String.join(",", packageList));
+        beanConfig.setTitle("OpenSilex API");
         beanConfig.setExpandSuperTypes(false);
         beanConfig.setScan(true);
     }

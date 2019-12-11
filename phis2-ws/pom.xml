@@ -112,7 +112,7 @@
                     
                 <executions>
                     <execution>
-                        <phase>process-classes</phase>
+                        <phase>compile</phase>
                         <goals>
                             <goal>generate</goal>
                         </goals>

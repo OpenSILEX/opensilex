@@ -7,8 +7,8 @@
 //******************************************************************************
 package opensilex.service;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import org.opensilex.OpenSilex;
 import org.opensilex.bigdata.mongodb.MongoDBConfig;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
@@ -51,6 +51,13 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension {
         list.add("opensilex.service.resource.request.filters");
 
         return list;
+    }
+    
+    @Override
+    public Set<String> apiPackages() {
+        Set<String> packageSet = APIExtension.super.apiPackages();
+        packageSet.add("opensilex.service.resource");
+        return packageSet;
     }
 
 }

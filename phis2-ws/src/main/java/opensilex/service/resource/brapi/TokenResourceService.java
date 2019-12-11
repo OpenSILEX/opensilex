@@ -176,10 +176,10 @@ public class TokenResourceService implements BrapiCall{
                 if (user == null) {
                     statusList.add(new Status("User/password doesn't exist", StatusCodeMsg.ERR, null));
                 } else {
-                    String token = authentication.generateToken(user);
+                    authentication.generateToken(user);
                     Response.Status reponseStatus = Response.Status.OK;
-                    String expires_in = "" + AuthenticationService.getExpiresInSec();
-                    TokenResponseStructure res = new TokenResponseStructure(token, user.getFirstName() + " " + user.getLastName(), expires_in);
+                    String expires_in = "" + authentication.getExpiresInSec();
+                    TokenResponseStructure res = new TokenResponseStructure(user.getToken(), user.getFirstName() + " " + user.getLastName(), expires_in);
                     final URI uri = new URI(ui.getPath());
                     return Response.status(reponseStatus).location(uri).entity(res).build();
                 }

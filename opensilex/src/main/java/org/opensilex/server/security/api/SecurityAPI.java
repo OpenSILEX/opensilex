@@ -96,7 +96,7 @@ public class SecurityAPI implements RestApplicationAPI {
     @ApiResponses({
         @ApiResponse(code = 200, message = "User sucessfully logout"),})
     @ApiProtected
-    public Response logout(@HeaderParam(ApiProtected.HEADER_NAME) String userToken) {
+    public Response logout(@ApiParam(hidden = true) @HeaderParam(ApiProtected.HEADER_NAME) String userToken) {
         // TODO should implement a proper blacklist mechanism in AuthenticationService
         return Response.ok().build();
     }

@@ -27,6 +27,7 @@ import org.opensilex.sparql.SPARQLQueryHelper;
 import org.opensilex.sparql.SPARQLResult;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
@@ -150,8 +151,9 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         if (!realType.equals(getRDFType().toString())) {
             // TODO gérer les sous-classes
         }
-
-        URI uri = new URI(result.getStringValue(classAnalizer.getURIFieldName()));
+        
+        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
+        URI uri = uriDeserializer.fromString((result.getStringValue(classAnalizer.getURIFieldName())));
 
         T instance = createInstance(uri);
 
@@ -175,7 +177,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         for (Field field : classAnalizer.getObjectPropertyFields()) {
             Method setter = classAnalizer.getSetterFromField(field);
             if (result.getStringValue(field.getName()) != null) {
-                URI objURI = new URI(result.getStringValue(field.getName()));
+                URI objURI = uriDeserializer.fromString(result.getStringValue(field.getName()));
 
                 Class<? extends SPARQLResourceModel> fieldType = (Class<? extends SPARQLResourceModel>) field.getType();
                 SPARQLProxyResource<?> proxy = new SPARQLProxyResource<>(getDefaultGraph(), objURI, fieldType, service);

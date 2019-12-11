@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.module.base;
 
+import org.opensilex.OpenSilex;
 import org.opensilex.bigdata.BigDataService;
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.module.ModuleConfig;
@@ -43,7 +44,7 @@ public interface BaseConfig extends ModuleConfig {
 
     @ConfigDescription(
         value = "Platform base URI",
-        defaultString = "http://www.opensilex.org/"
+        defaultString = OpenSilex.BASE_PREFIX_URI
     )
     public String baseURI();
     

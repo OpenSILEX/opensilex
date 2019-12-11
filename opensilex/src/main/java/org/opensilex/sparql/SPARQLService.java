@@ -10,8 +10,11 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
@@ -31,12 +34,19 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.OA;
 import org.apache.jena.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.FOAF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.opensilex.OpenSilex;
+import org.opensilex.server.security.SecurityOntology;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceConfigDefault;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
@@ -69,7 +79,7 @@ public class SPARQLService implements SPARQLConnection, Service {
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLService.class);
 
     public final static String DEFAULT_SPARQL_SERVICE = "sparql";
-    
+
     private final SPARQLConnection connection;
 
     private final URI baseURI;
@@ -82,6 +92,7 @@ public class SPARQLService implements SPARQLConnection, Service {
     @Override
     public void startup() {
         connection.startup();
+        URIDeserializer.setPrefixes(getPrefixes());
     }
 
     @Override
@@ -89,8 +100,35 @@ public class SPARQLService implements SPARQLConnection, Service {
         connection.shutdown();
     }
 
+    public Map<String, String> getPrefixes() {
+        return new HashMap<String, String>() {
+            {
+                put("rdfs", RDFS.NAMESPACE);
+                put("foaf", FOAF.NAMESPACE);
+                put("dc", DCTerms.NS);
+                put("oa", OA.NS);
+                put("xsd", XMLSchema.NAMESPACE);
+                put("os", OpenSilex.BASE_PREFIX_URI);
+                put("os-sec", SecurityOntology.NS);
+            }
+        };
+    }
+
+    private void addPrefixes(UpdateBuilder builder) {
+        getPrefixes().forEach((key, value) -> {
+            builder.addPrefix(key, value);
+        });
+    }
+
+    private void addPrefixes(AbstractQueryBuilder<?> builder) {
+        getPrefixes().forEach((key, value) -> {
+            builder.addPrefix(key, value);
+        });
+    }
+
     @Override
     public boolean executeAskQuery(AskBuilder ask) throws SPARQLQueryException {
+        addPrefixes(ask);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("SPARQL ASK\n" + ask.buildString());
         }
@@ -99,6 +137,7 @@ public class SPARQLService implements SPARQLConnection, Service {
 
     @Override
     public List<SPARQLStatement> executeDescribeQuery(DescribeBuilder describe) throws SPARQLQueryException {
+        addPrefixes(describe);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("SPARQL DESCRIBE\n" + describe.buildString());
         }
@@ -115,6 +154,7 @@ public class SPARQLService implements SPARQLConnection, Service {
 
     @Override
     public List<SPARQLStatement> executeConstructQuery(ConstructBuilder construct) throws SPARQLQueryException {
+        addPrefixes(construct);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("SPARQL CONSTRUCT\n" + construct.buildString());
         }
@@ -123,6 +163,7 @@ public class SPARQLService implements SPARQLConnection, Service {
 
     @Override
     public List<SPARQLResult> executeSelectQuery(SelectBuilder select, Consumer<SPARQLResult> resultHandler) throws SPARQLQueryException {
+        addPrefixes(select);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("SPARQL SELECT\n" + select.buildString());
         }
@@ -131,6 +172,7 @@ public class SPARQLService implements SPARQLConnection, Service {
 
     @Override
     public void executeUpdateQuery(UpdateBuilder update) throws SPARQLQueryException {
+        addPrefixes(update);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("SPARQL UPDATE\n" + update.build().toString());
         }
@@ -139,6 +181,7 @@ public class SPARQLService implements SPARQLConnection, Service {
 
     @Override
     public void executeDeleteQuery(UpdateBuilder delete) throws SPARQLQueryException {
+        addPrefixes(delete);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("SPARQL DELETE\n" + delete.buildRequest().toString());
         }
@@ -201,6 +244,7 @@ public class SPARQLService implements SPARQLConnection, Service {
     public <T extends SPARQLResourceModel> T loadByURI(Class<T> objectClass, URI uri) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
         SelectBuilder select = sparqlObjectMapper.getSelectBuilder();
+
         Node nodeURI = NodeFactory.createURI(uri.toString());
         select.setVar(sparqlObjectMapper.getURIFieldName(), nodeURI);
         select.addValueVar(sparqlObjectMapper.getURIFieldName(), "<" + nodeURI.getURI() + ">");

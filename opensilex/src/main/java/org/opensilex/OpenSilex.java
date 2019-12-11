@@ -110,6 +110,12 @@ public class OpenSilex {
      * Command line argument key for OpenSilex debug flag
      */
     public final static String DEBUG_ARG_KEY = "DEBUG";
+    
+    /**
+     * Base prefix for OpenSilex ontologies
+     */
+    public final static String BASE_PREFIX_URI = "http://www.opensilex.org/";
+    
 
     /**
      * Store startup args for reset

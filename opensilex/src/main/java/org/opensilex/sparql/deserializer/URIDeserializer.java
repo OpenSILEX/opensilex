@@ -6,9 +6,10 @@
 package org.opensilex.sparql.deserializer;
 
 import java.net.URI;
+import java.util.Map;
 import org.apache.jena.graph.Node;
+import org.apache.jena.shared.PrefixMapping;
 import org.opensilex.sparql.utils.Ontology;
-
 
 /**
  *
@@ -18,11 +19,23 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
 
     @Override
     public URI fromString(String value) throws Exception {
-        return new URI(value);
+        if (prefixes == null) {
+            return new URI(value);
+        }
+
+        return new URI(prefixes.shortForm(value));
     }
 
     @Override
     public Node getNode(Object value) throws Exception {
         return Ontology.nodeURI((URI) value);
     }
+
+    private static PrefixMapping prefixes = null;
+
+    public static void setPrefixes(Map<String, String> prefixesMap) {
+        prefixes = PrefixMapping.Factory.create();
+        prefixes.setNsPrefixes(prefixesMap);
+    }
+
 }

@@ -75,10 +75,10 @@ public class Install {
 
         opensilex = OpenSilex.getInstance();
 
-//        initPGSQL();
+        initPGSQL();
         initRDF4J();
 
-//        opensilex.install();
+        opensilex.install();
         createSuperAdmin();
     }
 

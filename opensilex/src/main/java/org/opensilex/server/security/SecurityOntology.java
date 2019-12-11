@@ -7,6 +7,7 @@ package org.opensilex.server.security;
 
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.opensilex.OpenSilex;
 import org.opensilex.sparql.utils.Ontology;
 
 /**
@@ -15,7 +16,7 @@ import org.opensilex.sparql.utils.Ontology;
  */
 public class SecurityOntology {
 
-    public static final String DOMAIN = "http://www.opensilex.org/users";
+    public static final String DOMAIN = OpenSilex.BASE_PREFIX_URI + "security";
 
     public static final String NS = DOMAIN + "#";
 

@@ -464,12 +464,13 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
      * @param endDate
      * @param homePage
      * @param objective
+     * @param financialFundingLang
      * @return the list of projects that matches the filter parameters.
      */
     public ArrayList<Project> find(Integer page, Integer pageSize, String uri, String name, String shortname, String financialfunding, 
-            String financialReference, String description, String startDate, String endDate, String homePage, String objective) {
+            String financialReference, String description, String startDate, String endDate, String homePage, String objective,String financialFundingLang) {
         
-        SPARQLQueryBuilder query = prepareSearchQuery(page, pageSize, uri, name, shortname, financialfunding, financialReference, description, startDate, endDate, homePage, objective);
+        SPARQLQueryBuilder query = prepareSearchQuery(page, pageSize, uri, name, shortname, financialfunding, financialReference, description, startDate, endDate, homePage, objective,financialFundingLang);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         ArrayList<Project> projects = new ArrayList<>();
 
@@ -950,6 +951,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
      * @param endDate
      * @param homePage
      * @param objective
+     * @param financialFundingLang
      * @return the generated query.
      * @example
      * SELECT DISTINCT  ?uri ?name ?shortname ?financialFundingURI ?financialFundingLabel ?financialReference 
@@ -965,6 +967,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
      *      }
      *      OPTIONAL {
      *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasFinancialFunding> ?financialFundingURI . 
+     *          FILTER ( langMatches( lang(?financialFundingLabel), "fr" ) ||  LANG(?financialFundingLabel) = "")
      *      }
      *      OPTIONAL {
      *          ?uri <http://www.opensilex.org/vocabulary/oeso#hasFinancialReference> ?financialReference . 
@@ -987,7 +990,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
      * }
      */
     protected SPARQLQueryBuilder prepareSearchQuery(Integer page, Integer pageSize, String uri, String name, String shortname, 
-            String financialFunding, String financialReference, String description, String startDate, String endDate, String homePage, String objective) {
+            String financialFunding, String financialReference, String description, String startDate, String endDate, String homePage, String objective, String financialFundingLang) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE);
         
@@ -1022,17 +1025,21 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         }
         
         //financialFunding filter
-        query.appendSelect("?" + FINANCIAL_FUNDING_URI + " ?" + FINANCIAL_FUNDING_LABEL);
+        query.appendSelect("?" + FINANCIAL_FUNDING_URI + " ?" + FINANCIAL_FUNDING_LABEL);  
+        String filterLang = " LANG(?" + FINANCIAL_FUNDING_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + FINANCIAL_FUNDING_LABEL + "), \""+financialFundingLang+"\") ";
+        
         if (financialFunding == null) {
             query.beginBodyOptional();
             query.appendToBody("?" + URI + " <" + Oeso.RELATION_HAS_FINANCIAL_FUNDING.toString() + "> " + "?" + FINANCIAL_FUNDING_URI + " . ");
             query.appendToBody("?" + FINANCIAL_FUNDING_URI + " <" + RDFS.label.toString() + "> " + "?" + FINANCIAL_FUNDING_LABEL + " . ");
+            query.appendToBody("FILTER( "+filterLang+" )"); // append the filter clause inside the optional clause       
             query.endBodyOptional();
         } else {
             query.appendTriplet("?" + URI, Oeso.RELATION_HAS_FINANCIAL_FUNDING.toString(), "?" + FINANCIAL_FUNDING_URI, null);
             query.appendTriplet("?" + FINANCIAL_FUNDING_URI, RDFS.label.toString(), "?" + FINANCIAL_FUNDING_LABEL, null);
-        }
-        query.appendFilter("LANG(?" + FINANCIAL_FUNDING_LABEL + ") = \"\" || LANGMATCHES(LANG(?" + FINANCIAL_FUNDING_LABEL + "), \"en\")");
+            query.appendFilter("REGEX ( str(?" + FINANCIAL_FUNDING_LABEL + "),\".*" + financialFunding + ".*\",\"i\")");
+            query.appendAndFilter(filterLang);
+        }        
         
         //financialReference filter
         query.appendSelect("?" + FINANCIAL_REFERENCE);
@@ -1116,6 +1123,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
      * @param endDate
      * @param homePage
      * @param objective
+     * @param financialFundingLang
      * @return the generated query
      * @example
      * SELECT DISTINCT  (COUNT(DISTINCT ?uri) AS ?count) 
@@ -1152,8 +1160,8 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
      * }
      */
     public SPARQLQueryBuilder prepareCount(String uri, String name, String shortname, String financialFunding, String financialReference, 
-            String description, String startDate, String endDate, String homePage, String objective) {
-        SPARQLQueryBuilder query = this.prepareSearchQuery(null, null, uri, name, shortname, financialFunding, financialReference, description, startDate, endDate, homePage, objective);
+            String description, String startDate, String endDate, String homePage, String objective,String financialFundingLang) {
+        SPARQLQueryBuilder query = this.prepareSearchQuery(null, null, uri, name, shortname, financialFunding, financialReference, description, startDate, endDate, homePage, objective,financialFundingLang);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
@@ -1175,11 +1183,12 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
      * @param endDate
      * @param homePage
      * @param objective
+     * @param financialFundingLang
      * @return the number of projects.
      */
     public Integer count(String uri, String name, String shortname, String financialFunding, String financialReference, 
-            String description, String startDate, String endDate, String homePage, String objective) {
-        SPARQLQueryBuilder prepareCount = prepareCount(uri, name, shortname, financialFunding, financialReference, description, startDate, endDate, homePage, objective);
+            String description, String startDate, String endDate, String homePage, String objective,String financialFundingLang) {  	
+        SPARQLQueryBuilder prepareCount = prepareCount(uri, name, shortname, financialFunding, financialReference, description, startDate, endDate, homePage, objective,financialFundingLang);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -1218,3 +1227,4 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         return null;
     }
 }
+

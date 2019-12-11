@@ -77,7 +77,6 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
                         new Status("You cannot access this resource.", StatusCodeMsg.ERR,
                                 "Invalid token")))
                 .type(MediaType.APPLICATION_JSON).build();
-
         
         final UriInfo uriInfo = requestContext.getUriInfo();
         final String resourcePath = uriInfo.getPath();

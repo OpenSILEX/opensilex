@@ -302,8 +302,8 @@ public class DataResourceService extends ResourceService {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)  
     public Response postDataFile(
-        @ApiParam(value = "File description with metadata", required = true) @NotNull @Valid @FormDataParam("description") FileDescriptionPostDTO descriptionDto,
-        @ApiParam(value = "Data file", required = true) @NotNull @FormDataParam("file") File file,
+        @ApiParam(value = "File description with metadata", required = true, type = "string") @NotNull @Valid @FormDataParam("description") FileDescriptionPostDTO descriptionDto,
+        @ApiParam(value = "Data file", required = true, type="file") @NotNull @FormDataParam("file") File file,
         @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) {
         

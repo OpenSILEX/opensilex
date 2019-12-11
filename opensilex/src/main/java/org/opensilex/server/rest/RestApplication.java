@@ -49,29 +49,29 @@ public class RestApplication extends ResourceConfig {
     }
 
     /**
-     * Constructor for opensilex Application: 
+     * Constructor for opensilex Application:
      * <pre>
-     * - Load core configuration 
-     * - register packages 
-     * - initialize swagger 
-     * - call module initialization 
+     * - Load core configuration
+     * - register packages
+     * - initialize swagger
+     * - call module initialization
      * - make database services and module injectable
      * </pre>
-     * 
+     *
      * @param app OpenSilex instance
      */
     public RestApplication(OpenSilex app) {
         this.app = app;
-        
+
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
         property(ServerProperties.WADL_FEATURE_DISABLE, true);
-        
+
         // Register JSON Multipart Feature for Jersey to allow MediaType.MULTIPART_FORM_DATA for file upload
         register(MultiPartFeature.class);
 
         // Enable Jackson JSON serialier/deserializer for Jersey
         register(JacksonFeature.class);
-        
+
         // Enable GZIP for web services
         register(GZipEncoder.class);
         register(EncodingFilter.class);

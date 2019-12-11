@@ -45,7 +45,7 @@ public class ExceptionJsonMapper implements ExceptionMapper<Throwable> {
             response = new ErrorResponse(exception).getResponse();
         }
 
-        LOGGER.debug("Exception returned to user service call", exception);
+        LOGGER.error("Exception returned to user service call", exception);
         return response;
     }
 

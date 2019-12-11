@@ -259,14 +259,6 @@ public class OpenSilex {
      */
     private static OpenSilex createInstance(Path baseDirectory, String profileId, File configFile, boolean debug) throws Exception {
 
-        if (profileId.equals(PROD_PROFILE_ID)) {
-            // In production mode, enable logger with files
-            File logConfigFile = new File(
-                    OpenSilex.class.getClassLoader().getResource("logback-prod.xml").getFile()
-            );
-            loadLoggerConfig(logConfigFile, false);
-        }
-
         // Try to find logback.xml file in OpenSilex base directory to initialize logger configuration
         File logConfigFile = baseDirectory.resolve("logback.xml").toFile();
         loadLoggerConfig(logConfigFile, true);

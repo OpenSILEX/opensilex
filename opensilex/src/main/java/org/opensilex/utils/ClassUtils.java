@@ -15,6 +15,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.opensilex.OpenSilex;
 import org.reflections.Reflections;
 import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
@@ -274,7 +277,21 @@ public class ClassUtils {
 
     public static Reflections getReflectionInstance() {
         if (reflections == null) {
-            reflections = new Reflections(ConfigurationBuilder.build("", Thread.currentThread().getContextClassLoader()).setExpandSuperTypes(false));
+            List<URL> urls = new ArrayList<>();
+            if (OpenSilex.getInstance() != null) {
+                OpenSilex.getInstance().getModules().forEach(module -> {
+                    File jar = getJarFile(module.getClass());
+                    try {
+                        URL url = jar.toURI().toURL();
+                        urls.add(url);
+                    } catch (MalformedURLException ex) {
+                        LOGGER.error("Error in jar file", ex);
+                    }
+                });
+                reflections = new Reflections(ConfigurationBuilder.build("", Thread.currentThread().getContextClassLoader()).setUrls(urls).setExpandSuperTypes(false));
+            } else {
+                reflections = new Reflections(ConfigurationBuilder.build("", Thread.currentThread().getContextClassLoader()).setExpandSuperTypes(false));
+            }
         }
 
         return reflections;

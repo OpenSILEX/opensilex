@@ -8,7 +8,7 @@ import VueRouter from 'vue-router';
 export class OpenSilexRouter {
 
     private frontConfig: FrontConfigDTO;
-    private menu = {};
+    private menu: Array<MenuItemDTO> = [];
     private router: any = this.createRouter(User.ANONYMOUS());
 
     public getMenu() {
@@ -63,8 +63,7 @@ export class OpenSilexRouter {
                 }
             }
 
-            this.menu = {};
-            this.walkMenuItems(frontConfig.menu, routes, user, this.menu, []);
+            this.menu = this.buildMenu(frontConfig.menu, routes, user);
 
             routes.push({
                 path: "*",
@@ -72,17 +71,28 @@ export class OpenSilexRouter {
             });
         }
 
-        console.log("Loaded Routes & Menu: ", routes, this.menu);
         return routes;
     }
 
     public getAsyncComponentLoader($opensilex, componentId) {
         return () => {
-            return new Promise(function (resolve, reject) {
-                let componentDef = ModuleComponentDefinition.fromString(componentId)
+            return new Promise((resolve, reject) => {
+                let componentDef = ModuleComponentDefinition.fromString(componentId);
                 $opensilex.loadComponentModule(componentDef)
-                    .then(function () {
-                        resolve(Vue.component(componentDef.getName()))
+                    .then(() => {
+                        let component = Vue.component(componentDef.getName());
+                        if (component) {
+                            resolve(component)
+                        } else {
+                            console.warn("Component not found", componentId);
+                            let result = this.getAsyncComponentLoader($opensilex, this.frontConfig.notFoundComponent)();
+                            if (result instanceof Promise) {
+                                result.then(resolve)
+                                .catch(reject);
+                            } else {
+                                resolve(result);
+                            }
+                        }
                     })
                     .catch(reject);
             })
@@ -90,18 +100,19 @@ export class OpenSilexRouter {
     }
 
 
-    private walkMenuItems(items: Array<MenuItemDTO>, routes: Array<any>, user: User, menu: any, baseIds: Array<string>) {
+    private buildMenu(items: Array<MenuItemDTO>, routes: Array<any>, user: User) {
         let $opensilex: OpenSilexVuePlugin = Vue["$opensilex"];
+        let menu: Array<MenuItemDTO> = [];
 
         for (let i in items) {
             let item: MenuItemDTO = items[i];
+            let hasRouteAccess = false;
 
-            let hasRoute = false;
             if (item.route) {
                 let route = item.route;
-
                 if (user.hasAccess(route.access)) {
-                    hasRoute = true;
+                    hasRouteAccess = true;
+                    menu.push(item);
                     routes.push({
                         path: route.path,
                         component: this.getAsyncComponentLoader($opensilex, route.component)
@@ -109,25 +120,18 @@ export class OpenSilexRouter {
                 }
             }
 
-            let localIds: Array<string> = [];
-            localIds = localIds.concat(baseIds);
-            localIds.push(item.id);
-            let id = localIds.join("_");
-
-            menu[id] = {
-                id: item.id,
-                label: item.label,
-                path: null
-            }
-
-            if (hasRoute && item.route) {
-                menu[id].path = item.route.path;
-            }
-
+            let childItems: Array<MenuItemDTO> = [];
             if (item.children.length > 0) {
-                this.walkMenuItems(item.children, routes, user, menu, localIds);
+                childItems = this.buildMenu(item.children, routes, user);
+            }
+
+            if (!item.route && childItems.length > 0) {
+                item.children = childItems;
+                menu.push(item);
             }
         }
+
+        return menu;
     }
 
 }

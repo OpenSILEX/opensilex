@@ -22,21 +22,21 @@ menu:
           access: []
 
 routes:
-  - path: /user/{uri}/view
+  - path: /users/view/:uri
     component: opensilex#UserView
     access: []
-  - path: /user/{uri}/edit
+  - path: /users/edit/:uri
     component: opensilex#UserEdit
     access: []
-  - path: /group/{uri}/view
+  - path: /groups/view/:uri
     component: opensilex#GroupView
     access: []
-  - path: /group/{uri}/edit
+  - path: /groups/edit/:uri
     component: opensilex#GroupEdit
     access: []
-  - path: /profile/{uri}/view
+  - path: /profiles/view/:uri
     component: opensilex#ProfileView
     access: []
-  - path: /profile/{uri}/edit
+  - path: /profiles/edit/:uri
     component: opensilex#ProfileEdit
     access: []

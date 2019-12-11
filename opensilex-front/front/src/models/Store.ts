@@ -1,24 +1,23 @@
 import Vue from 'vue'
-import Vuex, { Store } from 'vuex'
+import Vuex from 'vuex'
 import { User } from '@/models/User'
-import VueRouter, { Route } from 'vue-router';
-import { FrontConfigDTO, RouteDTO, MenuItemDTO } from './lib';
-import { OpenSilexVuePlugin } from './models/OpenSilexVuePlugin';
-import { ModuleComponentDefinition } from './models/ModuleComponentDefinition';
-import { OpenSilexRouter } from './models/OpenSilexRouter';
+import VueRouter from 'vue-router';
+import { FrontConfigDTO, MenuItemDTO } from '../lib';
+import { OpenSilexRouter } from './OpenSilexRouter';
 
 Vue.use(Vuex)
 Vue.use(VueRouter)
 
 let expireTimeout: any = undefined;
 let loaderCount: number = 0;
+let menu: Array<MenuItemDTO> = [];
 
 export default new Vuex.Store({
   state: {
     user: User.ANONYMOUS(),
     loaderVisible: false,
     openSilexRouter: new OpenSilexRouter(),
-    menu: {}
+    menu: menu
   },
   mutations: {
     login(state, user: User) {

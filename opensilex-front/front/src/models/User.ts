@@ -136,7 +136,7 @@ export class User {
     }
 
     public hasAccess(...access): boolean {
-        // check in accessLisy
+        // TODO really check access list
         return this.isAdmin() || false;
     }
 

@@ -6,14 +6,13 @@
 package org.opensilex.front;
 
 import java.util.List;
-import java.util.Map;
 import org.opensilex.config.ConfigDescription;
 
 /**
  *
  * @author vidalmor
  */
-public interface FrontModuleConfig  {
+public interface FrontRoutingConfig  {
     
     @ConfigDescription("Menu entries")
     public List<MenuItem> menu();

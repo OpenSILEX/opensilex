@@ -2,7 +2,20 @@
   <div>
     <nav v-if="user.isLoggedIn()" v-bind:class="{'hide-responsive':!menuVisible}">
       <ul>
-        <li>MENU</li>
+        <li>
+          <router-link to="/">Home</router-link>
+        </li>
+        <li v-for="item in menu" v-bind:key="item.id">
+          <span v-if="!item.route">{{item.label}}</span>
+          <router-link v-else :to="item.route.path">{{item.label}}</router-link>
+
+          <ul v-if="item.children.length > 0">
+            <li v-for="itemChild in item.children" v-bind:key="itemChild.id">
+              <span v-if="!itemChild.route">{{itemChild.label}}</span>
+              <router-link v-else :to="itemChild.route.path">{{itemChild.label}}</router-link>
+            </li>
+          </ul>
+        </li>
       </ul>
     </nav>
     <div class="hamburger" v-if="user.isLoggedIn()">
@@ -16,9 +29,14 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
+import { MenuItemDTO } from "../../lib";
 
 @Component
 export default class DefaultMenuComponent extends Vue {
+  get menu(): Array<MenuItemDTO> {
+    return this.$store.state.menu;
+  }
+
   get user() {
     return this.$store.state.user;
   }
@@ -33,6 +51,10 @@ export default class DefaultMenuComponent extends Vue {
 ul {
   list-style-type: none;
   padding: 0;
+}
+
+ul > li > ul {
+  margin-left: 15px;
 }
 
 nav {
@@ -144,6 +166,11 @@ nav {
     height: auto;
     min-height: 0;
     width: 100%;
+    text-align: center;
+  }
+
+  ul > li > ul {
+    margin-left: 0;
   }
 }
 </style>

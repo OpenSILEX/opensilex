@@ -8,13 +8,13 @@ import "reflect-metadata"
 import Vue from 'vue'
 
 // Local imports
+import store from './models/Store'
 import App from './App.vue'
 import { FrontConfigDTO, FrontService } from './lib'
 import HttpResponse from './lib/HttpResponse'
 import { User } from './models/User'
 import { ModuleComponentDefinition } from './models/ModuleComponentDefinition'
 import { OpenSilexVuePlugin } from './models/OpenSilexVuePlugin'
-import store from './store'
 
 // Initialize cookie management library
 import VueCookies from 'vue-cookies'

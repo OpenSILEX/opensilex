@@ -4,13 +4,16 @@ export class ModuleComponentDefinition {
 
   private name: string;
 
+  private id: string;
+
   public constructor(module, name) {
     this.module = module;
     this.name = name;
+    this.id = this.module + "#" + this.name;
   }
 
   public getId(): string {
-    return this.module + "#" + this.name;
+    return this.id;
   }
 
   public getModule(): string {

@@ -22,7 +22,7 @@ export class OpenSilexVuePlugin {
         ApiServiceBinder.with(this.container);
     }
 
-    getService<T>(id: string): T {
+    public getService<T>(id: string): T {
         let idParts = id.split("#");
         if (idParts.length == 1) {
             return this.getServiceContainer().get<T>(id);
@@ -78,7 +78,11 @@ export class OpenSilexVuePlugin {
             this.loadingModules[moduleName] = this.loadModule(moduleName);
         }
 
-        return this.loadingModules[moduleName];
+        if (this.loadingModules[moduleName] instanceof Promise) {
+            return this.loadingModules[moduleName];
+        }
+
+        return Promise.resolve(this.loadingModules[moduleName]);
     }
 
     public loadModule(name) {
@@ -103,15 +107,11 @@ export class OpenSilexVuePlugin {
         return window[name];
     }
 
-    callLog(str) {
-        console.log(str);
-    }
-
-    getServiceContainer() {
+    public getServiceContainer() {
         return this.container;
     }
 
-    install(Vue, options) {
+    public install(Vue, options) {
         Vue.prototype.$opensilex = this;
         Vue.$opensilex = this;
     }

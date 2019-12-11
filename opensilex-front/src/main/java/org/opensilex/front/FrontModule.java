@@ -72,13 +72,13 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                     if (m.fileExists(FRONT_CONFIG_PATH)) {
                         ConfigManager cfg = new ConfigManager();
                         cfg.addSource(m.getFileInputStream(FRONT_CONFIG_PATH));
-                        FrontModuleConfig frontModuleConfig = cfg.loadConfig("", FrontModuleConfig.class);
-                        for (MenuItem menuItem : frontModuleConfig.menu()) {
+                        FrontRoutingConfig frontRoutingConfig = cfg.loadConfig("", FrontRoutingConfig.class);
+                        for (MenuItem menuItem : frontRoutingConfig.menu()) {
                             MenuItemDTO menuDTO = MenuItemDTO.fromModel(menuItem);
                             globalMenu.add(menuDTO);
                         }
 
-                        for (Route route : frontModuleConfig.routes()) {
+                        for (Route route : frontRoutingConfig.routes()) {
                             RouteDTO routeDTO = RouteDTO.fromModel(route);
                             globalRoutes.add(routeDTO);
                         }

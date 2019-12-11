@@ -122,7 +122,7 @@ public class AuthenticationService implements Service {
                 .withClaim(CLAIM_IS_ADMIN, jwt.getClaim(CLAIM_IS_ADMIN).toString());
 
         String[] access = jwt.getClaim(CLAIM_ACCESS_LIST).asArray(String.class);
-        if (access.length > 0) {
+        if (access != null && access.length > 0) {
             tokenBuilder.withArrayClaim(CLAIM_ACCESS_LIST, access);
         }
 

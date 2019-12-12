@@ -150,45 +150,45 @@ public class TokenResourceService implements BrapiCall{
         }
         if ((password != null && username != null) || (isJWT && validJWTToken && username != null)) {
             // Is user authorized ?
-//            UserModel user = new UserModel(username, password);
+            // UserModel user = new UserModel(username, password);
+            //SILEX:info
+            // if we have a jwt the password is not verified because it means that the
+            // user is already logged
+            // we trust the client
+            //\SILEX:info
+            org.opensilex.server.user.dal.UserDAO userDAO = new org.opensilex.server.user.dal.UserDAO(sparql, authentication);
+            org.opensilex.server.user.dal.UserModel user;
             try {
-                //SILEX:info
-                // if we have a jwt the password is not verified because it means that the
-                // user is already logged
-                // we trust the client
-                //\SILEX:info
-                org.opensilex.server.user.dal.UserDAO userDAO = new org.opensilex.server.user.dal.UserDAO(sparql, authentication);
-                org.opensilex.server.user.dal.UserModel user;
-                try {
-                    user = userDAO.getByEmail(new InternetAddress(username));
+                user = userDAO.getByEmail(new InternetAddress(username));
 
-                    if (!isJWT) {
-                        if (!userDAO.authenticate(user, password)) {
-                            user = null;
-                        }
+                if (!isJWT) {
+                    if (!userDAO.authenticate(user, password)) {
+                        user = null;
                     }
-                } catch (Exception ex) {
-                    LOGGER.warn("Exception while authenticating user: " + username, ex);
-                    user = null;
                 }
+            } catch (Exception ex) {
+                LOGGER.warn("Exception while authenticating user: " + username, ex);
+                user = null;
+            }
 
-                // No user found
-                if (user == null) {
-                    statusList.add(new Status("User/password doesn't exist", StatusCodeMsg.ERR, null));
-                } else {
-                    authentication.generateToken(user);
+            // No user found
+            if (user == null) {
+                statusList.add(new Status("User/password doesn't exist", StatusCodeMsg.ERR, null));
+            } else {
+                try {
+                    userDAO.authenticate(user);
                     Response.Status reponseStatus = Response.Status.OK;
                     String expires_in = "" + authentication.getExpiresInSec();
                     TokenResponseStructure res = new TokenResponseStructure(user.getToken(), user.getFirstName() + " " + user.getLastName(), expires_in);
                     final URI uri = new URI(ui.getPath());
                     return Response.status(reponseStatus).location(uri).entity(res).build();
+                } catch (Exception ex) {
+                    LOGGER.error(ex.getMessage(), ex);
+                    statusList.add(new Status("Error while authenticating user " + StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.getMessage()));
+                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormPOST(statusList)).build();
                 }
-
-            } catch (URISyntaxException ex) {
-                LOGGER.error(ex.getMessage(), ex);
-                statusList.add(new Status("SQL " + StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.getMessage()));
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormPOST(statusList)).build();
             }
+
         } else {
             // if an error occurred
             if (!isJWT && password == null) {

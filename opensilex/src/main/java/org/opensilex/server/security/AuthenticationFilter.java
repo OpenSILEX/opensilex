@@ -35,7 +35,7 @@ import org.opensilex.server.user.dal.UserModel;
  */
 @Provider
 @Priority(Priorities.AUTHENTICATION)
-public class AuthenticationFilter implements ContainerRequestFilter, ContainerResponseFilter {
+public class AuthenticationFilter implements ContainerRequestFilter {
 
     @Context
     ResourceInfo resourceInfo;
@@ -46,8 +46,6 @@ public class AuthenticationFilter implements ContainerRequestFilter, ContainerRe
     @Inject
     UserRegistryService registry;
 
-    public static final String TOKEN_RENEW_RESPONSE_HEADER = "opensilex-renew-token";
-    
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         Method apiMethod = resourceInfo.getResourceMethod();
@@ -96,18 +94,7 @@ public class AuthenticationFilter implements ContainerRequestFilter, ContainerRe
                 } catch (Throwable ex) {
                     throw new UnexpectedErrorException(ex);
                 }
-
             }
-        }
-    }
-
-    @Override
-    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-        UserModel user = (UserModel) requestContext.getSecurityContext().getUserPrincipal();
-        if (user != null) {
-            authentication.renewToken(user);
-            registry.addUser(user, authentication.getExpireInMs());
-            responseContext.getHeaders().add(TOKEN_RENEW_RESPONSE_HEADER, user.getToken());
         }
     }
 }

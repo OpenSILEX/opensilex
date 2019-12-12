@@ -61,7 +61,7 @@ if (window["webpackHotUpdate"]) {
 }
 
 // Enable Vue front plugin manager for OpenSilex API
-let frontPlugin = new OpenSilexVuePlugin(baseApi);
+let frontPlugin = new OpenSilexVuePlugin(baseApi, store);
 Vue.use(frontPlugin);
 
 // Define global error manager

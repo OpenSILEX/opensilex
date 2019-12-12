@@ -52,7 +52,7 @@ public class UserDAO {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setAdmin(admin);
-        
+
         if (password != null) {
             user.setPasswordHash(authentication.getPasswordHash(password));
         }
@@ -61,9 +61,32 @@ public class UserDAO {
 
         return user;
     }
-    
+
     public boolean authenticate(UserModel user, String password) throws Exception {
-        return (user != null && authentication.checkPassword(password, user.getPasswordHash()));
+        if ((user != null && authentication.checkPassword(password, user.getPasswordHash()))) {
+            List<String> accessList = getAccessList(user.getUri());
+            authentication.generateToken(user, accessList);
+            authentication.addUser(user, authentication.getExpireInMs());
+            return true;
+        }
+        return false;
+    }
+
+    public boolean authenticate(UserModel user) throws Exception {
+        List<String> accessList = getAccessList(user.getUri());
+        authentication.generateToken(user, accessList);
+        authentication.addUser(user, authentication.getExpireInMs());
+        return true;
+    }
+
+    public boolean renewToken(UserModel user) throws Exception {
+        authentication.renewToken(user);
+        authentication.addUser(user, authentication.getExpireInMs());
+        return true;
+    }
+
+    public boolean logout(UserModel user) {
+        return (authentication.removeUser(user) != null);
     }
 
     public boolean userEmailexists(InternetAddress email) throws Exception {
@@ -90,12 +113,12 @@ public class UserDAO {
     public List<String> getAccessList(URI uri) throws Exception {
         SecurityProfileModelDAO profileDAO = new SecurityProfileModelDAO(sparql);
         List<SecurityProfileModel> userProfiles = profileDAO.getByUserURI(uri);
-        
+
         List<String> accessList = new ArrayList<>();
         userProfiles.forEach((SecurityProfileModel profile) -> {
             accessList.addAll(profile.getAccessList());
         });
-        
+
         return accessList;
     }
 

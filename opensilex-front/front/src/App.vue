@@ -54,10 +54,10 @@ export default class App extends VueBaseClass {
   }
 
   beforeMount() {
-    this.headerComponent = this.headerComponentDef.getName();
-    this.loginComponent = this.loginComponentDef.getName();
-    this.menuComponent = this.menuComponentDef.getName();
-    this.footerComponent = this.footerComponentDef.getName();
+    this.headerComponent = this.headerComponentDef.getId();
+    this.loginComponent = this.loginComponentDef.getId();
+    this.menuComponent = this.menuComponentDef.getId();
+    this.footerComponent = this.footerComponentDef.getId();
   }
 }
 </script>

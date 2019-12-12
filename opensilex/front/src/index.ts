@@ -1,8 +1,12 @@
-import { ApiServiceBinder } from './lib'
+import { ApiServiceBinder } from './lib';
+import UserList from './components/UserList.vue';
 
 export default {
     install(Vue, options) {
         ApiServiceBinder.with(Vue.$opensilex.getServiceContainer());
-        // TODO register components
+    },
+
+    components: {
+        "opensilex.UserList": UserList
     }
 };

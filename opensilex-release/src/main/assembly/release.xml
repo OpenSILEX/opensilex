@@ -13,6 +13,7 @@
             </includes>
             <excludes>
                 <exclude>${project.groupId}:opensilex:*:${project.version}</exclude>
+                <exclude>${project.groupId}:opensilex-swagger-codegen-maven-plugin:*:${project.version}</exclude>
             </excludes>
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
             <useProjectArtifact>false</useProjectArtifact>

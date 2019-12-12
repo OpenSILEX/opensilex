@@ -16,8 +16,6 @@ import javax.inject.Inject;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;
@@ -26,7 +24,6 @@ import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.exceptions.UnauthorizedException;
 import org.opensilex.server.exceptions.UnexpectedErrorException;
 import org.opensilex.server.security.dal.SecurityAccessDAO;
-import org.opensilex.server.user.UserRegistryService;
 import org.opensilex.server.user.dal.UserModel;
 
 /**
@@ -42,9 +39,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     @Inject
     AuthenticationService authentication;
-
-    @Inject
-    UserRegistryService registry;
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -65,8 +59,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                     URI userURI = authentication.decodeTokenUserURI(token);
 
                     UserModel user;
-                    if (registry.hasUserURI(userURI)) {
-                        user = registry.getUserByUri(userURI);
+                    if (authentication.hasUserURI(userURI)) {
+                        user = authentication.getUserByUri(userURI);
                     } else {
                         throw new ForbiddenException("User not found with URI: " + userURI);
                     }

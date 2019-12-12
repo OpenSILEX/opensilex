@@ -80,7 +80,7 @@ export class OpenSilexRouter {
                 let componentDef = ModuleComponentDefinition.fromString(componentId);
                 $opensilex.loadComponentModule(componentDef)
                     .then(() => {
-                        let component = Vue.component(componentDef.getName());
+                        let component = Vue.component(componentDef.getId());
                         if (component) {
                             resolve(component)
                         } else {

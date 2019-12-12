@@ -31,14 +31,13 @@ import org.opensilex.sparql.SPARQLService;
 import org.opensilex.server.user.dal.UserDAO;
 import org.opensilex.server.user.dal.UserModel;
 
-
 @Api("Users")
 @Path("/user")
 public class UserAPI implements RestApplicationAPI {
 
     @Inject
     private SPARQLService sparql;
-    
+
     @Inject
     private AuthenticationService authentication;
 
@@ -62,7 +61,7 @@ public class UserAPI implements RestApplicationAPI {
         if (userDTO.isAdmin() && (currentUser == null || !currentUser.isAdmin())) {
             throw new ForbiddenException("You must be an admin to create other admin users");
         }
-        
+
         UserDAO userDAO = new UserDAO(sparql, authentication);
 
         InternetAddress userEmail = new InternetAddress(userDTO.getEmail());

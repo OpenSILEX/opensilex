@@ -79,7 +79,7 @@ export default class DefaultLoginComponent extends Vue {
     this.$store.commit("showLoader");
     var self = this;
     this.$opensilex
-      .getService<SecurityService>("opensilex#SecurityService")
+      .getService<SecurityService>("opensilex.SecurityService")
       .authenticate({
         identifier: this.form.email,
         password: this.form.password

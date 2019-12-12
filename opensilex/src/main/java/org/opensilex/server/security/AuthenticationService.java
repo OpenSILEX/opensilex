@@ -10,6 +10,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import java.net.URI;
@@ -22,10 +23,15 @@ import java.security.interfaces.RSAPublicKey;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ws.rs.core.SecurityContext;
+import org.opensilex.OpenSilex;
 import org.opensilex.service.Service;
 import org.opensilex.server.user.dal.UserModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -33,7 +39,9 @@ import org.opensilex.server.user.dal.UserModel;
  */
 public class AuthenticationService implements Service {
 
-    public final static String DEFAULT_AUTHENTICATION_SERVICE = "authentication";
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationService.class);
+
+    public static final String DEFAULT_AUTHENTICATION_SERVICE = "authentication";
 
     private static final int PASSWORD_HASH_COMPLEXITY = 12;
 
@@ -52,6 +60,9 @@ public class AuthenticationService implements Service {
     private static final String CLAIM_IS_ADMIN = "is_admin";
     private static final String CLAIM_ACCESS_LIST = "access_list";
 
+    private Map<URI, UserModel> userRegistry = new HashMap<>();
+    private Map<URI, Thread> schedulerRegistry = new HashMap<>();
+
     private final Algorithm algoRSA;
 
     public AuthenticationService() throws NoSuchAlgorithmException {
@@ -69,10 +80,6 @@ public class AuthenticationService implements Service {
 
     public boolean checkPassword(String password, String passwordHash) {
         return BCrypt.verifyer().verify(password.getBytes(), passwordHash.getBytes()).verified;
-    }
-
-    public void generateToken(UserModel user) {
-        generateToken(user, null);
     }
 
     public void generateToken(UserModel user, List<String> accessList) {
@@ -94,12 +101,16 @@ public class AuthenticationService implements Service {
             tokenBuilder.withArrayClaim(CLAIM_ACCESS_LIST, accessList.toArray(new String[accessList.size()]));
         }
 
+        OpenSilex.getInstance().getModules().forEach(module -> {
+            module.addLoginClaims(user, tokenBuilder);
+        });
+
         user.setToken(tokenBuilder.sign(algoRSA));
     }
 
     public void renewToken(UserModel user) {
         if (user.getToken() == null) {
-            
+
         }
         JWTVerifier verifier = JWT.require(algoRSA)
                 .withIssuer(TOKEN_ISSUER)
@@ -113,18 +124,22 @@ public class AuthenticationService implements Service {
                 .withIssuer(TOKEN_ISSUER)
                 .withSubject(jwt.getSubject())
                 .withIssuedAt(issuedDate)
-                .withExpiresAt(expirationDate)
-                .withClaim(CLAIM_FIRST_NAME, jwt.getClaim(CLAIM_FIRST_NAME).toString())
-                .withClaim(CLAIM_LAST_NAME, jwt.getClaim(CLAIM_LAST_NAME).toString())
-                .withClaim(CLAIM_EMAIL, jwt.getClaim(CLAIM_EMAIL).toString())
-                .withClaim(CLAIM_FULL_NAME, jwt.getClaim(CLAIM_FULL_NAME).toString())
-                // custom claim
-                .withClaim(CLAIM_IS_ADMIN, jwt.getClaim(CLAIM_IS_ADMIN).toString());
+                .withExpiresAt(expirationDate);
 
-        String[] access = jwt.getClaim(CLAIM_ACCESS_LIST).asArray(String.class);
-        if (access != null && access.length > 0) {
-            tokenBuilder.withArrayClaim(CLAIM_ACCESS_LIST, access);
-        }
+        jwt.getClaims().forEach((key, claim) -> {
+            try {
+                String[] claimArray = claim.asArray(String.class);
+                if (claimArray == null) {
+                    String claimValue = claim.asString();
+                    tokenBuilder.withClaim(key, claimValue);
+                } else {
+                    tokenBuilder.withArrayClaim(key, claimArray);
+                }
+            } catch (JWTDecodeException ex) {
+                String claimValue = claim.asString();
+                tokenBuilder.withClaim(key, claimValue);
+            }
+        });
 
         user.setToken(tokenBuilder.sign(algoRSA));
     }
@@ -161,4 +176,55 @@ public class AuthenticationService implements Service {
         return getExpiresInSec() * 1000;
     }
 
+    public boolean hasUser(UserModel user) {
+        return hasUserURI(user.getUri());
+    }
+
+    public void addUser(UserModel user, long expireMs) {
+        URI userURI = user.getUri();
+
+        if (hasUserURI(userURI)) {
+            removeUserByURI(userURI);
+        }
+
+        Thread t = new Thread(() -> {
+            try {
+                Thread.sleep(expireMs);
+                LOGGER.debug("User connection timeout: " + userURI);
+                removeUser(user);
+            } catch (InterruptedException e) {
+                LOGGER.debug("Revoke user: " + userURI + " - " + e.getMessage());
+            }
+        });
+
+        t.start();
+
+        userRegistry.put(userURI, user);
+        schedulerRegistry.put(userURI, t);
+
+        LOGGER.debug("Register user: " + userURI);
+    }
+
+    public UserModel removeUser(UserModel user) {
+        return removeUserByURI(user.getUri());
+    }
+
+    public UserModel removeUserByURI(URI userURI) {
+        if (hasUserURI(userURI)) {
+            LOGGER.debug("Unregister user: " + userURI);
+            schedulerRegistry.get(userURI).interrupt();
+            schedulerRegistry.remove(userURI);
+            return userRegistry.remove(userURI);
+        }
+
+        return null;
+    }
+
+    public boolean hasUserURI(URI userURI) {
+        return userRegistry.containsKey(userURI);
+    }
+
+    public UserModel getUserByUri(URI userURI) {
+        return userRegistry.get(userURI);
+    }
 }

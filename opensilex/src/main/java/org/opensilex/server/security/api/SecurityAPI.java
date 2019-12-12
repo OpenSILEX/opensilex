@@ -12,7 +12,6 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.mail.internet.AddressException;
@@ -35,7 +34,6 @@ import org.opensilex.server.rest.RestApplicationAPI;
 import org.opensilex.server.security.ApiProtected;
 import org.opensilex.server.security.AuthenticationService;
 import org.opensilex.server.security.dal.SecurityAccessDAO;
-import org.opensilex.server.user.UserRegistryService;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.server.user.dal.UserDAO;
 import org.opensilex.server.user.dal.UserModel;
@@ -50,9 +48,6 @@ public class SecurityAPI implements RestApplicationAPI {
      * Logger
      */
     private final static Logger LOGGER = LoggerFactory.getLogger(SecurityAPI.class);
-
-    @Inject
-    private UserRegistryService userRegistry;
 
     @Inject
     private SPARQLService sparql;
@@ -89,13 +84,29 @@ public class SecurityAPI implements RestApplicationAPI {
         }
 
         if (userDAO.authenticate(user, authenticationDTO.getPassword())) {
-            List<String> accessList = userDAO.getAccessList(user.getUri());
-            authentication.generateToken(user, accessList);
-            userRegistry.addUser(user, authentication.getExpireInMs());
             return new SingleObjectResponse<String>(user.getToken()).getResponse();
         } else {
             return new ErrorResponse(Status.FORBIDDEN, "Invalid credentials", "User does not exists or password is invalid").getResponse();
         }
+    }
+
+    @GET
+    @Path("renew-token")
+    @ApiOperation("Send back a new token if the provided one is still valid")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Token sucessfully renewed"),})
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response renewToken(
+            @ApiParam(hidden = true) @HeaderParam(ApiProtected.HEADER_NAME) String userToken,
+            @Context SecurityContext securityContext
+    ) throws Exception {
+        UserModel user = authentication.getCurrentUser(securityContext);
+        UserDAO userDAO = new UserDAO(sparql, authentication);
+        userDAO.renewToken(user);
+
+        return new SingleObjectResponse<String>(user.getToken()).getResponse();
     }
 
     @POST
@@ -108,7 +119,8 @@ public class SecurityAPI implements RestApplicationAPI {
             @ApiParam(hidden = true) @HeaderParam(ApiProtected.HEADER_NAME) String userToken,
             @Context SecurityContext securityContext
     ) {
-        userRegistry.removeUser(authentication.getCurrentUser(securityContext));
+        UserDAO userDAO = new UserDAO(sparql, authentication);
+        userDAO.logout(authentication.getCurrentUser(securityContext));
         return Response.ok().build();
     }
 

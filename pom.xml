@@ -33,6 +33,9 @@
         <!-- Development module -->
         <module>opensilex-dev-tools</module>
         
+        <!-- Release module -->
+        <module>opensilex-release</module>
+         
         <!-- Maven Plugin module -->
         <module>opensilex-swagger-codegen-maven-plugin</module>
     </modules>
@@ -110,14 +113,6 @@
     </reporting>
     
     <profiles>
-        <!-- Profile to produce release build -->
-        <profile>
-            <id>release</id>
-            <modules>
-                <module>opensilex-release</module>
-            </modules>
-        </profile>
-        
         <!-- Profile which enable Jacoco Code coverage -->
         <profile>
             <id>with-test-report</id>

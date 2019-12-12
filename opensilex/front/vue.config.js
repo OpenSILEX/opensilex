@@ -5,8 +5,8 @@ module.exports = {
         externals: {
             'vue': 'Vue',
             'core-js': 'core-js',
-            'vue-class-component': 'vue-class-component',
-            'vue-property-decorator': 'vue-property-decorator',
+            'vue-class-component': 'vueClassComponent',
+            'vue-property-decorator': 'vuePropertyDecorator',
             'vue-router': 'vue-router',
             'vuex': 'vuex',
             'node-fetch': 'node-fetch',

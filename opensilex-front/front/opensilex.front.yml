@@ -6,37 +6,37 @@ menu:
         label: Users
         route: 
           path: /users
-          component: opensilex#UserList
+          component: opensilex.UserList
           access: []
       - id: groups
         label: Groups
         route: 
           path: /groups
-          component: opensilex#GroupList
+          component: opensilex.GroupList
           access: []
       - id: profiles
         label: Profiles
         route: 
           path: /profiles
-          component: opensilex#ProfileList
+          component: opensilex.ProfileList
           access: []
 
 routes:
   - path: /users/view/:uri
-    component: opensilex#UserView
+    component: opensilex.UserView
     access: []
   - path: /users/edit/:uri
-    component: opensilex#UserEdit
+    component: opensilex.UserEdit
     access: []
   - path: /groups/view/:uri
-    component: opensilex#GroupView
+    component: opensilex.GroupView
     access: []
   - path: /groups/edit/:uri
-    component: opensilex#GroupEdit
+    component: opensilex.GroupEdit
     access: []
   - path: /profiles/view/:uri
-    component: opensilex#ProfileView
+    component: opensilex.ProfileView
     access: []
   - path: /profiles/edit/:uri
-    component: opensilex#ProfileEdit
+    component: opensilex.ProfileEdit
     access: []

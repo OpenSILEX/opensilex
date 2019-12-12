@@ -1,4 +1,5 @@
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const webpack = require("webpack");
 
 module.exports = {
     publicPath: "/app/",
@@ -22,6 +23,10 @@ module.exports = {
                     }
                 })
             ]
-        }
+        },
+        plugins: [new webpack.ProvidePlugin({
+            "vuePropertyDecorator": "vue-property-decorator",
+            "vueClassComponent": "vue-class-component"
+        })]
     }
 };

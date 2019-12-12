@@ -4,6 +4,8 @@ import IHttpClient from '@/lib/IHttpClient';
 import HttpClient from '@/lib/HttpClient';
 import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import Vue from 'vue';
+import { User } from './User';
+import { Store } from 'vuex';
 
 declare var window: any;
 
@@ -11,24 +13,26 @@ export class OpenSilexVuePlugin {
 
     private container: Container;
     private baseApi: string;
+    public store: Store<any>;
 
-    constructor(baseApi: string) {
+    constructor(baseApi: string, store: Store<any>) {
         this.container = new Container();
         this.container.bind<IHttpClient>("IApiHttpClient").to(HttpClient).inSingletonScope();
         this.container.bind<IAPIConfiguration>("IAPIConfiguration").toConstantValue({
             basePath: baseApi
         });
         this.baseApi = baseApi;
+        this.store = store;
         ApiServiceBinder.with(this.container);
     }
 
     public getService<T>(id: string): T {
-        let idParts = id.split("#");
+        let idParts = id.split(".");
         if (idParts.length == 1) {
             return this.getServiceContainer().get<T>(id);
-        } else if (idParts.length == 2) {
+        } else if (idParts.length >= 2) {
             let moduleName = idParts[0];
-            let serviceName = idParts[1];
+            let serviceName = idParts[idParts.length - 1];
             if (this.loadedModules.indexOf(moduleName) >= 0) {
                 return this.getServiceContainer().get<T>(serviceName);
             } else {
@@ -40,7 +44,9 @@ export class OpenSilexVuePlugin {
 
     }
 
-    private loadedModules: Array<string> = [];
+    private loadedModules: Array<string> = [
+        "opensilex-front"
+    ];
 
     private loadingModules = {
         "opensilex-front": Promise.resolve(null)
@@ -93,8 +99,8 @@ export class OpenSilexVuePlugin {
             const script = document.createElement('script');
             script.async = true;
             script.addEventListener('load', () => {
-                Vue.use(window[name].default);
                 this.loadedModules.push(name);
+                Vue.use(window[name].default);
                 resolve(window[name]);
             });
             script.addEventListener('error', () => {
@@ -109,6 +115,10 @@ export class OpenSilexVuePlugin {
 
     public getServiceContainer() {
         return this.container;
+    }
+
+    public get user(): User {
+        return this.store.state.user;
     }
 
     public install(Vue, options) {

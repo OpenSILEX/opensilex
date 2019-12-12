@@ -265,7 +265,7 @@ public class SPARQLClassQueryBuilder {
             if (fieldValue == null) {
                 if (!analyzer.isOptional(field)) {
                     // TODO change exception type
-                    throw new Exception("Field value can't be null");
+                    throw new Exception("Field value can't be null: " + field.getName());
                 }
             } else {
                 Property property = analyzer.getDataPropertyByField(field);
@@ -280,7 +280,7 @@ public class SPARQLClassQueryBuilder {
             if (fieldValue == null) {
                 if (!analyzer.isOptional(field)) {
                     // TODO change exception type
-                    throw new Exception("Field value can't be null");
+                    throw new Exception("Field value can't be null: " + field.getName());
                 }
             } else {
                 URI propertyFieldURI = SPARQLClassObjectMapper.getForClass(fieldValue.getClass()).getURI(fieldValue);
@@ -289,9 +289,8 @@ public class SPARQLClassQueryBuilder {
                     tripleHandler.accept(new Triple(Ontology.nodeURI(uri), property.asNode(), Ontology.nodeURI(propertyFieldURI)), analyzer.isReverseRelation(field));
                 } else {
                     // TODO change exception type
-                    throw new Exception("Object URI value can't be null");
+                    throw new Exception("Object URI value can't be null: " + field.getName());
                 }
-
             }
         }
 

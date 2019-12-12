@@ -11,7 +11,6 @@ import org.opensilex.config.ConfigDescription;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.server.security.AuthenticationService;
 import org.opensilex.fs.FileStorageService;
-import org.opensilex.server.user.UserRegistryService;
 import org.opensilex.sparql.SPARQLService;
 
 /**
@@ -74,8 +73,4 @@ public interface BaseConfig extends ModuleConfig {
     )
     public FileStorageService fs();
 
-    @ConfigDescription(
-            value = "User registry"
-    )
-    public UserRegistryService userRegistry();
 }

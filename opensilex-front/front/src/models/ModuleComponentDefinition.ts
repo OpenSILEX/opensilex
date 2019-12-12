@@ -2,14 +2,11 @@ export class ModuleComponentDefinition {
 
   private module: string;
 
-  private name: string;
-
   private id: string;
 
   public constructor(module, name) {
     this.module = module;
-    this.name = name;
-    this.id = this.module + "#" + this.name;
+    this.id = this.module + "." + name;
   }
 
   public getId(): string {
@@ -20,14 +17,10 @@ export class ModuleComponentDefinition {
     return this.module;
   }
 
-  public getName(): string {
-    return this.name;
-  }
-
   public static fromString(component): ModuleComponentDefinition {
-    let componentParts = component.split("#");
-    if (componentParts.length == 2) {
-      return new ModuleComponentDefinition(componentParts[0], componentParts[1]);
+    let componentParts = component.split(".");
+    if (componentParts.length >= 2) {
+      return new ModuleComponentDefinition(componentParts[0], componentParts[componentParts.length - 1]);
 
     } else {
       throw new Error("Invalid component definition: " + component);

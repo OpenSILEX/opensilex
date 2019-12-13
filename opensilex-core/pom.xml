@@ -50,6 +50,7 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
                 <configuration>
+                    <skip>${skipOutdated}</skip>
                     <rulesUri>classpath:///version-rules.xml</rulesUri>
                 </configuration>
                 <dependencies>

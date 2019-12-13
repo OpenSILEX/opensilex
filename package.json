@@ -13,8 +13,6 @@
         "inversify": "^5.0.1",
         "node-fetch": "^2.6.0",
         "reflect-metadata": "0.1.13",
-        "rxjs": "~6.5.3",
-        "rxjs-compat": "^6.5.3",
         "vue": "^2.6.10",
         "vue-class-component": "^7.1.0",
         "vue-property-decorator": "^8.3.0",

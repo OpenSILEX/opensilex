@@ -54,6 +54,7 @@
                 <artifactId>versions-maven-plugin</artifactId>
                 <version>${versions.maven.plugin.version}</version>
                 <configuration>
+                    <skip>${skipOutdated}</skip>
                     <rulesUri>file:////${project.basedir}/src/main/resources/version-rules.xml</rulesUri>
                 </configuration>
             </plugin>

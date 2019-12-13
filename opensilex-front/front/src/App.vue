@@ -1,18 +1,18 @@
 <template>
   <div id="page-wrapper">
-    <header>
+    <header v-if="!embed">
       <div id="header-content">
         <component class="header-logo" v-bind:is="headerComponent"></component>
         <component class="header-login" v-bind:is="loginComponent"></component>
       </div>
     </header>
-    <section id="content-wrapper">
-      <component v-bind:is="menuComponent"></component>
+    <section id="content-wrapper" >
+      <component v-if="!embed" v-bind:is="menuComponent"></component>
       <main>
         <router-view />
       </main>
     </section>
-    <footer>
+    <footer v-if="!embed">
       <component v-bind:is="footerComponent"></component>
     </footer>
     <div id="loader" v-bind:class="{'visible':isLoaderVisible}">
@@ -25,25 +25,24 @@
 </template>
 
 <script lang="ts">
-import {
-  Component as ComponentAnnotation,
-  Vue as VueBaseClass,
-  Prop
-} from "vue-property-decorator";
+import { Component as ComponentAnnotation, Prop } from "vue-property-decorator";
+import Vue from "vue";
 import { ModuleComponentDefinition } from "./models/ModuleComponentDefinition";
 import { VueConstructor, Component } from "vue";
+import { OpenSilexVuePlugin } from "./models/OpenSilexVuePlugin";
+import { FrontConfigDTO } from "./lib";
 
 @ComponentAnnotation
-export default class App extends VueBaseClass {
-  @Prop() headerComponentDef!: ModuleComponentDefinition;
-  @Prop() loginComponentDef!: ModuleComponentDefinition;
-  @Prop() menuComponentDef!: ModuleComponentDefinition;
-  @Prop() footerComponentDef!: ModuleComponentDefinition;
+export default class App extends Vue {
+  @Prop() embed: boolean;
 
-  headerComponent!: string | Component;
-  loginComponent!: string | Component;
-  menuComponent!: string | Component;
-  footerComponent!: string | Component;
+  @Prop() headerComponent!: string | Component;
+  @Prop() loginComponent!: string | Component;
+  @Prop() menuComponent!: string | Component;
+  @Prop() footerComponent!: string | Component;
+
+
+  $opensilex: OpenSilexVuePlugin;
 
   get user() {
     return this.$store.state.user;
@@ -51,13 +50,6 @@ export default class App extends VueBaseClass {
 
   get isLoaderVisible() {
     return this.$store.state.loaderVisible;
-  }
-
-  beforeMount() {
-    this.headerComponent = this.headerComponentDef.getId();
-    this.loginComponent = this.loginComponentDef.getId();
-    this.menuComponent = this.menuComponentDef.getId();
-    this.footerComponent = this.footerComponentDef.getId();
   }
 }
 </script>
@@ -156,8 +148,8 @@ main {
   width: 30%;
   text-align: right;
 }
-#header-content .header-login *{
-text-align: initial;
+#header-content .header-login * {
+  text-align: initial;
 }
 
 section#content-wrapper {
@@ -181,8 +173,7 @@ main {
   }
 
   #header-content .header-login {
-  text-align: left;
-}
-
+    text-align: left;
+  }
 }
 </style>

@@ -1,5 +1,7 @@
 import IHttpClient from "./IHttpClient";
+{{^usePromise}}
 import { Observable } from "rxjs/Observable";
+{{/usePromise}}
 import "whatwg-fetch";
 import HttpResponse from "./HttpResponse";
 import {injectable} from "inversify";

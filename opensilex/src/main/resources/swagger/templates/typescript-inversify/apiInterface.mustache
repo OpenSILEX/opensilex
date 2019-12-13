@@ -1,6 +1,8 @@
 {{>licenseInfo}}
 import { Headers } from "../Headers";
+{{^usePromise}}
 import { Observable } from "rxjs/Observable";
+{{/usePromise}}
 import * as models from "../model/models";
 import HttpResponse from "../HttpResponse";
 

@@ -16,7 +16,7 @@ let loaderCount: number = 0;
 let menu: Array<MenuItemDTO> = [];
 
 let renewStarted = false;
-let renewTokenOnEvent= function() {
+let renewTokenOnEvent = function () {
   console.log("Disable renew event listeners");
   document.removeEventListener('mousemove ', renewTokenOnEvent);
   document.removeEventListener('click ', renewTokenOnEvent);
@@ -41,23 +41,40 @@ let renewTokenOnEvent= function() {
     });
 }
 
+let defaultConfig: FrontConfigDTO = {
+  homeComponent: "opensilex-front.ToDoComponent",
+  notFoundComponent: "opensilex-front.ToDoComponent",
+  headerComponent: "opensilex-front.ToDoComponent",
+  loginComponent: "opensilex-front.ToDoComponent",
+  menuComponent: "opensilex-front.ToDoComponent",
+  footerComponent: "opensilex-front.ToDoComponent",
+  menu: [],
+  routes: []
+};
+
 export default new Vuex.Store({
   state: {
     user: User.ANONYMOUS(),
     loaderVisible: false,
     openSilexRouter: new OpenSilexRouter(),
+    config: defaultConfig,
     menu: menu
   },
   mutations: {
     login(state, user: User) {
+      console.debug("Login", user);
+
       if (expireTimeout != undefined) {
-        console.log("Clear renew timeout");
+        console.debug("Clear token timeout");
         clearTimeout(expireTimeout);
-        clearTimeout(autoRenewTimeout);
         expireTimeout = undefined;
+
+        console.debug("Clear renew timeout");
+        clearTimeout(autoRenewTimeout);
         autoRenewTimeout = undefined;
       }
 
+      console.debug("Define expiration timeout");
       let exipreAt = user.getExpirationMs();
       expireTimeout = setTimeout(() => {
         let method: any = "logout";
@@ -66,35 +83,46 @@ export default new Vuex.Store({
 
       let autoRenewDelay = exipreAt - 60000;
       if (autoRenewDelay > 0) {
-        console.log("Enable renew timeout in", autoRenewDelay, "ms");
+        console.debug("Enable renew timeout in", autoRenewDelay, "ms");
         autoRenewTimeout = setTimeout(() => {
           // TODO display toast to warn user that 
           renewStarted = false;
-          console.log("Enable renew event listeners");
+          console.debug("Enable renew event listeners");
           document.addEventListener('mousemove ', renewTokenOnEvent);
           document.addEventListener('click ', renewTokenOnEvent);
           document.addEventListener('keydown', renewTokenOnEvent);
         }, autoRenewDelay);
       }
 
+      console.debug("Define user");
       state.user = user;
+      console.debug("Reset router");
       state.openSilexRouter.resetRouter(state.user);
+      console.debug("Reset menu");
       state.menu = state.openSilexRouter.getMenu();
     },
     logout(state) {
+      console.debug("Logout");
+
       if (expireTimeout != undefined) {
-        console.log("Clear renew timeout");
+        console.debug("Clear token timeout");
         clearTimeout(expireTimeout);
-        clearTimeout(autoRenewTimeout);
         expireTimeout = undefined;
+
+        console.debug("Clear renew timeout");
+        clearTimeout(autoRenewTimeout);
         autoRenewTimeout = undefined;
       }
 
+      console.debug("Set user to anonymous");
       state.user = User.logout();
+      console.debug("Reset router");
       state.openSilexRouter.resetRouter(state.user);
+      console.debug("Reset menu");
       state.menu = state.openSilexRouter.getMenu();
     },
     setConfig(state, config: FrontConfigDTO) {
+      state.config = config;
       state.openSilexRouter.setConfig(config);
     },
     showLoader(state) {
@@ -108,6 +136,9 @@ export default new Vuex.Store({
       if (loaderCount == 0) {
         state.loaderVisible = false
       }
+    },
+    refresh(state) {
+      state.openSilexRouter.refresh();
     }
   },
   actions: {

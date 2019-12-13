@@ -15,7 +15,8 @@
         "bootstrap": "^4.4.1",
         "bootstrap-vue": "^2.1.0",
         "jwt-decode": "^2.2.0",
-        "vue-cookies": "^1.5.13"
+        "vue-cookies": "^1.5.13",
+        "vuejs-logger": "^1.5.3"
     },
     "devDependencies": {
         "@vue/cli-plugin-babel": "^4.1.0",
@@ -29,6 +30,7 @@
         "simple-progress-webpack-plugin": "^1.1.2",
         "yargs-parser": "^16.1.0"
     },
+    
     "eslintConfig": {
         "root": true,
         "env": {

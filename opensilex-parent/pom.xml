@@ -487,6 +487,9 @@
                     
                     <executions>
                         <execution>
+                            <configuration>
+                                <skip>${skipOutdated}</skip>
+                            </configuration>
                             <phase>generate-resources</phase>
                             <goals>
                                 <goal>display-dependency-updates</goal>
@@ -899,7 +902,7 @@
                         <executions>
                             <execution>
                                 <id>Copy Vue application dist files</id>
-                                <phase>process-sources</phase>
+                                <phase>process-classes</phase>
                                 <goals>
                                     <goal>copy-resources</goal>
                                 </goals>

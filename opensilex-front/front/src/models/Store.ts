@@ -37,7 +37,7 @@ let renewTokenOnEvent = function () {
     .then((newToken) => {
       console.log("Token renewed", newToken);
       $opensilex.user.setToken(newToken);
-      $opensilex.store.commit("login", $opensilex.user);
+      $opensilex.$store.commit("login", $opensilex.user);
     });
 }
 

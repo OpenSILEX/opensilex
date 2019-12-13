@@ -208,6 +208,6 @@ export class OpenSilexVuePlugin {
     }
 
     public get user(): User {
-        return this.store.state.user;
+        return this.$store.state.user;
     }
 }

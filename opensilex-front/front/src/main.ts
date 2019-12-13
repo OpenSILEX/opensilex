@@ -5,51 +5,41 @@
 const DEV_BASE_API_PATH = "http://localhost:8666/rest";
 
 import "reflect-metadata"
+
+// Allow access to global "document" variable
+declare var document: any;
+
+// Import Vue as a global window variable
 import Vue from 'vue'
+declare var window: any;
+window.Vue = Vue;
 
-// Local imports
-import store from './models/Store'
-import App from './App.vue'
-import { FrontConfigDTO, FrontService } from './lib'
-import HttpResponse from './lib/HttpResponse'
-import { User } from './models/User'
-import { ModuleComponentDefinition } from './models/ModuleComponentDefinition'
-import { OpenSilexVuePlugin } from './models/OpenSilexVuePlugin'
-
-// Initialize cookie management library
-import VueCookies from 'vue-cookies'
-Vue.use(VueCookies);
-
-// Initialise bootstrap
-import BootstrapVue from 'bootstrap-vue'
-Vue.use(BootstrapVue);
-
-// Initialise font awesome
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { faPowerOff } from '@fortawesome/free-solid-svg-icons'
-library.add(faPowerOff)
-Vue.component('font-awesome-icon', FontAwesomeIcon)
-
-// Load default components
-import components from './components';
-for (let componentName in components) {
-  Vue.component(componentName, components[componentName]);
-}
+Vue.config.productionTip = false;
 
 // Import and assignation to enable auto rebuild on ws library change
 import * as LATEST_UPDATE from "./opensilex.dev";
 Vue.prototype.LATEST_UPDATE = LATEST_UPDATE.default
 
-// Allow access to global "document" variable
-declare var document: any;
+// Define if script in debug mode
+let isDebug = false;
+if (window["webpackHotUpdate"]) {
+  isDebug = true;
+}
 
-// Default Vue configuration
-Vue.config.productionTip = false
+// Initialise logger
+console.log = console.log || function() {};
+console.warn = console.warn || console.log;
+console.error = console.error || console.log;
+if (isDebug) {
+  console.debug = console.debug || console.log;
+} else {
+  console.debug = function() {};
+}
+console.debug("Logger initialized in debug mode");
 
 // Initialize service API container
 let baseApi = DEV_BASE_API_PATH;
-if (window["webpackHotUpdate"]) {
+if (isDebug) {
   console.warn(
     'Vue is running in development mode, with base API set by default to ' + DEV_BASE_API_PATH + '\n' +
     'If you start your webservices server with another host or port configuration,\n' +
@@ -60,63 +50,156 @@ if (window["webpackHotUpdate"]) {
   baseApi = splitURI[0] + "//" + splitURI[2] + "/rest"
 }
 
+// Setup store imports
+import store from './models/Store'
+
+// Local imports
+console.debug("Import local files...");
+import App from './App.vue'
+import { FrontConfigDTO, FrontService } from './lib'
+import HttpResponse from './lib/HttpResponse'
+import { User } from './models/User'
+import { ModuleComponentDefinition } from './models/ModuleComponentDefinition'
+import { OpenSilexVuePlugin } from './models/OpenSilexVuePlugin'
+console.debug("Local file imports done !");
+
+// Initialize cookie management library
+console.debug("Initialize Cookie plugin...");
+import VueCookies from 'vue-cookies'
+Vue.use(VueCookies);
+console.debug("Cookie plugin initialized !");
+
+// Initialise bootstrap
+console.debug("Initialize Bootstrap plugin...");
+import BootstrapVue from 'bootstrap-vue'
+Vue.use(BootstrapVue);
+console.debug("Bootstrap plugin initialized !");
+
+// Initialise font awesome
+console.debug("Initialize FontAwesomeIcon plugin...");
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faPowerOff } from '@fortawesome/free-solid-svg-icons'
+library.add(faPowerOff)
+Vue.component('font-awesome-icon', FontAwesomeIcon)
+console.debug("FontAwesomeIcon plugin initialized !");
+
+
 // Enable Vue front plugin manager for OpenSilex API
-let frontPlugin = new OpenSilexVuePlugin(baseApi, store);
-Vue.use(frontPlugin);
+console.debug("Enable OpenSilex plugin...");
+let $opensilex = new OpenSilexVuePlugin(baseApi, store);
+Vue.use($opensilex);
+console.debug("OpenSilex plugin enabled !");
 
 // Define global error manager
+console.debug("Define global error manager");
 const manageError = function manageError(error) {
   console.error(error);
   document.getElementById('opensilex-error-loading').style.visibility = 'visible';
 }
+// Load default components
+console.debug("Load default components...");
+import components from './components';
+for (let componentName in components) {
+  console.debug("Load default component", componentName);
+  Vue.component(componentName, components[componentName]);
+}
 
-// Get OpenSilex configuration
-const frontService = frontPlugin.getService<FrontService>("FrontService");
-frontService.getConfig()
-  .then(function (configResponse: HttpResponse<FrontConfigDTO>) {
-    const config: FrontConfigDTO = configResponse.response;
+$opensilex.initAsyncComponents(components)
+  .then(() => {
+    console.debug("Default components loaded !");
 
-    // Initalise main layout components from configuration
-    let footerDefinition: ModuleComponentDefinition = ModuleComponentDefinition.fromString(config.footerComponent);
-    let headerDefinition: ModuleComponentDefinition = ModuleComponentDefinition.fromString(config.headerComponent);
-    let homeDefinition: ModuleComponentDefinition = ModuleComponentDefinition.fromString(config.homeComponent);
-    let loginDefinition: ModuleComponentDefinition = ModuleComponentDefinition.fromString(config.loginComponent);
-    let menuDefinition: ModuleComponentDefinition = ModuleComponentDefinition.fromString(config.menuComponent);
-    let notFoundDefinition: ModuleComponentDefinition = ModuleComponentDefinition.fromString(config.notFoundComponent);
-    
-    store.commit("setConfig", config);
+    // Get OpenSilex configuration
+    console.debug("Start loading configuration...");
+    const frontService = $opensilex.getService<FrontService>("FrontService");
+    frontService.getConfig()
+      .then(function (configResponse: HttpResponse<FrontConfigDTO>) {
+        const config: FrontConfigDTO = configResponse.response;
+        store.commit("setConfig", config);
+        console.debug("Configuration loaded", config);
 
-    frontPlugin.loadComponentModules([
-      footerDefinition,
-      headerDefinition,
-      homeDefinition,
-      loginDefinition,
-      menuDefinition,
-      notFoundDefinition
-    ]).then(function () {
-      // Check user login
-      let user: User = User.fromCookie();
-      store.commit("login", user);
+        let urlParams = new URLSearchParams(window.location.search);
+        console.debug("Read url parameters", urlParams);
 
-      // Init routing
-      let router = store.state.openSilexRouter.getRouter();
+        // Load only necessary component if application is embed in an iframe
+        let embed = urlParams.has('embed');
 
-      new Vue({
-        router,
-        store,
-        render: h => h(App, {
-          props: {
-            footerComponentDef: footerDefinition,
-            headerComponentDef: headerDefinition,
-            loginComponentDef: loginDefinition,
-            menuComponentDef: menuDefinition
+        if (embed) {
+          console.debug("Application is embed");
+        } else {
+          console.debug("Application is not embed");
+        }
+
+        // Define user
+        console.debug("Define current user...");
+        let user: User | undefined = undefined;
+        if (urlParams.has("token")) {
+          let token = urlParams.get("token");
+          console.debug("Try to load user from token", token);
+          if (token != null) {
+            user = User.fromToken(token);
+            console.debug("Load user from token", user);
           }
+        }
 
-        },
-        )
-      }).$mount('#app')
+        if (user == undefined) {
+          console.debug("Try to load user from cookie");
+          user = User.fromCookie();
+          console.debug("Load user from cookie", user);
+        }
 
-      document.getElementById('opensilex-loader').style.visibility = 'hidden';
-    }).catch(manageError);
+        // Init user
+        console.debug("Initialize global user");
+        store.commit("login", user);
+
+        // Init routing
+        console.debug("Initialize routing");
+        let router = store.state.openSilexRouter.getRouter();
+
+        // Initalise main layout components from configuration
+        console.debug("Define initial modules to load...");
+        let modulesToLoad: Array<ModuleComponentDefinition> = [
+          ModuleComponentDefinition.fromString(config.homeComponent),
+          ModuleComponentDefinition.fromString(config.notFoundComponent)
+        ];
+
+        if (!embed) {
+          console.debug("Application is not embed");
+          modulesToLoad = modulesToLoad.concat([
+            ModuleComponentDefinition.fromString(config.footerComponent),
+            ModuleComponentDefinition.fromString(config.headerComponent),
+            ModuleComponentDefinition.fromString(config.loginComponent),
+            ModuleComponentDefinition.fromString(config.menuComponent)
+          ]);
+        } else {
+          console.debug("Application is embed");
+        }
+
+        $opensilex.loadComponentModules(modulesToLoad)
+          .then(() => {
+            // Initialize main application rendering
+            console.debug("Initialize main application rendering");
+            new Vue({
+              router,
+              store,
+              render: h => h(App, {
+                props: {
+                  embed: embed,
+                  footerComponent: config.footerComponent,
+                  headerComponent: config.headerComponent,
+                  loginComponent: config.loginComponent,
+                  menuComponent: config.menuComponent
+                }
+              },
+              )
+            }).$mount('#app').$nextTick(() => {
+              // Hide loader
+              console.debug("Hide application init loader");
+              document.getElementById('opensilex-loader').style.visibility = 'hidden';
+            });
+          })
+          .catch(manageError);
+      })
+      .catch(manageError);
   })
   .catch(manageError);

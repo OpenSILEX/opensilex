@@ -8,7 +8,7 @@ module.exports = {
     },
     configureWebpack: {
         externals: {
-            'opensilex': 'opensilex',
+            'opensilex': 'opensilex'
         },
         performance: {
             hints: false
@@ -23,10 +23,6 @@ module.exports = {
                     }
                 })
             ]
-        },
-        plugins: [new webpack.ProvidePlugin({
-            "vuePropertyDecorator": "vue-property-decorator",
-            "vueClassComponent": "vue-class-component"
-        })]
+        }
     }
 };

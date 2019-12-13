@@ -83,6 +83,7 @@
                 <artifactId>versions-maven-plugin</artifactId>
                 <version>${versions.maven.plugin.version}</version>
                 <configuration>
+                    <skip>${skipOutdated}</skip>
                     <rulesUri>classpath:///version-rules.xml</rulesUri>
                 </configuration>
                 <dependencies>

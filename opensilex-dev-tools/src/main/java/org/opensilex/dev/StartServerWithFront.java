@@ -144,6 +144,11 @@ public class StartServerWithFront {
             public void onFileCreate(File file) {
                 if (file.getName().equals(filename)) {
                     LOGGER.debug("File created: " + file.getName());
+                    try {
+                        FileUtils.copyFile(moduleDirectory.resolve("dist/" + filename).toFile(), targetDirectory.resolve(filename).toFile());
+                    } catch (IOException ex) {
+                        LOGGER.error("Error while copying lib file: " + filename, ex);
+                    }
                     countDownLatch.countDown();
                 }
             }

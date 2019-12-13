@@ -32,12 +32,17 @@ export class OpenSilexRouter {
             routes: routes
         })
 
+        this.router.beforeEach((to, from, next) => {
+            console.error("BEFORE EACH", to, from,);
+            next();
+        });
         return this.router;
     }
 
     public resetRouter(user: User) {
         const newRouter: any = this.createRouter(user);
         this.router.matcher = newRouter.matcher;
+        return this.router;
     }
 
     public computeMenuRoutes(user: User) {
@@ -80,15 +85,15 @@ export class OpenSilexRouter {
                 let componentDef = ModuleComponentDefinition.fromString(componentId);
                 $opensilex.loadComponentModule(componentDef)
                     .then(() => {
-                        let component = Vue.component(componentDef.getId());
+                        let component: any = Vue.component(componentDef.getId());
                         if (component) {
                             resolve(component)
                         } else {
-                            console.warn("Component not found", componentId);
                             let result = this.getAsyncComponentLoader($opensilex, this.frontConfig.notFoundComponent)();
                             if (result instanceof Promise) {
-                                result.then(resolve)
-                                .catch(reject);
+                                result
+                                    .then(resolve)
+                                    .catch(reject);
                             } else {
                                 resolve(result);
                             }
@@ -99,6 +104,9 @@ export class OpenSilexRouter {
         }
     }
 
+    public refresh() {
+        this.router.go();
+    }
 
     private buildMenu(items: Array<MenuItemDTO>, routes: Array<any>, user: User) {
         let $opensilex: OpenSilexVuePlugin = Vue["$opensilex"];

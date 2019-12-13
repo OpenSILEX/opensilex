@@ -1,8 +1,11 @@
 <template>
   <div>
-    <a id="logout" href="#" @click="logout" ><span>Logout: {{user.getFirstName()}}</span>&nbsp;<font-awesome-icon icon="power-off" size="lg"/></a>
-    <div class="fullmodal" v-if="!user.isLoggedIn()">
-      <b-form @submit="onLogin" class="fullmodal-form">
+    <a id="logout" href="#" @click.prevent="logout">
+      <span>Logout: {{user.getFirstName()}}</span>&nbsp;
+      <font-awesome-icon icon="power-off" size="lg" />
+    </a>
+    <div class="fullmodal" v-if="!user.isLoggedIn() || forceRefresh">
+      <b-form @submit.prevent="onLogin" class="fullmodal-form">
         <h2>Welcome to opensilex</h2>
         <b-form-group
           id="login-group"
@@ -42,7 +45,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
+import Vue from "vue";
 import { SecurityService } from "opensilex/index";
 import { OpenSilexVuePlugin } from "../../models/OpenSilexVuePlugin";
 import HttpResponse from "opensilex/HttpResponse";
@@ -65,18 +69,17 @@ export default class DefaultLoginComponent extends Vue {
 
   $opensilex: OpenSilexVuePlugin;
 
-  async created() {
-    this.$opensilex.loadModule("opensilex");
+  static async asyncInit($opensilex: OpenSilexVuePlugin) {
+    await $opensilex.loadService("opensilex.SecurityService");
   }
 
-  logout(event) {
-    event.preventDefault();
+  logout() {
     this.$store.commit("logout");
   }
 
-  onLogin(event) {
-    event.preventDefault();
-    this.$store.commit("showLoader");
+  forceRefresh = false;
+  onLogin() {
+    this.$opensilex.showLoader();
     var self = this;
     this.$opensilex
       .getService<SecurityService>("opensilex.SecurityService")
@@ -87,13 +90,15 @@ export default class DefaultLoginComponent extends Vue {
       .then(function(sucess: HttpResponse<any>) {
         let user = new User();
         user.setToken(sucess.response.result);
+        self.forceRefresh = true;
         self.$store.commit("login", user);
+        self.$store.commit("refresh");
       })
       .catch(function() {
-        // TODO 
+        // TODO
         console.error("TODO: Invalid credentials", arguments);
-      })
-      .then(() => self.$store.commit("hideLoader"));
+        this.$opensilex.hideLoader();
+      });
   }
 }
 </script>
@@ -128,16 +133,16 @@ export default class DefaultLoginComponent extends Vue {
 }
 
 #logout:hover {
-    color: getVar(--linkHighlightColor);
+  color: getVar(--linkHighlightColor);
 }
 
-#logout > font-awesome-icon  {
+#logout > font-awesome-icon {
   vertical-align: text-bottom;
   font-size: 24px;
 }
 
 @media (max-width: 600px) {
-  #logout > span{
+  #logout > span {
     display: none;
   }
 }

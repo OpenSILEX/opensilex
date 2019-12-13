@@ -32,6 +32,10 @@ export class OpenSilexRouter {
             routes: routes
         })
 
+        this.router.beforeEach((to, from, next) => {
+            console.error("BEFORE EACH", to, from,);
+            next();
+        });
         return this.router;
     }
 

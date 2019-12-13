@@ -22,18 +22,27 @@ menu:
           access: []
 
 routes:
+  - path: /users/create
+    component: opensilex.UserCreate
+    access: [],
   - path: /users/view/:uri
     component: opensilex.UserView
     access: []
   - path: /users/edit/:uri
     component: opensilex.UserEdit
     access: []
+  - path: /groups/create
+    component: opensilex.GroupCreate
+    access: []    
   - path: /groups/view/:uri
     component: opensilex.GroupView
     access: []
   - path: /groups/edit/:uri
     component: opensilex.GroupEdit
     access: []
+  - path: /profiles/create
+    component: opensilex.ProfileCreate
+    access: []    
   - path: /profiles/view/:uri
     component: opensilex.ProfileView
     access: []

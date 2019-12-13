@@ -10,7 +10,7 @@ import "reflect-metadata"
 declare var document: any;
 
 // Import Vue as a global window variable
-import Vue from 'vue'
+import Vue, { Component } from 'vue'
 declare var window: any;
 window.Vue = Vue;
 
@@ -113,7 +113,7 @@ $opensilex.initAsyncComponents(components)
     console.debug("Start loading configuration...");
     const frontService = $opensilex.getService<FrontService>("FrontService");
     frontService.getConfig()
-      .then(function (configResponse: HttpResponse<FrontConfigDTO>) {
+      .then(function (configResponse) {
         const config: FrontConfigDTO = configResponse.response;
         store.commit("setConfig", config);
         console.debug("Configuration loaded", config);
@@ -158,7 +158,7 @@ $opensilex.initAsyncComponents(components)
 
         // Initalise main layout components from configuration
         console.debug("Define initial modules to load...");
-        let modulesToLoad: Array<ModuleComponentDefinition> = [
+        let modulesToLoad: ModuleComponentDefinition[] = [
           ModuleComponentDefinition.fromString(config.homeComponent),
           ModuleComponentDefinition.fromString(config.notFoundComponent)
         ];
@@ -198,8 +198,5 @@ $opensilex.initAsyncComponents(components)
               document.getElementById('opensilex-loader').style.visibility = 'hidden';
             });
           })
-          .catch(manageError);
       })
-      .catch(manageError);
   })
-  .catch(manageError);

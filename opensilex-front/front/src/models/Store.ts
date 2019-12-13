@@ -34,9 +34,9 @@ let renewTokenOnEvent = function () {
   let $opensilex: OpenSilexVuePlugin = Vue["$opensilex"];
   $opensilex.getService<SecurityService>("opensilex.SecurityService")
     .renewToken($opensilex.user.getToken())
-    .then((newToken) => {
-      console.log("Token renewed", newToken);
-      $opensilex.user.setToken(newToken);
+    .then((sucess) => {
+      console.log("Token renewed", sucess.response.result);
+      $opensilex.user.setToken(sucess.response.result);
       $opensilex.$store.commit("login", $opensilex.user);
     });
 }

@@ -75,7 +75,7 @@ export class OpenSilexRouter {
         return routes;
     }
 
-    public getAsyncComponentLoader($opensilex, componentId) {
+    private getAsyncComponentLoader($opensilex, componentId) {
         return () => {
             return new Promise((resolve, reject) => {
                 let componentDef = ModuleComponentDefinition.fromString(componentId);

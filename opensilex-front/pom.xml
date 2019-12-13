@@ -68,7 +68,10 @@
                 <executions>
                     <execution>
                         <id>build typescript definition</id>
-                        <phase>none</phase>
+                        <configuration>
+                            <arguments>run build:types</arguments>
+                            <workingDirectory>front/</workingDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

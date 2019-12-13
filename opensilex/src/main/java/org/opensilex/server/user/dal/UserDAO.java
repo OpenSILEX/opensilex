@@ -97,7 +97,7 @@ public class UserDAO {
         );
     }
 
-    public UserModel getByURI(URI uri) throws Exception {
+    public UserModel get(URI uri) throws Exception {
         return sparql.getByURI(UserModel.class, uri);
     }
 

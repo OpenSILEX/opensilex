@@ -6,7 +6,8 @@
         "serve": "vue-cli-service serve",
         "build": "vue-cli-service build",
         "lint": "vue-cli-service lint",
-        "check:outdated": "yarn outdated || cd ."
+        "check:outdated": "yarn outdated || cd .",
+        "build:types": "dts-generator --project ./ --out ./types/opensilex-front.d.ts --prefix opensilex-front"
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "^1.2.25",
@@ -30,7 +31,6 @@
         "simple-progress-webpack-plugin": "^1.1.2",
         "yargs-parser": "^16.1.0"
     },
-    
     "eslintConfig": {
         "root": true,
         "env": {

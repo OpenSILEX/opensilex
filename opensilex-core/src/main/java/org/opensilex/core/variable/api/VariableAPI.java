@@ -139,7 +139,7 @@ public class VariableAPI implements RestApplicationAPI {
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response find(
+    public Response search(
             @ApiParam(value = "Name regex pattern") @QueryParam("name") String namePattern,
             @ApiParam(value = "Comment regex pattern") @QueryParam("comment") String commentPattern,
             @ApiParam(value = "Filter by entity URI") @QueryParam("entity") URI entity,

@@ -77,7 +77,7 @@ public class SecurityAPI implements RestApplicationAPI {
         } catch (AddressException ex2) {
             try {
                 URI uri = new URI(authenticationDTO.getIdentifier());
-                user = userDAO.getByURI(uri);
+                user = userDAO.get(uri);
             } catch (URISyntaxException ex1) {
                 throw new Exception("Submitted user identifier is neither a valid email or URI");
             }

@@ -59,8 +59,18 @@ class HttpClient implements IHttpClient {
             });
             return response.text().then(text => {
                 let contentType = headers["content-type"] || "";
-                let payload = contentType.match("application/json") ? JSON.parse(text) : text;
-                let httpResponse = new HttpResponse(payload, response.status, headers);
+                let content: any;
+                let metadata: any = {};
+                if (contentType.match("application/json")) {
+                    content = JSON.parse(text);
+                    if (content.metadata) {
+                        metadata = content.metadata;
+                    }
+                } else {
+                    content = text;
+                }
+
+                let httpResponse = new HttpResponse(content, response.status, headers);
 
                 if (response.status >= 400)
                     throw httpResponse;

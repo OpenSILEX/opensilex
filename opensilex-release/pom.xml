@@ -1,3 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+******************************************************************************
+ OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ Copyright © INRA 2019
+ Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+ 
+ OpenSilex Dev Release pom.xml
+ This module create a distribuable zip file of Jar with opensilex and
+ all non-dev modules declared in opensilex-dev <modules> section.
+ To create a release wtih the given X.Y.Z version use this command:
+ mvn install -Drevision=<RELEASE_NUMBER_X.Y.Z>
+******************************************************************************
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">

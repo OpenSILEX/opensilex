@@ -1,3 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+******************************************************************************
+ OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ Copyright © INRA 2019
+ Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+ 
+ Opensilex Dev Tools pom.xml
+ This module brings some tools and helpers for OpenSilex development purpose.
+ - org.opensilex.dev.Install.java
+    Main class to setup RDF4J, MongoDB and Postgres databases.
+ - org.opensilex.dev.StartServer.java
+    Main class to start OpenSilex in development mode without Front hot reload.
+ - org.opensilex.dev.StartServerWithFront.java
+    Main class to start OpenSilex in development mode with Front hot reload on
+    a different port.
+ - Default development configuration in /src/main/resources/config/opensilex.yml
+    Default loaded configuration file in use with StartServer or StartServerWithFront
+ - Default database and tools with Docker
+    see: README in opensilex-dev and /src/main/resources/docker/docker-compose.yml
+******************************************************************************
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -17,6 +39,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     
+    <!-- Dependencies for RDF4J used to create repository in Install.java class -->
     <dependencies>
          <dependency>
             <groupId>org.eclipse.rdf4j</groupId>
@@ -40,6 +63,7 @@
         </dependency>    
     </dependencies>
     
+    <!-- Disable site generation for this module -->
     <build>
         <plugins>
             <plugin>

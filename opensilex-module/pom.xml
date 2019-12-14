@@ -1,3 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+******************************************************************************
+ OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ Copyright © INRA 2019
+ Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+ 
+ OpenSilex Module pom.xml
+ This abstract module is used as parent module for all OpenSilex extensions
+ It brings Maven build for integration with OpenSilex and dependencies to:
+ - opensilex
+ - opensilex-core
+ - opensilex-front
+******************************************************************************
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -71,12 +86,14 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            
             <!-- Generate TypeScript library from swagger.json file -->
             <plugin>
                 <groupId>org.opensilex</groupId>
                 <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
                 <version>${revision}</version>
             </plugin>
+            
             <!-- Check plugin and dependencies available updates -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

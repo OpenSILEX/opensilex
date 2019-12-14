@@ -1,3 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+******************************************************************************
+ OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ Copyright © INRA 2019
+ Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+ 
+ OpenSilex parent pom.xml for all submodules
+ It contains all common dependencies versions and declaration.
+ It contains also the common build configuration for all submodules.
+ If you add a new common dependency, please add it here and declare it's
+ version as a variable in the <properties> section.
+******************************************************************************
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -14,21 +28,28 @@
     <properties>
         <!-- common projects version -->
         <revision>4.0.0-SNAPSHOT</revision>
+        
         <!-- global encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        
         <!-- generated doc site output directory -->
-        <generated.doc.site.directory>${maven.multiModuleProjectDirectory}/../opensilex-site-doc</generated.doc.site.directory>
-        <!-- variation build flags -->
+        <generated.doc.site.directory>${maven.multiModuleProjectDirectory}/opensilex-doc/src/main/doc/generated</generated.doc.site.directory>
+        
+        <!-- build variation flags -->
         <skipFrontBuild>false</skipFrontBuild>
         <skipFrontAudit>true</skipFrontAudit>
         <skipOutdated>true</skipOutdated>
 
+        <!-- Front-end Node & Yarn version -->
         <node.version>v12.13.1</node.version>
         <yarn.version>v1.19.2</yarn.version>
+        
         <!-- Java supported version -->
         <java.compiler.version>1.8</java.compiler.version>
+        
         <!-- Minimal maven version -->
         <maven.minimal.version>3.5</maven.minimal.version>
+        
         <!-- dependencies version -->
         <jersey.version>2.29.1</jersey.version>
         <tomcat.version>9.0.29</tomcat.version>
@@ -62,9 +83,11 @@
         <httpclient.version>4.5.10</httpclient.version>
         <httpcore.version>4.4.12</httpcore.version>
         <javaee.web.api.version>8.0.1</javaee.web.api.version>
+        
         <!-- test only dependencies version -->
         <junit.version>4.12</junit.version>
         <mockito.version>3.2.0</mockito.version>
+        
         <!-- maven plugins versions -->
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
         <maven.deploy.plugin.version>3.0.0-M1</maven.deploy.plugin.version>
@@ -110,6 +133,7 @@
             <artifactId>picocli</artifactId>
             <version>${picocli.version}</version>
         </dependency>
+        
         <!--Embedded Tomcat Server--> 
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
@@ -126,6 +150,7 @@
             <artifactId>tomcat-embed-websocket</artifactId>
             <version>${tomcat.version}</version>
         </dependency>
+        
         <!--Maven Dependency resolver--> 
         <dependency>
             <groupId>org.apache.maven.resolver</groupId>
@@ -157,24 +182,28 @@
             <artifactId>maven-resolver-provider</artifactId>
             <version>${maven.resolver.provider.version}</version>
         </dependency>
+        
         <!--BCrypt--> 
         <dependency>
             <groupId>at.favre.lib</groupId>
             <artifactId>bcrypt</artifactId>
             <version>${bcript.version}</version>
         </dependency>
+        
         <!-- Reflection utils -->
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <version>${reflections.version}</version>
         </dependency>
+        
         <!--Proxy class library--> 
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
             <version>${bytebuddy.version}</version>
         </dependency>
+        
         <!--RDF4J--> 
         <dependency>
             <groupId>org.eclipse.rdf4j</groupId>
@@ -187,7 +216,8 @@
             <artifactId>rdf4j-repository-http</artifactId>
             <version>${rdf4j.version}</version>
         </dependency>  
-        <!--RDF4J Testing--> 
+        
+        <!--RDF4J for Testing--> 
         <dependency>
             <groupId>org.eclipse.rdf4j</groupId>
             <artifactId>rdf4j-repository-sail</artifactId>
@@ -217,7 +247,8 @@
             <artifactId>rdf4j-shacl</artifactId>
             <version>${rdf4j.version}</version>
             <scope>test</scope>
-        </dependency>          
+        </dependency>   
+               
         <!--DataNucleus - Big data object mapping--> 
         <dependency>
             <groupId>org.datanucleus</groupId>
@@ -234,24 +265,28 @@
             <artifactId>datanucleus-api-jdo</artifactId>
             <version>${data.nucleus.version}</version>
         </dependency>
-        <!--DataNucleus - MongoDB--> 
+        
+        <!--DataNucleus - MongoDB driver --> 
         <dependency>
             <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-mongodb</artifactId>
             <version>${data.nucleus.mongodb.version}</version>
         </dependency>
+        
         <!--DataNucleus - JTA Transaction--> 
         <dependency>
             <groupId>org.jboss.narayana.jta</groupId>
             <artifactId>narayana-jta</artifactId>
             <version>${data.nucleus.jta.version}</version>
         </dependency>
+        
         <!--JWT--> 
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>${java.jwt.version}</version>
         </dependency>
+        
         <!--Logger--> 
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -263,12 +298,14 @@
             <artifactId>logback-core</artifactId>
             <version>${logback.version}</version>
         </dependency>
+        
         <!--allow condition evaluation in logback configuration file--> 
         <dependency>
             <groupId>org.codehaus.janino</groupId>
             <artifactId>janino</artifactId>
             <version>${janino.version}</version>
         </dependency>
+        
         <!--Jersey--> 
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
@@ -286,6 +323,7 @@
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
         </dependency>
+        
         <!--Jersey Validation extension --> 
         <dependency>
             <groupId>org.glassfish.jersey.ext</groupId>
@@ -313,6 +351,7 @@
             <version>${javaee.web.api.version}</version>
             <scope>provided</scope>
         </dependency>
+        
         <!--Jackson JSON & YAML--> 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -329,6 +368,7 @@
             <artifactId>jackson-dataformat-yaml</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+        
         <!--Servlet API v4 provided by Tomcat--> 
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -336,6 +376,7 @@
             <version>${javax.servlet.api.version}</version>
             <scope>provided</scope>
         </dependency>
+        
         <!--Swagger--> 
         <dependency>
             <groupId>io.swagger</groupId>
@@ -348,6 +389,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        
         <!--Java extension compatibility for JDK 9+--> 
         <dependency>
             <groupId>javax.xml.bind</groupId>
@@ -364,24 +406,28 @@
             <artifactId>javax.mail</artifactId>
             <version>${javax.mail.version}</version>
         </dependency>
+        
         <!--Logger--> 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.api.version}</version>
         </dependency>
+        
         <!--SPARQL Jena--> 
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-querybuilder</artifactId>
             <version>${jena.query.builder.version}</version>
         </dependency>
+        
         <!--File IO management--> 
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons.io.version}</version>
         </dependency>
+        
         <!--Unit tests--> 
         <dependency>
             <groupId>junit</groupId>
@@ -400,6 +446,7 @@
             <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
             <scope>test</scope>
         </dependency>
+        
         <!--Unit tests mocking framework--> 
         <dependency>
             <groupId>org.mockito</groupId>
@@ -419,6 +466,7 @@
                 </excludes>
             </resource>
         </resources>
+        
         <!-- Used maven plugins definitions -->
         <pluginManagement>
             <plugins>
@@ -530,7 +578,6 @@
                                 <goal>java</goal>
                             </goals>
                             <configuration>
-<!--                                <skip>${skipFrontBuild}</skip>-->
                                 <mainClass>org.opensilex.utils.SwaggerAPIGenerator</mainClass>
                                 <arguments>
                                     <argument>${project.basedir}/src/main/java/</argument>
@@ -539,7 +586,6 @@
                             </configuration>
                         </execution>
                     </executions>
-                  
                 </plugin>
                 <!-- Generate TypeScript library from swagger.json file -->
                 <plugin>
@@ -596,8 +642,6 @@
                     <version>${maven.resources.plugin.version}</version>
                 </plugin>
             </plugins>
-
-          
         </pluginManagement>
         
         <plugins>
@@ -747,6 +791,7 @@
                 </configuration>
             </plugin>
             
+            <!-- front clean plugin, remove lib and types auto-generated folders -->
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>${maven.clean.plugin.version}</version>
@@ -830,6 +875,7 @@
                         <artifactId>frontend-maven-plugin</artifactId>
                         <version>${frontend.maven.plugin.version}</version>
                         <executions>
+                            <!-- install Vue.js application dependencies with yarn package manager -->
                             <execution>
                                 <id>install Vue application dependencies</id>
                                 <phase>generate-sources</phase>
@@ -842,6 +888,7 @@
                                 </configuration>
                             </execution>
                             
+                            <!-- Build typescript definition for auto-generated webservice access service library -->
                             <execution>
                                 <id>build typescript definition</id>
                                 <phase>process-classes</phase>
@@ -855,6 +902,7 @@
                                 </configuration>
                             </execution>
                             
+                            <!-- Build Vue.js project -->
                             <execution>
                                 <id>build Vue application</id>
                                 <phase>process-classes</phase>
@@ -867,6 +915,7 @@
                                 </configuration>
                             </execution>
                             
+                            <!-- Check Vue.js project dependencies version -->
                             <execution>
                                 <id>check Vue application outdated dependencies</id>
                                 <phase>verify</phase>
@@ -880,6 +929,7 @@
                                 </configuration>
                             </execution>
                             
+                            <!-- Check Vue.js project security issues -->
                             <execution>
                                 <id>check Vue application security issues</id>
                                 <phase>verify</phase>
@@ -900,6 +950,7 @@
                         <artifactId>maven-resources-plugin</artifactId>
                         <version>${maven.resources.plugin.version}</version>
                         <executions>
+                            <!-- Copy Vue.js compiled application into generated Jar file -->
                             <execution>
                                 <id>Copy Vue application dist files</id>
                                 <phase>process-classes</phase>
@@ -918,6 +969,8 @@
                                     </resources>
                                 </configuration>
                             </execution>
+                            
+                            <!-- Copy Vue.js tomcat configuration into generated Jar file -->
                             <execution>
                                 <id>Copy Vue tomcat configuration</id>
                                 <phase>process-sources</phase>
@@ -952,6 +1005,7 @@
                         <artifactId>maven-resources-plugin</artifactId>
                         <version>${maven.resources.plugin.version}</version>
                         <executions>
+                            <!-- Copy Vue.js opensilex configuration into generated Jar file -->
                             <execution>
                                 <id>Copy Vue application configuration files</id>
                                 <phase>process-sources</phase>

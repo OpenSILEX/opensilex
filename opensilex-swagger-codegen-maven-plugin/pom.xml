@@ -1,3 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+******************************************************************************
+ OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ Copyright © INRA 2019
+ Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+ 
+ OpenSilex Swagger Generation pom.xml
+ This module is a fork of https://github.com/swagger-api/swagger-codegen/tree/master/modules/swagger-codegen-maven-plugin
+ It generates a swagger.json file for the given module corresponding to it's
+ declared web services API.
+ It simply add feature compare to the orginal one of not failling if no 
+ web services API exists for the module (it's simply do nothing in that case).
+******************************************************************************
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>

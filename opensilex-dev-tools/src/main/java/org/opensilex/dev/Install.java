@@ -120,7 +120,7 @@ public class Install {
             statement = connection.createStatement();
 
             // initialize file reader
-            BufferedReader reader = new BufferedReader(new FileReader(getResourceFile("./docker/opensilex_st_dump.sql")));
+            BufferedReader reader = new BufferedReader(new FileReader(getResourceFile("./install/opensilex_st_dump.sql")));
             String line = null;
             String statementValue = "";
             while ((line = reader.readLine()) != null) {
@@ -164,15 +164,15 @@ public class Install {
         SPARQLService sparql = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
 
         // Import default ontologies
-        InputStream ontologyStream = new FileInputStream(getResourceFile("./docker/oa.rdf"));
+        InputStream ontologyStream = new FileInputStream(getResourceFile("./install/oa.rdf"));
         sparql.loadOntologyStream(new URI("http://www.w3.org/ns/oa"), ontologyStream, Lang.RDFXML);
         ontologyStream.close();
 
-        ontologyStream = new FileInputStream(getResourceFile("./docker/oeso.owl"));
+        ontologyStream = new FileInputStream(getResourceFile("./install/oeso.owl"));
         sparql.loadOntologyStream(new URI("http://www.opensilex.org/vocabulary/oeso"), ontologyStream, Lang.RDFXML);
         ontologyStream.close();
 
-        ontologyStream = new FileInputStream(getResourceFile("./docker/oeev.owl"));
+        ontologyStream = new FileInputStream(getResourceFile("./install/oeev.owl"));
         sparql.loadOntologyStream(new URI("http://www.opensilex.org/vocabulary/oeev"), ontologyStream, Lang.RDFXML);
         ontologyStream.close();
     }

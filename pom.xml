@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+******************************************************************************
+ OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ Copyright © INRA 2019
+ Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+ 
+ OpenSilex Development Environment main pom.xml
+ If you add a new module, add it in the <modules> section and
+ in the <dependencies> section in order to make it work.
+******************************************************************************
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>opensilex-dev</artifactId>
@@ -20,7 +31,7 @@
     </properties>
       
     <modules>
-        <!-- Main modules -->
+        <!-- Main OpenSilex modules -->
         <module>opensilex-parent</module>
         <module>opensilex</module>
         <module>opensilex-module</module>
@@ -38,6 +49,9 @@
          
         <!-- Maven Plugin module -->
         <module>opensilex-swagger-codegen-maven-plugin</module>
+        
+        <!-- Documentation module -->
+        <module>opensilex-doc</module>
     </modules>
     
     <dependencies>
@@ -48,7 +62,7 @@
             <version>${revision}</version>
         </dependency>
             
-        <!--Required dependencies-->
+        <!-- OpenSilex build-in modules dependencies-->
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex</artifactId>
@@ -67,6 +81,7 @@
             <version>${revision}</version>
         </dependency>
         
+        <!--Other extension modules must be declared as dependencies-->
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>phis2ws</artifactId>
@@ -91,6 +106,7 @@
               
     <reporting>
         <plugins>
+            <!-- Add Javadoc generation plugin during "site" phase -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -100,6 +116,7 @@
                 </configuration>
             </plugin>
                   
+            <!-- Add project sources link and references in documentation during "site" phase -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
@@ -131,6 +148,7 @@
                         </configuration>
                                     
                         <executions>
+                            <!-- Create aggregate code coverage report accross all Maven modules -->
                             <execution>
                                 <id>report-aggregate</id>
                                 <phase>prepare-package</phase>
@@ -154,6 +172,7 @@
                   
             <reporting>
                 <plugins>
+                    <!-- Add project sources link and references in documentation during "site" phase -->
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>

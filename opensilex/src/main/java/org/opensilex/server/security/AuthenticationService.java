@@ -12,6 +12,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.impl.PublicClaims;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -45,10 +46,10 @@ public class AuthenticationService implements Service {
 
     private static final int PASSWORD_HASH_COMPLEXITY = 12;
 
-    private static final long TOKEN_VALIDITY_DURATION = 30;
-    private static final TemporalUnit TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.MINUTES;
-//    private static final long TOKEN_VALIDITY_DURATION = 10;
-//    private static final TemporalUnit TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.SECONDS;
+    // private static final long TOKEN_VALIDITY_DURATION = 30;
+    // private static final TemporalUnit TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.MINUTES;
+    private static final long TOKEN_VALIDITY_DURATION = 70;
+    private static final TemporalUnit TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.SECONDS;
 
     private static final String TOKEN_ISSUER = "opensilex";
 
@@ -59,6 +60,21 @@ public class AuthenticationService implements Service {
     private static final String CLAIM_FULL_NAME = "name";
     private static final String CLAIM_IS_ADMIN = "is_admin";
     private static final String CLAIM_ACCESS_LIST = "access_list";
+
+    private static Map<String, Class<?>> claimClasses = new HashMap<String, Class<?>>() {
+        {
+            put(PublicClaims.ISSUER, String.class);
+            put(PublicClaims.SUBJECT, String.class);
+            put(PublicClaims.ISSUED_AT, Date.class);
+            put(PublicClaims.EXPIRES_AT, Date.class);
+            put(CLAIM_FIRST_NAME, String.class);
+            put(CLAIM_LAST_NAME, String.class);
+            put(CLAIM_EMAIL, String.class);
+            put(CLAIM_FULL_NAME, String.class);
+            put(CLAIM_IS_ADMIN, Boolean.class);
+            put(CLAIM_ACCESS_LIST, List.class);
+        }
+    };
 
     private Map<URI, UserModel> userRegistry = new HashMap<>();
     private Map<URI, Thread> schedulerRegistry = new HashMap<>();
@@ -109,39 +125,50 @@ public class AuthenticationService implements Service {
     }
 
     public void renewToken(UserModel user) {
-        if (user.getToken() == null) {
+        if (user.getToken() != null) {
 
-        }
-        JWTVerifier verifier = JWT.require(algoRSA)
-                .withIssuer(TOKEN_ISSUER)
-                .build();
+            JWTVerifier verifier = JWT.require(algoRSA)
+                    .withIssuer(TOKEN_ISSUER)
+                    .build();
 
-        DecodedJWT jwt = verifier.verify(user.getToken());
+            DecodedJWT jwt = verifier.verify(user.getToken());
 
-        Date issuedDate = new Date();
-        Date expirationDate = Date.from(issuedDate.toInstant().plus(TOKEN_VALIDITY_DURATION, TOKEN_VALIDITY_DURATION_UNIT));
-        JWTCreator.Builder tokenBuilder = JWT.create()
-                .withIssuer(TOKEN_ISSUER)
-                .withSubject(jwt.getSubject())
-                .withIssuedAt(issuedDate)
-                .withExpiresAt(expirationDate);
+            JWTCreator.Builder tokenBuilder = JWT.create();
 
-        jwt.getClaims().forEach((key, claim) -> {
-            try {
-                String[] claimArray = claim.asArray(String.class);
-                if (claimArray == null) {
-                    String claimValue = claim.asString();
-                    tokenBuilder.withClaim(key, claimValue);
+            jwt.getClaims().forEach((key, claim) -> {
+                if (claimClasses.containsKey(key)) {
+                    switch (claimClasses.get(key).getSimpleName()) {
+                        case "Boolean":
+                            tokenBuilder.withClaim(key, claim.asBoolean());
+                            break;
+                        case "Integer":
+                            tokenBuilder.withClaim(key, claim.asInt());
+                            break;
+                        case "Date":
+                            tokenBuilder.withClaim(key, claim.asDate());
+                            break;
+                        case "List":
+                            tokenBuilder.withArrayClaim(key, claim.asArray(String.class));
+                            break;
+                        case "String":
+                        default:
+                            tokenBuilder.withClaim(key, claim.asString());
+                            break;
+                    }
                 } else {
-                    tokenBuilder.withArrayClaim(key, claimArray);
+                    LOGGER.warn("Unmanaged token claim, try to read as string: " + key + " -> " + claim.asString());
+                    tokenBuilder.withClaim(key, claim.asString());
                 }
-            } catch (JWTDecodeException ex) {
-                String claimValue = claim.asString();
-                tokenBuilder.withClaim(key, claimValue);
-            }
-        });
+            });
 
-        user.setToken(tokenBuilder.sign(algoRSA));
+            Date issuedDate = new Date();
+            Date expirationDate = Date.from(issuedDate.toInstant().plus(TOKEN_VALIDITY_DURATION, TOKEN_VALIDITY_DURATION_UNIT));
+            tokenBuilder.withIssuer(TOKEN_ISSUER)
+                    .withIssuedAt(issuedDate)
+                    .withExpiresAt(expirationDate);
+            
+            user.setToken(tokenBuilder.sign(algoRSA));
+        }
     }
 
     public URI decodeTokenUserURI(String tokenValue) throws JWTVerificationException, URISyntaxException {

@@ -62,8 +62,10 @@ public class Install {
 
     private static OpenSilex opensilex;
 
-    public static void main(String[] args) throws Exception {
+    private static boolean deleteFirst = false;
 
+    public static void main(String[] args) throws Exception {
+//        deleteFirst = true;
         String configFile = getResourceFile("./config/opensilex.yml").getCanonicalPath();
         OpenSilex.setup(new HashMap<String, String>() {
             {
@@ -107,7 +109,9 @@ public class Install {
             connection = getDBConnection(pgConfig, "postgres");
             statement = connection.createStatement();
 
-            statement.executeUpdate("DROP DATABASE IF EXISTS " + pgConfig.database());
+            if (deleteFirst) {
+                statement.executeUpdate("DROP DATABASE IF EXISTS " + pgConfig.database());
+            }
             statement.executeUpdate("CREATE DATABASE " + pgConfig.database());
             statement.close();
             connection.close();
@@ -178,7 +182,9 @@ public class Install {
         repositoryManager.init();
 
         // Remove existing repository
-        repositoryManager.removeRepository(config.repository());
+        if (deleteFirst) {
+            repositoryManager.removeRepository(config.repository());
+        }
 
         // Read repository configuration file located in jar
         File rdf4jApiJar = ClassUtils.getJarFile(RepositoryConfig.class);

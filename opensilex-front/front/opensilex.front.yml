@@ -24,7 +24,7 @@ menu:
 routes:
   - path: /users/create
     component: opensilex.UserCreate
-    access: [],
+    access: []
   - path: /users/view/:uri
     component: opensilex.UserView
     access: []

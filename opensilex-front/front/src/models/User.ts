@@ -4,6 +4,7 @@ import { VueCookies } from 'vue-cookies'
 declare var $cookies: VueCookies;
 
 export class User {
+    private static INACTIVITY_PERIOD_MIN = 10;
     private firstName: string = "Jean";
     private lastName: string = "Dupont";
     private email: string = "jean.dupont@opensilex.org";
@@ -74,12 +75,24 @@ export class User {
     }
 
     public getExpirationMs() {
+        console.log("Compute expiration time", this.expire * 1000 - Date.now(), this.expire)
         return (this.expire * 1000 - Date.now());
     }
 
+    public getInactivityRenewDelayMs() {
+        let exipreAfter = this.getExpirationMs();
+        return exipreAfter - (User.INACTIVITY_PERIOD_MIN * 60 * 1000);
+    }
+
+    public needRenew() {
+        return this.getInactivityRenewDelayMs() <= 0 && this.getExpirationMs() > 0;
+    }
+    
     public getToken() {
         return this.token;
     }
+
+
 
     public setToken(token: string) {
         let secure: boolean = ('https:' == document.location.protocol);
@@ -141,6 +154,7 @@ export class User {
     }
 
     public getTokenData(key: string) {
+        console.debug("Get token data", key, this.tokenData[key], this.tokenData);
         return this.tokenData[key];
     }
 }

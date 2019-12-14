@@ -1,6 +1,19 @@
 <template>
   <div>
-    <b-form-input v-model="filterPattern" debounce="300" placeholder="Filter users"></b-form-input>
+    <b-input-group class="mt-3 mb-3" size="sm">
+      <b-form-input v-model="filterPattern" debounce="300" placeholder="Filter users"></b-form-input>
+      <b-input-group-text slot="append">
+        <b-btn
+          class="p-0"
+          :disabled="!filterPattern"
+          variant="link"
+          size="sm"
+          @click="filterPattern = ''"
+        >
+          <i class="fa fa-remove"></i>
+        </b-btn>
+      </b-input-group-text>
+    </b-input-group>
     <b-table ref="table" striped hover :items="dataProvider" :fields="fields"></b-table>
     <b-pagination
       v-model="currentPage"
@@ -52,7 +65,7 @@ export default class UserList extends Vue {
   created() {
     let tableRef: any = this.$refs.table;
     let query: any = this.$route.query;
-      if (query.filterPattern) {
+    if (query.filterPattern) {
       this.filterPatternValue = decodeURI(query.filterPattern);
     }
     if (query.pageSize) {
@@ -62,10 +75,10 @@ export default class UserList extends Vue {
       this.currentPage = parseInt(query.currentPage);
     }
     if (query.sortBy) {
-          this.sortBy = decodeURI(query.sortBy);
+      this.sortBy = decodeURI(query.sortBy);
     }
     if (query.sortDesc) {
-        this.sortDesc = (query.sortDesc == "true");
+      this.sortDesc = query.sortDesc == "true";
     }
   }
 
@@ -85,7 +98,6 @@ export default class UserList extends Vue {
   ];
 
   dataProvider(ctx) {
-
     return this.loadData();
   }
 
@@ -115,16 +127,18 @@ export default class UserList extends Vue {
       )
       .then((sucess: any) => {
         this.totalRow = sucess.response.metadata.totalCount;
-        this.$router.push({
-          path: this.$route.fullPath,
-          query: {
-            filterPattern: encodeURI(this.filterPattern),
-            sortBy: encodeURI(this.sortBy),
-            sortDesc: "" + this.sortDesc,
-            currentPage: "" + this.currentPage,
-            pageSize: "" + this.pageSize
-          }
-        }).catch(function() {});
+        this.$router
+          .push({
+            path: this.$route.fullPath,
+            query: {
+              filterPattern: encodeURI(this.filterPattern),
+              sortBy: encodeURI(this.sortBy),
+              sortDesc: "" + this.sortDesc,
+              currentPage: "" + this.currentPage,
+              pageSize: "" + this.pageSize
+            }
+          })
+          .catch(function() {});
         return sucess.response.result;
       })
       .catch(error => {

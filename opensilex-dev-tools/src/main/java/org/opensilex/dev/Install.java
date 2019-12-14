@@ -159,8 +159,8 @@ public class Install {
         // Create repository
         createRDF4JRepository(config);
 
-        // Reset repository to reload sparql service
-        opensilex.reset();
+        // Restart repository to reload sparql service
+        opensilex.restart();
         SPARQLService sparql = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
 
         // Import default ontologies

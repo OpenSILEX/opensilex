@@ -1,4 +1,5 @@
 //******************************************************************************
+//                        BaseConfig.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -14,28 +15,18 @@ import org.opensilex.fs.FileStorageService;
 import org.opensilex.sparql.SPARQLService;
 
 /**
+ * Default configuration for OpenSilex base module
  *
  * @author Vincent Migot
  */
 public interface BaseConfig extends ModuleConfig {
 
-    /**
-     * Flag to determine if application is in debug mode or not
-     *
-     * @return true Application in debug mode false Application in production
-     * mode
-     */
     @ConfigDescription(
             value = "Flag to determine if application is in debug mode or not",
             defaultBoolean = false
     )
     public Boolean debug();
 
-    /**
-     * Default application language
-     *
-     * @return default application language
-     */
     @ConfigDescription(
             value = "Default application language",
             defaultString = "en"

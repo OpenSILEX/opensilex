@@ -1,4 +1,5 @@
 //******************************************************************************
+//                          ServerCommands.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -24,11 +25,14 @@ import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-
 /**
- * This class regroup all commands concerning OpenSilex server operation 
+ * <pre>
+ * This class regroup all commands concerning OpenSilex server operations:
  * - start: Start the server
  * - stop: Stop the server (using the admin port defined on start call)
+ * </pre>
+ *
+ * @author Vincent Migot
  */
 @Command(
         name = "server",
@@ -37,7 +41,7 @@ import picocli.CommandLine.Parameters;
 public class ServerCommands extends HelpPrinterCommand implements OpenSilexCommand {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ServerCommands.class);
-    
+
     /**
      * This function start the OpenSilex server with the given host, port and
      * adminPort If the daemon flag is set to true, this command will try to run
@@ -46,8 +50,10 @@ public class ServerCommands extends HelpPrinterCommand implements OpenSilexComma
      * @param host Server host name (default: localhost)
      * @param port Server port (default: 8666)
      * @param adminPort Server administration port (default: 8888)
-     * @param daemon Flag to determine if server must be started as a dameon process (default: false)
-     * @param tomcatDirectory Tomcat working directory (default: create a temporary directory)
+     * @param daemon Flag to determine if server must be started as a dameon
+     * process (default: false)
+     * @param tomcatDirectory Tomcat working directory (default: create a
+     * temporary directory)
      * @param help Helper parameter to allow help usage display for this command
      * @throws Exception Propagate any exception that could occurs
      */
@@ -69,7 +75,7 @@ public class ServerCommands extends HelpPrinterCommand implements OpenSilexComma
         if (tomcatDirectory.toString().equals("")) {
             final Path tmpDirectory = Files.createTempDirectory("opensilex");
             tomcatDirectory = tmpDirectory;
-            
+
             // Add shutdown hook to delete temporary directory on application stop
             Runtime.getRuntime().addShutdownHook(new Thread() {
                 @Override
@@ -83,7 +89,6 @@ public class ServerCommands extends HelpPrinterCommand implements OpenSilexComma
             });
         }
 
-        
         if (daemon) {
             // If daemon flag, start an external process
             try {
@@ -150,7 +155,7 @@ public class ServerCommands extends HelpPrinterCommand implements OpenSilexComma
     ) throws Exception {
         // Create the server admin client
         ServerAdminClient adminClient = new ServerAdminClient(host, adminPort);
-        
+
         // Call the stop server method
         adminClient.stopServer();
     }
@@ -164,7 +169,7 @@ public class ServerCommands extends HelpPrinterCommand implements OpenSilexComma
         MainCommand.main(new String[]{
             "server",
             "start",
-             "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.DEV_PROFILE_ID
+            "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.DEV_PROFILE_ID
         });
     }
 }

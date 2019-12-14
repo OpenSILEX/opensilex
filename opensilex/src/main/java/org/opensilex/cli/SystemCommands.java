@@ -1,4 +1,5 @@
 //******************************************************************************
+//                          SystemCommands.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -36,12 +37,16 @@ import picocli.CommandLine.Parameters;
 
 /**
  * <pre>
- * This class regroup all commands concerning OpenSilex system operation
- * install: install module(s)
+ * This class regroup all commands concerning OpenSilex system operations:
+ * - install: install module(s)
  * - update: Update module(s)
  * TODO - uninstall: uninstall one or all modules
- * TODO - check: check system configuration
+ * TODO - check: check system configuration.
+ * 
+ * TODO: Clean & update Javadoc
  * </pre>
+ *
+ * @author Vincent Migot
  */
 @Command(
         name = "system",
@@ -119,6 +124,7 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
 
     /**
      * This method install OpenSilex specific module or all new if no parameters
+     *
      * @param moduleNames List of module names to install
      */
     @Command(
@@ -191,6 +197,7 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
     /**
      * This method updates specific OpenSilex module or all new by default by
      * executing ModuleUpdate "execute" methods found in them
+     *
      * @param moduleNames List of module names to update
      */
     @Command(
@@ -257,7 +264,7 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
 
         }
     }
-    
+
     @Command(
             name = "run-update",
             header = "Execute opensilex module specific update"

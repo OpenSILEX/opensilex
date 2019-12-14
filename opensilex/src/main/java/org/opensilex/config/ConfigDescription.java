@@ -1,4 +1,5 @@
 //******************************************************************************
+//                      ConfigDescription.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -11,8 +12,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-
 /**
+ * Annotation for configuration description and default values
  *
  * @author Vincent Migot
  */
@@ -41,7 +42,7 @@ public @interface ConfigDescription {
 
     String defaultString() default "";
 
-    String[] defaultList() default  {};
+    String[] defaultList() default {};
 
     String[] defaultMap() default {};
 

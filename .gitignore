@@ -8,3 +8,4 @@ node_modules/
 **/front/dist
 **/front/src/lib
 **/front/types
+opensilex-doc/src/main/doc/generated/**

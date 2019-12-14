@@ -29,6 +29,7 @@ import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.fs.FileStorageService;
+import org.opensilex.module.OpenSilexModule;
 
 /**
  * This class extends Tomcat server to embbeded it and load OpenSilex services,
@@ -77,9 +78,14 @@ public class Server extends Tomcat {
 
         Context appContext = initApp("", "/", "/webapp", getClass());
         appContext.getPipeline().addValve(new RewriteValve());
-        
+
         instance.getModulesImplementingInterface(ServerExtension.class).forEach((ServerExtension extension) -> {
-            extension.initServer(this);
+            try {
+                extension.initServer(this);
+            } catch (Exception ex) {
+                OpenSilexModule extensionModule = (OpenSilexModule) extension;
+                LOGGER.error("Error while initilizing server extension for: " + extensionModule.getClass().getCanonicalName(), ex);
+            }
         });
 
         FileStorageService fs = instance.getServiceInstance("fs", FileStorageService.class);
@@ -99,6 +105,20 @@ public class Server extends Tomcat {
         initAdminThread(adminPort);
 
         super.start();
+    }
+
+    @Override
+    public void stop() throws LifecycleException {
+        instance.getModulesImplementingInterface(ServerExtension.class).forEach((ServerExtension extension) -> {
+            try {
+                extension.shutDownServer(this);
+            } catch (Exception ex) {
+                OpenSilexModule extensionModule = (OpenSilexModule) extension;
+                LOGGER.error("Error while stopping server extension for: " + extensionModule.getClass().getCanonicalName(), ex);
+            }
+        });
+
+        super.stop();
     }
 
     /**

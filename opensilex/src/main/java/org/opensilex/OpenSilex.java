@@ -1,4 +1,5 @@
 //******************************************************************************
+//                            OpenSilex.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -51,6 +52,8 @@ import org.slf4j.LoggerFactory;
  * Class Configuration management code is delegate to org.opensilex.config.ConfigManager
  * Class Service management code is delegate to org.opensilex.service.ServiceManager
  * </pre>
+ *
+ * @author Vincent Migot
  */
 public class OpenSilex {
 
@@ -110,22 +113,22 @@ public class OpenSilex {
      * Command line argument key for OpenSilex debug flag
      */
     public final static String DEBUG_ARG_KEY = "DEBUG";
-    
+
     /**
      * Base prefix for OpenSilex ontologies
      */
     public final static String BASE_PREFIX_URI = "http://www.opensilex.org/";
-    
 
     /**
      * Store startup args for reset
      */
     private static String[] SETUP_ARGS;
-    
+
     /**
      * Store reference to shutdown hook to avoid duplication on reset
      */
     private static Thread SHUTDOWN_HOOK;
+
     /**
      * <pre>
      * Main method to setup Opensilex instance based on command line arguments,
@@ -170,7 +173,7 @@ public class OpenSilex {
      */
     public static String[] setup(String[] args) {
         SETUP_ARGS = args;
-        
+
         // Init remaining arguments list to return
         List<String> cliArgsList = new ArrayList<>();
 
@@ -231,7 +234,18 @@ public class OpenSilex {
     }
 
     /**
-     * Helper method to call easily setup method
+     * <pre>
+     * Helper method to call easily setup method programatically this way:
+     * <code>
+     * OpenSilex.setup(new HashMap<String, String>() {
+     *     {
+     *         put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);
+     *         put(OpenSilex.CONFIG_FILE_ARG_KEY, configFile);
+     *         put(OpenSilex.DEBUG_ARG_KEY, "true");
+     *     }
+     * });
+     * </code>
+     * </pre>
      *
      * @param args Map of arguments
      * @return The command line arguments array without the Opensilex parameters
@@ -273,6 +287,7 @@ public class OpenSilex {
         File logProfileConfigFile = baseDirectory.resolve("logback-" + profileId + ".xml").toFile();
         loadLoggerConfig(logProfileConfigFile, false);
 
+        // If debug flag, set default log level output to DEBUG
         if (debug) {
             ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
             root.setLevel(Level.DEBUG);
@@ -424,20 +439,25 @@ public class OpenSilex {
         SHUTDOWN_HOOK = new Thread() {
             @Override
             public void run() {
-                LOGGER.debug("Clean modules");
-                moduleManager.clean();
+                LOGGER.debug("Shutdown modules");
+                moduleManager.shutdown();
             }
         };
         Runtime.getRuntime().addShutdownHook(SHUTDOWN_HOOK);
 
-        LOGGER.debug("Initialize modules");
-        moduleManager.init();
+        LOGGER.debug("Startup modules");
+        moduleManager.startup();
     }
 
-    public void reset() {
-        moduleManager.clean();
+    /**
+     * Restart application
+     */
+    public void restart() {
+        LOGGER.debug("Shutdown modules");
+        moduleManager.shutdown();
         setup(SETUP_ARGS);
     }
+
     /**
      * Give public access to module iterator
      *
@@ -514,6 +534,29 @@ public class OpenSilex {
         return config;
     }
 
+    /**
+     * Allow to directly get a configuration path in the loaded configuration.
+     * Path is determined by the different imbrication level in the
+     * configuration separaed with ".". By example RDF4J service configuration
+     * is accessible by "opensilex.sparql.rdf4j". it map the following structure
+     * in the yaml file:
+     * <pre>
+     * opensilex:
+     *      sparql:
+     *          rdf4j:
+     *              property1: ...
+     *              property2: ...
+     *              property3: ...
+     *              property4: ...
+     * </pre>
+     *
+     * @param <T> The config interface
+     * @param path The yaml path to the configration like:
+     * "opensilex.sparql.rdf4j"
+     * @param configClass The interface which map to the configuration structure
+     * @return An instance of a class which contains all the loaded
+     * configuration
+     */
     public <T> T loadConfigPath(String path, Class<T> configClass) {
         T config = configManager.loadConfigPath(path, configClass);
 

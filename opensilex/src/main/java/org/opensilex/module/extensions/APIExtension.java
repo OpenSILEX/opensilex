@@ -1,4 +1,5 @@
 //******************************************************************************
+//                      APIExtension.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -14,6 +15,7 @@ import org.opensilex.server.rest.RestApplication;
 import org.opensilex.utils.ClassUtils;
 
 /**
+ * Extension interface for OpenSilex modules which implements REST extension
  *
  * @author Vincent Migot
  */

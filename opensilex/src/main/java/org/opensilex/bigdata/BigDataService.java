@@ -1,4 +1,5 @@
 //******************************************************************************
+//                         BigDataService.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -11,12 +12,12 @@ import org.opensilex.bigdata.mongodb.MongoDBConnection;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceConfigDefault;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 /**
+ * Service for big data access and storage. 
+ * <pre>
+ * TODO: Only implement transaction for the moment, datanucleus integration
+ * to achieve: http://www.datanucleus.org/
+ * </pre>
  *
  * @author Vincent Migot
  */
@@ -27,6 +28,12 @@ import org.opensilex.service.ServiceConfigDefault;
 )
 public class BigDataService implements BigDataConnection, Service {
 
+    /**
+     * Constructor with BigDataConnection to allow multiple configurable
+     * implementations
+     *
+     * @param connection Connection for the service
+     */
     public BigDataService(BigDataConnection connection) {
         this.connection = connection;
     }

@@ -16,6 +16,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -235,6 +236,23 @@ public class ClassUtils {
 
         return fieldList;
 
+    }
+
+    /**
+     * Convert a JAR url to a file
+     *
+     * @param jarURL
+     * @return
+     */
+    public static File getJarFileFromURL(URL jarURL) {
+        File jarFile;
+        try {
+            jarFile = new File(jarURL.toURI());
+        } catch (URISyntaxException e) {
+            jarFile = new File(jarURL.getPath());
+        }
+
+        return jarFile;
     }
 
     private static void getAllFields(List<Field> fields, Class<?> type) {

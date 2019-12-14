@@ -1,4 +1,5 @@
 //******************************************************************************
+//                           MainCommand.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -18,11 +19,12 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.IVersionProvider;
 import picocli.CommandLine.Option;
 
-
 /**
  * This class is the main entry point for the CLI application It uses the
  * Picocli library to automatically generate help messages and argument parsing
  * see: https://picocli.info/
+ *
+ * @author Vincent Migot
  */
 @Command(
         name = "opensilex",
@@ -32,22 +34,45 @@ import picocli.CommandLine.Option;
 public class MainCommand extends HelpPrinterCommand implements IVersionProvider {
 
     /**
-     * Version flag option (automatically handled by the picocli library see:
-     * https://picocli.info/#_version_help
+     * <pre>
+     * Version flag option (automatically handled by the picocli library)
+     * For details see: https://picocli.info/#_version_help
+     * </pre>
      */
     @Option(names = {"-V", "--version"}, versionHelp = true, description = "Print version information and exit.")
     private boolean versionRequested;
 
+    /**
+     * Static main to launch commands directly from the JAR file.
+     *
+     * @param args
+     */
     public static void main(String[] args) {
-        // Initialize opensilex instance with arguments and return commands arguments
+        // Initialize OpenSilex instance with arguments and return 
+        // remaining commands arguments, ie without :
+        // - OpenSilex.BASE_DIR_ARG_KEY -> Base directory of the application
+        // - OpenSilex.PROFILE_ID --> Laucnh profile of the application
+        // - OpenSilex.CONFIG_FILE --> Main configuration file
+        // - OpenSilex.DEBUG --> Debug flag
         String[] cliArgs = OpenSilex.setup(args);
         run(cliArgs);
     }
 
-    public static void run(String[] args) {
+    /**
+     * <pre>
+     * Programmatic call for a CLI command.
+     * By example:
+     * <code>
+     * OpenSilex.run(
+     * </code>
+     * </pre>
+     *
+     * @param cliArgs Command lin
+     */
+    public static void run(String[] cliArgs) {
         // If no arguments assume help is requested
-        if (args.length == 0) {
-            args = new String[]{"--help"};
+        if (cliArgs.length == 0) {
+            cliArgs = new String[]{"--help"};
         }
 
         // Initialize picocli library
@@ -64,7 +89,7 @@ public class MainCommand extends HelpPrinterCommand implements IVersionProvider 
         cli.setHelpFactory(new HelpFactory());
 
         // Run actual commands
-        cli.execute(args);
+        cli.execute(cliArgs);
     }
 
     /**
@@ -78,7 +103,8 @@ public class MainCommand extends HelpPrinterCommand implements IVersionProvider 
     public String[] getVersion() throws Exception {
         List<String> versionList = new ArrayList<>();
         ModuleManager moduleManager = new ModuleManager();
-        
+
+        // Add version in list for all modules
         moduleManager.forEachModule((OpenSilexModule module) -> {
             versionList.add(module.getClass().getCanonicalName() + ": " + module.getOpenSilexVersion());
         });

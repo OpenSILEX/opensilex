@@ -1,4 +1,5 @@
 //******************************************************************************
+//                          ModuleManager.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -27,6 +28,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Module manager for OpenSilex applications
+ * <pre>
+ * TODO update javadoc
+ * </pre>
  *
  * @author Vincent Migot
  */
@@ -34,31 +39,63 @@ public class ModuleManager {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ModuleManager.class);
 
+    /**
+     * Dependencies cache file to avoid unneeded multiple downloads
+     */
     private final static String DEPENDENCIES_LIST_CACHE_FILE = ".opensilex.dependencies";
+
+    /**
+     * Subfolder where JAR modules are located
+     */
     private final static String MODULES_JAR_FOLDER = "modules";
 
+    /**
+     * Load modules with their dependencies, downloading them if needed
+     *
+     * @param dependencyManager Dependency manager for finding dependencies
+     * @param baseDirectory Base directory for modules to look at
+     */
     public void loadModulesWithDependencies(DependencyManager dependencyManager, Path baseDirectory) {
+        // Read existing dependencies from cache file
         List<URL> readDependencies = ModuleManager.readDependenciesList(baseDirectory);
+
+        // If no existing dependencies
         if (readDependencies.size() == 0) {
+            // Get list of modules URL
             List<URL> modulesUrl = ModuleManager.listModulesURLs(baseDirectory);
+
+            // Get modules dependencies and load them
             List<URL> dependencies = loadModulesWithDependencies(dependencyManager, modulesUrl);
+
+            // Write those dependencies in cache file
             ModuleManager.writeDependenciesList(baseDirectory, dependencies);
         } else {
+            // Otherwise simply register known dependencies
             registerDependencies(readDependencies);
         }
     }
 
+    /**
+     * Utility method to read dependencies from cache file
+     *
+     * @param baseDirectory Directory where dependency cache file is.
+     *
+     * @return Lsit of JAR dependencies URL
+     */
     private static List<URL> readDependenciesList(Path baseDirectory) {
         try {
+            // Check if depndency file exist
             File dependencyFile = baseDirectory.resolve(DEPENDENCIES_LIST_CACHE_FILE).toFile();
             List<URL> dependencyURLs = new ArrayList<>();
 
             if (dependencyFile.isFile()) {
+                // If it's a file read all lines and add in the dependencyURLs list
                 for (String dependency : FileUtils.readLines(dependencyFile, StandardCharsets.UTF_8.name())) {
                     dependencyURLs.add(new URL(dependency));
                 };
             }
 
+            // Return the list
             return dependencyURLs;
         } catch (IOException ex) {
             LOGGER.error("Error while reading dependency file", ex);
@@ -66,6 +103,12 @@ public class ModuleManager {
         }
     }
 
+    /**
+     * Utility method to write dependencies URL to a cache file
+     *
+     * @param baseDirectory Directory where dependency cache file is.
+     * @param dependencies Depndencies JAR URL list.
+     */
     private static void writeDependenciesList(Path baseDirectory, List<URL> dependencies) {
         try {
             File dependencyFile = baseDirectory.resolve(DEPENDENCIES_LIST_CACHE_FILE).toFile();
@@ -77,16 +120,30 @@ public class ModuleManager {
         }
     }
 
+    /**
+     * List of loaded modules
+     */
     private List<OpenSilexModule> modules;
 
-//    private ConfigManager configManager;
+    /**
+     * Service manager reference
+     */
     private ServiceManager services;
 
+    /**
+     * Load modules and their dependencies
+     *
+     * @param dependencyManager Dependency manager to load dependencies
+     * @param modulesJarURLs List of module JAR URLs
+     * @return List of all dependencies for modules and the modules themselves
+     */
     private List<URL> loadModulesWithDependencies(DependencyManager dependencyManager, List<URL> modulesJarURLs) {
         try {
+            // Load module dependencies and get the list
             List<URL> dependenciesURL = dependencyManager.loadModulesDependencies(modulesJarURLs);
             dependenciesURL.addAll(modulesJarURLs);
 
+            // Register all dependencies and modules
             registerDependencies(dependenciesURL);
             return dependenciesURL;
         } catch (Exception ex) {
@@ -96,6 +153,12 @@ public class ModuleManager {
         return null;
     }
 
+    /**
+     * Register all depents JAR URL in list for use with class loaders
+     *
+     *
+     * @param dependenciesURL List of dependencies to register
+     */
     private void registerDependencies(List<URL> dependenciesURL) {
         if (LOGGER.isDebugEnabled()) {
             dependenciesURL.forEach((dependencyURL) -> {
@@ -103,22 +166,42 @@ public class ModuleManager {
             });
         }
 
+        // Load dependencies through URL Class Loader based on actual class loader
         if (dependenciesURL.size() > 0) {
             URLClassLoader classLoader = new URLClassLoader(
                     dependenciesURL.toArray(new URL[dependenciesURL.size()]),
                     Thread.currentThread().getContextClassLoader()
             );
             LOGGER.debug("Module registred, jar URLs added to classpath");
+
+            // Set the newly created class loader as the main one
             Thread.currentThread().setContextClassLoader(classLoader);
         } else {
             LOGGER.debug("No external module found !");
         }
     }
 
+    /**
+     * Utility method to iterate through modules. Example:
+     * <pre>
+     * <code>
+     * moduleManager.forEachModule((OpenSilexModule module) -> {
+     *      // DO STUFF WITH MODULE..
+     * });
+     * </code>
+     * </pre>
+     *
+     * @param lambda Lambda to realize action on modules
+     */
     public void forEachModule(Consumer<OpenSilexModule> lambda) {
         getModules().forEach(lambda);
     }
 
+    /**
+     * Return an Iterable of modules to do custom loop logic
+     *
+     * @return Iterable of modules
+     */
     public Iterable<OpenSilexModule> getModules() {
         if (modules == null) {
             modules = new ArrayList<>();
@@ -130,24 +213,45 @@ public class ModuleManager {
 
     }
 
+    /**
+     * Utility method to get modules URL inside MODULES_JAR_FOLDER subdirectory
+     * of the given directory parameter.
+     *
+     * @param baseDirectory Directory to look in
+     * @return List of modules JAR URL found
+     */
     private static List<URL> listModulesURLs(Path baseDirectory) {
+        // Find the subdirectory
         File modulesDirectory = baseDirectory.resolve(MODULES_JAR_FOLDER).toFile();
+
+        // Get all files within
         File[] modulesList = modulesDirectory.listFiles();
 
         LOGGER.debug("Start listing jar module files in directory: " + modulesDirectory.getPath());
 
+        // Filter all JAR found
         List<URL> modulesJarURLs = new ArrayList<>();
         if (modulesList != null) {
             for (File moduleFile : modulesList) {
-                modulesJarURLs.add(getModuleURLFromFile(moduleFile));
+                URL jarURL = getModuleURLFromFile(moduleFile);
+                if (jarURL != null) {
+                    modulesJarURLs.add(jarURL);
+                }
             }
         } else {
             LOGGER.debug("Modules directory doesn't exists !");
         }
 
+        // Return the list
         return modulesJarURLs;
     }
 
+    /**
+     * Return corresonding JAR URL of the given file or null
+     *
+     * @param moduleFile The file to check
+     * @return JAR URL or null
+     */
     private static URL getModuleURLFromFile(File moduleFile) {
         URL result = null;
 
@@ -166,17 +270,29 @@ public class ModuleManager {
         return result;
     }
 
+    /**
+     * Register all module's configured services in the given services manager.
+     *
+     * @param serviceManager Service manager to use
+     * @throws Exception rethrow exceptions on service registring
+     */
     public void registerServices(ServiceManager serviceManager) throws Exception {
         this.services = serviceManager;
+        // Iterate over modules
         for (OpenSilexModule module : getModules()) {
 
             ModuleConfig moduleConfig = module.getConfig();
+            // If module has configuration
             if (moduleConfig != null) {
+                // Iterate of module configuration interface methods
                 for (Method m : moduleConfig.getClass().getMethods()) {
                     try {
-
+                        // If configuration parameter match org.opensilex.service.Service class
                         if (Service.class.isAssignableFrom(m.getReturnType())) {
+                            // Get service instance from configuration
                             Service service = (Service) m.invoke(moduleConfig);
+
+                            // Register service instance
                             services.register(service.getClass(), m.getName(), service);
                         }
                     } catch (Exception ex) {
@@ -189,13 +305,22 @@ public class ModuleManager {
         }
     }
 
-    public void init() throws Exception {
+    /**
+     * Start all registred modules and their services
+     *
+     * @throws Exception rethrow all exceptions during service startup or module
+     * initialization.
+     */
+    public void startup() throws Exception {
+        // Start all services for all modules
         services.getServices().forEach((String name, Service service) -> {
             service.startup();
         });
+
+        // Init all modules
         for (OpenSilexModule module : getModules()) {
             try {
-                module.init();
+                module.startup();
             } catch (Exception ex) {
                 LOGGER.error("Fail to initialize module: " + module.getClass().getCanonicalName(), ex);
                 throw ex;
@@ -203,15 +328,28 @@ public class ModuleManager {
         }
     }
 
-    public void clean() {
+    /**
+     * Shutdown all modules and their services
+     */
+    public void shutdown() {
+        // Clean all modules
         for (OpenSilexModule module : getModules()) {
-            module.clean();
+            module.shutdown();
         }
+
+        // Stop all services for all modules
         services.getServices().forEach((String name, Service service) -> {
             service.shutdown();
         });
     }
 
+    /**
+     * Return list of modules implementing the given interface
+     *
+     * @param <T> Interface class parameter
+     * @param extensionInterface Interface class
+     * @return List of found modules as T interface
+     */
     public <T> List<T> getModulesImplementingInterface(Class<T> extensionInterface) {
         List<T> modules = new ArrayList<>();
         forEachModule((OpenSilexModule m) -> {
@@ -223,19 +361,37 @@ public class ModuleManager {
         return modules;
     }
 
+    /**
+     * Load all modules configurations
+     *
+     * @param configManager Configuration manager instance
+     */
     public void loadConfigs(ConfigManager configManager) {
+        // Iterate over modules
         for (OpenSilexModule module : getModules()) {
+            // Get module configuration identifier and class
             String configId = module.getConfigId();
             Class<? extends ModuleConfig> configClass = module.getConfigClass();
 
+            // If module is configurable
             if (configId != null && configClass != null) {
+                // Load configuration with manager
                 ModuleConfig config = configManager.loadConfig(configId, configClass);
+                // Affect loaded configuration to module
                 module.setConfig(config);
             }
         }
 
     }
 
+    /**
+     * Return the module instance by is class
+     *
+     * @param <T> Module class parameter
+     * @param moduleClass Module class
+     * @return Module instance
+     * @throws ModuleNotFoundException Throw exception if module is not found
+     */
     public <T extends OpenSilexModule> T getModuleByClass(Class<T> moduleClass) throws ModuleNotFoundException {
         for (OpenSilexModule module : getModules()) {
             if (module.getClass().equals(moduleClass)) {
@@ -246,6 +402,11 @@ public class ModuleManager {
         throw new ModuleNotFoundException(moduleClass);
     }
 
+    /**
+     * Call install method for all modules
+     *
+     * @throws Exception Rethrow any exception in module install method
+     */
     public void install() throws Exception {
         for (OpenSilexModule module : getModules()) {
             try {

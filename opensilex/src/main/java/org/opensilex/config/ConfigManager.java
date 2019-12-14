@@ -1,4 +1,5 @@
 //******************************************************************************
+//                          ConfigManager.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -26,7 +27,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Configuration manager based on YAML files TODO: update Javadoc
  *
+ * @author Vincent Migot
  */
 public class ConfigManager {
 

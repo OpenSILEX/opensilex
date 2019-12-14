@@ -96,8 +96,6 @@ cd <BASE_DIR>
 cd opensilex-dev/opensilex-dev-tools
 mvn "-Dexec.args=-classpath %classpath:../opensilex:../opensilex-core:../opensilex-front:../phis-ws/phis2-ws org.opensilex.dev.Install" -Dexec.executable=/usr/bin/java  org.codehaus.mojo:exec-maven-plugin:1.6.0:exec
 ```
-
-
 # Start OpenSILEX development server with Netbeans
 
 ## For web services only
@@ -126,7 +124,26 @@ PGAdmin is accessible by default at: [http://localhost:8670/](http://localhost:8
 - PGAdmin default user: admin@opensilex.org
 - PGAdmin default password: opensilex
 
+# Generate documentation
+
+```
+cd <BASE_DIR>
+mvn site -Pwith-test-report
+```
+
+All documentation will be available in <BASE_DIR>/opensilex-doc/src/main/doc folder.
+
 # Other maven build profiles and options
+
+## Generate release
+
+```
+mvn install -Drevision=X.Y.Z
+```
+
+Zip for revision will be available in <BASE_DIR>/opensilex-release/target/opensilex-release-X.Y.Z.zip
+
+Uncompressed version is available in  <BASE_DIR>/opensilex-release/target/opensilex-release-X.Y.Z/
 
 ## Skip unit and integration tests
 

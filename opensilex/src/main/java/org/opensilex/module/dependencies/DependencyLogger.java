@@ -1,4 +1,5 @@
 //******************************************************************************
+//                      DependencyLogger.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -11,14 +12,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Simple logger for dependencies resolution.
+ * Almost usefull for debugging
  *
+ * @see org.eclipse.aether.AbstractRepositoryListener
  * @author Vincent Migot
  */
 public class DependencyLogger
         extends AbstractRepositoryListener {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DependencyManager.class);
-    
+
     @Override
     public void artifactInstalled(RepositoryEvent event) {
         LOGGER.debug(String.format("Artifact %s installed to file %s", event.getArtifact(), event.getFile()));
@@ -52,14 +56,14 @@ public class DependencyLogger
         LOGGER.debug(String.format("Resolving artifact %s", event.getArtifact()));
     }
 
-     @Override
+    @Override
     public void metadataResolving(RepositoryEvent event) {
         LOGGER.debug(String.format("Resolving artifact metadata %s", event.getArtifact()));
     }
 
     @Override
     public void metadataResolved(RepositoryEvent event) {
-         LOGGER.debug(String.format("Artifact %s metadata resolved", event.getArtifact()));
+        LOGGER.debug(String.format("Artifact %s metadata resolved", event.getArtifact()));
     }
 
     @Override
@@ -84,7 +88,7 @@ public class DependencyLogger
 
     @Override
     public void metadataDownloaded(RepositoryEvent event) {
-         LOGGER.debug(String.format("Artifact %s metadata downloaded", event.getArtifact()));
+        LOGGER.debug(String.format("Artifact %s metadata downloaded", event.getArtifact()));
     }
 
     @Override
@@ -94,7 +98,7 @@ public class DependencyLogger
 
     @Override
     public void metadataDeployed(RepositoryEvent event) {
-         LOGGER.debug(String.format("Artifact %s metadata deployed", event.getArtifact()));
+        LOGGER.debug(String.format("Artifact %s metadata deployed", event.getArtifact()));
     }
 
     @Override
@@ -114,6 +118,6 @@ public class DependencyLogger
 
     @Override
     public void artifactDeployed(RepositoryEvent event) {
-         LOGGER.debug(String.format("Artifact %s deployed", event.getArtifact()));
+        LOGGER.debug(String.format("Artifact %s deployed", event.getArtifact()));
     }
 }

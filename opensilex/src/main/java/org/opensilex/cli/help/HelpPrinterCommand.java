@@ -1,4 +1,5 @@
 //******************************************************************************
+//                        HelpPrinterCommand.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -11,10 +12,11 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.Mixin;
 
-
 /**
- * Utility class used as super class for commands which are only a regroup of 
- * other commands and which only has purpose of displaying help for them
+ * Utility class used as super class for commands which are only a regroup of
+ * other commands and which only has purpose of displaying help for them.
+ *
+ * @author Vincent Migot
  */
 @Command(
         description = "Calling this command will simply display help message with all subcommands",

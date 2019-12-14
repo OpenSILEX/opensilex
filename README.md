@@ -21,7 +21,7 @@ Note: the ```<BASE_DIR>``` variable referenced in this documentation is the root
 
 Following commands should work from everywhere in your system without errors:
 
-```java --version```
+```java -version```
 
 ```mvn --version```
 

@@ -33,7 +33,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         
         <!-- generated doc site output directory -->
-        <generated.doc.site.directory>${maven.multiModuleProjectDirectory}/opensilex-doc/src/main/doc/generated</generated.doc.site.directory>
+        <generated.doc.site.directory>${maven.multiModuleProjectDirectory}/opensilex-doc/src/main/resources/generated</generated.doc.site.directory>
         
         <!-- build variation flags -->
         <skipFrontBuild>false</skipFrontBuild>

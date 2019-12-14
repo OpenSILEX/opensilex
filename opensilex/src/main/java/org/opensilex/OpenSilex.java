@@ -237,7 +237,7 @@ public class OpenSilex {
      * <pre>
      * Helper method to call easily setup method programatically this way:
      * <code>
-     * OpenSilex.setup(new HashMap<String, String>() {
+     * OpenSilex.setup(new HashMap&lt;String, String&gt;() {
      *     {
      *         put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);
      *         put(OpenSilex.CONFIG_FILE_ARG_KEY, configFile);

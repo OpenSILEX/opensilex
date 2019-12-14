@@ -190,7 +190,7 @@ public class ModuleManager {
      * Utility method to iterate through modules. Example:
      * <pre>
      * <code>
-     * moduleManager.forEachModule((OpenSilexModule module) -> {
+     * moduleManager.forEachModule((OpenSilexModule module) -&gt; {
      *      // DO STUFF WITH MODULE..
      * });
      * </code>

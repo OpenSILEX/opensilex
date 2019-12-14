@@ -42,7 +42,7 @@ import picocli.CommandLine.Parameters;
  * TODO - update: Update module(s)
  * TODO - uninstall: uninstall one or all modules
  * TODO - check: check system configuration.
- * TODO Clean & update Javadoc
+ * TODO Clean and update Javadoc
  * </pre>
  *
  * @author Vincent Migot

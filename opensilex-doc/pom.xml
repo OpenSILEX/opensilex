@@ -17,15 +17,5 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/doc</directory>
-                <includes>
-                    <include>**/*</include>
-                </includes>
-            </resource>
-        </resources>
-    </build>
 </project>
 

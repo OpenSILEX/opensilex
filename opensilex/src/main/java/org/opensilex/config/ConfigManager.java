@@ -27,7 +27,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Configuration manager based on YAML files TODO: update Javadoc
+ * <pre>
+ * Configuration manager based on YAML files
+ * TODO update Javadoc
+ * </pre>
  *
  * @author Vincent Migot
  */

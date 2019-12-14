@@ -12,8 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -21,8 +21,10 @@ import java.util.ServiceLoader;
  */
 public class SPARQLDeserializers {
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLDeserializers.class);
+
     private static Map<Class<?>, SPARQLDeserializer<?>> deserialisersMap;
-    
+
     private static Map<Class<?>, SPARQLDeserializer<?>> getDeserializerMap() {
         if (deserialisersMap == null) {
             deserialisersMap = buildDeserializersMap();
@@ -35,7 +37,7 @@ public class SPARQLDeserializers {
         Map<Class<?>, SPARQLDeserializer<?>> map = getDeserializerMap();
         return map.containsKey(clazz);
     }
-        
+
     @SuppressWarnings("unchecked")
     public static <T> SPARQLDeserializer<T> getForClass(Class<T> clazz) throws SPARQLDeserializerNotFoundException {
         Map<Class<?>, SPARQLDeserializer<?>> map = getDeserializerMap();
@@ -46,20 +48,20 @@ public class SPARQLDeserializers {
         }
 
     }
-    
+
     private static Map<Class<?>, SPARQLDeserializer<?>> buildDeserializersMap() {
         HashMap<Class<?>, SPARQLDeserializer<?>> deserializersMap = new HashMap<>();
 
         List<SPARQLDeserializer<?>> deserializers = new ArrayList<>();
         ServiceLoader.load(SPARQLDeserializer.class, Thread.currentThread().getContextClassLoader())
                 .forEach(deserializers::add);
-        
+
         for (SPARQLDeserializer<?> deserializer : deserializers) {
             try {
                 Class<?> key = parameterizedClass(deserializer, SPARQLDeserializer.class, 0);
                 deserializersMap.put(key, deserializer);
             } catch (ClassNotFoundException ex) {
-                // TODO warn on missing deserializer. Error ?
+                LOGGER.error("SPARQL deserializer not found (should never happend)", ex);
             }
         }
 

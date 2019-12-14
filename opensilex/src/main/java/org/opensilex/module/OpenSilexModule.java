@@ -352,14 +352,4 @@ public abstract class OpenSilexModule {
         LOGGER.debug("Nothing to shutdown for module class: " + getClass().getCanonicalName());
     }
 
-    /**
-     * Extension method to allow modules to add custom claims on User login in
-     * JWT token. This token is available both on server and client sides.
-     *
-     * @param user Current user
-     * @param tokenBuilder Token builder on which to add claims
-     */
-    public void addLoginClaims(UserModel user, JWTCreator.Builder tokenBuilder) {
-        LOGGER.debug("No claims to add for module class: " + getClass().getCanonicalName());
-    }
 }

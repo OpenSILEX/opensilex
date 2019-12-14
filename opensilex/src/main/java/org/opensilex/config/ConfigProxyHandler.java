@@ -27,10 +27,12 @@ import org.opensilex.utils.ClassUtils;
 import org.slf4j.LoggerFactory;
 
 /**
+ * <pre>
  * Proxy class to transform configuration interfaces into real objects, reading
  * directly from loaded configuration.
- * TODO: update Javadoc
- * 
+ * TODO update Javadoc
+ * </pre>
+ *
  * @author Vincent Migot
  */
 public class ConfigProxyHandler implements InvocationHandler {

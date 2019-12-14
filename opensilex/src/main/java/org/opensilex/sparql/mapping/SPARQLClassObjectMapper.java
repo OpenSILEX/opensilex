@@ -149,7 +149,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public T createInstance(SPARQLResult result, SPARQLService service) throws Exception {
         String realType = result.getStringValue(SPARQLQueryHelper.typeDefVar.getName());
         if (!realType.equals(getRDFType().toString())) {
-            // TODO gérer les sous-classes
+            // TODO handle sub classes
         }
         
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
@@ -167,7 +167,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                     Object objValue = SPARQLDeserializers.getForClass(field.getType()).fromString(strValue);
                     setter.invoke(instance, objValue);
                 } else {
-                    //TODO change exception
+                    //TODO change exception type
                     throw new Exception("No deserializer for field: " + field.getName());
                 }
             }

@@ -25,6 +25,8 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.utils.Ontology;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -33,6 +35,8 @@ import org.opensilex.sparql.utils.Ontology;
  */
 public class SPARQLClassQueryBuilder {
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLClassQueryBuilder.class);
+    
     private SelectBuilder selectBuilder;
     private AskBuilder askBuilder;
     private SelectBuilder countBuilder;
@@ -104,10 +108,11 @@ public class SPARQLClassQueryBuilder {
 
             String uriFieldName = analyzer.getURIFieldName();
             try {
+                // TODO generate properly count/distinct trought Jena API 
                 countBuilder.addVar("(COUNT(DISTINCT ?" + uriFieldName + "))", makeVar(countFieldName));
             } catch (ParseException ex) {
-                // Should not append
-                // TODO generate properly count/distinct trought Jena API (see 
+                LOGGER.error("Error while building count query (should never happend)", ex);
+                
             }
             countBuilder.addWhere(makeVar(uriFieldName), RDF.type, typeDefVar);
             countBuilder.addWhere(typeDefVar, Ontology.subClassAny, analyzer.getRDFType());

@@ -5,7 +5,6 @@
 //******************************************************************************
 package org.opensilex.dev;
 
-//import org.opensilex.angular.AngularExtension;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;

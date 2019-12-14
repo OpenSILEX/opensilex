@@ -414,7 +414,7 @@ public class SPARQLClassAnalyzer {
         try {
             return (URI) getGetterFromField(getURIField()).invoke(instance);
         } catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException ex) {
-            // TODO warn or error, should not happend
+            LOGGER.error("Exception while getting SPARQL object URI (should never happend)", ex);
             return null;
         }
     }

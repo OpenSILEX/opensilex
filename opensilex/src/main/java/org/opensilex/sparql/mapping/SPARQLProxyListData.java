@@ -19,14 +19,16 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.utils.Ontology;
-
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author vincent
  */
 class SPARQLProxyListData<T> extends SPARQLProxyList<T> {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLProxyListData.class);
 
     public SPARQLProxyListData(Node graph, URI uri, Property property, Class<T> genericType, boolean isReverseRelation, SPARQLService service) throws SPARQLDeserializerNotFoundException {
         super(graph, uri, property, genericType, isReverseRelation, service);
@@ -38,7 +40,7 @@ class SPARQLProxyListData<T> extends SPARQLProxyList<T> {
 
         Var value = makeVar("value");
         select.addVar(value);
-        
+
         if (isReverseRelation) {
             select.addWhere(value, property, Ontology.nodeURI(uri));
         } else {
@@ -49,11 +51,11 @@ class SPARQLProxyListData<T> extends SPARQLProxyList<T> {
         SPARQLDeserializer<T> deserializer = SPARQLDeserializers.getForClass(genericType);
 
         service.executeSelectQuery(select, (SPARQLResult result) -> {
+            String strValue = result.getStringValue("value");
             try {
-                String strValue = result.getStringValue("value");
                 results.add(deserializer.fromString(strValue));
             } catch (Exception ex) {
-                // TODO warn
+                LOGGER.warn("Error while parsing SPARQL result, result will be ignored: " + strValue, ex);
             }
         });
 

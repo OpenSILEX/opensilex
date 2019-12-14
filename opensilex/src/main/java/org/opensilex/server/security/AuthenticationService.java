@@ -10,7 +10,6 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.impl.PublicClaims;
 import com.auth0.jwt.interfaces.DecodedJWT;
@@ -29,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.SecurityContext;
 import org.opensilex.OpenSilex;
+import org.opensilex.module.extensions.TokenExtension;
 import org.opensilex.service.Service;
 import org.opensilex.server.user.dal.UserModel;
 import org.slf4j.Logger;
@@ -117,7 +117,7 @@ public class AuthenticationService implements Service {
             tokenBuilder.withArrayClaim(CLAIM_ACCESS_LIST, accessList.toArray(new String[accessList.size()]));
         }
 
-        OpenSilex.getInstance().getModules().forEach(module -> {
+        OpenSilex.getInstance().getModulesImplementingInterface(TokenExtension.class).forEach(module -> {
             module.addLoginClaims(user, tokenBuilder);
         });
 

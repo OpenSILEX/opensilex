@@ -38,12 +38,11 @@ import picocli.CommandLine.Parameters;
 /**
  * <pre>
  * This class regroup all commands concerning OpenSilex system operations:
- * - install: install module(s)
- * - update: Update module(s)
+ * TODO - install: install module(s)
+ * TODO - update: Update module(s)
  * TODO - uninstall: uninstall one or all modules
  * TODO - check: check system configuration.
- * 
- * TODO: Clean & update Javadoc
+ * TODO Clean & update Javadoc
  * </pre>
  *
  * @author Vincent Migot

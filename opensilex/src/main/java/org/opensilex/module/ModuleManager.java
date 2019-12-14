@@ -28,9 +28,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Module manager for OpenSilex applications
  * <pre>
- * TODO update javadoc
+ * Module manager for OpenSilex applications
+ * - Load modules with dependencies
+ * - Load their configuration
+ * - Start/stop services
+ * - Start/stop modules
+ * - Call install method for all modules
+ * - Provide methods to access modules (By class, implemented extension, ...)
  * </pre>
  *
  * @author Vincent Migot

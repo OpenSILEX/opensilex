@@ -1,4 +1,5 @@
 //******************************************************************************
+//                              Server.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -32,17 +33,45 @@ import org.opensilex.fs.FileStorageService;
 import org.opensilex.module.OpenSilexModule;
 
 /**
- * This class extends Tomcat server to embbeded it and load OpenSilex services,
- * rdf4j server and workbench
+ * <pre>
+ * This class extends Tomcat server to embbeded it:
+ * - Set configuration in constructor
+ * - Load swagger "root" application
+ * - Call initServer method for all modules implementing {@code org.opensilex.module.extensions.ServerExtension}
+ * - Enable GZIP compression
+ * - Enable admin thread to remotly manage server
+ * - Call shutDownServer method for all modules implementing {@code org.opensilex.module.extensions.ServerExtension}
+ * </pre>
+ *
+ * @author Vincent Migot
  */
 public class Server extends Tomcat {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
+    /**
+     * Base directory for tomcat server
+     */
     private final String baseDir;
+
+    /**
+     * OpenSilex application instance
+     */
     private final OpenSilex instance;
+
+    /**
+     * Host name
+     */
     private final String host;
+
+    /**
+     * Tomcat port
+     */
     private final int port;
+
+    /**
+     * Administration port for server to be remotly managed
+     */
     private final int adminPort;
 
     /**
@@ -57,6 +86,7 @@ public class Server extends Tomcat {
      */
     public Server(OpenSilex instance, String host, int port, int adminPort, Path tomcatDirectory) {
         super();
+        // Define environment properties
         System.setProperty("org.apache.catalina.startup.EXIT_ON_INIT_FAILURE", "true");
         System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
 
@@ -69,24 +99,16 @@ public class Server extends Tomcat {
 
     @Override
     public void start() throws LifecycleException {
+        // Define properties
         setBaseDir(baseDir);
         setPort(port);
         setHostname(host);
         getHost().setAppBase(baseDir);
-
         getServer().setParentClassLoader(Thread.currentThread().getContextClassLoader());
 
+        // Load Swagger root application
         Context appContext = initApp("", "/", "/webapp", getClass());
         appContext.getPipeline().addValve(new RewriteValve());
-
-        instance.getModulesImplementingInterface(ServerExtension.class).forEach((ServerExtension extension) -> {
-            try {
-                extension.initServer(this);
-            } catch (Exception ex) {
-                OpenSilexModule extensionModule = (OpenSilexModule) extension;
-                LOGGER.error("Error while initilizing server extension for: " + extensionModule.getClass().getCanonicalName(), ex);
-            }
-        });
 
         FileStorageService fs = instance.getServiceInstance("fs", FileStorageService.class);
         try {
@@ -100,8 +122,20 @@ public class Server extends Tomcat {
             LOGGER.error("Errow while loading war applications", t);
         }
 
+        // Call initServer method for all modules implementing ServerExtension
+        instance.getModulesImplementingInterface(ServerExtension.class).forEach((ServerExtension extension) -> {
+            try {
+                extension.initServer(this);
+            } catch (Exception ex) {
+                OpenSilexModule extensionModule = (OpenSilexModule) extension;
+                LOGGER.error("Error while initilizing server extension for: " + extensionModule.getClass().getCanonicalName(), ex);
+            }
+        });
+
+        // Enable GZIP compression
         enableGzip(getConnector());
 
+        // Enable admin thread to manage server
         initAdminThread(adminPort);
 
         super.start();
@@ -109,6 +143,7 @@ public class Server extends Tomcat {
 
     @Override
     public void stop() throws LifecycleException {
+        // Call shutDownServer method for all modules implementing ServerExtension
         instance.getModulesImplementingInterface(ServerExtension.class).forEach((ServerExtension extension) -> {
             try {
                 extension.shutDownServer(this);
@@ -134,21 +169,31 @@ public class Server extends Tomcat {
      */
     public Context initApp(String name, String contextPath, String baseDirectory, Class<?> moduleClass) {
         try {
+            // Define webapp context
             Context context = addWebapp(name, new File(".").getAbsolutePath());
-            WebResourceRoot resource = new StandardRoot(context);
+
+            // Get module JAR file from it's class
             File jarFile = ClassUtils.getJarFile(moduleClass);
+
+            // Define application resources
+            WebResourceRoot resource = new StandardRoot(context);
             if (jarFile.isFile()) {
+                // Define resources as a JAR file
                 resource.createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR, contextPath, jarFile.getCanonicalPath(), null, baseDirectory);
 
+                // Speed class scanning avoiding to scan dependencies
                 context.getJarScanner().setJarScanFilter((JarScanType jarScanType, String jarName) -> {
                     return jarName.equals(jarFile.getName());
                 });
             } else {
+                // Define resources as a folder if module is a folder (DEV MODE)
                 resource.createWebResourceSet(WebResourceRoot.ResourceSetType.PRE, contextPath, jarFile.getCanonicalPath(), null, baseDirectory);
             }
-
-            context.getServletContext().setAttribute("opensilex", instance);
+            // Add resources to context
             context.setResources(resource);
+
+            // Allow application to get opensilex instance through servlet context injection
+            context.getServletContext().setAttribute("opensilex", instance);
 
             return context;
 

@@ -1,4 +1,5 @@
 //******************************************************************************
+//                        ServerAdminClient.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -13,7 +14,9 @@ import java.net.Socket;
 
 
 /**
- * Client for the ServerAdmin class used to send commands to a runnning server
+ * Client for the ServerAdmin class used to send commands to a runnning server.
+ * 
+ * @author Vincent Migot
  */
 public class ServerAdminClient {
 

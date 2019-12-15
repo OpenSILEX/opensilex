@@ -27,7 +27,7 @@ import javax.ws.rs.core.Response;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.MultipleObjectsResponse;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.RestApplicationAPI;
@@ -166,6 +166,6 @@ public class VariableAPI implements RestApplicationAPI {
                 VariableGetDTO.class,
                 VariableGetDTO::fromModel
         );
-        return new MultipleObjectsResponse<>(resultDTOList).getResponse();
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 }

@@ -1,4 +1,5 @@
 //******************************************************************************
+//                      ExceptionJsonMapper.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Handles generic exceptions in web services and displays them as JSON.
  *
+ * @see org.opensilex.server.response.ErrorResponse
  * @author Vincent Migot
  */
 @Provider

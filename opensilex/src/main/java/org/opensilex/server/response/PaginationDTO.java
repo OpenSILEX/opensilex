@@ -1,4 +1,5 @@
 //******************************************************************************
+//                          PaginationDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -6,29 +7,37 @@
 package org.opensilex.server.response;
 
 /**
- * Pagination model. See Brapi for details
- * https://brapi.docs.apiary.io/#introduction/structure-of-the-response-object:/the-metadata-key
+ * Response metadata Pagination DTO.
  *
+ * @see org.opensilex.server.response.MetadataDTO
  * @author Samuël Cherimont
  */
-public class Pagination {
+public class PaginationDTO {
 
-    // number of elements in the current returned page
+    /**
+     * number of elements in the current returned page
+     */
     private final long pageSize;
 
-    // index number of the current returned page
+    /**
+     * index number of the current returned page
+     */
     private final long currentPage;
 
-    // total number of elements available in the super set (unpaged)
+    /**
+     * total number of elements available in the super set (unpaged)
+     */
     private final long totalCount;
 
-    // total number of pages available (total count / requested page size)
+    /**
+     * total number of pages available (total count / requested page size)
+     */
     private final long totalPages;
 
     /**
      * Empty constructor assume no pagination
      */
-    public Pagination() {
+    public PaginationDTO() {
         this.pageSize = 0;
         this.currentPage = 0;
         this.totalCount = 0;
@@ -42,7 +51,7 @@ public class Pagination {
      * @param currentPage
      * @param totalCount
      */
-    public Pagination(long pageSize, long currentPage, long totalCount) {
+    public PaginationDTO(long pageSize, long currentPage, long totalCount) {
         this.pageSize = pageSize;
         this.currentPage = currentPage;
         this.totalCount = totalCount;

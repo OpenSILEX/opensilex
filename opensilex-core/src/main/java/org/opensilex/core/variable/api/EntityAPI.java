@@ -27,7 +27,7 @@ import javax.ws.rs.core.Response;
 import org.opensilex.core.variable.dal.EntityDAO;
 import org.opensilex.core.variable.dal.EntityModel;
 import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.MultipleObjectsResponse;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.RestApplicationAPI;
@@ -157,6 +157,6 @@ public class EntityAPI implements RestApplicationAPI {
                 EntityGetDTO.class,
                 EntityGetDTO::fromModel
         );
-        return new MultipleObjectsResponse<>(resultDTOList).getResponse();
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 }

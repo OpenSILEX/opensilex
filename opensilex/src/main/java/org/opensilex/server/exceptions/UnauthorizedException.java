@@ -1,8 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                        UnauthorizedException.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.server.exceptions;
 
 import javax.ws.rs.WebApplicationException;
@@ -10,6 +11,18 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.server.response.ErrorResponse;
 
+/**
+ * <pre>
+ * This class represent an unauthorized exception (401 - UNAUTHORIZED).
+ * 
+ * It should only be used for authentication errors (ie: invalid credentials or token decoding issues)
+ *
+ * Do not confuse it with {@code org.opensilex.server.exceptions.ForbiddenException}
+ * which should be use for all other access rights restrictriction.
+ * </pre>
+ *
+ * @author Vincent Migot
+ */
 public class UnauthorizedException extends WebApplicationException {
 
     public UnauthorizedException() {

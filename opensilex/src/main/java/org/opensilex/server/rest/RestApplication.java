@@ -1,4 +1,5 @@
 //******************************************************************************
+//                              RestApplication.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -28,10 +29,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is the main entry point of OpenSILEX application It extends Jersey
- * ResourceConfig with main API entry point
+ * <pre>
+ * This class is the main entry point of OpenSILEX REST API:
+ * - extends Jersey ResourceConfig
+ * - can automatically get OpenSilex instance via ServletContext or through constructor argument
+ * - configure all Jersey features and options in constructor
+ * - register API classes implementing APIExtension
+ * - initialize swagger
+ * - register services for injection
+ * - call module initialization for classes implementing APIExtension
  *
  * see: https://jersey.github.io/
+ * </pre>
+ *
+ * @see org.opensilex.module.extensions.APIExtension
+ * @author Vincent Migot
  */
 @ApplicationPath("/rest")
 @Singleton
@@ -52,10 +64,11 @@ public class RestApplication extends ResourceConfig {
      * Constructor for opensilex Application:
      * <pre>
      * - Load core configuration
-     * - register packages
+     * - register packages for API classes implementing APIExtension
      * - initialize swagger
-     * - call module initialization
-     * - make database services and module injectable
+     * - register services for injection
+     * - register modules classes for injection
+     * - call all modules initAPI method
      * </pre>
      *
      * @param app OpenSilex instance
@@ -130,6 +143,11 @@ public class RestApplication extends ResourceConfig {
         beanConfig.setScan(true);
     }
 
+    /**
+     * Return list of modules implementing APIExtension
+     *
+     * @return List of modules as APIExtension
+     */
     private List<APIExtension> getAPIExtensionModules() {
         return app.getModulesImplementingInterface(APIExtension.class);
     }

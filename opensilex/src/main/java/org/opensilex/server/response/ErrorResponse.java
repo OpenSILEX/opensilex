@@ -1,4 +1,5 @@
 //******************************************************************************
+//                      ErrorResponse.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -9,12 +10,38 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import javax.ws.rs.core.Response.Status;
 
-
 /**
- * Internal class used to format the exception, removing useless information.
+ * <pre>
+ * This class represents an HTTP error response (Status &gt;= 400) in JSON.
+ * Response status is automatically set to 500 - INTERNAL_SERVER_ERROR if error comes from a source exception.
+ * Otherwise response status is defined by constructor parameter.
+ *
+ * Produced JSON:
+ * {
+ *      metadata: {
+ *          pagination: {
+ *              pageSize: 0,
+ *              currentPage: 0,
+ *              totalCount: 0,
+ *              totalPages: 0
+ *          },
+ *          status: [],
+ *          datafiles: []
+ *      },
+ *      result: {
+ *          title: Title of the error
+ *          message: Message of the error
+ *          stack: Stack trace array of the source exception filtered by packages org.opensilex.* (ONLY IN DEBUG MODE)
+ *          fullstack: Complete stack trace array of the source exception (ONLY IN DEBUG MODE)
+ *      }
+ * }
+ * </pre>
+ * 
+ * @see org.opensilex.server.response.ErrorDTO
+ * @author Vincent Migot
  */
 @JsonInclude(Include.NON_NULL)
-public class ErrorResponse extends JsonResponse<ErrorResult> {
+public class ErrorResponse extends JsonResponse<ErrorDTO> {
 
     /**
      * Constructor
@@ -23,8 +50,8 @@ public class ErrorResponse extends JsonResponse<ErrorResult> {
      */
     public ErrorResponse(Throwable exception) {
         super(Status.INTERNAL_SERVER_ERROR);
-        metadata = new Metadata(new Pagination());
-        result = new ErrorResult(
+        metadata = new MetadataDTO(new PaginationDTO());
+        result = new ErrorDTO(
                 "Unexpected internal error - " + exception.getClass().getCanonicalName(),
                 exception.getMessage(),
                 exception
@@ -33,8 +60,8 @@ public class ErrorResponse extends JsonResponse<ErrorResult> {
 
     public ErrorResponse(Status status, String title, String message) {
         super(status);
-        metadata = new Metadata(new Pagination());
-        result = new ErrorResult(title, message);
+        metadata = new MetadataDTO(new PaginationDTO());
+        result = new ErrorDTO(title, message);
     }
 
 }

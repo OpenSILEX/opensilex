@@ -1,4 +1,5 @@
 //******************************************************************************
+//                           ErrorDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -7,17 +8,27 @@ package org.opensilex.server.response;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.opensilex.OpenSilex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
+ * <pre>
+ * This class define an error DTO used by {@code org.opensilex.server.response.ErrorResponse}
+ * It's defined by a title and a message and eventually a source exception.
  *
- * @author vincent
+ * ONLY IN DEBUG MODE:
+ * If error result is constructed with an exception result will contains two version of the stack trace arrays
+ * - "stack" contains exception stack trace array filtered by packages org.opensilex.*
+ * - "fullstack" contains complete exception stack trace array
+ * </pre>
+ *
+ * @see org.opensilex.server.response.ErrorResponse
+ * @author Vincent Migot
  */
-public class ErrorResult {
+public class ErrorDTO {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ErrorResult.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(ErrorDTO.class);
 
     /**
      * Title field of the exception containing the class name.
@@ -39,15 +50,15 @@ public class ErrorResult {
      */
     public List<String> fullstack;
 
-    public ErrorResult(String title, String message) {
+    public ErrorDTO(String title, String message) {
         this(title, message, null);
     }
 
-    public ErrorResult(String title, String message, Throwable t) {
+    public ErrorDTO(String title, String message, Throwable t) {
         this.title = title;
         this.message = message;
 
-        if (t != null && LOGGER.isDebugEnabled()) {
+        if (t != null && OpenSilex.debug()) {
             stack = new ArrayList<>();
             fullstack = new ArrayList<>();
             for (StackTraceElement stackElement : t.getStackTrace()) {

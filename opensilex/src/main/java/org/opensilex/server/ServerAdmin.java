@@ -1,4 +1,5 @@
 //******************************************************************************
+//                           ServerAdmin.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -11,10 +12,11 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-
 /**
  * Server administration tool used to execute recieved commands from the command
- * line while tomcat server is running
+ * line while tomcat server is running and managed it remotly.
+ * 
+ * @author Vincent Migot
  */
 public class ServerAdmin implements Runnable {
 
@@ -64,7 +66,7 @@ public class ServerAdmin implements Runnable {
                         String message = input.readUTF();
                         if (message.equals(SHUTDOWN_COMMAND)) {
                             // TODO redirect server output to the calling socket client
-                            output.println("WTF");
+                            output.println("RESPONSE");
                             output.flush();
                             System.setOut(output);
                             System.setErr(output);

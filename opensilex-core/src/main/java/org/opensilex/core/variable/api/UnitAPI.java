@@ -27,7 +27,7 @@ import javax.ws.rs.core.Response;
 import org.opensilex.core.variable.dal.UnitDAO;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.MultipleObjectsResponse;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.RestApplicationAPI;
@@ -156,6 +156,6 @@ public class UnitAPI implements RestApplicationAPI {
                 UnitGetDTO.class,
                 UnitGetDTO::fromModel
         );
-        return new MultipleObjectsResponse<>(resultDTOList).getResponse();
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 }

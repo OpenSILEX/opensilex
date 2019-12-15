@@ -305,7 +305,7 @@ public class OpenSilex {
         }
 
         LOGGER.debug("Create instance");
-        OpenSilex app = new OpenSilex(baseDirectory, profileId, configFile, new ModuleManager(), new ConfigManager(), new ServiceManager());
+        OpenSilex app = new OpenSilex(baseDirectory, profileId, configFile, new ModuleManager(), new ConfigManager(), new ServiceManager(), debug);
 
         return app;
     }
@@ -380,6 +380,11 @@ public class OpenSilex {
     private final File configFile;
 
     /**
+     * Debug flag
+     */
+    private final boolean debug;
+
+    /**
      * Constructor for OpenSilex application
      *
      * @param baseDirectory Base directory for the application used to load
@@ -396,7 +401,8 @@ public class OpenSilex {
             File configFile,
             ModuleManager moduleManager,
             ConfigManager configManager,
-            ServiceManager serviceManager
+            ServiceManager serviceManager,
+            boolean debug
     ) {
         this.baseDirectory = baseDirectory;
         this.profileId = profileId;
@@ -405,6 +411,8 @@ public class OpenSilex {
         this.configManager = configManager;
         this.moduleManager = moduleManager;
         this.serviceManager = serviceManager;
+
+        this.debug = debug;
     }
 
     /**
@@ -606,6 +614,14 @@ public class OpenSilex {
      */
     public boolean isDev() {
         return getProfileId().equals(DEV_PROFILE_ID);
+    }
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public static boolean debug() {
+        return getInstance().isDebug();
     }
 
     public <T extends Service> T getServiceInstance(String serviceId, Class<T> serviceInterface) {

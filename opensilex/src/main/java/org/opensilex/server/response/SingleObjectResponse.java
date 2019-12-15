@@ -1,4 +1,5 @@
 //******************************************************************************
+//                          SingleObjectResponse.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -6,14 +7,20 @@
 package org.opensilex.server.response;
 
 /**
+ * <pre>
+ * Single Object URI response (for get by uri result by example).
  *
- * @author vincent
+ * Automatically set given object to result body with no metadata.
+ * </pre>
+ *
+ * @see org.opensilex.server.response.JsonResponse
+ * @author Vincent Migot
  */
 public class SingleObjectResponse<T> extends JsonResponse<T> {
 
     public SingleObjectResponse(T result) {
         super(javax.ws.rs.core.Response.Status.OK);
-        this.metadata = new Metadata(new Pagination());
+        this.metadata = new MetadataDTO(new PaginationDTO());
         this.result = result;
     }
 }

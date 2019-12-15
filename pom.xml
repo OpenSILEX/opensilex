@@ -148,6 +148,22 @@
                         </configuration>
                                     
                         <executions>
+                            <execution>
+                                <id>merge</id>
+                                <goals>
+                                    <goal>merge</goal>
+                                </goals>
+                                <configuration>
+                                    <fileSets>
+                                        <fileSet implementation="org.apache.maven.shared.model.fileset.FileSet">
+                                            <directory>${maven.multiModuleProjectDirectory}</directory>
+                                            <includes>
+                                                <include>**/*.exec</include>
+                                            </includes>
+                                        </fileSet>
+                                    </fileSets>
+                                </configuration>
+                            </execution>
                             <!-- Create aggregate code coverage report accross all Maven modules -->
                             <execution>
                                 <id>report-aggregate</id>
@@ -167,6 +183,7 @@
                             </execution>
                         </executions>
                     </plugin>
+                    
                 </plugins>
             </build>
                   

@@ -33,7 +33,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         
         <!-- generated doc site output directory -->
-        <generated.doc.site.directory>${maven.multiModuleProjectDirectory}/opensilex-doc/src/main/resources/generated</generated.doc.site.directory>
+        <generated.doc.site.directory>opensilex-doc/src/main/resources/generated</generated.doc.site.directory>
         
         <!-- build variation flags -->
         <skipFrontBuild>false</skipFrontBuild>
@@ -498,7 +498,8 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
-                        <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                        <reuseForks>true</reuseForks>
+                        <argLine>${argLine} -Dfile.encoding=${project.build.sourceEncoding}</argLine>
                         <trimStackTrace>false</trimStackTrace>
                         <useFile>false</useFile>
                     </configuration>
@@ -787,7 +788,7 @@
                     <!-- see below to enable multilang doc -->
                     <!--<locales>en,fr</locales>-->
                     <generateReports>true</generateReports>
-                    <outputDirectory>${generated.doc.site.directory}/${project.name}/</outputDirectory>
+                    <outputDirectory>../${generated.doc.site.directory}/${project.name}/</outputDirectory>
                 </configuration>
             </plugin>
             
@@ -1066,7 +1067,7 @@
                         <artifactId>jacoco-maven-plugin</artifactId>
                         <version>${jacoco.maven.plugin.version}</version>
                         <configuration>
-                            <outputDirectory>${generated.doc.site.directory}/${project.name}/jacoco/</outputDirectory>
+                            <outputDirectory>../${generated.doc.site.directory}/${project.name}/jacoco/</outputDirectory>
                             <excludes>
                                 <exclude>**/*.war</exclude>
                             </excludes>
@@ -1079,31 +1080,16 @@
                             </execution>
                             <execution>
                                 <id>report</id>
-                                <phase>prepare-package</phase>
+                                <phase>package</phase>
                                 <goals>
                                     <goal>report</goal>
                                 </goals>
-                            </execution>
-                            <execution>
-                                <id>merge</id>
-                                <goals>
-                                    <goal>merge</goal>
-                                </goals>
-                                <configuration>
-                                    <fileSets>
-                                        <fileSet implementation="org.apache.maven.shared.model.fileset.FileSet">
-                                            <directory>${project.basedir}</directory>
-                                            <includes>
-                                                <include>**/*.exec</include>
-                                            </includes>
-                                        </fileSet>
-                                    </fileSets>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
+            
             <reporting>
                 <plugins>
                     <plugin>

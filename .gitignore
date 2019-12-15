@@ -8,4 +8,4 @@ node_modules/
 **/front/dist
 **/front/src/lib
 **/front/types
-opensilex-doc/src/main/resources/generated/**
+opensilex-doc/src/main/resources/generated/

@@ -96,7 +96,6 @@ export default new Vuex.Store({
       }, exipreAfter);
 
       let inactivityRenewDelay = user.getInactivityRenewDelayMs();
-      let needRenew = false;
       if (inactivityRenewDelay > 0) {
         console.debug("Enable inactivity renew timeout in", inactivityRenewDelay, "ms");
         autoRenewTimeout = setTimeout(() => {

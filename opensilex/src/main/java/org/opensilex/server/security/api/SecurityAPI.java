@@ -30,7 +30,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.server.rest.RestApplicationAPI;
 import org.opensilex.server.security.ApiProtected;
 import org.opensilex.server.security.AuthenticationService;
 import org.opensilex.server.security.dal.SecurityAccessDAO;
@@ -42,7 +41,7 @@ import org.slf4j.LoggerFactory;
 
 @Api("Security")
 @Path("/security")
-public class SecurityAPI implements RestApplicationAPI {
+public class SecurityAPI {
 
     /**
      * Logger

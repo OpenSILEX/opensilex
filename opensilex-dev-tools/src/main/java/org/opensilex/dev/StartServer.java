@@ -20,7 +20,7 @@ public class StartServer {
     public static void main(String[] args) throws IOException {
 
         Path currentDirectory = Paths.get(System.getProperty("user.dir"));
-        String configFile = currentDirectory.resolve("./src/main/resources/config/opensilex.local.yml").toFile().getCanonicalPath();
+        String configFile = currentDirectory.resolve("./src/main/resources/config/opensilex.yml").toFile().getCanonicalPath();
         OpenSilex.setup(new HashMap<String, String>() {
             {
                 put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);

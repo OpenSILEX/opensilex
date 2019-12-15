@@ -95,7 +95,7 @@ export default class DefaultLoginComponent extends Vue {
         self.$store.commit("refresh");
       })
       .catch(function() {
-        // TODO
+        // TODO display error to user
         console.error("TODO: Invalid credentials", arguments);
         self.$opensilex.hideLoader();
       });

@@ -25,14 +25,13 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.server.rest.RestApplicationAPI;
 import org.opensilex.server.security.ApiProtected;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 
 @Api("Experiments")
 @Path("/core/experiment")
-public class ExperimentAPI implements RestApplicationAPI {
+public class ExperimentAPI {
     
     @Inject
     private SPARQLService sparql;

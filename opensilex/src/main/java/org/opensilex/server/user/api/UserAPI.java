@@ -32,7 +32,6 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.server.rest.RestApplicationAPI;
 import org.opensilex.server.security.ApiProtected;
 import org.opensilex.server.security.AuthenticationService;
 import org.opensilex.sparql.SPARQLService;
@@ -43,7 +42,7 @@ import org.opensilex.utils.ListWithPagination;
 
 @Api("Users")
 @Path("/user")
-public class UserAPI implements RestApplicationAPI {
+public class UserAPI {
 
     @Inject
     private SPARQLService sparql;

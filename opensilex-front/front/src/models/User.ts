@@ -81,11 +81,11 @@ export class User {
 
     public getInactivityRenewDelayMs() {
         let exipreAfter = this.getExpirationMs();
-        return exipreAfter - (User.INACTIVITY_PERIOD_MIN * 60 * 1000);
+        return (2 / 3) * exipreAfter;
     }
 
     public needRenew() {
-        return this.getInactivityRenewDelayMs() <= 0 && this.getExpirationMs() > 0;
+        return this.getExpirationMs() > 0 && this.getInactivityRenewDelayMs() <= 0;
     }
     
     public getToken() {
@@ -106,7 +106,6 @@ export class User {
         this.admin = this.getTokenData(User.CLAIM_IS_ADMIN);
         this.accessList = this.getTokenData(User.CLAIM_ACCESS_LIST);
         this.loggedIn = true;
-
         this.expire = parseInt(this.getTokenData(User.CLAIM_EXPIRE));
 
         $cookies.set(User.COOKIE_NAME, token, this.expire + "s", "/", undefined, secure);

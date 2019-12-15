@@ -30,7 +30,6 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.server.rest.RestApplicationAPI;
 import org.opensilex.server.security.ApiProtected;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
@@ -42,7 +41,7 @@ import org.opensilex.utils.ListWithPagination;
 
 @Api("Projects")
 @Path("/core/project")
-public class ProjectAPI implements RestApplicationAPI {
+public class ProjectAPI {
 
     @Inject
     private SPARQLService sparql;

@@ -29,10 +29,8 @@ import org.apache.http.HttpStatus;
 import org.opensilex.OpenSilex;
 import org.opensilex.front.FrontModule;
 import org.opensilex.module.OpenSilexModule;
-import org.opensilex.server.rest.RestApplicationAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.opensilex.front.FrontConfig;
 import org.opensilex.server.exceptions.NotFoundException;
 
 /**
@@ -40,7 +38,7 @@ import org.opensilex.server.exceptions.NotFoundException;
  */
 @Api("Front")
 @Path("/front")
-public class FrontAPI implements RestApplicationAPI {
+public class FrontAPI  {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(FrontAPI.class);
 

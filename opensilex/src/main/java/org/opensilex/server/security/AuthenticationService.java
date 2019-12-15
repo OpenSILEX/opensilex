@@ -46,10 +46,10 @@ public class AuthenticationService implements Service {
 
     private static final int PASSWORD_HASH_COMPLEXITY = 12;
 
-    // private static final long TOKEN_VALIDITY_DURATION = 30;
-    // private static final TemporalUnit TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.MINUTES;
-    private static final long TOKEN_VALIDITY_DURATION = 70;
-    private static final TemporalUnit TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.SECONDS;
+    private static final long TOKEN_VALIDITY_DURATION = 30;
+    private static final TemporalUnit TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.MINUTES;
+//    private static final long TOKEN_VALIDITY_DURATION = 60;
+//    private static final TemporalUnit TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.SECONDS;
 
     private static final String TOKEN_ISSUER = "opensilex";
 
@@ -166,7 +166,7 @@ public class AuthenticationService implements Service {
             tokenBuilder.withIssuer(TOKEN_ISSUER)
                     .withIssuedAt(issuedDate)
                     .withExpiresAt(expirationDate);
-            
+
             user.setToken(tokenBuilder.sign(algoRSA));
         }
     }

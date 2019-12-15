@@ -15,7 +15,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
-import org.opensilex.server.rest.RestApplicationAPI;
 import org.opensilex.server.security.ApiProtected;
 import org.opensilex.server.user.dal.UserModel;
 
@@ -26,7 +25,7 @@ import org.opensilex.server.user.dal.UserModel;
  */
 @Api("Hello")
 @Path("/hello")
-public class HelloAPI implements RestApplicationAPI {
+public class HelloAPI {
 
     /**
      * Hello world public webservice

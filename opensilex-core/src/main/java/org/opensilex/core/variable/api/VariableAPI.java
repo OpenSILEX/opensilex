@@ -30,19 +30,15 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.server.rest.RestApplicationAPI;
 import org.opensilex.server.security.ApiProtected;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
-
-
-
 @Api("Variables")
 @Path("/core/variable")
-public class VariableAPI implements RestApplicationAPI {
+public class VariableAPI {
 
     @Inject
     private SPARQLService sparql;
@@ -158,8 +154,8 @@ public class VariableAPI implements RestApplicationAPI {
                 quality,
                 method,
                 unit,
-                orderByList, 
-                page, 
+                orderByList,
+                page,
                 pageSize
         );
         ListWithPagination<VariableGetDTO> resultDTOList = resultList.convert(

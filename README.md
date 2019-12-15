@@ -158,7 +158,7 @@ mvn install -DskipTests=true
 This could be usefull if you work only on web services to speed up build.
 
 ```
-mvn install -DskipFrontBuild=true
+mvn install -DskipFrontBuild
 ```
 
 ## Generate documentation
@@ -167,7 +167,7 @@ Make sure the environment variable ```JAVA_HOME``` is defined.
 
 ```
 cd <BASE_DIR>/opensilex-dev
-mvn site -Pwith-test-report
+mvn site -Pwith-test-report -DskipFrontBuild
 ```
 
 ## Generate documentation with security report audit
@@ -177,7 +177,13 @@ This buid may be very very very long because it as to download a lot of stuff fr
 You should better configure it periodicaly on a automated platform.
 
 ```
-mvn site -Pwith-test-report -Pwith-security-check
+mvn site -Pwith-test-report -Pwith-security-check -DskipFrontBuild
+```
+
+## Check javascript security issues
+
+```
+mvn verify -DskipFrontAudit=false
 ```
 
 ## Special profile for eclipse

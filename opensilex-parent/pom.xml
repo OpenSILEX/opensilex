@@ -498,7 +498,6 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
-                        <reuseForks>true</reuseForks>
                         <argLine>${argLine} -Dfile.encoding=${project.build.sourceEncoding}</argLine>
                         <trimStackTrace>false</trimStackTrace>
                         <useFile>false</useFile>
@@ -826,6 +825,27 @@
                     </execution>
                 </executions>
             </plugin>
+            
+            
+            <!--Code coverage @see https://www.eclemma.org/jacoco/trunk/index.html --> 
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.maven.plugin.version}</version>
+                <configuration>
+                    <outputDirectory>../${generated.doc.site.directory}/${project.name}/jacoco/</outputDirectory>
+                    <excludes>
+                        <exclude>**/*.war</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -1036,9 +1056,6 @@
         <!-- Profile which enable OWASP security check for libraries, could be VERY slow -->
         <profile>
             <id>with-security-check</id>
-            <properties>
-                <skipFrontAudit>false</skipFrontAudit>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -1046,6 +1063,7 @@
                         <artifactId>dependency-check-maven</artifactId>
                         <executions>
                             <execution>
+                                <phase>pre-site</phase>
                                 <goals>
                                     <goal>check</goal>
                                 </goals>
@@ -1066,18 +1084,7 @@
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
                         <version>${jacoco.maven.plugin.version}</version>
-                        <configuration>
-                            <outputDirectory>../${generated.doc.site.directory}/${project.name}/jacoco/</outputDirectory>
-                            <excludes>
-                                <exclude>**/*.war</exclude>
-                            </excludes>
-                        </configuration>
                         <executions>
-                            <execution>
-                                <goals>
-                                    <goal>prepare-agent</goal>
-                                </goals>
-                            </execution>
                             <execution>
                                 <id>report</id>
                                 <phase>package</phase>

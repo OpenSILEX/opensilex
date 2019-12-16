@@ -208,14 +208,14 @@ public class CodeGenMojo extends AbstractMojo {
     @Parameter(name = "languageSpecificPrimitives")
     private List<String> languageSpecificPrimitives;
 
-    /**
-     * A map of additional properties that can be referenced by the mustache templates
-     * <additionalProperties>
-     *     <additionalProperty>key=value</additionalProperty>
-     * </additionalProperties>
-     */
-    @Parameter(name = "additionalProperties")
-    private List<String> additionalProperties;
+//    /**
+//     * A map of additional properties that can be referenced by the mustache templates
+//     * <additionalProperties>
+//     *     <additionalProperty>key=value</additionalProperty>
+//     * </additionalProperties>
+//     */
+//    @Parameter(name = "additionalProperties")
+//    private List<String> additionalProperties;
 
     /**
      * A map of reserved names and how they should be escaped
@@ -455,11 +455,11 @@ public class CodeGenMojo extends AbstractMojo {
                         .get("language-specific-primitives").toString(), configurator);
             }
 
-            // Retained for backwards-compataibility with configOptions -> additional-properties
-            if (additionalProperties == null && configOptions.containsKey("additional-properties")) {
-                applyAdditionalPropertiesKvp(configOptions.get("additional-properties").toString(),
-                        configurator);
-            }
+//            // Retained for backwards-compataibility with configOptions -> additional-properties
+//            if (additionalProperties == null && configOptions.containsKey("additional-properties")) {
+//                applyAdditionalPropertiesKvp(configOptions.get("additional-properties").toString(),
+//                        configurator);
+//            }
 
             // Retained for backwards-compataibility with configOptions -> reserved-words-mappings
             if (reservedWordsMappings == null && configOptions.containsKey("reserved-words-mappings")) {
@@ -488,10 +488,10 @@ public class CodeGenMojo extends AbstractMojo {
             applyLanguageSpecificPrimitivesCsvList(languageSpecificPrimitives, configurator);
         }
 
-        //Apply Additional Properties
-        if (additionalProperties != null && (configOptions == null || !configOptions.containsKey("additional-properties"))) {
-            applyAdditionalPropertiesKvpList(additionalProperties, configurator);
-        }
+//        //Apply Additional Properties
+//        if (additionalProperties != null && (configOptions == null || !configOptions.containsKey("additional-properties"))) {
+//            applyAdditionalPropertiesKvpList(additionalProperties, configurator);
+//        }
 
         //Apply Reserved Words Mappings
         if (reservedWordsMappings != null && (configOptions == null || !configOptions.containsKey("reserved-words-mappings"))) {

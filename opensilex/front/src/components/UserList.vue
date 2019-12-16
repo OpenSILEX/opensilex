@@ -30,11 +30,11 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import { UsersService } from "../lib";
+import { SecurityService } from "../lib";
 import HttpResponse from "../lib/HttpResponse";
 import { UserGetDTO } from "../lib/model/userGetDTO";
 import VueRouter from "vue-router";
-import { OpenSilexResponse } from "opensilex/HttpResponse";
+import { OpenSilexResponse } from "../lib/HttpResponse";
 
 @Component
 export default class UserList extends Vue {
@@ -103,8 +103,8 @@ export default class UserList extends Vue {
   }
 
   loadData() {
-    let service: UsersService = this.$opensilex.getService(
-      "opensilex.UsersService"
+    let service: SecurityService = this.$opensilex.getService(
+      "opensilex.SecurityService"
     );
 
     let orderBy = [];

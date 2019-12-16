@@ -32,7 +32,7 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension {
     }
 
     @Override
-    public void init() {
+    public void startup() {
         OpenSilex app = OpenSilex.getInstance();
 
         PropertiesFileManager.setOpensilexConfigs(

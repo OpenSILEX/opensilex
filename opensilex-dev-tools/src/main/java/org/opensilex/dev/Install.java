@@ -69,6 +69,7 @@ public class Install {
     }
 
     public static void install(boolean deleteFirst) throws Exception  {
+        Install.deleteFirst = deleteFirst;
         String configFile = getResourceFile("./config/opensilex.yml").getCanonicalPath();
         OpenSilex.setup(new HashMap<String, String>() {
             {

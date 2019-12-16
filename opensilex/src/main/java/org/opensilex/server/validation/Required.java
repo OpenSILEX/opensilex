@@ -1,4 +1,5 @@
 //******************************************************************************
+//                              Required.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2018
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, 
@@ -22,9 +23,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-
 /**
  * Annotation that verify if a field is required.
+ *
  * @author Arnaud Charleroy
  * @author Morgane Vidal
  */
@@ -37,6 +38,7 @@ import javax.validation.constraints.NotNull;
 @Documented
 @ReportAsSingleViolation
 public @interface Required {
+
     String message() default "is required and must be filled";
 
     Class<?>[] groups() default {};

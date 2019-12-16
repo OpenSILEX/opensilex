@@ -20,7 +20,8 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Experiment",
-        graph = "experiments"
+        graph = "set/experiments",
+        prefix = "expe"
 )
 public class ExperimentModel extends SPARQLResourceModel implements ClassURIGenerator<ExperimentModel> {
 
@@ -31,10 +32,10 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
     )
     String alias;
     public static final String ALIAS_FIELD = "alias";
-    
+
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasProject"
+            property = Oeso.HAS_ENTITY_RELATION
     )
     List<ProjectModel> projects;
 
@@ -167,12 +168,10 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
         this.comment = comment;
     }
 
-    
-    
     @Override
     public String[] getUriSegments(ExperimentModel instance) {
         return new String[]{
-            "experiment"
+            instance.getAlias()
         };
     }
 

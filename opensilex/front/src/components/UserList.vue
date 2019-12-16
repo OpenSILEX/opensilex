@@ -34,6 +34,7 @@ import { UsersService } from "../lib";
 import HttpResponse from "../lib/HttpResponse";
 import { UserGetDTO } from "../lib/model/userGetDTO";
 import VueRouter from "vue-router";
+import { OpenSilexResponse } from "opensilex/HttpResponse";
 
 @Component
 export default class UserList extends Vue {

@@ -1,4 +1,5 @@
 //******************************************************************************
+//                         URLListValidator.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2018
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, 
@@ -11,10 +12,10 @@ import java.util.List;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-
 /**
- * Class used by URL annotation to validate that a string value list contains an URL.
- * {@code null} elements are considered valid.
+ * Class used by URL annotation to validate that a string value list contains an
+ * URL. {@code null} elements are considered valid.
+ *
  * @see org.opensilex.server.validation.URL
  * @author Arnaud Charleroy
  * @author Morgane Vidal
@@ -30,7 +31,7 @@ public class URLListValidator implements ConstraintValidator<URL, List<String>> 
         if (valueList == null) {
             return true;
         }
-        
+
         Boolean allValid = true;
         String lastUrlCheck = null;
 

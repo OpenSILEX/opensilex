@@ -1,4 +1,5 @@
 //******************************************************************************
+//                          URL.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2018
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, 
@@ -13,6 +14,7 @@ import javax.validation.*;
 
 /**
  * Annotation used to check if a string is a valid URL
+ *
  * @author Arnaud Charleroy
  */
 @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})
@@ -20,12 +22,13 @@ import javax.validation.*;
 @Constraint(validatedBy = {URLValidator.class, URLListValidator.class})
 @Documented
 public @interface URL {
+
     String message() default "is not an URL";
- 
+
     Class<?>[] groups() default {};
- 
+
     Class<? extends Payload>[] payload() default {};
-    
+
     /**
      * Apply this interface on list of elements
      */
@@ -33,6 +36,7 @@ public @interface URL {
     @Retention(RUNTIME)
     @Documented
     public @interface List {
+
         public URL[] value();
     }
 }

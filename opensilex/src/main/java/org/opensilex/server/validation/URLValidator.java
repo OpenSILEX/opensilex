@@ -1,4 +1,5 @@
 //******************************************************************************
+//                              URLValidator.java 
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2018
 // Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, 
@@ -13,7 +14,8 @@ import javax.validation.ConstraintValidatorContext;
 /**
  * Class used by URL annotation to validate that a string value is an URL.
  * {@code null} elements are considered valid.
- * @see  org.opensilex.server.validation.URL
+ *
+ * @see org.opensilex.server.validation.URL
  * @author Arnaud Charleroy
  * @author Morgane Vidal
  */
@@ -34,7 +36,7 @@ public class URLValidator implements ConstraintValidator<URL, String> {
 
     public static boolean validateURL(String url) {
         try {
-        	new java.net.URL(url);
+            new java.net.URL(url);
         } catch (MalformedURLException e1) {
             return false;
         }

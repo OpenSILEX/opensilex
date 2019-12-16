@@ -1,4 +1,5 @@
 /// <reference path="../../../opensilex/front/types/opensilex.d.ts" />
+/// <reference path="../../../opensilex-core/front/types/opensilex-core.d.ts" />
 /**
  * CHANGE THIS VARIABLE IF NEEDED TO CHANGE API ENDPOINT
  */

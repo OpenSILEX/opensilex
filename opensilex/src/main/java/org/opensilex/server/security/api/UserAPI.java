@@ -15,8 +15,11 @@ import java.net.URI;
 import java.util.List;
 import javax.inject.Inject;
 import javax.mail.internet.InternetAddress;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -54,7 +57,7 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author Vincent Migot
  */
-@Api("Users")
+@Api("Security")
 @Path("/user")
 public class UserAPI {
 
@@ -91,7 +94,7 @@ public class UserAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response create(
-            @ApiParam("User creation informations") UserCreationDTO userDTO,
+            @ApiParam("User creation informations") @Valid UserCreationDTO userDTO,
             @Context SecurityContext securityContext
     ) throws Exception {
         // Get current user
@@ -193,10 +196,10 @@ public class UserAPI {
         @ApiResponse(code = 400, message = "Invalid parameters")
     })
     public Response search(
-            @ApiParam(value = "Regex pattern for filtering list by names or email", example = ".*") @QueryParam("pattern") String pattern,
+            @ApiParam(value = "Regex pattern for filtering list by names or email", example = ".*") @DefaultValue(".*") @QueryParam("pattern") @NotNull String pattern,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") int pageSize
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         // Search users with User DAO
         UserDAO dao = new UserDAO(sparql, authentication);
@@ -212,7 +215,7 @@ public class UserAPI {
                 UserGetDTO.class,
                 UserGetDTO::fromModel
         );
-        
+
         // Return paginated list of user DTO
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }

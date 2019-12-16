@@ -49,7 +49,9 @@ public class Oeso {
     public static final Resource Method = Ontology.resource(NS, "Method");
     public static final Resource Unit = Ontology.resource(NS, "Unit");
 
-    public static final Property hasEntity = Ontology.property(NS, "hasEntity");
+    public static final String HAS_ENTITY_RELATION = "hasEntity";
+    public static final Property hasEntity = Ontology.property(NS, HAS_ENTITY_RELATION);
+    
     public static final Property hasQuality = Ontology.property(NS, "hasQuality");
     public static final Property hasMethod = Ontology.property(NS, "hasMethod");
     public static final Property hasUnit = Ontology.property(NS, "hasUnit");

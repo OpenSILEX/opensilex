@@ -16,7 +16,8 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = SecurityOntology.class,
         resource = "SecurityProfile",
-        graph = "groups"
+        graph = "groups",
+        prefix = "profiles"
 )
 public class SecurityProfileModel extends SPARQLResourceModel implements ClassURIGenerator<SecurityProfileModel> {
 

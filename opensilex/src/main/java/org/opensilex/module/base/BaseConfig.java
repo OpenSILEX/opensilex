@@ -35,9 +35,15 @@ public interface BaseConfig extends ModuleConfig {
 
     @ConfigDescription(
             value = "Platform base URI",
-            defaultString = OpenSilex.BASE_PREFIX_URI
+            defaultString = OpenSilex.BASE_URI
     )
     public String baseURI();
+
+    @ConfigDescription(
+            value = "Platform base URI alias",
+            defaultString = OpenSilex.BASE_URI_ALIAS
+    )
+    public String baseURIAlias();
 
     @ConfigDescription(
             value = "Default file storage directory"

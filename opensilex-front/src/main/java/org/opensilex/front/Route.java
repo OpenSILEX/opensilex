@@ -15,7 +15,7 @@ public interface Route {
 
     @ConfigDescription("Vue component identifier")
     public String component();
-    
-    @ConfigDescription("Route access restriction")
-    public List<String> access();
+
+    @ConfigDescription("Route required credentials list")
+    public List<String> credentials();
 }

@@ -1,5 +1,6 @@
 opensilex:
-    baseURI: http://www.opensilex.org/
+    baseURI: http://opensilex.dev/
+    baseURIAlias: dev
     storageBasePath: <TO CONFIGURE>
     sparql:
         rdf4j:

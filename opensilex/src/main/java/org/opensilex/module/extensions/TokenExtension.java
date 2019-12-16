@@ -7,7 +7,7 @@
 package org.opensilex.module.extensions;
 
 import com.auth0.jwt.JWTCreator;
-import org.opensilex.server.user.dal.UserModel;
+import org.opensilex.server.security.dal.UserModel;
 
 /**
  * Extension interface for OpenSilex modules which want to add custom claims to

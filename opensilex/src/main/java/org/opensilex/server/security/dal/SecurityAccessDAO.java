@@ -22,7 +22,7 @@ import org.apache.jena.sparql.core.Var;
 import org.opensilex.utils.SwaggerAPIGenerator;
 import org.opensilex.server.security.ApiProtected;
 import org.opensilex.server.security.SecurityOntology;
-import org.opensilex.server.user.dal.UserModel;
+import org.opensilex.server.security.api.CredentialsGroupDTO;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.utils.Ontology;
@@ -45,7 +45,7 @@ public class SecurityAccessDAO {
         this.sparql = sparql;
     }
     
-    public static String getSecurityAccessIdFromMethod(Method method, String httpMethodString) {
+    public static String getCredentialIdFromMethod(Method method, String httpMethodString) {
         Path classPath = method.getDeclaringClass().getAnnotation(Path.class);
         Path methodPath = method.getAnnotation(Path.class);
         
@@ -65,20 +65,20 @@ public class SecurityAccessDAO {
         return accessId;
     }
     
-    public Map<String, Map<String, String>> getSecurityAccessMap() {
+    public TreeMap<String, Map<String, String>> getCredentialsGroups() {
         Swagger api = SwaggerAPIGenerator.getFullApi();
-        Map<String, Map<String, String>> accessMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        TreeMap<String, Map<String, String>> credentialsMap = new TreeMap<>();
         if (api != null) {
 
             api.getPaths().forEach((String pathUri, io.swagger.models.Path path) -> {
                 LOGGER.debug("Analyse API path: " + pathUri);
                 path.getOperationMap().forEach((HttpMethod method, Operation operation) -> {
-                    addOperationAccess(pathUri, operation, method, accessMap);
+                    addOperationAccess(pathUri, operation, method, credentialsMap);
                 });
             });
         }
         
-        return accessMap;
+        return credentialsMap;
     }
 
     private void addOperationAccess(String pathUri, Operation operation, HttpMethod method, Map<String, Map<String, String>> accessMap) {

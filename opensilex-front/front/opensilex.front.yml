@@ -7,45 +7,45 @@ menu:
         route: 
           path: /users
           component: opensilex.UserList
-          access: []
+          credentials: []
       - id: groups
         label: Groups
         route: 
           path: /groups
           component: opensilex.GroupList
-          access: []
+          credentials: []
       - id: profiles
         label: Profiles
         route: 
           path: /profiles
           component: opensilex.ProfileList
-          access: []
+          credentials: []
 
 routes:
   - path: /users/create
     component: opensilex.UserCreate
-    access: []
+    credentials: []
   - path: /users/view/:uri
     component: opensilex.UserView
-    access: []
+    credentials: []
   - path: /users/edit/:uri
     component: opensilex.UserEdit
-    access: []
+    credentials: []
   - path: /groups/create
     component: opensilex.GroupCreate
-    access: []    
+    credentials: []    
   - path: /groups/view/:uri
     component: opensilex.GroupView
-    access: []
+    credentials: []
   - path: /groups/edit/:uri
     component: opensilex.GroupEdit
-    access: []
+    credentials: []
   - path: /profiles/create
     component: opensilex.ProfileCreate
-    access: []    
+    credentials: []    
   - path: /profiles/view/:uri
     component: opensilex.ProfileView
-    access: []
+    credentials: []
   - path: /profiles/edit/:uri
     component: opensilex.ProfileEdit
-    access: []
+    credentials: []

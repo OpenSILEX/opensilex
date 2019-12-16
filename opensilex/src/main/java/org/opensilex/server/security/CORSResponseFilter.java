@@ -1,4 +1,5 @@
 //******************************************************************************
+//                    CORSResponseFilter.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -16,11 +17,15 @@ import javax.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-
 /**
+ * <pre>
  * CORS response filter.
+ * For more information on response filters with Jersey
+ * see: https://eclipse-ee4j.github.io/jersey.github.io/documentation/latest/filters-and-interceptors.html
  *
+ * Allow for cross-origin requests and allow authorization header.
+ *
+ * <pre>
  * @author Arnaud Charleroy
  */
 @Provider

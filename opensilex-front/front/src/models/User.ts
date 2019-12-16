@@ -1,5 +1,6 @@
 import * as jwtDecode from "jwt-decode";
 import { VueCookies } from 'vue-cookies'
+import { CredentialsGroupDTO } from 'opensilex/index';
 
 declare var $cookies: VueCookies;
 
@@ -9,7 +10,7 @@ export class User {
     private lastName: string = "Dupont";
     private email: string = "jean.dupont@opensilex.org";
     private admin: boolean = false;
-    private accessList: Array<any> = [];
+    private credentials: Array<string> = [];
 
     private expire: number = 0;
 
@@ -35,7 +36,7 @@ export class User {
     public static CLAIM_EMAIL = "email";
     public static CLAIM_FULL_NAME = "name";
     public static CLAIM_IS_ADMIN = "is_admin";
-    public static CLAIM_ACCESS_LIST = "access_list";
+    public static CLAIM_CREDENTIALS_LIST = "credentials_list";
 
     private static anonymous: User;
 
@@ -75,19 +76,18 @@ export class User {
     }
 
     public getExpirationMs() {
-        console.log("Compute expiration time", this.expire * 1000 - Date.now(), this.expire)
         return (this.expire * 1000 - Date.now());
     }
 
     public getInactivityRenewDelayMs() {
         let exipreAfter = this.getExpirationMs();
-        return (2 / 3) * exipreAfter;
+        return Math.floor((2 / 3) * exipreAfter);
     }
 
     public needRenew() {
         return this.getExpirationMs() > 0 && this.getInactivityRenewDelayMs() <= 0;
     }
-    
+
     public getToken() {
         return this.token;
     }
@@ -104,7 +104,7 @@ export class User {
         this.lastName = this.getTokenData(User.CLAIM_LAST_NAME);
         this.email = this.getTokenData(User.CLAIM_EMAIL);
         this.admin = this.getTokenData(User.CLAIM_IS_ADMIN);
-        this.accessList = this.getTokenData(User.CLAIM_ACCESS_LIST);
+        this.credentials = this.getTokenData(User.CLAIM_CREDENTIALS_LIST);
         this.loggedIn = true;
         this.expire = parseInt(this.getTokenData(User.CLAIM_EXPIRE));
 
@@ -147,9 +147,19 @@ export class User {
         return this.loggedIn;
     }
 
-    public hasAccess(...access): boolean {
-        // TODO really check access list
-        return this.isAdmin() || false;
+    public hasCredentials(...credentials): boolean {
+        if (this.isAdmin()) {
+            return true;
+        }
+
+        for (let i in credentials) {
+            let credential = credentials[i];
+            if (this.credentials.indexOf(credential) < 0) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     public getTokenData(key: string) {

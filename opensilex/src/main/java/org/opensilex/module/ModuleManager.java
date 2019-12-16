@@ -296,7 +296,7 @@ public class ModuleManager {
                         if (Service.class.isAssignableFrom(m.getReturnType())) {
                             // Get service instance from configuration
                             Service service = (Service) m.invoke(moduleConfig);
-
+                            service.setModule(module);
                             // Register service instance
                             services.register(service.getClass(), m.getName(), service);
                         }
@@ -318,9 +318,9 @@ public class ModuleManager {
      */
     public void startup() throws Exception {
         // Start all services for all modules
-        services.getServices().forEach((String name, Service service) -> {
+        for (Service service : services.getServices().values()) {
             service.startup();
-        });
+        };
 
         // Init all modules
         for (OpenSilexModule module : getModules()) {
@@ -336,16 +336,16 @@ public class ModuleManager {
     /**
      * Shutdown all modules and their services
      */
-    public void shutdown() {
+    public void shutdown() throws Exception {
         // Clean all modules
         for (OpenSilexModule module : getModules()) {
             module.shutdown();
         }
 
         // Stop all services for all modules
-        services.getServices().forEach((String name, Service service) -> {
+        for (Service service : services.getServices().values()) {
             service.shutdown();
-        });
+        };
     }
 
     /**

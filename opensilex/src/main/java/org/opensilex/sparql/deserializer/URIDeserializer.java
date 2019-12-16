@@ -27,6 +27,15 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
     }
 
     @Override
+    public Node getNodeFromString(String value) throws Exception {
+        if (prefixes == null) {
+            return getNode(new URI(value));
+        }
+
+        return getNode(new URI(prefixes.expandPrefix(value)));
+    }
+
+    @Override
     public Node getNode(Object value) throws Exception {
         return Ontology.nodeURI((URI) value);
     }

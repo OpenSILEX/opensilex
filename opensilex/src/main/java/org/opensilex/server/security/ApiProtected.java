@@ -15,7 +15,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * <pre>
+ * Annotation use to add header token protection for API service.
  * 
+ * Protection mechanism is implemented in {@code org.opensilex.server.security.AuthenticationFilter}
+ * </pre>
+ * 
+ * @see org.opensilex.server.security.AuthenticationFilter
  * @author Vincent Migot
  */
 @ApiImplicitParams({

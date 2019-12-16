@@ -9,7 +9,7 @@ import com.auth0.jwt.JWTCreator;
 import org.opensilex.module.OpenSilexModule;
 import org.opensilex.module.extensions.APIExtension;
 import org.opensilex.module.extensions.TokenExtension;
-import org.opensilex.server.user.dal.UserModel;
+import org.opensilex.server.security.dal.UserModel;
 
 /**
  * Core OpenSILEX module implementation

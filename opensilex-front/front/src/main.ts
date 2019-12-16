@@ -114,7 +114,7 @@ $opensilex.initAsyncComponents(components)
     const frontService = $opensilex.getService<FrontService>("FrontService");
     frontService.getConfig()
       .then(function (configResponse) {
-        const config: FrontConfigDTO = configResponse.response;
+        const config: FrontConfigDTO = configResponse.response.result;
         store.commit("setConfig", config);
         console.debug("Configuration loaded", config);
 

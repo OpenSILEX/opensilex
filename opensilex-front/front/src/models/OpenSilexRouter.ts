@@ -56,7 +56,7 @@ export class OpenSilexRouter {
             for (let i in frontConfig.routes) {
                 let route = frontConfig.routes[i];
 
-                if (user.hasAccess(route.access)) {
+                if (user.hasCredentials(route.credentials)) {
                     routes.push({
                         path: route.path,
                         component: this.getAsyncComponentLoader($opensilex, route.component)
@@ -114,7 +114,7 @@ export class OpenSilexRouter {
 
             if (item.route) {
                 let route = item.route;
-                if (user.hasAccess(route.access)) {
+                if (user.hasCredentials(route.credentials)) {
                     hasRouteAccess = true;
                     menu.push(item);
                     routes.push({

@@ -5,11 +5,14 @@
  */
 package org.opensilex.front.api;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import org.opensilex.front.MenuItem;
 
+@ApiModel
 public class MenuItemDTO {
 
     public static MenuItemDTO fromModel(MenuItem menuItem) {
@@ -22,7 +25,7 @@ public class MenuItemDTO {
         for (MenuItem child: menuItem.children()) {
             children.add(fromModel(child));
         }
-        menuDTO.setChildren(children);
+        menuDTO.setChildren(children.toArray(new MenuItemDTO[children.size()]));
         
         RouteDTO routeDTO = RouteDTO.fromModel(menuItem.route());
         menuDTO.setRoute(routeDTO);
@@ -37,10 +40,11 @@ public class MenuItemDTO {
     private String label;
 
     @NotNull
-    private List<MenuItemDTO> children;
+    private MenuItemDTO[] children;
 
     private RouteDTO route;
 
+    @ApiModelProperty(value = "Menu identifier", example = "users")
     public String getId() {
         return id;
     }
@@ -49,6 +53,7 @@ public class MenuItemDTO {
         this.id = id;
     }
 
+    @ApiModelProperty(value = "Menu label", example = "Users")
     public String getLabel() {
         return label;
     }
@@ -57,14 +62,16 @@ public class MenuItemDTO {
         this.label = label;
     }
 
-    public List<MenuItemDTO> getChildren() {
+    @ApiModelProperty(value = "List of sub menu items")
+    public MenuItemDTO[] getChildren() {
         return children;
     }
 
-    public void setChildren(List<MenuItemDTO> children) {
+    public void setChildren(MenuItemDTO[] children) {
         this.children = children;
     }
 
+    @ApiModelProperty(value = "Optional route definition")
     public RouteDTO getRoute() {
         return route;
     }

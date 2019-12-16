@@ -3,7 +3,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.server.user.dal;
+package org.opensilex.server.security.dal;
 
 import org.opensilex.server.security.SecurityOntology;
 import java.security.Principal;
@@ -21,7 +21,8 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = FOAF.class,
         resource = "Agent",
-        graph = "users"
+        graph = "users",
+        prefix = "users"
 )
 public class UserModel extends SPARQLResourceModel implements Principal, ClassURIGenerator<UserModel> {
 

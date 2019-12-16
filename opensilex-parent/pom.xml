@@ -50,6 +50,9 @@
         <!-- Minimal maven version -->
         <maven.minimal.version>3.5</maven.minimal.version>
         
+        <!-- define default arg line -->
+        <argLine></argLine>
+        
         <!-- dependencies version -->
         <jersey.version>2.29.1</jersey.version>
         <tomcat.version>9.0.30</tomcat.version>

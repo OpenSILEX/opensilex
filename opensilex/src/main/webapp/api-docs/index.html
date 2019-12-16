@@ -225,11 +225,23 @@
                     },
                     responseInterceptor: function (response) {
                         // Check if response match BrAPI token
-                        if (response && response.url && response.body && response.url.endsWith("/brapi/v1/token")) {
+                        if (response
+                                && response.url
+                                && response.body
+                                && (
+                                        response.url.endsWith("/brapi/v1/token")
+                                        || response.url.endsWith("/security/authenticate")
+                                        || response.url.endsWith("/security/renew-token")
+                                        )) {
                             try {
                                 // Extract token from reponse
                                 var responseValues = JSON.parse(this.statusText);
-                                var token = responseValues.access_token;
+                                var token;
+                                if (response.url.endsWith("/brapi/v1/token")) {
+                                    token = responseValues.access_token;
+                                } else {
+                                    token = responseValues.result.token;
+                                }
 
                                 // Set token value prefixed by 'Bearer ' to all input named 'Authorization'
                                 $("input[name='Authorization']").val("Bearer " + token);

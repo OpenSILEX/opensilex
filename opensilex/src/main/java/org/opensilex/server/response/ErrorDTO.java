@@ -6,6 +6,8 @@
 //******************************************************************************
 package org.opensilex.server.response;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.OpenSilex;
@@ -26,28 +28,33 @@ import org.slf4j.LoggerFactory;
  * @see org.opensilex.server.response.ErrorResponse
  * @author Vincent Migot
  */
+@ApiModel
 public class ErrorDTO {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ErrorDTO.class);
 
     /**
-     * Title field of the exception containing the class name.
+     * Title of the error.
      */
+    @ApiModelProperty(value = "Title of the error", example = "Error")
     public final String title;
 
     /**
-     * Message of the exception.
+     * Message of the error.
      */
+    @ApiModelProperty(value = "Message of the error", example = "Unexpected error")
     public final String message;
 
     /**
      * Stack trace of the exception as an array.
      */
+    @ApiModelProperty(hidden = true)
     public List<String> stack;
 
     /**
      * Stack trace of the exception as an array.
      */
+    @ApiModelProperty(hidden = true)
     public List<String> fullstack;
 
     public ErrorDTO(String title, String message) {

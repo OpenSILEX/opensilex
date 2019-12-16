@@ -5,6 +5,8 @@
  */
 package org.opensilex.front.api;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import org.opensilex.front.Route;
@@ -13,6 +15,7 @@ import org.opensilex.front.Route;
  *
  * @author vidalmor
  */
+@ApiModel
 public class RouteDTO {
 
     public static RouteDTO fromModel(Route route) {
@@ -24,8 +27,8 @@ public class RouteDTO {
 
         routeDTO.setPath(route.path());
         routeDTO.setComponent(route.component());
-        routeDTO.setAccess(route.access());
-        
+        routeDTO.setCredentials(route.credentials());
+
         return routeDTO;
     }
 
@@ -35,8 +38,9 @@ public class RouteDTO {
     @NotNull
     private String component;
 
-    private List<String> access;
+    private List<String> credentials;
 
+    @ApiModelProperty(value = "Route path", example = "/users")
     public String getPath() {
         return path;
     }
@@ -45,6 +49,7 @@ public class RouteDTO {
         this.path = path;
     }
 
+    @ApiModelProperty(value = "Route component", example = "opensilex.UserList")
     public String getComponent() {
         return component;
     }
@@ -53,11 +58,12 @@ public class RouteDTO {
         this.component = component;
     }
 
-    public List<String> getAccess() {
-        return access;
+    @ApiModelProperty(value = "Required credentials list for this route")
+    public List<String> getCredentials() {
+        return credentials;
     }
 
-    public void setAccess(List<String> access) {
-        this.access = access;
+    public void setCredentials(List<String> credentials) {
+        this.credentials = credentials;
     }
 }

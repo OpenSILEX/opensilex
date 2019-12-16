@@ -20,9 +20,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.config.ConfigManager;
+import org.opensilex.module.ModuleConfig;
 import org.opensilex.module.ModuleManager;
 import org.opensilex.module.ModuleNotFoundException;
 import org.opensilex.module.OpenSilexModule;
@@ -115,9 +115,19 @@ public class OpenSilex {
     public final static String DEBUG_ARG_KEY = "DEBUG";
 
     /**
-     * Base prefix for OpenSilex ontologies
+     * Base URI for plateform ontologies
      */
-    public final static String BASE_PREFIX_URI = "http://www.opensilex.org/";
+    public final static String BASE_URI = "http://installation.domain.org/";
+
+    /**
+     * Base URI alias for plateform ontologies
+     */
+    public final static String BASE_URI_ALIAS = "os";
+
+    /**
+     * Base domain for all OpenSilex ontologies
+     */
+    public final static String ONTOLOGY_BASE_DOMAIN = "http://www.opensilex.org/";
 
     /**
      * Store startup args for reset
@@ -448,7 +458,11 @@ public class OpenSilex {
             @Override
             public void run() {
                 LOGGER.debug("Shutdown modules");
-                moduleManager.shutdown();
+                try {
+                    moduleManager.shutdown();
+                } catch (Exception ex) {
+                    LOGGER.error("Error while shutting down modules", ex);
+                }
             }
         };
         Runtime.getRuntime().addShutdownHook(SHUTDOWN_HOOK);
@@ -460,7 +474,7 @@ public class OpenSilex {
     /**
      * Restart application
      */
-    public void restart() {
+    public void restart() throws Exception {
         LOGGER.debug("Shutdown modules");
         moduleManager.shutdown();
         setup(SETUP_ARGS);
@@ -659,11 +673,28 @@ public class OpenSilex {
     }
 
     /**
-     * Construct an URI with base configured platform URI and a list of subpath
+     * Return configured platform base URI alias
      *
-     * @return Constructed URI relative to platform base
+     * @return plateform URI alias
      */
-    public static URI getPlatformURI(String... suffixes) {
-        return UriBuilder.fromUri(getPlatformURI()).segment(suffixes).build();
+    public static String getPlatformURIAlias() {
+        try {
+            if (OpenSilex.getInstance() == null) {
+                return "t";
+            } else {
+                return OpenSilex.getInstance().getModuleByClass(BaseModule.class).getConfig(BaseConfig.class).baseURIAlias();
+            }
+        } catch (ModuleNotFoundException ex) {
+            LOGGER.error("Base module not found, can't really happend because it's in the same package", ex);
+            return null;
+        }
+    }
+
+    public static URI getPlatformDomainGraphURI(String graphSuffix) throws URISyntaxException {
+        return new URI(getPlatformURI().toString() + graphSuffix);
+    }
+
+    public static <T extends ModuleConfig> T getModuleConfig(Class<? extends OpenSilexModule> moduleClass, Class<T> configClass) throws ModuleNotFoundException {
+        return getInstance().getModuleByClass(moduleClass).getConfig(configClass);
     }
 }

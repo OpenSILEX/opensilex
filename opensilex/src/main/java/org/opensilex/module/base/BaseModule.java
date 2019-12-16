@@ -8,8 +8,11 @@ package org.opensilex.module.base;
 
 import org.opensilex.module.extensions.APIExtension;
 import java.util.*;
+import org.opensilex.OpenSilex;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.module.OpenSilexModule;
+import org.opensilex.server.security.SecurityOntology;
+import org.opensilex.sparql.SPARQLService;
 
 /**
  * <pre>
@@ -33,6 +36,15 @@ public class BaseModule extends OpenSilexModule implements APIExtension {
     }
 
     @Override
+    public void startup() throws Exception {
+        SPARQLService sparql = OpenSilex.getInstance().getServiceInstance("sparql", SPARQLService.class);
+        BaseConfig cfg = getConfig(BaseConfig.class);
+        sparql.addPrefix(cfg.baseURIAlias(), cfg.baseURI());
+        sparql.addPrefix(SecurityOntology.PREFIX, SecurityOntology.NAMESPACE);
+    }
+
+    
+    @Override
     public String getConfigId() {
         return "opensilex";
     }
@@ -43,7 +55,8 @@ public class BaseModule extends OpenSilexModule implements APIExtension {
         list.add("io.swagger.jaxrs.listing");
         list.add("org.opensilex.server.rest");
         list.add("org.opensilex.server.security");
-
+        list.add("org.opensilex.server.security.api");
+        
         return list;
     }
 

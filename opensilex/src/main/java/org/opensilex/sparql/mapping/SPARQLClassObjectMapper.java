@@ -12,6 +12,8 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
@@ -55,6 +57,11 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         } else {
             return objectClass;
         }
+    }
+
+    public static void forEach(BiConsumer<Resource, SPARQLClassObjectMapper<?>> lambda) throws SPARQLInvalidClassDefinitionException {
+        initialize();
+        SPARQL_RESOURCES_MAPPER.forEach(lambda);
     }
 
     public static void initialize() throws SPARQLInvalidClassDefinitionException {
@@ -131,6 +138,19 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return objectClass;
     }
 
+    public String getResourceGraphPrefix() {
+        return classAnalizer.getResourceGraphPrefix();
+    }
+
+    public String getResourceGraphNamespace() {
+        Node defaultGraph = getDefaultGraph();
+        if (defaultGraph != null) {
+            return defaultGraph.toString();
+        }
+        
+        return null;
+    }
+
     public Class<?> getGenericListFieldType(Field f) {
         return ClassUtils.getGenericTypeFromClass(f.getClass());
     }
@@ -151,7 +171,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         if (!realType.equals(getRDFType().toString())) {
             // TODO handle sub classes
         }
-        
+
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
         URI uri = uriDeserializer.fromString((result.getStringValue(classAnalizer.getURIFieldName())));
 
@@ -219,7 +239,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public Node getDefaultGraph() {
         if (classAnalizer.getGraphSuffix() != null) {
             try {
-                String classGraphURI = OpenSilex.getPlatformURI(classAnalizer.getGraphSuffix()).toString();
+                String classGraphURI = OpenSilex.getPlatformDomainGraphURI(classAnalizer.getGraphSuffix()).toString();
                 return NodeFactory.createURI(classGraphURI);
             } catch (Exception ex) {
                 LOGGER.error("Invalid class suffix for: " + objectClass.getCanonicalName() + " - " + classAnalizer.getGraphSuffix(), ex);
@@ -304,7 +324,16 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public String getURIFieldName() {
         return classAnalizer.getURIFieldName();
     }
-    
+
+    public ExprVar getURIFieldExprVar() {
+        try {
+            return getFieldExprVar(getURIFieldName());
+        } catch (SPARQLUnknownFieldException ex) {
+            LOGGER.error("Unknown URI field for a resource, should never happend", ex);
+            return null;
+        }
+    }
+
     public ExprVar getFieldExprVar(String fieldName) throws SPARQLUnknownFieldException {
         Field f = classAnalizer.getFieldFromName(fieldName);
         if (f != null) {

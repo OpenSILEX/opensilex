@@ -45,7 +45,7 @@ import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.opensilex.OpenSilex;
 import org.opensilex.server.security.AuthenticationService;
-import org.opensilex.server.user.dal.UserDAO;
+import org.opensilex.server.security.dal.UserDAO;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.utils.ClassUtils;
@@ -65,7 +65,10 @@ public class Install {
     private static boolean deleteFirst = false;
 
     public static void main(String[] args) throws Exception {
-//        deleteFirst = true;
+        install(false);
+    }
+
+    public static void install(boolean deleteFirst) throws Exception  {
         String configFile = getResourceFile("./config/opensilex.yml").getCanonicalPath();
         OpenSilex.setup(new HashMap<String, String>() {
             {

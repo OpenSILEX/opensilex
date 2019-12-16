@@ -29,4 +29,11 @@ public class PaginatedListResponse<T> extends JsonResponse<List<T>> {
 
     }
 
+    public PaginatedListResponse(List<T> list) {
+        super(javax.ws.rs.core.Response.Status.OK);
+        this.result = list;
+        this.metadata = new MetadataDTO(new PaginationDTO(list.size(), 0, list.size()));
+
+    }
+
 }

@@ -8,7 +8,6 @@ package org.opensilex.server.security.dal;
 import org.opensilex.server.security.SecurityOntology;
 import java.util.List;
 import org.apache.jena.vocabulary.DCTerms;
-import org.opensilex.server.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -17,7 +16,8 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = SecurityOntology.class,
         resource = "Group",
-        graph = "groups"
+        graph = "groups",
+        prefix = "groups"
 )
 public class GroupModel extends SPARQLResourceModel implements ClassURIGenerator<GroupModel> {
 
@@ -88,5 +88,4 @@ public class GroupModel extends SPARQLResourceModel implements ClassURIGenerator
             instance.getName()
         };
     }
-
 }

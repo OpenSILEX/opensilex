@@ -7,6 +7,7 @@ package test.opensilex.sparql;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -52,13 +53,13 @@ public abstract class SPARQLServiceTest {
         service.loadOntologyStream(OpenSilex.getPlatformURI(), ontology, TEST_ONTOLOGY.FILE_FORMAT);
 
         InputStream ontologyData = SPARQLService.class.getClassLoader().getResourceAsStream(TEST_ONTOLOGY.DATA_FILE_PATH.toString());
-        service.loadOntologyStream(OpenSilex.getPlatformURI("data"), ontologyData, TEST_ONTOLOGY.DATA_FILE_FORMAT);
+        service.loadOntologyStream(OpenSilex.getPlatformDomainGraphURI("data"), ontologyData, TEST_ONTOLOGY.DATA_FILE_FORMAT);
     }
 
     @AfterClass
-    public static void destroy() throws SPARQLQueryException {
+    public static void destroy() throws SPARQLQueryException, URISyntaxException {
         service.clearGraph(OpenSilex.getPlatformURI());
-        service.clearGraph(OpenSilex.getPlatformURI("data"));
+        service.clearGraph(OpenSilex.getPlatformDomainGraphURI("data"));
     }
 
     @Test

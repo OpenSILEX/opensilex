@@ -33,7 +33,6 @@ import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  *
  * @author vincent
@@ -46,6 +45,7 @@ public class SPARQLClassAnalyzer {
 
     private final Resource resource;
     private final String graphSuffix;
+    private final String graphPrefix;
 
     private Field fieldURI;
     private final Map<Field, Property> dataProperties = new HashMap<>();
@@ -60,8 +60,8 @@ public class SPARQLClassAnalyzer {
 
     private final Map<Property, Field> fieldsByUniqueProperty = new HashMap<>();
 
-    private final Set<String>  managedProperties = new HashSet<>();
-        
+    private final Set<String> managedProperties = new HashSet<>();
+
     private final BiMap<Method, Field> fieldsByGetter;
 
     private final BiMap<Method, Field> fieldsBySetter;
@@ -71,7 +71,6 @@ public class SPARQLClassAnalyzer {
     private final List<Field> reverseRelationFields = new ArrayList<>();
 
     private final URIGenerator<? extends SPARQLResourceModel> uriGenerator;
-
 
     public SPARQLClassAnalyzer(Class<?> objectClass) throws SPARQLInvalidClassDefinitionException {
         LOGGER.debug("Start SPARQL model class analyze for: " + objectClass.getName());
@@ -105,6 +104,13 @@ public class SPARQLClassAnalyzer {
             } else {
                 graphSuffix = null;
             }
+
+            if (!resourceAnnotation.prefix().isEmpty()) {
+                graphPrefix = resourceAnnotation.prefix();
+            } else {
+                graphPrefix = null;
+            }
+
         } catch (NoSuchFieldException ex) {
             throw new SPARQLInvalidClassDefinitionException(objectClass, "Resource type " + resourceAnnotation.resource() + " does not exists in ontology: " + resourceAnnotation.ontology().getName(), ex);
         } catch (IllegalArgumentException | IllegalAccessException ex) {
@@ -210,7 +216,7 @@ public class SPARQLClassAnalyzer {
 
         LOGGER.debug("Store field " + field.getName() + " in global index by name");
         fieldsByName.put(field.getName(), field);
-        
+
         managedProperties.add(property.getURI());
     }
 
@@ -434,5 +440,9 @@ public class SPARQLClassAnalyzer {
 
     public Set<String> getManagedProperties() {
         return managedProperties;
+    }
+
+    String getResourceGraphPrefix() {
+        return this.graphPrefix;
     }
 }

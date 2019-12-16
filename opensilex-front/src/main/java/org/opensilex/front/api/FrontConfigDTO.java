@@ -5,9 +5,12 @@
  */
 package org.opensilex.front.api;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 
+@ApiModel
 public class FrontConfigDTO {
 
     @NotNull
@@ -34,6 +37,7 @@ public class FrontConfigDTO {
     @NotNull
     List<RouteDTO> routes;
 
+    @ApiModelProperty(value = "Home component identifier", example = "opensilex-front.DefaultHomeComponent")
     public String getHomeComponent() {
         return homeComponent;
     }
@@ -42,6 +46,7 @@ public class FrontConfigDTO {
         this.homeComponent = homeComponent;
     }
 
+    @ApiModelProperty(value = "Not found component identifier", example = "opensilex-front.DefaultNotFoundComponent")
     public String getNotFoundComponent() {
         return notFoundComponent;
     }
@@ -50,6 +55,7 @@ public class FrontConfigDTO {
         this.notFoundComponent = notFoundComponent;
     }
 
+    @ApiModelProperty(value = "Menu component identifier", example = "opensilex-front.DefaultMenuComponent")
     public String getMenuComponent() {
         return menuComponent;
     }
@@ -58,6 +64,7 @@ public class FrontConfigDTO {
         this.menuComponent = menuComponent;
     }
 
+    @ApiModelProperty(value = "Footer component identifier", example = "opensilex-front.DefaultFooterComponent")
     public String getFooterComponent() {
         return footerComponent;
     }
@@ -66,6 +73,7 @@ public class FrontConfigDTO {
         this.footerComponent = footerComponent;
     }
 
+    @ApiModelProperty(value = "Header component identifier", example = "opensilex-front.DefaultHeaderComponent")
     public String getHeaderComponent() {
         return headerComponent;
     }
@@ -74,6 +82,7 @@ public class FrontConfigDTO {
         this.headerComponent = headerComponent;
     }
 
+    @ApiModelProperty(value = "Login component identifier", example = "opensilex-front.DefaultLoginComponent")
     public String getLoginComponent() {
         return loginComponent;
     }
@@ -82,6 +91,7 @@ public class FrontConfigDTO {
         this.loginComponent = loginComponent;
     }
 
+    @ApiModelProperty(value = "Application menu with routes")
     public List<MenuItemDTO> getMenu() {
         return menu;
     }
@@ -90,6 +100,7 @@ public class FrontConfigDTO {
         this.menu = menu;
     }
 
+     @ApiModelProperty(value = "List of configured routes")
     public List<RouteDTO> getRoutes() {
         return routes;
     }

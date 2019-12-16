@@ -6,3 +6,29 @@ class HttpResponse<T = any> {
 }
 
 export default HttpResponse
+
+export class PaginationDTO {
+
+    constructor(public pageSize: number, public currentPage: number, public totalCount: number, public totalPages: number) {
+    }
+}
+
+export class StatusDTO {
+
+    constructor(public message: string, public messageType: string) {
+    }
+}
+
+
+export class MetadataDTO {
+
+    constructor(public pagination: PaginationDTO, public status: Array<StatusDTO>, public datafiles: Array<string>) {
+    }
+}
+
+
+export class OpenSilexResponse<T = any> {
+
+    constructor(public result: T, public metadata: MetadataDTO) {
+    }
+}

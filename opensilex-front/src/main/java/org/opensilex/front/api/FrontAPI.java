@@ -8,8 +8,10 @@ package org.opensilex.front.api;
 import com.google.common.hash.Hashing;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.io.File;
 import java.util.List;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -32,13 +34,14 @@ import org.opensilex.module.OpenSilexModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.server.exceptions.NotFoundException;
+import org.opensilex.server.response.SingleObjectResponse;
 
 /**
  * Service to produce angular application configuration
  */
 @Api("Front")
 @Path("/front")
-public class FrontAPI  {
+public class FrontAPI {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(FrontAPI.class);
 
@@ -53,28 +56,27 @@ public class FrontAPI  {
 
     @GET
     @Path("/config")
-    @ApiOperation(value = "Return the current configuration", response = FrontConfigDTO.class)
+    @ApiOperation(value = "Return the current configuration")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Plugin configuration"),
-        @ApiResponse(code = 500, message = "Internal error")
+        @ApiResponse(code = 200, message = "Front application configuration", response = FrontConfigDTO.class)
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getConfig() throws Exception {
 
         FrontConfigDTO config = frontModule.getConfigDTO();
-        
-        return Response.ok().entity(config).build();
+
+        return new SingleObjectResponse<FrontConfigDTO>(config).getResponse();
     }
 
     @GET
     @Path("/extension/{module}.js")
     @ApiOperation(value = "Return the front Vue JS extension file to include")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return the extension")
+        @ApiResponse(code = 200, message = "Return the extension file", response = File.class)
     })
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getExtension(
-            @PathParam("module") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String moduleId,
+            @PathParam("module") @ApiParam(value = "Module identifier", example = "opensilex") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String moduleId,
             @Context Request request
     ) throws Exception {
 

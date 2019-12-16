@@ -3,7 +3,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.server.user.dal;
+package org.opensilex.server.security.dal;
 
 import java.net.URI;
 import java.util.ArrayList;

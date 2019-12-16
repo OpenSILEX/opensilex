@@ -3,20 +3,15 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.sparql.utils;
-
-import java.net.URI;
+package org.opensilex.dev;
 
 /**
  *
- * @author vidalmor
+ * @author vincent
  */
-public interface ClassURIGenerator<T> extends URIGenerator<T> {
+public class InstallReset {
 
-    @Override
-    public default String getInstanceURI(T instance) {
-        return String.join(".", getUriSegments(instance));
+    public static void main(String[] args) throws Exception {
+        Install.install(true);
     }
-
-    public String[] getUriSegments(T instance);
 }

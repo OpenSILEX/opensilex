@@ -24,11 +24,13 @@ import org.opensilex.sparql.utils.URIGenerator;
 @Inherited
 public @interface SPARQLResource {
 
-    Class<?> ontology();
+    public Class<?> ontology();
 
-    String resource();
+    public String resource();
 
-    Class<? extends URIGenerator> uriGenerator() default DefaultURIGenerator.class;
+    public Class<? extends URIGenerator> uriGenerator() default DefaultURIGenerator.class;
 
-    String graph() default "";
+    public String graph() default "";
+
+    public String prefix() default "";
 }

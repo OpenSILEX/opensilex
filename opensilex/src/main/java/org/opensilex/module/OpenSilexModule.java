@@ -6,7 +6,6 @@
 //******************************************************************************
 package org.opensilex.module;
 
-import com.auth0.jwt.JWTCreator;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,7 +27,6 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.commons.io.IOUtils;
-import org.opensilex.server.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

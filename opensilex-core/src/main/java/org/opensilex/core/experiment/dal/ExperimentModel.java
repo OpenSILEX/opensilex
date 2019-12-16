@@ -11,7 +11,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.server.security.dal.GroupModel;
-import org.opensilex.server.user.dal.UserModel;
+import org.opensilex.server.security.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;

@@ -13,7 +13,7 @@ import org.opensilex.service.Service;
 import org.opensilex.service.ServiceConfigDefault;
 
 /**
- * Service for big data access and storage. 
+ * Service for big data access and storage.
  * <pre>
  * TODO: Only implement transaction for the moment, datanucleus integration
  * to achieve: http://www.datanucleus.org/
@@ -56,12 +56,12 @@ public class BigDataService implements BigDataConnection, Service {
     }
 
     @Override
-    public void startup() {
+    public void startup() throws Exception {
         connection.startup();
     }
 
     @Override
-    public void shutdown() {
+    public void shutdown() throws Exception {
         connection.shutdown();
     }
 }

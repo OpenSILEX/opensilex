@@ -10,7 +10,7 @@ import IHttpClient from "../IHttpClient";
 import { inject, injectable } from "inversify";
 import { IAPIConfiguration } from "../IAPIConfiguration";
 import { Headers } from "../Headers";
-import HttpResponse from "../HttpResponse";
+import HttpResponse, { OpenSilexResponse } from "../HttpResponse";
 
 {{#imports}}
 import { {{classname}} } from '../{{filename}}';
@@ -52,8 +52,7 @@ export class {{classname}} {
      {{/allParams}}{{#useHttpClient}}* @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.{{/useHttpClient}}
      */
-    public {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}observe?: 'body', headers?: Headers): {{#usePromise}}Promise{{/usePromise}}{{^usePromise}}Observable{{/usePromise}}<{{#returnType}}{{{returnType}}}{{#isResponseTypeFile}}|undefined{{/isResponseTypeFile}}{{/returnType}}{{^returnType}}any{{/returnType}}>;
-    public {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}observe?: 'response', headers?: Headers): {{#usePromise}}Promise{{/usePromise}}{{^usePromise}}Observable{{/usePromise}}<HttpResponse<{{#returnType}}{{{returnType}}}{{#isResponseTypeFile}}|undefined{{/isResponseTypeFile}}{{/returnType}}{{^returnType}}any{{/returnType}}>>;
+    public {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}observe?: 'response', headers?: Headers): {{#usePromise}}Promise{{/usePromise}}{{^usePromise}}Observable{{/usePromise}}<HttpResponse<OpenSilexResponse<{{#returnType}}{{{returnType}}}{{#isResponseTypeFile}}|undefined{{/isResponseTypeFile}}{{/returnType}}{{^returnType}}any{{/returnType}}>>>;
     public {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}observe: any = 'body', headers: Headers = {}): {{#usePromise}}Promise{{/usePromise}}{{^usePromise}}Observable{{/usePromise}}<any> {
 {{#allParams}}
 {{#required}}

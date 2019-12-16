@@ -102,7 +102,6 @@ export default class UserList extends Vue {
   }
 
   loadData() {
-    console.warn("LOAD DATA");
     let service: UsersService = this.$opensilex.getService(
       "opensilex.UsersService"
     );

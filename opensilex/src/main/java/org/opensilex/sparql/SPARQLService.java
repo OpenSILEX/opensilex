@@ -7,8 +7,10 @@ package org.opensilex.sparql;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +43,8 @@ import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.opensilex.OpenSilex;
-import org.opensilex.server.security.SecurityOntology;
+import org.opensilex.module.base.BaseConfig;
+import org.opensilex.module.base.BaseModule;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceConfigDefault;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
@@ -82,36 +85,52 @@ public class SPARQLService implements SPARQLConnection, Service {
 
     private final SPARQLConnection connection;
 
-    private final URI baseURI;
-
     public SPARQLService(SPARQLConnection connection) throws URISyntaxException {
         this.connection = connection;
-        baseURI = OpenSilex.getPlatformURI();
     }
 
     @Override
-    public void startup() {
+    public void startup() throws Exception {
         connection.startup();
-        URIDeserializer.setPrefixes(getPrefixes());
+
+        final String basePrefix;
+        BaseConfig baseConfig = this.getModuleConfig(BaseModule.class, BaseConfig.class);
+        if (baseConfig != null) {
+            basePrefix = baseConfig.baseURIAlias() + "-";
+        } else {
+            basePrefix = "";
+        }
+
+        SPARQLClassObjectMapper.forEach((Resource resource, SPARQLClassObjectMapper<?> mapper) -> {
+            String resourceNamespace = mapper.getResourceGraphNamespace();
+            if (resourceNamespace != null) {
+                addPrefix(basePrefix + mapper.getResourceGraphPrefix(), resourceNamespace + "#");
+            }
+        });
+        URIDeserializer.setPrefixes(prefixes);
     }
 
     @Override
-    public void shutdown() {
+    public void shutdown() throws Exception {
         connection.shutdown();
     }
 
+    private HashMap<String, String> prefixes = new HashMap<String, String>() {
+        {
+            put(RDFS.PREFIX, RDFS.NAMESPACE);
+            put(FOAF.PREFIX, FOAF.NAMESPACE);
+            put("dc", DCTerms.NS);
+            put("oa", OA.NS);
+            put(XMLSchema.PREFIX, XMLSchema.NAMESPACE);
+        }
+    };
+
+    public void addPrefix(String prefix, String namespace) {
+        prefixes.put(prefix, namespace);
+    }
+
     public Map<String, String> getPrefixes() {
-        return new HashMap<String, String>() {
-            {
-                put("rdfs", RDFS.NAMESPACE);
-                put("foaf", FOAF.NAMESPACE);
-                put("dc", DCTerms.NS);
-                put("oa", OA.NS);
-                put("xsd", XMLSchema.NAMESPACE);
-                put("os", OpenSilex.BASE_PREFIX_URI);
-                put("os-sec", SecurityOntology.NS);
-            }
-        };
+        return prefixes;
     }
 
     private void addPrefixes(UpdateBuilder builder) {
@@ -246,8 +265,9 @@ public class SPARQLService implements SPARQLConnection, Service {
         SelectBuilder select = sparqlObjectMapper.getSelectBuilder();
 
         Node nodeURI = NodeFactory.createURI(uri.toString());
-        select.setVar(sparqlObjectMapper.getURIFieldName(), nodeURI);
-        select.addValueVar(sparqlObjectMapper.getURIFieldName(), "<" + nodeURI.getURI() + ">");
+//        select.setVar(sparqlObjectMapper.getURIFieldName(), nodeURI);
+
+        select.addValueVar(sparqlObjectMapper.getURIFieldExprVar(), SPARQLDeserializers.getForClass(URI.class).getNodeFromString(nodeURI.toString()));
 
         List<SPARQLResult> results = executeSelectQuery(select);
 
@@ -396,10 +416,12 @@ public class SPARQLService implements SPARQLConnection, Service {
         URIGenerator<T> uriGenerator = sparqlObjectMapper.getUriGenerator(instance);
         URI uri = sparqlObjectMapper.getURI(instance);
         if (uri == null) {
-            uri = uriGenerator.generateURI(baseURI, instance);
+
             int retry = 0;
+            String graphPrefix = sparqlObjectMapper.getDefaultGraph().toString();
+            uri = uriGenerator.generateURI(graphPrefix, instance, retry);
             while (uriExists(uri)) {
-                uri = uriGenerator.generateURI(baseURI, instance, ++retry);
+                uri = uriGenerator.generateURI(graphPrefix, instance, ++retry);
             }
 
             sparqlObjectMapper.setUri(instance, uri);

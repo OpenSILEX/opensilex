@@ -17,29 +17,31 @@ import javax.ws.rs.core.UriBuilder;
  */
 public interface URIGenerator<T> {
 
-    public default URI generateURI(URI platformUri, T instance) throws Exception {
-        return normalize(platformUri, instance);
-    }
-
-    ;
     
-    public default URI generateURI(URI platformUri, T instance, int retryCount) throws Exception {
-        return UriBuilder.fromUri(generateURI(platformUri, instance)).segment("" + retryCount).build();
+    public default URI generateURI(String prefix, T instance, int retryCount) throws Exception {
+        if (retryCount > 0) {
+            return new URI(prefix + "#" + getInstanceURI(instance) + "/" + retryCount);
+        } else {
+            return new URI(prefix + "#" + getInstanceURI(instance));
+        }
     }
-
-    ;
+    
+    public default String getInstanceURI(T instance) {
+        return instance.toString();
+    }
     
     public static String normalizePart(Object txt) {
         return txt.toString().toLowerCase().trim().replaceAll(" +", " ").replace(" ", "-");
     }
 
-    public static URI normalize(URI base, Object... parts) {
-        UriBuilder builder = UriBuilder.fromUri(base);
+    public static List<String> normalize(Object... parts) {
         List<String> normalizedString = new ArrayList<>();
         for (int i = 0; i < parts.length; i++) {
             normalizedString.add(normalizePart(parts[i]));
         }
 
-        return builder.segment(normalizedString.toArray(new String[normalizedString.size()])).build();
+        return normalizedString;
     }
+
+    
 }

@@ -46,9 +46,9 @@ let renewTokenOnEvent = function (event) {
 
   $opensilex.getService<SecurityService>("opensilex.SecurityService")
     .renewToken(currentUser.getToken())
-    .then((sucess) => {
-      console.log("Token renewed", sucess.response.result);
-      currentUser.setToken(sucess.response.result);
+    .then((http) => {
+      console.log("Token renewed", http.response.result.token);
+      currentUser.setToken(http.response.result.token);
       $opensilex.$store.commit("login", currentUser);
     })
     .catch(console.error);
@@ -88,7 +88,8 @@ export default new Vuex.Store({
       }
 
       let exipreAfter = user.getExpirationMs();
-      console.debug("Define expiration timeout", exipreAfter);
+      let expireDate = new Date(exipreAfter);
+      console.debug("Define expiration timeout", expireDate.getMinutes(), "min", expireDate.getSeconds(), "sec");
       expireTimeout = setTimeout(() => {
         console.debug("Automatically call logout");
         let method: any = "logout";
@@ -96,8 +97,9 @@ export default new Vuex.Store({
       }, exipreAfter);
 
       let inactivityRenewDelay = user.getInactivityRenewDelayMs();
+      let inactivityRenewDelayDate = new Date(inactivityRenewDelay);
       if (inactivityRenewDelay > 0) {
-        console.debug("Enable inactivity renew timeout in", inactivityRenewDelay, "ms");
+        console.debug("Enable inactivity renew timeout in", inactivityRenewDelayDate.getMinutes(), "min", inactivityRenewDelayDate.getSeconds(), "sec");
         autoRenewTimeout = setTimeout(() => {
           // TODO display toast to warn user that is session will be distoryed if no activity
           renewStarted = false;
@@ -106,7 +108,7 @@ export default new Vuex.Store({
           window.addEventListener('click', renewTokenOnEvent);
           window.addEventListener('keydown', renewTokenOnEvent);
         }, inactivityRenewDelay);
-      } 
+      }
 
       if (!user.needRenew()) {
         console.debug("Define user");
@@ -116,7 +118,6 @@ export default new Vuex.Store({
         state.openSilexRouter.resetRouter(state.user);
         console.debug("Reset menu");
         state.menu = state.openSilexRouter.getMenu();
-        console.log(state.menu);
       }
     },
     logout(state) {

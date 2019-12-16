@@ -1,9 +1,10 @@
 //******************************************************************************
+//                          UserAPI.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.server.user.api;
+package org.opensilex.server.security.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -35,21 +36,49 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.security.ApiProtected;
 import org.opensilex.server.security.AuthenticationService;
 import org.opensilex.sparql.SPARQLService;
-import org.opensilex.server.user.dal.UserDAO;
-import org.opensilex.server.user.dal.UserModel;
+import org.opensilex.server.security.dal.UserDAO;
+import org.opensilex.server.security.dal.UserModel;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
+/**
+ * <pre>
+ * User API for OpenSilex which provides:
+ *
+ * - create: Create a user
+ * - get: Get a user by URI
+ * - search: Search a filtered, ordered and paginated list of users
+ * - TODO update: Update a user
+ * - TODO delete: Delete a user
+ * </pre>
+ *
+ * @author Vincent Migot
+ */
 @Api("Users")
 @Path("/user")
 public class UserAPI {
 
+    /**
+     * Inject SPARQL service
+     */
     @Inject
     private SPARQLService sparql;
 
+    /**
+     * Inject Authentication service
+     */
     @Inject
     private AuthenticationService authentication;
 
+    /**
+     * Create a user and return it's URI
+     *
+     * @see org.opensilex.server.security.dal.UserDAO
+     * @param userDTO user model to create
+     * @param securityContext injected security context to get current user
+     * @return User URI
+     * @throws Exception
+     */
     @POST
     @Path("create")
     @ApiOperation("Create a user and return it's URI")
@@ -65,17 +94,21 @@ public class UserAPI {
             @ApiParam("User creation informations") UserCreationDTO userDTO,
             @Context SecurityContext securityContext
     ) throws Exception {
-
+        // Get current user
         UserModel currentUser = authentication.getCurrentUser(securityContext);
+
+        // Check if user is admin to create a new admin user
         if (userDTO.isAdmin() && (currentUser == null || !currentUser.isAdmin())) {
             throw new ForbiddenException("You must be an admin to create other admin users");
         }
 
+        // Create user DAO
         UserDAO userDAO = new UserDAO(sparql, authentication);
 
+        // check if user email already exists
         InternetAddress userEmail = new InternetAddress(userDTO.getEmail());
-
         if (!userDAO.userEmailexists(userEmail)) {
+            // create new user
             UserModel user = userDAO.create(
                     userEmail,
                     userDTO.getFirstName(),
@@ -83,9 +116,10 @@ public class UserAPI {
                     userDTO.isAdmin(),
                     userDTO.getPassword()
             );
-
+            // return user URI
             return new ObjectUriResponse(Response.Status.CREATED, user.getUri()).getResponse();
         } else {
+            // Return error response 409 - CONFLICT if user already exists
             return new ErrorResponse(
                     Status.CONFLICT,
                     "User already exists",
@@ -93,10 +127,18 @@ public class UserAPI {
             ).getResponse();
         }
     }
-    
+
+    /**
+     * Return a user by URI
+     *
+     * @see org.opensilex.server.security.dal.UserDAO
+     * @param uri URI of the user
+     * @return Corresponding user
+     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     */
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a user")
+    @ApiOperation("Get a user by it's URI")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -106,16 +148,20 @@ public class UserAPI {
         @ApiResponse(code = 404, message = "User not found")
     })
     public Response get(
-            @ApiParam(value = "User URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "User URI", example = "dev-users:agent.Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
+        // Get user from DAO by URI
         UserDAO dao = new UserDAO(sparql, authentication);
         UserModel model = dao.get(uri);
 
+        // Check if user is found
         if (model != null) {
+            // Return user converted in UserGetDTO
             return new SingleObjectResponse<>(
                     UserGetDTO.fromModel(model)
             ).getResponse();
         } else {
+            // Otherwise return a 404 - NOT_FOUND error response
             return new ErrorResponse(
                     Response.Status.NOT_FOUND,
                     "User not found",
@@ -124,35 +170,50 @@ public class UserAPI {
         }
     }
 
+    /**
+     * Search users
+     *
+     * @see org.opensilex.server.security.dal.UserDAO
+     * @param pattern Regex pattern for filtering list by names or email
+     * @param orderByList List of fields to sort as an array of
+     * fieldName=asc|desc
+     * @param page Page number
+     * @param pageSize Page size
+     * @return filtered, ordered and paginated list
+     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     */
     @GET
     @Path("search")
     @ApiOperation("Search users")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-        @ApiResponses(value = {
+    @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return user list", response = UserGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters")
     })
     public Response search(
-            @ApiParam(value = "Regex pattern for filtering list by names or email") @QueryParam("pattern") String pattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("orderBy") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number") @QueryParam("page") int page,
-            @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize
+            @ApiParam(value = "Regex pattern for filtering list by names or email", example = ".*") @QueryParam("pattern") String pattern,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") int pageSize
     ) throws Exception {
+        // Search users with User DAO
         UserDAO dao = new UserDAO(sparql, authentication);
-        
         ListWithPagination<UserModel> resultList = dao.search(
                 pattern,
-                orderByList, 
-                page, 
+                orderByList,
+                page,
                 pageSize
         );
-        
+
+        // Convert paginated list to DTO
         ListWithPagination<UserGetDTO> resultDTOList = resultList.convert(
                 UserGetDTO.class,
                 UserGetDTO::fromModel
         );
+        
+        // Return paginated list of user DTO
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 

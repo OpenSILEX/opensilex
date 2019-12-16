@@ -5,6 +5,10 @@
 //******************************************************************************
 package org.opensilex.service;
 
+import java.util.HashMap;
+import java.util.Map;
+import org.opensilex.module.ModuleConfig;
+import org.opensilex.module.OpenSilexModule;
 import org.opensilex.utils.ClassUtils;
 
 /**
@@ -13,11 +17,11 @@ import org.opensilex.utils.ClassUtils;
  */
 public interface Service {
 
-    public default void startup() {
+    public default void startup() throws Exception {
 
     }
 
-    public default void shutdown() {
+    public default void shutdown() throws Exception {
 
     }
 
@@ -90,5 +94,31 @@ public interface Service {
                 return defaultConfigAnnotation.implementation();
             }
         };
+    }
+
+    public default void setModule(OpenSilexModule module) {
+        Service.registerModule(this.getClass(), module);
+    }
+
+    public default <T extends OpenSilexModule> T getModule(Class<T> moduleClass) {
+        return Service.getModule(this.getClass(), moduleClass);
+    }
+
+    public default <T extends ModuleConfig> T getModuleConfig(Class<? extends OpenSilexModule> moduleClass, Class<T> configClass) {
+        OpenSilexModule module = Service.getModule(this.getClass(), moduleClass);
+        if (module != null) {
+            return module.getConfig(configClass);
+        }
+        return null;
+    }
+
+    static Map<Class<? extends Service>, OpenSilexModule> moduleByService = new HashMap<>();
+
+    public static void registerModule(Class<? extends Service> serviceClass, OpenSilexModule module) {
+        moduleByService.put(serviceClass, module);
+    }
+
+    public static <T extends OpenSilexModule> T getModule(Class<? extends Service> serviceClass, Class<T> moduleClass) {
+        return (T) moduleByService.get(serviceClass);
     }
 }

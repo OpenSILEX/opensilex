@@ -36,9 +36,9 @@ import java.util.List;
  * @see org.opensilex.server.response.PaginationDTO
  * @see org.opensilex.server.response.StatusDTO
  * @see org.opensilex.server.response.JsonResponse
- * @update [Arnaud Charleroy] Oct. 2016: BrAPI datafiles update
- * @update [Vincent Migot] Nov. 2019: Refactor according to BrAPI v1.3
  * @author Samuël Chérimont
+ * @author Arnaud Charleroy - Oct. 2016: BrAPI datafiles update
+ * @author Vincent Migot - Nov. 2019: Refactor according to BrAPI v1.3
  */
 public class MetadataDTO {
 

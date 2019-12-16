@@ -1,4 +1,5 @@
 //******************************************************************************
+//                      SecurityOntology.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -11,28 +12,28 @@ import org.opensilex.OpenSilex;
 import org.opensilex.sparql.utils.Ontology;
 
 /**
+ * <pre>
+ * Security ontology Resource and Property definitions for concepts:
+ * - Users
+ * - Groups
+ * - Profiles
+ * </pre>
  *
  * @author Vincent Migot
  */
 public class SecurityOntology {
 
-    public static final String DOMAIN = OpenSilex.BASE_PREFIX_URI + "security";
+    public static final String NAMESPACE = OpenSilex.ONTOLOGY_BASE_DOMAIN + "/security#";
 
-    public static final String NS = DOMAIN + "#";
+    public static final String PREFIX = "os-sec";
 
-    public static String getURI() {
-        return NS;
-    }
+    public static final Resource Group = Ontology.resource(NAMESPACE, "Group");
+    public static final Resource SecurityProfile = Ontology.resource(NAMESPACE, "GroupProfile");
 
-    public static final Resource NAMESPACE = Ontology.resource(NS);
-
-    public static final Resource Group = Ontology.resource(NS, "Group");
-    public static final Resource SecurityProfile = Ontology.resource(NS, "GroupProfile");
-
-    public static final Property hasPasswordHash = Ontology.property(NS, "hasPasswordHash");
-    public static final Property hasUser = Ontology.property(NS, "hasUser");
-    public static final Property hasProfile = Ontology.property(NS, "hasProfile");
-    public static final Property hasAccess = Ontology.property(NS, "hasAccess");
-    public static final Property isAdmin = Ontology.property(NS, "isAdmin");
+    public static final Property hasPasswordHash = Ontology.property(NAMESPACE, "hasPasswordHash");
+    public static final Property hasUser = Ontology.property(NAMESPACE, "hasUser");
+    public static final Property hasProfile = Ontology.property(NAMESPACE, "hasProfile");
+    public static final Property hasAccess = Ontology.property(NAMESPACE, "hasAccess");
+    public static final Property isAdmin = Ontology.property(NAMESPACE, "isAdmin");
 
 }

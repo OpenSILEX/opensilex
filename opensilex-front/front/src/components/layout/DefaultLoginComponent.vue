@@ -47,9 +47,9 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import { SecurityService } from "opensilex/index";
+import { SecurityService, TokenGetDTO } from "opensilex/index";
 import { OpenSilexVuePlugin } from "../../models/OpenSilexVuePlugin";
-import HttpResponse from "opensilex/HttpResponse";
+import HttpResponse, { OpenSilexResponse } from "opensilex/HttpResponse";
 import { User } from "../../models/User";
 
 @Component
@@ -87,9 +87,9 @@ export default class DefaultLoginComponent extends Vue {
         identifier: this.form.email,
         password: this.form.password
       })
-      .then(function(sucess: HttpResponse<any>) {
+      .then(function(http: HttpResponse<OpenSilexResponse<TokenGetDTO>>) {
         let user = new User();
-        user.setToken(sucess.response.result);
+        user.setToken(http.response.result.token);
         self.forceRefresh = true;
         self.$store.commit("login", user);
         self.$store.commit("refresh");

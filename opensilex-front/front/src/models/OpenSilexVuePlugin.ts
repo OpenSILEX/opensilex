@@ -44,7 +44,8 @@ export class OpenSilexVuePlugin {
             try {
                 let result: T | null = this.getServiceSync(id);
                 if (result == null) {
-                    this.loadComponentModule(ModuleComponentDefinition.fromString(id))
+                    let idParts = this.parseServiceId(id);
+                    this.loadModule(idParts.module)
                         .then(() => {
                             resolve(this.getService(id));
                         })
@@ -70,25 +71,37 @@ export class OpenSilexVuePlugin {
         return result;
     }
 
-    public getServiceSync<T>(id: string): T | null {
-        console.debug("Get API service", this.baseApi, id);
+    public parseServiceId(id) {
         let idParts = id.split(".");
         if (idParts.length == 1) {
-            return this.getServiceContainer().get<T>(id);
-        } else if (idParts.length >= 2) {
-            let moduleName = idParts[0];
-            let serviceName = idParts[idParts.length - 1];
-            if (this.loadedModules.indexOf(moduleName) >= 0) {
-                return this.getServiceContainer().get<T>(serviceName);
-            } else {
-                return null;
-            }
+            return {
+                module: null,
+                service: idParts[0]
+            };
+        } else if (idParts.length == 2) {
+            return {
+                module: idParts[0],
+                service: idParts[1]
+            };
         } else {
             let errorMessage = "Invalid service identifier: " + id;
             console.error(errorMessage);
             throw new Error(errorMessage);
         }
+    }
 
+    public getServiceSync<T>(id: string): T | null {
+        console.debug("Get API service", this.baseApi, id);
+        let idParts = this.parseServiceId(id);
+        if (idParts.module == null) {
+            return this.getServiceContainer().get<T>(idParts.service);
+        } else {
+            if (this.loadedModules.indexOf(idParts.module) >= 0) {
+                return this.getServiceContainer().get<T>(idParts.service);
+            } else {
+                return null;
+            }
+        }
     }
 
     private loadedModules: Array<string> = [
@@ -155,11 +168,11 @@ export class OpenSilexVuePlugin {
                 const plugin = window[name].default;
                 Vue.use(plugin);
                 self.initAsyncComponents(plugin.components)
-                    .then(function(_module) {
+                    .then(function (_module) {
                         self.hideLoader();
                         resolve(_module);
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         self.hideLoader();
                         reject(error);
                     });
@@ -210,4 +223,27 @@ export class OpenSilexVuePlugin {
     public get user(): User {
         return this.$store.state.user;
     }
+
+    private handleError(error) {
+        switch (error.status) {
+            case 400:
+                console.error("Constraint validation error", error);
+                break;
+            case 401:
+                console.error("Unhautorized error", error);
+                this.$store.commit("logout");
+                break;
+            case 403:
+                console.error("Forbidden error", error);
+                break;
+            case 500:
+                console.error("Internal server error", error);
+                break;
+            default:
+                console.error("Unhandled error", error);
+                break;
+        }
+    }
+
+    public errorHandler = this.handleError.bind(this);
 }

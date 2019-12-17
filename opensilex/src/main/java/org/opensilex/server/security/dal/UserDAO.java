@@ -13,8 +13,6 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.server.security.AuthenticationService;
-import org.opensilex.server.security.dal.SecurityProfileModel;
-import org.opensilex.server.security.dal.SecurityProfileModelDAO;
 import org.opensilex.sparql.SPARQLQueryHelper;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
@@ -41,6 +39,7 @@ public class UserDAO {
     }
 
     public UserModel create(
+            URI uri,
             InternetAddress email,
             String firstName,
             String lastName,
@@ -48,6 +47,7 @@ public class UserDAO {
             String password
     ) throws Exception {
         UserModel user = new UserModel();
+        user.setUri(uri);
         user.setEmail(email);
         user.setFirstName(firstName);
         user.setLastName(lastName);
@@ -105,9 +105,27 @@ public class UserDAO {
         sparql.delete(UserModel.class, instanceURI);
     }
 
-    public UserModel update(UserModel instance) throws Exception {
-        sparql.update(instance);
-        return instance;
+    public UserModel update(
+            URI uri,
+            InternetAddress email,
+            String firstName,
+            String lastName,
+            boolean admin, String password
+    ) throws Exception {
+        UserModel user = new UserModel();
+        user.setUri(uri);
+        user.setEmail(email);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setAdmin(admin);
+
+        if (password != null) {
+            user.setPasswordHash(authentication.getPasswordHash(password));
+        }
+
+        sparql.update(user);
+        
+        return user;
     }
 
     public List<String> getAccessList(URI uri) throws Exception {

@@ -6,10 +6,12 @@
 package org.opensilex.sparql.mapping;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
+import java.util.logging.Level;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -21,13 +23,13 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 import static org.opensilex.sparql.SPARQLQueryHelper.typeDefVar;
+import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  *
@@ -36,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class SPARQLClassQueryBuilder {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLClassQueryBuilder.class);
-    
+
     private SelectBuilder selectBuilder;
     private AskBuilder askBuilder;
     private SelectBuilder countBuilder;
@@ -112,7 +114,7 @@ public class SPARQLClassQueryBuilder {
                 countBuilder.addVar("(COUNT(DISTINCT ?" + uriFieldName + "))", makeVar(countFieldName));
             } catch (ParseException ex) {
                 LOGGER.error("Error while building count query (should never happend)", ex);
-                
+
             }
             countBuilder.addWhere(makeVar(uriFieldName), RDF.type, typeDefVar);
             countBuilder.addWhere(typeDefVar, Ontology.subClassAny, analyzer.getRDFType());
@@ -137,9 +139,9 @@ public class SPARQLClassQueryBuilder {
     }
 
     public <T extends SPARQLResourceModel> void addCreateBuilder(Node graph, T instance, UpdateBuilder create) throws Exception {
-        executeOnInstanceTriples(instance, (Triple triple, Boolean isReverse) -> {
-            addCreateBuilderHelper(graph, triple, isReverse, create);
-        });
+        executeOnInstanceTriples(instance, (Triple triple, Field field) -> {
+            addCreateBuilderHelper(graph, triple, field, create);
+        }, false);
 
         URI uri = instance.getUri();
 
@@ -148,17 +150,22 @@ public class SPARQLClassQueryBuilder {
             Class<?> valueType = relation.getType();
             Node valueNode = SPARQLDeserializers.getForClass(valueType).getNodeFromString(relation.getValue());
 
-            Triple triple = new Triple(Ontology.nodeURI(uri), relation.getProperty().asNode(), valueNode);
+            Triple triple = new Triple(SPARQLDeserializers.nodeURI(uri), relation.getProperty().asNode(), valueNode);
 
             Node relationGraph = graph;
             if (relation.getGraph() != null) {
-                relationGraph = Ontology.nodeURI(relation.getGraph());
+                relationGraph = SPARQLDeserializers.nodeURI(relation.getGraph());
             }
-            addCreateBuilderHelper(relationGraph, triple, relation.getReverse(), create);
+            addCreateBuilderHelper(relationGraph, triple, null, create);
         }
     }
 
-    private void addCreateBuilderHelper(Node graph, Triple triple, Boolean isReverse, UpdateBuilder create) {
+    private void addCreateBuilderHelper(Node graph, Triple triple, Field field, UpdateBuilder create) {
+        boolean isReverse = false;
+        if (field != null) {
+            isReverse = analyzer.isReverseRelation(field);
+        }
+
         if (graph != null) {
             if (isReverse) {
                 create.addInsert(graph, triple.getObject(), triple.getPredicate(), triple.getSubject());
@@ -183,32 +190,55 @@ public class SPARQLClassQueryBuilder {
 
     public <T extends SPARQLResourceModel> void addUpdateBuilder(Node graph, T oldInstance, T newInstance, UpdateBuilder update) throws Exception {
         final AtomicInteger i = new AtomicInteger(0);
-        executeOnInstanceTriples(oldInstance, (Triple triple, Boolean isReverse) -> {
-            String var = "?x" + i.addAndGet(1);
-
-            if (graph != null) {
-                if (isReverse) {
-                    update.addDelete(graph, var, triple.getPredicate(), triple.getSubject());
-                    update.addWhere(var, triple.getPredicate(), triple.getSubject());
-                } else {
-                    update.addDelete(graph, triple.getSubject(), triple.getPredicate(), var);
-                    update.addWhere(triple.getSubject(), triple.getPredicate(), var);
+        executeOnInstanceTriples(oldInstance, (Triple triple, Field field) -> {
+            boolean isReverse = false;
+            boolean ignoreUpdateIfNull = false;
+            if (field != null) {
+                isReverse = analyzer.isReverseRelation(field);
+                try {
+                    Object newFieldValue = analyzer.getGetterFromField(field).invoke(newInstance);
+                    ignoreUpdateIfNull = newFieldValue == null && analyzer.getFieldAnnotation(field).ignoreUpdateIfNull();
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    LOGGER.warn("Unexpected error (should never happend) while reading field: " + field.getName(), ex);
                 }
-            } else {
-                if (isReverse) {
-                    update.addDelete(var, triple.getPredicate(), triple.getSubject());
-                    update.addWhere(var, triple.getPredicate(), triple.getSubject());
+
+            }
+
+            if (!ignoreUpdateIfNull) {
+                String var = "?x" + i.addAndGet(1);
+
+                if (graph != null) {
+                    if (isReverse) {
+                        update.addDelete(graph, var, triple.getPredicate(), triple.getSubject());
+                        update.addWhere(var, triple.getPredicate(), triple.getSubject());
+                    } else {
+                        update.addDelete(graph, triple.getSubject(), triple.getPredicate(), var);
+                        update.addWhere(triple.getSubject(), triple.getPredicate(), var);
+                    }
                 } else {
-                    update.addDelete(triple.getSubject(), triple.getPredicate(), var);
-                    update.addWhere(triple.getSubject(), triple.getPredicate(), var);
+                    if (isReverse) {
+                        update.addDelete(var, triple.getPredicate(), triple.getSubject());
+                        update.addWhere(var, triple.getPredicate(), triple.getSubject());
+                    } else {
+                        update.addDelete(triple.getSubject(), triple.getPredicate(), var);
+                        update.addWhere(triple.getSubject(), triple.getPredicate(), var);
+                    }
                 }
             }
-        });
-        addCreateBuilder(graph, newInstance, update);
+        }, true);
+
+        executeOnInstanceTriples(newInstance, (Triple triple, Field field) -> {
+            addCreateBuilderHelper(graph, triple, field, update);
+        }, true);
     }
 
     public void addDeleteBuilder(Node graph, Object instance, UpdateBuilder delete) throws Exception {
-        executeOnInstanceTriples(instance, (Triple triple, Boolean isReverse) -> {
+        executeOnInstanceTriples(instance, (Triple triple, Field field) -> {
+            boolean isReverse = false;
+            if (field != null) {
+                isReverse = analyzer.isReverseRelation(field);
+            }
+
             if (graph != null) {
                 if (isReverse) {
                     delete.addDelete(graph, triple.getObject(), triple.getPredicate(), triple.getSubject());
@@ -222,7 +252,7 @@ public class SPARQLClassQueryBuilder {
                     delete.addDelete(triple);
                 }
             }
-        });
+        }, false);
     }
 
     private void addSelectProperty(SelectBuilder select, String uriFieldName, Property property, Field field) {
@@ -259,23 +289,24 @@ public class SPARQLClassQueryBuilder {
         }
     }
 
-    private void executeOnInstanceTriples(Object instance, BiConsumer<Triple, Boolean> tripleHandler) throws Exception {
+    private void executeOnInstanceTriples(Object instance, BiConsumer<Triple, Field> tripleHandler, boolean ignoreNullFields) throws Exception {
         URI uri = analyzer.getURI(instance);
+        Node uriNode  = SPARQLDeserializers.getForClass(URI.class).getNodeFromString(uri.toString());
 
-        tripleHandler.accept(new Triple(Ontology.nodeURI(uri), RDF.type.asNode(), analyzer.getRDFType().asNode()), false);
+        tripleHandler.accept(new Triple(uriNode, RDF.type.asNode(), analyzer.getRDFType().asNode()), analyzer.getURIField());
 
         for (Field field : analyzer.getDataPropertyFields()) {
             Object fieldValue = analyzer.getGetterFromField(field).invoke(instance);
 
             if (fieldValue == null) {
-                if (!analyzer.isOptional(field)) {
+                if (!ignoreNullFields && !analyzer.isOptional(field)) {
                     // TODO change exception type
                     throw new Exception("Field value can't be null: " + field.getName());
                 }
             } else {
                 Property property = analyzer.getDataPropertyByField(field);
                 Node fieldNodeValue = SPARQLDeserializers.getForClass(fieldValue.getClass()).getNode(fieldValue);
-                tripleHandler.accept(new Triple(Ontology.nodeURI(uri), property.asNode(), fieldNodeValue), analyzer.isReverseRelation(field));
+                tripleHandler.accept(new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), fieldNodeValue), field);
             }
         }
 
@@ -283,18 +314,18 @@ public class SPARQLClassQueryBuilder {
             Object fieldValue = analyzer.getGetterFromField(field).invoke(instance);
 
             if (fieldValue == null) {
-                if (!analyzer.isOptional(field)) {
+                if (!ignoreNullFields && !analyzer.isOptional(field)) {
                     // TODO change exception type
                     throw new Exception("Field value can't be null: " + field.getName());
                 }
             } else {
                 URI propertyFieldURI = SPARQLClassObjectMapper.getForClass(fieldValue.getClass()).getURI(fieldValue);
-                if (propertyFieldURI != null) {
-                    Property property = analyzer.getObjectPropertyByField(field);
-                    tripleHandler.accept(new Triple(Ontology.nodeURI(uri), property.asNode(), Ontology.nodeURI(propertyFieldURI)), analyzer.isReverseRelation(field));
-                } else {
+                if (!ignoreNullFields && propertyFieldURI == null) {
                     // TODO change exception type
                     throw new Exception("Object URI value can't be null: " + field.getName());
+                } else {
+                    Property property = analyzer.getObjectPropertyByField(field);
+                    tripleHandler.accept(new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), SPARQLDeserializers.nodeURI(propertyFieldURI)), field);
                 }
             }
         }
@@ -307,7 +338,7 @@ public class SPARQLClassQueryBuilder {
 
                 for (Object listValue : fieldValues) {
                     Node listNodeValue = SPARQLDeserializers.getForClass(listValue.getClass()).getNode(listValue);
-                    tripleHandler.accept(new Triple(Ontology.nodeURI(uri), property.asNode(), listNodeValue), analyzer.isReverseRelation(field));
+                    tripleHandler.accept(new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), listNodeValue), field);
                 }
             }
         }
@@ -318,18 +349,18 @@ public class SPARQLClassQueryBuilder {
             if (fieldValues != null) {
                 for (Object listValue : fieldValues) {
                     if (listValue == null) {
-                        if (!analyzer.isOptional(field)) {
+                        if (!ignoreNullFields && !analyzer.isOptional(field)) {
                             // TODO change exception type
                             throw new Exception("Field value can't be null");
                         }
                     } else {
                         URI propertyFieldURI = SPARQLClassObjectMapper.getForClass(listValue.getClass()).getURI(listValue);
-                        if (propertyFieldURI != null) {
-                            Property property = analyzer.getObjectListPropertyByField(field);
-                            tripleHandler.accept(new Triple(Ontology.nodeURI(uri), property.asNode(), Ontology.nodeURI(propertyFieldURI)), analyzer.isReverseRelation(field));
-                        } else {
+                        if (!ignoreNullFields && propertyFieldURI == null) {
                             // TODO change exception type
                             throw new Exception("Object URI value can't be null");
+                        } else {
+                            Property property = analyzer.getObjectListPropertyByField(field);
+                            tripleHandler.accept(new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), SPARQLDeserializers.nodeURI(propertyFieldURI)), field);
                         }
 
                     }

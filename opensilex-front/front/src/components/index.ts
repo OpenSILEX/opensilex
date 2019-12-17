@@ -7,11 +7,11 @@ import DefaultNotFoundComponent from './layout/DefaultNotFoundComponent.vue';
 import ToDoComponent from './layout/ToDoComponent.vue';
 
 export default {
-    'opensilex-front.DefaultFooterComponent': DefaultFooterComponent,
-    'opensilex-front.DefaultHeaderComponent': DefaultHeaderComponent,
-    'opensilex-front.DefaultLoginComponent': DefaultLoginComponent,
-    'opensilex-front.DefaultMenuComponent': DefaultMenuComponent,
-    'opensilex-front.DefaultHomeComponent': DefaultHomeComponent,
-    'opensilex-front.DefaultNotFoundComponent': DefaultNotFoundComponent,
-    'opensilex-front.ToDoComponent': ToDoComponent
+    'opensilex-front-DefaultFooterComponent': DefaultFooterComponent,
+    'opensilex-front-DefaultHeaderComponent': DefaultHeaderComponent,
+    'opensilex-front-DefaultLoginComponent': DefaultLoginComponent,
+    'opensilex-front-DefaultMenuComponent': DefaultMenuComponent,
+    'opensilex-front-DefaultHomeComponent': DefaultHomeComponent,
+    'opensilex-front-DefaultNotFoundComponent': DefaultNotFoundComponent,
+    'opensilex-front-ToDoComponent': ToDoComponent
 };

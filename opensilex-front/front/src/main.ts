@@ -80,8 +80,10 @@ console.debug("Bootstrap plugin initialized !");
 console.debug("Initialize FontAwesomeIcon plugin...");
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faPowerOff } from '@fortawesome/free-solid-svg-icons'
-library.add(faPowerOff);
+import { faPowerOff, faTimes, faTrashAlt, faEdit} from '@fortawesome/free-solid-svg-icons'
+import {  } from '@fortawesome/free-solid-svg-icons'
+import { }from '@fortawesome/free-solid-svg-icons'
+library.add(faPowerOff, faTimes, faTrashAlt, faEdit);
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 console.debug("FontAwesomeIcon plugin initialized !");
 
@@ -136,19 +138,24 @@ $opensilex.initAsyncComponents(components)
         let user: User | undefined = undefined;
         if (urlParams.has("token")) {
           let token = urlParams.get("token");
-          console.debug("Try to load user from token", token);
+          console.debug("Try to load user from URL token...");
           if (token != null) {
             user = User.fromToken(token);
-            console.debug("Load user from token", user);
+            console.debug("User sucessfully loaded from URL token !");
           }
         }
 
         if (user == undefined) {
-          console.debug("Try to load user from cookie");
+          console.debug("Try to load user from cookie...");
           user = User.fromCookie();
-          console.debug("Load user from cookie", user);
+          console.debug("User sucessfully loaded from cookie !");
         }
 
+        if (!user.isLoggedIn()) {
+          console.debug("User is ANONYMOUS !");
+        } else {
+          console.debug("User is:", user.getEmail());
+        }
         // Init user
         console.debug("Initialize global user");
         store.commit("login", user);

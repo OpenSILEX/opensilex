@@ -37,7 +37,7 @@ public class FrontConfigDTO {
     @NotNull
     List<RouteDTO> routes;
 
-    @ApiModelProperty(value = "Home component identifier", example = "opensilex-front.DefaultHomeComponent")
+    @ApiModelProperty(value = "Home component identifier", example = "opensilex-front-DefaultHomeComponent")
     public String getHomeComponent() {
         return homeComponent;
     }
@@ -46,7 +46,7 @@ public class FrontConfigDTO {
         this.homeComponent = homeComponent;
     }
 
-    @ApiModelProperty(value = "Not found component identifier", example = "opensilex-front.DefaultNotFoundComponent")
+    @ApiModelProperty(value = "Not found component identifier", example = "opensilex-front-DefaultNotFoundComponent")
     public String getNotFoundComponent() {
         return notFoundComponent;
     }
@@ -55,7 +55,7 @@ public class FrontConfigDTO {
         this.notFoundComponent = notFoundComponent;
     }
 
-    @ApiModelProperty(value = "Menu component identifier", example = "opensilex-front.DefaultMenuComponent")
+    @ApiModelProperty(value = "Menu component identifier", example = "opensilex-front-DefaultMenuComponent")
     public String getMenuComponent() {
         return menuComponent;
     }
@@ -64,7 +64,7 @@ public class FrontConfigDTO {
         this.menuComponent = menuComponent;
     }
 
-    @ApiModelProperty(value = "Footer component identifier", example = "opensilex-front.DefaultFooterComponent")
+    @ApiModelProperty(value = "Footer component identifier", example = "opensilex-front-DefaultFooterComponent")
     public String getFooterComponent() {
         return footerComponent;
     }
@@ -73,7 +73,7 @@ public class FrontConfigDTO {
         this.footerComponent = footerComponent;
     }
 
-    @ApiModelProperty(value = "Header component identifier", example = "opensilex-front.DefaultHeaderComponent")
+    @ApiModelProperty(value = "Header component identifier", example = "opensilex-front-DefaultHeaderComponent")
     public String getHeaderComponent() {
         return headerComponent;
     }

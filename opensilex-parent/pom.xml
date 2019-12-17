@@ -616,6 +616,7 @@
                                     <packageVersion>${revision}</packageVersion>
                                     <npmName>${project.name}</npmName>
                                     <usePromise>true</usePromise>
+                                    <useHttpClient>true</useHttpClient>
                                     <modelPropertyNaming>original</modelPropertyNaming>
                                 </configOptions>
                             </configuration>

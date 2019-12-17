@@ -19,9 +19,11 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -31,7 +33,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
+import static org.apache.jena.vocabulary.RDF.uri;
 import org.opensilex.server.exceptions.ForbiddenException;
+import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -41,6 +45,7 @@ import org.opensilex.server.security.AuthenticationService;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.server.security.dal.UserDAO;
 import org.opensilex.server.security.dal.UserModel;
+import org.opensilex.server.validation.ValidURI;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
@@ -57,7 +62,7 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author Vincent Migot
  */
-@Api("Security")
+@Api("User")
 @Path("/user")
 public class UserAPI {
 
@@ -113,6 +118,7 @@ public class UserAPI {
         if (!userDAO.userEmailexists(userEmail)) {
             // create new user
             UserModel user = userDAO.create(
+                    userDTO.getUri(),
                     userEmail,
                     userDTO.getFirstName(),
                     userDTO.getLastName(),
@@ -147,8 +153,8 @@ public class UserAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return user", response = UserGetDTO.class),
-        @ApiResponse(code = 400, message = "Invalid parameters"),
-        @ApiResponse(code = 404, message = "User not found")
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "User not found", response = ErrorDTO.class)
     })
     public Response get(
             @ApiParam(value = "User URI", example = "dev-users:agent.Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
@@ -193,10 +199,10 @@ public class UserAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return user list", response = UserGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters")
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response search(
-            @ApiParam(value = "Regex pattern for filtering list by names or email", example = ".*") @DefaultValue(".*") @QueryParam("pattern") @NotNull String pattern,
+            @ApiParam(value = "Regex pattern for filtering list by names or email", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
@@ -218,6 +224,56 @@ public class UserAPI {
 
         // Return paginated list of user DTO
         return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+
+    @PUT
+    @Path("update")
+    @ApiOperation("Update a user")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return user uri of the updated user", response = String.class),
+        @ApiResponse(code = 400, message = "Invalid parameters")
+    })
+    public Response update(
+            @ApiParam("Project description") @Valid UserUpdateDTO dto
+    ) throws Exception {
+        UserDAO dao = new UserDAO(sparql, authentication);
+
+        UserModel model = dao.get(dto.getUri());
+        if (model != null) {
+            UserModel user = dao.update(
+                    dto.getUri(),
+                    new InternetAddress(dto.getEmail()),
+                    dto.getFirstName(),
+                    dto.getLastName(),
+                    dto.isAdmin(),
+                    dto.getPassword()
+            );
+
+            return new ObjectUriResponse(Response.Status.OK, user.getUri()).getResponse();
+        } else {
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Project not found",
+                    "Unknown project URI: " + uri
+            ).getResponse();
+        }
+    }
+
+    @DELETE
+    @Path("{uri}")
+    @ApiOperation("Delete a user")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response delete(
+            @ApiParam(value = "User URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+    ) throws Exception {
+        UserDAO dao = new UserDAO(sparql, authentication);
+        dao.delete(uri);
+        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
 }

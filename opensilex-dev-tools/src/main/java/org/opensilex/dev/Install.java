@@ -242,6 +242,6 @@ public class Install {
         UserDAO userDAO = new UserDAO(sparql, authentication);
 
         InternetAddress email = new InternetAddress("admin@opensilex.org");
-        userDAO.create(email, "Admin", "OpenSilex", true, "admin");
+        userDAO.create(null, email, "Admin", "OpenSilex", true, "admin");
     }
 }

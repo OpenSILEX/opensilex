@@ -12,8 +12,8 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
 import org.opensilex.sparql.SPARQLService;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.utils.Ontology;
 
 
 
@@ -32,7 +32,7 @@ public class SPARQLProxyListObject<T extends SPARQLResourceModel> extends SPARQL
     protected List<T> loadData() throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(genericType);
         
-        Node nodeURI = Ontology.nodeURI(uri);
+        Node nodeURI = SPARQLDeserializers.nodeURI(uri);
         List<T> results = service.search(genericType, (SelectBuilder select) -> {
             if (isReverseRelation) {
                 select.addWhere(makeVar(sparqlObjectMapper.getURIFieldName()), property, nodeURI);

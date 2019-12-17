@@ -1,36 +1,75 @@
 <template>
   <div>
     <b-input-group class="mt-3 mb-3" size="sm">
-      <b-form-input v-model="filterPattern" debounce="300" placeholder="Filter users"></b-form-input>
-      <b-input-group-text slot="append">
-        <b-btn
-          class="p-0"
-          :disabled="!filterPattern"
-          variant="link"
-          size="sm"
-          @click="filterPattern = ''"
-        >
-          <i class="fa fa-remove"></i>
-        </b-btn>
-      </b-input-group-text>
+      <b-input-group>
+        <b-form-input v-model="filterPattern" debounce="300" placeholder="Filter users"></b-form-input>
+        <template v-slot:append>
+          <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
+            <font-awesome-icon icon="times" size="sm" />
+          </b-btn>
+        </template>
+      </b-input-group>
     </b-input-group>
-    <b-table ref="table" striped hover :items="dataProvider" :fields="fields"></b-table>
+    <b-table
+      ref="tableRef"
+      striped
+      hover
+      small
+      :items="loadData"
+      :fields="fields"
+      :sort-by.sync="sortBy"
+      :sort-desc.sync="sortDesc"
+      no-provider-paging
+    >
+      <template v-slot:cell(email)="data">
+        <a :href="'mailto:' + data.item.email">{{ data.item.email }}</a>
+      </template>
+
+      <template v-slot:cell(uri)="data">
+        <a class="uri-info">
+          <small>{{ data.item.uri }}</small>
+        </a>
+      </template>
+
+      <template v-slot:cell(admin)="data">
+        <small v-if="data.item.admin">Yes</small>
+        <small v-if="!data.item.admin">No</small>
+      </template>
+
+      <template v-slot:cell(actions)="data">
+        <b-button-group>
+          <b-button
+            size="sm"
+            v-if="user.admin"
+            @click="$emit('onEdit', data.item)"
+            variant="outline-primary"
+          >
+            <font-awesome-icon icon="edit" size="sm" />
+          </b-button>
+          <b-button
+            size="sm"
+            v-if="user.admin"
+            @click="$emit('onDelete', data.item.uri)"
+            variant="danger"
+          >
+            <font-awesome-icon icon="trash-alt" size="sm" />
+          </b-button>
+        </b-button-group>
+      </template>
+    </b-table>
     <b-pagination
       v-model="currentPage"
       :total-rows="totalRow"
       :per-page="pageSize"
-      :sort-by="sortBy"
-      :sort-desc="sortDesc"
-      @change="loadData"
+      @change="refresh()"
     ></b-pagination>
-    <b-button to="/users/create">Create</b-button>
   </div>
 </template>
 
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import { SecurityService } from "../lib";
+import { UserService } from "../lib/api/user.service";
 import HttpResponse from "../lib/HttpResponse";
 import { UserGetDTO } from "../lib/model/userGetDTO";
 import VueRouter from "vue-router";
@@ -55,7 +94,7 @@ export default class UserList extends Vue {
   private filterPatternValue: any = "";
   set filterPattern(value: string) {
     this.filterPatternValue = value;
-    let tableRef: any = this.$refs.table;
+    let tableRef: any = this.$refs.tableRef;
     tableRef.refresh();
   }
 
@@ -64,7 +103,6 @@ export default class UserList extends Vue {
   }
 
   created() {
-    let tableRef: any = this.$refs.table;
     let query: any = this.$route.query;
     if (query.filterPattern) {
       this.filterPatternValue = decodeURI(query.filterPattern);
@@ -95,16 +133,28 @@ export default class UserList extends Vue {
     {
       key: "email",
       sortable: true
+    },
+    {
+      key: "uri",
+      sortable: true
+    },
+    {
+      key: "admin",
+      sortable: true
+    },
+    {
+      key: "actions"
     }
   ];
 
-  dataProvider(ctx) {
-    return this.loadData();
+  refresh() {
+    let tableRef: any = this.$refs.tableRef;
+    tableRef.refresh();
   }
 
   loadData() {
-    let service: SecurityService = this.$opensilex.getService(
-      "opensilex.SecurityService"
+    let service: UserService = this.$opensilex.getService(
+      "opensilex.UserService"
     );
 
     let orderBy = [];
@@ -119,14 +169,19 @@ export default class UserList extends Vue {
 
     return service
       .search(
-        this.user.getToken(),
+        this.user.getAuthorizationHeader(),
         this.filterPattern,
         orderBy,
         this.currentPage - 1,
         this.pageSize
       )
-      .then((sucess: any) => {
-        this.totalRow = sucess.response.metadata.totalCount;
+      .then((http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) => {
+        this.totalRow = http.response.metadata.pagination.totalCount;
+        this.pageSize = http.response.metadata.pagination.pageSize;
+        setTimeout(() => {
+          this.currentPage = http.response.metadata.pagination.currentPage + 1;
+        }, 0);
+
         this.$router
           .push({
             path: this.$route.fullPath,
@@ -139,15 +194,21 @@ export default class UserList extends Vue {
             }
           })
           .catch(function() {});
-        return sucess.response.result;
+
+        return http.response.result;
       })
-      .catch(error => {
-        console.error("Error while loading users", error);
-        return [];
-      });
+      .catch(this.$opensilex.errorHandler);
   }
 }
 </script>
 
 <style scoped lang="scss">
+.uri-info {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  max-width: 300px;
+}
 </style>

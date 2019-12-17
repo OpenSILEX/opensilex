@@ -52,7 +52,8 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,
-            property = "hasPasswordHash"
+            property = "hasPasswordHash",
+            ignoreUpdateIfNull = true
     )
     private String passwordHash;
 

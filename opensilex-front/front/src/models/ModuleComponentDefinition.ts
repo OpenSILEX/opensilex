@@ -6,7 +6,7 @@ export class ModuleComponentDefinition {
 
   public constructor(module, name) {
     this.module = module;
-    this.id = this.module + "." + name;
+    this.id = this.module + "-" + name;
   }
 
   public getId(): string {
@@ -18,9 +18,10 @@ export class ModuleComponentDefinition {
   }
 
   public static fromString(component): ModuleComponentDefinition {
-    let componentParts = component.split(".");
+    let componentParts = component.split("-");
     if (componentParts.length >= 2) {
-      return new ModuleComponentDefinition(componentParts[0], componentParts[componentParts.length - 1]);
+      let componentName = componentParts.pop();
+      return new ModuleComponentDefinition(componentParts.join("-"), componentName);
 
     } else {
       throw new Error("Invalid component definition: " + component);

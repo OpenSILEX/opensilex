@@ -6,7 +6,7 @@
         <component class="header-login" v-bind:is="loginComponent"></component>
       </div>
     </header>
-    <section id="content-wrapper" >
+    <section id="content-wrapper">
       <component v-if="!embed" v-bind:is="menuComponent"></component>
       <main>
         <router-view />
@@ -40,7 +40,6 @@ export default class App extends Vue {
   @Prop() loginComponent!: string | Component;
   @Prop() menuComponent!: string | Component;
   @Prop() footerComponent!: string | Component;
-
 
   $opensilex: OpenSilexVuePlugin;
 
@@ -174,6 +173,11 @@ main {
 
   #header-content .header-login {
     text-align: left;
+  }
+
+  #page-wrapper {
+    min-width: 100vw;
+    display: inline-flex;
   }
 }
 </style>

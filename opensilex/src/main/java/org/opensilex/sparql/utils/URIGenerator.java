@@ -5,11 +5,12 @@
 //******************************************************************************
 package org.opensilex.sparql.utils;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import javax.ws.rs.core.UriBuilder;
-
 
 /**
  *
@@ -17,7 +18,6 @@ import javax.ws.rs.core.UriBuilder;
  */
 public interface URIGenerator<T> {
 
-    
     public default URI generateURI(String prefix, T instance, int retryCount) throws Exception {
         if (retryCount > 0) {
             return new URI(prefix + "#" + getInstanceURI(instance) + "/" + retryCount);
@@ -25,23 +25,31 @@ public interface URIGenerator<T> {
             return new URI(prefix + "#" + getInstanceURI(instance));
         }
     }
-    
-    public default String getInstanceURI(T instance) {
+
+    public default String getInstanceURI(T instance) throws UnsupportedEncodingException {
         return instance.toString();
     }
-    
-    public static String normalizePart(Object txt) {
-        return txt.toString().toLowerCase().trim().replaceAll(" +", " ").replace(" ", "-");
+
+    public static String normalize(Object txt) throws UnsupportedEncodingException {
+
+        String value = txt.toString()
+                .toLowerCase()
+                .trim()
+                .replaceAll(" +", " ")
+                .replace(" ", "-")
+                .replaceAll("\\$|&|\\+|\\||,|/|:|;|=|\\?|@|<|>|#|%|\\{|\\}|\\(|\\)|\\^|~|\\[|\\]|\\\\|\"|'|`|\\*|\\!|\\.", "")
+                .replaceAll("%", "");
+
+        return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
     }
 
-    public static List<String> normalize(Object... parts) {
+    public static String normalize(String[] parts) throws UnsupportedEncodingException {
         List<String> normalizedString = new ArrayList<>();
         for (int i = 0; i < parts.length; i++) {
-            normalizedString.add(normalizePart(parts[i]));
+            normalizedString.add(normalize(parts[i]));
         }
 
-        return normalizedString;
+        return String.join(".", normalizedString.toArray(parts));
     }
 
-    
 }

@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
+import org.opensilex.server.validation.NullOrNotEmpty;
 import org.opensilex.server.validation.Required;
 import org.opensilex.server.validation.ValidURI;
 
@@ -20,12 +21,11 @@ import org.opensilex.server.validation.ValidURI;
  *
  * JSON representation:
  * {
- *      uri: ... optional custom uri, auto-generated if missing
  *      email: ... user email
  *      firstName: ... user first name
  *      lastName: ... user last name
  *      admin: ... flag to define if user is an admin or not
- *      password: ... user password
+ *      password: ... optional user password to update
  * }
  * </pre>
  *
@@ -35,7 +35,7 @@ import org.opensilex.server.validation.ValidURI;
  * @author Vincent Migot
  */
 @ApiModel
-public class UserCreationDTO extends UserGetDTO {
+public class UserUpdateDTO extends UserGetDTO {
 
     /**
      * User password
@@ -43,6 +43,7 @@ public class UserCreationDTO extends UserGetDTO {
     protected String password;
 
     @ValidURI
+    @NotNull
     public URI getUri() {
         return super.getUri();
     }
@@ -66,8 +67,8 @@ public class UserCreationDTO extends UserGetDTO {
         return super.getLastName();
     }
 
-    @Required
-    @ApiModelProperty(value = "User password", example = "azerty", required = true)
+    @NullOrNotEmpty
+    @ApiModelProperty(value = "Optional user password", example = "azerty")
     public String getPassword() {
         return password;
     }
@@ -81,4 +82,5 @@ public class UserCreationDTO extends UserGetDTO {
     public boolean isAdmin() {
         return super.isAdmin();
     }
+
 }

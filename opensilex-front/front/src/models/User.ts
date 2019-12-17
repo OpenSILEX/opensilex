@@ -92,6 +92,9 @@ export class User {
         return this.token;
     }
 
+    public getAuthorizationHeader() {
+        return "Bearer " + this.getToken();
+    }
 
 
     public setToken(token: string) {

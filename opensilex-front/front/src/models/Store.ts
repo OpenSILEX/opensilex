@@ -45,7 +45,7 @@ let renewTokenOnEvent = function (event) {
   let $opensilex: OpenSilexVuePlugin = Vue["$opensilex"];
 
   $opensilex.getService<SecurityService>("opensilex.SecurityService")
-    .renewToken(currentUser.getToken())
+    .renewToken(currentUser.getAuthorizationHeader())
     .then((http) => {
       console.log("Token renewed", http.response.result.token);
       currentUser.setToken(http.response.result.token);
@@ -55,12 +55,12 @@ let renewTokenOnEvent = function (event) {
 }
 
 let defaultConfig: FrontConfigDTO = {
-  homeComponent: "opensilex-front.ToDoComponent",
-  notFoundComponent: "opensilex-front.ToDoComponent",
-  headerComponent: "opensilex-front.ToDoComponent",
-  loginComponent: "opensilex-front.ToDoComponent",
-  menuComponent: "opensilex-front.ToDoComponent",
-  footerComponent: "opensilex-front.ToDoComponent",
+  homeComponent: "opensilex-front-ToDoComponent",
+  notFoundComponent: "opensilex-front-ToDoComponent",
+  headerComponent: "opensilex-front-ToDoComponent",
+  loginComponent: "opensilex-front-ToDoComponent",
+  menuComponent: "opensilex-front-ToDoComponent",
+  footerComponent: "opensilex-front-ToDoComponent",
   menu: [],
   routes: []
 };

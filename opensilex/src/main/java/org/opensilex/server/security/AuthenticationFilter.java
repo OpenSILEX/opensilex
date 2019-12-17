@@ -128,7 +128,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                     requestContext.setSecurityContext(newContext);
 
                 } catch (JWTVerificationException | URISyntaxException ex) {
-                    LOGGER.error("Error while decoding and verifying token", ex);
+                    LOGGER.debug("Error while decoding and verifying token: " + ex.getMessage());
                     throw new UnauthorizedException();
                 } catch (ForbiddenException ex) {
                     throw ex;

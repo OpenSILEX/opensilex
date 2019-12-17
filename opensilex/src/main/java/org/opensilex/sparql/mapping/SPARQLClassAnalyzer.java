@@ -66,6 +66,7 @@ public class SPARQLClassAnalyzer {
 
     private final BiMap<Method, Field> fieldsBySetter;
 
+    private final Map<Field, SPARQLProperty> annotationsByField = new HashMap<>();
     private final List<Field> optionalFields = new ArrayList<>();
 
     private final List<Field> reverseRelationFields = new ArrayList<>();
@@ -214,6 +215,8 @@ public class SPARQLClassAnalyzer {
             reverseRelationFields.add(field);
         }
 
+        annotationsByField.put(field, sProperty);
+        
         LOGGER.debug("Store field " + field.getName() + " in global index by name");
         fieldsByName.put(field.getName(), field);
 
@@ -442,7 +445,11 @@ public class SPARQLClassAnalyzer {
         return managedProperties;
     }
 
-    String getResourceGraphPrefix() {
+    public String getResourceGraphPrefix() {
         return this.graphPrefix;
+    }
+
+    public SPARQLProperty getFieldAnnotation(Field field) {
+        return annotationsByField.get(field);
     }
 }

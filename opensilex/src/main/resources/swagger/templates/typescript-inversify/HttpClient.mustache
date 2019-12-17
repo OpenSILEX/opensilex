@@ -24,7 +24,7 @@ class HttpClient implements IHttpClient {
         return this.performNetworkCall(url, "put", this.getJsonBody(body), this.addJsonHeaders(headers));
     }
 
-    delete(url: string, body: any, headers?: Headers): Promise<HttpResponse> {
+    delete(url: string, headers?: Headers): Promise<HttpResponse> {
         return this.performNetworkCall(url, "delete", undefined, headers);
     }
 

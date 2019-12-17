@@ -36,27 +36,27 @@ public class UserGetDTO {
     /**
      * User URI
      */
-    private URI uri;
+    protected URI uri;
 
     /**
      * User email
      */
-    private String email;
+    protected String email;
 
     /**
      * User first name
      */
-    private String firstName;
+    protected String firstName;
 
     /**
      * User last name
      */
-    private String lastName;
+    protected String lastName;
 
     /**
      * Determine if user is admin or not
      */
-    private boolean admin;
+    protected boolean admin;
 
     @ApiModelProperty(value = "User URI", example = "http://opensilex.dev/users#agent.Admin_OpenSilex")
     public URI getUri() {

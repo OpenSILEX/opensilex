@@ -1,6 +1,7 @@
 import { ApiServiceBinder } from './lib';
 import UserList from './components/UserList.vue';
-import UserCreate from './components/UserCreate.vue';
+import UserForm from './components/UserForm.vue';
+import UserView from './components/UserView.vue';
 
 export default {
     install(Vue, options) {
@@ -8,7 +9,8 @@ export default {
     },
 
     components: {
-        "opensilex.UserList": UserList,
-        "opensilex.UserCreate": UserCreate
+        "opensilex-UserView": UserView,
+        "opensilex-UserList": UserList,
+        "opensilex-UserForm": UserForm
     }
 };

@@ -7,10 +7,8 @@ package org.opensilex.sparql;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,7 +40,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
-import org.opensilex.OpenSilex;
 import org.opensilex.module.base.BaseConfig;
 import org.opensilex.module.base.BaseModule;
 import org.opensilex.service.Service;
@@ -103,7 +100,8 @@ public class SPARQLService implements SPARQLConnection, Service {
 
         SPARQLClassObjectMapper.forEach((Resource resource, SPARQLClassObjectMapper<?> mapper) -> {
             String resourceNamespace = mapper.getResourceGraphNamespace();
-            if (resourceNamespace != null) {
+            String resourcePrefix = mapper.getResourceGraphPrefix();
+            if (resourceNamespace != null && resourcePrefix != null && !resourcePrefix.isEmpty()) {
                 addPrefix(basePrefix + mapper.getResourceGraphPrefix(), resourceNamespace + "#");
             }
         });
@@ -474,12 +472,12 @@ public class SPARQLService implements SPARQLConnection, Service {
         executeDeleteQuery(delete);
     }
 
-    public boolean uriExists(URI uri) throws SPARQLQueryException {
+    public boolean uriExists(URI uri) throws SPARQLException {
         AskBuilder askQuery = new AskBuilder();
         Var s = makeVar("s");
         Var p = makeVar("p");
         Var o = makeVar("o");
-        Node nodeUri = Ontology.nodeURI(uri);
+        Node nodeUri = SPARQLDeserializers.nodeURI(uri);
         askQuery.addWhere(nodeUri, p, o);
         WhereBuilder reverseWhere = new WhereBuilder();
         reverseWhere.addWhere(s, p, nodeUri);
@@ -492,11 +490,11 @@ public class SPARQLService implements SPARQLConnection, Service {
         return executeAskQuery(getUriExistsQuery(objectClass, uri));
     }
 
-    public <T extends SPARQLResourceModel> AskBuilder getUriExistsQuery(Class<T> objectClass, URI uri) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+    public <T extends SPARQLResourceModel> AskBuilder getUriExistsQuery(Class<T> objectClass, URI uri) throws SPARQLException {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
 
         AskBuilder askQuery = new AskBuilder();
-        Node nodeUri = Ontology.nodeURI(uri);
+        Node nodeUri = SPARQLDeserializers.nodeURI(uri);
         askQuery.addWhere(nodeUri, RDF.type, SPARQLQueryHelper.typeDefVar);
 
         Resource typeDef = sparqlObjectMapper.getRDFType();
@@ -505,9 +503,9 @@ public class SPARQLService implements SPARQLConnection, Service {
         return askQuery;
     }
 
-    public void deleteObjectRelation(Node g, URI s, Property p, URI o) throws SPARQLQueryException {
+    public void deleteObjectRelation(Node g, URI s, Property p, URI o) throws SPARQLException {
         UpdateBuilder delete = new UpdateBuilder();
-        delete.addDelete(g, Ontology.nodeURI(s), p.asNode(), Ontology.nodeURI(o));
+        delete.addDelete(g, SPARQLDeserializers.nodeURI(s), p.asNode(), SPARQLDeserializers.nodeURI(o));
 
         executeDeleteQuery(delete);
     }

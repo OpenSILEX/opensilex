@@ -7,11 +7,14 @@ package org.opensilex.sparql.deserializer;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import org.apache.jena.graph.Node;
+import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,6 +96,15 @@ public class SPARQLDeserializers {
     private static Class<?> parameterizedClass(final Object object, final Class<?> target, final int paramIndex)
             throws ClassNotFoundException {
         return parameterizedClass(object.getClass(), target, paramIndex);
+    }
+    
+    public static Node nodeURI(URI uri) throws SPARQLInvalidURIException {
+        try {
+            return SPARQLDeserializers.getForClass(URI.class).getNodeFromString(uri.toString());
+        } catch (Exception ex) {
+            throw new SPARQLInvalidURIException(uri);
+        }
+        
     }
 
 }

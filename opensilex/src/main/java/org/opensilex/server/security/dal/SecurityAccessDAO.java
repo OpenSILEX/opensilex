@@ -22,10 +22,9 @@ import org.apache.jena.sparql.core.Var;
 import org.opensilex.utils.SwaggerAPIGenerator;
 import org.opensilex.server.security.ApiProtected;
 import org.opensilex.server.security.SecurityOntology;
-import org.opensilex.server.security.api.CredentialsGroupDTO;
 import org.opensilex.sparql.SPARQLService;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,7 +113,7 @@ public class SecurityAccessDAO {
     }
 
     public boolean checkUserAccess(UserModel user, String accessId) throws SPARQLException {
-        Node nodeUri = Ontology.nodeURI(user.getUri());
+        Node nodeUri = SPARQLDeserializers.nodeURI(user.getUri());
         Var groupVar = makeVar("__group");
         Var profileVar = makeVar("__profile");
         

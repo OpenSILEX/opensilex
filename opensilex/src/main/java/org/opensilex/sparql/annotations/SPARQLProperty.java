@@ -31,4 +31,6 @@ public @interface SPARQLProperty {
     boolean required() default false;
     
     boolean inverse() default false;
+    
+    boolean ignoreUpdateIfNull() default false;
 }

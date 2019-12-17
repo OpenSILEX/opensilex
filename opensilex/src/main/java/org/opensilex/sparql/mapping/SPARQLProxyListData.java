@@ -18,7 +18,6 @@ import org.opensilex.sparql.SPARQLService;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,9 +41,9 @@ class SPARQLProxyListData<T> extends SPARQLProxyList<T> {
         select.addVar(value);
 
         if (isReverseRelation) {
-            select.addWhere(value, property, Ontology.nodeURI(uri));
+            select.addWhere(value, property, SPARQLDeserializers.nodeURI(uri));
         } else {
-            select.addWhere(Ontology.nodeURI(uri), property, value);
+            select.addWhere(SPARQLDeserializers.nodeURI(uri), property, value);
         }
 
         List<T> results = new ArrayList<>();

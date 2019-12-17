@@ -75,29 +75,33 @@ export default class DefaultLoginComponent extends Vue {
 
   logout() {
     this.$store.commit("logout");
+    this.$router.push("/");
   }
 
   forceRefresh = false;
   onLogin() {
     this.$opensilex.showLoader();
-    var self = this;
     this.$opensilex
       .getService<SecurityService>("opensilex.SecurityService")
       .authenticate({
         identifier: this.form.email,
         password: this.form.password
       })
-      .then(function(http: HttpResponse<OpenSilexResponse<TokenGetDTO>>) {
+      .then((http: HttpResponse<OpenSilexResponse<TokenGetDTO>>) => {
         let user = new User();
         user.setToken(http.response.result.token);
-        self.forceRefresh = true;
-        self.$store.commit("login", user);
-        self.$store.commit("refresh");
+        this.forceRefresh = true;
+        this.$store.commit("login", user);
+        this.$store.commit("refresh");
       })
-      .catch(function() {
-        // TODO display error to user
-        console.error("TODO: Invalid credentials", arguments);
-        self.$opensilex.hideLoader();
+      .catch(error => {
+        if (error.status == 403) {
+          console.error("TODO invalid crevalid credentials error", error);
+          // TODO display invalid crevalid credentials error
+        } else {
+          this.$opensilex.errorHandler(error);
+        }
+        this.$opensilex.hideLoader();
       });
   }
 }

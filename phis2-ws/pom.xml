@@ -158,6 +158,24 @@
                     <installDirectory>../../.node</installDirectory>
                 </configuration>
             </plugin>
+            
+            <!--Code coverage @see https://www.eclemma.org/jacoco/trunk/index.html --> 
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.maven.plugin.version}</version>
+                <configuration>
+                    <outputDirectory>../../${generated.doc.site.directory}/${project.name}/jacoco/</outputDirectory>
+                </configuration>
+            </plugin>
+            
+            <plugin>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>${maven.site.plugin.version}</version>
+                <configuration>
+                    <outputDirectory>../../${generated.doc.site.directory}/${project.name}/</outputDirectory>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     

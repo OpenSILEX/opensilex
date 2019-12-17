@@ -24,5 +24,9 @@ public interface LoginExtension {
      * @param user Current user
      * @param tokenBuilder Token builder on which to add claims
      */
-    public void addLoginClaims(UserModel user, JWTCreator.Builder tokenBuilder);
+    public void login(UserModel user, JWTCreator.Builder tokenBuilder);
+    
+    public default void logout (UserModel user) {
+        
+    }
 }

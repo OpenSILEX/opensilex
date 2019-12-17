@@ -222,7 +222,7 @@ public class AuthenticationService implements Service {
 
         // Allow any module implementing LoginExtension to add custom claims on login
         OpenSilex.getInstance().getModulesImplementingInterface(LoginExtension.class).forEach(module -> {
-            module.addLoginClaims(user, tokenBuilder);
+            module.login(user, tokenBuilder);
         });
 
         // Set signed token to the user
@@ -358,7 +358,7 @@ public class AuthenticationService implements Service {
      * @param user User to check
      * @return true if user is authenticated, false otherwise
      */
-    public boolean hasUser(UserModel user) {
+    public synchronized boolean hasUser(UserModel user) {
         return hasUserURI(user.getUri());
     }
 
@@ -404,7 +404,7 @@ public class AuthenticationService implements Service {
      * @param user User to remove from registry
      * @return removed user or null
      */
-    public UserModel removeUser(UserModel user) {
+    public synchronized UserModel removeUser(UserModel user) {
         return removeUserByURI(user.getUri());
     }
 
@@ -419,7 +419,15 @@ public class AuthenticationService implements Service {
             LOGGER.debug("Unregister user: " + userURI);
             schedulerRegistry.get(userURI).interrupt();
             schedulerRegistry.remove(userURI);
-            return userRegistry.remove(userURI);
+
+            UserModel user = userRegistry.remove(userURI);
+            
+            // Allow any module implementing LoginExtension to do something on logout
+            OpenSilex.getInstance().getModulesImplementingInterface(LoginExtension.class).forEach(module -> {
+                module.logout(user);
+            });
+
+            return user;
         }
 
         return null;

@@ -51,7 +51,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.view.brapi.form.ResponseUnique;
 import opensilex.service.model.Call;
-import org.opensilex.rest.security.AuthenticationService;
+import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -155,8 +155,8 @@ public class TokenResourceService implements BrapiCall{
             // user is already logged
             // we trust the client
             //\SILEX:info
-            org.opensilex.rest.security.dal.UserDAO userDAO = new org.opensilex.rest.security.dal.UserDAO(sparql, authentication);
-            org.opensilex.rest.security.dal.UserModel user;
+            org.opensilex.rest.user.dal.UserDAO userDAO = new org.opensilex.rest.user.dal.UserDAO(sparql, authentication);
+            org.opensilex.rest.user.dal.UserModel user;
             try {
                 user = userDAO.getByEmail(new InternetAddress(username));
 

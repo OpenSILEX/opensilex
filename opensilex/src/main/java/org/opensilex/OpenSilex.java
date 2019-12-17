@@ -110,21 +110,6 @@ public class OpenSilex {
     public final static String DEBUG_ARG_KEY = "DEBUG";
 
     /**
-     * Base URI for plateform ontologies
-     */
-    public final static String BASE_URI = "http://installation.domain.org/";
-
-    /**
-     * Base URI alias for plateform ontologies
-     */
-    public final static String BASE_URI_ALIAS = "os";
-
-    /**
-     * Base domain for all OpenSilex ontologies
-     */
-    public final static String ONTOLOGY_BASE_DOMAIN = "http://www.opensilex.org/";
-
-    /**
      * Store startup args for reset
      */
     private static String[] SETUP_ARGS;

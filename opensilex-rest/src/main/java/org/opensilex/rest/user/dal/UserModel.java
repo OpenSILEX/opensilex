@@ -3,9 +3,9 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.rest.security.dal;
+package org.opensilex.rest.user.dal;
 
-import org.opensilex.rest.security.SecurityOntology;
+import org.opensilex.rest.authentication.SecurityOntology;
 import java.security.Principal;
 import javax.mail.internet.InternetAddress;
 import org.apache.jena.sparql.vocabulary.FOAF;

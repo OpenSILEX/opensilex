@@ -5,6 +5,7 @@
  */
 package org.opensilex.rest.security.dal;
 
+import org.opensilex.rest.user.dal.UserModel;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
@@ -20,8 +21,8 @@ import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
 import org.opensilex.utils.SwaggerAPIGenerator;
-import org.opensilex.rest.security.ApiProtected;
-import org.opensilex.rest.security.SecurityOntology;
+import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.rest.authentication.SecurityOntology;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;

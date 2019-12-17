@@ -4,11 +4,11 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.rest.security;
+package org.opensilex.rest.authentication;
 
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
-import org.opensilex.OpenSilex;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.utils.Ontology;
 
 /**
@@ -23,7 +23,7 @@ import org.opensilex.sparql.utils.Ontology;
  */
 public class SecurityOntology {
 
-    public static final String NAMESPACE = OpenSilex.ONTOLOGY_BASE_DOMAIN + "/security#";
+    public static final String NAMESPACE = SPARQLModule.ONTOLOGY_BASE_DOMAIN + "/security#";
 
     public static final String PREFIX = "os-sec";
 

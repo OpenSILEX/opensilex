@@ -4,17 +4,17 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.rest.security;
+package org.opensilex.rest.authentication;
 
 import java.security.Principal;
 import javax.ws.rs.core.SecurityContext;
-import org.opensilex.rest.security.dal.UserModel;
+import org.opensilex.rest.user.dal.UserModel;
 
 /**
  * Helper class to encapsulate an existing security context with the correct
  * User class type {@code org.opensilex.server.user.dal.UserModel}
  *
- * @see org.opensilex.rest.security.AuthenticationFilter
+ * @see org.opensilex.rest.authentication.AuthenticationFilter
  * @author Vincent Migot
  */
 public class SecurityContextProxy implements SecurityContext {

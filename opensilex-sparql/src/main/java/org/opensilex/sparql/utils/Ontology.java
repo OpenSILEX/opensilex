@@ -16,7 +16,6 @@ import org.apache.jena.sparql.path.P_ZeroOrMore1;
 import org.apache.jena.sparql.path.Path;
 import org.apache.jena.vocabulary.RDFS;
 
-
 /**
  *
  * @author vincent
@@ -24,10 +23,11 @@ import org.apache.jena.vocabulary.RDFS;
 public abstract class Ontology {
 
     public static final Path subClassAny;
+
     static {
         subClassAny = new P_ZeroOrMore1(new P_Link(RDFS.subClassOf.asNode()));
     }
-    
+
     public static final Resource resource(String uri) {
         return ResourceFactory.createResource(uri);
     }
@@ -42,13 +42,5 @@ public abstract class Ontology {
 
     public static final Property property(String namespace, String local) {
         return ResourceFactory.createProperty(namespace, local);
-    }
-
-    public static final Node nodeURI(URI uri) {
-        return nodeURI(uri.toString());
-    }
-
-    public static final Node nodeURI(String uri) {
-        return NodeFactory.createURI(uri);
     }
 }

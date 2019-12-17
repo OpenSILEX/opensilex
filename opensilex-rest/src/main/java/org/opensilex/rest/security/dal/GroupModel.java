@@ -5,7 +5,8 @@
 //******************************************************************************
 package org.opensilex.rest.security.dal;
 
-import org.opensilex.rest.security.SecurityOntology;
+import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.rest.authentication.SecurityOntology;
 import java.util.List;
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.sparql.annotations.SPARQLProperty;

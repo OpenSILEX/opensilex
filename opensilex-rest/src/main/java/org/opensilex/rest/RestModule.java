@@ -6,13 +6,12 @@
 //******************************************************************************
 package org.opensilex.rest;
 
+import org.opensilex.rest.authentication.SecurityOntology;
 import org.opensilex.rest.extensions.APIExtension;
 import java.util.*;
 import org.opensilex.OpenSilex;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.server.extensions.ServerExtension;
-import org.opensilex.rest.security.SecurityOntology;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -45,8 +44,8 @@ public class RestModule extends OpenSilexModule implements APIExtension {
     public List<String> getPackagesToScan() {
         List<String> list = APIExtension.super.getPackagesToScan();
         list.add("io.swagger.jaxrs.listing");
-        list.add("org.opensilex.rest.security");
-        list.add("org.opensilex.rest.response");
+        list.add("org.opensilex.rest.authentication");
+        list.add("org.opensilex.rest.cors");
         list.add("org.opensilex.rest.validation");
 
         return list;

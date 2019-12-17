@@ -7,7 +7,10 @@
 package org.opensilex.rest.extensions;
 
 import com.auth0.jwt.JWTCreator;
-import org.opensilex.rest.security.dal.UserModel;
+import org.opensilex.rest.authentication.AuthenticationService;
+import org.opensilex.rest.user.dal.UserModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Extension interface for OpenSilex modules which want to add custom claims to
@@ -17,6 +20,8 @@ import org.opensilex.rest.security.dal.UserModel;
  */
 public interface LoginExtension {
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(LoginExtension.class);
+
     /**
      * Extension method to allow modules to add custom claims on User login in
      * JWT token. This token is available both on server and client sides.
@@ -24,9 +29,17 @@ public interface LoginExtension {
      * @param user Current user
      * @param tokenBuilder Token builder on which to add claims
      */
-    public void login(UserModel user, JWTCreator.Builder tokenBuilder);
-    
-    public default void logout (UserModel user) {
-        
+    public default void login(UserModel user, JWTCreator.Builder tokenBuilder) {
+        LOGGER.debug(this.getClass().getCanonicalName() + " - User logged in: " + user.getEmail());
+    }
+
+    /**
+     * Allow module tom implements custom logic on user logout. Do nothing by
+     * default
+     *
+     * @param user User logged out
+     */
+    public default void logout(UserModel user) {
+        LOGGER.debug(this.getClass().getCanonicalName() + " - User logged out: " + user.getEmail());
     }
 }

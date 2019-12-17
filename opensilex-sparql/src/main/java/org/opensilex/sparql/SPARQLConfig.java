@@ -18,13 +18,13 @@ public interface SPARQLConfig extends ModuleConfig {
 
     @ConfigDescription(
             value = "Platform base URI",
-            defaultString = OpenSilex.BASE_URI
+            defaultString = "http://installation.domain.org/"
     )
     public String baseURI();
 
     @ConfigDescription(
             value = "Platform base URI alias",
-            defaultString = OpenSilex.BASE_URI_ALIAS
+            defaultString = "local"
     )
     public String baseURIAlias();
 

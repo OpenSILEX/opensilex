@@ -10,7 +10,7 @@ import org.opensilex.bigdata.BigDataService;
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.fs.FileStorageService;
-import org.opensilex.rest.security.AuthenticationService;
+import org.opensilex.rest.authentication.AuthenticationService;
 
 /**
  * Default configuration for OpenSilex base module

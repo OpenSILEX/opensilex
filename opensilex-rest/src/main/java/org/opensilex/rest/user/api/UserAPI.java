@@ -4,7 +4,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.rest.security.api;
+package org.opensilex.rest.user.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -40,11 +40,11 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.rest.security.ApiProtected;
-import org.opensilex.rest.security.AuthenticationService;
+import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.rest.security.dal.UserDAO;
-import org.opensilex.rest.security.dal.UserModel;
+import org.opensilex.rest.user.dal.UserDAO;
+import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.rest.validation.ValidURI;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
@@ -81,7 +81,7 @@ public class UserAPI {
     /**
      * Create a user and return it's URI
      *
-     * @see org.opensilex.rest.security.dal.UserDAO
+     * @see org.opensilex.rest.user.dal.UserDAO
      * @param userDTO user model to create
      * @param securityContext injected security context to get current user
      * @return User URI
@@ -140,7 +140,7 @@ public class UserAPI {
     /**
      * Return a user by URI
      *
-     * @see org.opensilex.rest.security.dal.UserDAO
+     * @see org.opensilex.rest.user.dal.UserDAO
      * @param uri URI of the user
      * @return Corresponding user
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
@@ -182,7 +182,7 @@ public class UserAPI {
     /**
      * Search users
      *
-     * @see org.opensilex.rest.security.dal.UserDAO
+     * @see org.opensilex.rest.user.dal.UserDAO
      * @param pattern Regex pattern for filtering list by names or email
      * @param orderByList List of fields to sort as an array of
      * fieldName=asc|desc

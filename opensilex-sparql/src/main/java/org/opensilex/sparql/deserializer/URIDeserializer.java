@@ -8,8 +8,8 @@ package org.opensilex.sparql.deserializer;
 import java.net.URI;
 import java.util.Map;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.shared.PrefixMapping;
-import org.opensilex.sparql.utils.Ontology;
 
 /**
  *
@@ -37,7 +37,7 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
 
     @Override
     public Node getNode(Object value) throws Exception {
-        return Ontology.nodeURI((URI) value);
+        return NodeFactory.createURI(value.toString());
     }
 
     private static PrefixMapping prefixes = null;

@@ -4,7 +4,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.rest.security;
+package org.opensilex.rest.authentication;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.auth0.jwt.JWT;
@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.ws.rs.core.SecurityContext;
 import org.opensilex.OpenSilex;
 import org.opensilex.service.Service;
-import org.opensilex.rest.security.dal.UserModel;
+import org.opensilex.rest.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.rest.extensions.LoginExtension;

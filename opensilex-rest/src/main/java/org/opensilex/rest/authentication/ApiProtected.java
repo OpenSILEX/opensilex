@@ -4,7 +4,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.rest.security;
+package org.opensilex.rest.authentication;
 
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -21,7 +21,7 @@ import java.lang.annotation.Target;
  * Protection mechanism is implemented in {@code org.opensilex.server.security.AuthenticationFilter}
  * </pre>
  * 
- * @see org.opensilex.rest.security.AuthenticationFilter
+ * @see org.opensilex.rest.authentication.AuthenticationFilter
  * @author Vincent Migot
  */
 @ApiImplicitParams({

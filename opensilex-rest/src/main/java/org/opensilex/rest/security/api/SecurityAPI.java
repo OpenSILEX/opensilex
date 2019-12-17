@@ -37,12 +37,12 @@ import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.rest.security.ApiProtected;
-import org.opensilex.rest.security.AuthenticationService;
+import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.security.dal.SecurityAccessDAO;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.rest.security.dal.UserDAO;
-import org.opensilex.rest.security.dal.UserModel;
+import org.opensilex.rest.user.dal.UserDAO;
+import org.opensilex.rest.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +80,7 @@ public class SecurityAPI {
      * Authenticate a user with it's identifier (email or URI) and password
      * returning a JWT token
      *
-     * @see org.opensilex.rest.security.dal.UserDAO
+     * @see org.opensilex.rest.user.dal.UserDAO
      * @param authenticationDTO suer identifier and password message
      * @return user token
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
@@ -128,7 +128,7 @@ public class SecurityAPI {
      * Renew a user token if the provided one is still valid extending it's
      * validity
      *
-     * @see org.opensilex.rest.security.dal.UserDAO
+     * @see org.opensilex.rest.user.dal.UserDAO
      * @param userToken actual valid token for user
      * @param securityContext injected security context to get current user
      * @return Renewed JWT token
@@ -157,7 +157,7 @@ public class SecurityAPI {
     /**
      * Logout current user
      *
-     * @see org.opensilex.rest.security.dal.UserDAO
+     * @see org.opensilex.rest.user.dal.UserDAO
      * @param securityContext Security context to get current user
      * @return Empty ok response
      */

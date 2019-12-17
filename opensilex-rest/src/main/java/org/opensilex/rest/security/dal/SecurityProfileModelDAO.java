@@ -11,7 +11,7 @@ import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.opensilex.rest.security.SecurityOntology;
+import org.opensilex.rest.authentication.SecurityOntology;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;

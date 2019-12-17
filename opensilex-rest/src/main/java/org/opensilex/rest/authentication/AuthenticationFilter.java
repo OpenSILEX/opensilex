@@ -4,7 +4,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************n the template in the editor.
-package org.opensilex.rest.security;
+package org.opensilex.rest.authentication;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import java.io.IOException;
@@ -25,7 +25,7 @@ import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.exceptions.UnauthorizedException;
 import org.opensilex.server.exceptions.UnexpectedErrorException;
 import org.opensilex.rest.security.dal.SecurityAccessDAO;
-import org.opensilex.rest.security.dal.UserModel;
+import org.opensilex.rest.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -3,7 +3,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.rest.security.dal;
+package org.opensilex.rest.user.dal;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -12,7 +12,9 @@ import javax.mail.internet.InternetAddress;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
-import org.opensilex.rest.security.AuthenticationService;
+import org.opensilex.rest.authentication.AuthenticationService;
+import org.opensilex.rest.security.dal.SecurityProfileModel;
+import org.opensilex.rest.security.dal.SecurityProfileModelDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;

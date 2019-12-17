@@ -13,6 +13,8 @@ import java.util.Set;
 import javax.ws.rs.Path;
 import org.opensilex.rest.RestApplication;
 import org.opensilex.utils.ClassUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Extension interface for OpenSilex modules which implements REST extension
@@ -21,6 +23,8 @@ import org.opensilex.utils.ClassUtils;
  */
 public interface APIExtension {
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(APIExtension.class);
+    
     /**
      * This method is called during application initialization to get all
      * packages to scan for components like request filters or response mapper
@@ -59,6 +63,6 @@ public interface APIExtension {
      * {@code org.glassfish.jersey.server.ResourceConfig}
      */
     public default void initAPI(RestApplication resourceConfig) {
-        // Do nothing by default; 
+        LOGGER.debug("Init API for module: " + this.getClass().getCanonicalName());
     }
 }

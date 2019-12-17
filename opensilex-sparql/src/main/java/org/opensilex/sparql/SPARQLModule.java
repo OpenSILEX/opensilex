@@ -26,6 +26,8 @@ public class SPARQLModule extends OpenSilexModule {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLModule.class);
 
+    public final static String ONTOLOGY_BASE_DOMAIN = "http://www.opensilex.org/";
+    
     @Override
     public Class<? extends ModuleConfig> getConfigClass() {
         return SPARQLConfig.class;

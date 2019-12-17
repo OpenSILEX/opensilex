@@ -7,6 +7,8 @@
 package org.opensilex.server.extensions;
 
 import org.opensilex.server.Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Extension interface for OpenSilex modules which add logic at server
@@ -16,13 +18,17 @@ import org.opensilex.server.Server;
  */
 public interface ServerExtension {
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(ServerExtension.class);
+    
     /**
      * Hook on server initialisation
      *
      * @param server Unstarted server instance
      * @throws Exception Can throw anything
      */
-    public void initServer(Server server) throws Exception;
+    public default void initServer(Server server) throws Exception {
+        LOGGER.debug("Initialize server for module: " + this.getClass().getCanonicalName());
+    }
 
     /**
      * Hook on server shutdown
@@ -30,5 +36,7 @@ public interface ServerExtension {
      * @param server Unstopped server instance
      * @throws Exception Can throw anything
      */
-    public void shutDownServer(Server server) throws Exception;
+    public default void shutDownServer(Server server) throws Exception {
+        LOGGER.debug("Shutdown server for module: " + this.getClass().getCanonicalName());
+    }
 }

@@ -44,9 +44,9 @@ import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.opensilex.OpenSilex;
-import org.opensilex.server.security.AuthenticationService;
-import org.opensilex.server.security.dal.UserDAO;
-import org.opensilex.sparql.SPARQLService;
+import org.opensilex.rest.security.AuthenticationService;
+import org.opensilex.rest.security.dal.UserDAO;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
@@ -158,7 +158,7 @@ public class Install {
 
     private static void initRDF4J() throws Exception {
         // initialise repository manager
-        RDF4JConfig config = opensilex.loadConfigPath("opensilex.sparql.rdf4j", RDF4JConfig.class);
+        RDF4JConfig config = opensilex.loadConfigPath("ontologies.sparql.rdf4j", RDF4JConfig.class);
 
         // Create repository
         createRDF4JRepository(config);

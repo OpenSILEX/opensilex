@@ -7,8 +7,12 @@ package org.opensilex.service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.opensilex.OpenSilex;
 import org.opensilex.module.ModuleConfig;
-import org.opensilex.module.OpenSilexModule;
+import org.opensilex.module.ModuleNotFoundException;
+import org.opensilex.OpenSilexModule;
 import org.opensilex.utils.ClassUtils;
 
 /**
@@ -102,14 +106,6 @@ public interface Service {
 
     public default <T extends OpenSilexModule> T getModule(Class<T> moduleClass) {
         return Service.getModule(this.getClass(), moduleClass);
-    }
-
-    public default <T extends ModuleConfig> T getModuleConfig(Class<? extends OpenSilexModule> moduleClass, Class<T> configClass) {
-        OpenSilexModule module = Service.getModule(this.getClass(), moduleClass);
-        if (module != null) {
-            return module.getConfig(configClass);
-        }
-        return null;
     }
 
     static Map<Class<? extends Service>, OpenSilexModule> moduleByService = new HashMap<>();

@@ -30,7 +30,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.http.HttpStatus;
 import org.opensilex.OpenSilex;
 import org.opensilex.front.FrontModule;
-import org.opensilex.module.OpenSilexModule;
+import org.opensilex.OpenSilexModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.server.exceptions.NotFoundException;

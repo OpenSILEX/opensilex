@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.module;
 
+import org.opensilex.OpenSilexModule;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -21,7 +22,7 @@ import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.config.ConfigManager;
-import org.opensilex.module.dependencies.DependencyManager;
+import org.opensilex.dependencies.DependencyManager;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
 import org.slf4j.Logger;

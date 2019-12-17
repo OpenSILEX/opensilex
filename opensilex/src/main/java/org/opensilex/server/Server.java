@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.server;
 
+import org.opensilex.server.admin.ServerAdmin;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,12 +26,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.jasper.servlet.JasperInitializer;
 import org.apache.tomcat.JarScanType;
 import org.opensilex.OpenSilex;
-import org.opensilex.module.extensions.ServerExtension;
+import org.opensilex.server.extensions.ServerExtension;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.opensilex.fs.FileStorageService;
-import org.opensilex.module.OpenSilexModule;
+import org.opensilex.OpenSilexModule;
 
 /**
  * <pre>
@@ -110,9 +110,8 @@ public class Server extends Tomcat {
         Context appContext = initApp("", "/", "/webapp", getClass());
         appContext.getPipeline().addValve(new RewriteValve());
 
-        FileStorageService fs = instance.getServiceInstance("fs", FileStorageService.class);
         try {
-            fs.listFilesByExtension(instance.getBaseDirectory() + "/webapps", "war", (File warfile) -> {
+            ClassUtils.listFilesByExtension(instance.getBaseDirectory() + "/webapps", "war", (File warfile) -> {
                 String filename = warfile.getName();
                 String context = "/" + filename.substring(0, filename.length() - 4);
                 addWarApp(context, warfile);

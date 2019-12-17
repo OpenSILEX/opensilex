@@ -13,8 +13,6 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -25,10 +23,7 @@ import org.opensilex.config.ConfigManager;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.module.ModuleManager;
 import org.opensilex.module.ModuleNotFoundException;
-import org.opensilex.module.OpenSilexModule;
-import org.opensilex.module.base.BaseConfig;
-import org.opensilex.module.base.BaseModule;
-import org.opensilex.module.dependencies.DependencyManager;
+import org.opensilex.dependencies.DependencyManager;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
 import org.opensilex.utils.ClassUtils;
@@ -649,49 +644,6 @@ public class OpenSilex {
      */
     public Path getBaseDirectory() {
         return this.baseDirectory;
-    }
-
-    /**
-     * Return configured platform base URI
-     *
-     * @return plateform URI
-     */
-    public static URI getPlatformURI() {
-        try {
-            if (OpenSilex.getInstance() == null) {
-                return new URI("http://test.opensilex.org/");
-            } else {
-                return new URI(OpenSilex.getInstance().getModuleByClass(BaseModule.class).getConfig(BaseConfig.class).baseURI());
-            }
-        } catch (ModuleNotFoundException ex) {
-            LOGGER.error("Base module not found, can't really happend because it's in the same package", ex);
-            return null;
-        } catch (URISyntaxException ex) {
-            LOGGER.error("Invalid Base URI", ex);
-            return null;
-        }
-    }
-
-    /**
-     * Return configured platform base URI alias
-     *
-     * @return plateform URI alias
-     */
-    public static String getPlatformURIAlias() {
-        try {
-            if (OpenSilex.getInstance() == null) {
-                return "t";
-            } else {
-                return OpenSilex.getInstance().getModuleByClass(BaseModule.class).getConfig(BaseConfig.class).baseURIAlias();
-            }
-        } catch (ModuleNotFoundException ex) {
-            LOGGER.error("Base module not found, can't really happend because it's in the same package", ex);
-            return null;
-        }
-    }
-
-    public static URI getPlatformDomainGraphURI(String graphSuffix) throws URISyntaxException {
-        return new URI(getPlatformURI().toString() + graphSuffix);
     }
 
     public static <T extends ModuleConfig> T getModuleConfig(Class<? extends OpenSilexModule> moduleClass, Class<T> configClass) throws ModuleNotFoundException {

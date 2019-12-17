@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.server.validation.Required;
+import org.opensilex.rest.validation.Required;
 
 /**
  *

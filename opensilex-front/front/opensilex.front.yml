@@ -12,40 +12,11 @@ menu:
         label: Groups
         route: 
           path: /groups
-          component: opensilex-GroupList
+          component: opensilex-GroupView
           credentials: []
       - id: profiles
         label: Profiles
         route: 
           path: /profiles
-          component: opensilex-ProfileList
+          component: opensilex-ProfileView
           credentials: []
-
-routes:
-  - path: /users/create
-    component: opensilex-UserCreate
-    credentials: []
-  - path: /users/view/:uri
-    component: opensilex-UserView
-    credentials: []
-  - path: /users/edit/:uri
-    component: opensilex-UserEdit
-    credentials: []
-  - path: /groups/create
-    component: opensilex-GroupCreate
-    credentials: []    
-  - path: /groups/view/:uri
-    component: opensilex-GroupView
-    credentials: []
-  - path: /groups/edit/:uri
-    component: opensilex-GroupEdit
-    credentials: []
-  - path: /profiles/create
-    component: opensilex-ProfileCreate
-    credentials: []    
-  - path: /profiles/view/:uri
-    component: opensilex-ProfileView
-    credentials: []
-  - path: /profiles/edit/:uri
-    component: opensilex-ProfileEdit
-    credentials: []

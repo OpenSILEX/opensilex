@@ -5,6 +5,9 @@
  */
 package org.opensilex.front;
 
+import org.opensilex.front.config.FrontRoutingConfig;
+import org.opensilex.front.config.Route;
+import org.opensilex.front.config.MenuItem;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.catalina.Context;
@@ -15,10 +18,9 @@ import org.opensilex.front.api.FrontConfigDTO;
 import org.opensilex.front.api.MenuItemDTO;
 import org.opensilex.front.api.RouteDTO;
 import org.opensilex.module.ModuleConfig;
-import org.opensilex.module.OpenSilexModule;
-import org.opensilex.module.extensions.APIExtension;
-import org.opensilex.server.Server;
-import org.opensilex.module.extensions.ServerExtension;
+import org.opensilex.OpenSilexModule;
+import org.opensilex.rest.extensions.APIExtension;
+import org.opensilex.server.extensions.ServerExtension;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -26,52 +28,52 @@ import org.slf4j.LoggerFactory;
  * @author vincent
  */
 public class FrontModule extends OpenSilexModule implements ServerExtension, APIExtension {
-    
+
     private final static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(FrontModule.class);
-    
+
     @Override
     public Class<? extends ModuleConfig> getConfigClass() {
         return FrontConfig.class;
     }
-    
+
     @Override
     public String getConfigId() {
-        return "opensilex-front";
+        return "front";
     }
-    
+
     @Override
-    public void initServer(Server server) {
+    public void initServer(org.opensilex.server.Server server) throws Exception {
         Context appContext = server.initApp("/app", "/", "/front", FrontModule.class);
         appContext.getPipeline().addValve(new RewriteValve());
     }
-    
+
     @Override
-    public void shutDownServer(Server server) throws Exception {
+    public void shutDownServer(org.opensilex.server.Server server) throws Exception {
         LOGGER.debug("Shutting down front app extension");
     }
-    
+
     public final static String FRONT_EXTENSIONS_DIRECTORY = "front/";
     public static final String FRONT_CONFIG_FILE = "opensilex.front.yml";
     public static final String FRONT_CONFIG_PATH = FRONT_EXTENSIONS_DIRECTORY + FRONT_CONFIG_FILE;
-    
+
     private FrontConfigDTO config = null;
-    
+
     public FrontConfigDTO getConfigDTO() {
         if (this.config == null || OpenSilex.getInstance().isDev()) {
             FrontConfig frontConfig = getConfig(FrontConfig.class);
-            
+
             FrontConfigDTO config = new FrontConfigDTO();
-            
+
             config.setHomeComponent(frontConfig.homeComponent());
             config.setNotFoundComponent(frontConfig.notFoundComponent());
             config.setHeaderComponent(frontConfig.headerComponent());
             config.setLoginComponent(frontConfig.loginComponent());
             config.setMenuComponent(frontConfig.menuComponent());
             config.setFooterComponent(frontConfig.footerComponent());
-            
+
             List<MenuItemDTO> globalMenu = new ArrayList<>();
             List<RouteDTO> globalRoutes = new ArrayList<>();
-            
+
             for (OpenSilexModule m : OpenSilex.getInstance().getModules()) {
                 try {
                     if (m.fileExists(FRONT_CONFIG_PATH)) {
@@ -82,7 +84,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                             MenuItemDTO menuDTO = MenuItemDTO.fromModel(menuItem);
                             globalMenu.add(menuDTO);
                         }
-                        
+
                         for (Route route : frontRoutingConfig.routes()) {
                             RouteDTO routeDTO = RouteDTO.fromModel(route);
                             globalRoutes.add(routeDTO);
@@ -92,13 +94,13 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                     LOGGER.warn("Error will loading front configuration opensilex.front.yml for: " + m.getClass().getCanonicalName(), ex);
                 }
             }
-            
+
             config.setMenu(globalMenu);
             config.setRoutes(globalRoutes);
-            
+
             this.config = config;
         }
-        
+
         return this.config;
     }
 }

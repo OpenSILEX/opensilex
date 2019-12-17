@@ -14,7 +14,7 @@ import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.QualityModel;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableModel;
-import org.opensilex.server.validation.Required;
+import org.opensilex.rest.validation.Required;
 
 public class VariableUpdateDTO {
 

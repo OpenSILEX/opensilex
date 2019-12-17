@@ -10,7 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
-import org.opensilex.front.MenuItem;
+import org.opensilex.front.config.MenuItem;
 
 @ApiModel
 public class MenuItemDTO {

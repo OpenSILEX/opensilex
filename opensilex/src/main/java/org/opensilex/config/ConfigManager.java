@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import org.opensilex.OpenSilex;
 import static org.opensilex.OpenSilex.PROD_PROFILE_ID;
-import org.opensilex.module.OpenSilexModule;
+import org.opensilex.OpenSilexModule;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

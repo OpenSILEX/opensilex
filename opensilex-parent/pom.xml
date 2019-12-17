@@ -716,7 +716,7 @@
                 </executions>
             </plugin>
             
-            <!--Generate OpenSilex service loader references--> 
+            <!-- Generate OpenSilex core feature interface --> 
             <plugin>
                 <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
                 <artifactId>serviceloader-maven-plugin</artifactId>
@@ -728,10 +728,9 @@
                         </goals>
                         <configuration>
                             <services>
-                                <param>org.opensilex.module.OpenSilexModule</param>
-                                <param>org.opensilex.module.ModuleUpdate</param>
+                                <param>org.opensilex.OpenSilexModule</param>
                                 <param>org.opensilex.cli.OpenSilexCommand</param>
-                                <param>org.opensilex.sparql.deserializer.SPARQLDeserializer</param>
+                                <param>org.opensilex.module.OpenSilexModuleUpdate</param>
                             </services>
                         </configuration>
                     </execution>

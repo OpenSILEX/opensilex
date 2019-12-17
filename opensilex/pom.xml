@@ -39,6 +39,10 @@
         <relativePath>../opensilex-parent/pom.xml</relativePath>
     </parent>
 
+    <properties>
+        <skipFrontBuild>true</skipFrontBuild>
+    </properties>
+    
     <dependencies>
         <!-- Web app JS library Manage js file from maven @see http://www.webjars.org/documentation#servlet3 
         The ressource namespace META-INF.resources.webjars.jquery.2.1.4 contains 
@@ -158,20 +162,6 @@
                     </execution>
                     
                 </executions>
-            </plugin>
-            
-            <!-- Generate swagger.json file -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>${maven.exec.plugin.version}</version>
-            </plugin>
-            
-            <!-- Generate TypeScript library from swagger.json file -->
-            <plugin>
-                <groupId>org.opensilex</groupId>
-                <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
-                <version>${revision}</version>
             </plugin>
             
             <!-- Generate Shaded jar with dependencies -->

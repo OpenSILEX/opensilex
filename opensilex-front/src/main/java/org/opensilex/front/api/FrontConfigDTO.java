@@ -37,7 +37,7 @@ public class FrontConfigDTO {
     @NotNull
     List<RouteDTO> routes;
 
-    @ApiModelProperty(value = "Home component identifier", example = "opensilex-front-DefaultHomeComponent")
+    @ApiModelProperty(value = "Home component identifier", example = "opensilex-DefaultHomeComponent")
     public String getHomeComponent() {
         return homeComponent;
     }
@@ -46,7 +46,7 @@ public class FrontConfigDTO {
         this.homeComponent = homeComponent;
     }
 
-    @ApiModelProperty(value = "Not found component identifier", example = "opensilex-front-DefaultNotFoundComponent")
+    @ApiModelProperty(value = "Not found component identifier", example = "opensilex-DefaultNotFoundComponent")
     public String getNotFoundComponent() {
         return notFoundComponent;
     }
@@ -55,7 +55,7 @@ public class FrontConfigDTO {
         this.notFoundComponent = notFoundComponent;
     }
 
-    @ApiModelProperty(value = "Menu component identifier", example = "opensilex-front-DefaultMenuComponent")
+    @ApiModelProperty(value = "Menu component identifier", example = "opensilex-DefaultMenuComponent")
     public String getMenuComponent() {
         return menuComponent;
     }
@@ -64,7 +64,7 @@ public class FrontConfigDTO {
         this.menuComponent = menuComponent;
     }
 
-    @ApiModelProperty(value = "Footer component identifier", example = "opensilex-front-DefaultFooterComponent")
+    @ApiModelProperty(value = "Footer component identifier", example = "opensilex-DefaultFooterComponent")
     public String getFooterComponent() {
         return footerComponent;
     }
@@ -73,7 +73,7 @@ public class FrontConfigDTO {
         this.footerComponent = footerComponent;
     }
 
-    @ApiModelProperty(value = "Header component identifier", example = "opensilex-front-DefaultHeaderComponent")
+    @ApiModelProperty(value = "Header component identifier", example = "opensilex-DefaultHeaderComponent")
     public String getHeaderComponent() {
         return headerComponent;
     }
@@ -82,7 +82,7 @@ public class FrontConfigDTO {
         this.headerComponent = headerComponent;
     }
 
-    @ApiModelProperty(value = "Login component identifier", example = "opensilex-front.DefaultLoginComponent")
+    @ApiModelProperty(value = "Login component identifier", example = "opensilex-DefaultLoginComponent")
     public String getLoginComponent() {
         return loginComponent;
     }

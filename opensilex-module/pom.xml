@@ -50,6 +50,21 @@
         <!-- OpenSilex Core -->
         <dependency>
             <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-sparql</artifactId>
+            <!--<scope>provided</scope>-->
+            <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex Core test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-sparql</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <!-- OpenSilex Core -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
             <artifactId>opensilex-core</artifactId>
             <!--<scope>provided</scope>-->
             <version>${revision}</version>
@@ -68,6 +83,29 @@
             <artifactId>opensilex-front</artifactId>
             <!--<scope>provided</scope>-->
             <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex Front test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-front</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <!-- OpenSilex Front -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-rest</artifactId>
+            <!--<scope>provided</scope>-->
+            <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex Front test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-rest</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
         </dependency>
     </dependencies>
     

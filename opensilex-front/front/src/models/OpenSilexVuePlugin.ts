@@ -105,10 +105,12 @@ export class OpenSilexVuePlugin {
     }
 
     private loadedModules: Array<string> = [
-        "opensilex-front"
+        "opensilex", "opensilex-front"
+
     ];
 
     private loadingModules = {
+        "opensilex": Promise.resolve(null),
         "opensilex-front": Promise.resolve(null)
     };
 

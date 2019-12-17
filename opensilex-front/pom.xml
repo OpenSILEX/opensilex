@@ -34,12 +34,6 @@
             <artifactId>opensilex</artifactId>
             <version>${revision}</version>
         </dependency>
-        <!-- OpenSilex Core -->
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-core</artifactId>
-            <version>${revision}</version>
-        </dependency>  
         <!-- OpenSilex Base test -->
         <dependency>
             <groupId>org.opensilex</groupId>
@@ -48,6 +42,34 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
+        <!-- OpenSilex Server -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-rest</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex Server test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-rest</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <!-- OpenSilex Core -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-core</artifactId>
+            <version>${revision}</version>
+        </dependency>  
+        <!-- OpenSilex Core test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-core</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>  
     </dependencies>
     
     <build>

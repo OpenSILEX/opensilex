@@ -9,7 +9,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
 import javax.validation.constraints.NotNull;
-import org.opensilex.front.Route;
+import org.opensilex.front.config.Route;
 
 /**
  *

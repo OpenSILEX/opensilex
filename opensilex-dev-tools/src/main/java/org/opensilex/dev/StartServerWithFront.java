@@ -18,7 +18,7 @@ import org.opensilex.*;
 import org.opensilex.cli.*;
 import org.opensilex.front.FrontModule;
 import org.opensilex.front.api.FrontAPI;
-import org.opensilex.module.OpenSilexModule;
+import org.opensilex.OpenSilexModule;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

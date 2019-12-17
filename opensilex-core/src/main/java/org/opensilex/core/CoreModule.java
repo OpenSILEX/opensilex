@@ -6,15 +6,23 @@
 package org.opensilex.core;
 
 import com.auth0.jwt.JWTCreator;
-import org.opensilex.module.OpenSilexModule;
-import org.opensilex.module.extensions.APIExtension;
-import org.opensilex.module.extensions.TokenExtension;
-import org.opensilex.server.security.dal.UserModel;
+import java.util.List;
+import org.opensilex.OpenSilexModule;
+import org.opensilex.rest.extensions.APIExtension;
+import org.opensilex.rest.security.dal.UserModel;
+import org.opensilex.rest.extensions.LoginExtension;
 
 /**
  * Core OpenSILEX module implementation
  */
-public class CoreModule extends OpenSilexModule implements APIExtension, TokenExtension {
+public class CoreModule extends OpenSilexModule implements APIExtension, LoginExtension {
+
+    @Override
+    public List<String> getPackagesToScan() {
+        List<String> list = APIExtension.super.getPackagesToScan();
+
+        return list;
+    }
 
     @Override
     public void addLoginClaims(UserModel user, JWTCreator.Builder tokenBuilder) {

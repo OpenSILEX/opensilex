@@ -6,7 +6,8 @@
         "serve": "vue-cli-service build --target lib --formats umd-min src/index.ts --mode development --watch",
         "build": "vue-cli-service build --target lib --formats umd-min src/index.ts --mode production",
         "lint": "vue-cli-service lint",
-        "check:outdated": "yarn outdated || cd ."
+        "check:outdated": "yarn outdated || cd .",
+        "build:types": "dts-generator --project ./ --out ./types/opensilex-core.d.ts --prefix opensilex-core"
     },
     "devDependencies": {
         "@vue/cli-plugin-babel": "^4.1.0",
@@ -27,7 +28,9 @@
             "eslint:recommended",
             "@vue/typescript"
         ],
-        "rules": {},
+        "rules": {
+            "no-unused-vars": "off"
+        },
         "parserOptions": {
             "parser": "@typescript-eslint/parser"
         }

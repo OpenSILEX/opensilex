@@ -18,7 +18,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 import java.text.ParseException;
@@ -52,8 +51,8 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.view.brapi.form.ResponseUnique;
 import opensilex.service.model.Call;
-import org.opensilex.server.security.AuthenticationService;
-import org.opensilex.sparql.SPARQLService;
+import org.opensilex.rest.security.AuthenticationService;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Token resource service.
@@ -156,8 +155,8 @@ public class TokenResourceService implements BrapiCall{
             // user is already logged
             // we trust the client
             //\SILEX:info
-            org.opensilex.server.security.dal.UserDAO userDAO = new org.opensilex.server.security.dal.UserDAO(sparql, authentication);
-            org.opensilex.server.security.dal.UserModel user;
+            org.opensilex.rest.security.dal.UserDAO userDAO = new org.opensilex.rest.security.dal.UserDAO(sparql, authentication);
+            org.opensilex.rest.security.dal.UserModel user;
             try {
                 user = userDAO.getByEmail(new InternetAddress(username));
 

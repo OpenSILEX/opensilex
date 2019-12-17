@@ -41,13 +41,13 @@ import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
-import org.opensilex.module.ModuleUpdate;
+import org.opensilex.module.OpenSilexModuleUpdate;
 
 /**
  *
  * @author vincent
  */
-public class U_20190904_ProjectMigration implements ModuleUpdate {
+public class U_20190904_ProjectMigration implements OpenSilexModuleUpdate {
 
     @Override
     public LocalDateTime getDate() {

@@ -36,10 +36,10 @@ import opensilex.service.resource.DataResourceService;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.security.AuthenticationService;
-import org.opensilex.server.security.SecurityContextProxy;
-import org.opensilex.server.security.dal.UserModel;
-import org.opensilex.sparql.SPARQLService;
+import org.opensilex.rest.security.AuthenticationService;
+import org.opensilex.rest.security.SecurityContextProxy;
+import org.opensilex.rest.security.dal.UserModel;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ClassUtils;
 
 /**

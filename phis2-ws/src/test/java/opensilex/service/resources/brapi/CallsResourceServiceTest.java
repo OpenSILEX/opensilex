@@ -6,7 +6,7 @@
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources.brapi;
-import integration.opensilex.server.rest.RestApplicationTest;
+import integration.opensilex.rest.RestApplicationTest;
 import javax.ws.rs.core.Response;
 import static junit.framework.TestCase.assertEquals;
 import org.junit.Test;

@@ -12,9 +12,9 @@ import java.util.Set;
 import org.opensilex.OpenSilex;
 import org.opensilex.bigdata.mongodb.MongoDBConfig;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
-import org.opensilex.module.OpenSilexModule;
+import org.opensilex.OpenSilexModule;
 import org.opensilex.module.ModuleConfig;
-import org.opensilex.module.extensions.APIExtension;
+import org.opensilex.rest.extensions.APIExtension;
 
 /**
  * Phis opensilex module implementation

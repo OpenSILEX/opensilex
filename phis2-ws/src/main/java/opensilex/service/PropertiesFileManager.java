@@ -28,7 +28,7 @@ import java.util.Properties;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
-import org.opensilex.bigdata.mongodb.MongoDBConfig;
+import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

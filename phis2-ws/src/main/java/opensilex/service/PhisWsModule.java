@@ -10,10 +10,10 @@ package opensilex.service;
 import java.util.List;
 import java.util.Set;
 import org.opensilex.OpenSilex;
-import org.opensilex.bigdata.mongodb.MongoDBConfig;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.module.ModuleConfig;
+import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.rest.extensions.APIExtension;
 
 /**
@@ -37,9 +37,9 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension {
 
         PropertiesFileManager.setOpensilexConfigs(
                 getConfig(PhisWsConfig.class),
-                app.loadConfigPath("opensilex.sparql.rdf4j", RDF4JConfig.class),
-                app.loadConfigPath("opensilex.bigData.mongodb", MongoDBConfig.class),
-                app.loadConfigPath("opensilex.storageBasePath", String.class)
+                app.loadConfigPath("ontologies.sparql.rdf4j", RDF4JConfig.class),
+                app.loadConfigPath("big-data.nosql.mongodb", MongoDBConfig.class),
+                app.loadConfigPath("rest.storageBasePath", String.class)
         );
     }
 

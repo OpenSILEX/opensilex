@@ -314,8 +314,9 @@ public class OpenSilex {
      * @param logConfigFile Logback configuration file to merge or override
      * @param reset Flag to determine if configuration must be merge or erase
      * existing
+     * @return true if given file has been loaded and false otherwise
      */
-    public static void loadLoggerConfig(File logConfigFile, boolean reset) {
+    public static boolean loadLoggerConfig(File logConfigFile, boolean reset) {
         // Check if config file exists
         if (logConfigFile.isFile()) {
             try {
@@ -330,6 +331,7 @@ public class OpenSilex {
                 configurator.setContext(loggerContext);
                 try (InputStream configStream = FileUtils.openInputStream(logConfigFile)) {
                     configurator.doConfigure(configStream);
+                    return true;
                 }
             } catch (JoranException | IOException ex) {
                 LOGGER.warn("Error while trying to load logback configuration file: " + logConfigFile.getAbsolutePath(), ex);
@@ -337,6 +339,8 @@ public class OpenSilex {
         } else {
             LOGGER.debug("Logger configuration file does not exists: " + logConfigFile.getAbsolutePath());
         }
+
+        return false;
     }
 
     /**
@@ -633,5 +637,13 @@ public class OpenSilex {
 
     public static <T extends ModuleConfig> T getModuleConfig(Class<? extends OpenSilexModule> moduleClass, Class<T> configClass) throws ModuleNotFoundException {
         return getInstance().getModuleByClass(moduleClass).getConfig(configClass);
+    }
+
+    public static ClassLoader getClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
+    }
+
+    public static InputStream getResourceAsStream(String name) {
+        return getClassLoader().getResourceAsStream(name);
     }
 }

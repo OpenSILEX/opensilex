@@ -42,13 +42,13 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
-        <!-- OpenSilex Server -->
+        <!-- OpenSilex REST -->
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-rest</artifactId>
             <version>${revision}</version>
         </dependency>
-        <!-- OpenSilex Server test -->
+        <!-- OpenSilex REST test -->
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-rest</artifactId>

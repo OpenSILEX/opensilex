@@ -1,12 +1,12 @@
 //******************************************************************************
-//                        BigDataConnection.java
+//                        NoSQLConnection.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.bigdata;
+package org.opensilex.nosql.service;
 
-import org.opensilex.bigdata.exceptions.BigDataTransactionException;
+import org.opensilex.nosql.exceptions.NoSQLTransactionException;
 import org.opensilex.service.ServiceConnection;
 
 /**
@@ -16,30 +16,30 @@ import org.opensilex.service.ServiceConnection;
  * to achieve: http://www.datanucleus.org/
  * </pre>
  *
- * @see org.opensilex.bigdata.BigDataService
+ * @see org.opensilex.nosql.service.BigDataService
  * @author Vincent Migot
  */
-public interface BigDataConnection extends ServiceConnection {
+public interface NoSQLConnection extends ServiceConnection {
 
     /**
      * Start a transaction
      *
-     * @throws BigDataTransactionException
+     * @throws NoSQLTransactionException
      */
-    public void startTransaction() throws BigDataTransactionException;
+    public void startTransaction() throws NoSQLTransactionException;
 
     /**
      * Commit a transaction
      *
-     * @throws BigDataTransactionException
+     * @throws NoSQLTransactionException
      */
-    public void commitTransaction() throws BigDataTransactionException;
+    public void commitTransaction() throws NoSQLTransactionException;
 
     /**
      * Rollback a transaction
      *
-     * @throws BigDataTransactionException
+     * @throws NoSQLTransactionException
      */
-    public void rollbackTransaction() throws BigDataTransactionException;
+    public void rollbackTransaction() throws NoSQLTransactionException;
 
 }

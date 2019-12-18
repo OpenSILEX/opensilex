@@ -11,6 +11,7 @@ import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.matcher.ElementMatchers;
 import org.apache.jena.graph.*;
+import org.opensilex.OpenSilex;
 import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,7 @@ abstract class SPARQLProxy<T> implements InvocationHandler {
                 .method(ElementMatchers.any())
                 .intercept(InvocationHandlerAdapter.of(this))
                 .make()
-                .load(Thread.currentThread().getContextClassLoader())
+                .load(OpenSilex.getClassLoader())
                 .getLoaded();
         
         try {

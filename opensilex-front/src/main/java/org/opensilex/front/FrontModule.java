@@ -21,6 +21,7 @@ import org.opensilex.module.ModuleConfig;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.rest.extensions.APIExtension;
 import org.opensilex.server.extensions.ServerExtension;
+import org.opensilex.server.scanner.IgnoreJarScanner;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -43,7 +44,13 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
 
     @Override
     public void initServer(org.opensilex.server.Server server) throws Exception {
+        // Register front application
         Context appContext = server.initApp("/app", "/", "/front", FrontModule.class);
+        
+        // Disable JAR scanner for front application because it's not required
+        appContext.setJarScanner(new IgnoreJarScanner());
+        
+        // Add rewrite rules for application
         appContext.getPipeline().addValve(new RewriteValve());
     }
 

@@ -4,11 +4,11 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.bigdata.datanucleus;
+package org.opensilex.nosql.datanucleus;
 
 import java.util.Map;
-import org.opensilex.bigdata.BigDataConnection;
-import org.opensilex.bigdata.exceptions.BigDataTransactionException;
+import org.opensilex.nosql.exceptions.NoSQLTransactionException;
+import org.opensilex.nosql.service.NoSQLConnection;
 
 /**
  * Datanucleus connection implementation.
@@ -16,10 +16,10 @@ import org.opensilex.bigdata.exceptions.BigDataTransactionException;
  * TODO: Implement it
  * </pre>
  *
- * @see org.opensilex.bigdata.BigDataConnection
+ * @see org.opensilex.nosql.service.NoSQLConnection
  * @author Vincent Migot
  */
-public abstract class AbstractDataNucleusConnection implements BigDataConnection {
+public abstract class AbstractDataNucleusConnection implements NoSQLConnection {
 
     /**
      * Constructor for datanucleus allowing any Map of properties for
@@ -33,17 +33,17 @@ public abstract class AbstractDataNucleusConnection implements BigDataConnection
     }
 
     @Override
-    public void startTransaction() throws BigDataTransactionException {
+    public void startTransaction() throws NoSQLTransactionException {
 
     }
 
     @Override
-    public void commitTransaction() throws BigDataTransactionException {
+    public void commitTransaction() throws NoSQLTransactionException {
 
     }
 
     @Override
-    public void rollbackTransaction() throws BigDataTransactionException {
+    public void rollbackTransaction() throws NoSQLTransactionException {
 
     }
 }

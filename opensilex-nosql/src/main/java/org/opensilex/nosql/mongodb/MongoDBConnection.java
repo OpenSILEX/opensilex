@@ -4,10 +4,10 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.bigdata.mongodb;
+package org.opensilex.nosql.mongodb;
 
 import java.util.HashMap;
-import org.opensilex.bigdata.datanucleus.AbstractDataNucleusConnection;
+import org.opensilex.nosql.datanucleus.AbstractDataNucleusConnection;
 import org.opensilex.service.ServiceConnection;
 
 /**
@@ -16,7 +16,7 @@ import org.opensilex.service.ServiceConnection;
  * TODO: Implement it
  * </pre>
  *
- * @see org.opensilex.bigdata.datanucleus.AbstractDataNucleusConnection
+ * @see org.opensilex.nosql.datanucleus.AbstractDataNucleusConnection
  * @author Vincent Migot
  */
 public class MongoDBConnection extends AbstractDataNucleusConnection implements ServiceConnection {

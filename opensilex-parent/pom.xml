@@ -75,7 +75,7 @@
         <commons.io.version>2.6</commons.io.version>
         <logback.version>1.2.3</logback.version>
         <janino.version>3.1.0</janino.version>
-        <slf4j.api.version>1.7.29</slf4j.api.version>
+        <slf4j.api.version>1.7.30</slf4j.api.version>
         <javax.xml.bind.version>2.3.1</javax.xml.bind.version>
         <javax.mail.api.version>1.6.2</javax.mail.api.version>
         <javax.mail.version>1.6.2</javax.mail.version>
@@ -89,7 +89,7 @@
         
         <!-- test only dependencies version -->
         <junit.version>4.12</junit.version>
-        <mockito.version>3.2.0</mockito.version>
+        <mockito.version>3.2.4</mockito.version>
         
         <!-- maven plugins versions -->
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
@@ -108,7 +108,7 @@
         <flatten.maven.plugin.version>1.1.0</flatten.maven.plugin.version>
         <properties.maven.plugin.version>1.0.0</properties.maven.plugin.version>
         <serviceloader.maven.plugin.version>1.1.0</serviceloader.maven.plugin.version>
-        <jacoco.maven.plugin.version>0.8.4</jacoco.maven.plugin.version>
+        <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
         <owasp.dependency.check.maven.plugin.version>5.2.1</owasp.dependency.check.maven.plugin.version>
         <frontend.maven.plugin.version>1.8.0</frontend.maven.plugin.version>
         <maven.project.info.reports.plugin.version>3.0.0</maven.project.info.reports.plugin.version>

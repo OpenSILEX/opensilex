@@ -308,9 +308,9 @@ public class ClassUtils {
                         LOGGER.error("Error in jar file", ex);
                     }
                 });
-                reflections = new Reflections(ConfigurationBuilder.build("", Thread.currentThread().getContextClassLoader()).setUrls(urls).setExpandSuperTypes(false));
+                reflections = new Reflections(ConfigurationBuilder.build("", OpenSilex.getClassLoader()).setUrls(urls).setExpandSuperTypes(false));
             } else {
-                reflections = new Reflections(ConfigurationBuilder.build("", Thread.currentThread().getContextClassLoader()).setExpandSuperTypes(false));
+                reflections = new Reflections(ConfigurationBuilder.build("", OpenSilex.getClassLoader()).setExpandSuperTypes(false));
             }
         }
 

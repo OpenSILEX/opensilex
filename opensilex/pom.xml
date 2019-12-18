@@ -70,14 +70,6 @@
                 </includes>
                 <targetPath>webapp</targetPath>
             </resource>
-            
-            <!-- define front resources folder -->
-            <resource>
-                <directory>front</directory>
-                <excludes>
-                    <exclude>**</exclude>
-                </excludes>
-            </resource>
         </resources>
         <plugins>
             <!-- Check plugin and dependencies available updates -->

@@ -34,8 +34,10 @@
         <!-- Main OpenSilex modules -->
         <module>opensilex-parent</module>
         <module>opensilex</module>
-        <module>opensilex-rest</module>
         <module>opensilex-sparql</module>
+        <module>opensilex-nosql</module>
+        <module>opensilex-fs</module>
+        <module>opensilex-rest</module>
         <module>opensilex-module</module>
         <module>opensilex-core</module>
         <module>opensilex-front</module>
@@ -70,16 +72,28 @@
             <artifactId>opensilex</artifactId>
             <version>${revision}</version>
         </dependency>
-            
+        
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-rest</artifactId>
+            <artifactId>opensilex-sparql</artifactId>
             <version>${revision}</version>
         </dependency>
         
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-sparql</artifactId>
+            <artifactId>opensilex-nosql</artifactId>
+            <version>${revision}</version>
+        </dependency>
+                
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-fs</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-rest</artifactId>
             <version>${revision}</version>
         </dependency>
         

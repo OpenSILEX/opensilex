@@ -154,7 +154,7 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
             }
 
             Map<String, LocalDateTime> existingUpdatesByModules = new HashMap<>();
-            ServiceLoader.load(OpenSilexModuleUpdate.class, Thread.currentThread().getContextClassLoader()).forEach((OpenSilexModuleUpdate update) -> {
+            ServiceLoader.load(OpenSilexModuleUpdate.class, OpenSilex.getClassLoader()).forEach((OpenSilexModuleUpdate update) -> {
                 String updateProjectId = ClassUtils.getProjectIdFromClass(update.getClass());
                 if (!updateProjectId.isEmpty()) {
                     if (existingUpdatesByModules.containsKey(updateProjectId)) {
@@ -221,7 +221,7 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
             List<OpenSilexModuleUpdate> newUpdates = new ArrayList<>();
 
             // Load all OpenSilexModuleUpdate and filter the new ones
-            ServiceLoader.load(OpenSilexModuleUpdate.class, Thread.currentThread().getContextClassLoader())
+            ServiceLoader.load(OpenSilexModuleUpdate.class, OpenSilex.getClassLoader())
                     .forEach((OpenSilexModuleUpdate update) -> {
                         // Get the related module id of the update
                         String moduleId = ClassUtils.getProjectIdFromClass(update.getClass());
@@ -271,7 +271,7 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
     public void runUpdate(
             @Parameters(description = "Update class to execute") String updateClassName
     ) throws Exception {
-        Class updateClass = Class.forName(updateClassName, true, Thread.currentThread().getContextClassLoader());
+        Class updateClass = Class.forName(updateClassName, true, OpenSilex.getClassLoader());
         OpenSilexModuleUpdate updateInstance = (OpenSilexModuleUpdate) updateClass.getConstructor().newInstance();
         updateInstance.execute();
     }

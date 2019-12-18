@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import org.apache.jena.graph.Node;
+import org.opensilex.OpenSilex;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,7 @@ public class SPARQLDeserializers {
         HashMap<Class<?>, SPARQLDeserializer<?>> deserializersMap = new HashMap<>();
 
         List<SPARQLDeserializer<?>> deserializers = new ArrayList<>();
-        ServiceLoader.load(SPARQLDeserializer.class, Thread.currentThread().getContextClassLoader())
+        ServiceLoader.load(SPARQLDeserializer.class, OpenSilex.getClassLoader())
                 .forEach(deserializers::add);
 
         for (SPARQLDeserializer<?> deserializer : deserializers) {

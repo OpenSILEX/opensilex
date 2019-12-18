@@ -6,10 +6,8 @@
 //******************************************************************************
 package org.opensilex.rest;
 
-import org.opensilex.bigdata.BigDataService;
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.module.ModuleConfig;
-import org.opensilex.fs.FileStorageService;
 import org.opensilex.rest.authentication.AuthenticationService;
 
 /**
@@ -30,21 +28,6 @@ public interface RestConfig extends ModuleConfig {
             defaultString = "en"
     )
     public String defaultLanguage();
-
-    @ConfigDescription(
-            value = "Default file storage directory"
-    )
-    public String storageBasePath();
-
-    @ConfigDescription(
-            value = "Big data source"
-    )
-    public BigDataService bigData();
-
-    @ConfigDescription(
-            value = "File storage service"
-    )
-    public FileStorageService fs();
 
     @ConfigDescription(
             value = "Authentication service"

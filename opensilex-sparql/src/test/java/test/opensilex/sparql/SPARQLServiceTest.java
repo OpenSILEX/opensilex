@@ -27,6 +27,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import org.opensilex.OpenSilex;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
@@ -49,10 +50,10 @@ public abstract class SPARQLServiceTest {
 
         service.clear();
 
-        InputStream ontology = Thread.currentThread().getContextClassLoader().getResourceAsStream(TEST_ONTOLOGY.FILE_PATH.toString());
+        InputStream ontology = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.FILE_PATH.toString());
         service.loadOntologyStream(SPARQLModule.getPlatformURI(), ontology, TEST_ONTOLOGY.FILE_FORMAT);
 
-        InputStream ontologyData = Thread.currentThread().getContextClassLoader().getResourceAsStream(TEST_ONTOLOGY.DATA_FILE_PATH.toString());
+        InputStream ontologyData = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.DATA_FILE_PATH.toString());
         service.loadOntologyStream(SPARQLModule.getPlatformDomainGraphURI("data"), ontologyData, TEST_ONTOLOGY.DATA_FILE_FORMAT);
     }
 

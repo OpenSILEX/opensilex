@@ -75,7 +75,7 @@ public class ConfigManager {
             config = (T) ConfigProxyHandler.getPrimitive(key, root, null);
         } else {
             config = (T) Proxy.newProxyInstance(
-                    Thread.currentThread().getContextClassLoader(),
+                    OpenSilex.getClassLoader(),
                     new Class<?>[]{configClass},
                     new ConfigProxyHandler(key, root.deepCopy(), yamlMapper)
             );
@@ -105,7 +105,7 @@ public class ConfigManager {
             config = (T) ConfigProxyHandler.getPrimitive(finalKey, baseNode, null);
         } else {
             config = (T) Proxy.newProxyInstance(
-                    Thread.currentThread().getContextClassLoader(),
+                    OpenSilex.getClassLoader(),
                     new Class<?>[]{configClass},
                     new ConfigProxyHandler(finalKey, baseNode.deepCopy(), yamlMapper)
             );

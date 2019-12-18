@@ -7,8 +7,10 @@ ontologies:
             repository: opensilex
 
 rest:    
-    storageBasePath: <TO CONFIGURE>    
-    bigData:
+    storageBasePath: <TO CONFIGURE>  
+    
+big-data:   
+    nosql:
         mongodb:
             host: localhost
             port: 8668

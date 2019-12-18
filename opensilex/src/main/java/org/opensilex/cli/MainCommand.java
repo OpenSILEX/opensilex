@@ -79,7 +79,7 @@ public class MainCommand extends HelpPrinterCommand implements IVersionProvider 
         CommandLine cli = new CommandLine(new MainCommand());
 
         // Register all commands contained in OpenSilex modules
-        ServiceLoader.load(OpenSilexCommand.class, Thread.currentThread().getContextClassLoader())
+        ServiceLoader.load(OpenSilexCommand.class, OpenSilex.getClassLoader())
                 .forEach((OpenSilexCommand cmd) -> {
                     Command cmdDef = cmd.getClass().getAnnotation(CommandLine.Command.class);
                     cli.addSubcommand(cmdDef.name(), cmd);

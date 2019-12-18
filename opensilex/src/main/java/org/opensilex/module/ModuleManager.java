@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import org.apache.commons.io.FileUtils;
+import org.opensilex.OpenSilex;
 import org.opensilex.config.ConfigManager;
 import org.opensilex.dependencies.DependencyManager;
 import org.opensilex.service.Service;
@@ -211,7 +212,7 @@ public class ModuleManager {
     public Iterable<OpenSilexModule> getModules() {
         if (modules == null) {
             modules = new ArrayList<>();
-            ServiceLoader.load(OpenSilexModule.class, Thread.currentThread().getContextClassLoader())
+            ServiceLoader.load(OpenSilexModule.class, OpenSilex.getClassLoader())
                     .forEach(modules::add);
         }
 

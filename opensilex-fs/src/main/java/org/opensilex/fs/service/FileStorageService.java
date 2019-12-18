@@ -4,7 +4,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.fs;
+package org.opensilex.fs.service;
 
 import org.opensilex.service.Service;
 import org.slf4j.Logger;

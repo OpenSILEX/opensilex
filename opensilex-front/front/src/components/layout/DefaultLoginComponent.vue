@@ -6,7 +6,7 @@
     </a>
     <div class="fullmodal" v-if="!user.isLoggedIn() || forceRefresh">
       <b-form @submit.prevent="onLogin" class="fullmodal-form">
-        <h2>Welcome to opensilex</h2>
+        <h2>{{ $t('hello') }}</h2>
         <b-form-group
           id="login-group"
           label="Login:"

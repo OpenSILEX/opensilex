@@ -53,6 +53,9 @@ export default class App extends Vue {
 }
 </script>
 
+<i18n src="./lang/message-en-US.json"></i18n>
+<i18n src="./lang/message-fr.json"></i18n>
+
 <style lang="scss">
 @import "../styles/styles";
 

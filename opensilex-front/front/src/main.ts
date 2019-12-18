@@ -87,6 +87,9 @@ library.add(faPowerOff, faTimes, faTrashAlt, faEdit);
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 console.debug("FontAwesomeIcon plugin initialized !");
 
+// Initialize i18n
+import VueI18n from 'vue-i18n'
+Vue.use(VueI18n)
 
 // Enable Vue front plugin manager for OpenSilex API
 console.debug("Enable OpenSilex plugin...");

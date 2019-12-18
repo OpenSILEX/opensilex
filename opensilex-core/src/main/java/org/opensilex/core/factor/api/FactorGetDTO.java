@@ -1,7 +1,11 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * ******************************************************************************
+ *                                     FactorGetDTO.java
+ *  OpenSILEX
+ *  Copyright © INRA 2019
+ *  Creation date:  17 December, 2019
+ *  Contact: arnaud.charleroy@inra.fr
+ * ******************************************************************************
  */
 package org.opensilex.core.factor.api;
 

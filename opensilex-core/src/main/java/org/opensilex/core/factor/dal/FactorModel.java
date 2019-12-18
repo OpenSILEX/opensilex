@@ -1,22 +1,25 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * ******************************************************************************
+ *                                     FactorModel.java
+ *  OpenSILEX
+ *  Copyright © INRA 2019
+ *  Creation date:  17 December, 2019
+ *  Contact: arnaud.charleroy@inra.fr
+ * ******************************************************************************
  */
 package org.opensilex.core.factor.dal;
 
-import java.time.LocalDate;
-import java.util.List;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.server.security.dal.GroupModel;
-import org.opensilex.server.security.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
+/**
+ * 
+ * @author charlero
+ */
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Factor",

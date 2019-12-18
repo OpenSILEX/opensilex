@@ -56,8 +56,8 @@ import org.opensilex.utils.ListWithPagination;
  * - create: Create a user
  * - get: Get a user by URI
  * - search: Search a filtered, ordered and paginated list of users
- * - TODO update: Update a user
- * - TODO delete: Delete a user
+ * - update: Update a user with optionnaly a new password
+ * - delete: Delete a user
  * </pre>
  *
  * @author Vincent Migot
@@ -241,8 +241,11 @@ public class UserAPI {
     ) throws Exception {
         UserDAO dao = new UserDAO(sparql, authentication);
 
+        // Get user model from DTO uri
         UserModel model = dao.get(dto.getUri());
+        
         if (model != null) {
+            // If model exists, update it
             UserModel user = dao.update(
                     dto.getUri(),
                     new InternetAddress(dto.getEmail()),

@@ -158,7 +158,7 @@ public class SPARQLClassAnalyzer {
             }
         }
 
-        // TODO check that all SPARQL annotated fields has getter and setter
+        // TODO check that all SPARQL annotated fields has getter and setter for verification, should throw an exception
     }
 
     private void analyzeSPARQLPropertyField(SPARQLProperty sProperty, Field field) throws SPARQLInvalidClassDefinitionException {

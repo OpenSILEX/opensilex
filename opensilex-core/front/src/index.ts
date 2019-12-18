@@ -1,8 +1,11 @@
 import { ApiServiceBinder } from './lib'
+import FactorList from './components/factors/FactorList.vue';
 
 export default {
     install(Vue, options) {
         ApiServiceBinder.with(Vue.$opensilex.getServiceContainer());
-        // TODO register components
+    },
+    components: {
+        "opensilex-core-FactorList": FactorList
     }
 };

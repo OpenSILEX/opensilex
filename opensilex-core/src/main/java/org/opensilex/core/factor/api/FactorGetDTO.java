@@ -6,7 +6,6 @@
 package org.opensilex.core.factor.api;
 
 import java.net.URI;
-import java.util.List;
 import org.opensilex.core.factor.dal.FactorModel;
 
 /**

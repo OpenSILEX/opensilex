@@ -17,6 +17,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -34,6 +35,7 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.security.ApiProtected;
+import org.opensilex.server.validation.ValidURI;
 import org.opensilex.sparql.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.utils.OrderBy;
@@ -50,6 +52,12 @@ public class FactorAPI {
     @Inject
     private SPARQLService sparql;
     
+    /**
+     * Create a factor model from a FactorCreationDTO object
+     * @param dto FactorCreationDTO object
+     * @return
+     * @throws Exception 
+     */
     @POST
     @ApiOperation("Create an factor")
     @ApiProtected
@@ -72,6 +80,12 @@ public class FactorAPI {
         }
     }
     
+    /**
+     * Retreive factor by uri
+     * @param uri factor uri
+     * @return
+     * @throws Exception
+     */
     @GET
     @Path("{uri}")
     @ApiOperation("Get an factor")
@@ -142,5 +156,25 @@ public class FactorAPI {
 
         // Return paginated list of factor DTO
         return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+    
+    /**
+     * Remove a factor
+     * @param uri factor uri
+     * @return
+     * @throws Exception
+     */
+    @DELETE
+    @Path("{uri}")
+    @ApiOperation("Delete a user")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response delete(
+            @ApiParam(value = "Factor URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+    ) throws Exception {
+        FactorDAO dao = new FactorDAO(sparql);
+        dao.delete(uri);
+        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 }

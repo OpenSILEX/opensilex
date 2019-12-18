@@ -20,3 +20,18 @@ menu:
           path: /profiles
           component: opensilex-ProfileView
           credentials: []
+  - id: factors
+    label: Factors
+    children:
+      - id: factors-list
+        label: Factors
+        route: 
+          path: /factors 
+          component: opensilex-core-FactorList
+          credentials: []
+routes:
+# Route item example:
+#  - path: /users/create
+#    component: opensilex-UserCreate
+#    credentials: []
+  

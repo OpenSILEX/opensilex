@@ -52,16 +52,18 @@ import org.joda.time.format.DateTimeFormatter;
 
 /**
  * Events DAO.
+ *
  * @update [Andreas Garcia] 14 Feb. 2019: Add event detail service.
  * @update [Andreas Garcia] 5 Mar. 2019: Add events insertion service.
- * @update [Andréas Garcia] 5 Mar. 2019: 
- *      Move the generic function to get a string value from a binding set to mother class.
- *      Move concerned items accesses handling into a new ConcernedItemDAO class.
- * @update [Andréas Garcia] 8 Apr. 2019: Use DAO generic function create, update, checkBeforeCreation and use exceptions 
- * to handle errors.
+ * @update [Andréas Garcia] 5 Mar. 2019: Move the generic function to get a
+ * string value from a binding set to mother class. Move concerned items
+ * accesses handling into a new ConcernedItemDAO class.
+ * @update [Andréas Garcia] 8 Apr. 2019: Use DAO generic function create,
+ * update, checkBeforeCreation and use exceptions to handle errors.
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class EventDAO extends Rdf4jDAO<Event> {
+
     final static Logger LOGGER = LoggerFactory.getLogger(EventDAO.class);
 
     private static final String INSTANT_SELECT_NAME = "instant";
@@ -84,14 +86,13 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
 
     /**
-     * Sets a search query to select an URI and adds a filter according to it 
-     * if necessary
-     * @example SparQL filter added:
-     *  SELECT DISTINCT  ?uri
-     *  WHERE {
-     *    FILTER ( (regex (str(?uri), "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1", "i"))
-     *  }
-     *  GROUP BY ?uri
+     * Sets a search query to select an URI and adds a filter according to it if
+     * necessary
+     *
+     * @example SparQL filter added: SELECT DISTINCT ?uri WHERE { FILTER (
+     * (regex (str(?uri),
+     * "http://www.phenome-fppn.fr/id/event/5a1b3c0d-58af-4cfb-811e-e141b11453b1",
+     * "i")) } GROUP BY ?uri
      * @param query
      * @param searchUri
      * @param inGroupBy
@@ -110,15 +111,15 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
 
     /**
-     * Sets a search query to select a type and to filter according to it 
-     * if necessary
-     * @example SparQL filter added:
-     *  SELECT DISTINCT ?rdfType
-     *  WHERE {
-     *    ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeev#Event> .
-     *    ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  .
-     *  }
-     *  GROUP BY ?rdfType
+     * Sets a search query to select a type and to filter according to it if
+     * necessary
+     *
+     * @example SparQL filter added: SELECT DISTINCT ?rdfType WHERE { ?rdfType
+     * <http://www.w3.org/2000/01/rdf-schema#subClassOf>
+     *
+     * <http://www.opensilex.org/vocabulary/oeev#Event> . ?uri
+     * <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdfType . } GROUP BY
+     * ?rdfType
      * @param query
      * @param uriSelectNameSparql
      * @param searchType
@@ -126,7 +127,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
      */
     private void prepareSearchQueryType(SPARQLQueryBuilder query, String uriSelectNameSparql, String searchType, boolean inGroupBy) {
         query.appendSelect(RDF_TYPE_SELECT_NAME_SPARQL);
-        if(inGroupBy){
+        if (inGroupBy) {
             query.appendGroupBy(RDF_TYPE_SELECT_NAME_SPARQL);
         }
         if (searchType != null) {
@@ -148,28 +149,30 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
     /**
      * Prepares the event search query
+     *
      * @param uri
      * @param type
-     * @example
-     * SELECT DISTINCT  ?uri ?rdfType ?dateTimeStamp 
-     * WHERE {
-     *   ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
-     *   ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeev#MoveFrom> . 
-     *   ?uri  <http://www.opensilex.org/vocabulary/oeev#concerns>  ?concernedItemUri  . 
-     *   ?concernedItemUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernedItemLabel  . 
-     *   ?uri  <http://www.w3.org/2006/time#hasTime>  ?time  . 
-     *   ?time  <http://www.w3.org/2006/time#inXSDDateTimeStamp>  ?dateTimeStamp  . 
-     *   BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str(?dateTimeStamp)) as ?dateTime) .
-     *   BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-08T12:00:00+01:00")) as ?dateRangeStartDateTime) .
-     *   BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2019-10-08T12:00:00+01:00")) as ?dateRangeEndDateTime) .
-     *   FILTER ( (regex (str(?uri), "http://www.phenome-fppn.fr/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e", "i")) 
-     *    && (regex (?concernedItemLabel, "Plot Lavalette", "i")) 
-     *    && (regex (str(?concernedItemUri), "http://www.phenome-fppn.fr/m3p/arch/2017/c17000242", "i")) 
-     *    && (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
-     *  }
-     *  GROUP BY  ?uri ?rdfType ?dateTimeStamp 
-     *  LIMIT 20 
-     *  OFFSET 0 
+     * @example SELECT DISTINCT ?uri ?rdfType ?dateTimeStamp WHERE { ?uri
+     * <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdfType . ?rdfType
+     * <http://www.w3.org/2000/01/rdf-schema#subClassOf>
+     *
+     * <http://www.opensilex.org/vocabulary/oeev#MoveFrom> . ?uri
+     * <http://www.opensilex.org/vocabulary/oeev#concerns> ?concernedItemUri .
+     * ?concernedItemUri  <http://www.w3.org/2000/01/rdf-schema#label>
+     * ?concernedItemLabel . ?uri  <http://www.w3.org/2006/time#hasTime> ?time .
+     * ?time  <http://www.w3.org/2006/time#inXSDDateTimeStamp> ?dateTimeStamp .
+     * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str(?dateTimeStamp)) as
+     * ?dateTime) .
+     * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-08T12:00:00+01:00"))
+     * as ?dateRangeStartDateTime) .
+     * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2019-10-08T12:00:00+01:00"))
+     * as ?dateRangeEndDateTime) . FILTER ( (regex (str(?uri),
+     * "http://www.phenome-fppn.fr/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e",
+     * "i")) && (regex (?concernedItemLabel, "Plot Lavalette", "i")) && (regex
+     * (str(?concernedItemUri),
+     * "http://www.phenome-fppn.fr/m3p/arch/2017/c17000242", "i")) &&
+     * (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >=
+     * ?dateTime) ) } GROUP BY ?uri ?rdfType ?dateTimeStamp LIMIT 20 OFFSET 0
      * @param searchConcernedItemLabel
      * @param searchConcernedItemUri
      * @param dateRangeStartString
@@ -207,14 +210,14 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
     /**
      * Prepares the event search query
-     * @example
-     * SELECT  ?uri ?rdfType ?dateTimeStamp 
-     * WHERE {
-     *   ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
-     *   ?uri  <http://www.w3.org/2006/time#hasTime>  ?time  . 
-     *   ?time  <http://www.w3.org/2006/time#inXSDDateTimeStamp>  ?dateTimeStamp  . 
-     *   FILTER (regex (str(?uri), "http://opensilex.org/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e", "i"))
-     *  }
+     *
+     * @example SELECT ?uri ?rdfType ?dateTimeStamp WHERE { ?uri
+     * <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdfType . ?uri
+     * <http://www.w3.org/2006/time#hasTime> ?time . ?time
+     * <http://www.w3.org/2006/time#inXSDDateTimeStamp> ?dateTimeStamp . FILTER
+     * (regex (str(?uri),
+     * "http://opensilex.org/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e",
+     * "i")) }
      * @param searchUri
      * @return query
      */
@@ -245,6 +248,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
     /**
      * Gets an event from a given binding set.
+     *
      * @param bindingSet a binding set, result from a search query
      * @return an event target with data extracted from the given binding set
      */
@@ -259,6 +263,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
     /**
      * Searches events stored
+     *
      * @param searchUri
      * @param searchType
      * @param searchConcernedItemLabel
@@ -294,33 +299,40 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 Oeev.concerns.getURI());
 
         // for each event, set its properties and concerned Items
-        try {
-            TupleQueryResult eventsResult = eventsTupleQuery.evaluate();
+        try (TupleQueryResult eventsResult = eventsTupleQuery.evaluate()){
+            
+            boolean first = true;
             while (eventsResult.hasNext()) {
                 BindingSet bindingSet = eventsResult.next();
-                int i = bindingSet.size();
-                if (i > 0) {
-                    Event event = getEventFromBindingSet(bindingSet);
-
-                    // Instant
-                    event.setInstant(getInstantFromBindingSet(
-                            bindingSet,
-                            INSTANT_SELECT_NAME,
-                            DATETIMESTAMP_SELECT_NAME));
-
-                    // Properties
-                    setEventProperties(event);
-
-                    // Concerned items
-                    event.setConcernedItems(concernedItemDao.find(
-                            event.getUri(),
-                            null,
-                            null,
-                            0,
-                            pageSizeMaxValue));
-
-                    events.add(event);
+                //Patch for a bindingSet of type EmptyBindingSet (an empty line) 
+                if (first) {
+                    int i = bindingSet.size();
+                    if (i == 0) {
+                        break;
+                    }
+                    first = false;
                 }
+
+                Event event = getEventFromBindingSet(bindingSet);
+
+                // Instant
+                event.setInstant(getInstantFromBindingSet(
+                        bindingSet,
+                        INSTANT_SELECT_NAME,
+                        DATETIMESTAMP_SELECT_NAME));
+
+                // Properties
+                setEventProperties(event);
+
+                // Concerned items
+                event.setConcernedItems(concernedItemDao.find(
+                        event.getUri(),
+                        null,
+                        null,
+                        0,
+                        pageSizeMaxValue));
+
+                events.add(event);
 
             }
         } catch (RepositoryException | MalformedQueryException | QueryEvaluationException ex) {
@@ -332,6 +344,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
     /**
      * Searches an event by its URI.
+     *
      * @param searchUri
      * @return events
      * @throws opensilex.service.dao.exception.DAOPersistenceException
@@ -382,14 +395,14 @@ public class EventDAO extends Rdf4jDAO<Event> {
                         0,
                         pageSizeMaxValue));
             }
-        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+        } catch (RepositoryException | MalformedQueryException | QueryEvaluationException ex) {
             handleTriplestoreException(ex);
         }
         return event;
     }
 
-    public static void setNewUris (List<Event> events) throws Exception {
-        for(Event event : events) {
+    public static void setNewUris(List<Event> events) throws Exception {
+        for (Event event : events) {
             event.setUri(UriGenerator.generateNewInstanceUri(Oeev.Event.getURI(), null, null));
 
             event.getConcernedItems().forEach(concernedItem -> {
@@ -407,6 +420,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
     /**
      * Generates an insert query for the given event.
+     *
      * @param updateBuilder
      * @param event
      * @throws java.lang.Exception
@@ -425,8 +439,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 eventResource,
                 event.getInstant());
 
-        ConcernedItemDAO concernedItemDao = 
-                new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
+        ConcernedItemDAO concernedItemDao
+                = new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
         concernedItemDao.addInsertToUpdateBuilder(updateBuilder, event.getConcernedItems());
 
         AnnotationDAO.addInsertToUpdateBuilder(updateBuilder, event.getAnnotations());
@@ -440,8 +454,10 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
     /**
      * Inserts the given events in the storage.
+     *
      * @param events
-     * @return the insertion result, with the error list or the URI of the events inserted
+     * @return the insertion result, with the error list or the URI of the
+     * events inserted
      * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
     @Override
@@ -457,6 +473,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
     /**
      * Checks the given list of events.
+     *
      * @param events
      * @throws opensilex.service.dao.exception.DAOPersistenceException
      * @throws opensilex.service.dao.exception.NotAnAdminException
@@ -471,10 +488,9 @@ public class EventDAO extends Rdf4jDAO<Event> {
         UserDAO userDAO = new UserDAO();
         if (!userDAO.isAdmin(user)) {
             throw new NotAnAdminException();
-            }
-            else {
-                ConcernedItemDAO concernedItemDao = 
-                        new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
+        } else {
+            ConcernedItemDAO concernedItemDao
+                    = new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
             PropertyDAO propertyDao = new PropertyDAO();
             AnnotationDAO annotationDao = new AnnotationDAO();
             try {
@@ -482,7 +498,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
                     // Check the event URI if given (in case of an update)
                     if (event.getUri() != null) {
-                            if (!existUri(event.getUri())){
+                        if (!existUri(event.getUri())) {
                             exceptions.add(new UnknownUriException(event.getUri(), "the event"));
                         }
                     }
@@ -495,28 +511,25 @@ public class EventDAO extends Rdf4jDAO<Event> {
                     // Check concerned items
                     try {
                         concernedItemDao.validate(event.getConcernedItems());
-                        }
-                        catch (DAODataErrorAggregateException ex) {
+                    } catch (DAODataErrorAggregateException ex) {
                         exceptions.addAll(ex.getExceptions());
                     }
 
                     // Check properties
                     try {
                         propertyDao.checkExistenceRangeDomain(event.getUri(), event.getType(), event.getProperties());
-                        }
-                        catch (DAODataErrorAggregateException ex) {
+                    } catch (DAODataErrorAggregateException ex) {
                         exceptions.addAll(ex.getExceptions());
                     }
 
                     // Check annotations
                     try {
                         annotationDao.validate(event.getAnnotations());
-                        }
-                        catch (DAODataErrorAggregateException ex) {
+                    } catch (DAODataErrorAggregateException ex) {
                         exceptions.addAll(ex.getExceptions());
                     }
                 }
-                } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            } catch (RepositoryException | MalformedQueryException | QueryEvaluationException ex) {
                 handleTriplestoreException(ex);
             }
         }
@@ -528,6 +541,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
     /**
      * Searches event properties and set them to it
+     *
      * @param event
      */
     private void setEventProperties(Event event) throws DAOPersistenceException {
@@ -538,29 +552,35 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 add(Rdf.RELATION_TYPE.toString());
                 add(Time.hasTime.getURI());
                 add(Oeev.concerns.getURI());
-                }});
             }
+        });
+    }
 
     /**
-     * Generates a query to count the results of the research with the 
-     * searched parameters. 
-     * @example 
-     * SELECT DISTINCT  (COUNT(DISTINCT ?uri) AS ?count) 
-     * WHERE {
-     *   ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
-     *   ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeev#MoveFrom> . 
-     *   ?uri  <http://www.opensilex.org/vocabulary/oeev#concerns>  ?concernedItemUri  . 
-     *   ?concernedItemUri  <http://www.w3.org/2000/01/rdf-schema#label>  ?concernedItemLabel  . 
-     *   ?uri  <http://www.w3.org/2006/time#hasTime>  ?time  . 
-     *   ?time  <http://www.w3.org/2006/time#inXSDDateTimeStamp>  ?dateTimeStamp  . 
-     *   BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str(?dateTimeStamp)) as ?dateTime) .
-     *   BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-08T12:00:00+01:00")) as ?dateRangeStartDateTime) .
-     *   BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2019-10-08T12:00:00+01:00")) as ?dateRangeEndDateTime) .
-     *   FILTER ( (regex (str(?uri), "http://www.phenome-fppn.fr/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e", "i")) 
-     *     && (regex (?concernedItemLabel, "Plot Lavalette", "i")) 
-     *     && (regex (str(?concernedItemUri), "http://www.phenome-fppn.fr/m3p/arch/2017/c17000242", "i")) 
-     *     && (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
-     * }
+     * Generates a query to count the results of the research with the searched
+     * parameters.
+     *
+     * @example SELECT DISTINCT (COUNT(DISTINCT ?uri) AS ?count) WHERE { ?uri
+     * <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdfType . ?rdfType
+     * <http://www.w3.org/2000/01/rdf-schema#subClassOf>
+     *
+     * <http://www.opensilex.org/vocabulary/oeev#MoveFrom> . ?uri
+     * <http://www.opensilex.org/vocabulary/oeev#concerns> ?concernedItemUri .
+     * ?concernedItemUri  <http://www.w3.org/2000/01/rdf-schema#label>
+     * ?concernedItemLabel . ?uri  <http://www.w3.org/2006/time#hasTime> ?time .
+     * ?time  <http://www.w3.org/2006/time#inXSDDateTimeStamp> ?dateTimeStamp .
+     * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str(?dateTimeStamp)) as
+     * ?dateTime) .
+     * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2017-09-08T12:00:00+01:00"))
+     * as ?dateRangeStartDateTime) .
+     * BIND(<http://www.w3.org/2001/XMLSchema#dateTime>(str("2019-10-08T12:00:00+01:00"))
+     * as ?dateRangeEndDateTime) . FILTER ( (regex (str(?uri),
+     * "http://www.phenome-fppn.fr/id/event/96e72788-6bdc-4f8e-abd1-ce9329371e8e",
+     * "i")) && (regex (?concernedItemLabel, "Plot Lavalette", "i")) && (regex
+     * (str(?concernedItemUri),
+     * "http://www.phenome-fppn.fr/m3p/arch/2017/c17000242", "i")) &&
+     * (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >=
+     * ?dateTime) ) }
      */
     private SPARQLQueryBuilder prepareCountQuery(String searchUri, String searchType, String searchConcernedItemLabel, String searchConcernedItemUri, String dateRangeStartString, String dateRangeEndString) {
         SPARQLQueryBuilder query = this.prepareSearchQueryEvents(
@@ -581,6 +601,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
     /**
      * Counts the total number of events filtered with the search fields
+     *
      * @param searchUri
      * @param searchType
      * @param searchConcernedItemLabel
@@ -608,11 +629,9 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 BindingSet bindingSet = result.next();
                 count = Integer.parseInt(bindingSet.getValue(COUNT_ELEMENT_QUERY).stringValue());
             }
-        }
-        catch (QueryEvaluationException ex) {
+        } catch (QueryEvaluationException ex) {
             handleTriplestoreException(ex);
-        }
-        catch (NumberFormatException ex) {
+        } catch (NumberFormatException ex) {
             handleCountValueNumberFormatException(ex);
         }
         return count;
@@ -620,6 +639,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
     /**
      * Generates an delete query for the given event in the case of an update.
+     *
      * @param updateBuilder
      * @param event
      * @throws java.lang.Exception
@@ -649,7 +669,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
     @Override
     public List<Event> update(List<Event> events) throws Exception {
         UpdateBuilder updateBuilder;
-        for(Event event : events) {
+        for (Event event : events) {
             updateBuilder = new UpdateBuilder();
             Event oldEvent = findById(event.getUri());
             addDeleteWhenUpdatingToUpdateBuilder(updateBuilder, oldEvent);
@@ -669,11 +689,12 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
     /**
      * Adds a filter to the search query comparing a SPARQL dateTimeStamp
-     * variable to a date. 
-     * SPARQL dateTimeStamp dates have to be handled in a specific way as 
-     * the comparison operators (<, >, etc.) aren't available for dateTimeStamp
-     * objects.
-     * @see <a href="https://www.w3.org/TR/2013/REC-sparql11-query-20130321/#OperatorMapping">
+     * variable to a date. SPARQL dateTimeStamp dates have to be handled in a
+     * specific way as the comparison operators (<, >, etc.) aren't available
+     * for dateTimeStamp objects.
+     *
+     * @see
+     * <a href="https://www.w3.org/TR/2013/REC-sparql11-query-20130321/#OperatorMapping">
      * SparQL Operator Mapping
      * </a>
      * @param query
@@ -681,18 +702,19 @@ public class EventDAO extends Rdf4jDAO<Event> {
      * @param filterDateFormat
      * @param filterDateSparqlVariable SPARQL variable (?abc format)
      * @param comparisonSign e.g >, >=, <, <=
-     * @param dateTimeStampToCompareSparqlVariable the SPARQL variable 
-     * (?abc format) of the dateTimeStamp to which the date has to be compared
+     * @param dateTimeStampToCompareSparqlVariable the SPARQL variable (?abc
+     * format) of the dateTimeStamp to which the date has to be compared
      * @example SparQL code added to the query :
-     *   BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
-     *   FILTER ( (?dateRangeStartDateTime <= ?dateTime) ) 
+     * BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as
+     * ?dateRangeStartDateTime) . FILTER ( (?dateRangeStartDateTime <=
+     * ?dateTime) )
      */
-    public static void filterSearchQueryWithDateTimeStampComparison(SPARQLStringBuilder query, String filterDateString, String filterDateFormat, String filterDateSparqlVariable, String comparisonSign, String dateTimeStampToCompareSparqlVariable){
+    public static void filterSearchQueryWithDateTimeStampComparison(SPARQLStringBuilder query, String filterDateString, String filterDateFormat, String filterDateSparqlVariable, String comparisonSign, String dateTimeStampToCompareSparqlVariable) {
 
         DateTime filterDate = Dates.stringToDateTimeWithGivenPattern(filterDateString, filterDateFormat);
 
-        String filterDateStringInSparqlDateTimeStampFormat = 
-                DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL).print(filterDate);
+        String filterDateStringInSparqlDateTimeStampFormat
+                = DateTimeFormat.forPattern(DATETIMESTAMP_FORMAT_SPARQL).print(filterDate);
 
         query.appendToBody(
                 "\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(\""
@@ -704,19 +726,22 @@ public class EventDAO extends Rdf4jDAO<Event> {
     /**
      * Appends a filter to select only the results whose datetime is included in
      * the date range in parameter.
+     *
      * @param query
      * @param filterRangeDatesStringFormat
      * @param filterRangeStartDateString
      * @param filterRangeEndDateString
-     * @param dateTimeStampToCompareSparqlName the SPARQL variable (?abc 
-     * format) of the dateTimeStamp to compare to the range
+     * @param dateTimeStampToCompareSparqlName the SPARQL variable (?abc format)
+     * of the dateTimeStamp to compare to the range
      * @example SparQL code added to the query :
-     *   BIND(xsd:dateTime(str(?dateTimeStamp)) as ?dateTime) .
-     *   BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as ?dateRangeStartDateTime) .
-     *   BIND(xsd:dateTime(str("2017-09-12T12:00:00+01:00")) as ?dateRangeEndDateTime) .
-     *   FILTER ( (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime >= ?dateTime) ) 
+     * BIND(xsd:dateTime(str(?dateTimeStamp)) as ?dateTime) .
+     * BIND(xsd:dateTime(str("2017-09-10T12:00:00+01:00")) as
+     * ?dateRangeStartDateTime) .
+     * BIND(xsd:dateTime(str("2017-09-12T12:00:00+01:00")) as
+     * ?dateRangeEndDateTime) . FILTER ( (?dateRangeStartDateTime <= ?dateTime) && (?dateRangeEndDateTime
+     * >= ?dateTime) )
      */
-    public static void filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(SPARQLQueryBuilder query, String objectUriLinkedToInstant, String instantSparqlName, String filterRangeDatesStringFormat, String filterRangeStartDateString, String filterRangeEndDateString, String dateTimeStampToCompareSparqlName, boolean inGroupBy){
+    public static void filterSearchQueryWithDateRangeComparisonWithDateTimeStamp(SPARQLQueryBuilder query, String objectUriLinkedToInstant, String instantSparqlName, String filterRangeDatesStringFormat, String filterRangeStartDateString, String filterRangeEndDateString, String dateTimeStampToCompareSparqlName, boolean inGroupBy) {
 
         query.appendSelect(instantSparqlName);
         query.appendSelect(dateTimeStampToCompareSparqlName);
@@ -729,7 +754,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
         query.appendToBody("\nBIND(<" + Xsd.FUNCTION_DATETIME.toString() + ">(str(" + dateTimeStampToCompareSparqlName + ")) as " + DATETIME_SELECT_NAME_SPARQL + ") .");
 
-        if (filterRangeStartDateString != null){
+        if (filterRangeStartDateString != null) {
             filterSearchQueryWithDateTimeStampComparison(
                     query,
                     filterRangeStartDateString,
@@ -738,7 +763,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
                     " <= ",
                     DATETIME_SELECT_NAME_SPARQL);
         }
-        if (filterRangeEndDateString != null){
+        if (filterRangeEndDateString != null) {
             filterSearchQueryWithDateTimeStampComparison(
                     query,
                     filterRangeEndDateString,
@@ -750,7 +775,9 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
 
     /**
-     * Inserts an Instant linked to the given URI in the given graph with the given date value.
+     * Inserts an Instant linked to the given URI in the given graph with the
+     * given date value.
+     *
      * @param updateBuilder
      * @param graph
      * @param resourceLinkedToInstant
@@ -773,7 +800,9 @@ public class EventDAO extends Rdf4jDAO<Event> {
     }
 
     /**
-     * Adds a delete statement to an update builder for an Instant linked to the given URI in the given graph. 
+     * Adds a delete statement to an update builder for an Instant linked to the
+     * given URI in the given graph.
+     *
      * @param updateBuilder
      * @param graph
      * @param linkedResource
@@ -791,6 +820,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
     /**
      * Return instant from BindingSet string value
+     *
      * @param bindingSet
      * @param instantUriSelectName
      * @param dateTimeStampSelectName
@@ -799,13 +829,14 @@ public class EventDAO extends Rdf4jDAO<Event> {
     public static Instant getInstantFromBindingSet(BindingSet bindingSet, String instantUriSelectName, String dateTimeStampSelectName) {
         String instantDateTimeString = getStringValueOfSelectNameFromBindingSet(dateTimeStampSelectName, bindingSet);
         String instantUri = getStringValueOfSelectNameFromBindingSet(instantUriSelectName, bindingSet);
-        DateTime InstantDateTime = 
-                Dates.stringToDateTimeWithGivenPattern(instantDateTimeString, DateFormat.YMDTHMSZZ.toString());
+        DateTime InstantDateTime
+                = Dates.stringToDateTimeWithGivenPattern(instantDateTimeString, DateFormat.YMDTHMSZZ.toString());
         return new Instant(instantUri, InstantDateTime);
     }
 
     /**
      * Builds a Literal date from a Datetime date.
+     *
      * @param datetime
      * @return
      */

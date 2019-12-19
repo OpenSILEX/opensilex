@@ -39,10 +39,6 @@
         <relativePath>../opensilex-parent/pom.xml</relativePath>
     </parent>
 
-    <properties>
-        <skipFrontBuild>true</skipFrontBuild>
-    </properties>
-    
     <dependencies>
         <!-- Web app JS library Manage js file from maven @see http://www.webjars.org/documentation#servlet3 
         The ressource namespace META-INF.resources.webjars.jquery.2.1.4 contains 

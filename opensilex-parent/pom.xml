@@ -538,9 +538,6 @@
                     
                     <executions>
                         <execution>
-                            <configuration>
-                                <skip>${skipOutdated}</skip>
-                            </configuration>
                             <phase>generate-resources</phase>
                             <goals>
                                 <goal>display-dependency-updates</goal>
@@ -784,7 +781,6 @@
                 <artifactId>maven-site-plugin</artifactId>
                 <version>${maven.site.plugin.version}</version>
                 <configuration>
-                    <source>8</source>
                     <locales>en</locales>
                     <!-- see below to enable multilang doc -->
                     <!--<locales>en,fr</locales>-->

@@ -304,12 +304,20 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 Oeev.concerns.getURI());
         
         // for each event, set its properties and concerned Items
-        try {
-            TupleQueryResult eventsResult = eventsTupleQuery.evaluate();
+        try ( TupleQueryResult eventsResult = eventsTupleQuery.evaluate()){
+           
+            boolean first = true;
             while (eventsResult.hasNext()) {
                 BindingSet bindingSet = eventsResult.next();
+                //Patch for a bindingSet of type EmptyBindingSet (an empty line) 
+                if (first) {
                 int i = bindingSet.size();
-                    if (i > 0) { // Graphdb fix 
+                    if (i == 0) {
+                        break;
+                    }
+                    first = false;
+                }
+
                     Event event = getEventFromBindingSet(bindingSet);
 
                     // Instant
@@ -331,8 +339,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
                     events.add(event);
                     }
-                }
-        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+        } catch (RepositoryException | MalformedQueryException | QueryEvaluationException ex) {
             handleTriplestoreException(ex);
         }
        

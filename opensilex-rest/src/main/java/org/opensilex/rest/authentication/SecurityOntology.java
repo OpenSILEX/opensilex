@@ -35,5 +35,10 @@ public class SecurityOntology {
     public static final Property hasProfile = Ontology.property(NAMESPACE, "hasProfile");
     public static final Property hasAccess = Ontology.property(NAMESPACE, "hasAccess");
     public static final Property isAdmin = Ontology.property(NAMESPACE, "isAdmin");
+    
+    public static final Resource Profile = Ontology.resource(NAMESPACE, "Profile");
+    
+    public static final Property hasName = Ontology.property(NAMESPACE, "hasName");
+    public static final Property hasCredential = Ontology.property(NAMESPACE, "hasCredential");
 
 }

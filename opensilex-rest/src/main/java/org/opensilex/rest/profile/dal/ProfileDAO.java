@@ -1,0 +1,91 @@
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
+package org.opensilex.rest.profile.dal;
+
+import java.net.URI;
+import java.util.List;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.sparql.expr.Expr;
+import org.opensilex.rest.authentication.SecurityOntology;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.OrderBy;
+import org.opensilex.utils.ListWithPagination;
+
+/**
+ * @author vincent
+ */
+public class ProfileDAO {
+
+    private SPARQLService sparql;
+
+    public ProfileDAO(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    public ProfileModel create(
+            URI uri,
+            String name,
+            List<String> credentials
+    ) throws Exception {
+        ProfileModel profile = new ProfileModel();
+        profile.setUri(uri);
+        profile.setName(name);
+        profile.setCredentials(credentials);
+
+        sparql.create(profile);
+
+        return profile;
+    }
+
+    public ProfileModel get(URI uri) throws Exception {
+        return sparql.getByURI(ProfileModel.class, uri);
+    }
+
+    public void delete(URI instanceURI) throws Exception {
+        sparql.delete(ProfileModel.class, instanceURI);
+    }
+
+    public ProfileModel update(
+            URI uri,
+            String name,
+            List<String> credentials
+    ) throws Exception {
+        ProfileModel user = new ProfileModel();
+        ProfileModel profile = new ProfileModel();
+        profile.setUri(uri);
+        profile.setName(name);
+        profile.setCredentials(credentials);
+
+        sparql.update(profile);
+
+        return user;
+    }
+
+    public ListWithPagination<ProfileModel> search(String namePattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+
+        Expr nameFilter = SPARQLQueryHelper.regexFilter(ProfileModel.NAME_FIELD, namePattern);
+
+        return sparql.searchWithPagination(
+                ProfileModel.class,
+                (SelectBuilder select) -> {
+                    if (nameFilter != null) {
+                        select.addFilter(nameFilter);
+                    }
+                },
+                orderByList,
+                page,
+                pageSize
+        );
+    }
+
+    public ProfileModel profileNameExists(String name) throws Exception {
+        return sparql.getByUniquePropertyValue(ProfileModel.class,
+                SecurityOntology.hasName,
+                name
+        );
+    }
+}

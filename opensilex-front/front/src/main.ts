@@ -103,6 +103,7 @@ const manageError = function manageError(error) {
   console.error(error);
   document.getElementById('opensilex-error-loading').style.visibility = 'visible';
 }
+
 // Load default components
 console.debug("Load default components...");
 import components from './components';
@@ -110,6 +111,9 @@ for (let componentName in components) {
   console.debug("Load default component", componentName);
   Vue.component(componentName, components[componentName]);
 }
+
+// Load d3
+import * as d3 from 'd3'
 
 $opensilex.initAsyncComponents(components)
   .then(() => {

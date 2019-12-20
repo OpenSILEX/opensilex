@@ -1,5 +1,43 @@
 {
-    "fr": {
-        "hello": "Bievenue sur opensilex"
+    "en-US": {
+        "component": {
+            "common": {
+                
+            },
+            "menu": {
+                "dashboard": "Tableau de bord",
+                "data": "Données",
+                "experiments": "Expérimentations",
+                "installations": "Installations",
+                "projects": "Projets",
+                "scientificObjects": "Objets Scientifiques",
+                "equipments": {
+                    "label": "Matériel",
+                    "sensors": "Capteurs",
+                    "actuators": "Activateurs",
+                    "vectors": "Vecteurs",
+                    "radiometricTargets": "Cibles Radiométriques"
+                },
+                "security": {
+                    "label": "Securité",
+                    "users": "Utilisateurs",
+                    "groups": "Groupes",
+                    "profiles": "Profils"
+                }
+            },
+            "login": {
+                "input": {
+                    "email": "Email",
+                    "password": "Mot de passe"
+                },
+                "button": {
+                    "login": "Connexion"
+                },
+                "copyright": "Copyright © 2019 - 2020 INRA All Rights Reserved PHIS - Phenotyping Hybrid Information System - Version {version} du {date}"
+            },
+            "footer": {
+                "copyright": "Copyright © 2019 - 2020 INRA All Rights Reserved. PHIS {version} version du {date}"
+            }
+        }
     }
 }

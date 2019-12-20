@@ -1,21 +1,92 @@
 menu: 
+  - id: dashboard
+    label: component.menu.dashboard
+    icon: ik-grid
+    route: 
+      path: /users
+      component: opensilex-UserView
+      credentials: []
+  - id: data
+    label: component.menu.data
+    icon: ik-trending-up
+    route: 
+      path: /users
+      component: opensilex-UserView
+      credentials: []
+  - id: experiments
+    label: component.menu.experiments
+    icon: ik-layers
+    route: 
+      path: /users
+      component: opensilex-UserView
+      credentials: []
+  - id: installations
+    label: component.menu.installations
+    icon: ik-globe
+  - id: projects
+    label: component.menu.projects
+    icon: ik-folder
+    route: 
+      path: /users
+      component: opensilex-UserView
+      credentials: []
+  - id: scientificObjects
+    label: component.menu.scientificObjects
+    icon: ik-target
+    route: 
+      path: /users
+      component: opensilex-UserView
+      credentials: []
+  - id: equipments
+    label: component.menu.equipments.label
+    icon: ik-aperture
+    route: 
+      path: /users
+      component: opensilex-UserView
+      credentials: []
+    children:
+      - id: sensors
+        label: component.menu.equipments.sensors
+        route: 
+          path: /users
+          component: opensilex-UserView
+          credentials: []
+      - id: actuators
+        label: component.menu.equipments.actuators
+        route: 
+          path: /users
+          component: opensilex-UserView
+          credentials: []
+      - id: vectors
+        label: component.menu.equipments.vectors
+        route: 
+          path: /users
+          component: opensilex-UserView
+          credentials: []
+      - id: radiometricTargets
+        label: component.menu.equipments.radiometricTargets
+        route: 
+          path: /users
+          component: opensilex-UserView
+          credentials: []
   - id: security
-    label: Security
+    label: component.menu.security.label
+    icon: ik-lock
     children:
       - id: users
-        label: Users
+        label: component.menu.security.users
         route: 
           path: /users
           component: opensilex-UserView
           credentials: []
       - id: groups
-        label: Groups
+        label: component.menu.security.groups
         route: 
           path: /groups
           component: opensilex-GroupList
           credentials: []
       - id: profiles
-        label: Profiles
+        label: component.menu.security.profiles
         route: 
           path: /profiles
           component: opensilex-ProfileList

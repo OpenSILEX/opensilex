@@ -1,26 +1,30 @@
 <template>
-  <div id="page-wrapper">
-    <header v-if="!embed">
-      <div id="header-content">
-        <component class="header-logo" v-bind:is="headerComponent"></component>
-        <component class="header-login" v-bind:is="loginComponent"></component>
-      </div>
+  <div id="page-wrapper" class="wrapper customized">
+
+    <header class="header-top" header-theme="light" v-if="!embed">
+      <component class="header-logo" v-bind:is="headerComponent"></component>
+      <component class="header-login" v-bind:is="loginComponent"></component>
     </header>
-    <section id="content-wrapper">
+
+    <section id="content-wrapper" class="page-wrap" v-if="user.isLoggedIn()">
       <component v-if="!embed" v-bind:is="menuComponent"></component>
+
       <main>
         <router-view />
       </main>
+
+      <footer v-if="!embed" class="footer fixed-bottom">
+        <component v-bind:is="footerComponent"></component>
+      </footer>
     </section>
-    <footer v-if="!embed">
-      <component v-bind:is="footerComponent"></component>
-    </footer>
+    
     <div id="loader" v-bind:class="{'visible':isLoaderVisible}">
       <div class="lds-ripple">
         <div></div>
         <div></div>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -58,6 +62,11 @@ export default class App extends Vue {
 
 <style lang="scss">
 @import "../styles/styles";
+
+@import "../node_modules/icon-kit/dist/css/iconkit.min.css";
+
+@import "../styles/theme.css";
+@import "../styles/main.css";
 
 #loader {
   display: none;
@@ -122,12 +131,7 @@ export default class App extends Vue {
 }
 
 header {
-  padding: 5px 30px;
-  min-height: 50px;
-  color: white;
   display: flex;
-  background-color: getVar(--highlightBackgroundColorLight);
-  color: getVar(--defaultColorDark);
 }
 
 main {
@@ -150,9 +154,6 @@ main {
   width: 30%;
   text-align: right;
 }
-#header-content .header-login * {
-  text-align: initial;
-}
 
 section#content-wrapper {
   display: -webkit-flex;
@@ -168,19 +169,4 @@ main {
   width: 100%;
 }
 
-@media (max-width: 600px) {
-  section#content-wrapper {
-    -webkit-flex-direction: column;
-    flex-direction: column;
-  }
-
-  #header-content .header-login {
-    text-align: left;
-  }
-
-  #page-wrapper {
-    min-width: 100vw;
-    display: inline-flex;
-  }
-}
 </style>

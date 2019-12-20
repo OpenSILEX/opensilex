@@ -1,5 +1,9 @@
 <template>
-  <div>HOME</div>
+  <div class="main-content">
+      <div class="container-fluid">
+          
+      </div>
+  </div> 
 </template>
 
 <script lang="ts">

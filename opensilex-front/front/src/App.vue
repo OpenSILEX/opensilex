@@ -1,12 +1,12 @@
 <template>
   <div id="page-wrapper" class="wrapper customized">
 
-    <header class="header-top" header-theme="light" v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() }">
+    <header class="header-top" header-theme="light" v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
       <component class="header-logo" v-bind:is="headerComponent"></component>
       <component class="header-login" v-bind:is="loginComponent"></component>
     </header>
 
-    <section id="content-wrapper" class="page-wrap" v-if="user.isLoggedIn()">
+    <section id="content-wrapper" class="page-wrap" v-if="user.isLoggedIn() && !disconnected">
       <component v-if="!embed" v-bind:is="menuComponent"></component>
 
       <main>
@@ -46,6 +46,10 @@ export default class App extends Vue {
   @Prop() footerComponent!: string | Component;
 
   $opensilex: OpenSilexVuePlugin;
+
+  get disconnected() {
+    return this.$store.state.disconnected;
+  }
 
   get user() {
     return this.$store.state.user;

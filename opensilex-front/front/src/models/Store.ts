@@ -71,7 +71,8 @@ export default new Vuex.Store({
     loaderVisible: false,
     openSilexRouter: new OpenSilexRouter(),
     config: defaultConfig,
-    menu: menu
+    menu: menu,
+    disconnected: false
   },
   mutations: {
     login(state, user: User) {
@@ -139,6 +140,7 @@ export default new Vuex.Store({
 
       console.debug("Set user to anonymous");
       state.user = User.logout();
+      state.disconnected = true;
       console.debug("Reset router");
       state.openSilexRouter.resetRouter(state.user);
       console.debug("Reset menu");

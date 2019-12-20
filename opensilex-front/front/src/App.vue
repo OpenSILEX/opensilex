@@ -1,7 +1,7 @@
 <template>
   <div id="page-wrapper" class="wrapper customized">
 
-    <header class="header-top" header-theme="light" v-if="!embed">
+    <header class="header-top" header-theme="light" v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() }">
       <component class="header-logo" v-bind:is="headerComponent"></component>
       <component class="header-login" v-bind:is="loginComponent"></component>
     </header>
@@ -167,6 +167,10 @@ section#content-wrapper {
 main {
   padding: 15px;
   width: 100%;
+}
+
+.header-top.logged-out {
+  box-shadow: none;
 }
 
 </style>

@@ -167,11 +167,6 @@ section#content-wrapper {
 main {
   padding: 15px;
   width: 100%;
-  margin-top: 60px;
-}
-
-.wrapper .page-wrap .app-sidebar {
-  position: relative;
 }
 
 </style>

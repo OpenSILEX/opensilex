@@ -7,7 +7,8 @@ package org.opensilex.rest.security.api;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.Map;
+import java.util.List;
+import javax.validation.Valid;
 
 /**
  *
@@ -18,7 +19,7 @@ public class CredentialsGroupDTO {
 
     private String groupId;
 
-    private Map<String, String> credentials;
+    private List<CredentialDTO> credentials;
 
     @ApiModelProperty(value = "Credential group identifier", example = "Security")
     public String getGroupId() {
@@ -29,12 +30,13 @@ public class CredentialsGroupDTO {
         this.groupId = groupId;
     }
 
-    @ApiModelProperty(value = "Credentials Map", dataType = "Map[string,string]", reference = "Map")
-    public Map<String, String> getCredentials() {
+    @Valid()
+    @ApiModelProperty(value = "Credentials Map",  dataType = "List[org.opensilex.rest.security.api.CredentialDTO]", reference = "List")
+    public List<CredentialDTO> getCredentials() {
         return credentials;
     }
 
-    public void setCredentials(Map<String, String> credentials) {
+    public void setCredentials(List<CredentialDTO> credentials) {
         this.credentials = credentials;
     }
 

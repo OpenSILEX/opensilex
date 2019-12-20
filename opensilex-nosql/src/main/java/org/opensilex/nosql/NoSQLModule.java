@@ -23,4 +23,5 @@ public class NoSQLModule extends OpenSilexModule {
     public String getConfigId() {
         return "big-data";
     }
+
 }

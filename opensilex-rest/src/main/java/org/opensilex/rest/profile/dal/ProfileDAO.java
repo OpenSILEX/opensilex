@@ -82,10 +82,12 @@ public class ProfileDAO {
         );
     }
 
-    public ProfileModel profileNameExists(String name) throws Exception {
-        return sparql.getByUniquePropertyValue(ProfileModel.class,
+    public ProfileModel getProfileByName(String name) throws Exception {
+        ProfileModel profile = sparql.getByUniquePropertyValue(ProfileModel.class,
                 SecurityOntology.hasName,
                 name
         );
+
+        return profile;
     }
 }

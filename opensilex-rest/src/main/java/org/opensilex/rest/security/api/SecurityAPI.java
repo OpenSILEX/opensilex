@@ -199,18 +199,25 @@ public class SecurityAPI {
      * @return Map of existing application credential.
      */
     @GET
-    @Path("credentials-map")
-    @ApiOperation(value = "Get list of existing credentials by group in the application")
+    @Path("credentials")
+    @ApiOperation(value = "Get list of existing credentials indexed by Swagger @API concepts in the application")
     @ApiResponses({
         @ApiResponse(code = 200, message = "List of existing credentials by group in the application", response = CredentialsGroupDTO.class, responseContainer = "List")
     })
-    public Response getCredentialsMap() {
+    public Response getCredentialsGroups() {
         if (credentialsGroupList == null) {
             SecurityAccessDAO securityDAO = new SecurityAccessDAO(sparql);
             credentialsGroupList = new ArrayList<>();
-            securityDAO.getCredentialsGroups().forEach((String groupId, Map<String, String> credentials) -> {
+            securityDAO.getCredentialsGroups().forEach((String groupId, Map<String, String> credentialMap) -> {
                 CredentialsGroupDTO credentialsGroup = new CredentialsGroupDTO();
                 credentialsGroup.setGroupId(groupId);
+                List<CredentialDTO> credentials = new ArrayList<>();
+                credentialMap.forEach((id, label) -> {
+                    CredentialDTO credential = new CredentialDTO();
+                    credential.setId(id);
+                    credential.setLabel(label);
+                    credentials.add(credential);
+                });
                 credentialsGroup.setCredentials(credentials);
                 credentialsGroupList.add(credentialsGroup);
             });

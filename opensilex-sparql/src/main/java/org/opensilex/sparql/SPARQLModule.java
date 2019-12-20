@@ -27,7 +27,7 @@ public class SPARQLModule extends OpenSilexModule {
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLModule.class);
 
     public final static String ONTOLOGY_BASE_DOMAIN = "http://www.opensilex.org/";
-    
+
     @Override
     public Class<? extends ModuleConfig> getConfigClass() {
         return SPARQLConfig.class;
@@ -58,7 +58,6 @@ public class SPARQLModule extends OpenSilexModule {
         });
         URIDeserializer.setPrefixes(sparql.getPrefixes());
 
-        
         SPARQLConfig cfg = OpenSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         sparql.addPrefix(cfg.baseURIAlias(), cfg.baseURI());
 
@@ -88,4 +87,5 @@ public class SPARQLModule extends OpenSilexModule {
     public static URI getPlatformDomainGraphURI(String graphSuffix) throws URISyntaxException {
         return new URI(getPlatformURI().toString() + graphSuffix);
     }
+
 }

@@ -23,4 +23,5 @@ public class FileStorageModule extends OpenSilexModule {
     public String getConfigId() {
         return "file-system";
     }
+
 }

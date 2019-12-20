@@ -48,7 +48,7 @@
           </b-button>
           <b-button
             size="sm"
-            v-if="user.admin && user.email != data.item.email"
+            v-if="user.admin"
             @click="$emit('onDelete', data.item.uri)"
             variant="danger"
           >
@@ -70,11 +70,11 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { UserService, UserGetDTO } from "opensilex-rest/index";
+import { UserService, UserGetDTO, ProfileService } from "opensilex-rest/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
 
 @Component
-export default class UserList extends Vue {
+export default class ProfileList extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
@@ -86,7 +86,7 @@ export default class UserList extends Vue {
   currentPage: number = 1;
   pageSize = 20;
   totalRow = 0;
-  sortBy = "firstName";
+  sortBy = "name";
   sortDesc = false;
 
   private filterPatternValue: any = "";
@@ -120,23 +120,14 @@ export default class UserList extends Vue {
 
   fields = [
     {
-      key: "firstName",
+      key: "name",
       sortable: true
     },
     {
-      key: "lastName",
-      sortable: true
-    },
-    {
-      key: "email",
-      sortable: true
+      key: "credentials"
     },
     {
       key: "uri",
-      sortable: true
-    },
-    {
-      key: "admin",
       sortable: true
     },
     {
@@ -150,8 +141,8 @@ export default class UserList extends Vue {
   }
 
   loadData() {
-    let service: UserService = this.$opensilex.getService(
-      "opensilex.UserService"
+    let service: ProfileService = this.$opensilex.getService(
+      "opensilex.ProfileService"
     );
 
     let orderBy = [];
@@ -165,7 +156,7 @@ export default class UserList extends Vue {
     }
 
     return service
-      .searchUsers(
+      .searchProfiles(
         this.user.getAuthorizationHeader(),
         this.filterPattern,
         orderBy,

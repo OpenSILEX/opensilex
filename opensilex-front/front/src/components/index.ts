@@ -7,6 +7,9 @@ import DefaultNotFoundComponent from './layout/DefaultNotFoundComponent.vue';
 import UserForm from './users/UserForm.vue';
 import UserList from './users/UserList.vue';
 import UserView from './users/UserView.vue';
+import ProfileForm from './profiles/ProfileForm.vue';
+import ProfileView from './profiles/ProfileView.vue';
+import ProfileList from './profiles/ProfileList.vue';
 import ToDoComponent from './layout/ToDoComponent.vue';
 
 export default {
@@ -19,5 +22,8 @@ export default {
     'opensilex-UserForm': UserForm,
     'opensilex-UserList': UserList,
     'opensilex-UserView': UserView,
+    'opensilex-ProfileForm': ProfileForm,
+    'opensilex-ProfileView': ProfileView,
+    'opensilex-ProfileList': ProfileList,
     'opensilex-ToDoComponent': ToDoComponent
 };

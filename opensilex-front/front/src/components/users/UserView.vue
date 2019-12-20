@@ -14,7 +14,7 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { UserCreationDTO, UserUpdateDTO, UserService } from "opensilex-rest/index";
+import { UserCreationDTO, UserUpdateDTO, UserService, UserGetDTO } from "opensilex-rest/index";
 
 @Component
 export default class UserView extends Vue {
@@ -61,7 +61,7 @@ export default class UserView extends Vue {
     );
   }
 
-  editUser(form: UserCreationDTO) {
+  editUser(form: UserGetDTO) {
     let userForm: any = this.$refs.userForm;
     userForm.showEditForm(form);
   }

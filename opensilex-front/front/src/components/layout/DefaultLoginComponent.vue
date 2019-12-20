@@ -1,45 +1,63 @@
 <template>
-  <div>
-    <a id="logout" href="#" @click.prevent="logout">
-      <span>Logout: {{user.getFirstName()}}</span>&nbsp;
-      <font-awesome-icon icon="power-off" size="lg" />
-    </a>
-    <div class="fullmodal" v-if="!user.isLoggedIn() || forceRefresh">
-      <b-form @submit.prevent="onLogin" class="fullmodal-form">
-        <h2>Welcome to opensilex</h2>
-        <b-form-group
-          id="login-group"
-          label="Login:"
-          label-for="email"
-          required
-          description="Please enter your email."
-        >
-          <b-form-input
-            id="email"
-            type="email"
-            v-model="form.email"
-            required
-            placeholder="Enter your email"
-          ></b-form-input>
-        </b-form-group>
-        <b-form-group
-          id="password-group"
-          label="Password:"
-          label-for="password"
-          required
-          description="Please enter your password."
-        >
-          <b-form-input
-            id="password"
-            type="password"
-            v-model="form.password"
-            required
-            placeholder="Enter your password"
-          ></b-form-input>
-        </b-form-group>
-        <b-button type="reset" variant="danger">Clear</b-button>&nbsp;
-        <b-button type="submit" variant="primary">Login</b-button>
-      </b-form>
+  <div class="fullmodal auth-wrapper" v-if="!user.isLoggedIn() || forceRefresh">
+    <div class="container-fluid h-100">
+      <div class="row flex-row h-100 bg-white">
+        <div class="col-xl-8 col-lg-6 col-md-5 p-0 d-md-block d-lg-block d-sm-none d-none">
+            <div class="lavalite-bg" style="background-image: url('opensilex-login-bg.jpg')">
+                <div class="lavalite-overlay"></div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-lg-6 col-md-7 my-auto p-0">
+          <div class="authentication-form mx-auto">
+            <div class="logo-centered">
+                <img src="logo-phis-lg.png" alt="">
+            </div>
+            <b-form @submit.prevent="onLogin" class="fullmodal-form">
+                <b-form-group
+                  id="login-group"
+                  required
+                >
+                  <b-form-input
+                    id="email"
+                    type="email"
+                    v-model="form.email"
+                    required
+                    :placeholder="$t('component.login.input.email')"
+                  ></b-form-input>
+                  <i class="ik ik-user"></i>
+                </b-form-group>
+
+                <b-form-group
+                  id="password-group"
+                  required
+                >
+                  <b-form-input
+                    id="password"
+                    type="password"
+                    v-model="form.password"
+                    required
+                    :placeholder="$t('component.login.input.password')"
+                  ></b-form-input>
+                  <i class="ik ik-lock"></i>
+                </b-form-group>
+                <div class="row">
+                    <div class="col text-left">
+                        <label class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="item_checkbox" name="item_checkbox" value="option1">
+                            <span class="custom-control-label">&nbsp;Remember Me</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="sign-btn text-center">
+                    <b-button type="submit" variant="primary" v-text="$t('component.login.button.login')"></b-button>
+                </div>
+            </b-form>
+            <div class="trademark">
+                <p>{{ $t('component.login.copyright') }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -108,7 +126,6 @@ export default class DefaultLoginComponent extends Vue {
 </script>
 
 <style scoped lang="scss">
-@import "../../../styles/styles";
 
 .fullmodal {
   display: block;
@@ -120,34 +137,6 @@ export default class DefaultLoginComponent extends Vue {
   height: 100%;
   width: 100%;
   z-index: 9999;
-  background: getVar(--defaultColorLight);
 }
 
-.fullmodal-form {
-  position: relative;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 50%;
-  margin: auto;
-}
-
-#logout {
-  color: getVar(--linkColor);
-  display: inline-block;
-}
-
-#logout:hover {
-  color: getVar(--linkHighlightColor);
-}
-
-#logout > font-awesome-icon {
-  vertical-align: text-bottom;
-  font-size: 24px;
-}
-
-@media (max-width: 600px) {
-  #logout > span {
-    display: none;
-  }
-}
 </style>

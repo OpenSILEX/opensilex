@@ -87,6 +87,9 @@ library.add(faPowerOff, faTimes, faTrashAlt, faEdit);
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 console.debug("FontAwesomeIcon plugin initialized !");
 
+// Initialize i18n
+import VueI18n from 'vue-i18n'
+Vue.use(VueI18n)
 
 // Enable Vue front plugin manager for OpenSilex API
 console.debug("Enable OpenSilex plugin...");
@@ -100,6 +103,7 @@ const manageError = function manageError(error) {
   console.error(error);
   document.getElementById('opensilex-error-loading').style.visibility = 'visible';
 }
+
 // Load default components
 console.debug("Load default components...");
 import components from './components';
@@ -107,6 +111,9 @@ for (let componentName in components) {
   console.debug("Load default component", componentName);
   Vue.component(componentName, components[componentName]);
 }
+
+// Load d3
+import * as d3 from 'd3'
 
 $opensilex.initAsyncComponents(components)
   .then(() => {

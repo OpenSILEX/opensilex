@@ -65,12 +65,10 @@ export default class App extends Vue {
 <i18n src="./lang/message-fr.json"></i18n>
 
 <style lang="scss">
-@import "../styles/styles";
 
 @import "../node_modules/icon-kit/dist/css/iconkit.min.css";
-
-@import "../styles/theme.css";
-@import "../styles/main.css";
+@import '../node_modules/bootstrap/scss/bootstrap';
+@import '../node_modules/bootstrap-vue/src/index.scss';
 
 #loader {
   display: none;

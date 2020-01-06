@@ -10,3 +10,4 @@ node_modules/
 **/front/types
 opensilex-doc/src/main/resources/generated/
 **/opensilex.dev.ts
+**/inrae-sixtine

@@ -9,12 +9,12 @@
         "check:outdated": "npm outdated || cd ."
     },
     "devDependencies": {
-        "@vue/cli-plugin-babel": "^4.1.0",
-        "@vue/cli-plugin-eslint": "^4.1.0",
-        "@vue/cli-plugin-router": "^4.1.0",
-        "@vue/cli-plugin-typescript": "^4.1.0",
-        "@vue/cli-plugin-vuex": "^4.1.0",
-        "@vue/cli-service": "^4.1.0",
+        "@vue/cli-plugin-babel": "4.1.2",
+        "@vue/cli-plugin-eslint": "4.1.2",
+        "@vue/cli-plugin-router": "4.1.2",
+        "@vue/cli-plugin-typescript": "4.1.2",
+        "@vue/cli-plugin-vuex": "4.1.2",
+        "@vue/cli-service": "4.1.2",
         "@vue/eslint-config-typescript": "^5.0.1"
     },
     "eslintConfig": {

@@ -78,6 +78,12 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             config.setMenuComponent(frontConfig.menuComponent());
             config.setFooterComponent(frontConfig.footerComponent());
 
+            String[] themeId = frontConfig.theme().split("#");
+            if (themeId.length == 2) {
+                config.setThemeModule(themeId[0]);
+                config.setThemeName(themeId[1]);
+            }
+            
             List<MenuItemDTO> globalMenu = new ArrayList<>();
             List<RouteDTO> globalRoutes = new ArrayList<>();
 

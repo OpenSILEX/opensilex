@@ -33,7 +33,7 @@ import { Component as ComponentAnnotation, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import { ModuleComponentDefinition } from "./models/ModuleComponentDefinition";
 import { VueConstructor, Component } from "vue";
-import { OpenSilexVuePlugin } from "./models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin from "./models/OpenSilexVuePlugin";
 import { FrontConfigDTO } from "./lib";
 
 @ComponentAnnotation

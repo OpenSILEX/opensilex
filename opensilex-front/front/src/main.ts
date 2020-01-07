@@ -28,13 +28,13 @@ if (window["webpackHotUpdate"]) {
 }
 
 // Initialise logger
-console.log = console.log || function() {};
+console.log = console.log || function () { };
 console.warn = console.warn || console.log;
 console.error = console.error || console.log;
 if (isDebug) {
   console.debug = console.debug || console.log;
 } else {
-  console.debug = function() {};
+  console.debug = function () { };
 }
 console.debug("Logger initialized in debug mode");
 
@@ -57,11 +57,11 @@ import store from './models/Store'
 // Local imports
 console.debug("Import local files...");
 import App from './App.vue'
-import { FrontConfigDTO, FrontService } from './lib'
-import HttpResponse from './lib/HttpResponse'
+import { FrontConfigDTO, FrontService, ThemeConfigDTO } from './lib'
+import HttpResponse, { OpenSilexResponse } from './lib/HttpResponse'
 import { User } from './models/User'
 import { ModuleComponentDefinition } from './models/ModuleComponentDefinition'
-import { OpenSilexVuePlugin } from './models/OpenSilexVuePlugin'
+import OpenSilexVuePlugin from './models/OpenSilexVuePlugin'
 console.debug("Local file imports done !");
 
 // Initialize cookie management library
@@ -80,9 +80,9 @@ console.debug("Bootstrap plugin initialized !");
 console.debug("Initialize FontAwesomeIcon plugin...");
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faPowerOff, faTimes, faTrashAlt, faEdit} from '@fortawesome/free-solid-svg-icons'
-import {  } from '@fortawesome/free-solid-svg-icons'
-import { }from '@fortawesome/free-solid-svg-icons'
+import { faPowerOff, faTimes, faTrashAlt, faEdit } from '@fortawesome/free-solid-svg-icons'
+import { } from '@fortawesome/free-solid-svg-icons'
+import { } from '@fortawesome/free-solid-svg-icons'
 library.add(faPowerOff, faTimes, faTrashAlt, faEdit);
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 console.debug("FontAwesomeIcon plugin initialized !");
@@ -112,6 +112,31 @@ for (let componentName in components) {
   Vue.component(componentName, components[componentName]);
 }
 
+function loadTheme(frontService: FrontService, config: FrontConfigDTO) {
+  return new Promise((resolve, reject) => {
+    if (config.themeModule && config.themeName) {
+      frontService.getThemeConfig(config.themeModule, config.themeName)
+        .then((http: HttpResponse<OpenSilexResponse<ThemeConfigDTO>>) => {
+          if (http.response.result.hasStyle) {
+            const cssURI = baseApi + "/front/theme/" + encodeURIComponent(config.themeModule) + "/" + encodeURIComponent(config.themeName) + "/style.css";
+            var link = document.createElement('link');
+            link.setAttribute("rel", "stylesheet");
+            link.setAttribute("type", "text/css");
+            link.onload = resolve;
+            link.onerror = reject;
+            link.setAttribute("href", cssURI);
+            document.getElementsByTagName("head")[0].appendChild(link);
+          } else {
+            resolve();
+          }
+        })
+        .catch(reject)
+    } else {
+      resolve();
+    }
+  })
+}
+
 // Load d3
 import * as d3 from 'd3'
 
@@ -125,93 +150,98 @@ $opensilex.initAsyncComponents(components)
     frontService.getConfig()
       .then(function (configResponse) {
         const config: FrontConfigDTO = configResponse.response.result;
-        store.commit("setConfig", config);
-        console.debug("Configuration loaded", config);
 
-        let urlParams = new URLSearchParams(window.location.search);
-        console.debug("Read url parameters", urlParams);
+        let themePromise: Promise<any> = loadTheme(frontService, config);
 
-        // Load only necessary component if application is embed in an iframe
-        let embed = urlParams.has('embed');
+        themePromise.then(() => {
+          store.commit("setConfig", config);
+          console.debug("Configuration loaded", config);
 
-        if (embed) {
-          console.debug("Application is embed");
-        } else {
-          console.debug("Application is not embed");
-        }
+          let urlParams = new URLSearchParams(window.location.search);
+          console.debug("Read url parameters", urlParams);
 
-        // Define user
-        console.debug("Define current user...");
-        let user: User | undefined = undefined;
-        if (urlParams.has("token")) {
-          let token = urlParams.get("token");
-          console.debug("Try to load user from URL token...");
-          if (token != null) {
-            user = User.fromToken(token);
-            console.debug("User sucessfully loaded from URL token !");
+          // Load only necessary component if application is embed in an iframe
+          let embed = urlParams.has('embed');
+
+          if (embed) {
+            console.debug("Application is embed");
+          } else {
+            console.debug("Application is not embed");
           }
-        }
 
-        if (user == undefined) {
-          console.debug("Try to load user from cookie...");
-          user = User.fromCookie();
-          console.debug("User sucessfully loaded from cookie !");
-        }
+          // Define user
+          console.debug("Define current user...");
+          let user: User | undefined = undefined;
+          if (urlParams.has("token")) {
+            let token = urlParams.get("token");
+            console.debug("Try to load user from URL token...");
+            if (token != null) {
+              user = User.fromToken(token);
+              console.debug("User sucessfully loaded from URL token !");
+            }
+          }
 
-        if (!user.isLoggedIn()) {
-          console.debug("User is ANONYMOUS !");
-        } else {
-          console.debug("User is:", user.getEmail());
-        }
-        // Init user
-        console.debug("Initialize global user");
-        store.commit("login", user);
+          if (user == undefined) {
+            console.debug("Try to load user from cookie...");
+            user = User.fromCookie();
+            console.debug("User sucessfully loaded from cookie !");
+          }
 
-        // Init routing
-        console.debug("Initialize routing");
-        let router = store.state.openSilexRouter.getRouter();
+          if (!user.isLoggedIn()) {
+            console.debug("User is ANONYMOUS !");
+          } else {
+            console.debug("User is:", user.getEmail());
+          }
+          // Init user
+          console.debug("Initialize global user");
+          store.commit("login", user);
 
-        // Initalise main layout components from configuration
-        console.debug("Define initial modules to load...");
-        let modulesToLoad: ModuleComponentDefinition[] = [
-          ModuleComponentDefinition.fromString(config.homeComponent),
-          ModuleComponentDefinition.fromString(config.notFoundComponent)
-        ];
+          // Init routing
+          console.debug("Initialize routing");
+          let router = store.state.openSilexRouter.getRouter();
 
-        if (!embed) {
-          console.debug("Application is not embed");
-          modulesToLoad = modulesToLoad.concat([
-            ModuleComponentDefinition.fromString(config.footerComponent),
-            ModuleComponentDefinition.fromString(config.headerComponent),
-            ModuleComponentDefinition.fromString(config.loginComponent),
-            ModuleComponentDefinition.fromString(config.menuComponent)
-          ]);
-        } else {
-          console.debug("Application is embed");
-        }
+          // Initalise main layout components from configuration
+          console.debug("Define initial modules to load...");
+          let modulesToLoad: ModuleComponentDefinition[] = [
+            ModuleComponentDefinition.fromString(config.homeComponent),
+            ModuleComponentDefinition.fromString(config.notFoundComponent)
+          ];
 
-        $opensilex.loadComponentModules(modulesToLoad)
-          .then(() => {
-            // Initialize main application rendering
-            console.debug("Initialize main application rendering");
-            new Vue({
-              router,
-              store,
-              render: h => h(App, {
-                props: {
-                  embed: embed,
-                  footerComponent: config.footerComponent,
-                  headerComponent: config.headerComponent,
-                  loginComponent: config.loginComponent,
-                  menuComponent: config.menuComponent
-                }
-              },
-              )
-            }).$mount('#app').$nextTick(() => {
-              // Hide loader
-              console.debug("Hide application init loader");
-              document.getElementById('opensilex-loader').style.visibility = 'hidden';
-            });
-          })
+          if (!embed) {
+            console.debug("Application is not embed");
+            modulesToLoad = modulesToLoad.concat([
+              ModuleComponentDefinition.fromString(config.footerComponent),
+              ModuleComponentDefinition.fromString(config.headerComponent),
+              ModuleComponentDefinition.fromString(config.loginComponent),
+              ModuleComponentDefinition.fromString(config.menuComponent)
+            ]);
+          } else {
+            console.debug("Application is embed");
+          }
+
+          $opensilex.loadComponentModules(modulesToLoad)
+            .then(() => {
+              // Initialize main application rendering
+              console.debug("Initialize main application rendering");
+              new Vue({
+                router,
+                store,
+                render: h => h(App, {
+                  props: {
+                    embed: embed,
+                    footerComponent: config.footerComponent,
+                    headerComponent: config.headerComponent,
+                    loginComponent: config.loginComponent,
+                    menuComponent: config.menuComponent
+                  }
+                },
+                )
+              }).$mount('#app').$nextTick(() => {
+                // Hide loader
+                console.debug("Hide application init loader");
+                document.getElementById('opensilex-loader').style.visibility = 'hidden';
+              });
+            })
+        })
       })
   })

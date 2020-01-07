@@ -1,9 +1,9 @@
 import { User } from './User';
-import { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin';
 import Vue from 'vue';
-import { ModuleComponentDefinition } from '@/models/ModuleComponentDefinition';
-import { MenuItemDTO, FrontConfigDTO } from '@/lib';
+import { ModuleComponentDefinition } from './ModuleComponentDefinition';
+import { MenuItemDTO, FrontConfigDTO } from '../lib';
 import VueRouter from 'vue-router';
+import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 
 export class OpenSilexRouter {
 

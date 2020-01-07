@@ -37,6 +37,10 @@ public class FrontConfigDTO {
     @NotNull
     List<RouteDTO> routes;
 
+    String themeModule;
+
+    String themeName;
+
     @ApiModelProperty(value = "Home component identifier", example = "opensilex-DefaultHomeComponent")
     public String getHomeComponent() {
         return homeComponent;
@@ -100,13 +104,31 @@ public class FrontConfigDTO {
         this.menu = menu;
     }
 
-     @ApiModelProperty(value = "List of configured routes")
+    @ApiModelProperty(value = "List of configured routes")
     public List<RouteDTO> getRoutes() {
         return routes;
     }
 
     public void setRoutes(List<RouteDTO> routes) {
         this.routes = routes;
+    }
+
+    @ApiModelProperty(value = "Theme module identifier")
+    public String getThemeModule() {
+        return themeModule;
+    }
+
+    public void setThemeModule(String themeModule) {
+        this.themeModule = themeModule;
+    }
+
+    @ApiModelProperty(value = "Theme module name")
+    public String getThemeName() {
+        return themeName;
+    }
+
+    public void setThemeName(String themeName) {
+        this.themeName = themeName;
     }
 
 }

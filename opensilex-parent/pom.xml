@@ -734,6 +734,35 @@
                 </executions>
             </plugin>
        
+            <!-- Copy front theme files if exists -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven.resources.plugin.version}</version>
+                <executions>
+                    <!-- Copy Vue.js opensilex configuration into generated Jar file -->
+                    <execution>
+                        <id>Copy Vue theme files</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipFrontBuild}</skip>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${basedir}/target/classes/front/theme</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>front/theme</directory>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
             <!--Generate tests artifact--> 
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>

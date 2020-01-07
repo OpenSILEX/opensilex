@@ -1,10 +1,10 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { User } from '@/models/User'
+import { User } from './User'
 import VueRouter from 'vue-router';
 import { FrontConfigDTO, MenuItemDTO } from '../lib';
 import { OpenSilexRouter } from './OpenSilexRouter';
-import { OpenSilexVuePlugin } from './OpenSilexVuePlugin';
+import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import { SecurityService } from 'opensilex-rest/index';
 
 Vue.use(Vuex)

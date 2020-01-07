@@ -1,7 +1,7 @@
-import { ApiServiceBinder, IAPIConfiguration } from '@/lib';
+import { ApiServiceBinder, IAPIConfiguration } from '../lib';
 import { Container } from 'inversify';
-import IHttpClient from '@/lib/IHttpClient';
-import HttpClient from '@/lib/HttpClient';
+import IHttpClient from '../lib/IHttpClient';
+import HttpClient from '../lib/HttpClient';
 import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import Vue from 'vue';
 import { User } from './User';
@@ -9,7 +9,7 @@ import { Store } from 'vuex';
 
 declare var window: any;
 
-export class OpenSilexVuePlugin {
+export default class OpenSilexVuePlugin {
 
     private container: Container;
     private baseApi: string;

@@ -15,7 +15,7 @@ big-data:
             host: localhost
             port: 8668
             database: opensilex
-    
+
 phisws:
     postgreSQL:
         host: localhost

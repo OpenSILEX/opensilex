@@ -65,7 +65,7 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import { OpenSilexVuePlugin } from "../../models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { User } from "../../models/User";
 import { SecurityService, TokenGetDTO } from "opensilex-rest/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
@@ -80,7 +80,8 @@ export default class DefaultLoginComponent extends Vue {
   }
 
   $store: any;
-
+  $router: any;
+  
   get user() {
     return this.$store.state.user;
   }

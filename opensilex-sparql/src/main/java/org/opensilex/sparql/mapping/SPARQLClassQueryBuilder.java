@@ -5,34 +5,35 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
+import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.sparql.core.TriplePath;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.lang.sparql_11.ParseException;
+import org.apache.jena.sparql.syntax.ElementNamedGraph;
+import org.apache.jena.vocabulary.RDF;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.utils.Ontology;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
-import java.util.logging.Level;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.lang.sparql_11.ParseException;
-import org.apache.jena.vocabulary.RDF;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.typeDefVar;
-import org.opensilex.sparql.annotations.SPARQLProperty;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.model.SPARQLModelRelation;
-import org.opensilex.sparql.utils.Ontology;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- *
  * @author vincent
  */
 public class SPARQLClassQueryBuilder {
@@ -53,25 +54,32 @@ public class SPARQLClassQueryBuilder {
         if (selectBuilder == null) {
             selectBuilder = new SelectBuilder();
 
-            if (graph != null) {
-                selectBuilder.from(graph.toString());
-            }
-
             String uriFieldName = analyzer.getURIFieldName();
             selectBuilder.addVar(uriFieldName);
             selectBuilder.addVar(typeDefVar);
-            selectBuilder.addWhere(makeVar(uriFieldName), RDF.type, typeDefVar);
-            selectBuilder.addWhere(typeDefVar, Ontology.subClassAny, analyzer.getRDFType());
+
+            // WhereHandler used for adding all WHERE clause
+            WhereHandler rootWhereHandler = new WhereHandler();
+            rootWhereHandler.addWhere(selectBuilder.makeTriplePath(makeVar(uriFieldName), RDF.type, typeDefVar));
+            rootWhereHandler.addWhere(selectBuilder.makeTriplePath(typeDefVar, Ontology.subClassAny, analyzer.getRDFType()));
 
             analyzer.forEachDataProperty((Field field, Property property) -> {
                 selectBuilder.addVar(field.getName());
-                addSelectProperty(selectBuilder, uriFieldName, property, field);
+                addSelectProperty(selectBuilder, uriFieldName, property, field, rootWhereHandler);
             });
 
             analyzer.forEachObjectProperty((Field field, Property property) -> {
                 selectBuilder.addVar(field.getName());
-                addSelectProperty(selectBuilder, uriFieldName, property, field);
+                addSelectProperty(selectBuilder, uriFieldName, property, field, rootWhereHandler);
             });
+
+            // add the rootWhereHandler inside a GRAPH clause
+            if (graph != null) {
+                ElementNamedGraph elementNamedGraph = new ElementNamedGraph(graph, rootWhereHandler.getElement());
+                selectBuilder.getWhereHandler().getClause().addElement(elementNamedGraph);
+            } else {
+                selectBuilder.getHandlerBlock().addAll(rootWhereHandler);
+            }
         }
 
         return selectBuilder.clone();
@@ -104,28 +112,32 @@ public class SPARQLClassQueryBuilder {
         if (countBuilder == null) {
             countBuilder = new SelectBuilder();
 
-            if (graph != null) {
-                countBuilder.from(graph.toString());
-            }
-
             String uriFieldName = analyzer.getURIFieldName();
             try {
-                // TODO generate properly count/distinct trought Jena API 
+                // TODO generate properly count/distinct trought Jena API
                 countBuilder.addVar("(COUNT(DISTINCT ?" + uriFieldName + "))", makeVar(countFieldName));
             } catch (ParseException ex) {
                 LOGGER.error("Error while building count query (should never happend)", ex);
-
             }
-            countBuilder.addWhere(makeVar(uriFieldName), RDF.type, typeDefVar);
-            countBuilder.addWhere(typeDefVar, Ontology.subClassAny, analyzer.getRDFType());
+            WhereHandler rootWhereHandler = new WhereHandler();
+            rootWhereHandler.addWhere(countBuilder.makeTriplePath(makeVar(uriFieldName), RDF.type, typeDefVar));
+            rootWhereHandler.addWhere(countBuilder.makeTriplePath(typeDefVar, Ontology.subClassAny, analyzer.getRDFType()));
 
             analyzer.forEachDataProperty((Field field, Property property) -> {
-                addSelectProperty(countBuilder, uriFieldName, property, field);
+                addSelectProperty(countBuilder, uriFieldName, property, field, rootWhereHandler);
             });
 
             analyzer.forEachObjectProperty((Field field, Property property) -> {
-                addSelectProperty(countBuilder, uriFieldName, property, field);
+                addSelectProperty(countBuilder, uriFieldName, property, field, rootWhereHandler);
             });
+
+            // add the rootWhereHandler inside a GRAPH clause
+            if (graph != null) {
+                ElementNamedGraph elementNamedGraph = new ElementNamedGraph(graph, rootWhereHandler.getElement());
+                countBuilder.getWhereHandler().getClause().addElement(elementNamedGraph);
+            } else {
+                countBuilder.getHandlerBlock().addAll(rootWhereHandler);
+            }
         }
 
         return countBuilder.clone();
@@ -255,21 +267,36 @@ public class SPARQLClassQueryBuilder {
         }, false);
     }
 
-    private void addSelectProperty(SelectBuilder select, String uriFieldName, Property property, Field field) {
+    /**
+     * Add the WHERE clause into handler, depending if the given field is optional or not,
+     * according {@link #analyzer}
+     *
+     * @param select       the root {@link SelectBuilder}, needed in order to create the {@link TriplePath} to add
+     *                     to the handler
+     * @param uriFieldName name of the uri SPARQL variable
+     * @param property     the {@link Property} to add
+     * @param field        the property corresponding {@link Field}
+     * @param handler      the {@link WhereHandler} in which the where clause is added when the field is required
+     * @see SPARQLClassAnalyzer#isOptional(Field)
+     * @see SelectBuilder#makeTriplePath(Object, Object, Object)
+     */
+    private void addSelectProperty(SelectBuilder select, String uriFieldName, Property property, Field field,
+                                   WhereHandler handler) {
+
         Var uriFieldVar = makeVar(uriFieldName);
         Var propertyFieldVar = makeVar(field.getName());
 
         if (analyzer.isReverseRelation(field)) {
             if (analyzer.isOptional(field)) {
-                select.addOptional(propertyFieldVar, property, uriFieldVar);
+                handler.addOptional(select.makeTriplePath(propertyFieldVar, property, uriFieldVar));
             } else {
-                select.addWhere(propertyFieldVar, property, uriFieldVar);
+                handler.addWhere(select.makeTriplePath(propertyFieldVar, property, uriFieldVar));
             }
         } else {
             if (analyzer.isOptional(field)) {
-                select.addOptional(uriFieldVar, property, propertyFieldVar);
+                handler.addOptional(select.makeTriplePath(uriFieldVar, property, propertyFieldVar));
             } else {
-                select.addWhere(uriFieldVar, property, propertyFieldVar);
+                handler.addWhere(select.makeTriplePath(uriFieldVar, property, propertyFieldVar));
             }
         }
     }
@@ -291,12 +318,14 @@ public class SPARQLClassQueryBuilder {
 
     private void executeOnInstanceTriples(Object instance, BiConsumer<Triple, Field> tripleHandler, boolean ignoreNullFields) throws Exception {
         URI uri = analyzer.getURI(instance);
-        Node uriNode  = SPARQLDeserializers.getForClass(URI.class).getNodeFromString(uri.toString());
+        Node uriNode = SPARQLDeserializers.getForClass(URI.class).getNodeFromString(uri.toString());
 
         tripleHandler.accept(new Triple(uriNode, RDF.type.asNode(), analyzer.getRDFType().asNode()), analyzer.getURIField());
 
         for (Field field : analyzer.getDataPropertyFields()) {
-            Object fieldValue = analyzer.getGetterFromField(field).invoke(instance);
+            Method method = analyzer.getGetterFromField(field);
+            // prevent NullPointerException if the method is not found from the analyser
+            Object fieldValue = method != null ? method.invoke(instance) : null;
 
             if (fieldValue == null) {
                 if (!ignoreNullFields && !analyzer.isOptional(field)) {
@@ -311,7 +340,8 @@ public class SPARQLClassQueryBuilder {
         }
 
         for (Field field : analyzer.getObjectPropertyFields()) {
-            Object fieldValue = analyzer.getGetterFromField(field).invoke(instance);
+            Method method = analyzer.getGetterFromField(field);
+            Object fieldValue = method != null ? method.invoke(instance) : null;
 
             if (fieldValue == null) {
                 if (!ignoreNullFields && !analyzer.isOptional(field)) {
@@ -331,7 +361,8 @@ public class SPARQLClassQueryBuilder {
         }
 
         for (Field field : analyzer.getDataListPropertyFields()) {
-            List<?> fieldValues = (List<?>) analyzer.getGetterFromField(field).invoke(instance);
+            Method method = analyzer.getGetterFromField(field);
+            List<?> fieldValues = method != null ? (List<?>) method.invoke(instance) : null;
 
             if (fieldValues != null) {
                 Property property = analyzer.getDataListPropertyByField(field);
@@ -344,7 +375,8 @@ public class SPARQLClassQueryBuilder {
         }
 
         for (Field field : analyzer.getObjectListPropertyFields()) {
-            List<?> fieldValues = (List<?>) analyzer.getGetterFromField(field).invoke(instance);
+            Method method = analyzer.getGetterFromField(field);
+            List<?> fieldValues = method != null ? (List<?>) method.invoke(instance) : null;
 
             if (fieldValues != null) {
                 for (Object listValue : fieldValues) {

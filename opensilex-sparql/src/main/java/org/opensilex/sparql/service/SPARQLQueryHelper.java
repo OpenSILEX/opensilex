@@ -45,7 +45,7 @@ public class SPARQLQueryHelper {
 
     public static final Var typeDefVar = makeVar("__type");
 
-    public static <T> Var getUriFieldVar(Class<T> objectClass) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+    public final static <T> Var getUriFieldVar(Class<T> objectClass) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
         SPARQLClassObjectMapper<SPARQLResourceModel> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
         return makeVar(mapper.getURIFieldName());
     }

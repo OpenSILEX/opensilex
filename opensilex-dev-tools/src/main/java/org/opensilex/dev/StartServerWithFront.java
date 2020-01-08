@@ -100,6 +100,7 @@ public class StartServerWithFront {
 
         Path moduleDirectory = currentDirectory.resolve("../opensilex-front/front");
         createConfigMonitor(moduleDirectory, targetDirectory);
+        createThemeMonitor(moduleDirectory, targetDirectory);
 
         List<String> args = new ArrayList<>();
         args.add(currentDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
@@ -180,7 +181,7 @@ public class StartServerWithFront {
         return frontBuilder.start();
     }
 
-    public static void createConfigMonitor(Path moduleDirectory, Path targetDirectory) throws Exception {
+    private static void createConfigMonitor(Path moduleDirectory, Path targetDirectory) throws Exception {
         File configFile = moduleDirectory.resolve(FrontModule.FRONT_CONFIG_FILE).toFile();
         if (configFile.exists()) {
             copyConfig(configFile, targetDirectory);
@@ -214,12 +215,102 @@ public class StartServerWithFront {
     private static void copyConfig(File configFile, Path targetDirectory) {
         try {
             FileUtils.copyFile(configFile, targetDirectory.resolve(FrontModule.FRONT_CONFIG_FILE).toFile());
-            String pseudoScript = "export default { \"last-dev-update\": " + System.currentTimeMillis() + "};";
-            PrintWriter prw = new PrintWriter(currentDirectory.resolve("../opensilex-front/front/src/opensilex.dev.ts").toFile());
-            prw.println(pseudoScript);
-            prw.close();
+            triggerHotReload();
         } catch (IOException ex) {
             LOGGER.error("Error while copying config file: " + configFile.getName(), ex);
+        }
+    }
+
+    private static void createThemeMonitor(Path moduleDirectory, Path targetDirectory) throws Exception {
+        File themeFolder = moduleDirectory.resolve("theme").toFile();
+        Path themeDestFolder = targetDirectory.resolve("theme");
+
+        if (themeFolder.exists() && themeFolder.isDirectory()) {
+            initDevTheme(themeFolder, themeDestFolder.toFile());
+            FileAlterationObserver configObserver = new FileAlterationObserver(themeFolder.getCanonicalPath());
+            FileAlterationMonitor configMonitor = new FileAlterationMonitor(200);
+
+            FileAlterationListener configListener = new FileAlterationListenerAdaptor() {
+
+                @Override
+                public void onFileCreate(File file) {
+                    try {
+                        String srcFilePath = file.getCanonicalPath();
+                        String srcBasePath = themeFolder.getCanonicalPath();
+                        if (srcFilePath.startsWith(srcBasePath)) {
+                            String srcFileRelativePath = srcFilePath.substring(srcBasePath.length() + 1);
+                            File destFile = themeDestFolder.resolve(srcFileRelativePath).toFile();
+                            FileUtils.copyFile(file, destFile);
+                            triggerHotReload();
+
+                        }
+                    } catch (IOException ex) {
+                        LOGGER.error("Error while updating theme file", ex);
+                    }
+                }
+
+                @Override
+                public void onFileDelete(File file) {
+                    try {
+                        String srcFilePath = file.getCanonicalPath();
+                        String srcBasePath = themeFolder.getCanonicalPath();
+                        if (srcFilePath.startsWith(srcBasePath)) {
+                            String srcFileRelativePath = srcFilePath.substring(srcBasePath.length() + 1);
+                            File destFile = themeDestFolder.resolve(srcFileRelativePath).toFile();
+                            
+                            FileUtils.deleteDirectory(destFile);
+                            triggerHotReload();
+
+                        }
+                    } catch (IOException ex) {
+                        LOGGER.error("Error while deleting theme file", ex);
+                    }
+                }
+
+                @Override
+                public void onFileChange(File file) {
+                    this.onFileCreate(file);
+                }
+
+            };
+            configObserver.addListener(configListener);
+            configMonitor.addObserver(configObserver);
+            configMonitor.start();
+        }
+    }
+
+    private static void initDevTheme(File themeFolder, File targetDirectory) {
+
+        try {
+            if (targetDirectory.exists()) {
+                FileUtils.deleteDirectory(targetDirectory);
+            }
+        } catch (IOException ex) {
+            LOGGER.warn("Error while deleting theme directory: " + themeFolder.getAbsolutePath(), ex);
+        }
+
+        try {
+            FileUtils.forceMkdir(targetDirectory);
+            FileUtils.copyDirectory(themeFolder, targetDirectory);
+            triggerHotReload();
+
+        } catch (IOException ex) {
+            LOGGER.error("Error while copying theme directory: " + themeFolder.getAbsolutePath(), ex);
+        }
+
+    }
+
+    private static void triggerHotReload() {
+        PrintWriter prw = null;
+        try {
+            String pseudoScript = "export default { \"last-dev-update\": " + System.currentTimeMillis() + "};";
+            prw = new PrintWriter(currentDirectory.resolve("../opensilex-front/front/src/opensilex.dev.ts").toFile());
+            prw.println(pseudoScript);
+            prw.close();
+        } catch (FileNotFoundException ex) {
+            LOGGER.error("Error while trying to trigger vue js hot reload", ex);
+        } finally {
+            prw.close();
         }
     }
 

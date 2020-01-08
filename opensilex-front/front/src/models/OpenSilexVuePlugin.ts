@@ -1,4 +1,4 @@
-import { ApiServiceBinder, IAPIConfiguration } from '../lib';
+import { ApiServiceBinder, IAPIConfiguration, FrontConfigDTO } from '../lib';
 import { Container } from 'inversify';
 import IHttpClient from '../lib/IHttpClient';
 import HttpClient from '../lib/HttpClient';
@@ -13,6 +13,7 @@ export default class OpenSilexVuePlugin {
 
     private container: Container;
     private baseApi: string;
+    private config: FrontConfigDTO;
     public $store: Store<any>;
 
     constructor(baseApi: string, store: Store<any>) {
@@ -24,6 +25,23 @@ export default class OpenSilexVuePlugin {
         this.baseApi = baseApi;
         this.$store = store;
         ApiServiceBinder.with(this.container);
+    }
+
+    getResourceURI(path: string): string {
+        if (this.config.themeModule && this.config.themeName) {
+            let resourceURI = this.baseApi + "/front/theme/" + encodeURIComponent(this.config.themeModule) + "/" + encodeURIComponent(this.config.themeName) + "/resource";
+            return resourceURI + "?filePath=" + encodeURIComponent(path);
+        } else {
+            return "/app/" + path;
+        }
+    }
+
+    setConfig(config: FrontConfigDTO) {
+        this.config = config;
+    }
+
+    getConfig() {
+        return this.config;
     }
 
     showLoader() {

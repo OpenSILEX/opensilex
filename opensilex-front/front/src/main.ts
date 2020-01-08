@@ -150,7 +150,8 @@ $opensilex.initAsyncComponents(components)
     frontService.getConfig()
       .then(function (configResponse) {
         const config: FrontConfigDTO = configResponse.response.result;
-
+        $opensilex.setConfig(config);
+        
         let themePromise: Promise<any> = loadTheme(frontService, config);
 
         themePromise.then(() => {

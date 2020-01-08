@@ -126,7 +126,7 @@ public class SPARQLQueryHelper {
      *         null if sparqlVarName is empty or null or if object is null
      * @see ExprFactory#eq(Object, Object)
      */
-    public static Expr eq(String sparqlVarName, Node node) {
+    public static E_Equals eq(String sparqlVarName, Node node) {
 
         if (StringUtils.isEmpty(sparqlVarName) || node == null) {
             return null;

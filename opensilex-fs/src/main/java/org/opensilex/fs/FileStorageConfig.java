@@ -20,4 +20,8 @@ public interface FileStorageConfig extends ModuleConfig {
     )
     public FileStorageService fs();
 
+    @ConfigDescription(
+        value = "Base path for file storage"
+    )
+    public String storageBasePath();
 }

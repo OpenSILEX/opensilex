@@ -6,7 +6,7 @@ ontologies:
             serverURI: http://localhost:8667/rdf4j-server/
             repository: opensilex
 
-rest:    
+file-system:    
     storageBasePath: <TO CONFIGURE>  
     
 big-data:   

@@ -6,7 +6,7 @@ ontologies:
             serverURI: http://localhost:8667/rdf4j-server/
             repository: opensilex
 
-rest:    
+file-system:    
     storageBasePath: <TO CONFIGURE>  
     
 big-data:   
@@ -18,7 +18,11 @@ big-data:
 
 front:
     theme: inrae-sixtine#sixtine
-
+    loginComponent: inrae-sixtine-SixtineLoginComponent
+    footerComponent: inrae-sixtine-SixtineFooterComponent
+    menuComponent: inrae-sixtine-SixtineMenuComponent
+    headerComponent: inrae-sixtine-SixtineHeaderComponent
+    
 phisws:
     postgreSQL:
         host: localhost

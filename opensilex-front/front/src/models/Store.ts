@@ -166,6 +166,12 @@ export default new Vuex.Store({
     toggleMenu(state) {
       state.menuVisible = !state.menuVisible;
     },
+    hideMenu(state) {
+      state.menuVisible = false;
+    },
+    showMenu(state) {
+      state.menuVisible = true;
+    },
     refresh(state) {
       state.openSilexRouter.refresh();
     }

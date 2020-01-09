@@ -58,6 +58,10 @@ export default class DefaultMenuComponent extends Vue {
   get menuVisible() {
     return this.$store.state.menuVisible;
   }
+
+  toggleMenu() {
+    this.$store.commit("toggleMenu");
+  }
 }
 </script>
 

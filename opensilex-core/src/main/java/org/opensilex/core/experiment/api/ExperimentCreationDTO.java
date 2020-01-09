@@ -8,34 +8,43 @@ package org.opensilex.core.experiment.api;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.rest.security.dal.GroupModel;
+import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.rest.validation.NullOrNotEmpty;
 import org.opensilex.rest.validation.Required;
+import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
- *
- * @author vidalmor
+ * @author Vincent MIGOT
  */
 public class ExperimentCreationDTO {
 
     private URI uri;
 
+    private Integer campaign;
+
     @Required
     private String alias;
 
-    private List<URI> projects;
+    private List<URI> projects = Collections.emptyList();
 
     @Required
     private String startDate;
 
     private String endDate;
 
-    private List<URI> scientificSupervisors;
+    private List<URI> scientificSupervisors = Collections.emptyList();
 
-    private List<URI> technicalSupervisors;
+    private List<URI> technicalSupervisors = Collections.emptyList();
 
-    private List<URI> groups;
+    private List<URI> groups = Collections.emptyList();
 
     private String objectives;
 
@@ -123,6 +132,14 @@ public class ExperimentCreationDTO {
         this.keywords = keywords;
     }
 
+    public Integer getCampaign() {
+        return campaign;
+    }
+
+    public void setCampaign(Integer campaign) {
+        this.campaign = campaign;
+    }
+
     public String getComment() {
         return comment;
     }
@@ -131,25 +148,54 @@ public class ExperimentCreationDTO {
         this.comment = comment;
     }
 
+
     public ExperimentModel newModel() {
+
         ExperimentModel model = new ExperimentModel();
         model.setUri(getUri());
-        model.setAlias(getAlias());
+        model.setLabel(getAlias());
+        model.setStartDate(LocalDate.parse(startDate));
 
-        List<ProjectModel> ps = new ArrayList<>();
-        getProjects().forEach((URI u) -> {
-            ProjectModel project = new ProjectModel();
-            project.setUri(u);
-            ps.add(project);
-        });
-        model.setProjects(ps);
-
-        model.setStartDate(LocalDate.parse(getStartDate()));
-        model.setEndDate(LocalDate.parse(getEndDate()));
-        
+        if (endDate != null) {
+            model.setEndDate(LocalDate.parse(endDate));
+        }
         model.setObjectives(getObjectives());
         model.setComment(getComment());
-        
+        model.setKeywords(keywords);
+        model.setCampaign(campaign);
+
+        List<ProjectModel> projectList = new ArrayList<>(projects.size());
+        projects.forEach((URI u) -> {
+            ProjectModel project = new ProjectModel();
+            project.setUri(u);
+            projectList.add(project);
+        });
+        model.setProjects(projectList);
+
+        List<UserModel> scientificList = new ArrayList<>(scientificSupervisors.size());
+        scientificSupervisors.forEach((URI u) -> {
+            UserModel user = new UserModel();
+            user.setUri(u);
+            scientificList.add(user);
+        });
+        model.setScientificSupervisors(scientificList);
+
+        List<UserModel> technicalList = new ArrayList<>(technicalSupervisors.size());
+        technicalSupervisors.forEach((URI u) -> {
+            UserModel user = new UserModel();
+            user.setUri(u);
+            technicalList.add(user);
+        });
+        model.setTechnicalSupervisors(technicalList);
+
+        List<GroupModel> groupList = new ArrayList<>(groups.size());
+        groups.forEach((URI u) -> {
+            GroupModel group = new GroupModel();
+            group.setUri(u);
+            groupList.add(group);
+        });
+        model.setGroups(groupList);
+
         return model;
     }
 

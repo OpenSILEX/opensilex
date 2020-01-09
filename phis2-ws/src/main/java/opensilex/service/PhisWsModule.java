@@ -39,7 +39,7 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension {
                 getConfig(PhisWsConfig.class),
                 app.loadConfigPath("ontologies.sparql.rdf4j", RDF4JConfig.class),
                 app.loadConfigPath("big-data.nosql.mongodb", MongoDBConfig.class),
-                app.loadConfigPath("rest.storageBasePath", String.class)
+                app.loadConfigPath("file-system.storageBasePath", String.class)
         );
     }
 

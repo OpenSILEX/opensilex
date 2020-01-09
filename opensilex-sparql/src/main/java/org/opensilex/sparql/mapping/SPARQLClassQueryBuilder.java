@@ -323,9 +323,7 @@ public class SPARQLClassQueryBuilder {
         tripleHandler.accept(new Triple(uriNode, RDF.type.asNode(), analyzer.getRDFType().asNode()), analyzer.getURIField());
 
         for (Field field : analyzer.getDataPropertyFields()) {
-            Method method = analyzer.getGetterFromField(field);
-            // prevent NullPointerException if the method is not found from the analyser
-            Object fieldValue = method != null ? method.invoke(instance) : null;
+            Object fieldValue = analyzer.getGetterFromField(field).invoke(instance);
 
             if (fieldValue == null) {
                 if (!ignoreNullFields && !analyzer.isOptional(field)) {
@@ -340,8 +338,7 @@ public class SPARQLClassQueryBuilder {
         }
 
         for (Field field : analyzer.getObjectPropertyFields()) {
-            Method method = analyzer.getGetterFromField(field);
-            Object fieldValue = method != null ? method.invoke(instance) : null;
+            Object fieldValue = analyzer.getGetterFromField(field).invoke(instance);
 
             if (fieldValue == null) {
                 if (!ignoreNullFields && !analyzer.isOptional(field)) {
@@ -361,8 +358,7 @@ public class SPARQLClassQueryBuilder {
         }
 
         for (Field field : analyzer.getDataListPropertyFields()) {
-            Method method = analyzer.getGetterFromField(field);
-            List<?> fieldValues = method != null ? (List<?>) method.invoke(instance) : null;
+            List<?> fieldValues = (List<?>) analyzer.getGetterFromField(field).invoke(instance);
 
             if (fieldValues != null) {
                 Property property = analyzer.getDataListPropertyByField(field);
@@ -375,8 +371,7 @@ public class SPARQLClassQueryBuilder {
         }
 
         for (Field field : analyzer.getObjectListPropertyFields()) {
-            Method method = analyzer.getGetterFromField(field);
-            List<?> fieldValues = method != null ? (List<?>) method.invoke(instance) : null;
+            List<?> fieldValues = (List<?>) analyzer.getGetterFromField(field).invoke(instance);
 
             if (fieldValues != null) {
                 for (Object listValue : fieldValues) {

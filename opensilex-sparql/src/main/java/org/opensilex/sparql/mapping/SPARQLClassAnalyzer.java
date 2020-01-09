@@ -158,7 +158,21 @@ public class SPARQLClassAnalyzer {
             }
         }
 
-        // TODO check that all SPARQL annotated fields has getter and setter for verification, should throw an exception
+        for (Field field : ClassUtils.getClassFieldsRecursivly(objectClass)) {
+
+            SPARQLProperty sProperty = field.getAnnotation(SPARQLProperty.class);
+            if(sProperty == null){
+                continue;
+            }
+            Method getter = getGetterFromField(field);
+            if(getter == null){
+                throw new SPARQLInvalidClassDefinitionException(objectClass,"no getter found for the field :"+field.getName());
+            }
+            Method setter = getSetterFromField(field);
+            if(setter == null){
+                throw new SPARQLInvalidClassDefinitionException(objectClass,"no setter found for the field :"+field.getName());
+            }
+        }
     }
 
     private void analyzeSPARQLPropertyField(SPARQLProperty sProperty, Field field) throws SPARQLInvalidClassDefinitionException {

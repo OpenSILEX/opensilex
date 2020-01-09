@@ -200,7 +200,7 @@ public class FrontAPI {
         String fileName = getFileName(filePath);
 
         if (module.fileExists(themeFilePath)) {
-            String mimeType = module.getFileMimeType(themeFilePath) 
+            String mimeType = module.getFileMimeType(themeFilePath);
             
             // Load file
             return Response

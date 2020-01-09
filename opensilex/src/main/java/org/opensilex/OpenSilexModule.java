@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.commons.io.IOUtils;
+import org.apache.tika.Tika;
 import org.opensilex.module.ModuleConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -202,6 +203,11 @@ public abstract class OpenSilexModule {
         return null;
     }
 
+    public String getFileMimeType(String filePath) throws IOException, URISyntaxException {
+        Tika tika = new Tika();
+        return tika.detect(getFileInputStream(filePath));
+    }
+    
     /**
      * List a directory inside a module
      *

@@ -57,7 +57,7 @@ import store from './models/Store'
 // Local imports
 console.debug("Import local files...");
 import App from './App.vue'
-import { FrontConfigDTO, FrontService, ThemeConfigDTO } from './lib'
+import { FrontConfigDTO, FrontService, ThemeConfigDTO, FontConfigDTO } from './lib'
 import HttpResponse, { OpenSilexResponse } from './lib/HttpResponse'
 import { User } from './models/User'
 import { ModuleComponentDefinition } from './models/ModuleComponentDefinition'
@@ -112,17 +112,69 @@ for (let componentName in components) {
   Vue.component(componentName, components[componentName]);
 }
 
+function loadFonts(frontService: FrontService, fonts: Array<FontConfigDTO>) {
+
+  for (let i in fonts) {
+    let font: FontConfigDTO = fonts[i];
+
+    console.debug("Loading font:", font.family);
+
+    let fontStyle = document.createElement('style');
+    let fontFace = [
+      "@font-face {",
+      "font-family: '" + font.family + "';",
+      "font-style: '" + font.style + "';",
+      "font-weight: '" + font.weight + "';",
+      "src: url('" + $opensilex.getResourceURI(font.url) + "');"
+    ];
+
+    let fontCount = Object.keys(font.src).length;
+    if (fontCount > 0) {
+      fontFace.push("src: local( '" + font.family + "'),");
+
+      let i = 0;
+      for (let typeFormat in font.src) {
+        i++;
+        let formatUrl = "url('" + $opensilex.getResourceURI(font.src[typeFormat]) + "') format('" + typeFormat + "')";
+        if (i == fontCount) {
+          formatUrl += ";"
+        } else {
+          formatUrl += ","
+        }
+
+        fontFace.push(formatUrl);
+      }
+    }
+
+    fontFace.push("}");
+
+    fontStyle.appendChild(document.createTextNode(fontFace.join("\n")));
+
+    document.head.appendChild(fontStyle);
+  }
+}
+
 function loadTheme(frontService: FrontService, config: FrontConfigDTO) {
   return new Promise((resolve, reject) => {
     if (config.themeModule && config.themeName) {
+      console.debug("Load defined theme configuration...", config.themeModule, config.themeName);
       frontService.getThemeConfig(config.themeModule, config.themeName)
         .then((http: HttpResponse<OpenSilexResponse<ThemeConfigDTO>>) => {
-          if (http.response.result.hasStyle) {
+          console.debug("Theme configuration loaded !", config.themeModule, config.themeName);
+          const themeConfig: ThemeConfigDTO = http.response.result;
+
+          loadFonts(frontService, themeConfig.fonts);
+
+          if (themeConfig.hasStyle) {
+            console.debug("Load CSS theme style...");
             const cssURI = baseApi + "/front/theme/" + encodeURIComponent(config.themeModule) + "/" + encodeURIComponent(config.themeName) + "/style.css";
             var link = document.createElement('link');
             link.setAttribute("rel", "stylesheet");
             link.setAttribute("type", "text/css");
-            link.onload = resolve;
+            link.onload = function () {
+              console.debug("CSS theme style loaded !");
+              resolve();
+            };
             link.onerror = reject;
             link.setAttribute("href", cssURI);
             document.getElementsByTagName("head")[0].appendChild(link);
@@ -132,6 +184,7 @@ function loadTheme(frontService: FrontService, config: FrontConfigDTO) {
         })
         .catch(reject)
     } else {
+      console.debug("No theme defined !");
       resolve();
     }
   })
@@ -151,7 +204,7 @@ $opensilex.initAsyncComponents(components)
       .then(function (configResponse) {
         const config: FrontConfigDTO = configResponse.response.result;
         $opensilex.setConfig(config);
-        
+
         let themePromise: Promise<any> = loadTheme(frontService, config);
 
         themePromise.then(() => {

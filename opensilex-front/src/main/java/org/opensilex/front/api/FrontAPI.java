@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.List;
-import javax.activation.MimetypesFileTypeMap;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Pattern;
@@ -39,7 +38,6 @@ import org.opensilex.OpenSilexModule;
 import org.opensilex.config.ConfigManager;
 import org.opensilex.front.theme.ThemeBuilder;
 import org.opensilex.front.theme.ThemeConfig;
-import org.opensilex.front.theme.ThemeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.server.exceptions.NotFoundException;
@@ -200,11 +198,10 @@ public class FrontAPI {
 
         String themeFilePath = getModuleFrontThemeResourcePath(themeId, filePath);
         String fileName = getFileName(filePath);
-        MimetypesFileTypeMap fileTypeMap = new MimetypesFileTypeMap();
-        String mimeType = fileTypeMap.getContentType(fileName);
 
         if (module.fileExists(themeFilePath)) {
-
+            String mimeType = module.getFileMimeType(themeFilePath) 
+            
             // Load file
             return Response
                     .ok(module.getFileInputStream(themeFilePath), mimeType)

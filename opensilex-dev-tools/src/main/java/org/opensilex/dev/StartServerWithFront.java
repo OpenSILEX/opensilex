@@ -135,6 +135,9 @@ public class StartServerWithFront {
         if (!targetDirectory.toFile().exists()) {
             Files.createDirectories(targetDirectory);
         }
+        
+        createThemeMonitor(moduleDirectory, targetDirectory);
+        
         String filename = moduleId + ".umd.min.js";
 
         FileAlterationObserver observer = new FileAlterationObserver(moduleDirectory.resolve("dist").toFile().getCanonicalPath());

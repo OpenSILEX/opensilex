@@ -1,7 +1,6 @@
 <template>
   <div id="page-wrapper" class="wrapper customized">
-
-    <header class="header-top" header-theme="light" v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
+    <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
       <component class="header-logo" v-bind:is="headerComponent"></component>
       <component class="header-login" v-bind:is="loginComponent"></component>
     </header>
@@ -13,11 +12,12 @@
         <router-view />
       </main>
 
-      <footer v-if="!embed" class="footer fixed-bottom">
-        <component v-bind:is="footerComponent"></component>
-      </footer>
     </section>
-    
+
+    <footer v-if="!embed">
+      <component v-bind:is="footerComponent"></component>
+    </footer>
+
     <div id="loader" v-bind:class="{'visible':isLoaderVisible}">
       <div class="lds-ripple">
         <div></div>

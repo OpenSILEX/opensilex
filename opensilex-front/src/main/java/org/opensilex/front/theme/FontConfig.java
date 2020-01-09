@@ -5,14 +5,21 @@
  */
 package org.opensilex.front.theme;
 
-import java.util.List;
+import java.util.Map;
 
-public interface ThemeConfig {
+/**
+ *
+ * @author vidalmor
+ */
+public interface FontConfig {
     
-    String favicon();
+    String family();
     
-    List<String> stylesheets();
+    String style();
     
-    List<FontConfig> fonts();
+    String weight();
     
+    String url();
+    
+    Map<String, String> src();
 }

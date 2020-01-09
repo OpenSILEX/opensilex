@@ -2,20 +2,10 @@
 * TEMPORARY STYLE OVERRIDE
 *********************************/
 
-.btn,
-.input-group .input-group-append .btn {
-    height: 38px;
-    min-width: 38px;
-}
-
 main {
     margin-top: 60px;
+    margin-left: 240px;
 }
-
-.wrapper .page-wrap .app-sidebar {
-    position: relative;
-}
-
 
 /*********************************
 * GLOBAL STYLE

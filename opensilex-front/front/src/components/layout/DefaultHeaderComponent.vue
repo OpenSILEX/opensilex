@@ -1,5 +1,6 @@
 <template>
-  <div class="container-fluid boxed-layout">
+<div>
+  <div class="header-top" header-theme="light">
     <div class="d-flex justify-content-end">
       <div class="top-menu d-flex align-items-center">
         <div class="dropdown">
@@ -36,6 +37,7 @@
       </div>
     </div>
   </div>
+</div>
 </template>
 
 <script lang="ts">

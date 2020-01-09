@@ -86,6 +86,7 @@
         <httpclient.version>4.5.10</httpclient.version>
         <httpcore.version>4.4.12</httpcore.version>
         <javaee.web.api.version>8.0.1</javaee.web.api.version>
+        <apache.tika.version>1.19.1</apache.tika.version>
         
         <!-- test only dependencies version -->
         <junit.version>4.13</junit.version>
@@ -281,6 +282,13 @@
             <groupId>org.jboss.narayana.jta</groupId>
             <artifactId>narayana-jta</artifactId>
             <version>${data.nucleus.jta.version}</version>
+        </dependency>
+        
+        <!-- Apache-Tika - Used for file mime type detection -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+             <version>${apache.tika.version}</version>
         </dependency>
         
         <!--JWT--> 

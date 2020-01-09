@@ -1,9 +1,9 @@
 <template>
-  <div class="app-sidebar" >
+  <div class="app-sidebar" v-if="menuVisible" >
     <div class="sidebar-header">
       <router-link class="header-brand" to="/">
         <div class="logo-img">
-          <img src="logo-phis.svg" class="header-brand-img" alt="lavalite" />
+          <img v-bind:src="$opensilex.getResourceURI('images/logo-phis.svg')" class="header-brand-img" alt="lavalite" />
         </div>
         <span class="text">
           PHIS
@@ -53,6 +53,10 @@ export default class DefaultMenuComponent extends Vue {
 
   get user() {
     return this.$store.state.user;
+  }
+
+  get menuVisible() {
+    return this.$store.state.menuVisible;
   }
 }
 </script>

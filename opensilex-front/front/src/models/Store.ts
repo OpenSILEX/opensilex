@@ -72,6 +72,7 @@ export default new Vuex.Store({
     openSilexRouter: new OpenSilexRouter(),
     config: defaultConfig,
     menu: menu,
+    menuVisible: true,
     disconnected: false
   },
   mutations: {
@@ -161,6 +162,9 @@ export default new Vuex.Store({
       if (loaderCount == 0) {
         state.loaderVisible = false
       }
+    },
+    toggleMenu(state) {
+      state.menuVisible = !state.menuVisible;
     },
     refresh(state) {
       state.openSilexRouter.refresh();

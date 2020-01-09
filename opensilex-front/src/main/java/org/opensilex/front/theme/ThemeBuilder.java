@@ -38,24 +38,18 @@ public class ThemeBuilder {
         for (String stylesheet : stylesheets) {
             String stylesheetFile = basePath + stylesheet;
             if (module.fileExists(stylesheetFile)) {
-                if (stylesheetFile.endsWith(".scss")) {
-                    globalCss += buildSass(stylesheetFile) + "\n";
-                } else {
-                    globalCss += IOUtils.toString(module.getFileInputStream(stylesheetFile), StandardCharsets.UTF_8.name()) + "\n";
-                }
-
+                globalCss += IOUtils.toString(module.getFileInputStream(stylesheetFile), StandardCharsets.UTF_8.name()) + "\n";
             }
         }
 
-        return globalCss;
+        return buildSass(globalCss);
     }
 
-    private String buildSass(String scssFile) throws IOException, URISyntaxException, CompilationException {
-        String scss = IOUtils.toString(module.getFileInputStream(scssFile), StandardCharsets.UTF_8.name());
+    private String buildSass(String scssContent) throws IOException, URISyntaxException, CompilationException {
         final Compiler compiler = new Compiler();
         Options options = new Options();
         options.setOutputStyle(OutputStyle.EXPANDED);
-        Output output = compiler.compileString(scss, options);
+        Output output = compiler.compileString(scssContent, options);
         return output.getCss();
     }
 

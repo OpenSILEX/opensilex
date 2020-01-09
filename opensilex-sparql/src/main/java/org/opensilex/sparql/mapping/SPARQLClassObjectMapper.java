@@ -5,14 +5,6 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiConsumer;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
@@ -24,9 +16,6 @@ import org.apache.jena.sparql.expr.E_StrLowerCase;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprVar;
 import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
-import org.opensilex.sparql.service.SPARQLResult;
-import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -34,10 +23,20 @@ import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLResult;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.URIGenerator;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.util.*;
+import java.util.function.BiConsumer;
 
 /**
  *
@@ -49,6 +48,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     private static Set<Class<?>> SPARQL_CLASSES_LIST;
     private static final Map<Class<?>, SPARQLClassObjectMapper<?>> SPARQL_CLASSES_MAPPER = new HashMap<>();
     private static final Map<Resource, SPARQLClassObjectMapper<?>> SPARQL_RESOURCES_MAPPER = new HashMap<>();
+    private static final List<Class<? extends SPARQLResourceModel>> SPARQL_RESOURCES_EXCLUSION_LIST = new ArrayList<>();
 
     private static <T> Class<? super T> getConcreteClass(Class<T> objectClass) {
         if (SPARQLProxyMarker.class.isAssignableFrom(objectClass)) {
@@ -67,6 +67,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         if (SPARQL_CLASSES_LIST == null) {
             SPARQL_CLASSES_LIST = ClassUtils.getAnnotatedClasses(SPARQLResource.class);
 
+            SPARQL_CLASSES_LIST.removeAll(SPARQL_RESOURCES_EXCLUSION_LIST);
+
             for (Class<?> sparqlModelClass : SPARQL_CLASSES_LIST) {
                 SPARQLClassObjectMapper<?> sparqlObjectMapper = new SPARQLClassObjectMapper<>((Class<? extends SPARQLResourceModel>) sparqlModelClass);
                 SPARQL_CLASSES_MAPPER.put(sparqlModelClass, sparqlObjectMapper);
@@ -74,6 +76,15 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             }
         }
 
+    }
+
+    /**
+     * Add a class to the initialization class exclusion list
+     * @param clazz the class to remove from initialization
+     * @see #initialize()
+     */
+    public static void excludeResourceClass(Class<? extends SPARQLResourceModel> clazz) {
+        SPARQL_RESOURCES_EXCLUSION_LIST.add(clazz);
     }
 
     @SuppressWarnings("unchecked")

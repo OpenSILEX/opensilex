@@ -80,29 +80,20 @@ public class SPARQLQueryHelperTest {
         assertTrue(endDatePart instanceof E_LessThanOrEqual);
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testWhereValuesFailWithNullSelect() throws Exception {
-        SPARQLQueryHelper.addWhereValues(null, null, null);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testWhereValuesFailWithNullVarName() throws Exception {
-        SPARQLQueryHelper.addWhereValues(new SelectBuilder(), null, null);
-    }
-
     @Test
-    public void testWhereValuesFailWithEmptyVarName() throws Exception {
+    public void testWhereValuesFailWithEmptyParams() throws Exception {
 
         SelectBuilder select = new SelectBuilder();
         SPARQLQueryHelper.addWhereValues(select, "", Collections.emptyList());
 
         Map<Var, List<Node>> whereValuesMap = select.getWhereValuesMap();
         assertTrue(whereValuesMap.isEmpty());
-    }
 
-    @Test(expected = NullPointerException.class)
-    public void testWhereValuesFailWithNullValues() throws Exception {
-        SPARQLQueryHelper.addWhereValues(new SelectBuilder(), "var", null);
+        select = new SelectBuilder();
+        SPARQLQueryHelper.addWhereValues(select, "varName", Collections.emptyList());
+
+        whereValuesMap = select.getWhereValuesMap();
+        assertTrue(whereValuesMap.isEmpty());
     }
 
     protected void testWhereValues(SelectBuilder select, Node var, List<?> objs) throws Exception {

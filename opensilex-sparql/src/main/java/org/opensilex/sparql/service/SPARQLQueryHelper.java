@@ -5,7 +5,6 @@
  */
 package org.opensilex.sparql.service;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
@@ -16,7 +15,6 @@ import org.apache.jena.sparql.expr.E_LogicalOr;
 import org.apache.jena.sparql.expr.E_Regex;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprVar;
-import org.apache.jena.sparql.expr.E_Equals;
 import org.apache.jena.sparql.expr.E_GreaterThanOrEqual;
 import org.apache.jena.sparql.expr.E_LessThanOrEqual;
 import org.opensilex.sparql.deserializer.DateDeserializer;
@@ -29,7 +27,6 @@ import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 
 /**
@@ -50,11 +47,11 @@ public class SPARQLQueryHelper {
         return makeVar(mapper.getURIFieldName());
     }
 
-    public static Expr regexFilter(String fieldName, String regexPattern) {
-        return regexFilter(fieldName, regexPattern, null);
+    public static Expr regexFilter(String varName, String regexPattern) {
+        return regexFilter(varName, regexPattern, null);
     }
 
-    public static Expr regexFilter(String fieldName, String regexPattern, String regexFlag) {
+    public static Expr regexFilter(String varName, String regexPattern, String regexFlag) {
         if (regexPattern == null || regexPattern.equals("")) {
             return null;
         }
@@ -63,7 +60,7 @@ public class SPARQLQueryHelper {
             regexFlag = "i";
         }
 
-        ExprVar name = new ExprVar(fieldName);
+        ExprVar name = new ExprVar(varName);
         return new E_Regex(name, regexPattern, regexFlag);
     }
 
@@ -100,61 +97,45 @@ public class SPARQLQueryHelper {
     }
 
     /**
-     * @param sparqlVarName the variable name
+     * @param varName the variable name
      * @param object the object to compare with the given variable
-     * @return an E_Equals expression between the given variable and the given object,
-     *         null if sparqlVarName is empty or null or if object is null
-     *
+     * @return an E_Equals expression between the given variable and the given object
      * @throws SPARQLDeserializerNotFoundException if no {@link SPARQLDeserializer} is found for object
      * 
      * @see ExprFactory#eq(Object, Object)
      * @see SPARQLDeserializers#getForClass(Class)
      */
-    public static E_Equals eq(String sparqlVarName, Object object) throws Exception {
-
-        if (StringUtils.isEmpty(sparqlVarName) || object == null) {
-            return null;
-        }
+    public static Expr eq(String varName, Object object) throws Exception {
         Node node = SPARQLDeserializers.getForClass(object.getClass()).getNode(object);
-        return exprFactory.eq(NodeFactory.createVariable(sparqlVarName), node);
+        return eq(varName,node);
     }
 
     /**
-     * @param sparqlVarName the variable name
+     * @param varName the variable name
      * @param node the Jena node to compare with the given variable
-     * @return an E_Equals expression between the given variable and the given object,
-     *         null if sparqlVarName is empty or null or if object is null
+     * @return an E_Equals expression between the given variable and the given object
      * @see ExprFactory#eq(Object, Object)
      */
-    public static E_Equals eq(String sparqlVarName, Node node) {
-
-        if (StringUtils.isEmpty(sparqlVarName) || node == null) {
-            return null;
-        }
-        return exprFactory.eq(NodeFactory.createVariable(sparqlVarName), node);
+    public static Expr eq(String varName, Node node) {
+        return exprFactory.eq(NodeFactory.createVariable(varName), node);
     }
 
     /**
-     * Append a VALUES clause to the given select if values and sparqlVarName are not empty,
+     * Append a VALUES clause to the given select if values are not empty,
      *
-     * @param select        the SelectBuilder to update
-     * @param sparqlVarName the name of the SPARQL variable
-     * @param values        the list of values to put in the VALUES set
+     * @param select  the SelectBuilder to update
+     * @param varName the variable name
+     * @param values  the list of values to put in the VALUES set
      *
-     * @throws NullPointerException if select, varName or values are null
      * @throws SPARQLDeserializerNotFoundException  if no {@link SPARQLDeserializer} is found for an element of values
      *
      * @see <a href=www.w3.org/TR/2013/REC-sparql11-query-20130321/#inline-data>W3C SPARQL VALUES specifications</a>
      * @see SelectBuilder#addWhereValueVar(Object, Object...)
      * @see SPARQLDeserializers#getForClass(Class)
      */
-    public static void addWhereValues(SelectBuilder select, String sparqlVarName, List<?> values) throws Exception {
+    public static void addWhereValues(SelectBuilder select, String varName, List<?> values) throws Exception {
 
-        Objects.requireNonNull(select);
-        Objects.requireNonNull(values);
-        Objects.requireNonNull(sparqlVarName);
-
-        if (values.isEmpty() || sparqlVarName.isEmpty())
+        if (values.isEmpty())
            return;
 
         // convert list to JENA node array and return the new SelectBuilder
@@ -163,15 +144,15 @@ public class SPARQLQueryHelper {
         for (Object object : values) {
             nodes[i++] = SPARQLDeserializers.getForClass(object.getClass()).getNode(object);
         }
-        select.addWhereValueVar(sparqlVarName, nodes);
+        select.addWhereValueVar(varName, nodes);
     }
 
     /**
-     * @param startDateSparqlVarName : the name of the startDate SPARQL variable , should not be null if startDate is not null
-     * @param startDate              : the start date
-     * @param endDateSparqlVarName   : the name of the endDate SPARQL variable , should not be null if endDate is not null
-     * @param endDate                : the end date
-     * @return an Expr with the two given LocalDate and the two SPARQL variables
+     * @param startDateVarName  the name of the startDate variable , should not be null if startDate is not null
+     * @param startDate the start date
+     * @param endDateVarName the name of the endDate variable , should not be null if endDate is not null
+     * @param endDate the end date
+     * @return an Expr according the two given LocalDate and variable names
      * <pre>
      *     null if startDate and endDate are both null
      *     an {@link E_LogicalAnd} if startDate and endDate are both non null
@@ -182,7 +163,7 @@ public class SPARQLQueryHelper {
      * @see ExprFactory#le(Object, Object)
      * @see ExprFactory#ge(Object, Object)
      */
-    public static Expr dateRange(String startDateSparqlVarName, LocalDate startDate, String endDateSparqlVarName, LocalDate endDate) throws Exception {
+    public static Expr dateRange(String startDateVarName, LocalDate startDate, String endDateVarName, LocalDate endDate) throws Exception {
 
         boolean startDateNull = startDate == null;
         boolean endDateNull = endDate == null;
@@ -195,12 +176,12 @@ public class SPARQLQueryHelper {
         Expr endDateExpr = null;
 
         if (!endDateNull) {
-            endVar = NodeFactory.createVariable(endDateSparqlVarName);
+            endVar = NodeFactory.createVariable(endDateVarName);
             endDateExpr = exprFactory.le(endVar, dateDeserializer.getNode(endDate));
         }
 
         if (!startDateNull) {
-            Node startVar = NodeFactory.createVariable(startDateSparqlVarName);
+            Node startVar = NodeFactory.createVariable(startDateVarName);
             Expr startDateExpr = exprFactory.ge(startVar, dateDeserializer.getNode(startDate));
 
             if (!endDateNull) {

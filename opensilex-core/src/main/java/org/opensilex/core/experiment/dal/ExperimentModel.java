@@ -6,6 +6,7 @@
 package org.opensilex.core.experiment.dal;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
@@ -17,83 +18,111 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
+/**
+ * @author Vincent MIGOT
+ * @author Renaud COLIN
+ */
+
 @SPARQLResource(
-        ontology = Oeso.class,
-        resource = "Experiment",
-        graph = "set/experiments",
-        prefix = "expe"
+    ontology = Oeso.class,
+    resource = "Experiment",
+    graph = "set/experiments",
+    prefix = "expe"
 )
 public class ExperimentModel extends SPARQLResourceModel implements ClassURIGenerator<ExperimentModel> {
 
     @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "label",
-            required = true
+        ontology = RDFS.class,
+        property = "label",
+        required = true
     )
-    String alias;
-    public static final String ALIAS_FIELD = "alias";
+    String label;
+    public static final String LABEL_FIELD = "label";
 
     @SPARQLProperty(
-            ontology = Oeso.class,
-            property = Oeso.HAS_ENTITY_RELATION
+        ontology = Oeso.class,
+        property = "hasProject"
     )
-    List<ProjectModel> projects;
+    List<ProjectModel> projects = Collections.emptyList();
+    public static final String PROJECT_URI_SPARQL_VAR = "project";
+
 
     @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasStartDate",
-            required = true
+        ontology = Oeso.class,
+        property = "startDate",
+        required = true
     )
     LocalDate startDate;
+    public static final String START_DATE_SPARQL_VAR = "startDate";
 
     @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasEndDate"
+        ontology = Oeso.class,
+        property = "endDate"
     )
     LocalDate endDate;
+    public static final String END_DATE_SPARQL_VAR = "endDate";
 
     @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasScientificSupervisor"
+        ontology = Oeso.class,
+        property = "hasScientificSupervisor"
     )
-    List<UserModel> scientificSupervisors;
+    List<UserModel> scientificSupervisors = Collections.emptyList();
+    public static final String SCIENTIFIC_SUPERVISOR_SPARQL_VAR = "scientificSupervisor";
+
 
     @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasTechnicalSupervisor"
+        ontology = Oeso.class,
+        property = "hasTechnicalSupervisor"
     )
-    List<UserModel> technicalSupervisors;
+    List<UserModel> technicalSupervisors = Collections.emptyList();
+    public static final String TECHNICAL_SUPERVISOR_SPARQL_VAR = "technicalSupervisor";
+
 
     @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasGroup"
+        ontology = Oeso.class,
+        property = "hasGroup"
     )
-    List<GroupModel> groups;
+    List<GroupModel> groups = Collections.emptyList();
+    public static final String GROUP_SPARQL_VAR = "group";
+
 
     @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasObjective"
+        ontology = Oeso.class,
+        property = "hasCampaign"
+    )
+    Integer campaign;
+    public static final String CAMPAIGN_SPARQL_FIELD = "campaign";
+
+
+    @SPARQLProperty(
+        ontology = Oeso.class,
+        property = "hasObjective"
     )
     String objectives;
+    public static final String OBJECTIVE_SPARQL_FIELD = "objective";
+
 
     @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasKeyword"
+        ontology = Oeso.class,
+        property = "hasKeyword"
     )
-    List<String> keywords;
+    List<String> keywords = Collections.emptyList();
+    public static final String KEYWORD_SPARQL_FIELD = "keyword";
 
     @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "comment"
+        ontology = RDFS.class,
+        property = "comment"
     )
     String comment;
+    public static final String COMMENT_SPARQL_FIELD = "comment";
 
-    public String getAlias() {
-        return alias;
+
+    public String getLabel() {
+        return label;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public List<ProjectModel> getProjects() {
@@ -168,11 +197,18 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
         this.comment = comment;
     }
 
+    public Integer getCampaign() {
+        return campaign;
+    }
+
+    public void setCampaign(Integer campaign) {
+        this.campaign = campaign;
+    }
+
     @Override
     public String[] getUriSegments(ExperimentModel instance) {
         return new String[]{
-            instance.getAlias()
+            instance.getLabel()
         };
     }
-
 }

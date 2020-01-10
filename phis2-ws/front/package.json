@@ -27,7 +27,9 @@
             "eslint:recommended",
             "@vue/typescript"
         ],
-        "rules": {},
+        "rules": {
+            "no-unused-vars": "off"
+        },
         "parserOptions": {
             "parser": "@typescript-eslint/parser"
         }

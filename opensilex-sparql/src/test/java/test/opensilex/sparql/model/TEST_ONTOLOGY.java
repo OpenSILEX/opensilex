@@ -31,6 +31,7 @@ public class TEST_ONTOLOGY {
 
     public static final Resource A = Ontology.resource(NAMESPACE, "A");
     public static final Resource B = Ontology.resource(NAMESPACE, "B");
+    public static final Resource Fail = Ontology.resource(NAMESPACE, "Fail");
 
     public static final Property hasRelationToB = Ontology.property(NAMESPACE, "hasRelationToB");
 

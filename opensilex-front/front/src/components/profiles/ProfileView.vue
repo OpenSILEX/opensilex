@@ -3,7 +3,7 @@
     <b-button @click="showCreateForm" variant="success">Add profile</b-button>
     <opensilex-ProfileForm
       ref="profileForm"
-      :credentialsGroups="credentialsGroups"
+      v-bind:credentialsGroups="credentialsGroups"
       @onCreate="callCreateProfileService"
       @onUpdate="callUpdateProfileService"
     ></opensilex-ProfileForm>
@@ -27,14 +27,10 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
 @Component
 export default class ProfileView extends Vue {
   $opensilex: any;
-  $store: any;
   service: ProfileService;
-  credentialsGroups: Array<CredentialsGroupDTO>;
+  $store: any;
+  credentialsGroups: Array<CredentialsGroupDTO> = [];
 
-    constructor() {
-        super()
-        this.credentialsGroups = ProfileView.credentialsGroups;
-    }
   get user() {
     return this.$store.state.user;
   }
@@ -53,6 +49,7 @@ export default class ProfileView extends Vue {
   }
 
   created() {
+    this.credentialsGroups = ProfileView.credentialsGroups;
     this.service = this.$opensilex.getService("opensilex.ProfileService");
   }
 

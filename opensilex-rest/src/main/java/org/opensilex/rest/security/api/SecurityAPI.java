@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Extension;
+import io.swagger.annotations.ExtensionProperty;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -136,11 +138,21 @@ public class SecurityAPI {
      */
     @PUT
     @Path("renew-token")
-    @ApiOperation("Send back a new token if the provided one is still valid")
+    @ApiProtected(noCredential=true)
+    @ApiOperation(
+            value = "Send back a new token if the provided one is still valid",
+            extensions = @Extension(
+                    name = ApiProtected.OPENSILEX_CREDENTIAL_EXTENSION,
+                    properties = {
+                        @ExtensionProperty(
+                                name = ApiProtected.OPENSILEX_NO_CREDENTIAL_REQUIRED_PROPERTY,
+                                value = ApiProtected.OPENSILEX_NO_CREDENTIAL_REQUIRED_PROPERTY_VALUE
+                        )
+                    }
+            ))
     @ApiResponses({
         @ApiResponse(code = 200, message = "Token sucessfully renewed", response = TokenGetDTO.class)
     })
-    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response renewToken(
@@ -163,10 +175,20 @@ public class SecurityAPI {
      */
     @DELETE
     @Path("logout")
-    @ApiOperation("Logout by discarding a user token")
-    @ApiResponses({
-        @ApiResponse(code = 200, message = "User sucessfully logout")})
     @ApiProtected
+    @ApiOperation(
+            value = "Logout by discarding a user token",
+            extensions = @Extension(
+                    name = ApiProtected.OPENSILEX_CREDENTIAL_EXTENSION,
+                    properties = {
+                        @ExtensionProperty(
+                                name = ApiProtected.OPENSILEX_NO_CREDENTIAL_REQUIRED_PROPERTY,
+                                value = ApiProtected.OPENSILEX_NO_CREDENTIAL_REQUIRED_PROPERTY_VALUE
+                        )
+                    }
+            ))
+    @ApiResponses({
+    @ApiResponse(code = 200, message = "User sucessfully logout")})
     public Response logout(
             @Context SecurityContext securityContext
     ) {

@@ -108,7 +108,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                     }
 
                     // If user is not an admin check credentials
-                    if (!user.isAdmin()) {
+                    if (!user.isAdmin() && !securityAnnotation.noCredential()) {
                         // Get current API service credential
                         String credentialId = SecurityAccessDAO.getCredentialIdFromMethod(apiMethod, requestContext.getMethod());
 

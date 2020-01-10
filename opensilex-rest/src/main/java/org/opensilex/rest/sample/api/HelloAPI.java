@@ -23,7 +23,7 @@ import org.opensilex.rest.user.dal.UserModel;
 /**
  * Sample webservice which just return "Hello World !" on any request
  */
-@Api("Hello")
+@Api(value="Hello", hidden = true)
 @Path("/hello")
 public class HelloAPI {
 

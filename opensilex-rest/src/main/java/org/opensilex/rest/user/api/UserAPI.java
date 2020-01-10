@@ -62,7 +62,7 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author Vincent Migot
  */
-@Api("User")
+@Api("Users")
 @Path("/user")
 public class UserAPI {
 

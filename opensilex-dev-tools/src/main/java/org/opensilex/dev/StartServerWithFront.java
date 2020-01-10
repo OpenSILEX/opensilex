@@ -31,6 +31,8 @@ public class StartServerWithFront {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(StartServerWithFront.class);
 
+    private final static String CONFIG_FILE_PATH = "./src/main/resources/config/opensilex.yml";
+    
     private static Path currentDirectory;
     private static String nodeBin = "node";
     private static CountDownLatch countDownLatch;
@@ -42,7 +44,7 @@ public class StartServerWithFront {
         }
         // Define current directory to launch node.js processes
         currentDirectory = Paths.get(System.getProperty("user.dir"));
-        String configFile = currentDirectory.resolve("./src/main/resources/config/opensilex.yml").toFile().getCanonicalPath();
+        String configFile = currentDirectory.resolve(CONFIG_FILE_PATH).toFile().getCanonicalPath();
         OpenSilex.setup(new HashMap<String, String>() {
             {
                 put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);

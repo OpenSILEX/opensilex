@@ -1,5 +1,5 @@
 <template>
-  <b-modal ref="modalRef" @ok.prevent="validate">
+  <b-modal ref="modalRef" @ok.prevent="validate" size="xl">
     <template v-slot:modal-title>{{title}}</template>
     <b-form ref="formRef">
       <b-form-group label="Profile URI:" label-for="uri">
@@ -28,21 +28,23 @@
           autocomplete="no"
         ></b-form-input>
       </b-form-group>
-      <b-form-group
-        v-for="credentialsGroup in credentialsGroups"
-        v-bind:key="credentialsGroup.groupId"
-        :label="credentialsGroup.groupId"
-        :label-for="credentialsGroup.groupId"
-      >
-      ????
-        <b-form-checkbox-group
-          v-for="credential in credentialsGroup.credentials"
-          v-bind:key="credential.id"
-          v-model="selectedCredentialsGroups[credentialsGroup.groupId]"
-          :options="credentialOptions[credentialsGroup.groupId]"
-          switches
-        ></b-form-checkbox-group>
-      </b-form-group>
+      
+      <b-card no-body>
+        <b-tabs pills card>
+          <b-tab
+            v-for="credentialsGroup in credentialsGroups"
+            v-bind:key="credentialsGroup.groupId"
+            :title="credentialsGroup.groupId"
+          >
+            <b-form-checkbox-group
+              v-bind:key="credentialsGroup.groupId"
+              v-model="selectedCredentials[credentialsGroup.groupId]"
+              :options="credentialOptions[credentialsGroup.groupId]"
+              switches
+            ></b-form-checkbox-group>
+          </b-tab>
+        </b-tabs>
+      </b-card>
     </b-form>
   </b-modal>
 </template>
@@ -58,7 +60,7 @@ import {
 } from "opensilex-rest/index";
 
 @Component
-export default class UserForm extends Vue {
+export default class ProfileForm extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
@@ -69,38 +71,27 @@ export default class UserForm extends Vue {
 
   uriGenerated = true;
 
-  selectedCredentialsGroups: any;
-  credentialOptions: any;
-  allCredentialsGroups: Array<CredentialsGroupDTO>;
+  @Prop()
+  credentialsGroups: any;
 
-  set credentialsGroups(allCredentialsGroups: Array<CredentialsGroupDTO>) {
-    console.warn("!!!!!!!!!!", this.allCredentialsGroups, this.selectedCredentialsGroups, this.credentialOptions)
-    this.allCredentialsGroups = allCredentialsGroups;
-    this.selectedCredentialsGroups = this.getSelectedCredentials();
-    this.credentialOptions = this.getCredentialOptions();
-    console.warn("!!!!!!!!!!", this.allCredentialsGroups, this.selectedCredentialsGroups, this.credentialOptions)
-  }
-
-  get credentialsGroups() {
-    return this.allCredentialsGroups;
-  }
-
-  getSelectedCredentials() {
+  get selectedCredentials() {
     let def: any = {};
-    for (let i in this.credentialsGroups) {
-      def[this.credentialsGroups[i].groupId] = [];
-    }
+    // for (let i in this.credentialsGroups) {
+    //   def[this.credentialsGroups[i].groupId] = [];
+    // }
 
     return def;
   }
 
-  getCredentialOptions() {
+  get credentialOptions() {
+    let credentialsGroups = this.credentialsGroups;
     let def: any = {};
-    for (let i in this.credentialsGroups) {
-      def[this.credentialsGroups[i].groupId] = [];
-      for (let j in this.credentialsGroups[i].credentials) {
-        let credential = this.credentialsGroups[i].credentials[j];
-        def[this.credentialsGroups[i].groupId].push({
+    for (let i = 0; i < credentialsGroups.length; i++) {
+      def[credentialsGroups[i].groupId] = [];
+
+      for (let j = 0; j < credentialsGroups[i].credentials.length; j++) {
+        let credential = credentialsGroups[i].credentials[j];
+        def[credentialsGroups[i].groupId].push({
           text: credential.label,
           value: credential.id
         });
@@ -204,5 +195,6 @@ export default class UserForm extends Vue {
 </script>
 
 <style scoped lang="scss">
+
 </style>
 

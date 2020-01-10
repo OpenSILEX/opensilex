@@ -134,7 +134,7 @@ public class MethodAPI  {
 
     @GET
     @Path("search")
-    @ApiOperation("Search entities corresponding to given criteria")
+    @ApiOperation("Search methods corresponding to given criteria")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

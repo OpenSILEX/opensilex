@@ -61,6 +61,7 @@ export default class ImageView extends Vue {
     this.showSearchComponent = false;
     this.showImageListComponent = true;
     this.searchImagesFields.rdfType = form.rdfType;
+    this.searchImagesFields.concernedItems.push(form.soUri);
     this.loadData();
   }
 
@@ -70,6 +71,7 @@ export default class ImageView extends Vue {
   }
 
   loadData() {
+    this.images = [];
     let dataService: DataService = this.$opensilex.getService(
       "opensilex.DataService"
     );
@@ -96,9 +98,13 @@ export default class ImageView extends Vue {
             const res = http.response.result as any;
             const data = res.data;
             this.images = data;
+            this.searchImagesFields.concernedItems = [];
           }
         )
-        .catch(this.$opensilex.errorHandler);
+        .catch((error) => {
+          this.searchImagesFields.concernedItems = [];
+          console.log(error);
+        });
     }
   }
 }

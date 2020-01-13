@@ -1,7 +1,7 @@
 
 <template>
   <div>
-    <div class="row">
+    <div class="row text-center text-lg-left">
       <phis2ws-Image v-for="(image, index) in images" v-bind:key="index" :image="image.uri">
        
       </phis2ws-Image>

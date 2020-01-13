@@ -95,16 +95,6 @@ export default class ImageView extends Vue {
             this.pageSize = http.response.metadata.pagination.pageSize;
             const res = http.response.result as any;
             const data = res.data;
-               var promises = [];
-            var promise;
-            var vm = this;
-            // data.forEach(function(value, i) {
-            //   promise = dataService.getDataFile(data[i].uri).catch(error => { return error });
-            //   promises.push(promise);
-            // });
-            // Promise.all(promises).then(function(values) {
-            //   console.log(values);
-            // });
             this.images = data;
           }
         )

@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.opensilex.OpenSilex;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceConfig;
 import org.opensilex.service.ServiceConnection;
@@ -332,7 +333,7 @@ public class ConfigProxyHandler implements InvocationHandler {
     }
 
     private <T> T getInterface(Class<T> interfaceClass, String key, JsonNode node) {
-        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
+        return (T) Proxy.newProxyInstance(OpenSilex.getClassLoader(),
                 new Class<?>[]{interfaceClass},
                 new ConfigProxyHandler(key, node, yamlMapper)
         );

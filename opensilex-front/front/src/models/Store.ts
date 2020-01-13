@@ -1,11 +1,11 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { User } from '@/models/User'
+import { User } from './User'
 import VueRouter from 'vue-router';
 import { FrontConfigDTO, MenuItemDTO } from '../lib';
 import { OpenSilexRouter } from './OpenSilexRouter';
-import { SecurityService } from 'opensilex/index';
-import { OpenSilexVuePlugin } from './OpenSilexVuePlugin';
+import OpenSilexVuePlugin from './OpenSilexVuePlugin';
+import { SecurityService } from 'opensilex-rest/index';
 
 Vue.use(Vuex)
 Vue.use(VueRouter)
@@ -44,7 +44,7 @@ let renewTokenOnEvent = function (event) {
 
   let $opensilex: OpenSilexVuePlugin = Vue["$opensilex"];
 
-  $opensilex.getService<SecurityService>("opensilex.SecurityService")
+  $opensilex.getService<SecurityService>("opensilex-rest.SecurityService")
     .renewToken(currentUser.getAuthorizationHeader())
     .then((http) => {
       console.log("Token renewed", http.response.result.token);
@@ -71,7 +71,9 @@ export default new Vuex.Store({
     loaderVisible: false,
     openSilexRouter: new OpenSilexRouter(),
     config: defaultConfig,
-    menu: menu
+    menu: menu,
+    menuVisible: true,
+    disconnected: false
   },
   mutations: {
     login(state, user: User) {
@@ -139,6 +141,7 @@ export default new Vuex.Store({
 
       console.debug("Set user to anonymous");
       state.user = User.logout();
+      state.disconnected = true;
       console.debug("Reset router");
       state.openSilexRouter.resetRouter(state.user);
       console.debug("Reset menu");
@@ -159,6 +162,15 @@ export default new Vuex.Store({
       if (loaderCount == 0) {
         state.loaderVisible = false
       }
+    },
+    toggleMenu(state) {
+      state.menuVisible = !state.menuVisible;
+    },
+    hideMenu(state) {
+      state.menuVisible = false;
+    },
+    showMenu(state) {
+      state.menuVisible = true;
     },
     refresh(state) {
       state.openSilexRouter.refresh();

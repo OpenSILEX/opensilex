@@ -5,7 +5,6 @@
  */
 package org.opensilex.front;
 
-import java.util.List;
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.module.ModuleConfig;
 
@@ -17,38 +16,43 @@ public interface FrontConfig extends ModuleConfig {
 
     @ConfigDescription(
             value = "Front login component definition",
-            defaultString = "opensilex-front-DefaultLoginComponent"
+            defaultString = "opensilex-DefaultLoginComponent"
     )
     String loginComponent();
 
     @ConfigDescription(
             value = "Front home component once logged",
-            defaultString = "opensilex-front-DefaultHomeComponent"
+            defaultString = "opensilex-DefaultHomeComponent"
     )
     String homeComponent();
 
     @ConfigDescription(
             value = "Front not found component",
-            defaultString = "opensilex-front-DefaultNotFoundComponent"
+            defaultString = "opensilex-DefaultNotFoundComponent"
     )
     String notFoundComponent();
 
     @ConfigDescription(
             value = "Front header component definition",
-            defaultString = "opensilex-front-DefaultHeaderComponent"
+            defaultString = "opensilex-DefaultHeaderComponent"
     )
     String headerComponent();
 
     @ConfigDescription(
             value = "Front menu component definition",
-            defaultString = "opensilex-front-DefaultMenuComponent"
+            defaultString = "opensilex-DefaultMenuComponent"
     )
     String menuComponent();
 
     @ConfigDescription(
             value = "Front footer component definition",
-            defaultString = "opensilex-front-DefaultFooterComponent"
+            defaultString = "opensilex-DefaultFooterComponent"
     )
     String footerComponent();
 
+    @ConfigDescription(
+            value = "Front theme identifier",
+            defaultString = "opensilex-front#phis"
+    )
+    String theme();
 }

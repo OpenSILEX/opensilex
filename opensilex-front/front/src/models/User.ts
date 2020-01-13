@@ -1,6 +1,5 @@
 import * as jwtDecode from "jwt-decode";
 import { VueCookies } from 'vue-cookies'
-import { CredentialsGroupDTO } from 'opensilex/index';
 
 declare var $cookies: VueCookies;
 

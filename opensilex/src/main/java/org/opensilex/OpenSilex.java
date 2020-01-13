@@ -13,8 +13,6 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -25,10 +23,7 @@ import org.opensilex.config.ConfigManager;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.module.ModuleManager;
 import org.opensilex.module.ModuleNotFoundException;
-import org.opensilex.module.OpenSilexModule;
-import org.opensilex.module.base.BaseConfig;
-import org.opensilex.module.base.BaseModule;
-import org.opensilex.module.dependencies.DependencyManager;
+import org.opensilex.dependencies.DependencyManager;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
 import org.opensilex.utils.ClassUtils;
@@ -113,21 +108,6 @@ public class OpenSilex {
      * Command line argument key for OpenSilex debug flag
      */
     public final static String DEBUG_ARG_KEY = "DEBUG";
-
-    /**
-     * Base URI for plateform ontologies
-     */
-    public final static String BASE_URI = "http://installation.domain.org/";
-
-    /**
-     * Base URI alias for plateform ontologies
-     */
-    public final static String BASE_URI_ALIAS = "os";
-
-    /**
-     * Base domain for all OpenSilex ontologies
-     */
-    public final static String ONTOLOGY_BASE_DOMAIN = "http://www.opensilex.org/";
 
     /**
      * Store startup args for reset
@@ -334,8 +314,9 @@ public class OpenSilex {
      * @param logConfigFile Logback configuration file to merge or override
      * @param reset Flag to determine if configuration must be merge or erase
      * existing
+     * @return true if given file has been loaded and false otherwise
      */
-    public static void loadLoggerConfig(File logConfigFile, boolean reset) {
+    public static boolean loadLoggerConfig(File logConfigFile, boolean reset) {
         // Check if config file exists
         if (logConfigFile.isFile()) {
             try {
@@ -350,6 +331,7 @@ public class OpenSilex {
                 configurator.setContext(loggerContext);
                 try (InputStream configStream = FileUtils.openInputStream(logConfigFile)) {
                     configurator.doConfigure(configStream);
+                    return true;
                 }
             } catch (JoranException | IOException ex) {
                 LOGGER.warn("Error while trying to load logback configuration file: " + logConfigFile.getAbsolutePath(), ex);
@@ -357,6 +339,8 @@ public class OpenSilex {
         } else {
             LOGGER.debug("Logger configuration file does not exists: " + logConfigFile.getAbsolutePath());
         }
+
+        return false;
     }
 
     /**
@@ -651,50 +635,15 @@ public class OpenSilex {
         return this.baseDirectory;
     }
 
-    /**
-     * Return configured platform base URI
-     *
-     * @return plateform URI
-     */
-    public static URI getPlatformURI() {
-        try {
-            if (OpenSilex.getInstance() == null) {
-                return new URI("http://test.opensilex.org/");
-            } else {
-                return new URI(OpenSilex.getInstance().getModuleByClass(BaseModule.class).getConfig(BaseConfig.class).baseURI());
-            }
-        } catch (ModuleNotFoundException ex) {
-            LOGGER.error("Base module not found, can't really happend because it's in the same package", ex);
-            return null;
-        } catch (URISyntaxException ex) {
-            LOGGER.error("Invalid Base URI", ex);
-            return null;
-        }
-    }
-
-    /**
-     * Return configured platform base URI alias
-     *
-     * @return plateform URI alias
-     */
-    public static String getPlatformURIAlias() {
-        try {
-            if (OpenSilex.getInstance() == null) {
-                return "t";
-            } else {
-                return OpenSilex.getInstance().getModuleByClass(BaseModule.class).getConfig(BaseConfig.class).baseURIAlias();
-            }
-        } catch (ModuleNotFoundException ex) {
-            LOGGER.error("Base module not found, can't really happend because it's in the same package", ex);
-            return null;
-        }
-    }
-
-    public static URI getPlatformDomainGraphURI(String graphSuffix) throws URISyntaxException {
-        return new URI(getPlatformURI().toString() + graphSuffix);
-    }
-
     public static <T extends ModuleConfig> T getModuleConfig(Class<? extends OpenSilexModule> moduleClass, Class<T> configClass) throws ModuleNotFoundException {
         return getInstance().getModuleByClass(moduleClass).getConfig(configClass);
+    }
+
+    public static ClassLoader getClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
+    }
+
+    public static InputStream getResourceAsStream(String name) {
+        return getClassLoader().getResourceAsStream(name);
     }
 }

@@ -1,0 +1,183 @@
+/*********************************
+* TEMPORARY STYLE OVERRIDE
+*********************************/
+
+main {
+    margin-top: 60px;
+    margin-left: 240px;
+}
+
+/*********************************
+* GLOBAL STYLE
+*********************************/
+
+.bg-phis-green {
+    background-color: #00A38D
+}
+
+.uri .uri-copy {
+    margin-left: 5px;
+    border: 1px solid #D8DDE5;
+    border-radius: 5px;
+    padding: 3px 3px 0px 3px;
+    visibility: hidden;
+}
+
+.uri:hover .uri-copy {
+    visibility: visible;
+}
+
+.uri .uri-copy:hover {
+    background-color: #D8DDE5;
+}
+
+
+/*************************************
+* TABLES
+*************************************/
+
+.main-content .table .cell-filters {
+    background-color: #f6f8fb;
+}
+
+
+/*************************************
+* MAIN NAVIGATION MENU
+*************************************/
+
+.sidebar-header {
+    background-color: #00A38D
+}
+
+.sidebar-header .header-brand .text {
+    margin-left: 16px;
+    color: #fff
+}
+
+.sidebar-header .header-brand .text .instance-name {
+    font-size: 0.7em;
+    font-weight: normal;
+    margin-left: 0.5em;
+}
+
+.sidebar-content {
+    padding-top: 3em
+}
+
+#main-menu-navigation .nav-item:hover,
+.customized #main-menu-navigation .nav-item.has-sub .submenu-content .menu-item:hover {
+    background-color: #ddd
+}
+
+#main-menu-navigation .nav-item.active,
+.customized #main-menu-navigation .nav-item.has-sub .submenu-content .menu-item.active {
+    background-color: #e9e9e9;
+    font-weight: bold;
+}
+
+.customized #main-menu-navigation .nav-item.active::after {
+    background: #00A38D;
+    border-radius: 10px;
+    color: #fff;
+    content: " ";
+    height: 50px;
+    right: 0;
+    left: inherit;
+    top: 0;
+    width: 4px;
+}
+
+.customized #main-menu-navigation .nav-item.open::after {
+    background: none;
+}
+
+.customized #main-menu-navigation .nav-item.has-sub .submenu-content .menu-item.active {
+    font-weight: bold;
+    color: inherit;
+}
+
+.customized #main-menu-navigation .nav-item.has-sub.open:hover {
+    background: inherit;
+}
+
+.customized #main-menu-navigation .nav-item.has-sub .submenu-content .menu-item.active::after {
+    background: #00A38D;
+    border-radius: 10px;
+    color: #fff;
+    content: " ";
+    height: 40px;
+    right: 0;
+    top: 0;
+    width: 4px;
+    position: absolute
+}
+
+.customized .header-top .top-menu .dropdown .dropdown-toggle {
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid #D8DDE5;
+    color: #007bff;
+    text-decoration: none;
+    background-color: transparent;
+    height: 43px;
+}
+
+.customized .header-top .top-menu .dropdown .dropdown-toggle::after {
+    content: none;
+}
+
+.customized .header-top .top-menu .dropdown .dropdown-toggle:hover {
+    background-color: #F0F1F5;
+}
+
+.customized .header-top .top-menu .dropdown .dropdown-toggle .icon {
+    font-size: 1.3em;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+.wrapper .page-wrap .main-content .page-header .breadcrumb-container .breadcrumb .breadcrumb-item a {
+    color: #3C76F4;
+}
+
+.wrapper .page-wrap .main-content .page-header .breadcrumb-container .breadcrumb .breadcrumb-item a:hover {
+    color: inherit;
+}
+
+
+/*********************************
+* LOGIN PAGE
+*********************************/
+
+.auth-wrapper .lavalite-bg .lavalite-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: linear-gradient(135deg, rgba(0, 163, 141, 0.2) 0%, rgba(0, 163, 141, 0.7) 100%);
+}
+
+.auth-wrapper .authentication-form .logo-centered {
+    width: 350px;
+    margin: 0 auto;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.auth-wrapper .authentication-form .logo-centered .system-name {
+    display: inline-block;
+    margin-top: 1.5em;
+    color: #666;
+    font-size: 1.3em;
+}
+
+.trademark {
+    text-align: center;
+    margin-top: 2em;
+    color: #666;
+}
+
+.auth-wrapper .authentication-form {
+    padding-top: 20px;
+}

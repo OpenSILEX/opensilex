@@ -1,18 +1,21 @@
-opensilex:
+ontologies:
     baseURI: http://opensilex.dev/
     baseURIAlias: dev
-    storageBasePath: <TO CONFIGURE>
     sparql:
         rdf4j:
             serverURI: http://localhost:8667/rdf4j-server/
             repository: opensilex
+
+file-system:    
+    storageBasePath: <TO CONFIGURE>  
     
-    bigData:
+big-data:   
+    nosql:
         mongodb:
             host: localhost
             port: 8668
             database: opensilex
-    
+
 phisws:
     postgreSQL:
         host: localhost

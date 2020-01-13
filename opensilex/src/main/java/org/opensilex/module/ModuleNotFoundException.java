@@ -6,6 +6,8 @@
 //******************************************************************************
 package org.opensilex.module;
 
+import org.opensilex.OpenSilexModule;
+
 /**
  * Exception thrown when a module is not found based on it's class
  *

@@ -8,7 +8,7 @@ package org.opensilex.core.project.dal;
 import java.net.URI;
 import java.util.List;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.opensilex.sparql.SPARQLService;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;

@@ -66,14 +66,6 @@
                 </includes>
                 <targetPath>webapp</targetPath>
             </resource>
-            
-            <!-- define front resources folder -->
-            <resource>
-                <directory>front</directory>
-                <excludes>
-                    <exclude>**</exclude>
-                </excludes>
-            </resource>
         </resources>
         <plugins>
             <!-- Check plugin and dependencies available updates -->
@@ -158,20 +150,6 @@
                     </execution>
                     
                 </executions>
-            </plugin>
-            
-            <!-- Generate swagger.json file -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>${maven.exec.plugin.version}</version>
-            </plugin>
-            
-            <!-- Generate TypeScript library from swagger.json file -->
-            <plugin>
-                <groupId>org.opensilex</groupId>
-                <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
-                <version>${revision}</version>
             </plugin>
             
             <!-- Generate Shaded jar with dependencies -->

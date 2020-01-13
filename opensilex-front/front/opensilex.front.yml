@@ -83,40 +83,26 @@ menu:
         label: component.menu.security.groups
         route: 
           path: /groups
-          component: opensilex-GroupList
+          component: opensilex-GroupView
           credentials: []
       - id: profiles
         label: component.menu.security.profiles
         route: 
           path: /profiles
-          component: opensilex-ProfileList
+          component: opensilex-ProfileView
           credentials: []
-
+  - id: factors
+    label: Factors
+    children:
+      - id: factors-list
+        label: Factors
+        route: 
+          path: /factors 
+          component: opensilex-core-FactorList
+          credentials: []
 routes:
-  - path: /users/create
-    component: opensilex-UserCreate
-    credentials: []
-  - path: /users/view/:uri
-    component: opensilex-UserView
-    credentials: []
-  - path: /users/edit/:uri
-    component: opensilex-UserEdit
-    credentials: []
-  - path: /groups/create
-    component: opensilex-GroupCreate
-    credentials: []    
-  - path: /groups/view/:uri
-    component: opensilex-GroupView
-    credentials: []
-  - path: /groups/edit/:uri
-    component: opensilex-GroupEdit
-    credentials: []
-  - path: /profiles/create
-    component: opensilex-ProfileCreate
-    credentials: []    
-  - path: /profiles/view/:uri
-    component: opensilex-ProfileView
-    credentials: []
-  - path: /profiles/edit/:uri
-    component: opensilex-ProfileEdit
-    credentials: []
+# Route item example:
+#  - path: /users/create
+#    component: opensilex-UserCreate
+#    credentials: []
+  

@@ -1,0 +1,47 @@
+ontologies:
+    baseURI: http://opensilex.dev/
+    baseURIAlias: dev
+    sparql:
+        rdf4j:
+            serverURI: http://localhost:8667/rdf4j-server/
+            repository: opensilex
+
+file-system:    
+    storageBasePath: <TO CONFIGURE>  
+    
+big-data:   
+    nosql:
+        mongodb:
+            host: localhost
+            port: 8668
+            database: opensilex
+
+front:
+    theme: inrae-sixtine#sixtine
+    loginComponent: inrae-sixtine-SixtineLoginComponent
+    footerComponent: inrae-sixtine-SixtineFooterComponent
+    menuComponent: inrae-sixtine-SixtineMenuComponent
+    headerComponent: inrae-sixtine-SixtineHeaderComponent
+    
+phisws:
+    postgreSQL:
+        host: localhost
+        port: 8669
+        database: opensilex
+        username: opensilex
+        password: opensilex
+        
+    ontologyBaseURI: http://www.phenome-fppn.fr/
+    vocabulary: http://www.phenome-fppn.fr/vocabulary/2017#
+    infrastructure: opensilex
+    
+    uploadFileServerIP: localhost
+    uploadFileServerUsername: <TO CONFIGURE>
+    uploadFileServerPassword: <TO CONFIGURE>
+    
+    layerFileServerDirectory: /var/www/html/layers
+    layerFileServerAddress: http://localhost/layers
+    
+    uploadImageServerDirectory: /var/www/html/images
+    imageFileServerDirectory: http://localhost/images
+        

@@ -37,7 +37,6 @@
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex</artifactId>
             <version>${revision}</version>
-            <!--<scope>provided</scope>-->
         </dependency>
         <!-- OpenSilex Base test -->
         <dependency>
@@ -47,11 +46,52 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
+        <!-- OpenSilex SPARQL -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-sparql</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex SPARQL test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-sparql</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <!-- OpenSilex NOSQL -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-nosql</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex NOSQL test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-nosql</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <!-- OpenSilex File System -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-fs</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex File System test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-fs</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
         <!-- OpenSilex Core -->
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-core</artifactId>
-            <!--<scope>provided</scope>-->
             <version>${revision}</version>
         </dependency>
         <!-- OpenSilex Core test -->
@@ -66,8 +106,29 @@
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-front</artifactId>
-            <!--<scope>provided</scope>-->
             <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex Front test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-front</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <!-- OpenSilex REST -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-rest</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex REST test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-rest</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
         </dependency>
     </dependencies>
     
@@ -94,6 +155,33 @@
                 <version>${revision}</version>
             </plugin>
             
+                  
+            <!-- Allow to extends SPARQL deserializers --> 
+            <plugin>
+                <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
+                <artifactId>serviceloader-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>opensilex-sparql-services</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <services>
+                                <param>org.opensilex.sparql.deserializer.SPARQLDeserializer</param>
+                            </services>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.opensilex</groupId>
+                        <artifactId>opensilex-sparql</artifactId>
+                        <version>${revision}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+    
             <!-- Check plugin and dependencies available updates -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

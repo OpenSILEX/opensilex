@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import org.opensilex.OpenSilex;
 import static org.opensilex.OpenSilex.PROD_PROFILE_ID;
-import org.opensilex.module.OpenSilexModule;
+import org.opensilex.OpenSilexModule;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +75,7 @@ public class ConfigManager {
             config = (T) ConfigProxyHandler.getPrimitive(key, root, null);
         } else {
             config = (T) Proxy.newProxyInstance(
-                    Thread.currentThread().getContextClassLoader(),
+                    OpenSilex.getClassLoader(),
                     new Class<?>[]{configClass},
                     new ConfigProxyHandler(key, root.deepCopy(), yamlMapper)
             );
@@ -102,10 +102,10 @@ public class ConfigManager {
         T config;
 
         if (ClassUtils.isPrimitive(configClass)) {
-            config = (T) ConfigProxyHandler.getPrimitive(finalKey, baseNode, null);
+            config = (T) ConfigProxyHandler.getPrimitive(configClass.getCanonicalName(), baseNode.at("/" + finalKey), null);
         } else {
             config = (T) Proxy.newProxyInstance(
-                    Thread.currentThread().getContextClassLoader(),
+                    OpenSilex.getClassLoader(),
                     new Class<?>[]{configClass},
                     new ConfigProxyHandler(finalKey, baseNode.deepCopy(), yamlMapper)
             );

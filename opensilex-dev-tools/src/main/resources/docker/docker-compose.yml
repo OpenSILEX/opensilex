@@ -21,7 +21,8 @@ services:
          - backend
       ports:
          - "8668:27017"
-      restart: always         
+      restart: always   
+      command: '--bind_ip_all --replSet opensilex'
       volumes:
          - mongodb_data:/data/db
          

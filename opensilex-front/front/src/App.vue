@@ -1,23 +1,23 @@
 <template>
   <div id="page-wrapper" class="wrapper customized">
-
-    <header class="header-top" header-theme="light" v-if="!embed">
+    <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
       <component class="header-logo" v-bind:is="headerComponent"></component>
       <component class="header-login" v-bind:is="loginComponent"></component>
     </header>
 
-    <section id="content-wrapper" class="page-wrap" v-if="user.isLoggedIn()">
+    <section id="content-wrapper" class="page-wrap" v-if="user.isLoggedIn() && !disconnected">
       <component v-if="!embed" v-bind:is="menuComponent"></component>
 
       <main>
         <router-view />
       </main>
 
-      <footer v-if="!embed" class="footer fixed-bottom">
-        <component v-bind:is="footerComponent"></component>
-      </footer>
     </section>
-    
+
+    <footer v-if="!embed">
+      <component v-bind:is="footerComponent"></component>
+    </footer>
+
     <div id="loader" v-bind:class="{'visible':isLoaderVisible}">
       <div class="lds-ripple">
         <div></div>
@@ -33,7 +33,7 @@ import { Component as ComponentAnnotation, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import { ModuleComponentDefinition } from "./models/ModuleComponentDefinition";
 import { VueConstructor, Component } from "vue";
-import { OpenSilexVuePlugin } from "./models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin from "./models/OpenSilexVuePlugin";
 import { FrontConfigDTO } from "./lib";
 
 @ComponentAnnotation
@@ -46,6 +46,10 @@ export default class App extends Vue {
   @Prop() footerComponent!: string | Component;
 
   $opensilex: OpenSilexVuePlugin;
+
+  get disconnected() {
+    return this.$store.state.disconnected;
+  }
 
   get user() {
     return this.$store.state.user;
@@ -61,12 +65,10 @@ export default class App extends Vue {
 <i18n src="./lang/message-fr.json"></i18n>
 
 <style lang="scss">
-@import "../styles/styles";
 
 @import "../node_modules/icon-kit/dist/css/iconkit.min.css";
-
-@import "../styles/theme.css";
-@import "../styles/main.css";
+@import '../node_modules/bootstrap/scss/bootstrap';
+@import '../node_modules/bootstrap-vue/src/index.scss';
 
 #loader {
   display: none;
@@ -167,6 +169,10 @@ section#content-wrapper {
 main {
   padding: 15px;
   width: 100%;
+}
+
+.header-top.logged-out {
+  box-shadow: none;
 }
 
 </style>

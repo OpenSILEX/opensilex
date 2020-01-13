@@ -8,19 +8,24 @@
     <!-- output -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="org.opensilex.utils.LogFilter">
-            <level>${opensilex.log.level}</level>
+            <!-- Default application log level (for libraries) -->
+            <level>${default.log.level}</level>
+            <!-- Log level for included and excluded patterns -->
+            <customLevel>${opensilex.log.level}</customLevel>
+            <!-- List of logger name pattern to include at custom log level -->
             <include>org.opensilex</include>
             <include>test.opensilex</include>
+            <!-- List of classes to include at DEBUG log level -->
+            <!-- <debug>org.opensilex.server.Server</debug> -->
         </filter>
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>${default.log.level}</level>
-        </filter> 
+	
         <encoder>
             <pattern>${log.pattern}</pattern>
         </encoder>
     </appender>
+
     
-    <root level="${opensilex.log.level}">
+    <root>
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>

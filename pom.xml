@@ -34,11 +34,16 @@
         <!-- Main OpenSilex modules -->
         <module>opensilex-parent</module>
         <module>opensilex</module>
+        <module>opensilex-sparql</module>
+        <module>opensilex-nosql</module>
+        <module>opensilex-fs</module>
+        <module>opensilex-rest</module>
         <module>opensilex-module</module>
         <module>opensilex-core</module>
         <module>opensilex-front</module>
         
         <!-- Extension modules -->
+        <!--<module>inrae-sixtine</module>-->
         <module>phis-ws/phis2-ws</module>
             
         <!-- Development module -->
@@ -68,7 +73,31 @@
             <artifactId>opensilex</artifactId>
             <version>${revision}</version>
         </dependency>
-            
+        
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-sparql</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-nosql</artifactId>
+            <version>${revision}</version>
+        </dependency>
+                
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-fs</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-rest</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-core</artifactId>
@@ -87,6 +116,11 @@
             <artifactId>phis2ws</artifactId>
             <version>${revision}</version>
         </dependency>
+        <!--<dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>inrae-sixtine</artifactId>
+            <version>${revision}</version>
+        </dependency>-->
     </dependencies>
       
     <build>

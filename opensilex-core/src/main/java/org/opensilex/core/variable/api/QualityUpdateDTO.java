@@ -8,7 +8,7 @@ package org.opensilex.core.variable.api;
 import java.util.List;
 import org.opensilex.core.ontology.OntologyReference;
 import org.opensilex.core.variable.dal.QualityModel;
-import org.opensilex.server.validation.Required;
+import org.opensilex.rest.validation.Required;
 
 public class QualityUpdateDTO {
 

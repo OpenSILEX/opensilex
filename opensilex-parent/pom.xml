@@ -57,7 +57,7 @@
         <jersey.version>2.29.1</jersey.version>
         <tomcat.version>9.0.30</tomcat.version>
         <hibernate.validator.version>6.1.0.Final</hibernate.validator.version>
-        <jackson.version>2.10.1</jackson.version>
+        <jackson.version>2.10.2</jackson.version>
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
         <swagger.jersey2.jaxrs.version>1.6.0</swagger.jersey2.jaxrs.version>
         <maven.resolver.version>1.4.1</maven.resolver.version>
@@ -68,14 +68,14 @@
         <data.nucleus.jdo.version>3.2.0-m12</data.nucleus.jdo.version>
         <data.nucleus.jta.version>5.10.1.Final</data.nucleus.jta.version>
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
-        <bytebuddy.version>1.10.5</bytebuddy.version>
-        <java.jwt.version>3.8.3</java.jwt.version>
-        <picocli.version>4.1.2</picocli.version>
+        <bytebuddy.version>1.10.6</bytebuddy.version>
+        <java.jwt.version>3.9.0</java.jwt.version>
+        <picocli.version>4.1.4</picocli.version>
         <bcript.version>0.9.0</bcript.version>
         <commons.io.version>2.6</commons.io.version>
         <logback.version>1.2.3</logback.version>
         <janino.version>3.1.0</janino.version>
-        <slf4j.api.version>1.7.29</slf4j.api.version>
+        <slf4j.api.version>1.7.30</slf4j.api.version>
         <javax.xml.bind.version>2.3.1</javax.xml.bind.version>
         <javax.mail.api.version>1.6.2</javax.mail.api.version>
         <javax.mail.version>1.6.2</javax.mail.version>
@@ -86,10 +86,11 @@
         <httpclient.version>4.5.10</httpclient.version>
         <httpcore.version>4.4.12</httpcore.version>
         <javaee.web.api.version>8.0.1</javaee.web.api.version>
+        <apache.tika.version>1.23</apache.tika.version>
         
         <!-- test only dependencies version -->
-        <junit.version>4.12</junit.version>
-        <mockito.version>3.2.0</mockito.version>
+        <junit.version>4.13</junit.version>
+        <mockito.version>3.2.4</mockito.version>
         
         <!-- maven plugins versions -->
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
@@ -108,7 +109,7 @@
         <flatten.maven.plugin.version>1.1.0</flatten.maven.plugin.version>
         <properties.maven.plugin.version>1.0.0</properties.maven.plugin.version>
         <serviceloader.maven.plugin.version>1.1.0</serviceloader.maven.plugin.version>
-        <jacoco.maven.plugin.version>0.8.4</jacoco.maven.plugin.version>
+        <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
         <owasp.dependency.check.maven.plugin.version>5.2.1</owasp.dependency.check.maven.plugin.version>
         <frontend.maven.plugin.version>1.8.0</frontend.maven.plugin.version>
         <maven.project.info.reports.plugin.version>3.0.0</maven.project.info.reports.plugin.version>
@@ -281,6 +282,13 @@
             <groupId>org.jboss.narayana.jta</groupId>
             <artifactId>narayana-jta</artifactId>
             <version>${data.nucleus.jta.version}</version>
+        </dependency>
+        
+        <!-- Apache-Tika - Used for file mime type detection -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+             <version>${apache.tika.version}</version>
         </dependency>
         
         <!--JWT--> 
@@ -538,9 +546,6 @@
                     
                     <executions>
                         <execution>
-                            <configuration>
-                                <skip>${skipOutdated}</skip>
-                            </configuration>
                             <phase>generate-resources</phase>
                             <goals>
                                 <goal>display-dependency-updates</goal>
@@ -716,7 +721,7 @@
                 </executions>
             </plugin>
             
-            <!--Generate OpenSilex service loader references--> 
+            <!-- Generate OpenSilex core feature interface --> 
             <plugin>
                 <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
                 <artifactId>serviceloader-maven-plugin</artifactId>
@@ -728,16 +733,44 @@
                         </goals>
                         <configuration>
                             <services>
-                                <param>org.opensilex.module.OpenSilexModule</param>
-                                <param>org.opensilex.module.ModuleUpdate</param>
+                                <param>org.opensilex.OpenSilexModule</param>
                                 <param>org.opensilex.cli.OpenSilexCommand</param>
-                                <param>org.opensilex.sparql.deserializer.SPARQLDeserializer</param>
+                                <param>org.opensilex.module.OpenSilexModuleUpdate</param>
                             </services>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
        
+            <!-- Copy front theme files if exists -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven.resources.plugin.version}</version>
+                <executions>
+                    <!-- Copy Vue.js opensilex configuration into generated Jar file -->
+                    <execution>
+                        <id>Copy Vue theme files</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipFrontBuild}</skip>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${basedir}/target/classes/front/theme</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>front/theme</directory>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
             <!--Generate tests artifact--> 
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -785,7 +818,6 @@
                 <artifactId>maven-site-plugin</artifactId>
                 <version>${maven.site.plugin.version}</version>
                 <configuration>
-                    <source>8</source>
                     <locales>en</locales>
                     <!-- see below to enable multilang doc -->
                     <!--<locales>en,fr</locales>-->

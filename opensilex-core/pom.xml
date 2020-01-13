@@ -46,6 +46,63 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
+        <!-- OpenSilex REST -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-rest</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex REST test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-rest</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <!-- OpenSilex SPARQL -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-sparql</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex SPARQL test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-sparql</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <!-- OpenSilex NOSQL -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-nosql</artifactId>
+            <!--<scope>provided</scope>-->
+            <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex NOSQL test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-nosql</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <!-- OpenSilex File System -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-fs</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex File System test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-fs</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>        
     </dependencies>
     
     <build>

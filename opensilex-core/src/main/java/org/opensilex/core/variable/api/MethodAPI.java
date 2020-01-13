@@ -30,8 +30,8 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.server.security.ApiProtected;
-import org.opensilex.sparql.SPARQLService;
+import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
@@ -134,7 +134,7 @@ public class MethodAPI  {
 
     @GET
     @Path("search")
-    @ApiOperation("Search entities corresponding to given criteria")
+    @ApiOperation("Search methods corresponding to given criteria")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

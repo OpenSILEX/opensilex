@@ -13,7 +13,7 @@ import org.opensilex.OpenSilex;
 import org.opensilex.cli.help.HelpFactory;
 import org.opensilex.cli.help.HelpPrinterCommand;
 import org.opensilex.module.ModuleManager;
-import org.opensilex.module.OpenSilexModule;
+import org.opensilex.OpenSilexModule;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IVersionProvider;
@@ -79,7 +79,7 @@ public class MainCommand extends HelpPrinterCommand implements IVersionProvider 
         CommandLine cli = new CommandLine(new MainCommand());
 
         // Register all commands contained in OpenSilex modules
-        ServiceLoader.load(OpenSilexCommand.class, Thread.currentThread().getContextClassLoader())
+        ServiceLoader.load(OpenSilexCommand.class, OpenSilex.getClassLoader())
                 .forEach((OpenSilexCommand cmd) -> {
                     Command cmdDef = cmd.getClass().getAnnotation(CommandLine.Command.class);
                     cli.addSubcommand(cmdDef.name(), cmd);

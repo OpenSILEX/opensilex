@@ -18,6 +18,7 @@ import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.maven.model.Model;
@@ -306,9 +308,9 @@ public class ClassUtils {
                         LOGGER.error("Error in jar file", ex);
                     }
                 });
-                reflections = new Reflections(ConfigurationBuilder.build("", Thread.currentThread().getContextClassLoader()).setUrls(urls).setExpandSuperTypes(false));
+                reflections = new Reflections(ConfigurationBuilder.build("", OpenSilex.getClassLoader()).setUrls(urls).setExpandSuperTypes(false));
             } else {
-                reflections = new Reflections(ConfigurationBuilder.build("", Thread.currentThread().getContextClassLoader()).setExpandSuperTypes(false));
+                reflections = new Reflections(ConfigurationBuilder.build("", OpenSilex.getClassLoader()).setExpandSuperTypes(false));
             }
         }
 
@@ -328,5 +330,19 @@ public class ClassUtils {
         });
 
         return classMap;
+    }
+
+    public static void listFilesByExtension(String directory, String extensionFilter, Consumer<File> action) throws IOException {
+        Path directoryPath = Paths.get(directory);
+
+        LOGGER.debug("Load files by extension: " + directory + " " + extensionFilter);
+
+        if (Files.exists(directoryPath) && Files.isDirectory(directoryPath)) {
+            Files.walk(directoryPath)
+                    .filter(Files::isRegularFile)
+                    .map(p -> p.toFile())
+                    .filter(f -> f.getAbsolutePath().endsWith("." + extensionFilter))
+                    .forEach(action);
+        }
     }
 }

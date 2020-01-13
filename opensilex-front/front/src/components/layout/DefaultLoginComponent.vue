@@ -3,14 +3,14 @@
     <div class="container-fluid h-100">
       <div class="row flex-row h-100 bg-white">
         <div class="col-xl-8 col-lg-6 col-md-5 p-0 d-md-block d-lg-block d-sm-none d-none">
-            <div class="lavalite-bg" style="background-image: url('opensilex-login-bg.jpg')">
+            <div class="lavalite-bg" v-bind:style="{ 'background-image': 'url(' + $opensilex.getResourceURI('images/opensilex-login-bg.jpg') + ')' }">
                 <div class="lavalite-overlay"></div>
             </div>
         </div>
         <div class="col-xl-4 col-lg-6 col-md-7 my-auto p-0">
           <div class="authentication-form mx-auto">
             <div class="logo-centered">
-                <img src="logo-phis-lg.png" alt="">
+                <img v-bind:src="$opensilex.getResourceURI('images/logo-phis-lg.png')" alt="">
             </div>
             <b-form @submit.prevent="onLogin" class="fullmodal-form">
                 <b-form-group
@@ -65,10 +65,10 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import { SecurityService, TokenGetDTO } from "opensilex/index";
-import { OpenSilexVuePlugin } from "../../models/OpenSilexVuePlugin";
-import HttpResponse, { OpenSilexResponse } from "opensilex/HttpResponse";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { User } from "../../models/User";
+import { SecurityService, TokenGetDTO } from "opensilex-rest/index";
+import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
 
 @Component
 export default class DefaultLoginComponent extends Vue {
@@ -80,7 +80,8 @@ export default class DefaultLoginComponent extends Vue {
   }
 
   $store: any;
-
+  $router: any;
+  
   get user() {
     return this.$store.state.user;
   }
@@ -88,7 +89,7 @@ export default class DefaultLoginComponent extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
   static async asyncInit($opensilex: OpenSilexVuePlugin) {
-    await $opensilex.loadService("opensilex.SecurityService");
+    await $opensilex.loadService("opensilex-rest.SecurityService");
   }
 
   logout() {
@@ -100,7 +101,7 @@ export default class DefaultLoginComponent extends Vue {
   onLogin() {
     this.$opensilex.showLoader();
     this.$opensilex
-      .getService<SecurityService>("opensilex.SecurityService")
+      .getService<SecurityService>("opensilex-rest.SecurityService")
       .authenticate({
         identifier: this.form.email,
         password: this.form.password
@@ -137,6 +138,10 @@ export default class DefaultLoginComponent extends Vue {
   height: 100%;
   width: 100%;
   z-index: 9999;
+}
+
+.logo-centered > img {
+  display: inline-block;
 }
 
 </style>

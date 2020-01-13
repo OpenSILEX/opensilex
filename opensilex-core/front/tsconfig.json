@@ -16,8 +16,7 @@
         "baseUrl": ".",
         "typeRoots": ["node_modules"],
         "types": [
-            "webpack-env",
-            "system"
+            "webpack-env"
         ],
         "paths": {
             "@/*": [

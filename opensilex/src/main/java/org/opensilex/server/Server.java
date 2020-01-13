@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.server;
 
+import org.opensilex.server.admin.ServerAdmin;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -13,6 +14,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.WebResourceRoot;
@@ -25,12 +28,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.jasper.servlet.JasperInitializer;
 import org.apache.tomcat.JarScanType;
 import org.opensilex.OpenSilex;
-import org.opensilex.module.extensions.ServerExtension;
+import org.opensilex.server.extensions.ServerExtension;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.opensilex.fs.FileStorageService;
-import org.opensilex.module.OpenSilexModule;
+import org.opensilex.OpenSilexModule;
 
 /**
  * <pre>
@@ -104,15 +106,14 @@ public class Server extends Tomcat {
         setPort(port);
         setHostname(host);
         getHost().setAppBase(baseDir);
-        getServer().setParentClassLoader(Thread.currentThread().getContextClassLoader());
+        getServer().setParentClassLoader(OpenSilex.getClassLoader());
 
         // Load Swagger root application
         Context appContext = initApp("", "/", "/webapp", getClass());
         appContext.getPipeline().addValve(new RewriteValve());
 
-        FileStorageService fs = instance.getServiceInstance("fs", FileStorageService.class);
         try {
-            fs.listFilesByExtension(instance.getBaseDirectory() + "/webapps", "war", (File warfile) -> {
+            ClassUtils.listFilesByExtension(instance.getBaseDirectory() + "/webapps", "war", (File warfile) -> {
                 String filename = warfile.getName();
                 String context = "/" + filename.substring(0, filename.length() - 4);
                 addWarApp(context, warfile);
@@ -181,14 +182,37 @@ public class Server extends Tomcat {
                 // Define resources as a JAR file
                 resource.createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR, contextPath, jarFile.getCanonicalPath(), null, baseDirectory);
 
-                // Speed class scanning avoiding to scan dependencies
-                context.getJarScanner().setJarScanFilter((JarScanType jarScanType, String jarName) -> {
-                    return jarName.equals(jarFile.getName());
-                });
             } else {
                 // Define resources as a folder if module is a folder (DEV MODE)
                 resource.createWebResourceSet(WebResourceRoot.ResourceSetType.PRE, contextPath, jarFile.getCanonicalPath(), null, baseDirectory);
             }
+
+            // Speed class scanning avoiding to scan useless dependencies
+            Set<String> jarModules = new HashSet<>();
+            this.instance.getModules().forEach((module) -> {
+                File moduleJarFile = ClassUtils.getJarFile(module.getClass());
+                if (moduleJarFile.getName().endsWith(".jar")) {
+                    jarModules.add(moduleJarFile.getName());
+                }
+            });
+            
+            // Change application scanner to avoid land and unnecessary library scan
+            context.getJarScanner().setJarScanFilter((JarScanType jarScanType, String jarName) -> {
+                if (jarScanType == JarScanType.TLD) {
+                    if (jarName.endsWith(".jar")) {
+                        boolean shouldBeScan = jarModules.contains(jarName);
+                        if (shouldBeScan) {
+                            LOGGER.debug("Scan for Tomcat TLD: " + jarName);
+                        }
+                        return shouldBeScan;
+                    } else {
+                        return true;
+                    }
+                } else {
+                    return true;
+                }
+            });
+
             // Add resources to context
             context.setResources(resource);
 

@@ -6,8 +6,8 @@
 package org.opensilex.utils;
 
 import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.filter.ThresholdFilter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.filter.Filter;
 import ch.qos.logback.core.spi.FilterReply;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,21 +16,31 @@ import java.util.List;
  *
  * @author vincent
  */
-public class LogFilter extends Filter<ILoggingEvent> {
+public class LogFilter extends ThresholdFilter {
 
     public static void forceDebug() {
         levelOverride = Level.DEBUG;
     }
     private static Level levelOverride;
-    
-    private Level level;
+
+    private Level customLevel;
     private List<String> loggerIncludeList = new ArrayList<String>();
     private List<String> loggerExcludeList = new ArrayList<String>();
+    private List<String> debug = new ArrayList<String>();
 
     @Override
     public FilterReply decide(ILoggingEvent event) {
         if (!isStarted()) {
             return FilterReply.NEUTRAL;
+        }
+
+        if (event.getLoggerName().equals("org.opensilex.server.Server")) {
+            boolean a = true;
+            a = false;
+        }
+        
+        if (debug.contains(event.getLoggerName())) {
+            return FilterReply.ACCEPT;
         }
 
         boolean hasMatch = (loggerIncludeList.size() == 0);
@@ -50,22 +60,26 @@ public class LogFilter extends Filter<ILoggingEvent> {
             }
         }
 
-        if (hasMatch && event.getLevel().isGreaterOrEqual(getLevel())) {
+        if (hasMatch && event.getLevel().isGreaterOrEqual(getCustomLevel())) {
             return FilterReply.ACCEPT;
         } else {
-            return FilterReply.NEUTRAL;
+            return super.decide(event);
         }
     }
 
-    public void setLevel(Level level) {
-        this.level = level;
+    public void setDebug(String logger) {
+        this.debug.add(logger);
     }
 
-    public Level getLevel() {
+    public void setCustomLevel(Level level) {
+        this.customLevel = level;
+    }
+
+    public Level getCustomLevel() {
         if (levelOverride != null) {
             return levelOverride;
         }
-        return level;
+        return customLevel;
     }
 
     public void setInclude(String logger) {
@@ -77,7 +91,7 @@ public class LogFilter extends Filter<ILoggingEvent> {
     }
 
     public void start() {
-        if (this.getLevel() != null) {
+        if (this.getCustomLevel() != null) {
             super.start();
         }
     }

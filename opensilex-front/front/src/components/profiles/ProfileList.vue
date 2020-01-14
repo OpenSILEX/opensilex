@@ -21,19 +21,16 @@
       :sort-desc.sync="sortDesc"
       no-provider-paging
     >
-      <template v-slot:cell(email)="data">
-        <a :href="'mailto:' + data.item.email">{{ data.item.email }}</a>
+      <template v-slot:cell(credentials)="data">
+        <ul>
+          <li v-for="credential in data.item.credentials" v-bind:key="credential">{{credential}}</li>
+        </ul>
       </template>
 
       <template v-slot:cell(uri)="data">
         <a class="uri-info">
           <small>{{ data.item.uri }}</small>
         </a>
-      </template>
-
-      <template v-slot:cell(admin)="data">
-        <small v-if="data.item.admin">Yes</small>
-        <small v-if="!data.item.admin">No</small>
       </template>
 
       <template v-slot:cell(actions)="data">
@@ -67,10 +64,10 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { UserService, UserGetDTO, ProfileService } from "opensilex-rest/index";
+import { ProfileService, ProfileGetDTO } from "opensilex-rest/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
 
 @Component
@@ -88,6 +85,9 @@ export default class ProfileList extends Vue {
   totalRow = 0;
   sortBy = "name";
   sortDesc = false;
+
+  @Prop()
+  credentialsGroups: any;
 
   private filterPatternValue: any = "";
   set filterPattern(value: string) {
@@ -163,7 +163,7 @@ export default class ProfileList extends Vue {
         this.currentPage - 1,
         this.pageSize
       )
-      .then((http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<ProfileGetDTO>>>) => {
         this.totalRow = http.response.metadata.pagination.totalCount;
         this.pageSize = http.response.metadata.pagination.pageSize;
         setTimeout(() => {
@@ -183,7 +183,25 @@ export default class ProfileList extends Vue {
           })
           .catch(function() {});
 
-        return http.response.result;
+        let credentials: any = {};
+        for (let i in this.credentialsGroups) {
+          for (let j in this.credentialsGroups[i].credentials) {
+            let credential = this.credentialsGroups[i].credentials[j];
+            credentials[credential.id] = credential.label;
+          }
+        }
+
+        let result = http.response.result;
+        for (let i in result) {
+          for (let j in result[i].credentials) {
+            let itemCredential: any = result[i].credentials[j];
+            if (credentials[itemCredential]) {
+              result[i].credentials[j] = credentials[itemCredential];
+            }
+          }
+        }
+
+        return result;
       })
       .catch(this.$opensilex.errorHandler);
   }

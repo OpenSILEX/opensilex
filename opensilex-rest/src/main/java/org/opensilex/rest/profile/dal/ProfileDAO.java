@@ -54,7 +54,6 @@ public class ProfileDAO {
             String name,
             List<String> credentials
     ) throws Exception {
-        ProfileModel user = new ProfileModel();
         ProfileModel profile = new ProfileModel();
         profile.setUri(uri);
         profile.setName(name);
@@ -62,7 +61,7 @@ public class ProfileDAO {
 
         sparql.update(profile);
 
-        return user;
+        return profile;
     }
 
     public ListWithPagination<ProfileModel> search(String namePattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {

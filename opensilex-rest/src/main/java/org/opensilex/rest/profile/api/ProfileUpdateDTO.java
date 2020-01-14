@@ -53,7 +53,7 @@ public class ProfileUpdateDTO extends ProfileGetDTO {
         return name;
     }
 
-    @Required
+    @NotNull
     @ApiModelProperty(value = "Profile credentials", required = true)
     @Override
     public List<String> getCredentials() {

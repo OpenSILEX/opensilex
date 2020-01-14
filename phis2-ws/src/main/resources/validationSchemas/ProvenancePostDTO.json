@@ -7,9 +7,10 @@
   "items": {
     "$id": "#/items",
     "type": "object",
-    "title": "The Provenances Schema",
+    "title": "The Items Schema",
     "required": [
       "label",
+      "created",
       "metadata"
     ],
     "properties": {
@@ -19,26 +20,27 @@
         "title": "The Label Schema",
         "default": "",
         "examples": [
-          "PROV-SUA3-LEAF"
+          "test"
         ],
         "pattern": "^(.*)$"
       },
       "comment": {
         "$id": "#/items/properties/comment",
-        "type":  [ "string", "null" ],
+        "type": "string",
         "title": "The Comment Schema",
         "default": "",
         "examples": [
-          "In this provenance we have count the number of leaf per plant"
-        ]
+          "sasa"
+        ],
+        "pattern": "^(.*)$"
       },
-       "created": {
+      "created": {
         "$id": "#/items/properties/created",
         "type": "string",
         "title": "The Created Schema",
         "default": "",
         "examples": [
-          "2019-11-18T13:30:26+0100"
+          "2020-01-14T12:57:25+0100"
         ],
         "pattern": "^(.*)$"
       },
@@ -88,54 +90,15 @@
               }
             }
           },
-          "creationDate": {
-            "$id": "#/items/properties/metadata/properties/creationDate",
-            "type": "string",
-            "title": "The Creationdate Schema",
-            "default": "",
-            "examples": [
-              "2019-11-08T14:36:34+0100"
-            ],
-            "pattern": "^(.*)$"
-          },
           "prov:Agent": {
             "$id": "#/items/properties/metadata/properties/prov:Agent",
-            "type": "object",
-            "title": "The Prov:agent Schema",
-            "required": [
-            ],
-            "properties": {
-              "oeso:SensingDevice": {
-                "$id": "#/items/properties/metadata/properties/prov:Agent/properties/oeso:SensingDevice",
-                "type": "array",
-                "title": "The Oeso:sensingdevice Schema",
-                "items": {
-                  "$id": "#/items/properties/metadata/properties/prov:Agent/properties/oeso:SensingDevice/items",
-                  "type": "string",
-                  "title": "The Items Schema",
-                  "default": "",
-                  "examples": [
-                    "http://www.opensilex.org/sunagri/2018/s18002"
-                  ],
-                  "pattern": "^(.*)$"
-                }
-              },
-              "oeso:Operator": {
-                "$id": "#/items/properties/metadata/properties/prov:Agent/properties/oeso:Operator",
-                "type": "array",
-                "title": "The Oeso:operator Schema",
-                "items": {
-                  "$id": "#/items/properties/metadata/properties/prov:Agent/properties/oeso:Operator/items",
-                  "type": "string",
-                  "title": "The Items Schema",
-                  "default": "",
-                  "examples": [
-                    "http://www.sunagri.fr/sunagri/id/agent/admin_sunagri"
-                  ],
-                  "pattern": "^(.*)$"
-                }
-              }
-            }
+            "type": "array",
+            "title": "The Prov:agent Schema"
+          },
+          "prov:Entity": {
+            "$id": "#/items/properties/metadata/properties/prov:Entity",
+            "type": "array",
+            "title": "The Prov:entity Schema"
           }
         }
       }

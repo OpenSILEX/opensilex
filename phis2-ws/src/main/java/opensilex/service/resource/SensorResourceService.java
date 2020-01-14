@@ -727,7 +727,7 @@ public class SensorResourceService extends ResourceService {
             @ApiParam(value = "Search by provenance", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_URI) @QueryParam("provenance") String provenanceUri,
             @ApiParam(value = "Search by minimal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("startDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String startDate,
             @ApiParam(value = "Search by maximal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("endDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String endDate,
-            @ApiParam(value = "Search by object uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("object")  @URL String object,
+            @ApiParam(value = "Search by object uri", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("object")  @URL String object,
             @PathParam("uri") @Required @URL String uri
         ) {
         DataDAO dataDAO = new DataDAO();
@@ -743,7 +743,7 @@ public class SensorResourceService extends ResourceService {
             provenanceUrisAssociatedToSensor.add(provenanceUri);
         }else{
             Provenance searchProvenance = new Provenance();
-            String jsonFilter = BasicDBObjectBuilder.start("metadata.prov:Agent.oeso:SensingDevice",Arrays.asList(uri)).get().toString();
+            String jsonFilter = BasicDBObjectBuilder.start("metadata.prov:Agent.oeso:SensingDevice", uri).get().toString();
             ArrayList<Provenance> provenances = provenanceDAO.getProvenances(searchProvenance, jsonFilter);
 
             for (Provenance provenance : provenances) {

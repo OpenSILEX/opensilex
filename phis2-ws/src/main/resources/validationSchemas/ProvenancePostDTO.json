@@ -7,10 +7,9 @@
   "items": {
     "$id": "#/items",
     "type": "object",
-    "title": "The Items Schema",
+    "title": "The Provenances Schema",
     "required": [
       "label",
-      "created",
       "metadata"
     ],
     "properties": {
@@ -20,17 +19,17 @@
         "title": "The Label Schema",
         "default": "",
         "examples": [
-          "test"
+          "PROV-SUA3-LEAF"
         ],
         "pattern": "^(.*)$"
       },
       "comment": {
         "$id": "#/items/properties/comment",
-        "type": "string",
+        "type": [ "string", "null" ],
         "title": "The Comment Schema",
         "default": "",
         "examples": [
-          "sasa"
+          "In this provenance we have count the number of leaf per plant"
         ],
         "pattern": "^(.*)$"
       },

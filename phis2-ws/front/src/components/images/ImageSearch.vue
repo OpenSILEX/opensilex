@@ -15,7 +15,6 @@
           v-model="form.soUri"
           type="text"
           debounce="300"
-          required
           placeholder="Enter URI"
         ></b-form-input>
         <template v-slot:append>
@@ -25,11 +24,9 @@
         </template>
 
       </b-input-group>
-
-
-
-      <b-button type="submit" variant="primary">Submit</b-button>
-      <b-button type="reset" variant="danger">Reset</b-button>
+      <b-btn type="submit" variant="primary">
+          Submit</b-btn>
+      <b-btn type="reset" variant="danger">Reset</b-btn>
     </b-form>
   </div>
 </template>

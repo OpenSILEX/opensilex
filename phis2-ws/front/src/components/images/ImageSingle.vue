@@ -14,20 +14,11 @@ import Vue from "vue";
 export default class ImageSingle extends Vue {
   @Prop()
   image: any;
+  $opensilex: any;
 
   link: any = "";
   created() {
-    this.link =
-      "http://localhost:8666/rest/data/file/" + encodeURIComponent(this.image);
-
-    //  let vm = this;
-    // dataService.getDataFile(this.image).then(
-    //       (
-    //         http: HttpResponse<OpenSilexResponse<Array<Uri>>>
-    //       ) => {
-
-    //        vm.link= http.response;
-    //       }).catch(this.$opensilex.errorHandler);
+    this.link = this.$opensilex.getBaseApi() + "/data/file/" + encodeURIComponent(this.image);
   }
 }
 </script>

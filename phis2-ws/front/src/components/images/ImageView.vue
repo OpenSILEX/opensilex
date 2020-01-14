@@ -6,14 +6,27 @@
       aria-controls="collapse-1"
       @click="onSearchButtonClick"
       variant="primary"
-    >Image Search</b-button>
+    >
+      <font-awesome-icon icon="sliders-h" size="sm" /> Search
+    </b-button>
 
     <b-collapse id="collapse-1" v-model="showSearchComponent" class="mt-2">
       <phis2ws-ImageSearch @onSearchFormSubmit="onSearchFormSubmit"></phis2ws-ImageSearch>
     </b-collapse>
 
     <b-collapse id="collapse-2" v-model="showImageListComponent" class="mt-2">
-      <phis2ws-ImageGrid :images="images" ref="imageGrid"></phis2ws-ImageGrid>
+      <div v-if="totalImages>0">
+        <p>Total Image {{totalImages}}</p>
+        <p class="mt-3">Current Page: {{ currentPage }}</p>
+        <phis2ws-ImageGrid :images="images" ref="imageGrid"></phis2ws-ImageGrid>
+        <b-pagination
+          v-model="currentPage"
+          :total-rows="totalImages"
+          :per-page="pageSize"
+          @change="loadDataWithDelay()"
+        ></b-pagination>
+      </div>
+      <div v-else>No images to dispay</div>
     </b-collapse>
   </div>
 </template>
@@ -25,6 +38,7 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import { DataService } from "../../lib/api/data.service";
 import { FileDescriptionDTO } from "../../lib/model/fileDescriptionDTO";
 
+import VueRouter from "vue-router";
 @Component
 export default class ImageView extends Vue {
   $opensilex: any;
@@ -38,15 +52,15 @@ export default class ImageView extends Vue {
 
   images = [];
 
-  currentPage: number = 0;
-  pageSize = 800;
+  currentPage: number = 1;
+  pageSize = 3;
   totalImages = 0;
   private searchImagesFields: any = {
     rdfType: undefined,
     startDate: undefined,
     endDate: undefined,
     provenance: undefined,
-    concernedItems: [],
+    concernedItems: undefined,
     jsonValueFilter: undefined,
     orderByDate: true
   };
@@ -61,7 +75,11 @@ export default class ImageView extends Vue {
     this.showSearchComponent = false;
     this.showImageListComponent = true;
     this.searchImagesFields.rdfType = form.rdfType;
-    this.searchImagesFields.concernedItems.push(form.soUri);
+    if (form.soUri) {
+      this.searchImagesFields.concernedItems = [];
+      this.searchImagesFields.concernedItems.push(form.soUri);
+    }
+
     this.loadData();
   }
 
@@ -69,12 +87,18 @@ export default class ImageView extends Vue {
     this.showSearchComponent = !this.showSearchComponent;
     this.showImageListComponent = !this.showImageListComponent;
   }
+  loadDataWithDelay() {
+    setTimeout(() => {
+      this.loadData();
+    }, 0);
+  }
 
   loadData() {
     this.images = [];
     let dataService: DataService = this.$opensilex.getService(
       "opensilex.DataService"
     );
+    console.log("currentpage send " + this.currentPage);
     if (this.searchImagesFields.rdfType != undefined) {
       dataService
         .getDataFileDescriptionsBySearch(
@@ -87,22 +111,24 @@ export default class ImageView extends Vue {
           this.searchImagesFields.jsonValueFilter,
           this.searchImagesFields.orderByDate,
           this.pageSize,
-          this.currentPage
+          this.currentPage - 1
         )
         .then(
           (
             http: HttpResponse<OpenSilexResponse<Array<FileDescriptionDTO>>>
           ) => {
+            this.searchImagesFields.concernedItems = undefined;
             this.totalImages = http.response.metadata.pagination.totalCount;
             this.pageSize = http.response.metadata.pagination.pageSize;
             const res = http.response.result as any;
             const data = res.data;
             this.images = data;
-            this.searchImagesFields.concernedItems = [];
+            console.log("currentpage receive " + this.currentPage);
           }
         )
-        .catch((error) => {
-          this.searchImagesFields.concernedItems = [];
+        .catch(error => {
+          this.searchImagesFields.concernedItems = undefined;
+          this.totalImages = 0;
           console.log(error);
         });
     }

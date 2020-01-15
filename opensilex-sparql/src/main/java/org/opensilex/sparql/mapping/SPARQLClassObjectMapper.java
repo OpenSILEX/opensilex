@@ -37,6 +37,8 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.*;
 import java.util.function.BiConsumer;
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.sparql.core.Var;
 
 /**
  *
@@ -80,6 +82,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     /**
      * Add a class to the initialization class exclusion list
+     *
      * @param clazz the class to remove from initialization
      * @see #initialize()
      */
@@ -157,7 +160,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         if (defaultGraph != null) {
             return defaultGraph.toString();
         }
-        
+
         return null;
     }
 
@@ -342,6 +345,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             LOGGER.error("Unknown URI field for a resource, should never happend", ex);
             return null;
         }
+    }
+
+    public Var getURIFieldVar() {
+        return makeVar(getURIFieldName());
     }
 
     public ExprVar getFieldExprVar(String fieldName) throws SPARQLUnknownFieldException {

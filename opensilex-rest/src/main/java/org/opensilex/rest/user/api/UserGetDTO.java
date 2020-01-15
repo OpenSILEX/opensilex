@@ -58,7 +58,7 @@ public class UserGetDTO {
      */
     protected boolean admin;
 
-    @ApiModelProperty(value = "User URI", example = "http://opensilex.dev/users#agent.Admin_OpenSilex")
+    @ApiModelProperty(value = "User URI", example = "http://opensilex.dev/users#Admin.OpenSilex")
     public URI getUri() {
         return uri;
     }

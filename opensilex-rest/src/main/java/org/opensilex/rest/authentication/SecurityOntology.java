@@ -28,17 +28,13 @@ public class SecurityOntology {
     public static final String PREFIX = "os-sec";
 
     public static final Resource Group = Ontology.resource(NAMESPACE, "Group");
-    public static final Resource SecurityProfile = Ontology.resource(NAMESPACE, "GroupProfile");
+    public static final Resource Profile = Ontology.resource(NAMESPACE, "Profile");
 
     public static final Property hasPasswordHash = Ontology.property(NAMESPACE, "hasPasswordHash");
     public static final Property hasUser = Ontology.property(NAMESPACE, "hasUser");
     public static final Property hasProfile = Ontology.property(NAMESPACE, "hasProfile");
     public static final Property hasAccess = Ontology.property(NAMESPACE, "hasAccess");
     public static final Property isAdmin = Ontology.property(NAMESPACE, "isAdmin");
-    
-    public static final Resource Profile = Ontology.resource(NAMESPACE, "Profile");
-    
-    public static final Property hasName = Ontology.property(NAMESPACE, "hasName");
     public static final Property hasCredential = Ontology.property(NAMESPACE, "hasCredential");
 
 }

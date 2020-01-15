@@ -62,7 +62,7 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author Vincent Migot
  */
-@Api("Users")
+@Api("User")
 @Path("/user")
 public class UserAPI {
 
@@ -157,7 +157,7 @@ public class UserAPI {
         @ApiResponse(code = 404, message = "User not found", response = ErrorDTO.class)
     })
     public Response getUser(
-            @ApiParam(value = "User URI", example = "dev-users:agent.Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "User URI", example = "dev-users:Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         // Get user from DAO by URI
         UserDAO dao = new UserDAO(sparql, authentication);
@@ -237,7 +237,7 @@ public class UserAPI {
         @ApiResponse(code = 400, message = "Invalid parameters")
     })
     public Response updateUser(
-            @ApiParam("Project description") @Valid UserUpdateDTO dto
+            @ApiParam("User description") @Valid UserUpdateDTO dto
     ) throws Exception {
         UserDAO dao = new UserDAO(sparql, authentication);
 
@@ -259,8 +259,8 @@ public class UserAPI {
         } else {
             return new ErrorResponse(
                     Response.Status.NOT_FOUND,
-                    "Project not found",
-                    "Unknown project URI: " + uri
+                    "User not found",
+                    "Unknown user URI: " + uri
             ).getResponse();
         }
     }

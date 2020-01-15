@@ -7,9 +7,17 @@ package org.opensilex.rest.profile.dal;
 
 import java.net.URI;
 import java.util.List;
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.syntax.ElementNamedGraph;
+import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.rest.authentication.SecurityOntology;
+import org.opensilex.rest.group.dal.GroupModel;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
@@ -83,10 +91,28 @@ public class ProfileDAO {
 
     public ProfileModel getProfileByName(String name) throws Exception {
         ProfileModel profile = sparql.getByUniquePropertyValue(ProfileModel.class,
-                SecurityOntology.hasName,
+                DCTerms.title,
                 name
         );
 
         return profile;
+    }
+
+    public List<ProfileModel> getByUserURI(URI uri) throws Exception {
+        return sparql.search(
+                ProfileModel.class,
+                (SelectBuilder select) -> {
+                    SPARQLClassObjectMapper<SPARQLResourceModel> profileMapper = SPARQLClassObjectMapper.getForClass(ProfileModel.class);
+                    Var profileURIVar = profileMapper.getURIFieldVar();
+                    Var groupURIVar = makeVar("__groupURI");
+                    WhereHandler whereHandler = new WhereHandler();
+                    whereHandler.addWhere(select.makeTriplePath(groupURIVar, SecurityOntology.hasProfile, profileURIVar));
+                    whereHandler.addWhere(select.makeTriplePath(groupURIVar, SecurityOntology.hasUser, uri));
+
+                    SPARQLClassObjectMapper<SPARQLResourceModel> groupMapper = SPARQLClassObjectMapper.getForClass(GroupModel.class);
+                    ElementNamedGraph elementNamedGraph = new ElementNamedGraph(groupMapper.getDefaultGraph(), whereHandler.getElement());
+                    select.getWhereHandler().getClause().addElement(elementNamedGraph);
+                }
+        );
     }
 }

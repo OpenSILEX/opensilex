@@ -1,11 +1,8 @@
 
 <template>
-  <div>
-    <div class="row text-center text-lg-left">
-      <phis2ws-Image v-for="(image, index) in images" v-bind:key="index" :image="image.uri">
-       
-      </phis2ws-Image>
-    </div>
+<div class="row">
+    <phis2ws-Image v-for="(image, index) in images" v-bind:key="index" :image="image"></phis2ws-Image>
+    <phis2ws-Image v-for="(image, index) in images" v-bind:key="index" :image="image"></phis2ws-Image>
   </div>
 </template>
 
@@ -17,7 +14,6 @@ import Vue from "vue";
 export default class ImageGrid extends Vue {
   @Prop()
   images: any;
- 
 }
 </script>
 

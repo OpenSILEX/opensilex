@@ -16,7 +16,6 @@
 
     <div v-if="totalImages>0">
       <p>Total Image {{totalImages}}</p>
-      <p class="mt-3">Current Page: {{ currentPage }}</p>
       <phis2ws-ImageGrid :images="images" ref="imageGrid"></phis2ws-ImageGrid>
 
       <b-pagination
@@ -52,7 +51,7 @@ export default class ImageView extends Vue {
   images = [];
 
   currentPage: number = 1;
-  pageSize = 3;
+  pageSize = 20;
   totalImages = 0;
   private searchImagesFields: any = {
     rdfType: undefined,

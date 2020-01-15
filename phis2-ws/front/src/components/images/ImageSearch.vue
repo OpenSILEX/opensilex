@@ -22,10 +22,30 @@
             <font-awesome-icon icon="times" size="sm" />
           </b-btn>
         </template>
-
       </b-input-group>
-      <b-btn type="submit" variant="primary">
-          Submit</b-btn>
+
+      <b-form inline>
+      <label class="mr-sm-2" for="inline-form-custom-select-pref">Start Date</label>
+      <b-input-group class="mt-3 mb-3" size="sm" id="inline-form-custom-select-pref">
+        <datePicker v-model="form.startDate"
+          input-class="form-control"
+          placeholder="Select a date"
+         
+        ></datePicker>
+      </b-input-group>
+
+       <label class="mr-sm-2 ml-4" for="inline-2">End Date</label>
+      <b-input-group class="mt-3 mb-3" size="sm" id="inline-2">
+        <datePicker v-model="form.endDate"
+          input-class="form-control"
+          placeholder="Select a date"
+         
+        ></datePicker>
+      </b-input-group>
+
+      </b-form>
+
+      <b-btn type="submit" variant="primary">Submit</b-btn>
       <b-btn type="reset" variant="danger">Reset</b-btn>
     </b-form>
   </div>

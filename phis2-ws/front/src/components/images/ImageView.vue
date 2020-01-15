@@ -7,7 +7,7 @@
       @click="onSearchButtonClick"
       variant="primary"
     >
-      <font-awesome-icon icon="sliders-h" size="sm" /> Search
+      <font-awesome-icon icon="sliders-h" size="sm" />Search
     </b-button>
 
     <b-collapse id="collapse-1" v-model="showSearchComponent" class="mt-2">
@@ -72,6 +72,7 @@ export default class ImageView extends Vue {
   }
 
   onSearchFormSubmit(form) {
+    console.log(form);
     this.showSearchComponent = false;
     this.showImageListComponent = true;
     this.searchImagesFields.rdfType = form.rdfType;
@@ -79,10 +80,25 @@ export default class ImageView extends Vue {
       this.searchImagesFields.concernedItems = [];
       this.searchImagesFields.concernedItems.push(form.soUri);
     }
-
+    if (form.startDate) {
+      const date = form.startDate;
+      console.log(this.format(date));
+      this.searchImagesFields.startDate = this.format(date);
+    }
+    if (form.endDate) {
+      const date = form.endDate;
+      console.log(this.format(date));
+      this.searchImagesFields.endDate = this.format(date);
+    }
     this.loadData();
   }
 
+  format(date) {
+    var day = ("0" + date.getDate()).slice(-2);
+    var month = ("0" + (date.getMonth() + 1)).slice(-2);
+    var year = date.getFullYear();
+    return year + "-" + month + "-" + day;
+  }
   onSearchButtonClick() {
     this.showSearchComponent = !this.showSearchComponent;
     this.showImageListComponent = !this.showImageListComponent;
@@ -98,7 +114,6 @@ export default class ImageView extends Vue {
     let dataService: DataService = this.$opensilex.getService(
       "opensilex.DataService"
     );
-    console.log("currentpage send " + this.currentPage);
     if (this.searchImagesFields.rdfType != undefined) {
       dataService
         .getDataFileDescriptionsBySearch(
@@ -123,7 +138,6 @@ export default class ImageView extends Vue {
             const res = http.response.result as any;
             const data = res.data;
             this.images = data;
-            console.log("currentpage receive " + this.currentPage);
           }
         )
         .catch(error => {

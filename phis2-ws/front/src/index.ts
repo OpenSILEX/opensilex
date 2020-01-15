@@ -7,7 +7,6 @@ import ImageSingle from './components/images/ImageSingle.vue';
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faSlidersH } from '@fortawesome/free-solid-svg-icons'
 library.add(faSlidersH);
-
 export default {
     install(Vue, options) {
         ApiServiceBinder.with(Vue.$opensilex.getServiceContainer());

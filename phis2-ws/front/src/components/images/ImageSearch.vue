@@ -12,37 +12,32 @@
       <b-input-group class="mt-3 mb-3" size="sm" label="Scientific Object URI" label-for="soUri">
         <b-form-input
           id="soUri"
-          v-model="form.soUri"
+          v-model="form.concernedItems"
           type="text"
           debounce="300"
           placeholder="Enter URI"
         ></b-form-input>
         <template v-slot:append>
-          <b-btn :disabled="!form.soUri" variant="primary" @click="form.soUri = ''">
+          <b-btn :disabled="!form.concernedItems" variant="primary" @click="form.concernedItems = ''">
             <font-awesome-icon icon="times" size="sm" />
           </b-btn>
         </template>
       </b-input-group>
 
       <b-form inline>
-      <label class="mr-sm-2" for="inline-form-custom-select-pref">Start Date</label>
-      <b-input-group class="mt-3 mb-3" size="sm" id="inline-form-custom-select-pref">
-        <datePicker v-model="form.startDate"
-          input-class="form-control"
-          placeholder="Select a date"
-         
-        ></datePicker>
-      </b-input-group>
+        <label class="mr-sm-2" for="inline-form-custom-select-pref">Start Date</label>
+        <b-input-group class="mt-3 mb-3" size="sm" id="inline-form-custom-select-pref">
+          <datePicker
+            v-model="form.startDate"
+            input-class="form-control"
+            placeholder="Select a date"
+          ></datePicker>
+        </b-input-group>
 
-       <label class="mr-sm-2 ml-4" for="inline-2">End Date</label>
-      <b-input-group class="mt-3 mb-3" size="sm" id="inline-2">
-        <datePicker v-model="form.endDate"
-          input-class="form-control"
-          placeholder="Select a date"
-         
-        ></datePicker>
-      </b-input-group>
-
+        <label class="mr-sm-2 ml-4" for="inline-2">End Date</label>
+        <b-input-group class="mt-3 mb-3" size="sm" id="inline-2">
+          <datePicker v-model="form.endDate" input-class="form-control" placeholder="Select a date"></datePicker>
+        </b-input-group>
       </b-form>
 
       <b-btn type="submit" variant="primary">Submit</b-btn>
@@ -53,7 +48,7 @@
 
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import { UriService } from "../../lib/api/uri.service";
@@ -66,7 +61,7 @@ export default class ImageSearch extends Vue {
   get user() {
     return this.$store.state.user;
   }
-
+  @Prop()
   form: any = {
     type: null
   };

@@ -11,6 +11,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.rest.group.dal.GroupModel;
+import org.opensilex.rest.group.dal.GroupUserProfile;
 import org.opensilex.rest.profile.dal.ProfileModel;
 import org.opensilex.rest.user.dal.UserModel;
 
@@ -30,10 +31,8 @@ public class GroupGetDTO {
     
     protected String description;
     
-    protected List<URI> profiles;
+    protected List<GroupUserProfileDTO> userProfiles;
     
-    protected List<URI> users;
-
     @ApiModelProperty(value = "Group URI", example = "http://opensilex.dev/groups#Experiment_manager")
     public URI getUri() {
         return uri;
@@ -61,22 +60,13 @@ public class GroupGetDTO {
         this.description = description;
     }
 
-    @ApiModelProperty(value = "Group profiles")
-    public List<URI> getProfiles() {
-        return profiles;
+    @ApiModelProperty(value = "Group user with profile")
+    public List<GroupUserProfileDTO> getUserProfiles() {
+        return userProfiles;
     }
 
-    public void setProfiles(List<URI> profiles) {
-        this.profiles = profiles;
-    }
-
-    @ApiModelProperty(value = "Group users")
-    public List<URI> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<URI> users) {
-        this.users = users;
+    public void setUserProfiles(List<GroupUserProfileDTO> userProfiles) {
+        this.userProfiles = userProfiles;
     }
     
     public static GroupGetDTO fromModel(GroupModel group) {
@@ -85,42 +75,18 @@ public class GroupGetDTO {
         dto.setName(group.getName());
         dto.setDescription(group.getDescription());
         
-        List<URI> profiles = new ArrayList<>();
-        group.getProfiles().forEach((profile) -> {
-            profiles.add(profile.getUri());
+        List<GroupUserProfileDTO> userProfiles = new ArrayList<>();
+        group.getUserProfiles().forEach((userProfile) -> {
+            GroupUserProfileDTO userProfileDTO = new GroupUserProfileDTO();
+            userProfileDTO.setProfileURI(userProfile.getProfile().getUri());
+            userProfileDTO.setProfileName(userProfile.getProfile().getName());
+            userProfileDTO.setUserURI(userProfile.getUser().getUri());
+            userProfileDTO.setUserName(userProfile.getUser().getName());
+            userProfileDTO.setUri(userProfile.getUri());
+            userProfiles.add(userProfileDTO);
         });
-        dto.setProfiles(profiles);
-        
-        List<URI> users = new ArrayList<>();
-        group.getUsers().forEach((user) -> {
-            profiles.add(user.getUri());
-        });
-        dto.setUsers(users);
+        dto.setUserProfiles(userProfiles);
         
         return dto;
-    }
-    
-    public GroupModel getModel() {
-        GroupModel group = new GroupModel();
-        group.setUri(uri);
-        group.setName(name);
-        group.setDescription(description);
-        List<UserModel> usersModel = new ArrayList<>();
-        users.forEach((userURI) -> {
-            UserModel user = new UserModel();
-            user.setUri(userURI);
-            usersModel.add(user);
-        });
-        group.setUsers(usersModel);
-
-        List<ProfileModel> profilesModel = new ArrayList<>();
-        profiles.forEach((profileURI) -> {
-            ProfileModel profile = new ProfileModel();
-            profile.setUri(profileURI);
-            profilesModel.add(profile);
-        });
-        group.setProfiles(profilesModel);
-
-        return group;
     }
 }

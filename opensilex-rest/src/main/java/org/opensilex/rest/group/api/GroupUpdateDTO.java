@@ -31,14 +31,4 @@ public class GroupUpdateDTO extends GroupGetDTO {
     public String getName() {
         return super.getName();
     }
-
-    @ValidURI
-    public List<URI> getProfiles() {
-        return super.getProfiles();
-    }
-
-    @ValidURI
-    public List<URI> getUsers() {
-        return super.getUsers();
-    }
 }

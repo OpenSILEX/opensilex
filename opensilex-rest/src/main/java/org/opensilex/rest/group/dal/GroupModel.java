@@ -25,7 +25,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         graph = "groups",
         prefix = "g"
 )
-public class GroupModel extends SPARQLResourceModel implements ClassURIGenerator<ProfileModel> {
+public class GroupModel extends SPARQLResourceModel implements ClassURIGenerator<GroupModel> {
 
     @SPARQLProperty(
             ontology = DCTerms.class,
@@ -45,15 +45,9 @@ public class GroupModel extends SPARQLResourceModel implements ClassURIGenerator
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,
-            property = "hasUser"
+            property = "hasUserProfile"
     )
-    private List<UserModel> users;
-
-    @SPARQLProperty(
-            ontology = SecurityOntology.class,
-            property = "hasProfile"
-    )
-    private List<ProfileModel> profiles;
+    private List<GroupUserProfile> userProfiles;
 
     public String getName() {
         return name;
@@ -71,24 +65,16 @@ public class GroupModel extends SPARQLResourceModel implements ClassURIGenerator
         this.description = description;
     }
 
-    public List<UserModel> getUsers() {
-        return users;
+    public List<GroupUserProfile> getUserProfiles() {
+        return userProfiles;
     }
 
-    public void setUsers(List<UserModel> users) {
-        this.users = users;
-    }
-
-    public List<ProfileModel> getProfiles() {
-        return profiles;
-    }
-
-    public void setProfiles(List<ProfileModel> profiles) {
-        this.profiles = profiles;
+    public void setUserProfiles(List<GroupUserProfile> userProfiles) {
+        this.userProfiles = userProfiles;
     }
 
     @Override
-    public String[] getUriSegments(ProfileModel instance) {
+    public String[] getUriSegments(GroupModel instance) {
         return new String[]{
             instance.getName()
         };

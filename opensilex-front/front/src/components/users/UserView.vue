@@ -6,7 +6,7 @@
       @onCreate="callCreateUserService"
       @onUpdate="callUpdateUserService"
     ></opensilex-UserForm>
-    <opensilex-UserList ref="UserList" @onEdit="editUser" @onDelete="deleteUser"></opensilex-UserList>
+    <opensilex-UserList ref="userList" @onEdit="editUser" @onDelete="deleteUser"></opensilex-UserList>
   </div>
 </template>
 
@@ -42,7 +42,7 @@ export default class UserView extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("User created", uri);
-          let userList: any = this.$refs.UserList;
+          let userList: any = this.$refs.userList;
           userList.refresh();
         })
     );
@@ -55,7 +55,7 @@ export default class UserView extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("User updated", uri);
-          let userList: any = this.$refs.UserList;
+          let userList: any = this.$refs.userList;
           userList.refresh();
         })
     );
@@ -68,7 +68,7 @@ export default class UserView extends Vue {
 
   deleteUser(uri: string) {
     this.service.deleteUser(this.user.getAuthorizationHeader(), uri).then(() => {
-      let userList: any = this.$refs.UserList;
+      let userList: any = this.$refs.userList;
       userList.refresh();
     })
     .catch(this.$opensilex.errorHandler);

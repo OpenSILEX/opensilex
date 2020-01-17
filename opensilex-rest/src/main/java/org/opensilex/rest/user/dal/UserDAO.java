@@ -13,8 +13,8 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.rest.authentication.AuthenticationService;
-import org.opensilex.rest.security.dal.SecurityProfileModel;
-import org.opensilex.rest.security.dal.SecurityProfileModelDAO;
+import org.opensilex.rest.profile.dal.ProfileDAO;
+import org.opensilex.rest.profile.dal.ProfileModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
@@ -131,12 +131,12 @@ public class UserDAO {
     }
 
     public List<String> getAccessList(URI uri) throws Exception {
-        SecurityProfileModelDAO profileDAO = new SecurityProfileModelDAO(sparql);
-        List<SecurityProfileModel> userProfiles = profileDAO.getByUserURI(uri);
+        ProfileDAO profileDAO = new ProfileDAO(sparql);
+        List<ProfileModel> userProfiles = profileDAO.getByUserURI(uri);
 
         List<String> accessList = new ArrayList<>();
-        userProfiles.forEach((SecurityProfileModel profile) -> {
-            accessList.addAll(profile.getAccessList());
+        userProfiles.forEach((ProfileModel profile) -> {
+            accessList.addAll(profile.getCredentials());
         });
 
         return accessList;

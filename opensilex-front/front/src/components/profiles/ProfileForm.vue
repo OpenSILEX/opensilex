@@ -28,18 +28,18 @@
           autocomplete="no"
         ></b-form-input>
       </b-form-group>
-      
+
       <b-card no-body>
         <b-tabs pills card>
           <b-tab
             v-for="credentialsGroup in credentialsGroups"
             v-bind:key="credentialsGroup.groupId"
-            :title="credentialsGroup.groupId"
+            v-bind:title="credentialsGroup.groupId"
           >
             <b-form-checkbox-group
               v-bind:key="credentialsGroup.groupId"
               v-model="selectedCredentials[credentialsGroup.groupId]"
-              :options="credentialOptions[credentialsGroup.groupId]"
+              v-bind:options="credentialOptions[credentialsGroup.groupId]"
               switches
             ></b-form-checkbox-group>
           </b-tab>
@@ -54,9 +54,9 @@ import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import {
-  UserCreationDTO,
   ProfileGetDTO,
-  CredentialsGroupDTO
+  CredentialsGroupDTO,
+  ProfileCreationDTO
 } from "opensilex-rest/index";
 
 @Component
@@ -74,13 +74,29 @@ export default class ProfileForm extends Vue {
   @Prop()
   credentialsGroups: any;
 
+  private _selectedCredentials = null;
+
   get selectedCredentials() {
     let def: any = {};
-    // for (let i in this.credentialsGroups) {
-    //   def[this.credentialsGroups[i].groupId] = [];
-    // }
+    let credentialsGroups = this.credentialsGroups;
+    for (let i = 0; i < credentialsGroups.length; i++) {
+      def[credentialsGroups[i].groupId] = [];
 
-    return def;
+      for (let j = 0; j < credentialsGroups[i].credentials.length; j++) {
+        let credentialId = credentialsGroups[i].credentials[j].id;
+        if (this.form.credentials.indexOf(credentialId) >= 0) {
+          def[credentialsGroups[i].groupId].push(credentialId);
+        }
+      }
+    }
+
+    this._selectedCredentials = def;
+
+    return this._selectedCredentials;
+  }
+
+  set selectedCredentials(value) {
+    this._selectedCredentials = value;
   }
 
   get credentialOptions() {
@@ -128,7 +144,7 @@ export default class ProfileForm extends Vue {
     modalRef.show();
   }
 
-  showEditForm(form: UserCreationDTO) {
+  showEditForm(form: ProfileCreationDTO) {
     this.form = form;
     this.editMode = true;
     this.title = "Update profile";
@@ -143,6 +159,12 @@ export default class ProfileForm extends Vue {
   }
 
   onValidate() {
+    let credentials = [];
+    for (let i in this._selectedCredentials) {
+      credentials = credentials.concat(this._selectedCredentials[i]);
+    }
+    this.form.credentials = credentials;
+
     return new Promise((resolve, reject) => {
       if (this.editMode) {
         this.$emit("onUpdate", this.form, result => {
@@ -180,8 +202,8 @@ export default class ProfileForm extends Vue {
         })
         .catch(error => {
           if (error.status == 409) {
-            // TODO display error message user already exists
-            console.error("TODO display error message user already exists");
+            // TODO display error message profile already exists
+            console.error("TODO display error message profile already exists");
           } else {
             this.$opensilex.errorHandler(error);
           }
@@ -195,6 +217,5 @@ export default class ProfileForm extends Vue {
 </script>
 
 <style scoped lang="scss">
-
 </style>
 

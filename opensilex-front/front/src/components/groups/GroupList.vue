@@ -2,7 +2,7 @@
   <div>
     <b-input-group class="mt-3 mb-3" size="sm">
       <b-input-group>
-        <b-form-input v-model="filterPattern" debounce="300" placeholder="Filter profiles"></b-form-input>
+        <b-form-input v-model="filterPattern" debounce="300" placeholder="Filter groups"></b-form-input>
         <template v-slot:append>
           <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
             <font-awesome-icon icon="times" size="sm" />
@@ -21,12 +21,6 @@
       :sort-desc.sync="sortDesc"
       no-provider-paging
     >
-      <template v-slot:cell(credentials)="data">
-        <ul>
-          <li v-for="credential in data.item.credentials" v-bind:key="credential">{{credential}}</li>
-        </ul>
-      </template>
-
       <template v-slot:cell(uri)="data">
         <a class="uri-info">
           <small>{{ data.item.uri }}</small>
@@ -64,14 +58,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { ProfileService, ProfileGetDTO } from "opensilex-rest/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
+import { GroupService, GroupGetDTO } from "opensilex-rest/index";
 
 @Component
-export default class ProfileList extends Vue {
+export default class GroupList extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
@@ -85,9 +79,6 @@ export default class ProfileList extends Vue {
   totalRow = 0;
   sortBy = "name";
   sortDesc = false;
-
-  @Prop()
-  credentialsGroups: any;
 
   private filterPatternValue: any = "";
   set filterPattern(value: string) {
@@ -124,11 +115,14 @@ export default class ProfileList extends Vue {
       sortable: true
     },
     {
-      key: "credentials"
+      key: "description",
+      sortable: true
     },
     {
-      key: "uri",
-      sortable: true
+      key: "profiles"
+    },
+    {
+      key: "users"
     },
     {
       key: "actions"
@@ -141,8 +135,8 @@ export default class ProfileList extends Vue {
   }
 
   loadData() {
-    let service: ProfileService = this.$opensilex.getService(
-      "opensilex.ProfileService"
+    let service: GroupService = this.$opensilex.getService(
+      "opensilex.GroupService"
     );
 
     let orderBy = [];
@@ -156,14 +150,14 @@ export default class ProfileList extends Vue {
     }
 
     return service
-      .searchProfiles(
+      .searchGroups(
         this.user.getAuthorizationHeader(),
         this.filterPattern,
         orderBy,
         this.currentPage - 1,
         this.pageSize
       )
-      .then((http: HttpResponse<OpenSilexResponse<Array<ProfileGetDTO>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<GroupGetDTO>>>) => {
         this.totalRow = http.response.metadata.pagination.totalCount;
         this.pageSize = http.response.metadata.pagination.pageSize;
         setTimeout(() => {
@@ -183,25 +177,7 @@ export default class ProfileList extends Vue {
           })
           .catch(function() {});
 
-        let credentials: any = {};
-        for (let i in this.credentialsGroups) {
-          for (let j in this.credentialsGroups[i].credentials) {
-            let credential = this.credentialsGroups[i].credentials[j];
-            credentials[credential.id] = credential.label;
-          }
-        }
-
-        let result = http.response.result;
-        for (let i in result) {
-          for (let j in result[i].credentials) {
-            let itemCredential: any = result[i].credentials[j];
-            if (credentials[itemCredential]) {
-              result[i].credentials[j] = credentials[itemCredential];
-            }
-          }
-        }
-
-        return result;
+        return http.response.result;
       })
       .catch(this.$opensilex.errorHandler);
   }

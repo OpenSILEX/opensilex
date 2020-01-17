@@ -10,6 +10,9 @@ import UserView from './users/UserView.vue';
 import ProfileForm from './profiles/ProfileForm.vue';
 import ProfileView from './profiles/ProfileView.vue';
 import ProfileList from './profiles/ProfileList.vue';
+import GroupForm from './groups/GroupForm.vue';
+import GroupView from './groups/GroupView.vue';
+import GroupList from './groups/GroupList.vue';
 import ToDoComponent from './layout/ToDoComponent.vue';
 
 export default {
@@ -25,5 +28,8 @@ export default {
     'opensilex-ProfileForm': ProfileForm,
     'opensilex-ProfileView': ProfileView,
     'opensilex-ProfileList': ProfileList,
+    'opensilex-GroupForm': GroupForm,
+    'opensilex-GroupView': GroupView,
+    'opensilex-GroupList': GroupList,
     'opensilex-ToDoComponent': ToDoComponent
 };

@@ -7,6 +7,7 @@ package org.opensilex.rest.profile.dal;
 
 import org.opensilex.rest.authentication.SecurityOntology;
 import java.util.List;
+import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -25,8 +26,8 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 public class ProfileModel extends SPARQLResourceModel implements ClassURIGenerator<ProfileModel> {
 
     @SPARQLProperty(
-            ontology = SecurityOntology.class,
-            property = "hasName",
+            ontology = DCTerms.class,
+            property = "title",
             required = true
     )
     private String name;
@@ -37,7 +38,6 @@ public class ProfileModel extends SPARQLResourceModel implements ClassURIGenerat
             property = "hasCredential"
     )
     private List<String> credentials;
-    public static final String LAST_NAME_FIELD = "firstName";
 
     public String getName() {
         return name;

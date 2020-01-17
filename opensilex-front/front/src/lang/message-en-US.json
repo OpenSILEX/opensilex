@@ -1,42 +1,75 @@
 {
-    "en-US": {
-        "component": {
-            "common": {
-                
+    "component": {
+        "common": {
+            
+        },
+        "header": {
+            "language": {
+                "fr": "French",
+                "en-US": "English"
             },
+            "user": {
+                "admin": "Admin",
+                "logout": "Logout"
+            }
+        },
+        "menu": {
+            "dashboard": "Dashboard",
+            "data": "Data",
+            "experiments": "Experiments",
+            "installations": "Installations",
+            "projects": "Projects",
+            "scientificObjects": "Scientific Objects",
+            "equipments": {
+                "icon": "ik-folder",
+                "label": "Equipments",
+                "sensors": "Sensors",
+                "actuators": "Actuators",
+                "vectors": "Vectors",
+                "radiometricTargets": "Radiometric Targets"
+            },
+            "security": {
+                "label": "Security",
+                "users": "Users",
+                "groups": "Groups",
+                "profiles": "Profiles"
+            }
+        },
+        "login": {
+            "input": {
+                "email": "Email",
+                "password": "Password"
+            },
+            "remember-me": "Remember Me",
+            "button": {
+                "login": "Login"
+            },
+            "copyright": {
+                "1": "Copyright © 2019 - 2020 INRA All Rights Reserved",
+                "2": "PHIS - Phenotyping Hybrid Information System",
+                "3": "Version {version} released on {date}"
+            }
+        },
+        "footer": {
+            "copyright": "Copyright © 2019 - 2020 INRA All Rights Reserved. PHIS {version} released on {date}"
+        }
+    },
+    "icon": {
+        "component": {
             "menu": {
-                "dashboard": "Dashboard",
-                "data": "Data",
-                "experiments": "Experiments",
-                "installations": "Installations",
-                "projects": "Projects",
-                "scientificObjects": "Scientific Objects",
+                "default": "ik-folder",
+                "dashboard": "ik-grid",
+                "data": "ik-trending-up",
+                "experiments": "ik-layers",
+                "installations": "ik-globe",
+                "projects": "ik-folder",
+                "scientificObjects": "ik-target",
                 "equipments": {
-                    "label": "Equipments",
-                    "sensors": "Sensors",
-                    "actuators": "Actuators",
-                    "vectors": "Vectors",
-                    "radiometricTargets": "Radiometric Targets"
+                    "label": "ik-aperture"
                 },
                 "security": {
-                    "label": "Security",
-                    "users": "Users",
-                    "groups": "Groups",
-                    "profiles": "Profiles"
+                    "label": "ik-lock"
                 }
-            },
-            "login": {
-                "input": {
-                    "email": "Email",
-                    "password": "Password"
-                },
-                "button": {
-                    "login": "Login"
-                },
-                "copyright": "Copyright © 2019 - 2020 INRA All Rights Reserved PHIS - Phenotyping Hybrid Information System - Version {version} released on {date}"
-            },
-            "footer": {
-                "copyright": "Copyright © 2019 - 2020 INRA All Rights Reserved. PHIS {version} released on {date}"
             }
         }
     }

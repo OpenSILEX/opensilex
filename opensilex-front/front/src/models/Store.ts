@@ -2,10 +2,12 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import { User } from './User'
 import VueRouter from 'vue-router';
-import { FrontConfigDTO, MenuItemDTO } from '../lib';
+import { FrontConfigDTO } from '../lib';
+import { Menu } from '../models/Menu';
 import { OpenSilexRouter } from './OpenSilexRouter';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import { SecurityService } from 'opensilex-rest/index';
+import { Release } from './Release';
 
 Vue.use(Vuex)
 Vue.use(VueRouter)
@@ -15,7 +17,7 @@ declare var window: any;
 let expireTimeout: any = undefined;
 let autoRenewTimeout: any = undefined;
 let loaderCount: number = 0;
-let menu: Array<MenuItemDTO> = [];
+let menu: Array<Menu> = [];
 let inactivityRenewTimeoutInMin = 1;
 let renewStarted = false;
 let currentUser = undefined;
@@ -73,7 +75,8 @@ export default new Vuex.Store({
     config: defaultConfig,
     menu: menu,
     menuVisible: true,
-    disconnected: false
+    disconnected: false,
+    release: new Release(),
   },
   mutations: {
     login(state, user: User) {
@@ -119,7 +122,7 @@ export default new Vuex.Store({
         console.debug("Reset router");
         state.openSilexRouter.resetRouter(state.user);
         console.debug("Reset menu");
-        state.menu = state.openSilexRouter.getMenu();
+        state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
       }
     },
     logout(state) {
@@ -145,7 +148,7 @@ export default new Vuex.Store({
       console.debug("Reset router");
       state.openSilexRouter.resetRouter(state.user);
       console.debug("Reset menu");
-      state.menu = state.openSilexRouter.getMenu();
+      state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
     },
     setConfig(state, config: FrontConfigDTO) {
       state.config = config;

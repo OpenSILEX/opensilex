@@ -89,7 +89,21 @@ console.debug("FontAwesomeIcon plugin initialized !");
 
 // Initialize i18n
 import VueI18n from 'vue-i18n'
-Vue.use(VueI18n)
+import en from './lang/message-en-US.json';
+import fr from './lang/message-fr.json';
+
+export const languages = {
+  "en-US": en,
+  "fr": fr
+};
+
+const messages = Object.assign(languages);
+
+const i18n = new VueI18n({
+  fallbackLocale: 'en-US',
+  locale: navigator.language,
+  messages
+});
 
 // Enable Vue front plugin manager for OpenSilex API
 console.debug("Enable OpenSilex plugin...");
@@ -289,7 +303,8 @@ $opensilex.initAsyncComponents(components)
                     menuComponent: config.menuComponent
                   }
                 },
-                )
+                ),
+                i18n
               }).$mount('#app').$nextTick(() => {
                 // Hide loader
                 console.debug("Hide application init loader");

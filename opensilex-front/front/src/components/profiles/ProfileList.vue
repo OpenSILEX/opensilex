@@ -70,7 +70,7 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { UserService, UserGetDTO, ProfileService } from "opensilex-rest/index";
+import { UsersService, UserGetDTO, ProfileService } from "opensilex-rest/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
 
 @Component

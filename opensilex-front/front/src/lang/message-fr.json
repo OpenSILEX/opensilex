@@ -1,43 +1,56 @@
 {
-    "en-US": {
-        "component": {
-            "common": {
-                
+    "component": {
+        "common": {
+            
+        },
+        "header": {
+            "language": {
+                "fr": "Français",
+                "en-US": "Anglais"
             },
-            "menu": {
-                "dashboard": "Tableau de bord",
-                "data": "Données",
-                "experiments": "Expérimentations",
-                "installations": "Installations",
-                "projects": "Projets",
-                "scientificObjects": "Objets Scientifiques",
-                "equipments": {
-                    "label": "Matériel",
-                    "sensors": "Capteurs",
-                    "actuators": "Activateurs",
-                    "vectors": "Vecteurs",
-                    "radiometricTargets": "Cibles Radiométriques"
-                },
-                "security": {
-                    "label": "Securité",
-                    "users": "Utilisateurs",
-                    "groups": "Groupes",
-                    "profiles": "Profils"
-                }
-            },
-            "login": {
-                "input": {
-                    "email": "Email",
-                    "password": "Mot de passe"
-                },
-                "button": {
-                    "login": "Connexion"
-                },
-                "copyright": "Copyright © 2019 - 2020 INRA All Rights Reserved PHIS - Phenotyping Hybrid Information System - Version {version} du {date}"
-            },
-            "footer": {
-                "copyright": "Copyright © 2019 - 2020 INRA All Rights Reserved. PHIS {version} version du {date}"
+            "user": {
+                "admin": "Admin",
+                "logout": "Déconnexion"
             }
+        },
+        "menu": {
+            "dashboard": "Tableau de bord",
+            "data": "Données",
+            "experiments": "Expérimentations",
+            "installations": "Installations",
+            "projects": "Projets",
+            "scientificObjects": "Objets Scientifiques",
+            "equipments": {
+                "label": "Matériel",
+                "sensors": "Capteurs",
+                "actuators": "Activateurs",
+                "vectors": "Vecteurs",
+                "radiometricTargets": "Cibles Radiométriques"
+            },
+            "security": {
+                "label": "Securité",
+                "users": "Utilisateurs",
+                "groups": "Groupes",
+                "profiles": "Profils"
+            }
+        },
+        "login": {
+            "input": {
+                "email": "Email",
+                "password": "Mot de passe"
+            },
+            "remember-me": "Se souvenir de moi",
+            "button": {
+                "login": "Connexion"
+            },
+            "copyright": {
+                "1": "Copyright © 2019 - 2020 INRA Tous Droits Déservés",
+                "2": "PHIS - Phenotyping Hybrid Information System",
+                "3": "Version {version} du {date}"
+            }
+        },
+        "footer": {
+            "copyright": "Copyright © 2019 - 2020 INRA Tous Droits Déservés. PHIS {version} version du {date}"
         }
     }
 }

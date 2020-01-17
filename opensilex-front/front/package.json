@@ -20,6 +20,8 @@
         "d3": "5.15.0",
         "icon-kit": "^1.0.0",
         "jwt-decode": "^2.2.0",
+        "moment": "^2.24.0",
+        "preval.macro": "^4.0.0",
         "sass-loader": "^8.0.0",
         "style-loader": "1.1.2",
         "vue-cookies": "1.6.1",

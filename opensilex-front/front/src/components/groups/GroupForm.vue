@@ -81,8 +81,7 @@ export default class GroupForm extends Vue {
     uri: "",
     name: "",
     description: "",
-    /*profiles: [], TODO : AT commented to pass compilation
-    users: []*/
+    userProfiles: []
   };
 
   title = "Add group";
@@ -94,8 +93,7 @@ export default class GroupForm extends Vue {
       uri: "",
       name: "",
       description: "",
-      /*profiles: [], TODO : AT commented to pass compilation
-      users: []*/
+      userProfiles: []
     };
   }
 

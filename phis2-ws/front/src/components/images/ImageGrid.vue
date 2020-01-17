@@ -2,7 +2,6 @@
 <template>
 <div class="row">
     <phis2ws-Image v-for="(image, index) in images" v-bind:key="index" :image="image"></phis2ws-Image>
-    <phis2ws-Image v-for="(image, index) in images" v-bind:key="index" :image="image"></phis2ws-Image>
   </div>
 </template>
 

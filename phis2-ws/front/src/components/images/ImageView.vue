@@ -7,7 +7,7 @@
       @click="onSearchButtonClick"
       variant="primary"
     >
-      <font-awesome-icon icon="sliders-h" size="sm" />Search
+      <font-awesome-icon icon="sliders-h" size="sm" />
     </b-button>
 
     <b-collapse id="collapse-1" v-model="showSearchComponent" class="mt-2">
@@ -97,8 +97,6 @@ export default class ImageView extends Vue {
   }
 
   onSearchFormSubmit(form) {
-    console.log("form");
-    console.log(form);
     this.currentPage = 1;
     this.showImage();
     this.searchImagesFields.rdfType = form.rdfType;

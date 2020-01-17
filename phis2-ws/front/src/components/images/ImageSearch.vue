@@ -9,24 +9,27 @@
         </b-form-select>
       </b-form-group>
 
-      <b-input-group class="mt-3 mb-3" size="sm" label="Scientific Object URI" label-for="soUri">
-        <b-form-input
-          id="soUri"
-          v-model="form.concernedItems"
-          type="text"
-          debounce="300"
-          placeholder="Enter URI"
-        ></b-form-input>
-        <template v-slot:append>
-          <b-btn
-            :disabled="!form.concernedItems"
-            variant="primary"
-            @click="form.concernedItems = ''"
-          >
-            <font-awesome-icon icon="times" size="sm" />
-          </b-btn>
-        </template>
-      </b-input-group>
+      <b-form>
+        <label class="mr-sm-2" for="inline-form-custom-select-pref">Scientific Object URI:</label>
+        <b-input-group size="sm" >
+          <b-form-input
+            id="soUri"
+            v-model="form.concernedItems"
+            type="text"
+            debounce="300"
+            placeholder="Enter URI"
+          ></b-form-input>
+          <template v-slot:append>
+            <b-btn
+              :disabled="!form.concernedItems"
+              variant="primary"
+              @click="form.concernedItems = ''"
+            >
+              <font-awesome-icon icon="times" size="sm" />
+            </b-btn>
+          </template>
+        </b-input-group>
+      </b-form>
 
       <b-form inline>
         <label class="mr-sm-2" for="inline-form-custom-select-pref">Start Date</label>
@@ -97,11 +100,9 @@ export default class ImageSearch extends Vue {
   }
 
   onStartDateCleared() {
-    console.log("clear date");
     this.form.startDate = "";
   }
   onEndDateCleared() {
-    console.log("clear date");
     this.form.endDate = "";
   }
 
@@ -130,7 +131,6 @@ export default class ImageSearch extends Vue {
         0
       )
       .then((http: HttpResponse<OpenSilexResponse<Array<Uri>>>) => {
-        console.log(http.response.result);
         const res = http.response.result as any;
         res.data.forEach(element => {
           this.types.push({

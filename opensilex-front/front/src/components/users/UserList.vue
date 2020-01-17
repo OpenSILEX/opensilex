@@ -151,7 +151,7 @@ export default class UserList extends Vue {
 
   loadData() {
     let service: UserService = this.$opensilex.getService(
-      "opensilex.UserService"
+      "opensilex.UsersService"
     );
 
     let orderBy = [];

@@ -15,27 +15,25 @@
       </button>
     </div>
     <div class="sidebar-content">
-      <div class="nav-container"></div>
-      <nav id="main-menu-navigation" class="navigation-main">
-        <div li v-for="item in menu" v-bind:key="item.id" class="nav-item">
-          <span v-if="!item.route">
-            <i class="ik" v-bind:class="item.icon"></i>
-            <span>{{ $t(item.label) }}</span>
-          </span>
-          <router-link v-else :to="item.route.path">
-            <i class="ik" v-bind:class="item.icon"></i>
-            <span>{{ $t(item.label) }}</span>
-          </router-link>
-          <div v-for="itemChild in item.children" v-bind:key="itemChild.id" class="submenu-content">
-            <span v-if="!itemChild.route">
-              <span>{{ $t(itemChild.label) }}</span>
-            </span>
-            <router-link v-else :to="itemChild.route.path">
-              <span>{{ $t(itemChild.label) }}</span>
+      <div class="nav-container">
+        <nav id="main-menu-navigation" class="navigation-main">
+          <div li v-for="item in menu" v-bind:key="item.id" class="nav-item" v-bind:class="{ 'has-sub': item.hasChildren(),  'open': item.showChildren, 'active': isActive(item)}">
+            <a v-if="item.hasChildren()" href="#" v-on:click="toogle(item, $event)">
+              <i class="ik" v-bind:class="getIcon(item)"></i>
+              <span>{{ $t(item.label) }}</span>
+            </a>
+            <router-link v-else :to="item.route.path" :active="isActive">
+              <i class="ik" v-bind:class="getIcon(item)"></i>
+              <span>{{ $t(item.label) }}</span>
             </router-link>
+            <div class="submenu-content" v-bind:class="{ 'open': item.showChildren}">
+              <router-link v-for="itemChild in item.children" v-bind:key="itemChild.id" v-bind:class="{ 'is-shown': item.showChildren, 'active': isActive(itemChild) }" class="menu-item" :to="itemChild.route.path">
+                {{ $t(itemChild.label) }}
+              </router-link>
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+      </div>
     </div>
   </div>
 </template>
@@ -43,11 +41,16 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import { MenuItemDTO } from "../../lib";
+import { Menu } from "../../models/Menu";
+import { UserGetDTO } from 'opensilex-rest/index';
+import VueI18n from 'vue-i18n'
+import { MenuItemDTO } from '../../lib';
+
 
 @Component
 export default class DefaultMenuComponent extends Vue {
-  get menu(): Array<MenuItemDTO> {
+
+  get menu(): Array<Menu> {
     return this.$store.state.menu;
   }
 
@@ -55,12 +58,32 @@ export default class DefaultMenuComponent extends Vue {
     return this.$store.state.user;
   }
 
-  get menuVisible() {
+  get menuVisible(): boolean {
     return this.$store.state.menuVisible;
   }
 
-  toggleMenu() {
+  toggleMenu(): void {
     this.$store.commit("toggleMenu");
+  }
+
+  toogle(item: Menu, event: MouseEvent): void {
+    if(item.hasChildren()) {
+      console.info("toogle menu, old value = " + item.showChildren)
+      item.showChildren = !item.showChildren;
+    }
+  }
+
+  getIcon(item: Menu): string {
+    var code = "icon." + item.label;
+    var result = this.$i18n.t(code);
+    if(code != result) {
+      return result.toString();
+    }
+    return this.$i18n.t("icon.component.menu.default").toString();
+  }
+
+  isActive(item: Menu): boolean {
+    return item.route && this.$route.path.indexOf(item.route.path) === 0;
   }
 }
 </script>

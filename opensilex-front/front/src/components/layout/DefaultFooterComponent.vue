@@ -3,7 +3,7 @@
     <div class="w-100 clearfix">
       <span
         class="text-center text-sm-left d-md-inline-block"
-      >{{ $t('component.footer.copyright', { version: '1.0.0', date: '19/12/2019' }) }}</span>
+      >{{ $t('component.footer.copyright', { version: release.version, date: release.date }) }}</span>
     </div>
   </div>
 </template>
@@ -13,7 +13,13 @@ import { Component } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
-export default class DefaultFooterComponent extends Vue {}
+export default class DefaultFooterComponent extends Vue {
+
+  get release() {
+    return this.$store.state.release;
+  }
+
+}
 </script>
 
 <style scoped lang="scss">

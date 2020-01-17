@@ -44,7 +44,7 @@
                     <div class="col text-left">
                         <label class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input" id="item_checkbox" name="item_checkbox" value="option1">
-                            <span class="custom-control-label">&nbsp;Remember Me</span>
+                            <span class="custom-control-label">&nbsp;{{ $t('component.login.remember-me') }}</span>
                         </label>
                     </div>
                 </div>
@@ -53,7 +53,7 @@
                 </div>
             </b-form>
             <div class="trademark">
-                <p>{{ $t('component.login.copyright') }}</p>
+                <p>{{ $t('component.login.copyright.1') }}<br>{{ $t('component.login.copyright.2') }}<br>{{ $t('component.login.copyright.3', { version: release.version, date: release.date }) }}</p>
             </div>
           </div>
         </div>
@@ -84,6 +84,10 @@ export default class DefaultLoginComponent extends Vue {
   
   get user() {
     return this.$store.state.user;
+  }
+
+  get release() {
+    return this.$store.state.release;
   }
 
   $opensilex: OpenSilexVuePlugin;

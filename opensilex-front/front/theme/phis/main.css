@@ -7,9 +7,14 @@ main {
     margin-left: 240px;
 }
 
+
 /*********************************
 * GLOBAL STYLE
 *********************************/
+
+.btn {
+    font-weight: normal;
+}
 
 .bg-phis-green {
     background-color: #00A38D
@@ -64,6 +69,20 @@ main {
     padding-top: 3em
 }
 
+#main-menu-navigation.nav {
+    display: block;
+}
+
+.wrapper .page-wrap .app-sidebar .sidebar-content .nav-container .navigation-main .nav-item:not(.open) .submenu-content {
+    display: block;
+    height: 0;
+    overflow: hidden;
+}
+
+.customized #main-menu-navigation .nav-item.has-sub .submenu-content.open {
+    height: auto;
+}
+
 #main-menu-navigation .nav-item:hover,
 .customized #main-menu-navigation .nav-item.has-sub .submenu-content .menu-item:hover {
     background-color: #ddd
@@ -116,7 +135,8 @@ main {
     border-radius: 10px;
     padding: 10px;
     border: 1px solid #D8DDE5;
-    color: #007bff;
+    color: #212121;
+    font-weight: normal;
     text-decoration: none;
     background-color: transparent;
     height: 43px;

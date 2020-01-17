@@ -1,22 +1,24 @@
 <template>
   <div id="page-wrapper" class="wrapper customized">
+
+    <component class="header-logo" v-bind:is="headerComponent" v-if="user.isLoggedIn() && !disconnected"></component>
+
     <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
-      <component class="header-logo" v-bind:is="headerComponent"></component>
       <component class="header-login" v-bind:is="loginComponent"></component>
     </header>
 
     <section id="content-wrapper" class="page-wrap" v-if="user.isLoggedIn() && !disconnected">
-      <component v-if="!embed" v-bind:is="menuComponent"></component>
+      <component v-if="!embed" v-bind:is="menuComponent"></component>      
 
       <main>
         <router-view />
       </main>
 
-    </section>
+      <footer v-if="!embed">
+        <component v-bind:is="footerComponent"></component>
+      </footer>
 
-    <footer v-if="!embed">
-      <component v-bind:is="footerComponent"></component>
-    </footer>
+    </section>
 
     <div id="loader" v-bind:class="{'visible':isLoaderVisible}">
       <div class="lds-ripple">
@@ -60,9 +62,6 @@ export default class App extends Vue {
   }
 }
 </script>
-
-<i18n src="./lang/message-en-US.json"></i18n>
-<i18n src="./lang/message-fr.json"></i18n>
 
 <style lang="scss">
 
@@ -122,14 +121,6 @@ export default class App extends Vue {
 
 #loader.visible {
   display: block;
-}
-
-#page-wrapper {
-  min-height: 100vh;
-  flex-direction: column;
-  display: -webkit-flex;
-  display: flex;
-  margin: auto;
 }
 
 header {

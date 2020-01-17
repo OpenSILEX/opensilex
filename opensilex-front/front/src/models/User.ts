@@ -1,5 +1,6 @@
 import * as jwtDecode from "jwt-decode";
 import { VueCookies } from 'vue-cookies'
+import VueI18n from 'vue-i18n'
 
 declare var $cookies: VueCookies;
 

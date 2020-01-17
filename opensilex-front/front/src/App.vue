@@ -1,24 +1,28 @@
 <template>
   <div id="page-wrapper" class="wrapper customized">
-
-    <component class="header-logo" v-bind:is="headerComponent" v-if="user.isLoggedIn() && !disconnected"></component>
+    <component
+      class="header-logo"
+      v-bind:is="headerComponent"
+      v-if="user.isLoggedIn() && !disconnected"
+    ></component>
 
     <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
       <component class="header-login" v-bind:is="loginComponent"></component>
     </header>
 
-    <section id="content-wrapper" class="page-wrap" v-if="user.isLoggedIn() && !disconnected">
-      <component v-if="!embed" v-bind:is="menuComponent"></component>      
+    <div class="page-wrap">
+      <section id="content-wrapper" v-if="user.isLoggedIn() && !disconnected">
+        <component v-if="!embed" v-bind:is="menuComponent"></component>
 
-      <main>
-        <router-view />
-      </main>
+        <main>
+          <router-view />
+        </main>
+      </section>
 
       <footer v-if="!embed">
         <component v-bind:is="footerComponent"></component>
       </footer>
-
-    </section>
+    </div>
 
     <div id="loader" v-bind:class="{'visible':isLoaderVisible}">
       <div class="lds-ripple">
@@ -26,7 +30,6 @@
         <div></div>
       </div>
     </div>
-
   </div>
 </template>
 

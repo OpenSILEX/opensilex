@@ -7,7 +7,12 @@
       @onCreate="callCreateProfileService"
       @onUpdate="callUpdateProfileService"
     ></opensilex-ProfileForm>
-    <opensilex-ProfileList></opensilex-ProfileList>
+    <opensilex-ProfileList
+      ref="profileList"
+      v-bind:credentialsGroups="credentialsGroups"
+      @onEdit="editProfile"
+      @onDelete="deleteProfile"
+    ></opensilex-ProfileList>
   </div>
 </template>
 
@@ -64,9 +69,9 @@ export default class ProfileView extends Vue {
         .createProfile(this.user.getAuthorizationHeader(), form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
-          console.debug("User created", uri);
-          let userList: any = this.$refs.UserList;
-          userList.refresh();
+          console.debug("Profile created", uri);
+          let profileList: any = this.$refs.profileList;
+          profileList.refresh();
         })
     );
   }
@@ -78,23 +83,23 @@ export default class ProfileView extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Profile updated", uri);
-          let userList: any = this.$refs.UserList;
-          userList.refresh();
+          let profileList: any = this.$refs.profileList;
+          profileList.refresh();
         })
     );
   }
 
-  editUser(form: ProfileGetDTO) {
+  editProfile(form: ProfileGetDTO) {
     let profileForm: any = this.$refs.profileForm;
     profileForm.showEditForm(form);
   }
 
-  deleteUser(uri: string) {
+  deleteProfile(uri: string) {
     this.service
       .deleteProfile(this.user.getAuthorizationHeader(), uri)
       .then(() => {
-        let userList: any = this.$refs.UserList;
-        userList.refresh();
+        let profileList: any = this.$refs.profileList;
+        profileList.refresh();
       })
       .catch(this.$opensilex.errorHandler);
   }

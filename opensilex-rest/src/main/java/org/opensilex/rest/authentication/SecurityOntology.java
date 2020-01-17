@@ -23,7 +23,7 @@ import org.opensilex.sparql.utils.Ontology;
  */
 public class SecurityOntology {
 
-    public static final String NAMESPACE = SPARQLModule.ONTOLOGY_BASE_DOMAIN + "/security#";
+    public static final String NAMESPACE = SPARQLModule.ONTOLOGY_BASE_DOMAIN + "security#";
 
     public static final String PREFIX = "os-sec";
 

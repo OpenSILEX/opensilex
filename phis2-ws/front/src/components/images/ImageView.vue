@@ -11,7 +11,7 @@
     </b-button>
 
     <b-collapse id="collapse-1" v-model="showSearchComponent" class="mt-2">
-      <phis2ws-ImageSearch @onSearchFormSubmit="onSearchFormSubmit" :form="searchImagesFields"></phis2ws-ImageSearch>
+      <phis2ws-ImageSearch @onSearchFormSubmit="onSearchFormSubmit"></phis2ws-ImageSearch>
     </b-collapse>
 
     <div v-if="totalImages>0">
@@ -119,6 +119,7 @@ export default class ImageView extends Vue {
         }
       })
       .catch(function() {});
+
     if (form.startDate) {
       this.searchImagesFields.startDate = this.format(form.startDate);
       this.$router
@@ -126,6 +127,16 @@ export default class ImageView extends Vue {
           path: this.$route.fullPath,
           query: {
             startDate: this.searchImagesFields.startDate
+          }
+        })
+        .catch(function() {});
+    } else {
+      this.searchImagesFields.startDate = undefined;
+      this.$router
+        .push({
+          path: this.$route.fullPath,
+          query: {
+            startDate: undefined
           }
         })
         .catch(function() {});
@@ -137,6 +148,16 @@ export default class ImageView extends Vue {
           path: this.$route.fullPath,
           query: {
             endDate: this.searchImagesFields.endDate
+          }
+        })
+        .catch(function() {});
+    } else {
+      this.searchImagesFields.endDate = undefined;
+      this.$router
+        .push({
+          path: this.$route.fullPath,
+          query: {
+            endDate: undefined
           }
         })
         .catch(function() {});

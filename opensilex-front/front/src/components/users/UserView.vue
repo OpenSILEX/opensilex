@@ -14,13 +14,13 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { UserCreationDTO, UserUpdateDTO, UsersService, UserGetDTO } from "opensilex-rest/index";
+import { UserCreationDTO, UserUpdateDTO, UserService, UserGetDTO } from "opensilex-rest/index";
 
 @Component
 export default class UserView extends Vue {
   $opensilex: any;
   $store: any;
-  service: UsersService;
+  service: UserService;
 
   get user() {
     return this.$store.state.user;

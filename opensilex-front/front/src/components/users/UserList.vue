@@ -70,7 +70,7 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { UsersService, UserGetDTO } from "opensilex-rest/index";
+import { UserService, UserGetDTO } from "opensilex-rest/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
 
 @Component
@@ -150,7 +150,7 @@ export default class UserList extends Vue {
   }
 
   loadData() {
-    let service: UsersService = this.$opensilex.getService(
+    let service: UserService = this.$opensilex.getService(
       "opensilex.UsersService"
     );
 

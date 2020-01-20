@@ -59,7 +59,7 @@
       >
         <template v-slot:cell(selected)="data">
           <b-form-checkbox
-            v-model="selectedUsersId[data.item.id]"
+            v-model="selectedUsersId[data.item.uri]"
             @change="toggleUserSelection(data.item)"
           ></b-form-checkbox>
         </template>
@@ -82,8 +82,8 @@
       <b-table striped hover small :items="selectedUsers" :fields="fields">
         <template v-slot:cell(selected)="data">
           <b-form-checkbox
-            v-model="selectedUsersId[data.item.id]"
-            @change="toggleUserSelection(data.item)"
+            v-model="selectedUsersId[data.item.uri]"
+            @change="toggleUserSelection(data.item)"            
           ></b-form-checkbox>
         </template>
 
@@ -99,10 +99,10 @@
 
         <template v-slot:cell(admin)="data">
           <small v-if="data.item.admin">Admin</small>
-          <b-form-select v-if="!data.item.admin"></b-form-select>
+          <b-form-select v-if="!data.item.admin" size="sm"></b-form-select>
         </template>
       </b-table>
-      <b-pagination v-model="currentPage" :total-rows="totalRow" :per-page="pageSize"></b-pagination>
+      <!-- <b-pagination v-model="currentPage" :total-rows="totalRow" :per-page="pageSize"></b-pagination> -->
     </b-form>
   </b-modal>
 </template>
@@ -249,14 +249,13 @@ export default class GroupForm extends Vue {
   selectedUsers: any = [];
 
   toggleUserSelection(user) {
-    if (!this.selectedUsersId[user.id]) {
+    if (!this.selectedUsersId[user.uri]) {
       this.selectedUsers.push(user);
     } else {
-      let userIndex = this.selectedUsers.indexOf(user);
-      if (userIndex >= 0) {
-        this.selectedUsers.splice(userIndex, 1);
-      }
-      delete this.selectedUsersId[user.id];
+      this.selectedUsers = this.selectedUsers.filter((element) => {
+        return element.uri != user.uri;
+      })
+      delete this.selectedUsersId[user.uri];
     }
   }
 

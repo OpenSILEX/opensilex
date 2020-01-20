@@ -1,4 +1,5 @@
 const TerserPlugin = require('terser-webpack-plugin');
+var webpack = require('webpack');
 
 module.exports = {
     publicPath: "/app/",

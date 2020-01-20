@@ -58,6 +58,8 @@ import org.slf4j.LoggerFactory;
 public class DependencyManager {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DependencyManager.class);
+    
+    private final static String MAVEN_CENTRAL_URL = "https://repo1.maven.org/maven2/";
 
     /**
      * Generate a unique key for an artifact
@@ -119,7 +121,7 @@ public class DependencyManager {
      * @return Maven remote repository
      */
     private static RemoteRepository getCentralMavenRepository() {
-        return new RemoteRepository.Builder("central", "default", "https://repo1.maven.org/maven2/").build();
+        return new RemoteRepository.Builder("central", "default", MAVEN_CENTRAL_URL).build();
     }
 
     /**

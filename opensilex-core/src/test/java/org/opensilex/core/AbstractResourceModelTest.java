@@ -9,6 +9,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
+import org.opensilex.sparql.mapping.NoGetterClass;
+import org.opensilex.sparql.mapping.NoSetterClass;
+import org.opensilex.sparql.mapping.SPARQLClassAnalyzer;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -31,6 +35,9 @@ public abstract class AbstractResourceModelTest {
 
         service = new SPARQLService(new RDF4JConnection(repository.getConnection()));
         service.startup();
+
+        SPARQLClassObjectMapper.excludeResourceClass(NoGetterClass.class);
+        SPARQLClassObjectMapper.excludeResourceClass(NoSetterClass.class);
     }
 
     @AfterClass

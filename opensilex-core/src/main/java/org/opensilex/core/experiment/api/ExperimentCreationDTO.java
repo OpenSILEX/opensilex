@@ -5,21 +5,20 @@
  */
 package org.opensilex.core.experiment.api;
 
+import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.core.species.SpeciesModel;
+import org.opensilex.rest.group.dal.GroupModel;
+import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.rest.validation.Required;
+import org.opensilex.rest.validation.date.DateConstraint;
+
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.rest.security.dal.GroupModel;
-import org.opensilex.rest.user.dal.UserModel;
-import org.opensilex.rest.validation.NullOrNotEmpty;
-import org.opensilex.rest.validation.Required;
-import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
  * @author Vincent MIGOT
@@ -31,13 +30,17 @@ public class ExperimentCreationDTO {
     private Integer campaign;
 
     @Required
-    private String alias;
+    private String label;
 
     private List<URI> projects = Collections.emptyList();
 
     @Required
+    @ApiModelProperty(example = "2015-08-07")
+    @DateConstraint()
     private String startDate;
 
+    @ApiModelProperty(example = "2015-08-07")
+    @DateConstraint()
     private String endDate;
 
     private List<URI> scientificSupervisors = Collections.emptyList();
@@ -45,6 +48,8 @@ public class ExperimentCreationDTO {
     private List<URI> technicalSupervisors = Collections.emptyList();
 
     private List<URI> groups = Collections.emptyList();
+
+    List<URI> species = Collections.emptyList();
 
     private String objectives;
 
@@ -60,12 +65,12 @@ public class ExperimentCreationDTO {
         this.uri = uri;
     }
 
-    public String getAlias() {
-        return alias;
+    public String getLabel() {
+        return label;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public List<URI> getProjects() {
@@ -148,12 +153,19 @@ public class ExperimentCreationDTO {
         this.comment = comment;
     }
 
+    public List<URI> getSpecies() {
+        return species;
+    }
+
+    public void setSpecies(List<URI> species) {
+        this.species = species;
+    }
 
     public ExperimentModel newModel() {
 
         ExperimentModel model = new ExperimentModel();
         model.setUri(getUri());
-        model.setLabel(getAlias());
+        model.setLabel(getLabel());
         model.setStartDate(LocalDate.parse(startDate));
 
         if (endDate != null) {
@@ -196,6 +208,13 @@ public class ExperimentCreationDTO {
         });
         model.setGroups(groupList);
 
+        List<SpeciesModel> speciesList = new ArrayList<>(species.size());
+        groups.forEach((URI u) -> {
+            SpeciesModel species = new SpeciesModel();
+            species.setUri(u);
+            speciesList.add(species);
+        });
+        model.setSpecies(speciesList);
         return model;
     }
 

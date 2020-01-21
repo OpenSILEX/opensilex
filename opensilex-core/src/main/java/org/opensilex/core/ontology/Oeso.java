@@ -74,6 +74,11 @@ public class Oeso {
     public static final Property hasTechnicalSupervisor = Ontology.property(NS, "hasTechnicalSupervisor");
     public static final Property hasGroup = Ontology.property(NS, "hasGroup");
     public static final Property hasCampaign = Ontology.property(NS,"hasCampaign");
+    public static final Property hasSpecies = Ontology.property(NS,"hasSpecies");
+
+    // ---- SPECIES ----
+    public static final Resource Species = Ontology.resource(NS, "Species");
+
 
     // ---- FACTORS ----
     public static final Resource Factor = Ontology.resource(NS, "Factor");

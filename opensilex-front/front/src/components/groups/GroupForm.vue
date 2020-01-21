@@ -1,5 +1,5 @@
 <template>
-  <b-modal ref="modalRef" @ok.prevent="validate" size="lg">
+  <b-modal ref="modalRef" @ok.prevent="validate" size="xl">
     <template v-slot:modal-title>{{title}}</template>
     <b-form ref="formRef">
       <b-form-group label="Group URI:" label-for="uri">
@@ -46,63 +46,99 @@
           </template>
         </b-input-group>
       </b-input-group>
-      <b-table
-        ref="tableRef"
-        striped
-        hover
-        small
-        :items="loadData"
-        :fields="fields"
-        :sort-by.sync="sortBy"
-        :sort-desc.sync="sortDesc"
-        no-provider-paging
-      >
-        <template v-slot:cell(selected)="data">
-          <b-form-checkbox
-            v-model="selectedUsersId[data.item.uri]"
-            @change="toggleUserSelection(data.item)"
-          ></b-form-checkbox>
-        </template>
+      <div class="tables">
+        <div class="table-left">
+          <div>
+            <div class="table-title">Global users list</div>
+            <b-table
+              ref="tableRef"
+              striped
+              hover
+              small
+              :items="loadData"
+              :fields="fields"
+              :sort-by.sync="sortBy"
+              :sort-desc.sync="sortDesc"
+              no-provider-paging
+            >
+              <template v-slot:cell(selected)="data">
+                <b-form-checkbox
+                  v-model="selectedUsersId[data.item.uri]"
+                  @change="toggleUserSelection(data.item)"
+                ></b-form-checkbox>
+              </template>
 
-        <template v-slot:cell(email)="data">
-          <a :href="'mailto:' + data.item.email">{{ data.item.email }}</a>
-        </template>
+              <template v-slot:cell(name)="data">
+                {{data.item.firstName}} {{data.item.lastName}}
+                <a
+                  :href="'mailto:' + data.item.email"
+                >({{ data.item.email }})</a>
+              </template>
+            </b-table>
+          </div>
+          <b-pagination
+            class="bottom-pagination"
+            v-model="currentPage"
+            :total-rows="totalRow"
+            :per-page="pageSize"
+            @change="refresh()"
+          ></b-pagination>
+        </div>
+        <div class="table-right">
+          <div>
+            <div class="table-title">Selected users list ({{selectedUsers.length}})</div>
+            <b-table
+              id="user-selection-table"
+              striped
+              hover
+              small
+              :items="selectedUsers"
+              :fields="selectedFields"
+              :per-page="pageSize"
+              :current-page="currentSelectedPage"
+            >
+              <template v-slot:cell(selected)="data">
+                <b-form-checkbox
+                  v-model="selectedUsersId[data.item.uri]"
+                  :per-page="pageSize"
+                  :current-page="currentSelectedPage"
+                  @change="toggleUserSelection(data.item)"
+                ></b-form-checkbox>
+              </template>
 
-        <template v-slot:cell(admin)="data">
-          <small v-if="data.item.admin">Admin</small>
-          <small v-if="!data.item.admin">Regular user</small>
-        </template>
-      </b-table>
-      <b-pagination
-        v-model="currentPage"
-        :total-rows="totalRow"
-        :per-page="pageSize"
-        @change="refresh()"
-      ></b-pagination>
-      <b-table striped hover small :items="selectedUsers" :fields="fields">
-        <template v-slot:cell(selected)="data">
-          <b-form-checkbox
-            v-model="selectedUsersId[data.item.uri]"
-            @change="toggleUserSelection(data.item)"            
-          ></b-form-checkbox>
-        </template>
+              <template v-slot:cell(name)="data">
+                {{data.item.firstName}} {{data.item.lastName}}
+                <a
+                  :href="'mailto:' + data.item.email"
+                >({{ data.item.email }})</a>
+              </template>
 
-        <template v-slot:cell(email)="data">
-          <a :href="'mailto:' + data.item.email">{{ data.item.email }}</a>
-        </template>
+              <template v-slot:cell(uri)="data">
+                <a class="uri-info">
+                  <small>{{ data.item.uri }}</small>
+                </a>
+              </template>
 
-        <template v-slot:cell(uri)="data">
-          <a class="uri-info">
-            <small>{{ data.item.uri }}</small>
-          </a>
-        </template>
-
-        <template v-slot:cell(admin)="data">
-          <small v-if="data.item.admin">Admin</small>
-          <b-form-select v-if="!data.item.admin" size="sm"></b-form-select>
-        </template>
-      </b-table>
-      <!-- <b-pagination v-model="currentPage" :total-rows="totalRow" :per-page="pageSize"></b-pagination> -->
+              <template v-slot:cell(admin)="data">
+                <small v-if="data.item.admin">Admin</small>
+                <b-form-select
+                  v-if="!data.item.admin"
+                  size="sm"
+                  :options="['Test']"
+                  class="profile-selector"
+                ></b-form-select>
+              </template>
+            </b-table>
+          </div>
+          <b-pagination
+            class="bottom-pagination"
+            v-model="currentSelectedPage"
+            :total-rows="selectedUsers.length"
+            :per-page="pageSize"
+            aria-controls="user-selection-table"
+          ></b-pagination>
+        </div>
+      </div>
     </b-form>
   </b-modal>
 </template>
@@ -149,6 +185,15 @@ export default class GroupForm extends Vue {
       description: "",
       userProfiles: []
     };
+    this.currentSelectedPage = 1;
+    this.currentPage = 1;
+    this.pageSize = 5;
+    this.totalRow = 0;
+    this.sortBy = "firstName";
+    this.sortDesc = false;
+    this.selectedUsersId = {};
+    this.selectedUsers = [];
+    this.filterPatternValue = "";
   }
 
   refresh() {
@@ -157,10 +202,14 @@ export default class GroupForm extends Vue {
   }
 
   currentPage: number = 1;
+  currentSelectedPage: number = 1;
   pageSize = 5;
   totalRow = 0;
   sortBy = "firstName";
   sortDesc = false;
+
+  selectedUsersId: any = {};
+  selectedUsers: any = [];
 
   private filterPatternValue: any = "";
   set filterPattern(value: string) {
@@ -202,19 +251,6 @@ export default class GroupForm extends Vue {
           this.currentPage = http.response.metadata.pagination.currentPage + 1;
         }, 0);
 
-        this.$router
-          .push({
-            path: this.$route.fullPath,
-            query: {
-              filterPattern: encodeURI(this.filterPattern),
-              sortBy: encodeURI(this.sortBy),
-              sortDesc: "" + this.sortDesc,
-              currentPage: "" + this.currentPage,
-              pageSize: "" + this.pageSize
-            }
-          })
-          .catch(function() {});
-
         return http.response.result;
       })
       .catch(this.$opensilex.errorHandler);
@@ -226,35 +262,33 @@ export default class GroupForm extends Vue {
       label: ""
     },
     {
-      key: "firstName",
+      key: "name",
       sortable: true
+    }
+  ];
+
+  selectedFields = [
+    {
+      key: "selected",
+      label: ""
     },
     {
-      key: "lastName",
-      sortable: true
-    },
-    {
-      key: "email",
+      key: "name",
       sortable: true
     },
     {
       key: "admin",
-      sortable: true,
-      label: "Role"
+      label: "Profile"
     }
   ];
-
-  selectedUsersId: any = {};
-
-  selectedUsers: any = [];
 
   toggleUserSelection(user) {
     if (!this.selectedUsersId[user.uri]) {
       this.selectedUsers.push(user);
     } else {
-      this.selectedUsers = this.selectedUsers.filter((element) => {
+      this.selectedUsers = this.selectedUsers.filter(element => {
         return element.uri != user.uri;
-      })
+      });
       delete this.selectedUsersId[user.uri];
     }
   }
@@ -335,5 +369,40 @@ export default class GroupForm extends Vue {
 </script>
 
 <style scoped lang="scss">
+.tables {
+  display: flex;
+}
+
+.table-left,
+.table-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-left > div:first-child,
+.table-right > div:first-child {
+  flex: 1;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.table-left {
+  margin-right: 5px;
+}
+
+.table-right {
+  margin-left: 5px;
+}
+
+.profile-selector {
+  height: 20px;
+  line-height: 10px;
+}
+
+.table-title {
+  font-weight: bold;
+  text-align: center;
+}
 </style>
 

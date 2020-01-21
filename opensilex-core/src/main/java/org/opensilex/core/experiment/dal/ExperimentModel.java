@@ -11,6 +11,7 @@ import java.util.List;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.core.species.SpeciesModel;
 import org.opensilex.rest.group.dal.GroupModel;
 import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -20,7 +21,6 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 
 /**
  * @author Vincent MIGOT
- * @author Renaud COLIN
  */
 
 @SPARQLResource(
@@ -57,7 +57,8 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
 
     @SPARQLProperty(
         ontology = Oeso.class,
-        property = "endDate"
+        property = "endDate",
+        required = true
     )
     LocalDate endDate;
     public static final String END_DATE_SPARQL_VAR = "endDate";
@@ -85,6 +86,11 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
     List<GroupModel> groups = Collections.emptyList();
     public static final String GROUP_SPARQL_VAR = "group";
 
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasSpecies"
+    )
+    List<SpeciesModel> species = Collections.emptyList();
 
     @SPARQLProperty(
         ontology = Oeso.class,
@@ -116,10 +122,11 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
     String comment;
     public static final String COMMENT_SPARQL_FIELD = "comment";
 
-
     public String getLabel() {
         return label;
     }
+
+    public static final String SPECIES_SPARQL_FIELD = "species";
 
     public void setLabel(String label) {
         this.label = label;
@@ -203,6 +210,14 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
 
     public void setCampaign(Integer campaign) {
         this.campaign = campaign;
+    }
+
+    public List<SpeciesModel> getSpecies() {
+        return species;
+    }
+
+    public void setSpecies(List<SpeciesModel> species) {
+        this.species = species;
     }
 
     @Override

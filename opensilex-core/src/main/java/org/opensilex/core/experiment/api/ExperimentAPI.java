@@ -197,17 +197,17 @@ public class ExperimentAPI {
             @ApiResponse(code = 204, message = "No experiment found", response = ExperimentGetDTO.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
-    public Response search(
+    public Response searchExperiments(
             @ApiParam(value = "Search by uri") @QueryParam("uri") URI uri,
-            @ApiParam(value = "Search by start date") @QueryParam("startDate") @DateConstraint String startDate,
-            @ApiParam(value = "Search by end date") @QueryParam("endDate") @DateConstraint String endDate,
+            @ApiParam(value = "Search by start date", example = "2017-06-15") @QueryParam("startDate") @DateConstraint String startDate,
+            @ApiParam(value = "Search by end date", example = "2017-06-15") @QueryParam("endDate") @DateConstraint String endDate,
             @ApiParam(value = "Search by campaign") @QueryParam("campaign") Integer campaign,
-            @ApiParam(value = "Search by alias") @QueryParam("label") String label,
+            @ApiParam(value = "Search by label") @QueryParam("label") String label,
             @ApiParam(value = "Search by keywords") @QueryParam("keywords") List<String> keywords,
             @ApiParam(value = "Search by related project uri") @QueryParam("projects") List<URI> projects,
             @ApiParam(value = "Search by involved species") @QueryParam("species") List<URI> species,
 
-            @ApiParam(value = "search ended(false) or active projects(true") @QueryParam("isArchived") Boolean isActive,
+            @ApiParam(value = "search ended(false) or active projects(true") @QueryParam("isArchived") Boolean isEnded,
 
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "alias=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
@@ -216,7 +216,7 @@ public class ExperimentAPI {
 
         try {
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
-            ExperimentSearchDTO searchDTO = new ExperimentSearchDTO().setEnded(isActive);
+            ExperimentSearchDTO searchDTO = new ExperimentSearchDTO().setEnded(isEnded);
 
             searchDTO.setUri(uri)
                     .setCampaign(campaign)

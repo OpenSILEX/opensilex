@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.core.AbstractResourceModelTest;
-import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -74,12 +73,12 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
     public void testCreate() throws Exception {
 
         int count = service.count(ExperimentModel.class, null);
-        assertEquals("the initial ExperimentModel count must be 0", count, 0);
+        assertEquals("the initial ExperimentModel count must be 0", 0, count);
 
         xpDao.create(getModel(0));
 
         count = service.count(ExperimentModel.class, null);
-        assertEquals("the count must be equals to 1 since the experiment has been created", count, 1);
+        assertEquals("the count must be equals to 1 since the experiment has been created", 1, count);
     }
 
     @Test
@@ -89,30 +88,14 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
         assertEquals(count, 0);
 
         int n = 20;
-        int batchSize = 5;
-        int batchIdx = 0;
-
-        // initial xp list filling
-        List<ExperimentModel> xps = new ArrayList<>(batchSize);
-        for (int i = 0; i < batchSize; i++) {
+        List<ExperimentModel> xps = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
             xps.add(getModel(i));
         }
         xpDao.createAll(xps);
 
-        for (int i = batchSize; i < n; i++) {
-            xps.set(batchIdx++, getModel(i));
-            if (batchIdx == batchSize) {
-                xps = xpDao.createAll(xps);
-                batchIdx = 0;
-            }
-        }
-        // ensure that all xp have been created
-        if (batchIdx > 0) {
-            xpDao.createAll(xps.subList(0, batchIdx));
-        }
-
         count = service.count(ExperimentModel.class, null);
-        assertEquals("the count must be equals to " + n + " since " + n + " experiment have been created", count, n);
+        assertEquals("the count must be equals to " + n + " since " + n + " experiment have been created", n, count);
     }
 
     protected void testEquals(final ExperimentModel xp, final ExperimentModel otherXp) {
@@ -143,6 +126,25 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
         assertNotNull(daoXpModel);
 
         testEquals(xpModel, daoXpModel);
+    }
+
+    @Test
+    public void testGetAllXp() throws Exception {
+
+        int n = 100;
+        List<ExperimentModel> xps = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            xps.add(getModel(i));
+        }
+        xpDao.createAll(xps);
+
+        int pageSize = 10;
+        int nbPage = n/pageSize;
+        for (int i = 0; i < nbPage; i++) {
+            ListWithPagination<ExperimentModel> xpModelResults = xpDao.search(null,null,i,pageSize);
+            List<ExperimentModel> xpsFromDao = xpModelResults.getList();
+            assertEquals(pageSize,xpsFromDao.size());
+        }
 
     }
 
@@ -152,16 +154,16 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
         ExperimentModel xpModel = getModel(0);
         xpDao.create(xpModel);
 
-        ExperimentGetDTO getDTO = new ExperimentGetDTO();
-        getDTO.setLabel(xpModel.getLabel());
-        getDTO.setCampaign(xpModel.getCampaign());
-        getDTO.setStartDate(xpModel.getStartDate());
+        ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();
+        searchDTO.setLabel(xpModel.getLabel());
+        searchDTO.setCampaign(xpModel.getCampaign());
+        searchDTO.setStartDate(xpModel.getStartDate());
 
-        ListWithPagination<ExperimentModel> xpModelResults = xpDao.search(getDTO, null, 0, 10);
+        ListWithPagination<ExperimentModel> xpModelResults = xpDao.search(searchDTO, null, 0, 10);
         assertNotNull("one experiment should be fetched from db", xpModelResults);
         assertEquals("one experiment should be fetched from db", xpModelResults.getList().size(), 1);
 
-        testEquals( xpModel, xpModelResults.getList().get(0));
+        testEquals(xpModel, xpModelResults.getList().get(0));
     }
 
     @Test
@@ -170,15 +172,15 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
         ExperimentModel xpModel = getModel(0);
         xpDao.create(xpModel);
 
-        ExperimentGetDTO getDTO = new ExperimentGetDTO();
+        ExperimentSearchDTO getDTO = new ExperimentSearchDTO();
 
         // set a bad label in order to check if the result set from dao is empty
         getDTO.setLabel(xpModel.getLabel() + "str");
 
         getDTO.setProjects(xpModel.getProjects()
-            .stream()
-            .map(SPARQLResourceModel::getUri)
-            .collect(Collectors.toList()));
+                .stream()
+                .map(SPARQLResourceModel::getUri)
+                .collect(Collectors.toList()));
 
         ListWithPagination<ExperimentModel> xpModelResults = xpDao.search(getDTO, null, 0, 10);
         assertNotNull("empty results object", xpModelResults);
@@ -193,6 +195,38 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
         assertEquals("the experiment uri should be contained into the result list", xpModelResults.getList().get(0).getUri(), xpModel.getUri());
         testEquals(xpModel, xpModelResults.getList().get(0));
 
+    }
+
+    @Test
+    public void testSearchArchived() throws Exception {
+
+        LocalDate currentDate = LocalDate.now();
+
+        ExperimentModel archivedXp = getModel(0);
+        archivedXp.setStartDate(currentDate.minusDays(3));
+        archivedXp.setEndDate(currentDate.minusDays(1));
+        xpDao.create(archivedXp);
+
+        ExperimentModel unarchivedXp = getModel(1);
+        unarchivedXp.setStartDate(currentDate.minusDays(3));
+        unarchivedXp.setEndDate(currentDate.plusDays(3));
+        xpDao.create(unarchivedXp);
+
+        List<ExperimentModel> archivedXps = xpDao.search(new ExperimentSearchDTO().setEnded(true),null,0,10).getList();
+        assertEquals(1,archivedXps.size());
+        assertTrue(archivedXps.contains(archivedXp));
+
+        List<ExperimentModel> unarchivedXps = xpDao.search(new ExperimentSearchDTO().setEnded(false),null,0,10).getList();
+        assertEquals(1,unarchivedXps.size());
+        assertTrue(unarchivedXps.contains(unarchivedXp));
+
+
+        List<ExperimentModel> allXps = xpDao.search(new ExperimentSearchDTO(),null,0,10).getList();
+        assertEquals(2,allXps.size());
+        assertTrue(allXps.contains(archivedXp));
+        assertTrue(allXps.contains(unarchivedXp));
+
+        // search all archived projects
     }
 
     @Test
@@ -224,12 +258,12 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
         xpDao.create(xpModel);
 
         int oldCount = service.count(ExperimentModel.class, null);
-        assertEquals("one experiment should have been created", oldCount, 1);
+        assertEquals("one experiment should have been created", 1, oldCount);
 
         xpDao.delete(xpModel.getUri());
 
         int newCount = service.count(ExperimentModel.class, null);
-        assertEquals("the experiment must no longer exists", newCount, 0);
+        assertEquals("the experiment must no longer exists", 0, newCount);
         assertFalse("the experiment URI must no longer exists", xpDao.sparql.uriExists(xpModel.getUri()));
     }
 
@@ -249,7 +283,7 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
         xpDao.deleteAll(xps.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()));
 
         int newCount = service.count(ExperimentModel.class, null);
-        assertEquals("all experiments should have been deleted", newCount, 0);
+        assertEquals("all experiments should have been deleted", 0, newCount);
 
         for (ExperimentModel xp : xps) {
             assertFalse("the ExperimentModel " + xp.getUri() + " should have been deleted", xpDao.sparql.uriExists(xp.getUri()));

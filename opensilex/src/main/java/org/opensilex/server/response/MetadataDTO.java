@@ -61,6 +61,10 @@ public class MetadataDTO {
         this.pagination = pagination;
     }
 
+    public MetadataDTO(){
+        pagination = new PaginationDTO();
+    }
+
     public void addStatus(StatusDTO status) {
         this.status.add(status);
     }

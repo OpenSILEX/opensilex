@@ -7,8 +7,6 @@
 package org.opensilex.server.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -52,7 +50,7 @@ public abstract class JsonResponse<T> {
      * HTTP status
      */
     @JsonIgnore
-    protected final Status status;
+    protected Status status;
 
     /**
      * Response metadata
@@ -89,5 +87,32 @@ public abstract class JsonResponse<T> {
                 .entity(this)
                 .type(MediaType.APPLICATION_JSON)
                 .build();
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public JsonResponse<T> setStatus(Status status) {
+        this.status = status;
+        return this;
+    }
+
+    public MetadataDTO getMetadata() {
+        return metadata;
+    }
+
+    public JsonResponse<T> setMetadata(MetadataDTO metadata) {
+        this.metadata = metadata;
+        return this;
+    }
+
+    public T getResult() {
+        return result;
+    }
+
+    public JsonResponse<T> setResult(T result) {
+        this.result = result;
+        return this;
     }
 }

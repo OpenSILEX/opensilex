@@ -40,6 +40,10 @@ public class SPARQLQueryHelper {
 
     protected static final ExprFactory exprFactory = new ExprFactory();
 
+    public static ExprFactory getExprFactory() {
+        return exprFactory;
+    }
+
     public static final Var typeDefVar = makeVar("__type");
 
     public final static <T> Var getUriFieldVar(Class<T> objectClass) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {

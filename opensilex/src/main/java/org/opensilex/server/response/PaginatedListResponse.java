@@ -9,6 +9,8 @@ package org.opensilex.server.response;
 import java.util.List;
 import org.opensilex.utils.ListWithPagination;
 
+import javax.ws.rs.core.Response;
+
 /**
  * <pre>
  * Response model for paginated list response (for search request by example).
@@ -23,17 +25,25 @@ import org.opensilex.utils.ListWithPagination;
 public class PaginatedListResponse<T> extends JsonResponse<List<T>> {
 
     public PaginatedListResponse(ListWithPagination<T> paginatedList) {
-        super(javax.ws.rs.core.Response.Status.OK);
+        this();
         this.result = paginatedList.getList();
         this.metadata = new MetadataDTO(new PaginationDTO(paginatedList.getPageSize(), paginatedList.getPage(), paginatedList.getTotal()));
+    }
 
+    public PaginatedListResponse(){
+        super(Response.Status.OK);
     }
 
     public PaginatedListResponse(List<T> list) {
-        super(javax.ws.rs.core.Response.Status.OK);
+        this();
+        setResult(list);
+    }
+
+    @Override
+    public PaginatedListResponse<T> setResult(List<T> list){
         this.result = list;
         this.metadata = new MetadataDTO(new PaginationDTO(list.size(), 0, list.size()));
-
+        return this;
     }
 
 }

@@ -5,17 +5,25 @@
  */
 package org.opensilex.core.experiment.dal;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.expr.Expr;
-import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
+
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
 
 /**
  * @author Vincent MIGOT
@@ -47,23 +55,23 @@ public class ExperimentDAO {
     /**
      * Update the given experiment in the TripleStore
      *
-     * @param xp the experiment to update
+     * @param xpUri        the experiment to update URI
      * @param variableUris list of {@link VariableModel} URI
      * @return the updated experiment
      */
-    public ExperimentModel updateWithVariableList(ExperimentModel xp, List<URI> variableUris) {
-        return xp;
+    public ExperimentModel updateWithVariableList(URI xpUri, List<URI> variableUris) throws Exception {
+        return get(xpUri);
     }
 
     /**
      * Update the given experiment in the TripleStore
      *
-     * @param xp  the experiment to update
+     * @param xpUri       the experiment to update URI
      * @param sensorsUris list of sensor URI
      * @return the updated experiment
      */
-    public ExperimentModel updateWithSensorList(ExperimentModel xp, List<URI> sensorsUris) {
-        return xp;
+    public ExperimentModel updateWithSensorList(URI xpUri, List<URI> sensorsUris) throws Exception {
+        return get(xpUri);
     }
 
     public void delete(URI xpUri) throws Exception {
@@ -79,67 +87,124 @@ public class ExperimentDAO {
     }
 
     /**
-     * @param xpGetDTO DTO which contains a subset of attribute values for an {@link ExperimentModel}
-     * @param orderByList an OrderBy List
-     * @param page the current page
-     * @param pageSize the page size
-     * @return the ExperimentModel list
+     * @param searchDTO
+     * @return
      * @throws Exception
      */
-    public ListWithPagination<ExperimentModel> search(ExperimentGetDTO xpGetDTO,
-                                                      List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    protected List<Expr> extractFilters(ExperimentSearchDTO searchDTO) throws Exception {
+
+        if (searchDTO == null)
+            return Collections.emptyList();
 
         List<Expr> exprList = new ArrayList<>();
-        // add a filter for each non null data/object property
 
-        if(xpGetDTO.getLabel() != null){
-            exprList.add(SPARQLQueryHelper.regexFilter(ExperimentModel.LABEL_FIELD, xpGetDTO.getLabel()));
+        // build equality filters
+        if (searchDTO.getUri() != null) {
+            exprList.add(SPARQLQueryHelper.eq(SPARQLResourceModel.URI_FIELD, searchDTO.getUri()));
         }
-        if(xpGetDTO.getUri() != null){
-            exprList.add(SPARQLQueryHelper.eq(ExperimentModel.URI_FIELD, xpGetDTO.getUri()));
-        }
-        if(xpGetDTO.getObjective() != null){
-            exprList.add(SPARQLQueryHelper.regexFilter(ExperimentModel.OBJECTIVE_SPARQL_FIELD, xpGetDTO.getObjective()));
-        }
-        if(xpGetDTO.getCampaign() != null){
-            exprList.add(SPARQLQueryHelper.eq(ExperimentModel.CAMPAIGN_SPARQL_FIELD, xpGetDTO.getCampaign()));
-        }
-        if(xpGetDTO.getComment() != null){
-            exprList.add(SPARQLQueryHelper.regexFilter(ExperimentModel.COMMENT_SPARQL_FIELD, xpGetDTO.getComment()));
+        if (searchDTO.getCampaign() != null) {
+            exprList.add(SPARQLQueryHelper.eq(ExperimentModel.CAMPAIGN_SPARQL_FIELD, searchDTO.getCampaign()));
         }
 
-        // let the dateRange method handle the Expr to create according startDate and endDate nullity
-        Expr dateExpr = SPARQLQueryHelper.dateRange(ExperimentModel.START_DATE_SPARQL_VAR, xpGetDTO.getStartDate(), ExperimentModel.END_DATE_SPARQL_VAR, xpGetDTO.getEndDate());
-        if(dateExpr != null){
+        // build regex based filter
+        if (searchDTO.getObjective() != null) {
+            exprList.add(SPARQLQueryHelper.regexFilter(ExperimentModel.OBJECTIVE_SPARQL_FIELD, searchDTO.getObjective()));
+        }
+        if (searchDTO.getLabel() != null) {
+            exprList.add(SPARQLQueryHelper.regexFilter(ExperimentModel.LABEL_FIELD, searchDTO.getLabel()));
+        }
+        if (searchDTO.getComment() != null) {
+            exprList.add(SPARQLQueryHelper.regexFilter(ExperimentModel.COMMENT_SPARQL_FIELD, searchDTO.getComment()));
+        }
+
+        Boolean isEnded = searchDTO.isEnded();
+        if (isEnded != null) {
+
+            Node endDateVar = NodeFactory.createVariable(ExperimentModel.END_DATE_SPARQL_VAR);
+            Node currentDateNode = SPARQLDeserializers.getForClass(LocalDate.class).getNode(LocalDate.now());
+
+            // an experiment is ended if the end date is less than the the current date
+            if (isEnded) {
+                exprList.add(SPARQLQueryHelper.getExprFactory().le(endDateVar, currentDateNode));
+            } else {
+                exprList.add(SPARQLQueryHelper.getExprFactory().gt(endDateVar, currentDateNode));
+            }
+        }
+
+        // get an Expr build according startDate and endDate
+        Expr dateExpr = SPARQLQueryHelper.dateRange(
+            ExperimentModel.START_DATE_SPARQL_VAR, searchDTO.getStartDate(),
+            ExperimentModel.END_DATE_SPARQL_VAR, searchDTO.getEndDate()
+        );
+        if (dateExpr != null) {
             exprList.add(dateExpr);
         }
 
+        return exprList;
+    }
+
+    /**
+     * @param searchDTO
+     * @return for each attribute variable name, the list of values to put in the VALUES set
+     */
+    protected Map<String, List<?>> getValuesByVarName(ExperimentSearchDTO searchDTO) {
+
+        if (searchDTO == null) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, List<?>> valuesByVar = new HashMap<>();
+
+        if (!searchDTO.getKeywords().isEmpty()) {
+            valuesByVar.put(ExperimentModel.KEYWORD_SPARQL_FIELD, searchDTO.getKeywords());
+        }
+        if (!searchDTO.getProjects().isEmpty()) {
+            valuesByVar.put(ExperimentModel.PROJECT_URI_SPARQL_VAR, searchDTO.getProjects());
+        }
+        if(!searchDTO.getSpecies().isEmpty()){
+            valuesByVar.put(ExperimentModel.SPECIES_SPARQL_FIELD,searchDTO.getSpecies());
+        }
+        if (!searchDTO.getScientificSupervisors().isEmpty()) {
+            valuesByVar.put(ExperimentModel.SCIENTIFIC_SUPERVISOR_SPARQL_VAR, searchDTO.getScientificSupervisors());
+        }
+        if (!searchDTO.getTechnicalSupervisors().isEmpty()) {
+            valuesByVar.put(ExperimentModel.TECHNICAL_SUPERVISOR_SPARQL_VAR, searchDTO.getTechnicalSupervisors());
+        }
+        if (!searchDTO.getGroups().isEmpty()) {
+            valuesByVar.put(ExperimentModel.GROUP_SPARQL_VAR, searchDTO.getGroups());
+        }
+        return valuesByVar;
+    }
+
+    /**
+     * @param searchDTO   DTO which contains a subset of attribute values for an {@link ExperimentModel}
+     * @param orderByList an OrderBy List
+     * @param page        the current page
+     * @param pageSize    the page size
+     * @return the ExperimentModel list
+     * @throws Exception
+     */
+    public ListWithPagination<ExperimentModel> search(ExperimentSearchDTO searchDTO, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+
         return sparql.searchWithPagination(
-            ExperimentModel.class,
-            (SelectBuilder select) -> {
+                ExperimentModel.class,
+                (SelectBuilder select) -> {
 
-                exprList.forEach(select::addFilter);
+                    // add a filter for each non null data/object property
+                    extractFilters(searchDTO).forEach(select::addFilter);
 
-                // add a WHERE { ?var} VALUES { v1 v2} clause for each non empty data/object list property
-                if (! xpGetDTO.getKeywords().isEmpty()) {
-                    SPARQLQueryHelper.addWhereValues(select, ExperimentModel.KEYWORD_SPARQL_FIELD, xpGetDTO.getKeywords());
-                }
-                if (! xpGetDTO.getProjects().isEmpty()) {
-                    SPARQLQueryHelper.addWhereValues(select, ExperimentModel.PROJECT_URI_SPARQL_VAR, xpGetDTO.getProjects());
-                }
-                if (!xpGetDTO.getScientificSupervisors().isEmpty()) {
-                    SPARQLQueryHelper.addWhereValues(select, ExperimentModel.SCIENTIFIC_SUPERVISOR_SPARQL_VAR, xpGetDTO.getScientificSupervisors());
-                }
-                if (! xpGetDTO.getTechnicalSupervisors().isEmpty()) {
-                    SPARQLQueryHelper.addWhereValues(select, ExperimentModel.TECHNICAL_SUPERVISOR_SPARQL_VAR, xpGetDTO.getTechnicalSupervisors());
-                }
-                if (! xpGetDTO.getGroups().isEmpty()) {
-                    SPARQLQueryHelper.addWhereValues(select, ExperimentModel.GROUP_SPARQL_VAR, xpGetDTO.getGroups());
-                }
-            },
-            orderByList,
-            page,
-            pageSize
+                    // add a WHERE { ?var} VALUES { v1 v2} clause for each non empty data/object list property
+                    getValuesByVarName(searchDTO).forEach((var, values) -> {
+                        try {
+                            SPARQLQueryHelper.addWhereValues(select, var, values);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                },
+                orderByList,
+                page,
+                pageSize
         );
     }
 }

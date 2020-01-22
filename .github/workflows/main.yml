@@ -1,0 +1,13 @@
+name: trigger gitlab job
+on: [push]
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: trigger Job
+      uses: appleboy/gitlab-ci-action@master
+      with:
+        url: "https://forgemia.inra.fr"
+        token: ${{ secrets.FORGEMIA_TOKEN }}
+        project_id: 403

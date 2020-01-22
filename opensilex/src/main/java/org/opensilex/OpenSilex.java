@@ -646,4 +646,8 @@ public class OpenSilex {
     public static InputStream getResourceAsStream(String name) {
         return getClassLoader().getResourceAsStream(name);
     }
+
+    public File getConfigFile() {
+        return this.configFile;
+    }
 }

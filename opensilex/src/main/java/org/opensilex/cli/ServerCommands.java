@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.catalina.LifecycleException;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.OpenSilex;
@@ -97,17 +99,32 @@ public class ServerCommands extends HelpPrinterCommand implements OpenSilexComma
                 // Get location of current jar file
                 File jarFile = new File(ServerCommands.class.getProtectionDomain().getCodeSource().getLocation().toURI());
 
+                OpenSilex instance = OpenSilex.getInstance();
+                String debug = instance.isDebug() ? "true" : "false";
+                
+                List<String> processArgs = new ArrayList<String>() {
+                    {
+                        add(System.getProperty("java.home") + "/bin/java");
+                        add("-jar");
+                        add(jarFile.getAbsolutePath());
+                        add("server");
+                        add("start");
+                        add("--host=" + host);
+                        add("--port=" + port);
+                        add("--adminPort=" + adminPort);
+                        add("--DEBUG=" + debug);
+                    }
+                    
+                };
+                
+                if (instance.getConfigFile() != null) {
+                    processArgs.add("--CONFIG_FILE=" + instance.getConfigFile().getCanonicalPath());
+                }
+                
+                processArgs.add(tomcatDirectory.toAbsolutePath().toString());
                 // Create external process with given arguments
                 ProcessBuilder pb = new ProcessBuilder(
-                        System.getProperty("java.home") + "/bin/java",
-                        "-jar",
-                        jarFile.getAbsolutePath(),
-                        "server",
-                        "start",
-                        "--host=" + host,
-                        "--port=" + port,
-                        "--adminPort=" + adminPort,
-                        tomcatDirectory.toAbsolutePath().toString()
+                        processArgs
                 );
 
                 // Start server in a detached process

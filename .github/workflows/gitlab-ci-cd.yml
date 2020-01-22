@@ -1,0 +1,11 @@
+name: trigger gitlab job
+on: push
+jobs:
+  curl:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: curl
+      uses: wei/curl@v1
+      with:
+        args: -X POST https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline?token=${{ secrets.FORGEMIA_TOKEN }}&ref=master

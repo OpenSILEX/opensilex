@@ -124,7 +124,10 @@
                 <b-form-select
                   v-if="!data.item.admin"
                   size="sm"
-                  :options="['Test']"
+                  value-field="uri"
+                  text-field="name"
+                  :options="profiles"
+                  v-model="data.item.profile"
                   class="profile-selector"
                 ></b-form-select>
               </template>
@@ -151,7 +154,8 @@ import {
   UserCreationDTO,
   GroupCreationDTO,
   UserService,
-  UserGetDTO
+  UserGetDTO,
+  ProfileGetDTO
 } from "opensilex-rest/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
@@ -160,6 +164,9 @@ export default class GroupForm extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
+
+  @Prop()
+  profiles: Array<ProfileGetDTO>;
 
   get user() {
     return this.$store.state.user;
@@ -396,8 +403,10 @@ export default class GroupForm extends Vue {
 }
 
 .profile-selector {
-  height: 20px;
-  line-height: 10px;
+    height: 20px;
+    line-height: 15px;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 .table-title {

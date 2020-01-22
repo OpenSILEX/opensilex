@@ -27,6 +27,10 @@ export default class OpenSilexVuePlugin {
         ApiServiceBinder.with(this.container);
     }
 
+    getUser() {
+        return this.$store.state.user;
+    }
+
     getResourceURI(path: string): string {
         if (this.config.themeModule && this.config.themeName) {
             let resourceURI = this.baseApi + "/front/theme/" + encodeURIComponent(this.config.themeModule) + "/" + encodeURIComponent(this.config.themeName) + "/resource";

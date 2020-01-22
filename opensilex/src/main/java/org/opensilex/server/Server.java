@@ -27,6 +27,7 @@ import org.apache.catalina.webresources.StandardRoot;
 import org.apache.commons.io.FileUtils;
 import org.apache.jasper.servlet.JasperInitializer;
 import org.apache.tomcat.JarScanType;
+import org.apache.tomcat.util.descriptor.web.FilterDef;
 import org.opensilex.OpenSilex;
 import org.opensilex.server.extensions.ServerExtension;
 import org.opensilex.utils.ClassUtils;
@@ -133,8 +134,12 @@ public class Server extends Tomcat {
             }
         });
 
+        Connector connector = getConnector();
         // Enable GZIP compression
-        enableGzip(getConnector());
+        enableGzip(connector);
+
+        // enable UTF-8
+        enableUTF8(connector);
 
         // Enable admin thread to manage server
         initAdminThread(adminPort);
@@ -195,7 +200,7 @@ public class Server extends Tomcat {
                     jarModules.add(moduleJarFile.getName());
                 }
             });
-            
+
             // Change application scanner to avoid land and unnecessary library scan
             context.getJarScanner().setJarScanFilter((JarScanType jarScanType, String jarName) -> {
                 if (jarScanType == JarScanType.TLD) {
@@ -285,6 +290,10 @@ public class Server extends Tomcat {
         connector.setProperty("compressionMinSize", "1024");
         connector.setProperty("noCompressionUserAgents", "gozilla, traviata");
         connector.setProperty("compressableMimeType", "text/html,text/xml, text/css, application/json, application/javascript");
+    }
+
+    private void enableUTF8(Connector connector) {
+        connector.setURIEncoding("UTF-8");
     }
 
 }

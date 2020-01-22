@@ -6,4 +6,4 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name:  curl
-      run: curl --write-out '%{http_code}' --silent --output /dev/null -d "token=${{ secrets.FORGEMIA_TOKEN }}&ref=master&commit=$GITHUB_SHA" -X POST https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+      run: curl --write-out '%{http_code}' --silent --output /dev/null -d "token=${{ secrets.FORGEMIA_TOKEN }}&ref=master&variables[GITHUB_COMMIT_SHA]=$GITHUB_SHA" -X POST https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline

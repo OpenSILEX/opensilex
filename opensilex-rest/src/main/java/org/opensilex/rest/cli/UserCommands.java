@@ -77,7 +77,7 @@ public class UserCommands extends HelpPrinterCommand implements OpenSilexCommand
             @CommandLine.Option(names = {"--lastName"}, description = "Define user last name", defaultValue = "OpenSilex") String lastName,
             @CommandLine.Option(names = {"--email"}, description = "Define user email", defaultValue = "admin@opensilex.org") String email,
             @CommandLine.Option(names = {"--password"}, description = "Define user password", defaultValue = "admin") String password,
-            @CommandLine.Option(names = {"--admin"}, description = "Define if user is admin", defaultValue = "true") boolean isAdmin,
+            @CommandLine.Option(names = {"--admin"}, description = "Define if user is admin", defaultValue = "false") boolean isAdmin,
             @CommandLine.Mixin HelpOption help
     ) throws Exception {
         

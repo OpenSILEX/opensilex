@@ -8,7 +8,7 @@ jobs:
     - name: curl
       uses: wei/curl@v1
       with:
-        args:  "https://forgemia.inra.fr/api/v4/projects/$PROJECT_ID/trigger/pipeline?token=$TOKEN&ref=master"
+        args: -X POST "https://forgemia.inra.fr/api/v4/projects/$PROJECT_ID/trigger/pipeline?token=$TOKEN&ref=master"
       env: # Or as an environment variable
        TOKEN: ${{ secrets.FORGEMIA_TOKEN }}
        PROJECT_ID: 403

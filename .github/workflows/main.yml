@@ -8,6 +8,6 @@ jobs:
     - name: trigger Job
       uses: appleboy/gitlab-ci-action@master
       with:
-        url: "https://forgemia.inra.fr"
+        host: "https://forgemia.inra.fr"
         token: ${{ secrets.FORGEMIA_TOKEN }}
         project_id: 403

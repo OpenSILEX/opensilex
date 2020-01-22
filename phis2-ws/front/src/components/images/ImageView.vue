@@ -58,16 +58,11 @@ export default class ImageView extends Vue {
     startDate: undefined,
     endDate: undefined,
     provenance: undefined,
-    concernedItems: undefined,
     jsonValueFilter: undefined,
-    orderByDate: true
+    orderByDate: true,
+    concernedItemsValue: []
   };
-  set searchObject(value: any) {
-    this.searchImagesFields = value;
-  }
-  get searchObject() {
-    return this.searchImagesFields;
-  }
+
   created() {
     let query: any = this.$route.query;
     if (query.pageSize) {
@@ -77,7 +72,8 @@ export default class ImageView extends Vue {
       this.currentPage = parseInt(query.currentPage);
     }
     if (query.concernedItems) {
-      this.searchImagesFields.concernedItems = query.concernedItems;
+      //   this.concernedItems=[];
+      //   this.concernedItems.push(query.concernedItems);
     }
     if (query.startDate) {
       this.searchImagesFields.startDate = query.startDate;
@@ -97,6 +93,7 @@ export default class ImageView extends Vue {
   }
 
   onSearchFormSubmit(form) {
+    this.searchImagesFields.concernedItemsValue=[];
     this.currentPage = 1;
     this.showImage();
     this.searchImagesFields.rdfType = form.rdfType;
@@ -108,15 +105,24 @@ export default class ImageView extends Vue {
         }
       })
       .catch(function() {});
-    this.searchImagesFields.concernedItems = form.concernedItems;
-    this.$router
-      .push({
-        path: this.$route.fullPath,
-        query: {
-          concernedItems: this.searchImagesFields.concernedItems
-        }
-      })
-      .catch(function() {});
+
+    if (form.concernedItems) {
+      this.searchImagesFields.concernedItemsValue.push(form.concernedItems);
+    }
+    if (form.objectList) {
+      form.objectList.forEach(element => {
+        this.searchImagesFields.concernedItemsValue.push(element);
+      });
+    }
+
+    // this.$router
+    //   .push({
+    //     path: this.$route.fullPath,
+    //     query: {
+    //       concernedItems: this.concernedItems
+    //     }
+    //   })
+    //   .catch(function() {});
 
     if (form.startDate) {
       this.searchImagesFields.startDate = this.format(form.startDate);
@@ -139,6 +145,7 @@ export default class ImageView extends Vue {
         })
         .catch(function() {});
     }
+
     if (form.endDate) {
       this.searchImagesFields.endDate = this.format(form.endDate);
       this.$router
@@ -164,20 +171,6 @@ export default class ImageView extends Vue {
     this.loadData();
   }
 
-  format(date) {
-    var d = new Date(date),
-      month = "" + (d.getMonth() + 1),
-      day = "" + d.getDate(),
-      year = d.getFullYear();
-
-    if (month.length < 2) month = "0" + month;
-    if (day.length < 2) day = "0" + day;
-
-    return [year, month, day].join("-");
-  }
-  onSearchButtonClick() {
-    this.showSearchComponent = !this.showSearchComponent;
-  }
   loadDataWithDelay() {
     // Fix: on Pagination component: currentPage is changed after the change event call
     setTimeout(() => {
@@ -187,14 +180,9 @@ export default class ImageView extends Vue {
 
   loadData() {
     this.images = [];
-    var concernedItems = undefined;
     let dataService: DataService = this.$opensilex.getService(
       "opensilex.DataService"
     );
-    if (this.searchImagesFields.concernedItems) {
-      concernedItems = [];
-      concernedItems.push(this.searchImagesFields.concernedItems);
-    }
 
     if (this.searchImagesFields.rdfType != undefined) {
       dataService
@@ -204,7 +192,7 @@ export default class ImageView extends Vue {
           this.searchImagesFields.startDate,
           this.searchImagesFields.endDate,
           this.searchImagesFields.provenance,
-          concernedItems,
+          this.searchImagesFields.concernedItemsValue,
           this.searchImagesFields.jsonValueFilter,
           this.searchImagesFields.orderByDate,
           this.pageSize,
@@ -235,6 +223,22 @@ export default class ImageView extends Vue {
           console.log(error);
         });
     }
+  }
+
+  format(date) {
+    var d = new Date(date),
+      month = "" + (d.getMonth() + 1),
+      day = "" + d.getDate(),
+      year = d.getFullYear();
+
+    if (month.length < 2) month = "0" + month;
+    if (day.length < 2) day = "0" + day;
+
+    return [year, month, day].join("-");
+  }
+
+  onSearchButtonClick() {
+    this.showSearchComponent = !this.showSearchComponent;
   }
 }
 </script>

@@ -3,6 +3,7 @@ import ImageView from './components/images/ImageView.vue';
 import ImageSearch from './components/images/ImageSearch.vue';
 import ImageGrid from './components/images/ImageGrid.vue';
 import ImageSingle from './components/images/ImageSingle.vue';
+import ObjectSearch from './components/images/ObjectSearch.vue';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faSlidersH } from '@fortawesome/free-solid-svg-icons'
@@ -17,5 +18,6 @@ export default {
         'phis2ws-ImageSearch': ImageSearch,
         'phis2ws-ImageGrid': ImageGrid,
         'phis2ws-Image': ImageSingle,
+        'phis2ws-ObjectSearch': ObjectSearch,
     }
 };

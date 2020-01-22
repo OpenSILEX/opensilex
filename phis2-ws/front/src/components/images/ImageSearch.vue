@@ -8,10 +8,10 @@
           </template>
         </b-form-select>
       </b-form-group>
-
+      <phis2ws-ObjectSearch @onSearchObjectUpdate="onSearchObjectUpdate"></phis2ws-ObjectSearch>
       <b-form>
         <label class="mr-sm-2" for="inline-form-custom-select-pref">Scientific Object URI:</label>
-        <b-input-group size="sm" >
+        <b-input-group size="sm">
           <b-form-input
             id="soUri"
             v-model="form.concernedItems"
@@ -99,6 +99,16 @@ export default class ImageSearch extends Vue {
     // Reset our form values
   }
 
+  onSearchObjectUpdate(value) {
+    this.form.objectList = [];
+    this.form.objectTagList=[];
+    for (let [key, val] of Object.entries(value)) {
+      this.form.objectList.push(val);
+      this.form.objectTagList.push(key);
+    }
+    console.log("alluri");
+    console.log(this.form);
+  }
   onStartDateCleared() {
     this.form.startDate = "";
   }

@@ -6,6 +6,8 @@
 //******************************************************************************
 package org.opensilex.server.response;
 
+import javax.ws.rs.core.Response.Status;
+
 /**
  * <pre>
  * Single Object URI response (for get by uri result by example).
@@ -19,8 +21,13 @@ package org.opensilex.server.response;
 public class SingleObjectResponse<T> extends JsonResponse<T> {
 
     public SingleObjectResponse(T result) {
-        super(javax.ws.rs.core.Response.Status.OK);
-        this.metadata = new MetadataDTO(new PaginationDTO());
+        this();
         this.result = result;
     }
+
+    public SingleObjectResponse(){
+        super(Status.OK);
+        this.metadata = new MetadataDTO(new PaginationDTO());
+    }
+
 }

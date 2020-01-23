@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.rest.security.api;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -19,25 +20,29 @@ import io.swagger.annotations.ApiModelProperty;
  * }
  * </pre>
  *
- * @see
- * org.opensilex.server.security.api.SecurityAPI#authenticate(org.opensilex.server.security.api.AuthenticationDTO)
- * @see
- * org.opensilex.server.security.api.SecurityAPI#renewToken(java.lang.String,
- * javax.ws.rs.core.SecurityContext)
  * @author Vincent Migot
+ * @see org.opensilex.server.security.api.SecurityAPI#authenticate(org.opensilex.server.security.api.AuthenticationDTO)
+ * @see org.opensilex.server.security.api.SecurityAPI#renewToken(java.lang.String,
+ * javax.ws.rs.core.SecurityContext)
  */
 @ApiModel
 public class TokenGetDTO {
 
-    private final String token;
-
-    public TokenGetDTO(String token) {
-        this.token = token;
-    }
+    protected String token;
 
     @ApiModelProperty(value = "User token", example = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzUxMiJ9.eyJpc19hZG1pbiI6dHJ...")
     public String getToken() {
         return token;
     }
 
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public TokenGetDTO(String token) {
+        this.token = token;
+    }
+
+    public TokenGetDTO() {
+    }
 }

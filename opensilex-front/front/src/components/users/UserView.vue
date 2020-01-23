@@ -27,7 +27,7 @@ export default class UserView extends Vue {
   }
 
   created() {
-    this.service = this.$opensilex.getService("opensilex.UsersService");
+    this.service = this.$opensilex.getService("opensilex.UserService");
   }
 
   showCreateForm() {

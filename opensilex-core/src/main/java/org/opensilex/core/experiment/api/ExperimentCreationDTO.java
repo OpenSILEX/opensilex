@@ -5,37 +5,51 @@
  */
 package org.opensilex.core.experiment.api;
 
+import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.core.species.SpeciesModel;
+import org.opensilex.rest.group.dal.GroupModel;
+import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.rest.validation.Required;
+import org.opensilex.rest.validation.date.DateConstraint;
+
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.rest.validation.Required;
 
 /**
- *
- * @author vidalmor
+ * @author Vincent MIGOT
  */
 public class ExperimentCreationDTO {
 
     private URI uri;
 
-    @Required
-    private String alias;
-
-    private List<URI> projects;
+    private Integer campaign;
 
     @Required
+    private String label;
+
+    private List<URI> projects = Collections.emptyList();
+
+    @Required
+    @ApiModelProperty(example = "2015-08-07")
+    @DateConstraint()
     private String startDate;
 
+    @ApiModelProperty(example = "2015-08-07")
+    @DateConstraint()
     private String endDate;
 
-    private List<URI> scientificSupervisors;
+    private List<URI> scientificSupervisors = Collections.emptyList();
 
-    private List<URI> technicalSupervisors;
+    private List<URI> technicalSupervisors = Collections.emptyList();
 
-    private List<URI> groups;
+    private List<URI> groups = Collections.emptyList();
+
+    List<URI> species = Collections.emptyList();
 
     private String objectives;
 
@@ -51,12 +65,12 @@ public class ExperimentCreationDTO {
         this.uri = uri;
     }
 
-    public String getAlias() {
-        return alias;
+    public String getLabel() {
+        return label;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public List<URI> getProjects() {
@@ -123,6 +137,14 @@ public class ExperimentCreationDTO {
         this.keywords = keywords;
     }
 
+    public Integer getCampaign() {
+        return campaign;
+    }
+
+    public void setCampaign(Integer campaign) {
+        this.campaign = campaign;
+    }
+
     public String getComment() {
         return comment;
     }
@@ -131,25 +153,68 @@ public class ExperimentCreationDTO {
         this.comment = comment;
     }
 
+    public List<URI> getSpecies() {
+        return species;
+    }
+
+    public void setSpecies(List<URI> species) {
+        this.species = species;
+    }
+
     public ExperimentModel newModel() {
+
         ExperimentModel model = new ExperimentModel();
         model.setUri(getUri());
-        model.setAlias(getAlias());
+        model.setLabel(getLabel());
+        model.setStartDate(LocalDate.parse(startDate));
 
-        List<ProjectModel> ps = new ArrayList<>();
-        getProjects().forEach((URI u) -> {
-            ProjectModel project = new ProjectModel();
-            project.setUri(u);
-            ps.add(project);
-        });
-        model.setProjects(ps);
-
-        model.setStartDate(LocalDate.parse(getStartDate()));
-        model.setEndDate(LocalDate.parse(getEndDate()));
-        
+        if (endDate != null) {
+            model.setEndDate(LocalDate.parse(endDate));
+        }
         model.setObjectives(getObjectives());
         model.setComment(getComment());
-        
+        model.setKeywords(keywords);
+        model.setCampaign(campaign);
+
+        List<ProjectModel> projectList = new ArrayList<>(projects.size());
+        projects.forEach((URI u) -> {
+            ProjectModel project = new ProjectModel();
+            project.setUri(u);
+            projectList.add(project);
+        });
+        model.setProjects(projectList);
+
+        List<UserModel> scientificList = new ArrayList<>(scientificSupervisors.size());
+        scientificSupervisors.forEach((URI u) -> {
+            UserModel user = new UserModel();
+            user.setUri(u);
+            scientificList.add(user);
+        });
+        model.setScientificSupervisors(scientificList);
+
+        List<UserModel> technicalList = new ArrayList<>(technicalSupervisors.size());
+        technicalSupervisors.forEach((URI u) -> {
+            UserModel user = new UserModel();
+            user.setUri(u);
+            technicalList.add(user);
+        });
+        model.setTechnicalSupervisors(technicalList);
+
+        List<GroupModel> groupList = new ArrayList<>(groups.size());
+        groups.forEach((URI u) -> {
+            GroupModel group = new GroupModel();
+            group.setUri(u);
+            groupList.add(group);
+        });
+        model.setGroups(groupList);
+
+        List<SpeciesModel> speciesList = new ArrayList<>(species.size());
+        groups.forEach((URI u) -> {
+            SpeciesModel species = new SpeciesModel();
+            species.setUri(u);
+            speciesList.add(species);
+        });
+        model.setSpecies(speciesList);
         return model;
     }
 

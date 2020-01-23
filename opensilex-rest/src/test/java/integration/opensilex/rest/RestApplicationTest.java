@@ -6,8 +6,10 @@
 package integration.opensilex.rest;
 
 import java.util.HashMap;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.mockito.Mockito;
@@ -19,7 +21,7 @@ import org.opensilex.rest.RestApplication;
  * The application test class. Initialize the required environment for the
  * tests. Any other test class must extends OpensilexTest.
  */
-public class RestApplicationTest extends JerseyTest {
+public abstract class RestApplicationTest extends JerseyTest {
 
     /**
      * Initialise the required environment for the tests
@@ -44,6 +46,8 @@ public class RestApplicationTest extends JerseyTest {
                 bind(request).to(HttpServletRequest.class);
             }
         });
+
+        resourceConfig.register(JacksonFeature.class);
 
         return resourceConfig;
     }

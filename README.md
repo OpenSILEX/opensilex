@@ -7,7 +7,7 @@ This repository contains source code for Phenotyping Hybrid Information System (
 
 First you need to have these software installed :
 
-- [Java JDK 8](https://jdk.java.net/java-se-ri/8)
+- [Java JDK 8+](https://jdk.java.net/13/)
 - [Maven 3.6.2](https://maven.apache.org/install.html)
 - [Git 2.17.1](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - [docker 19.03.5](https://docs.docker.com/install/)

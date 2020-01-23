@@ -95,13 +95,13 @@
             <version>${revision}</version>
         </dependency>
         <!-- OpenSilex Core test -->
-        <dependency>
+<!--        <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-core</artifactId>
             <version>${revision}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
-        </dependency>
+        </dependency>-->
         <!-- OpenSilex Front -->
         <dependency>
             <groupId>org.opensilex</groupId>

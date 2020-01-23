@@ -1,5 +1,5 @@
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
-const webpack = require("webpack");
+const TerserPlugin = require('terser-webpack-plugin');
+var webpack = require('webpack');
 
 module.exports = {
     publicPath: "/app/",
@@ -14,15 +14,8 @@ module.exports = {
             hints: false
         },
         optimization: {
-            minimizer: [
-                new UglifyJsPlugin({
-                    uglifyOptions: {
-                        output: {
-                            comments: false
-                        }
-                    }
-                })
-            ]
+            minimize: true,
+            minimizer: [new TerserPlugin()]
         },
         plugins: [
             new webpack.DefinePlugin({

@@ -27,7 +27,6 @@ import org.apache.catalina.webresources.StandardRoot;
 import org.apache.commons.io.FileUtils;
 import org.apache.jasper.servlet.JasperInitializer;
 import org.apache.tomcat.JarScanType;
-import org.apache.tomcat.util.descriptor.web.FilterDef;
 import org.opensilex.OpenSilex;
 import org.opensilex.server.extensions.ServerExtension;
 import org.opensilex.utils.ClassUtils;
@@ -172,6 +171,7 @@ public class Server extends Tomcat {
      * @param baseDirectory Resource path of the web application whithin the
      * module
      * @param moduleClass Class of the module where the application belong
+     * @return Application context
      */
     public Context initApp(String name, String contextPath, String baseDirectory, Class<?> moduleClass) {
         try {

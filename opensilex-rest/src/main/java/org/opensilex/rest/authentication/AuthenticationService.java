@@ -367,7 +367,7 @@ public class AuthenticationService implements Service {
      * just sleep until delay is expired.
      *
      * @param user Userto add
-     * @param expireMs
+     * @param expireMs authentication delay in milliseconds
      */
     public synchronized void addUser(UserModel user, long expireMs) {
         URI userURI = user.getUri();

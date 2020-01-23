@@ -142,7 +142,7 @@ export default class FactorList extends Vue {
     }
 
     return service
-      .search(
+      .searchFactors(
         this.user.getAuthorizationHeader(),
         this.aliasPattern,
         orderBy,

@@ -46,15 +46,15 @@ import org.slf4j.LoggerFactory;
  * <code>
  *   ...
  *
- *   @Inject
+ *   &#64;Inject
  *   private AuthenticationService authentication;
  *
  *   ...
  *
- *   @GET
- * @Path("api-method") ...
- * @Produces(MediaType.APPLICATION_JSON) public Response apiMethod(
- * @Context SecurityContext securityContext ) throws Exception { UserModel
+ * &#64;GET
+ * &#64;Path("api-method") ...
+ * &#64;Produces(MediaType.APPLICATION_JSON) public Response apiMethod(
+ * &#64;Context SecurityContext securityContext ) throws Exception { UserModel
  * currentUser = authentication.getCurrentUser(securityContext);
  *
  * ... Do stuff with current user }

@@ -283,6 +283,7 @@ public class DependencyManager {
      * @return List of dependencies URL
      * @throws IOException In case of file access issues
      * @throws ModelBuildingException In case of bad pom files
+     * @throws DependencyResolutionException In case of dependency resolution error
      */
     public List<URL> loadModulesDependencies(List<URL> jarModulesURLs) throws IOException, DependencyResolutionException, ModelBuildingException {
         List<URL> dependenciesUrl = new ArrayList<>();

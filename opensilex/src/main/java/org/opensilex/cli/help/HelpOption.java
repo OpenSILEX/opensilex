@@ -16,9 +16,10 @@ import picocli.CommandLine.Option;
  * <code>@Mixin HelpOption help</code>
  * - For a class command, add the following code to the class members
  * <code>
- * @Mixin
+ * &#64;Mixin
  * private HelpOption help = new HelpOption();
- * </code><pre>
+ * </code>
+ * </pre>
  *
  * @author Vincent Migot
  */

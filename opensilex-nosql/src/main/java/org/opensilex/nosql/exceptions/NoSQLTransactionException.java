@@ -12,7 +12,7 @@ package org.opensilex.nosql.exceptions;
  * TODO: Not really implemented yet !
  * </pre>
  * 
- * @see org.opensilex.bigdata.NoSQLService
+ * @see org.opensilex.nosql.service.NoSQLService
  * @author Vincent Migot
  */
 public class NoSQLTransactionException extends Exception {

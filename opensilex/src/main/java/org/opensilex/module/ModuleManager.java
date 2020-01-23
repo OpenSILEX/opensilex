@@ -337,6 +337,8 @@ public class ModuleManager {
 
     /**
      * Shutdown all modules and their services
+     * 
+     * @throws Exception In case of error during moduules shutdown
      */
     public void shutdown() throws Exception {
         // Clean all modules

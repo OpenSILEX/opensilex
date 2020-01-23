@@ -243,8 +243,8 @@ public class ClassUtils {
     /**
      * Convert a JAR url to a file
      *
-     * @param jarURL
-     * @return
+     * @param jarURL Jar URL
+     * @return Jar file
      */
     public static File getJarFileFromURL(URL jarURL) {
         File jarFile;

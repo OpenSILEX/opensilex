@@ -66,7 +66,7 @@ public class UserCommands extends HelpPrinterCommand implements OpenSilexCommand
      * @param password Password of the user
      * @param isAdmin Flag to determine if user is admin or not
      * @param help Helper to generate automatically command help message
-     * @throws Exception 
+     * @throws Exception if command fail
      */
     @Command(
             name = "add",

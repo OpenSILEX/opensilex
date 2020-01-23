@@ -18,7 +18,7 @@ import picocli.CommandLine.Model.CommandSpec;
  *
  * see: <a href="https://picocli.info/#_usage_help_with_styles_and_colors">Picocli
  * Documentation</a>
- * <pre>
+ * </pre>
  *
  * @author Vincent Migot
  */

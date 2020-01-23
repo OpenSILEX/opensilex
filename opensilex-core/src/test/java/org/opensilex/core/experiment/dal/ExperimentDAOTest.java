@@ -1,9 +1,10 @@
 package org.opensilex.core.experiment.dal;
 
+import org.eclipse.rdf4j.model.vocabulary.LIST;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensilex.core.AbstractResourceModelTest;
+import org.opensilex.core.AbstractDaoTest;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -21,7 +22,7 @@ import static org.junit.Assert.*;
 /**
  * @author Renaud COLIN
  */
-public class ExperimentDAOTest extends AbstractResourceModelTest {
+public class ExperimentDAOTest extends AbstractDaoTest {
 
     protected static ExperimentDAO xpDao;
     protected static final String xpGraph = "set/experiments";
@@ -33,7 +34,7 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
     @BeforeClass
     public static void initialize() throws Exception {
 
-        AbstractResourceModelTest.initialize();
+        AbstractDaoTest.initialize();
 
         xpDao = new ExperimentDAO(service);
         projectDAO = new ProjectDAO(service);
@@ -61,7 +62,6 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
         xpModel.setCampaign(2019);
 
         xpModel.setProjects(Collections.singletonList(projectModel));
-        // #TODO add scientific and technical supervisors
         xpModel.setComment("a comment about an xp");
         xpModel.setKeywords(Arrays.asList("test", "project", "opensilex"));
         xpModel.setObjectives("this project has for objective to pass all the TU !");
@@ -70,7 +70,7 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
     }
 
     @Test
-    public void testCreate() throws Exception {
+    public void create() throws Exception {
 
         int count = service.count(ExperimentModel.class, null);
         assertEquals("the initial ExperimentModel count must be 0", 0, count);
@@ -82,7 +82,7 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
     }
 
     @Test
-    public void testCreateAll() throws Exception {
+    public void createAll() throws Exception {
 
         int count = service.count(ExperimentModel.class, null);
         assertEquals(count, 0);
@@ -117,7 +117,7 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
     }
 
     @Test
-    public void testGetByUri() throws Exception {
+    public void getByUri() throws Exception {
 
         ExperimentModel xpModel = getModel(0);
         xpDao.create(xpModel);
@@ -129,7 +129,7 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
     }
 
     @Test
-    public void testGetAllXp() throws Exception {
+    public void getAllXp() throws Exception {
 
         int n = 100;
         List<ExperimentModel> xps = new ArrayList<>(n);
@@ -139,17 +139,17 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
         xpDao.createAll(xps);
 
         int pageSize = 10;
-        int nbPage = n/pageSize;
+        int nbPage = n / pageSize;
         for (int i = 0; i < nbPage; i++) {
-            ListWithPagination<ExperimentModel> xpModelResults = xpDao.search(null,null,i,pageSize);
+            ListWithPagination<ExperimentModel> xpModelResults = xpDao.search(null, null, i, pageSize);
             List<ExperimentModel> xpsFromDao = xpModelResults.getList();
-            assertEquals(pageSize,xpsFromDao.size());
+            assertEquals(pageSize, xpsFromDao.size());
         }
 
     }
 
     @Test
-    public void testSearchSuccess() throws Exception {
+    public void searchWithDataType() throws Exception {
 
         ExperimentModel xpModel = getModel(0);
         xpDao.create(xpModel);
@@ -166,8 +166,47 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
         testEquals(xpModel, xpModelResults.getList().get(0));
     }
 
+
     @Test
-    public void testSearchFail() throws Exception {
+    public void searchWithObjectUriType() throws Exception {
+
+        // create two projects
+        List<ProjectModel> projects = new ArrayList<>();
+        projects.add(projectModel);
+
+        ProjectModel project2 = new ProjectModel();
+        project2.setName("TEST PROJECT");
+        projects.add(projectDAO.create(project2));
+
+        ExperimentModel xpModel = getModel(0);
+        xpModel.setProjects(projects);
+        xpDao.create(xpModel);
+
+        ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();
+        searchDTO.setProjects(Arrays.asList(projectModel.getUri(), project2.getUri()));
+
+        List<ExperimentModel> xpModelResults = xpDao.search(searchDTO, null, 0, 10).getList();
+
+        assertNotNull("no experiment found from db", xpModelResults);
+        assertEquals("the experiment uri should be contained into the result list", xpModelResults.get(0).getUri(), xpModel.getUri());
+        testEquals(xpModel, xpModelResults.get(0));
+
+        // create a 2nd xp with a shared project with the 1th xp
+
+        ExperimentModel xpModel2 = getModel(1);
+        xpModel2.setProjects(Collections.singletonList(project2));
+        xpDao.create(xpModel2);
+
+        xpModelResults = xpDao.search(searchDTO, null, 0, 10).getList();
+        assertNotNull("no experiment found from db", xpModelResults);
+
+        assertTrue(xpModelResults.contains(xpModel2));
+        assertTrue(xpModelResults.contains(xpModel));
+
+    }
+
+    @Test
+    public void searchFail() throws Exception {
 
         ExperimentModel xpModel = getModel(0);
         xpDao.create(xpModel);
@@ -198,10 +237,10 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
     }
 
     @Test
-    public void testSearchArchived() throws Exception {
+    public void searchArchived() throws Exception {
 
+        // create an archived and an unarchived xp
         LocalDate currentDate = LocalDate.now();
-
         ExperimentModel archivedXp = getModel(0);
         archivedXp.setStartDate(currentDate.minusDays(3));
         archivedXp.setEndDate(currentDate.minusDays(1));
@@ -212,25 +251,25 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
         unarchivedXp.setEndDate(currentDate.plusDays(3));
         xpDao.create(unarchivedXp);
 
-        List<ExperimentModel> archivedXps = xpDao.search(new ExperimentSearchDTO().setEnded(true),null,0,10).getList();
-        assertEquals(1,archivedXps.size());
+        // try to retrieve xps from dao
+        List<ExperimentModel> archivedXps = xpDao.search(new ExperimentSearchDTO().setEnded(true), null, 0, 10).getList();
+        assertEquals(1, archivedXps.size());
         assertTrue(archivedXps.contains(archivedXp));
 
-        List<ExperimentModel> unarchivedXps = xpDao.search(new ExperimentSearchDTO().setEnded(false),null,0,10).getList();
-        assertEquals(1,unarchivedXps.size());
+        List<ExperimentModel> unarchivedXps = xpDao.search(new ExperimentSearchDTO().setEnded(false), null, 0, 10).getList();
+        assertEquals(1, unarchivedXps.size());
         assertTrue(unarchivedXps.contains(unarchivedXp));
 
-
-        List<ExperimentModel> allXps = xpDao.search(new ExperimentSearchDTO(),null,0,10).getList();
-        assertEquals(2,allXps.size());
+        // search all archived projects
+        List<ExperimentModel> allXps = xpDao.search(new ExperimentSearchDTO(), null, 0, 10).getList();
+        assertEquals(2, allXps.size());
         assertTrue(allXps.contains(archivedXp));
         assertTrue(allXps.contains(unarchivedXp));
 
-        // search all archived projects
     }
 
     @Test
-    public void testUpdate() throws Exception {
+    public void update() throws Exception {
 
         ExperimentModel xpModel = getModel(0);
         xpDao.create(xpModel);
@@ -252,7 +291,7 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
     }
 
     @Test
-    public void testDelete() throws Exception {
+    public void delete() throws Exception {
 
         ExperimentModel xpModel = getModel(0);
         xpDao.create(xpModel);
@@ -268,7 +307,7 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
     }
 
     @Test
-    public void testDeleteAll() throws Exception {
+    public void deleteAll() throws Exception {
 
         int n = 20;
         List<ExperimentModel> xps = new ArrayList<>(n);
@@ -290,13 +329,4 @@ public class ExperimentDAOTest extends AbstractResourceModelTest {
         }
     }
 
-    @Test
-    public void testUpdateWithVariableList() {
-
-    }
-
-    @Test
-    public void testUpdateWithSensorsList() {
-
-    }
 }

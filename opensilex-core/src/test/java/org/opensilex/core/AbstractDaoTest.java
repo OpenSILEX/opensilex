@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * @author Renaud COLIN
  */
-public abstract class AbstractResourceModelTest {
+public abstract class AbstractDaoTest {
 
     protected static Repository repository;
     protected static SPARQLService service;

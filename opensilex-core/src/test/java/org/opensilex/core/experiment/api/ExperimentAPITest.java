@@ -2,7 +2,7 @@ package org.opensilex.core.experiment.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import integration.opensilex.rest.ServiceTest;
+import integration.opensilex.rest.AbstractServiceTest;
 import org.junit.Test;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -14,17 +14,14 @@ import javax.ws.rs.core.Response.Status;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotSame;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
-public class ExperimentAPITest extends ServiceTest {
+public class ExperimentAPITest extends AbstractServiceTest {
 
     protected String path = "/core/experiment";
     protected String uriPath = path+"/{uri}";
@@ -55,7 +52,7 @@ public class ExperimentAPITest extends ServiceTest {
     }
 
     @Test
-    public void testCreateAll() throws URISyntaxException {
+    public void testCreateAll() {
 
         List<ExperimentCreationDTO> xpDtos = Arrays.asList( getCreationDTO(),getCreationDTO());
         String createAllPath = path+"/experiments";
@@ -180,5 +177,10 @@ public class ExperimentAPITest extends ServiceTest {
         List<ExperimentGetDTO> xps = xpListResponse.getResult();
 
         assertFalse(xps.isEmpty());
+    }
+
+    @Override
+    protected List<String> getGraphsToCleanNames() {
+        return Collections.singletonList("set/experiments");
     }
 }

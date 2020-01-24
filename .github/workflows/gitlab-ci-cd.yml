@@ -1,21 +1,21 @@
 name: trigger gitlab job
 on: push
 jobs:
-  curl:
+  run_gitlab_ci_cd:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
     - name:  curl
       run: curl --write-out '%{http_code}' --silent --output /dev/null -d "token=${{ secrets.FORGEMIA_TOKEN }}&ref=master&variables[GITHUB_COMMIT_SHA]=$GITHUB_SHA" -X POST https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
-  update_upstream:
+  update_gitlab_upstream:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
     - name:  curl
       run: |
-        git clone https://arnaud.charleroy:${{ secrets.FORGEMIA_TOKEN }}@forgemia.inra.fr/OpenSILEX/opensilex-dev.git
-        git remote add upstream https://github.com/OpenSILEX/opensilex-dev.git
+        git clone --recurse-submodules https://oauth2:${{ secrets.FORGEMIA_TOKEN }}@forgemia.inra.fr/OpenSILEX/opensilex-dev.git
+        cd opensilex-dev/
         git fetch origin
         git checkout upstream
-        git merge pull upstream upstream
+        git pull  https://github.com/OpenSILEX/opensilex-dev.git master
         git push origin upstream

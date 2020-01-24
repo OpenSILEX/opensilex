@@ -25,7 +25,9 @@ let urlParams = new URLSearchParams(window.location.search);
 
 // Define if script in debug mode
 let isDebug = false;
+let isDevMode = false;
 if (window["webpackHotUpdate"]) {
+  isDevMode = true;
   isDebug = true;
 } else {
   isDebug = urlParams.has("debug");
@@ -52,7 +54,9 @@ if (isDebug) {
     'If you start your webservices server with another host or port configuration,\n' +
     'please edit opensilex-front/front/src/main.ts and update DEV_BASE_API_PATH constant'
   );
-} else {
+}
+
+if (!isDevMode) {
   let splitURI = window.location.href.split("/");
   baseApi = splitURI[0] + "//" + splitURI[2] + "/rest"
 }

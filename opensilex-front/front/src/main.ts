@@ -21,11 +21,17 @@ Vue.config.productionTip = false;
 import * as LATEST_UPDATE from "./opensilex.dev";
 Vue.prototype.LATEST_UPDATE = LATEST_UPDATE.default
 
+let urlParams = new URLSearchParams(window.location.search);
+
 // Define if script in debug mode
 let isDebug = false;
 if (window["webpackHotUpdate"]) {
   isDebug = true;
+} else {
+  isDebug = urlParams.has("debug");
 }
+
+console.debug("URL parameters", urlParams);
 
 // Initialise logger
 console.log = console.log || function () { };
@@ -224,9 +230,6 @@ $opensilex.initAsyncComponents(components)
         themePromise.then(() => {
           store.commit("setConfig", config);
           console.debug("Configuration loaded", config);
-
-          let urlParams = new URLSearchParams(window.location.search);
-          console.debug("Read url parameters", urlParams);
 
           // Load only necessary component if application is embed in an iframe
           let embed = urlParams.has('embed');

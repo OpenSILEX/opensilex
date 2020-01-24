@@ -13,7 +13,7 @@ jobs:
     - uses: actions/checkout@master
     - name:  curl
       run: |
-        git clone https://gitlab-ci-token:${{ secrets.FORGEMIA_TOKEN }}@forgemia.inra.fr/OpenSILEX/opensilex-dev.git
+        git clone https://arnaud.charleroy:${{ secrets.FORGEMIA_TOKEN }}@forgemia.inra.fr/OpenSILEX/opensilex-dev.git
         git remote add upstream https://github.com/OpenSILEX/opensilex-dev.git
         git fetch origin
         git checkout upstream

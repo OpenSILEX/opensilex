@@ -181,8 +181,15 @@ export default class OpenSilexVuePlugin {
 
         console.debug("Load module", name);
         this.showLoader();
-        let url = this.baseApi + "/front/extension/" + name + ".js";
+        let url = this.baseApi + "/front/extension/js/" + name + ".js";
+        let cssURI = this.baseApi + "/front/extension/css/" + name + ".css";
         let self = this;
+
+        var link = document.createElement('link');
+        link.setAttribute("rel", "stylesheet");
+        link.setAttribute("type", "text/css");
+        link.setAttribute("href", cssURI);
+        document.getElementsByTagName("head")[0].appendChild(link);
 
         window[name] = new Promise((resolve, reject) => {
             const script = document.createElement('script');

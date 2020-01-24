@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "serve": "vue-cli-service build --target lib --formats umd-min src/index.ts --mode development --watch",
-        "build": "vue-cli-service build --target lib --formats umd-min src/index.ts --mode production",
+        "build": "vue-cli-service build --target lib src/index.ts --mode production",
         "lint": "vue-cli-service lint",
         "check:outdated": "yarn outdated || cd .",
         "build:types": "dts-generator --project ./ --out ./types/opensilex-rest.d.ts --prefix opensilex-rest"

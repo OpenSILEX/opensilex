@@ -50,9 +50,6 @@
         <!-- Minimal maven version -->
         <maven.minimal.version>3.5</maven.minimal.version>
         
-        <!-- define default arg line -->
-        <argLine></argLine>
-        
         <!-- dependencies version -->
         <jersey.version>2.30</jersey.version>
         <tomcat.version>9.0.30</tomcat.version>
@@ -66,7 +63,7 @@
         <jena.query.builder.version>3.14.0</jena.query.builder.version>
         <data.nucleus.version>5.2.2</data.nucleus.version>
         <data.nucleus.jdo.version>3.2.0-m12</data.nucleus.jdo.version>
-        <data.nucleus.jta.version>5.10.1.Final</data.nucleus.jta.version>
+        <data.nucleus.jta.version>5.10.3.Final</data.nucleus.jta.version>
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
         <bytebuddy.version>1.10.7</bytebuddy.version>
         <java.jwt.version>3.9.0</java.jwt.version>
@@ -288,7 +285,7 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
-             <version>${apache.tika.version}</version>
+            <version>${apache.tika.version}</version>
         </dependency>
         
         <!--JWT--> 
@@ -509,9 +506,9 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
-                        <argLine>${argLine} -Dfile.encoding=${project.build.sourceEncoding}</argLine>
                         <trimStackTrace>false</trimStackTrace>
                         <useFile>false</useFile>
+                        <reuseForks>true</reuseForks>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -860,27 +857,6 @@
                     </execution>
                 </executions>
             </plugin>
-            
-            
-            <!--Code coverage @see https://www.eclemma.org/jacoco/trunk/index.html --> 
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco.maven.plugin.version}</version>
-                <configuration>
-                    <outputDirectory>../${generated.doc.site.directory}/${project.name}/jacoco/</outputDirectory>
-                    <excludes>
-                        <exclude>**/*.war</exclude>
-                    </excludes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -898,7 +874,7 @@
                 <configuration>
                     <source>8</source>
                     <quiet>true</quiet>
-                     <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+                    <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
                 </configuration>
             </plugin>
             <plugin>
@@ -911,11 +887,70 @@
                 <artifactId>maven-jxr-plugin</artifactId>
                 <version>3.0.0</version>
             </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.maven.plugin.version}</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>report</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
         </plugins>
     </reporting>
     
     <!--  Configuration profiles  -->
     <profiles>
+        <!-- Profile which enable Jacoco Code coverage -->
+        <profile>
+            <id>with-test-report</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${maven.surefire.plugin.version}</version>
+                        <configuration>
+                            <argLine>${jaCoCoArgLine} -Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                            <trimStackTrace>false</trimStackTrace>
+                            <useFile>false</useFile>
+                            <reuseForks>true</reuseForks>
+                        </configuration>
+                    </plugin>
+                    <!--Code coverage @see https://www.eclemma.org/jacoco/trunk/index.html --> 
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>${jacoco.maven.plugin.version}</version>
+                        <configuration>
+                            <outputDirectory>../${generated.doc.site.directory}/${project.name}/jacoco/</outputDirectory>
+                            <excludes>
+                                <exclude>**/*.war</exclude>
+                            </excludes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                                <configuration>
+                                    <propertyName>jaCoCoArgLine</propertyName>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>report</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <!-- Build Vue app if present -->
         <profile>
             <id>with-vue-app</id>
@@ -1107,46 +1142,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-        
-        <!-- Profile which enable Jacoco Code coverage -->
-        <profile>
-            <id>with-test-report</id>
-            <build>
-                <plugins>
-                    <!--Code coverage @see https://www.eclemma.org/jacoco/trunk/index.html --> 
-                    <plugin>
-                        <groupId>org.jacoco</groupId>
-                        <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>${jacoco.maven.plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>report</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>report</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-            
-            <reporting>
-                <plugins>
-                    <plugin>
-                        <groupId>org.jacoco</groupId>
-                        <artifactId>jacoco-maven-plugin</artifactId>
-                        <reportSets>
-                            <reportSet>
-                                <reports>
-                                    <report>report</report>
-                                </reports>
-                            </reportSet>
-                        </reportSets>
-                    </plugin>
-                </plugins>  
-            </reporting>
         </profile>
         
         <!-- Profile to enable in eclipse to avoid build errors -->

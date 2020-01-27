@@ -1,13 +1,7 @@
 name: trigger gitlab job
 on: push
 jobs:
-  run_gitlab_ci_cd: 
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - name:  curl
-      run: curl --write-out '%{http_code}' --silent --output /dev/null -d "token=${{ secrets.FORGEMIA_TOKEN }}&ref=master&variables[GITHUB_COMMIT_SHA]=$GITHUB_SHA" -X POST https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
-  update_gitlab_upstream:
+ update_gitlab_upstream:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
@@ -17,5 +11,5 @@ jobs:
         cd opensilex-dev/
         git fetch origin
         git checkout upstream
-        git pull  https://github.com/OpenSILEX/opensilex-dev.git master
+        git pull https://github.com/OpenSILEX/opensilex-dev.git master
         git push origin upstream

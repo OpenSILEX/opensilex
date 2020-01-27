@@ -202,6 +202,7 @@
                                     <exclude>com.sun.activation:jakarta.activation</exclude>
                                     <exclude>jakarta.el:jakarta.el-api</exclude>
                                     <exclude>org.glassfish:jakarta.el</exclude>
+                                    <exclude>javax.annotation:javax.annotation-api</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>

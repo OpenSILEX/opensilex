@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +35,9 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.opensilex.OpenSilex;
 import org.reflections.Reflections;
+import org.reflections.scanners.Scanner;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -308,9 +312,19 @@ public class ClassUtils {
                         LOGGER.error("Error in jar file", ex);
                     }
                 });
-                reflections = new Reflections(ConfigurationBuilder.build("", OpenSilex.getClassLoader()).setUrls(urls).setExpandSuperTypes(false));
+
+                reflections = new Reflections(
+                        ConfigurationBuilder.build("", OpenSilex.getClassLoader())
+                                .setUrls(urls)
+                                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner())
+                                .setExpandSuperTypes(false)
+                );
             } else {
-                reflections = new Reflections(ConfigurationBuilder.build("", OpenSilex.getClassLoader()).setExpandSuperTypes(false));
+                reflections = new Reflections(
+                        ConfigurationBuilder.build("", OpenSilex.getClassLoader())
+                                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner())
+                                .setExpandSuperTypes(false)
+                );
             }
         }
 

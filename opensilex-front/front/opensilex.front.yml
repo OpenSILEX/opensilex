@@ -5,14 +5,17 @@ menu:
     route: 
       path: /users
       component: opensilex-UserView
-      credentials: []
+      credentials: []  
   - id: data
-    label: component.menu.data
+    label: component.menu.data.label
     icon: ik-trending-up
-    route: 
-      path: /users
-      component: opensilex-UserView
-      credentials: []
+    children:
+      - id: images
+        label: component.menu.data.images
+        route: 
+          path: /images
+          component: phis2ws-ImageView
+          credentials: []
   - id: experiments
     label: component.menu.experiments
     icon: ik-layers

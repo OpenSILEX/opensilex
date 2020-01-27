@@ -86,6 +86,13 @@ import BootstrapVue from 'bootstrap-vue'
 Vue.use(BootstrapVue);
 console.debug("Bootstrap plugin initialized !");
 
+
+//Initialise DatePicker 
+//https://www.npmjs.com/package/vuejs-datepicker
+import Datepicker from 'vuejs-datepicker';
+
+Vue.component('datePicker', Datepicker);
+
 // Initialise font awesome
 console.debug("Initialize FontAwesomeIcon plugin...");
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'

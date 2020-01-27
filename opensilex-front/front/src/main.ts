@@ -21,11 +21,19 @@ Vue.config.productionTip = false;
 import * as LATEST_UPDATE from "./opensilex.dev";
 Vue.prototype.LATEST_UPDATE = LATEST_UPDATE.default
 
+let urlParams = new URLSearchParams(window.location.search);
+
 // Define if script in debug mode
 let isDebug = false;
+let isDevMode = false;
 if (window["webpackHotUpdate"]) {
+  isDevMode = true;
   isDebug = true;
+} else {
+  isDebug = urlParams.has("debug");
 }
+
+console.debug("URL parameters", urlParams);
 
 // Initialise logger
 console.log = console.log || function () { };
@@ -46,7 +54,9 @@ if (isDebug) {
     'If you start your webservices server with another host or port configuration,\n' +
     'please edit opensilex-front/front/src/main.ts and update DEV_BASE_API_PATH constant'
   );
-} else {
+}
+
+if (!isDevMode) {
   let splitURI = window.location.href.split("/");
   baseApi = splitURI[0] + "//" + splitURI[2] + "/rest"
 }
@@ -224,9 +234,6 @@ $opensilex.initAsyncComponents(components)
         themePromise.then(() => {
           store.commit("setConfig", config);
           console.debug("Configuration loaded", config);
-
-          let urlParams = new URLSearchParams(window.location.search);
-          console.debug("Read url parameters", urlParams);
 
           // Load only necessary component if application is embed in an iframe
           let embed = urlParams.has('embed');

@@ -24,7 +24,10 @@
         },
         "menu": {
             "dashboard": "Tableau de bord",
-            "data": "Données",
+            "data":{
+                "label":"Données",
+                "images":"Images"
+            },
             "experiments": "Expérimentations",
             "installations": "Installations",
             "projects": "Projets",

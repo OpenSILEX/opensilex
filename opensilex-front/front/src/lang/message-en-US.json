@@ -24,7 +24,10 @@
         },
         "menu": {
             "dashboard": "Dashboard",
-            "data": "Data",
+            "data":{
+                "label":"Data",
+                "images":"Images"
+            },
             "experiments": "Experiments",
             "installations": "Installations",
             "projects": "Projects",

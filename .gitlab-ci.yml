@@ -1,7 +1,6 @@
 # Trigger pipeline for test deployment
 deploy:webservice:
   image: curlimages/curl
-  when: manual
   stage: deploy
   script:
     - echo $CI_COMMIT_SHORT_SHA

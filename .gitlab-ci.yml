@@ -1,0 +1,7 @@
+# Trigger pipeline for test deployment
+deploy:webservice:
+  image: curlimages/curl
+  stage: deploy
+  script:
+    - echo $CI_COMMIT_SHA
+    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[CI_COMMIT_SHA]=$CI_COMMIT_SHA"  https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline

@@ -7,11 +7,14 @@
       @click="onSearchButtonClick"
       variant="primary"
     >
-      <font-awesome-icon icon="sliders-h" size="sm" />
+      <font-awesome-icon icon="search" size="sm" />
     </b-button>
 
     <b-collapse id="collapse-1" v-model="showSearchComponent" class="mt-2">
-      <phis2ws-ImageSearch @onSearchFormSubmit="onSearchFormSubmit"></phis2ws-ImageSearch>
+      <phis2ws-ImageSearch
+        @onSearchFormSubmit="onSearchFormSubmit"
+        @onSearchFormChange="onSearchFormChange"
+      ></phis2ws-ImageSearch>
     </b-collapse>
 
     <div v-if="totalImages>0">
@@ -71,10 +74,6 @@ export default class ImageView extends Vue {
     if (query.currentPage) {
       this.currentPage = parseInt(query.currentPage);
     }
-    if (query.concernedItems) {
-      //   this.concernedItems=[];
-      //   this.concernedItems.push(query.concernedItems);
-    }
     if (query.startDate) {
       this.searchImagesFields.startDate = query.startDate;
     }
@@ -92,37 +91,31 @@ export default class ImageView extends Vue {
     this.showSearchComponent = false;
   }
 
-  onSearchFormSubmit(form) {
-    this.searchImagesFields.concernedItemsValue=[];
-    this.currentPage = 1;
+  onSearchFormSubmit() {
     this.showImage();
-    this.searchImagesFields.rdfType = form.rdfType;
-    this.$router
-      .push({
-        path: this.$route.fullPath,
-        query: {
-          rdfType: encodeURI(this.searchImagesFields.rdfType)
-        }
-      })
-      .catch(function() {});
+  }
 
-    if (form.concernedItems) {
-      this.searchImagesFields.concernedItemsValue.push(form.concernedItems);
-    }
+  onSearchFormChange(form) {
+    this.currentPage = 1;
+
+    this.searchImagesFields.rdfType = form.rdfType;
+   
+      this.$router
+        .push({
+          path: this.$route.fullPath,
+          query: {
+            rdfType: encodeURI(this.searchImagesFields.rdfType)
+          }
+        })
+        .catch(function() {});
+   
+
+    this.searchImagesFields.concernedItemsValue = [];
     if (form.objectList) {
       form.objectList.forEach(element => {
         this.searchImagesFields.concernedItemsValue.push(element);
       });
     }
-
-    // this.$router
-    //   .push({
-    //     path: this.$route.fullPath,
-    //     query: {
-    //       concernedItems: this.concernedItems
-    //     }
-    //   })
-    //   .catch(function() {});
 
     if (form.startDate) {
       this.searchImagesFields.startDate = this.format(form.startDate);

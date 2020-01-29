@@ -31,9 +31,9 @@
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { ScientificObjectsService } from "../../lib/api/scientificObjects.service";
-import { ScientificObjectDTO } from "../../lib/model/scientificObjectDTO";
+import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+import { ScientificObjectsService } from "../../../lib/api/scientificObjects.service";
+import { ScientificObjectDTO } from "../../../lib/model/scientificObjectDTO";
 
 @Component
 export default class ObjectSearch extends Vue {
@@ -43,12 +43,9 @@ export default class ObjectSearch extends Vue {
     return this.$store.state.user;
   }
 
-  private searchObjectsFields: any = {
-    uri: undefined,
-    experiment: undefined,
-    alias: undefined,
-    rdfType: undefined
-  };
+  @Prop()
+  selectedExperiment:any;
+  alias:any=undefined;
 
   currentPage: number = 0;
   pageSize: number = 8000;
@@ -60,6 +57,10 @@ export default class ObjectSearch extends Vue {
   get criteria() {
     // Compute the search criteria
     return this.search.trim().toLowerCase();
+  }
+
+  get experiment(){
+    return this.selectedExperiment;
   }
   get availableOptions() {
     const criteria = this.criteria;
@@ -92,12 +93,8 @@ export default class ObjectSearch extends Vue {
     this.value.forEach(element => {
         this.selectedValueWithUri[element]=this.valueWithURI[element];
       });
-    console.log("this.value");
-    console.log("this.selectedValueWithUri");
-    console.log(this.value);
-    console.log(this.selectedValueWithUri);
     this.search = "";
-    this.$emit("onSearchObjectUpdate", this.selectedValueWithUri);
+    this.$emit("searchObjectSelected", this.selectedValueWithUri);
   }
   onRemove(index) {
     this.value.splice(index, 1);
@@ -105,18 +102,12 @@ export default class ObjectSearch extends Vue {
     this.value.forEach(element => {
         this.selectedValueWithUri[element]=this.valueWithURI[element];
       });
-    console.log("this.value");
-    console.log("this.selectedValueWithUri");
-    console.log(this.value);
-    console.log(this.selectedValueWithUri);
-    this.$emit("onSearchObjectUpdate", this.selectedValueWithUri);
+    this.$emit("searchObjectSelected", this.selectedValueWithUri);
   }
 
 
   onWrite(value) {
-    console.log("write");
-    console.log(value);
-    this.searchObjectsFields.alias = value;
+    this.alias = value;
     let service: ScientificObjectsService = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"
     );
@@ -125,10 +116,10 @@ export default class ObjectSearch extends Vue {
         this.user.getAuthorizationHeader(),
         this.pageSize,
         this.currentPage,
-        this.searchObjectsFields.uri,
-        this.searchObjectsFields.experiment,
-        this.searchObjectsFields.alias,
-        this.searchObjectsFields.rdfType
+        undefined,
+        this.experiment,
+        this.alias,
+        undefined
       )
       .then(
         (http: HttpResponse<OpenSilexResponse<Array<ScientificObjectDTO>>>) => {

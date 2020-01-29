@@ -1,35 +1,15 @@
 <template>
   <div>
-    <b-form @submit="onSubmit" @reset="onReset">
-      <b-form-group id="input-group-1" label="Type:" label-for="type">
-        <b-form-select id="type" v-model="form.rdfType" :options="types" required>
-          <template v-slot:first>
-            <option :value="null" disabled>-- Please select an Image type --</option>
-          </template>
-        </b-form-select>
-      </b-form-group>
-      <phis2ws-ObjectSearch @onSearchObjectUpdate="onSearchObjectUpdate"></phis2ws-ObjectSearch>
-      <b-form>
-        <label class="mr-sm-2" for="inline-form-custom-select-pref">Scientific Object URI:</label>
-        <b-input-group size="sm">
-          <b-form-input
-            id="soUri"
-            v-model="form.concernedItems"
-            type="text"
-            debounce="300"
-            placeholder="Enter URI"
-          ></b-form-input>
-          <template v-slot:append>
-            <b-btn
-              :disabled="!form.concernedItems"
-              variant="primary"
-              @click="form.concernedItems = ''"
-            >
-              <font-awesome-icon icon="times" size="sm" />
-            </b-btn>
-          </template>
-        </b-input-group>
-      </b-form>
+    <b-form @submit="onSubmit" >
+      <phis2ws-ImageTypeSearch :rdfType="form.rdfType" @imageTypeSelected="onImageTypeSelected"></phis2ws-ImageTypeSearch>
+      <phis2ws-ExperimentSearch
+        :experiment="selectedExperiment"
+        @experimentSelected="onExperimentSelected"
+      ></phis2ws-ExperimentSearch>
+      <phis2ws-SciObjectSearch
+        :selectedExperiment="selectedExperiment"
+        @searchObjectSelected="onSearchObjectSelected"
+      ></phis2ws-SciObjectSearch>
 
       <b-form inline>
         <label class="mr-sm-2" for="inline-form-custom-select-pref">Start Date</label>
@@ -39,6 +19,7 @@
             input-class="form-control"
             placeholder="Select a date"
             :clear-button="true"
+            @input="onStartDateSelected"
             @cleared="onStartDateCleared"
           ></datePicker>
         </b-input-group>
@@ -50,13 +31,13 @@
             input-class="form-control"
             placeholder="Select a date"
             :clear-button="true"
+            @input="onEndDateSelected"
             @cleared="onEndDateCleared"
           ></datePicker>
         </b-input-group>
       </b-form>
 
       <b-btn type="submit" variant="primary">Submit</b-btn>
-      <b-btn type="reset" variant="danger">Reset</b-btn>
     </b-form>
   </div>
 </template>
@@ -77,38 +58,68 @@ export default class ImageSearch extends Vue {
   get user() {
     return this.$store.state.user;
   }
-
+  selectedExperiment: any = "";
   $router: VueRouter;
   form: any = {
     rdfType: "",
-    concernedItems: "",
     startDate: "",
-    endDate: ""
+    endDate: "",
+    objectList: []
   };
   types: any = [];
 
   imageTypeUri: string = "http://www.opensilex.org/vocabulary/oeso#Image";
 
+  onExperimentSelected(value) {
+    //get the so (objectList) & emit onSearchFormChange event with the result
+    //get the so type
+    
+    this.selectedExperiment = value;
+    this.$router
+      .push({
+        path: this.$route.fullPath,
+        query: {
+          experiment: encodeURI(value)
+        }
+      })
+      .catch(function() {});
+  }
+
+  onImageTypeSelected(value) {
+    this.form.rdfType = value;
+    this.update();
+  }
+
   onSubmit(evt) {
     evt.preventDefault();
-    this.$emit("onSearchFormSubmit", this.form);
+    this.$emit("onSearchFormSubmit");
   }
 
-  onReset(evt) {
-    evt.preventDefault();
-    // Reset our form values
+
+  update() {
+    this.$emit("onSearchFormChange", this.form);
   }
 
-  onSearchObjectUpdate(value) {
+  onSearchObjectSelected(value) {
     this.form.objectList = [];
-    this.form.objectTagList=[];
+    // this.form.objectTagList = [];
     for (let [key, val] of Object.entries(value)) {
       this.form.objectList.push(val);
-      this.form.objectTagList.push(key);
+      //this.form.objectTagList.push(key);
     }
-    console.log("alluri");
-    console.log(this.form);
+    this.update();
   }
+
+  onStartDateSelected() {
+    console.log("start date" + this.form.startDate);
+    this.update();
+  }
+
+  onEndDateSelected() {
+    console.log("end date" + this.form.endDate);
+    this.update();
+  }
+
   onStartDateCleared() {
     this.form.startDate = "";
   }
@@ -118,9 +129,7 @@ export default class ImageSearch extends Vue {
 
   created() {
     let query: any = this.$route.query;
-    if (query.concernedItems) {
-      this.form.concernedItems = query.concernedItems;
-    }
+
     if (query.startDate) {
       this.form.startDate = query.startDate;
     }
@@ -129,6 +138,9 @@ export default class ImageSearch extends Vue {
     }
     if (query.rdfType) {
       this.form.rdfType = query.rdfType;
+    }
+    if (query.experiment) {
+      this.selectedExperiment = query.experiment;
     }
     let service: UriService = this.$opensilex.getService(
       "opensilex.UriService"

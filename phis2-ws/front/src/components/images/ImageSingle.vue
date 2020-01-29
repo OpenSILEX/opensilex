@@ -20,7 +20,7 @@ export default class ImageSingle extends Vue {
   formatedDateValue = "";
   created() {
     this.link =
-      this.$opensilex.getBaseApi() +
+      this.$opensilex.getBaseAPI() +
       "/data/file/" +
       encodeURIComponent(this.image.uri);
     this.formatedDateValue = this.formatedDate(this.image.date);

@@ -1,0 +1,94 @@
+/**
+ * Fir for bootstrap theme
+ */
+
+.wrapper .header-top {
+    padding: 10px 0;
+}
+
+.customized .header-top .top-menu .dropdown .dropdown-toggle {
+    height: 40px;
+    line-height: 15px;
+}
+
+::placeholder {
+    color: #879099;
+}
+
+.btn {
+    font-weight: normal;
+}
+
+.table tbody td { 
+    vertical-align: top;
+}
+
+#main-menu-navigation.nav {
+    display: block;
+}
+
+.wrapper .page-wrap .main-content {
+    width: 100%;
+}
+
+.wrapper .page-wrap .app-sidebar .sidebar-content .nav-container .navigation-main .nav-item:not(.open) .submenu-content {
+    display: block;
+    height: 0;
+    overflow: hidden;
+}
+
+.customized #main-menu-navigation .nav-item.has-sub .submenu-content.open {
+    height: auto;
+}
+
+.table-responsive {
+    min-height: 600px;
+}
+
+.btn-link {
+    color: #212121;
+}
+
+.btn-link:hover {
+    text-decoration: none;
+}
+
+/**
+ * Fix for multiselect module
+ */
+
+.multiselect__select {
+    height: 30px;
+}
+
+.multiselect__tags {
+    font-size: 13px;
+    min-height: 35px;
+    padding: 5px 40px 0 8px;
+}
+
+.multiselect__placeholder {
+    margin-bottom: 0;
+}
+
+.multiselect__tag {
+    background: #00A38D;
+    margin-bottom: 0;
+}
+
+.multiselect__tags input {
+    color: #eaeaea;
+    padding-top: 2px;
+}
+
+.multiselect__option--highlight {
+    background: #00A38D;
+}
+
+.multiselect, .multiselect__input, .multiselect__single {
+    font-size: 13px;
+}
+
+.multiselect__tag-icon:after {
+    color: #ffffff;
+}

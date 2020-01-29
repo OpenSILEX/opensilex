@@ -1,7 +1,33 @@
 {
     "component": {
         "common": {
-            
+            "multiselect": {
+                "label": {
+                    "x-more": "and {count} more"
+                }
+            }
+        },
+        "experiment": {
+            "search": {
+                "column": {
+                    "alias": "Alias",
+                    "projects": "Project(s)",
+                    "installations": "Installation(s)",
+                    "campaign": "Campaign",
+                    "startDate": "Start date",
+                    "endDate": "End date",
+                    "uri": "URI",
+                    "state": "State"
+                },
+                "filter": {
+                    "alias": "Filter by Alias",
+                    "campains": "Filter by Campain(s)",
+                    "projects": "Filter by Project(s)",
+                    "startDate": "Filter by start date",
+                    "endDate": "Filtrer by end date",
+                    "uri": "Filter by URI"
+                }
+            }
         },
         "header": {
             "language": {
@@ -21,7 +47,6 @@
             "projects": "Projects",
             "scientificObjects": "Scientific Objects",
             "equipments": {
-                "icon": "ik-folder",
                 "label": "Equipments",
                 "sensors": "Sensors",
                 "actuators": "Actuators",

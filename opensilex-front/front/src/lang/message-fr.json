@@ -1,7 +1,33 @@
 {
     "component": {
         "common": {
-            
+            "multiselect": {
+                "label": {
+                    "x-more": "et {count} de plus"
+                }
+            }
+        },
+        "experiment": {
+            "search": {
+                "column": {
+                    "alias": "Alias",
+                    "projects": "Projet(s)",
+                    "installations": "Installation(s)",
+                    "campaign": "Campagne",
+                    "startDate": "Date de début",
+                    "endDate": "Date de fin",
+                    "uri": "URI",
+                    "state": "Etat"
+                },
+                "filter": {
+                    "alias": "Filtrer par Alias",
+                    "campains": "Filtrer par Campagne(s)",
+                    "projects": "Filtrer par Projet(s)",
+                    "startDate": "Filtrer par Date de début",
+                    "endDate": "Filtrer par Date de fin",
+                    "uri": "Filtrer par URI"
+                }
+            }
         },
         "header": {
             "language": {

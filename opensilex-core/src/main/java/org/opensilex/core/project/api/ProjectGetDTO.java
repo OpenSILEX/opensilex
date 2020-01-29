@@ -48,9 +48,9 @@ public class ProjectGetDTO {
     public static ProjectGetDTO fromModel(ProjectModel model) {
         ProjectGetDTO dto = new ProjectGetDTO();
 
-//        dto.setUri(model.getUri());
-//        dto.setLabel(model.getName());
-//        dto.setComment(model.getComment());
+        dto.setUri(model.getUri());
+        dto.setLabel(model.getName());
+        //dto.setComment(model.getComment());
         
         return dto;
     }

@@ -17,8 +17,8 @@ menu:
     label: component.menu.experiments
     icon: ik-layers
     route: 
-      path: /users
-      component: opensilex-UserView
+      path: /experiments
+      component: opensilex-core-ExperimentList
       credentials: []
   - id: installations
     label: component.menu.installations

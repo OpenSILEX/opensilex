@@ -1,5 +1,6 @@
 import { ApiServiceBinder } from './lib'
 import FactorList from './components/factors/FactorList.vue';
+import ExperimentList from './components/experiments/ExperimentList.vue';
 
 export default {
     install(Vue, options) {
@@ -7,6 +8,7 @@ export default {
     },
     
     components: {
-        "opensilex-core-FactorList": FactorList
+        "opensilex-core-FactorList": FactorList,
+        "opensilex-core-ExperimentList": ExperimentList
     }
 };

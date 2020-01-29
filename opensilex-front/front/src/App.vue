@@ -10,19 +10,17 @@
       <component class="header-login" v-bind:is="loginComponent"></component>
     </header>
 
-    <div class="page-wrap">
-      <section id="content-wrapper" v-if="user.isLoggedIn() && !disconnected">
+    <section id="content-wrapper" class="page-wrap" v-if="user.isLoggedIn() && !disconnected">
         <component v-if="!embed" v-bind:is="menuComponent"></component>
 
-        <main>
+        <main class="main-content">
           <router-view />
         </main>
-      </section>
 
       <footer v-if="!embed">
         <component v-bind:is="footerComponent"></component>
       </footer>
-    </div>
+    </section>
 
     <div id="loader" v-bind:class="{'visible':isLoaderVisible}">
       <div class="lds-ripple">
@@ -71,6 +69,7 @@ export default class App extends Vue {
 @import "../node_modules/icon-kit/dist/css/iconkit.min.css";
 @import '../node_modules/bootstrap/scss/bootstrap';
 @import '../node_modules/bootstrap-vue/src/index.scss';
+@import '../node_modules/vue-multiselect/dist/vue-multiselect.min.css';
 
 #loader {
   display: none;

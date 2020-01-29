@@ -204,9 +204,6 @@ function loadTheme(frontService: FrontService, config: FrontConfigDTO) {
   })
 }
 
-// Load d3
-import * as d3 from 'd3'
-
 $opensilex.initAsyncComponents(components)
   .then(() => {
     console.debug("Default components loaded !");

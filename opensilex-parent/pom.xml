@@ -98,6 +98,7 @@
         <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
         <maven.surefire.plugin.version>3.0.0-M3</maven.surefire.plugin.version>
         <maven.resources.plugin.version>3.1.0</maven.resources.plugin.version>
+        <maven.antrun.plugin.version>1.8</maven.antrun.plugin.version>
         <maven.site.plugin.version>3.8.2</maven.site.plugin.version>
         <maven.assembly.plugin.version>3.1.1</maven.assembly.plugin.version>
         <maven.archetype.plugin.version>3.1.2</maven.archetype.plugin.version>

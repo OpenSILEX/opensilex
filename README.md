@@ -7,13 +7,11 @@ This repository contains source code for Phenotyping Hybrid Information System (
 
 First you need to have these software installed :
 
-- [Java JDK 8+](https://jdk.java.net/13/)
-- [Maven 3.6.2](https://maven.apache.org/install.html)
-- [Git 2.17.1](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- [docker 19.03.5](https://docs.docker.com/install/)
-- [docker-compose 1.24.1](https://docs.docker.com/compose/install/)
-
-The install process is tested with these software versions but it should work with newer versions.
+- [Java JDK 8+](https://jdk.java.net/) (Our project is tested with JDK versions 8, 11, 13 and 14)
+- [Maven 3.5+](https://maven.apache.org/install.html)
+- [Git 2.17.1+](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+- [docker 19.03.1+](https://docs.docker.com/install/)
+- [docker-compose 1.24.1+](https://docs.docker.com/compose/install/)
 
 Note: the ```<BASE_DIR>``` variable referenced in this documentation is the root folder of your installation whee your user must have read and write permissions.
 
@@ -49,6 +47,34 @@ cd <BASE_DIR>/opensilex-dev
 mvn install
 ```
 
+# Create opensilex command alias
+
+## Linux
+
+Create file `.bash_aliases` in your home folder if it doesn't exists.
+
+Add this line in it replacing <BASE_DIR> variable:
+
+```
+alias opensilex=<BASE_DIR>/opensilex-dev/opensilex-release/target/opensilex/opensilex.sh
+```
+
+Reload bash aliases and test it:
+```
+cd ~
+source .bash_aliases
+opensilex help
+```
+
+## Windows
+
+In a console terminal type the following command replacing <BASE_DIR> variable:
+
+```
+setx PATH "%PATH%;<BASE_DIR>\opensilex-dev\opensilex-release\target\opensilex\"
+opensilex help
+```
+
 # Setup configuration
 
 Edit ```<BASE_DIR>/opensilex-dev/opensilex-dev-tools/src/main/resources/config/opensilex.yml```
@@ -70,10 +96,17 @@ For usage with phis-webapp you should also configure these options if your app i
 
 # Install Databases with docker
 
+First you should add your current user `$USER` to docker group:
+```
+sudo usermod -aG docker $USER
+```
+
+You need to log out and log in again to make it work.
+
 ```
 cd <BASE_DIR>
 cd opensilex-dev/opensilex-dev-tools/src/main/resources/docker
-sudo docker-compose up -d
+docker-compose up -d
 ```
 
 Docker containers will be automatically started on your machine startup.
@@ -92,10 +125,9 @@ Then right-click on ```org.opensilex.dev.Install``` class in opensilex-dev-tools
 ## With command line
 
 ```
-cd <BASE_DIR>
-cd opensilex-dev/opensilex-dev-tools
-mvn "-Dexec.args=-classpath %classpath:../opensilex:../opensilex-core:../opensilex-front:../phis-ws/phis2-ws org.opensilex.dev.Install" -Dexec.executable=/usr/bin/java  org.codehaus.mojo:exec-maven-plugin:1.6.0:exec
+opensilex dev install
 ```
+
 # Start OpenSILEX development server with Netbeans
 
 ## For web services only
@@ -105,6 +137,7 @@ Right-click on ```org.opensilex.dev.StartServer``` class in opensilex-dev-tools 
 ## For webservices and Vue.js hot reload server
 
 Right-click on ```org.opensilex.dev.StartServerWithFront``` class in opensilex-dev-tools projet and select "run" or "debug"
+
 
 # Access to OpenSilex & tools
 

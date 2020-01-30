@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -21,6 +20,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.net.URI;
+import java.util.ServiceLoader;
 import javax.mail.internet.InternetAddress;
 import opensilex.service.PhisPostgreSQLConfig;
 import opensilex.service.PhisWsConfig;
@@ -37,6 +37,8 @@ import org.eclipse.rdf4j.repository.config.ConfigTemplate;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigSchema;
+import org.eclipse.rdf4j.repository.config.RepositoryFactory;
+import org.eclipse.rdf4j.repository.config.RepositoryRegistry;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.eclipse.rdf4j.repository.manager.RepositoryProvider;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -64,33 +66,51 @@ public class Install {
 
     private static boolean deleteFirst = false;
 
+    private final static String DEFAULT_CONFIG = "./src/main/resources/config/opensilex.yml";
+    
     public static void main(String[] args) throws Exception {
-        install(false);
+        install(false, null);
     }
 
-    public static void install(boolean deleteFirst) throws Exception  {
+    public static void install(boolean deleteFirst, String baseDirectory) throws Exception {
         Install.deleteFirst = deleteFirst;
-        String configFile = getResourceFile("./config/opensilex.yml").getCanonicalPath();
-        OpenSilex.setup(new HashMap<String, String>() {
+
+        Map<String, String> args = new HashMap<String, String>() {
             {
                 put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);
-                put(OpenSilex.CONFIG_FILE_ARG_KEY, configFile);
-                put(OpenSilex.DEBUG_ARG_KEY, "true");
             }
-        });
+        };
+
+        if (baseDirectory != null) {
+            args.put(OpenSilex.BASE_DIR_ARG_KEY, baseDirectory);
+            args.put(OpenSilex.CONFIG_FILE_ARG_KEY, getConfig(baseDirectory));
+        } else {
+             args.put(OpenSilex.CONFIG_FILE_ARG_KEY, getConfig(System.getProperty("user.dir")));
+        }
+
+        OpenSilex.setup(args);
 
         opensilex = OpenSilex.getInstance();
 
+        LOGGER.info("Initialize PostGreSQL");
         initPGSQL();
+
+        LOGGER.info("Initialize RDF4J");
         initRDF4J();
 
+        LOGGER.info("Initialize Modules");
         opensilex.install();
+
+        LOGGER.info("Create Super Admin");
         createSuperAdmin();
     }
 
+    private static String getConfig(String baseDirectory) {
+        return Paths.get(baseDirectory).resolve(DEFAULT_CONFIG).toFile().getAbsolutePath();
+    }
+    
     private static File getResourceFile(String path) {
-        Path currentDirectory = Paths.get(System.getProperty("user.dir"));
-        return currentDirectory.resolve("./src/main/resources/").resolve(path).toFile();
+        return OpenSilex.getInstance().getBaseDirectory().resolve("./src/main/resources/").resolve(path).toFile();
     }
 
     private static Connection getDBConnection(PhisPostgreSQLConfig pgConfig, String dbId) throws Exception {
@@ -227,6 +247,12 @@ public class Install {
         final Resource repositoryNode = Models
                 .subject(graph.filter(null, RDF.TYPE, RepositoryConfigSchema.REPOSITORY))
                 .orElseThrow(() -> new RepositoryConfigException("missing repository node"));
+
+        RepositoryRegistry registry = RepositoryRegistry.getInstance();
+        ServiceLoader<RepositoryFactory> services = ServiceLoader.load(RepositoryFactory.class, OpenSilex.getClassLoader());
+        services.forEach(action -> {
+            registry.add(action);
+        });
 
         final RepositoryConfig repConfig = RepositoryConfig.create(graph, repositoryNode);
         repConfig.validate();

@@ -52,8 +52,9 @@
         <!-- dependencies version -->
         <jersey.version>2.30</jersey.version>
         <tomcat.version>9.0.30</tomcat.version>
-        <hibernate.validator.version>6.1.1.Final</hibernate.validator.version>
+        <hibernate.validator.version>6.1.2.Final</hibernate.validator.version>
         <jackson.version>2.10.2</jackson.version>
+        <jackson.jaxrs.version>2.10.2.1</jackson.jaxrs.version>
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
         <swagger.jersey2.jaxrs.version>1.6.0</swagger.jersey2.jaxrs.version>
         <maven.resolver.version>1.4.1</maven.resolver.version>
@@ -61,8 +62,9 @@
         <rdf4j.version>3.0.4</rdf4j.version>
         <jena.query.builder.version>3.14.0</jena.query.builder.version>
         <data.nucleus.version>5.2.2</data.nucleus.version>
+        <data.nucleus.api.jdo.version>5.2.3</data.nucleus.api.jdo.version>
         <data.nucleus.jdo.version>3.2.0-m12</data.nucleus.jdo.version>
-        <data.nucleus.jta.version>5.10.3.Final</data.nucleus.jta.version>
+        <data.nucleus.jta.version>5.10.4.Final</data.nucleus.jta.version>
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
         <bytebuddy.version>1.10.7</bytebuddy.version>
         <java.jwt.version>3.9.0</java.jwt.version>
@@ -108,7 +110,7 @@
         <serviceloader.maven.plugin.version>1.1.0</serviceloader.maven.plugin.version>
         <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
         <owasp.dependency.check.maven.plugin.version>5.2.1</owasp.dependency.check.maven.plugin.version>
-        <frontend.maven.plugin.version>1.8.0</frontend.maven.plugin.version>
+        <frontend.maven.plugin.version>1.9.1</frontend.maven.plugin.version>
         <maven.project.info.reports.plugin.version>3.0.0</maven.project.info.reports.plugin.version>
         <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
@@ -264,7 +266,7 @@
         <dependency>
             <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-api-jdo</artifactId>
-            <version>${data.nucleus.version}</version>
+            <version>${data.nucleus.api.jdo.version}</version>
         </dependency>
         
         <!--DataNucleus - MongoDB driver --> 
@@ -369,7 +371,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
-            <version>${jackson.version}</version>
+            <version>${jackson.jaxrs.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>

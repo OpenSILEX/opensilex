@@ -92,3 +92,22 @@
 .multiselect__tag-icon:after {
     color: #ffffff;
 }
+
+/**
+ * Fix for date picker
+ */
+table.asd__month-table td {
+   padding: 0;
+}
+
+.table-striped .asd__month-table tbody tr:nth-of-type(odd) {
+    background-color: #fff;
+}
+
+.asd__keyboard-shortcuts-trigger {
+    display: none;
+}
+
+.asd__day {
+    line-height: normal;
+}

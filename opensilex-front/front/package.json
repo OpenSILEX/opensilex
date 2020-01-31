@@ -24,7 +24,9 @@
         "preval.macro": "^4.0.0",
         "sass-loader": "^8.0.0",
         "style-loader": "1.1.2",
+        "vue-airbnb-style-datepicker": "^2.7.1",
         "vue-cookies": "1.6.1",
+        "vue-date-fns": "^1.1.0",
         "vue-i18n": "8.15.3",
         "vue-multiselect": "^2.1.6",
         "vuejs-logger": "^1.5.3"

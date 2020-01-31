@@ -66,10 +66,11 @@ export default class App extends Vue {
 
 <style lang="scss">
 
-@import "../node_modules/icon-kit/dist/css/iconkit.min.css";
+@import '../node_modules/icon-kit/dist/css/iconkit.min.css';
 @import '../node_modules/bootstrap/scss/bootstrap';
 @import '../node_modules/bootstrap-vue/src/index.scss';
 @import '../node_modules/vue-multiselect/dist/vue-multiselect.min.css';
+@import '../node_modules/vue-airbnb-style-datepicker/dist/vue-airbnb-style-datepicker.min.css';
 
 #loader {
   display: none;

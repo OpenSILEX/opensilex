@@ -8,8 +8,8 @@
                 <div class="page-header-title">
                     <i class="ik ik-layers bg-phis-green"></i>
                     <div class="d-inline">
-                        <h5>Expérimentations</h5>
-                        <span>Gérer et configurer les expérimentations</span>
+                        <h5>{{ $t('component.menu.experiments') }}</h5>
+                        <span>{{ $t('component.experiment.search.description') }}</span>
                     </div>
                 </div>
             </div>
@@ -17,9 +17,9 @@
                 <nav class="breadcrumb-container" aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item">
-                            <a href="index.html" title="Revenir au tableau de bord"><i class="ik ik-grid mr-1"></i>Tableau de bord</a>
+                            <a href="index.html" title="Revenir au tableau de bord"><i class="ik ik-grid mr-1"></i>{{ $t('component.menu.dashboard') }}</a>
                         </li>
-                        <li class="breadcrumb-item active"><i class="ik ik-layers mr-1"></i>Expérimentations</li>
+                        <li class="breadcrumb-item active"><i class="ik ik-layers mr-1"></i>{{ $t('component.menu.experiments') }}</li>
                     </ol>
                 </nav>
             </div>
@@ -31,7 +31,7 @@
       <div class="card-header row clearfix">
           <div class="col col-sm-3">
               <div class="card-options d-inline-block">
-                  <button type="button" class="btn btn-primary"><i class="ik ik-plus"></i>Ajouter Expérimentation</button>
+                  <button type="button" class="btn btn-primary"><i class="ik ik-plus"></i>{{ $t('component.experiment.search.buttons.add-experiment') }}</button>
               </div>
           </div>                                
       </div>
@@ -42,11 +42,12 @@
             <thead>
                 <tr>
                     <th>{{ $t('component.experiment.search.column.alias') }}</th>
-                    <th >{{ $t('component.experiment.search.column.projects') }}</th>
+                    <th>{{ $t('component.experiment.search.column.projects') }}</th>
                     <th>{{ $t('component.experiment.search.column.installations') }}</th>
                     <th>{{ $t('component.experiment.search.column.campaign') }}</th>
+                    <th>{{ $t('component.experiment.search.column.places') }}</th>
+                    <th>{{ $t('component.experiment.search.column.species') }}</th>
                     <th>{{ $t('component.experiment.search.column.startDate') }}</th>
-                    <th>{{ $t('component.experiment.search.column.endDate') }}</th>
                     <th>{{ $t('component.experiment.search.column.uri') }}</th>
                     <th>{{ $t('component.experiment.search.column.state') }}</th>
                 </tr>
@@ -59,8 +60,7 @@
                     <b-form-input v-model="filter.alias" debounce="300" class="form-control" :placeholder="$t('component.experiment.search.filter.alias')"></b-form-input>
                   </td>
                   <td width="250">
-                      <component 
-                        v-bind:is="multiselect" 
+                      <multiselect
                         :limit="1"
                         :multiple="true"
                         track-by="uri"
@@ -72,15 +72,24 @@
                         selectLabel=""
                         selectedLabel="X"
                         deselectLabel="X"
-                        :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})">
-                      </component>
+                        :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"/>
                   </td>
-                  <td></td>
                   <td width="250">
-                      <component 
-                        v-bind:is="multiselect"
+                    <multiselect
                         :limit="1"
                         :multiple="true"
+                        :placeholder="$t('component.experiment.search.filter.installations')"
+                        :closeOnSelect="false"
+                        v-model="filter.installations"
+                        :options="campains"
+                        selectLabel=""
+                        selectedLabel="X"
+                        deselectLabel="X"
+                        :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"/>
+                  </td>
+                  <td width="250">
+                      <multiselect
+                        :limit="1"
                         :placeholder="$t('component.experiment.search.filter.campains')"
                         :closeOnSelect="false"
                         v-model="filter.campains"
@@ -88,14 +97,37 @@
                         selectLabel=""
                         selectedLabel="X"
                         deselectLabel="X"
-                        :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})">
-                      </component>
+                        :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})" />
                   </td>
-                  <td>
-                      <input type="text" class="form-control" name="daterange" value="" :placeholder="$t('component.experiment.search.filter.startDate')" />
+                  <td width="250">
+                    <multiselect
+                      :limit="1"
+                      :multiple="true"
+                      :placeholder="$t('component.experiment.search.filter.places')"
+                      :closeOnSelect="false"
+                      v-model="filter.places"
+                      :options="campains"
+                      selectLabel=""
+                      selectedLabel="X"
+                      deselectLabel="X"
+                      :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})" />
                   </td>
-                  <td>
-                      <input type="text" class="form-control" name="daterange" value="" :placeholder="$t('component.experiment.search.filter.endDate')" />
+                  <td width="250">
+                    <multiselect
+                      :limit="1"
+                      :multiple="true"
+                      :placeholder="$t('component.experiment.search.filter.species')"
+                      :closeOnSelect="false"
+                      v-model="filter.species"
+                      :options="campains"
+                      selectLabel=""
+                      selectedLabel="X"
+                      deselectLabel="X"
+                      :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"/>
+                  </td>
+                  <td class="datepicker-trigger">
+                    <input type="text" id="datepicker1" class="form-control" name="daterange" value="" :placeholder="$t('component.experiment.search.filter.startDate')" />
+                    <AirbnbStyleDatepicker :trigger-element-id="'datepicker1'" />
                   </td>
                   <td>
                     <b-form-input v-model="filter.uri" debounce="300" class="form-control" :placeholder="$t('component.experiment.search.filter.uri')"></b-form-input>
@@ -112,23 +144,32 @@
                 <tr v-for="experiment in experiments" v-bind:key="experiment.id">
                   <td>{{ experiment.label }}</td>
                   <td>
-                    <span :key="index" v-for="(project, index) in experiment.projects">
-                      <span :title="project">{{ getProjectName(project) }}</span><span v-if="index + 1 < experiment.projects.length">, </span>
+                    <span :key="index" v-for="(uri, index) in experiment.projects">
+                      <span :title="uri">{{ getProjectName(uri) }}</span><span v-if="index + 1 < experiment.projects.length">, </span>
                     </span>
                   </td>
+                  <td></td>
                   <td>{{ experiment.campaign }}</td>
-                  <td>{{ experiment.campaign }}</td>
+                  <td></td>
+                  <td>
+                    <span :key="index" v-for="(uri, index) in experiment.species">
+                      <span :title="uri">{{ getSpeciesName(uri) }}</span><span v-if="index + 1 < experiment.species.length">, </span>
+                    </span>
+                  </td>
                   <td>{{ formatDate(experiment.startDate) }}</td>
-                  <td>{{ formatDate(experiment.endDate) }}</td>
                   <td><span class="uri">{{ experiment.uri }}<a href="#" class="uri-copy" title="Copier dans le presse-papier"><i class="ik ik-copy"></i></a></span></td>
-                  <td><span class="badge badge-pill badge-success">En cours</span></td>
+                  <td>
+                    <i v-if="!experiment.isEnded" class="ik ik-sun badge-icon badge-info-phis" :title="$t('component.experiment.common.status.in-progress')"></i>
+                    <i v-else class="ik ik-moon badge-icon badge-light" :title="$t('component.experiment.common.status.finished')"></i>
+                    <i class="ik ik-users badge-icon badge-info" :title="$t('component.experiment.common.status.public')"></i>
+                  </td>
                 </tr>                                      
             </tbody>
           </table>
         </div>                                
       </div> 
 
-      <div v-if="totalRow > 1" class="card-footer"> 
+      <div v-if="totalRow > pageSize" class="card-footer"> 
         <nav class="float-right">
           <b-pagination
             v-model="currentPage"
@@ -147,9 +188,9 @@
 </template>
 
 <script lang="ts">
-import { Component as ComponentAnnotation, Prop } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import { VueConstructor, Component } from "vue";
+import VueConstructor from "vue";
 import { ExperimentsService } from "../../lib/api/experiments.service";
 import { ProjectsService } from "../../lib/api/projects.service";
 import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
@@ -158,7 +199,6 @@ import { ProjectCreationDTO } from "../../lib//model/projectCreationDTO";
 import VueRouter from "vue-router";
 import VueI18n from 'vue-i18n';
 import moment from "moment";
-import Multiselect from "vue-multiselect";
 
 export class ExperimentFilter {
 
@@ -169,8 +209,9 @@ export class ExperimentFilter {
   private _startDate: string;
   private _endDate: string
   private _campaign: number;
-  private _keywords: Array<string>;
   private _projects: Array<ProjectCreationDTO>;
+  private _installations: Array<string>;
+  private _places: Array<string>;
   private _species: Array<string>;
   private _isArchived: boolean;
 
@@ -206,12 +247,14 @@ export class ExperimentFilter {
     return this._endDate;
   }
 
-  get campaign() {
-    return this._campaign;
+  set campaign(value: number) {
+    console.log("new campaign = " + value);
+    this._campaign = value;
+    this._experimentList.loadExperiments();
   }
 
-  get keywords() {
-    return this._keywords;
+  get campaign() {
+    return this._campaign;
   }
 
   set projects(values: Array<ProjectCreationDTO>) {
@@ -225,6 +268,35 @@ export class ExperimentFilter {
     return this._projects;
   }
 
+  set installations(values: Array<string>) {
+    console.log("new installations = " + values);
+    console.log("installations size = " + values.length);
+    this._installations = values;
+    this._experimentList.loadExperiments();
+  }
+
+  get installations() {
+    return this._installations;
+  }
+
+   set places(values: Array<string>) {
+    console.log("new places = " + values);
+    console.log("places size = " + values.length);
+    this._places = values;
+    this._experimentList.loadExperiments();
+  }
+
+  get places() {
+    return this._places;
+  }
+
+  set species(values: Array<string>) {
+    console.log("new species = " + values);
+    console.log("species size = " + values.length);
+    this._species = values;
+    this._experimentList.loadExperiments();
+  }
+
   get species() {
     return this._species;
   }
@@ -235,17 +307,16 @@ export class ExperimentFilter {
   
 }
 
-@ComponentAnnotation
+@Component
 export default class ExperimentList extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
 
-  multiselect = Vue.component('multiselect', Multiselect);
-
   projectsList = [];
   projects: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
   experiments: Array<ExperimentGetDTO> = new Array<ExperimentGetDTO>();
+  species: Array<String> = new Array<String>();
   campains: Array<Number> = new Array<Number>();
 
   filter: ExperimentFilter;
@@ -293,7 +364,7 @@ export default class ExperimentList extends Vue {
       this.filter.endDate,
       this.filter.campaign,
       this.filter.alias,
-      this.filter.keywords,
+      null,
       projects,
       this.filter.species,
       this.filter.isArchived,
@@ -360,6 +431,10 @@ export default class ExperimentList extends Vue {
       return project.label;
     }
     return null;
+  }
+
+  getSpeciesName(uri: String): String {
+    return uri;
   }
 
 }

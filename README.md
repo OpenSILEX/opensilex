@@ -68,10 +68,10 @@ opensilex help
 
 ## Windows
 
-In a console terminal type the following command replacing <BASE_DIR> variable:
+Add the following directory to your PATH environment variable replacing <BASE_DIR> variable:
 
 ```
-setx PATH "%PATH%;<BASE_DIR>\opensilex-dev\opensilex-release\target\opensilex\"
+path %PATH%;<BASE_DIR>\opensilex-dev\opensilex-release\target\opensilex\
 opensilex help
 ```
 
@@ -94,11 +94,11 @@ For usage with phis-webapp you should also configure these options if your app i
 - uploadImageServerDirectory: Folder to store images files used by phis-webapp
 - imageFileServerDirectory:  Base uri for accessing uploadImageServerDirectory folder through apache
 
-# Install Databases with docker
+# Setup Databases with docker
 
-First you should add your current user `$USER` to docker group:
+On linux, you should add your current user `<USER>` to docker group to avoid using sudo:
 ```
-sudo usermod -aG docker $USER
+sudo usermod -aG docker <USER>
 ```
 
 You need to log out and log in again to make it work.
@@ -114,6 +114,7 @@ Docker containers will be automatically started on your machine startup.
 You can change the "restart" parameter in "docker-compose.yml" file if you don't want this behavior 
 but you will have to run the preious command after each restart manually.
 
+
 # Initialize system data
 
 ## With Netbeans
@@ -122,15 +123,20 @@ Right-click on opensilex-dev project and select "Open Required Projects" --> "Op
 
 Then right-click on ```org.opensilex.dev.Install``` class in opensilex-dev-tools projet and select "run" or "debug"
 
+If you want to reset all your database, you can do the same with class ```org.opensilex.dev.InstallRestet```
+
 ## With command line
 
 ```
 opensilex dev install
 ```
 
+If you want to reset all your database use `-r` flag with the previous command
+
+
 # Start OpenSILEX development server with Netbeans
 
-## For web services only
+## For web services only (with compiled Vue.js code)
 
 Right-click on ```org.opensilex.dev.StartServer``` class in opensilex-dev-tools projet and select "run" or "debug"
 
@@ -138,24 +144,63 @@ Right-click on ```org.opensilex.dev.StartServer``` class in opensilex-dev-tools 
 
 Right-click on ```org.opensilex.dev.StartServerWithFront``` class in opensilex-dev-tools projet and select "run" or "debug"
 
+# Start OpenSILEX development server with command line
+
+With command line you need to recompile all modules to have your change in Java source code taking into account (but not for Vue-JS code if using hot relaod).
+
+## For web services only (with compiled Vue.js code)
+
+```
+opensilex dev start --no-front-dev
+```
+
+## For webservices and Vue.js hot reload server
+
+```
+opensilex dev start
+```
+
 
 # Access to OpenSilex & tools
 
-If you use the default configuration, you can now access the OpenSILEX API at: [http://localhost:8666/](http://localhost:8666/)
+## OpenSilex Appllication
 
-If you start server with Vue.js, the hot reload server tell you on which port it's accessible.
+- OpenSilex Vue App is accessible at: [http://localhost:8666/](http://localhost:8666/)
+
+- OpenSILEX API is accessible at: [http://localhost:8666/api-docs](http://localhost:8666/api-docs)
+
+If you start server with Vue.js, the hot reload server tell you on which port it's accessible (probably 8080 depending of which is available).
 
 Default Super Admin user which will give you access to all web services is created with:
 - login: admin@opensilex.org
 - password: admin 
 
+## RDF4J workbench
+
 RDF4J workbench is accessible by default at: [http://localhost:8667/rdf4j-workbench](http://localhost:8667/rdf4j-workbench)
 
-MongoDB is accessible on port 8669
+At first connection, you must configure RDF4J server URL with this value: `http://opensilex-rdf4j:8080/rdf4j-server`
 
-PGAdmin is accessible by default at: [http://localhost:8670/](http://localhost:8670/)
-- PGAdmin default user: admin@opensilex.org
-- PGAdmin default password: opensilex
+## MongoDB
+
+MongoDB is accessible on port 8668
+
+## PostGreSQL and PGAdmin
+
+- PostGreSQL is accessible on port 8669
+
+- PGAdmin is accessible by default at: [http://localhost:8670/](http://localhost:8670/)
+
+PGAdmin default user: admin@opensilex.org
+
+PGAdmin default password: opensilex
+
+You must configure a new server connection for PGAdmin with the following parameters:
+
+- host: opensilex-psql
+- port: 5432
+- user: opensilex
+- password opensilex
 
 # Generate documentation
 

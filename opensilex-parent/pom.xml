@@ -38,7 +38,6 @@
         <!-- build variation flags -->
         <skipFrontBuild>false</skipFrontBuild>
         <skipFrontAudit>true</skipFrontAudit>
-        <skipOutdated>true</skipOutdated>
 
         <!-- Front-end Node & Yarn version -->
         <node.version>v12.13.1</node.version>
@@ -538,10 +537,6 @@
                     <artifactId>versions-maven-plugin</artifactId>
                     <version>${versions.maven.plugin.version}</version>
               
-                    <configuration>
-                        <skip>${skipOutdated}</skip>
-                    </configuration>
-                    
                     <executions>
                         <execution>
                             <phase>generate-resources</phase>
@@ -1016,7 +1011,7 @@
                                 </goals>
 
                                 <configuration>
-                                    <skip>${skipOutdated}</skip>
+                                    <skip>${skipFrontBuild}</skip>
                                     <arguments>run check:outdated</arguments>
                                 </configuration>
                             </execution>

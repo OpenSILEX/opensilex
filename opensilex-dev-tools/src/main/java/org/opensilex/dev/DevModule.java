@@ -9,4 +9,6 @@ import org.opensilex.OpenSilexModule;
 
 public class DevModule extends OpenSilexModule {
     
+    public final static String CONFIG_FILE_PATH = "./src/main/resources/config/opensilex.yml";
+    
 }

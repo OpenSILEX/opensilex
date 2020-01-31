@@ -24,3 +24,9 @@ images=`docker images -q -a`
 if [ -n "$images" ]; then
         docker rmi -f $images
 fi
+
+# Delete all volumes
+volumes=`docker volume ls -q`
+if [ -n "$volumes" ]; then
+        docker volume rm -f $volumes
+fi

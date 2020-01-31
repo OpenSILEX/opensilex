@@ -39,6 +39,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.sparql.core.Var;
+import org.opensilex.sparql.annotations.SPARQLManualLoading;
 
 /**
  *
@@ -50,7 +51,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     private static Set<Class<?>> SPARQL_CLASSES_LIST;
     private static final Map<Class<?>, SPARQLClassObjectMapper<?>> SPARQL_CLASSES_MAPPER = new HashMap<>();
     private static final Map<Resource, SPARQLClassObjectMapper<?>> SPARQL_RESOURCES_MAPPER = new HashMap<>();
-    private static final List<Class<? extends SPARQLResourceModel>> SPARQL_RESOURCES_EXCLUSION_LIST = new ArrayList<>();
+    private static final List<Class<? extends SPARQLResourceModel>> SPARQL_RESOURCES_MANUAL_INCLUSION_LIST = new ArrayList<>();
 
     private static <T> Class<? super T> getConcreteClass(Class<T> objectClass) {
         if (SPARQLProxyMarker.class.isAssignableFrom(objectClass)) {
@@ -69,7 +70,12 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         if (SPARQL_CLASSES_LIST == null) {
             SPARQL_CLASSES_LIST = ClassUtils.getAnnotatedClasses(SPARQLResource.class);
 
-            SPARQL_CLASSES_LIST.removeAll(SPARQL_RESOURCES_EXCLUSION_LIST);
+            SPARQL_CLASSES_LIST.removeIf((Class<?> resource) ->{ 
+                SPARQLManualLoading manualAnnotation = resource.getAnnotation(SPARQLManualLoading.class);
+                return (manualAnnotation != null);
+            });
+
+            SPARQL_CLASSES_LIST.addAll(SPARQL_RESOURCES_MANUAL_INCLUSION_LIST);
 
             for (Class<?> sparqlModelClass : SPARQL_CLASSES_LIST) {
                 SPARQLClassObjectMapper<?> sparqlObjectMapper = new SPARQLClassObjectMapper<>((Class<? extends SPARQLResourceModel>) sparqlModelClass);
@@ -86,8 +92,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
      * @param clazz the class to remove from initialization
      * @see #initialize()
      */
-    public static void excludeResourceClass(Class<? extends SPARQLResourceModel> clazz) {
-        SPARQL_RESOURCES_EXCLUSION_LIST.add(clazz);
+    public static void includeResourceClass(Class<? extends SPARQLResourceModel> clazz) {
+        SPARQL_RESOURCES_MANUAL_INCLUSION_LIST.add(clazz);
     }
 
     @SuppressWarnings("unchecked")

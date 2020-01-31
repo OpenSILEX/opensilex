@@ -29,9 +29,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.mapping.NoGetterClass;
-import org.opensilex.sparql.mapping.NoSetterClass;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import test.opensilex.sparql.model.A;
@@ -48,10 +45,6 @@ public abstract class SPARQLServiceTest {
     protected static SPARQLService service;
 
     public static void initialize(SPARQLService service) throws Exception {
-
-        // exclude these two classes from the SPARQLClassObjectMapper initialisation
-        SPARQLClassObjectMapper.excludeResourceClass(NoGetterClass.class);
-        SPARQLClassObjectMapper.excludeResourceClass(NoSetterClass.class);
 
         SPARQLServiceTest.service = service;
         service.startup();

@@ -58,7 +58,7 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>unpack</id>
+                        <id>unpack-dev</id>
                         <phase>install</phase>
                         <goals>
                             <goal>unpack</goal>
@@ -71,6 +71,25 @@
                                     <version>${revision}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/opensilex</outputDirectory>
+                                    <includes>**</includes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>unpack-prod</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${revision}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/${project.artifactId}-${revision}</outputDirectory>
                                     <includes>**</includes>
                                 </artifactItem>
                             </artifactItems>

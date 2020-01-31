@@ -31,20 +31,23 @@ public class StartServerWithFront {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(StartServerWithFront.class);
 
-    private final static String CONFIG_FILE_PATH = "./src/main/resources/config/opensilex.yml";
-    
-    private static Path currentDirectory;
+    private static Path baseDirectory;
     private static String nodeBin = "node";
     private static CountDownLatch countDownLatch;
 
-    public static void main(String[] args) throws IOException, Exception {
+    public static void main(String[] args) throws Exception {
+        start(Paths.get(System.getProperty("user.dir")));
+    }
+
+    public static void start(Path baseDirectory) throws Exception {
 
         if (isWindows()) {
             nodeBin += ".exe";
         }
-        // Define current directory to launch node.js processes
-        currentDirectory = Paths.get(System.getProperty("user.dir"));
-        String configFile = currentDirectory.resolve(CONFIG_FILE_PATH).toFile().getCanonicalPath();
+
+        StartServerWithFront.baseDirectory = baseDirectory;
+
+        String configFile = baseDirectory.resolve(DevModule.CONFIG_FILE_PATH).toFile().getCanonicalPath();
         OpenSilex.setup(new HashMap<String, String>() {
             {
                 put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);
@@ -83,6 +86,7 @@ public class StartServerWithFront {
                 for (Process process : moduleProcesses.values()) {
                     process.destroy();
                 }
+                setPseudoScript(0);
             }
         });
 
@@ -95,22 +99,22 @@ public class StartServerWithFront {
     }
 
     private static Process createFrontServer() throws Exception {
-        Path targetDirectory = currentDirectory.resolve("../opensilex-front/target/classes/front");
+        Path targetDirectory = baseDirectory.resolve("../opensilex-front/target/classes/front");
         if (!targetDirectory.toFile().exists()) {
             Files.createDirectories(targetDirectory);
         }
 
-        Path moduleDirectory = currentDirectory.resolve("../opensilex-front/front");
+        Path moduleDirectory = baseDirectory.resolve("../opensilex-front/front");
         createConfigMonitor(moduleDirectory, targetDirectory);
         createThemeMonitor(moduleDirectory, targetDirectory);
 
         List<String> args = new ArrayList<>();
-        args.add(currentDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
-        args.add(currentDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
+        args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
+        args.add(baseDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
         args.add("run");
         args.add("serve");
         ProcessBuilder frontBuilder = new ProcessBuilder(args);
-        frontBuilder.directory(currentDirectory.resolve("../opensilex-front/front").toFile());
+        frontBuilder.directory(baseDirectory.resolve("../opensilex-front/front").toFile());
         frontBuilder.inheritIO();
 
         return frontBuilder.start();
@@ -118,8 +122,8 @@ public class StartServerWithFront {
 
     private static Process createFrontModuleBuilder(String moduleId) throws Exception {
         List<String> args = new ArrayList<>();
-        args.add(currentDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
-        args.add(currentDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
+        args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
+        args.add(baseDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
         args.add("run");
         args.add("serve");
         ProcessBuilder frontBuilder = new ProcessBuilder(args);
@@ -129,17 +133,17 @@ public class StartServerWithFront {
             modulePath = "phis-ws/phis2-ws";
         }
 
-        Path moduleDirectory = currentDirectory.resolve("../" + modulePath + "/front");
+        Path moduleDirectory = baseDirectory.resolve("../" + modulePath + "/front");
         frontBuilder.directory(moduleDirectory.toFile());
         frontBuilder.inheritIO();
 
-        Path targetDirectory = currentDirectory.resolve("../" + modulePath + "/target/classes/front");
+        Path targetDirectory = baseDirectory.resolve("../" + modulePath + "/target/classes/front");
         if (!targetDirectory.toFile().exists()) {
             Files.createDirectories(targetDirectory);
         }
-        
+
         createThemeMonitor(moduleDirectory, targetDirectory);
-        
+
         String filename = moduleId + ".umd.min.js";
 
         FileAlterationObserver observer = new FileAlterationObserver(moduleDirectory.resolve("dist").toFile().getCanonicalPath());
@@ -168,10 +172,7 @@ public class StartServerWithFront {
                     LOGGER.debug("File changed: " + file.getName());
                     try {
                         FileUtils.copyFile(moduleDirectory.resolve("dist/" + filename).toFile(), targetDirectory.resolve(filename).toFile());
-                        String pseudoScript = "export default { \"last-dev-update\": " + System.currentTimeMillis() + "};";
-                        PrintWriter prw = new PrintWriter(currentDirectory.resolve("../opensilex-front/front/src/opensilex.dev.ts").toFile());
-                        prw.println(pseudoScript);
-                        prw.close();
+                        triggerHotReload();
                     } catch (IOException ex) {
                         LOGGER.error("Error while copying lib file: " + filename, ex);
                     }
@@ -262,7 +263,7 @@ public class StartServerWithFront {
                         if (srcFilePath.startsWith(srcBasePath)) {
                             String srcFileRelativePath = srcFilePath.substring(srcBasePath.length() + 1);
                             File destFile = themeDestFolder.resolve(srcFileRelativePath).toFile();
-                            
+
                             FileUtils.deleteDirectory(destFile);
                             triggerHotReload();
 
@@ -306,10 +307,14 @@ public class StartServerWithFront {
     }
 
     private static void triggerHotReload() {
+        setPseudoScript(System.currentTimeMillis());
+    }
+
+    private static void setPseudoScript(long timeMs) {
         PrintWriter prw = null;
         try {
-            String pseudoScript = "export default { \"last-dev-update\": " + System.currentTimeMillis() + "};";
-            prw = new PrintWriter(currentDirectory.resolve("../opensilex-front/front/src/opensilex.dev.ts").toFile());
+            String pseudoScript = "export default { \"last-dev-update\": " + timeMs + "};";
+            prw = new PrintWriter(baseDirectory.resolve("../opensilex-front/front/src/opensilex.dev.ts").toFile());
             prw.println(pseudoScript);
             prw.close();
         } catch (FileNotFoundException ex) {

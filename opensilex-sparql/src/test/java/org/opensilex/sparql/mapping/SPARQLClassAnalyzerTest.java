@@ -15,6 +15,10 @@ public class SPARQLClassAnalyzerTest {
     @BeforeClass
     public static void initialize() throws Exception {
 
+        // force inclusion of these two classes from the SPARQLClassObjectMapper initialisation
+        SPARQLClassObjectMapper.includeResourceClass(NoGetterClass.class);
+        SPARQLClassObjectMapper.includeResourceClass(NoSetterClass.class);
+        
         Repository repository = new SailRepository(new MemoryStore());
         repository.init();
 

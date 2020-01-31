@@ -5,7 +5,6 @@
 //******************************************************************************
 package org.opensilex.dev;
 
-import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import org.opensilex.*;
@@ -17,10 +16,13 @@ import org.opensilex.cli.*;
  */
 public class StartServer {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
+        start(Paths.get(System.getProperty("user.dir")));
+    }
 
-        Path currentDirectory = Paths.get(System.getProperty("user.dir"));
-        String configFile = currentDirectory.resolve("./src/main/resources/config/opensilex.yml").toFile().getCanonicalPath();
+    public static void start(Path baseDirectory) throws Exception {
+
+        String configFile = baseDirectory.resolve(DevModule.CONFIG_FILE_PATH).toFile().getCanonicalPath();
         OpenSilex.setup(new HashMap<String, String>() {
             {
                 put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);

@@ -44,6 +44,7 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.authentication.AuthenticationService;
+import org.opensilex.rest.profile.api.ProfileGetDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.rest.user.dal.UserModel;

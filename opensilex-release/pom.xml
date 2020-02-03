@@ -76,32 +76,31 @@
                             </artifactItems>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>unpack-prod</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>${project.artifactId}</artifactId>
-                                    <version>${revision}</version>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/${project.artifactId}-${revision}</outputDirectory>
-                                    <includes>**</includes>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
-            <!-- copy development module to unpacked directory -->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>${maven.resources.plugin.version}</version>
                 <executions>
+                    <execution>
+                        <id>Copy OpenSilex binaries for deployment</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${project.build.directory}/${project.artifactId}-${revision}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/opensilex</directory>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>Copy development module</id>
                         <phase>install</phase>

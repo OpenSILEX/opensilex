@@ -81,7 +81,8 @@
                     "species": "Filter by Species",
                     "startDate": "Filter by start date",
                     "endDate": "Filtrer by end date",
-                    "uri": "Filter by URI"
+                    "uri": "Filter by URI",
+                    "state": "Filter par state"
                 }
             }
         },

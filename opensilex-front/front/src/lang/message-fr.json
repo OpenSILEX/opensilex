@@ -79,7 +79,8 @@
                     "species": "Filtrer par Espèce(s)",
                     "startDate": "Filtrer par Date de début",
                     "endDate": "Filtrer par Date de fin",
-                    "uri": "Filtrer par URI"
+                    "uri": "Filtrer par URI",
+                    "state": "Filtrer par état"
                 }
             }
         },

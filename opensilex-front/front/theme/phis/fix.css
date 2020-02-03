@@ -41,16 +41,16 @@
     height: auto;
 }
 
-.table-responsive {
-    min-height: 600px;
-}
-
 .btn-link {
     color: #212121;
 }
 
 .btn-link:hover {
     text-decoration: none;
+}
+
+.table-responsive {
+    overflow-x:  visible;
 }
 
 /**

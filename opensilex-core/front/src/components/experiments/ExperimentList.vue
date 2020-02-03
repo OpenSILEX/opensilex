@@ -28,13 +28,13 @@
 
     <div class="card">
 
-      <div class="card-header row clearfix">
+      <!-- div class="card-header row clearfix">
           <div class="col col-sm-3">
               <div class="card-options d-inline-block">
                   <button type="button" class="btn btn-primary"><i class="ik ik-plus"></i>{{ $t('component.experiment.search.buttons.add-experiment') }}</button>
               </div>
           </div>                                
-      </div>
+      </div -->
 
       <div class="card-body p-0">
         <div class="table-responsive">
@@ -125,19 +125,35 @@
                       deselectLabel="X"
                       :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"/>
                   </td>
-                  <td class="datepicker-trigger">
-                    <input type="text" id="datepicker1" class="form-control" name="daterange" value="" :placeholder="$t('component.experiment.search.filter.startDate')" />
-                    <AirbnbStyleDatepicker :trigger-element-id="'datepicker1'" />
+                  <td>
+                    <div class="datepicker-trigger">
+                      <input type="text" id="datepicker1" class="form-control" name="daterange" debounce="300" v-model="filter.beginDate" :placeholder="$t('component.experiment.search.filter.startDate')"  />
+                      <AirbnbStyleDatepicker 
+                        :trigger-element-id="'datepicker1'"
+                        :date-one="filter.startDate"
+                        :date-two="filter.endDate"
+                        v-on:date-one-selected="function(value) { filter.startDate = value }"
+                        v-on:date-two-selected="function(value) { filter.endDate = value }"
+                        @apply="filter.updateBeginDate()"
+                      />
+                    </div>
                   </td>
                   <td>
                     <b-form-input v-model="filter.uri" debounce="300" class="form-control" :placeholder="$t('component.experiment.search.filter.uri')"></b-form-input>
                   </td>
-                  <td>
-                      <select class="form-control">
-                          <option>Tous</option>
-                          <option>En cours</option>
-                          <option>Archivé</option>
-                      </select>
+                  <td width="200">
+                      <multiselect
+                        track-by="code"
+                        :custom-label="state => state.label"
+                        :limit="1"
+                        :placeholder="$t('component.experiment.search.filter.state')"
+                        :closeOnSelect="false"
+                        v-model="filter.state"
+                        :options="experimentStates"
+                        selectLabel=""
+                        selectedLabel="X"
+                        deselectLabel="X"
+                        :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})" />
                   </td>
                 </tr>
 
@@ -161,7 +177,7 @@
                   <td>
                     <i v-if="!experiment.isEnded" class="ik ik-sun badge-icon badge-info-phis" :title="$t('component.experiment.common.status.in-progress')"></i>
                     <i v-else class="ik ik-moon badge-icon badge-light" :title="$t('component.experiment.common.status.finished')"></i>
-                    <i class="ik ik-users badge-icon badge-info" :title="$t('component.experiment.common.status.public')"></i>
+                    <!-- i class="ik ik-users badge-icon badge-info" :title="$t('component.experiment.common.status.public')"></i -->
                   </td>
                 </tr>                                      
             </tbody>
@@ -175,7 +191,7 @@
             v-model="currentPage"
             :total-rows="totalRow"
             :per-page="pageSize"
-            @change="refresh()"
+            @change="loadExperiments()"
             class="pagination mb-0"
           >
           </b-pagination>
@@ -200,20 +216,33 @@ import VueRouter from "vue-router";
 import VueI18n from 'vue-i18n';
 import moment from "moment";
 
+export class ExperimentState {
+
+  code: String;
+  label: String;
+
+  constructor(code: String, label: String) {
+    this.code = code;
+    this.label = label;
+  }
+
+}
+
 export class ExperimentFilter {
 
   private _experimentList: ExperimentList;
 
   private _alias: string;
   private _uri: string;
+  private _beginDate: string;
   private _startDate: string;
-  private _endDate: string
+  private _endDate: string;
   private _campaign: number;
   private _projects: Array<ProjectCreationDTO>;
   private _installations: Array<string>;
   private _places: Array<string>;
   private _species: Array<string>;
-  private _isArchived: boolean;
+  private _state: ExperimentState;
 
   constructor(experimentList: ExperimentList) {
     this._experimentList = experimentList;
@@ -239,8 +268,51 @@ export class ExperimentFilter {
     return this._uri;
   }
 
+  updateBeginDate() {
+    let startDate = moment(this.startDate, 'YYYY-MM-DD');
+    let endDate = moment(this.endDate, 'YYYY-MM-DD');
+    this.beginDate = startDate.format("DD/MM/YYYY") + " - " + endDate.format("DD/MM/YYYY");
+  }
+
+  set beginDate(value: string) {
+    console.log("new beginDate = " + value);
+    this._beginDate = value;
+
+    let dates = value.split(" - ");
+    
+    if(dates.length == 2 && dates[0].length == 10 && dates[1].length == 10) {
+      let startDate = moment(dates[0], 'DD/MM/YYYY');
+      let endDate = moment(dates[1], 'DD/MM/YYYY');
+
+      console.log("startDate = " + startDate);
+      console.log("endDate = " + endDate);
+
+      if(startDate.isValid() && endDate.isValid()) {
+        console.log("Date valid");
+        this._startDate = startDate.format('YYYY-MM-DD');
+        this._endDate = endDate.format('YYYY-MM-DD');
+      } 
+    }
+
+    this._experimentList.loadExperiments();
+  }
+
+  get beginDate() {
+    return this._beginDate;
+  }
+
+  set startDate(value) {
+    console.log("new startDate = " + value);
+    this._startDate = value;
+  }
+
   get startDate() {
     return this._startDate;
+  }
+
+  set endDate(value) {
+    console.log("new endDate = " + value);
+    this._endDate = value;
   }
 
   get endDate() {
@@ -301,8 +373,14 @@ export class ExperimentFilter {
     return this._species;
   }
 
-  get isArchived() {
-    return this._isArchived;
+  get state() {
+    return this._state;
+  }
+
+  set state(value: ExperimentState) {
+    console.log("new state = " + value);
+    this._state = value;
+    this._experimentList.loadExperiments();
   }
   
 }
@@ -317,6 +395,7 @@ export default class ExperimentList extends Vue {
   projects: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
   experiments: Array<ExperimentGetDTO> = new Array<ExperimentGetDTO>();
   species: Array<String> = new Array<String>();
+  experimentStates: Array<ExperimentState> = new Array<ExperimentState>();
   campains: Array<Number> = new Array<Number>();
 
   filter: ExperimentFilter;
@@ -343,10 +422,12 @@ export default class ExperimentList extends Vue {
   loadDatas() {
     this.loadProjects();
     this.loadExperiments();
+    this.loadExperimentStates();
   }
 
   loadExperiments() {
     console.log("loadExperiments()");
+    console.log("currentPage = " + this.currentPage);
 
     let service: ExperimentsService = this.$opensilex.getService(
       "opensilex.ExperimentsService"
@@ -356,18 +437,34 @@ export default class ExperimentList extends Vue {
     if(this.filter.projects && this.filter.projects.length > 0) {
       projects = this.filter.projects.map(project => project.uri);
     }
-    
+
+    let isArchived;
+    if(this.filter.state) {
+      isArchived = this.filter.state.code === "finished";
+    }
+
+    let startDate;
+    let endDate;
+
+    if(this.filter.beginDate) {
+      let dates = this.filter.beginDate.split(" - ");
+      if(dates.length == 2 && dates[0].length == 10 && dates[1].length == 10) {
+        startDate = moment(dates[0], 'DD/MM/YYYY').format('YYYY-MM-DD');
+        endDate = moment(dates[1], 'DD/MM/YYYY').format('YYYY-MM-DD');
+      }
+    }
+
     service.searchExperiments(
       this.user.getAuthorizationHeader(),
       this.filter.uri,
-      this.filter.startDate,
-      this.filter.endDate,
+      startDate,
+      endDate,
       this.filter.campaign,
       this.filter.alias,
       null,
       projects,
       this.filter.species,
-      this.filter.isArchived,
+      isArchived,
       this.orderBy,
       this.currentPage - 1,
       this.pageSize
@@ -392,6 +489,12 @@ export default class ExperimentList extends Vue {
     console.log(error);
     this.totalRow = 0;
     this.experiments = new Array<ExperimentGetDTO>();
+  }
+
+  loadExperimentStates() {
+    this.experimentStates = new Array<ExperimentState>();
+    this.experimentStates.push(new ExperimentState("in-progress", this.$i18n.t("component.experiment.common.status.in-progress").toString()));
+    this.experimentStates.push(new ExperimentState("finished", this.$i18n.t("component.experiment.common.status.finished").toString()));
   }
 
   loadProjects() {

@@ -9,7 +9,7 @@
     ></opensilex-ProfileForm>
     <opensilex-ProfileList
       ref="profileList"
-      v-bind:credentialsGroups="credentialsGroups"
+      v-bind:credentialsMapping="credentialsMapping"
       @onEdit="editProfile"
       @onDelete="deleteProfile"
     ></opensilex-ProfileList>
@@ -35,6 +35,7 @@ export default class ProfileView extends Vue {
   service: ProfileService;
   $store: any;
   credentialsGroups: Array<CredentialsGroupDTO> = [];
+  credentialsMapping: any = {};
 
   get user() {
     return this.$store.state.user;
@@ -46,15 +47,21 @@ export default class ProfileView extends Vue {
     let security: SecurityService = await $opensilex.loadService(
       "opensilex-rest.SecurityService"
     );
-    let http: HttpResponse<
-      OpenSilexResponse<Array<CredentialsGroupDTO>>
-    > = await security.getCredentialsGroups();
+    let http: HttpResponse<OpenSilexResponse<
+      Array<CredentialsGroupDTO>
+    >> = await security.getCredentialsGroups();
     ProfileView.credentialsGroups = http.response.result;
     console.debug("Credentials list loaded !", ProfileView.credentialsGroups);
   }
 
   created() {
     this.credentialsGroups = ProfileView.credentialsGroups;
+    for (let i in this.credentialsGroups) {
+      for (let j in this.credentialsGroups[i].credentials) {
+        let credential = this.credentialsGroups[i].credentials[j];
+        this.credentialsMapping[credential.id] = credential.label;
+      }
+    }
     this.service = this.$opensilex.getService("opensilex.ProfileService");
   }
 

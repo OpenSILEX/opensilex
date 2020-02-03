@@ -4,7 +4,7 @@
 // Copyright © INRA 2019
 // Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.rest.cors;
+package org.opensilex.rest.filters;
 
 import java.io.IOException;
 import javax.ws.rs.container.ContainerRequestContext;

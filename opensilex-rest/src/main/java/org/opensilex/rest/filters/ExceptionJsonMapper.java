@@ -4,7 +4,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.server.response;
+package org.opensilex.rest.filters;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;

@@ -8,27 +8,19 @@ package org.opensilex.rest.group.api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
-import java.util.List;
 import javax.validation.constraints.NotNull;
-import org.opensilex.rest.validation.Required;
-import org.opensilex.rest.validation.ValidURI;
 
 /**
  *
  * @author vidalmor
  */
 @ApiModel
-public class GroupUpdateDTO extends GroupGetDTO {
+public class GroupUpdateDTO extends GroupCreationDTO {
 
+    @ApiModelProperty(value = "Group URI", example = "http://opensilex.dev/groups#Experiment_manager", required = true)
     @NotNull
-    @ValidURI
     public URI getUri() {
         return super.getUri();
     }
 
-    @Required
-    @ApiModelProperty(required = true)
-    public String getName() {
-        return super.getName();
-    }
 }

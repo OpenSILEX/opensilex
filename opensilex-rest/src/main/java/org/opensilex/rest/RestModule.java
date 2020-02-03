@@ -45,7 +45,7 @@ public class RestModule extends OpenSilexModule implements APIExtension {
         List<String> list = APIExtension.super.getPackagesToScan();
         list.add("io.swagger.jaxrs.listing");
         list.add("org.opensilex.rest.authentication");
-        list.add("org.opensilex.rest.cors");
+        list.add("org.opensilex.rest.filters");
         list.add("org.opensilex.rest.validation");
 
         return list;

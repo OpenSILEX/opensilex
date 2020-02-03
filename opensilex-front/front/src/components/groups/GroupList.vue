@@ -21,10 +21,11 @@
       :sort-desc.sync="sortDesc"
       no-provider-paging
     >
-      <template v-slot:cell(uri)="data">
-        <a class="uri-info">
-          <small>{{ data.item.uri }}</small>
-        </a>
+
+      <template v-slot:cell(userProfiles)="data">
+          <ul>
+            <li v-for="userProfile in data.item.userProfiles" v-bind:key="userProfile.uri" >{{userProfile.userName}} ({{userProfile.profileName}})</li>
+          </ul>
       </template>
 
       <template v-slot:cell(actions)="data">
@@ -119,10 +120,8 @@ export default class GroupList extends Vue {
       sortable: true
     },
     {
-      key: "profiles"
-    },
-    {
-      key: "users"
+      label: "Users",
+      key: "userProfiles"
     },
     {
       key: "actions"

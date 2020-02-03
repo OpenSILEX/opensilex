@@ -504,7 +504,7 @@ export default class ExperimentList extends Vue {
       "opensilex.ProjectsService"
     );
 
-    service.search1(
+    service.search(
       this.user.getAuthorizationHeader(),
       null,
       0,

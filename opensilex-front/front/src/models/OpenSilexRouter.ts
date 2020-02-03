@@ -107,12 +107,7 @@ export class OpenSilexRouter {
     private buildMenu(items: Array<MenuItemDTO>, routes: Array<any>, user: User) {
         let $opensilex: OpenSilexVuePlugin = Vue["$opensilex"];
         let menu: Array<MenuItemDTO> = [];
-
-<<<<<<< HEAD
         console.log(items);
-
-=======
->>>>>>> 1123af87d11f910595886240940fbbfe7a99952f
         for (let i in items) {
             let item: MenuItemDTO = items[i];
             let hasRouteAccess = false;

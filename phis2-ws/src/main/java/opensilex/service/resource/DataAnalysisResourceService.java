@@ -29,17 +29,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import opensilex.service.authentication.Session;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.RDAO;
 import opensilex.service.dao.ScientificAppDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
+import opensilex.service.model.ScientificAppDescription;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
-import opensilex.service.model.ScientificAppDescription;
-import opensilex.service.shinyProxy.ShinyProxyProcess;
+import opensilex.service.resource.dto.ScientificAppDTO;
+import opensilex.service.shinyProxy.ShinyProxyService;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 
@@ -131,10 +131,10 @@ public class DataAnalysisResourceService extends ResourceService {
     public Response shinyProxyServerStatus() {
         ResponseFormGET response;
         Response.Status responseCode;
-        if (ShinyProxyProcess.SHINYPROX_RUN_STATE) {
+        if (ShinyProxyService.SHINYPROX_RUN_STATE) {
             response = new ResponseFormGET(new Status(StatusCodeMsg.INFO, "Running", null));
             responseCode = Response.Status.OK;
-            if (ShinyProxyProcess.SHINYPROX_UPDATE_APP_STATE) {
+            if (ShinyProxyService.SHINYPROXY_UPDATE_APP_STATE) {
                 response = new ResponseFormGET(new Status(StatusCodeMsg.INFO, "Updating app", null));
                 responseCode = Response.Status.CREATED;
             }
@@ -176,12 +176,17 @@ public class DataAnalysisResourceService extends ResourceService {
         ScientificAppDAO scientificAppDAO = new ScientificAppDAO();
         scientificAppDAO.session = userSession;
         ArrayList<ScientificAppDescription> shinyProxyAppList = scientificAppDAO.find(null, null);
-        if (shinyProxyAppList.isEmpty()) {
+        ArrayList<ScientificAppDTO> shinyProxyAppDTOList = new ArrayList<>();
+        for (ScientificAppDescription scientificApplicationDescription : shinyProxyAppList) {
+            shinyProxyAppDTOList.add(new ScientificAppDTO(scientificApplicationDescription));
+        }
+
+        if (shinyProxyAppDTOList.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseFormGET()).build();
         }
         return Response
                 .status(Response.Status.OK)
-                .entity(new ResultForm<>(limit, page, shinyProxyAppList, false))
+                .entity(new ResultForm<>(limit, page, shinyProxyAppDTOList, false))
                 .build();
     }
 }

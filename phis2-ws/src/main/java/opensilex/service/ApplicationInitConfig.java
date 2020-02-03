@@ -42,7 +42,7 @@ public class ApplicationInitConfig extends ResourceConfig {
 
     final static String PROPERTY_FILE_NAME = "service";
     final static Logger LOGGER = LoggerFactory.getLogger(ApplicationInitConfig.class);
-    
+
     /**
      * Initializes application configuration
      */

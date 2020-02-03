@@ -159,12 +159,12 @@ public class EventResourceService  extends ResourceService {
                 value = "Search by date - start of the range", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_START_DATE) 
             @QueryParam("startDate") 
-            @Date(DateFormat.YMDTHMSZZ) String startDate, 
+            @Date({DateFormat.YMDTHMSZZ, DateFormat.YMD}) String startDate, 
         @ApiParam(
                 value = "Search by date - end of the range", 
                 example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_END_DATE) 
             @QueryParam("endDate") 
-            @Date(DateFormat.YMDTHMSZZ) String endDate
+            @Date({DateFormat.YMDTHMSZZ, DateFormat.YMD}) String endDate
     ) {
         EventDAO eventDAO = new EventDAO(userSession.getUser());
         

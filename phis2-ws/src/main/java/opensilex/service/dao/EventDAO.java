@@ -260,7 +260,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
      * @param searchUri
      * @param searchType
      * @param searchConcernedItemLabel
-     * @param searchConcernedItemUri
+     * @param searchConcernedItemUri 
      * @param dateRangeStartString
      * @param dateRangeEndString
      * @param searchPage

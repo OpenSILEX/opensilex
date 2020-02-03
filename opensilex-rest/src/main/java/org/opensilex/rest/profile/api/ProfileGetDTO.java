@@ -26,9 +26,7 @@ import org.opensilex.rest.profile.dal.ProfileModel;
  * }
  * </pre>
  *
- * @see org.opensilex.server.security.api.UserAPI#get(java.net.URI)
- * @see org.opensilex.server.security.api.UserAPI#search(java.lang.String,
- * java.util.List, int, int)
+ * @see org.opensilex.rest.profile.api.ProfileAPI#searchProfiles(java.lang.String, java.util.List, int, int) 
  * @author Vincent Migot
  */
 @ApiModel

@@ -11,8 +11,10 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.List;
@@ -76,7 +78,7 @@ public class FrontAPI {
     }
 
     @GET
-    @Path("/extension/{module}.js")
+    @Path("/extension/js/{module}.js")
     @ApiOperation(value = "Return the front Vue JS extension file to include")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return the extension file", response = File.class)
@@ -120,6 +122,57 @@ public class FrontAPI {
         }
 
         throw new NotFoundException("No Vue JS extension found for module: " + moduleId);
+    }
+
+    @GET
+    @Path("/extension/css/{module}.css")
+    @ApiOperation(value = "Return the front Vue JS extension css file to include")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return the extension css file", response = File.class)
+    })
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response getExtensionStyle(
+            @PathParam("module") @ApiParam(value = "Module identifier", example = "opensilex") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String moduleId,
+            @Context Request request
+    ) throws Exception {
+
+        OpenSilexModule module = getModule(moduleId);
+
+        String filePath = getModuleFrontLibCssFilePath(moduleId);
+
+        EntityTag etag = new EntityTag(Hashing.sha256().hashUnencodedChars(module.getClass().getName() + "_" + getModuleFrontLibCssFileName(moduleId) + "_" + module.getLastModified(filePath).toString()).toString());
+
+        ResponseBuilder builder = request.evaluatePreconditions(etag);
+
+        CacheControl cc = new CacheControl();
+        cc.setPrivate(true);
+        cc.setNoTransform(true);
+        cc.setMaxAge(0);
+        cc.setMustRevalidate(true);
+
+        if (builder == null) {
+            if (module.fileExists(filePath)) {
+                return Response
+                        .ok(module.getFileInputStream(filePath), "text/css")
+                        .cacheControl(cc)
+                        .tag(etag)
+                        .header("Content-Disposition", "attachment; filename=\"" + getModuleFrontLibCssFileName(moduleId) + "\"")
+                        .build();
+            } else {
+                return Response
+                        .ok("", "text/css")
+                        .cacheControl(cc)
+                        .tag(etag)
+                        .header("Content-Disposition", "attachment; filename=\"" + getModuleFrontLibCssFileName(moduleId) + "\"")
+                        .build();
+            }
+        } else {
+            return builder
+                    .status(HttpStatus.SC_NOT_MODIFIED)
+                    .cacheControl(cc)
+                    .tag(etag)
+                    .build();
+        }
     }
 
     @GET
@@ -201,7 +254,7 @@ public class FrontAPI {
 
         if (module.fileExists(themeFilePath)) {
             String mimeType = module.getFileMimeType(themeFilePath);
-            
+
             // Load file
             return Response
                     .ok(module.getFileInputStream(themeFilePath), mimeType)
@@ -218,6 +271,14 @@ public class FrontAPI {
 
     private static String getModuleFrontLibFileName(String moduleId) {
         return moduleId + ".umd.min.js";
+    }
+
+    public static String getModuleFrontLibCssFilePath(String moduleId) {
+        return FrontModule.FRONT_EXTENSIONS_DIRECTORY + getModuleFrontLibCssFileName(moduleId);
+    }
+
+    private static String getModuleFrontLibCssFileName(String moduleId) {
+        return moduleId + ".css";
     }
 
     private static String getModuleFrontThemePath(String themeId) {

@@ -10,9 +10,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import java.util.List;
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
-import org.opensilex.rest.validation.NullOrNotEmpty;
 import org.opensilex.rest.validation.Required;
 import org.opensilex.rest.validation.ValidURI;
 
@@ -30,9 +28,7 @@ import org.opensilex.rest.validation.ValidURI;
  * }
  * </pre>
  *
- * @see
- * org.opensilex.server.security.api.UserAPI#create(org.opensilex.server.security.api.UserCreationDTO,
- * javax.ws.rs.core.SecurityContext)
+ * @see org.opensilex.rest.profile.api.ProfileAPI#updateProfile(org.opensilex.rest.profile.api.ProfileUpdateDTO) 
  * @author Vincent Migot
  */
 @ApiModel

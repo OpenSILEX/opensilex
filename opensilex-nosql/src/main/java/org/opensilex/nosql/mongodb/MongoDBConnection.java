@@ -27,7 +27,7 @@ public class MongoDBConnection extends AbstractDataNucleusConnection implements 
      * TODO setup correct configuration
      * </pre>
      *
-     * @param config
+     * @param config MongoDB configuration
      */
     public MongoDBConnection(MongoDBConfig config) {
         // TODO setup correct configuration

@@ -29,9 +29,7 @@ import org.opensilex.rest.validation.ValidURI;
  * }
  * </pre>
  *
- * @see
- * org.opensilex.server.security.api.UserAPI#create(org.opensilex.server.security.api.UserCreationDTO,
- * javax.ws.rs.core.SecurityContext)
+ * @see org.opensilex.rest.user.api.UserAPI#updateUser(org.opensilex.rest.user.api.UserUpdateDTO) 
  * @author Vincent Migot
  */
 @ApiModel

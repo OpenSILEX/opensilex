@@ -89,6 +89,13 @@ public class ProfileDAO {
         );
     }
 
+    public List<ProfileModel> getAll(List<OrderBy> orderByList) throws Exception {
+        return sparql.search(
+                ProfileModel.class,
+                orderByList
+        );
+    }
+
     public ProfileModel getProfileByName(String name) throws Exception {
         ProfileModel profile = sparql.getByUniquePropertyValue(ProfileModel.class,
                 DCTerms.title,

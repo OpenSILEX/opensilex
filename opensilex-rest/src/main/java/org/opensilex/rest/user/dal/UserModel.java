@@ -40,7 +40,7 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
             required = true
     )
     private String lastName;
-    public static final String LAST_NAME_FIELD = "firstName";
+    public static final String LAST_NAME_FIELD = "lastName";
 
     @SPARQLProperty(
             ontology = FOAF.class,

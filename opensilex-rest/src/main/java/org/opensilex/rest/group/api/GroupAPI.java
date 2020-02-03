@@ -69,10 +69,10 @@ public class GroupAPI {
     /**
      * Create a group and return it's URI
      *
-     * @see org.opensilex.rest.user.dal.GroupDAO
-     * @param groupDTO group model to create
+     * @see org.opensilex.rest.group.dal.GroupDAO
+     * @param dto group model to create
      * @return Group URI
-     * @throws Exception
+     * @throws Exception if creation failed
      */
     @POST
     @Path("create")

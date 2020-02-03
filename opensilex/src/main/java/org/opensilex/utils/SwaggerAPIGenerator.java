@@ -45,14 +45,14 @@ public class SwaggerAPIGenerator {
         SwaggerContextService ctx = new SwaggerContextService();
         swagger = ctx.getSwagger();
         swagger.setHost("${host}");
-        
-        Set<Class<?>> classes = new HashSet<>();
 
-        Map<String, Class<?>> availableAPI = ClassUtils.getAnnotatedClassesMap(Api.class);
+        Set<Class<?>> classes = new HashSet<>();
 
         if (source != null) {
             Path sourcePath = Paths.get(source);
             if (sourcePath.toFile().exists()) {
+                Map<String, Class<?>> availableAPI = ClassUtils.getAnnotatedClassesMap(Api.class);
+
                 try (Stream<Path> walk = Files.walk(sourcePath)) {
 
                     walk.filter(Files::isRegularFile)
@@ -75,8 +75,6 @@ public class SwaggerAPIGenerator {
 
                 }
             }
-        } else {
-            classes.addAll(availableAPI.values());
         }
 
         if (classes.size() > 0) {

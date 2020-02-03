@@ -350,8 +350,6 @@ public abstract class OpenSilexModule {
     /**
      * Default method for module shutdown, to be implemented by module
      * implementations for stopping logic
-     *
-     * @throws Exception Can throw anything
      */
     public void shutdown() {
         LOGGER.debug("Nothing to shutdown for module class: " + getClass().getCanonicalName());

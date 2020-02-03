@@ -173,6 +173,7 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>${jacoco.maven.plugin.version}</version>
                         <inherited>false</inherited>
                         <configuration>
                             <excludes>
@@ -182,6 +183,14 @@
                         </configuration>
                                     
                         <executions>
+                            <execution>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                                <configuration>
+                                    <propertyName>jaCoCoArgLine</propertyName>
+                                </configuration>
+                            </execution>
                             <execution>
                                 <id>merge</id>
                                 <goals>
@@ -227,6 +236,7 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>${jacoco.maven.plugin.version}</version>
                         <reportSets>
                             <reportSet>
                                 <reports>

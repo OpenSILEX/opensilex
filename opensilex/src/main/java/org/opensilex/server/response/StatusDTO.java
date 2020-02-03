@@ -10,7 +10,7 @@ import ch.qos.logback.classic.Level;
 
 /**
  *
- * < pre>
+ * <pre>
  * Response metadata status DTO.
  *
  * A status is composed of a message and a messageType which could be: - ERROR -

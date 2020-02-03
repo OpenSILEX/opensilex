@@ -9,5 +9,4 @@ node_modules/
 **/front/src/lib
 **/front/types
 opensilex-doc/src/main/resources/generated/
-**/opensilex.dev.ts
 **/inrae-sixtine

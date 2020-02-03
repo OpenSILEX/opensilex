@@ -8,7 +8,6 @@ package org.opensilex.rest.group.api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
-import java.util.List;
 import org.opensilex.rest.validation.ValidURI;
 
 /**

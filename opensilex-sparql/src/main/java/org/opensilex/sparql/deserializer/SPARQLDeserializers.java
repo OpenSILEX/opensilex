@@ -98,14 +98,24 @@ public class SPARQLDeserializers {
             throws ClassNotFoundException {
         return parameterizedClass(object.getClass(), target, paramIndex);
     }
-    
+
     public static Node nodeURI(URI uri) throws SPARQLInvalidURIException {
         try {
             return SPARQLDeserializers.getForClass(URI.class).getNodeFromString(uri.toString());
         } catch (Exception ex) {
             throw new SPARQLInvalidURIException(uri);
         }
-        
+
+    }
+
+    public static List<Node> nodeListURI(List<URI> uris) throws Exception {
+        SPARQLDeserializer<URI> uriParser = SPARQLDeserializers.getForClass(URI.class);
+        List<Node> uriNodes = new ArrayList<>();
+        for (URI uri : uris) {
+            uriNodes.add(uriParser.getNodeFromString(uri.toString()));
+        }
+
+        return uriNodes;
     }
 
 }

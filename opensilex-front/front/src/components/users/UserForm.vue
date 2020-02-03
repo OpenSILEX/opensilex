@@ -55,6 +55,14 @@
           placeholder="Enter last name"
         ></b-form-input>
       </b-form-group>
+      <b-form-group v-if="user.admin" label="Administrator:" label-for="isAdmin">
+            <b-form-checkbox
+              v-model="form.admin"
+              value="true"
+              unchecked-value="false"
+              switches
+            >Enable this option to create a super administrator</b-form-checkbox>
+      </b-form-group>
     </b-form>
   </b-modal>
 </template>

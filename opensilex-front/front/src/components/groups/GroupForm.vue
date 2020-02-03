@@ -120,9 +120,7 @@
               </template>
 
               <template v-slot:cell(admin)="data">
-                <small v-if="data.item.admin">Admin</small>
                 <b-form-select
-                  v-if="!data.item.admin"
                   size="sm"
                   value-field="uri"
                   text-field="name"
@@ -152,10 +150,11 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import {
   UserCreationDTO,
-  GroupCreationDTO,
+  GroupUpdateDTO,
   UserService,
   UserGetDTO,
-  ProfileGetDTO
+  ProfileGetDTO,
+  GroupUserProfileModificationDTO
 } from "opensilex-rest/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
@@ -168,13 +167,15 @@ export default class GroupForm extends Vue {
   @Prop()
   profiles: Array<ProfileGetDTO>;
 
+  service: UserService;
+
   get user() {
     return this.$store.state.user;
   }
 
   uriGenerated = true;
 
-  form: GroupCreationDTO = {
+  form: GroupUpdateDTO = {
     uri: "",
     name: "",
     description: "",
@@ -228,11 +229,11 @@ export default class GroupForm extends Vue {
     return this.filterPatternValue;
   }
 
-  loadData() {
-    let service: UserService = this.$opensilex.getService(
-      "opensilex.UserService"
-    );
+  created() {
+    this.service = this.$opensilex.getService("opensilex.UserService");
+  }
 
+  loadData() {
     let orderBy = [];
     if (this.sortBy) {
       let orderByText = this.sortBy + "=";
@@ -243,7 +244,7 @@ export default class GroupForm extends Vue {
       }
     }
 
-    return service
+    return this.service
       .searchUsers(
         this.user.getAuthorizationHeader(),
         this.filterPattern,
@@ -305,15 +306,38 @@ export default class GroupForm extends Vue {
     this.editMode = false;
     this.title = "Add group";
     this.uriGenerated = true;
+    this.selectedUsers = [];
+    this.selectedUsersId = {};
     let modalRef: any = this.$refs.modalRef;
     modalRef.show();
   }
 
-  showEditForm(form: GroupCreationDTO) {
+  showEditForm(form: GroupUpdateDTO) {
     this.form = form;
     this.editMode = true;
     this.title = "Update group";
     this.uriGenerated = true;
+
+    this.selectedUsers = [];
+    this.selectedUsersId = {};
+
+    let userURIs = [];
+    let profileByUser = {};
+    form.userProfiles.forEach(groupUserProfile => {
+      userURIs.push(groupUserProfile.userURI);
+      profileByUser[groupUserProfile.userURI] = groupUserProfile.profileURI;
+    });
+    this.service
+      .getUsersByURI(this.user.getAuthorizationHeader(), userURIs)
+      .then((http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) => {
+        let users = http.response.result;
+        users.forEach((user: any) => {
+          this.selectedUsersId[user.uri] = true;
+          user.profile = profileByUser[user.uri];
+          this.selectedUsers.push(user);
+        });
+      })
+      .catch(this.$opensilex.errorHandler);
     let modalRef: any = this.$refs.modalRef;
     modalRef.show();
   }
@@ -351,6 +375,20 @@ export default class GroupForm extends Vue {
       if (this.uriGenerated && !this.editMode) {
         this.form.uri = null;
       }
+
+      let userProfiles = [];
+      console.log(this.selectedUsers);
+      for (let i in this.selectedUsers) {
+        let userProfile = this.selectedUsers[i];
+        let userProfileDTO: GroupUserProfileModificationDTO = {
+          profileURI: userProfile.profile,
+          userURI: userProfile.uri
+        };
+
+        userProfiles.push(userProfileDTO);
+      }
+
+      this.form.userProfiles = userProfiles;
 
       this.onValidate()
         .then(() => {
@@ -403,10 +441,10 @@ export default class GroupForm extends Vue {
 }
 
 .profile-selector {
-    height: 20px;
-    line-height: 15px;
-    padding-top: 0;
-    padding-bottom: 0;
+  height: 20px;
+  line-height: 15px;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .table-title {

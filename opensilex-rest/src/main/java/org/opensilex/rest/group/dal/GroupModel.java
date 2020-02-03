@@ -8,8 +8,6 @@ package org.opensilex.rest.group.dal;
 import java.util.List;
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.rest.authentication.SecurityOntology;
-import org.opensilex.rest.profile.dal.ProfileModel;
-import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -47,7 +45,7 @@ public class GroupModel extends SPARQLResourceModel implements ClassURIGenerator
             ontology = SecurityOntology.class,
             property = "hasUserProfile"
     )
-    private List<GroupUserProfile> userProfiles;
+    private List<GroupUserProfileModel> userProfiles;
 
     public String getName() {
         return name;
@@ -65,11 +63,11 @@ public class GroupModel extends SPARQLResourceModel implements ClassURIGenerator
         this.description = description;
     }
 
-    public List<GroupUserProfile> getUserProfiles() {
+    public List<GroupUserProfileModel> getUserProfiles() {
         return userProfiles;
     }
 
-    public void setUserProfiles(List<GroupUserProfile> userProfiles) {
+    public void setUserProfiles(List<GroupUserProfileModel> userProfiles) {
         this.userProfiles = userProfiles;
     }
 

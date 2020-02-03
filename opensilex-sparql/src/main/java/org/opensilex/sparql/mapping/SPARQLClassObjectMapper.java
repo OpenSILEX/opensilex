@@ -261,6 +261,17 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return instance;
     }
 
+    public List<T> createInstanceList(List<URI> uris, SPARQLService service) throws Exception {
+        SPARQLProxyResourceList<T> proxy = new SPARQLProxyResourceList<>(getDefaultGraph(), uris, objectClass, service);
+        List<T> instances = proxy.loadIfNeeded();
+        if (instances != null) {
+            return proxy.getInstance();
+        } else {
+            return null;
+        }
+
+    }
+
     public Node getDefaultGraph() {
         if (classAnalizer.getGraphSuffix() != null) {
             try {
@@ -401,5 +412,4 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public Resource getRDFType() {
         return classAnalizer.getRDFType();
     }
-
 }

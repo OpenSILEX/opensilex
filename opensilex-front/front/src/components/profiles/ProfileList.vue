@@ -23,7 +23,7 @@
     >
       <template v-slot:cell(credentials)="data">
         <ul>
-          <li v-for="credential in data.item.credentials" v-bind:key="credential">{{credential}}</li>
+          <li v-for="credential in data.item.credentials" v-bind:key="credential">{{credentialsMapping[credential]}}</li>
         </ul>
       </template>
 
@@ -87,7 +87,7 @@ export default class ProfileList extends Vue {
   sortDesc = false;
 
   @Prop()
-  credentialsGroups: any;
+  credentialsMapping: any;
 
   private filterPatternValue: any = "";
   set filterPattern(value: string) {
@@ -183,25 +183,7 @@ export default class ProfileList extends Vue {
           })
           .catch(function() {});
 
-        let credentials: any = {};
-        for (let i in this.credentialsGroups) {
-          for (let j in this.credentialsGroups[i].credentials) {
-            let credential = this.credentialsGroups[i].credentials[j];
-            credentials[credential.id] = credential.label;
-          }
-        }
-
-        let result = http.response.result;
-        for (let i in result) {
-          for (let j in result[i].credentials) {
-            let itemCredential: any = result[i].credentials[j];
-            if (credentials[itemCredential]) {
-              result[i].credentials[j] = credentials[itemCredential];
-            }
-          }
-        }
-
-        return result;
+        return http.response.result;
       })
       .catch(this.$opensilex.errorHandler);
   }

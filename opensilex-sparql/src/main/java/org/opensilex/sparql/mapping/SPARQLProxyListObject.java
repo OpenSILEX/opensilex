@@ -33,13 +33,15 @@ public class SPARQLProxyListObject<T extends SPARQLResourceModel> extends SPARQL
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(genericType);
         
         Node nodeURI = SPARQLDeserializers.nodeURI(uri);
-        return service.search(genericType, (SelectBuilder select) -> {
+        List<T> list = service.search(genericType, (SelectBuilder select) -> {
             if (isReverseRelation) {
                 select.addGraph(graph, makeVar(sparqlObjectMapper.getURIFieldName()), property, nodeURI);
             } else {
                 select.addGraph(graph, nodeURI, property, makeVar(sparqlObjectMapper.getURIFieldName()));
             }
         });
+        
+        return list;
     }
 
 

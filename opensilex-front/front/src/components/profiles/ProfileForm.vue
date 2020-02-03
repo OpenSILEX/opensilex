@@ -144,7 +144,7 @@ export default class ProfileForm extends Vue {
     modalRef.show();
   }
 
-  showEditForm(form: ProfileCreationDTO) {
+  showEditForm(form: ProfileGetDTO) {
     this.form = form;
     this.editMode = true;
     this.title = "Update profile";

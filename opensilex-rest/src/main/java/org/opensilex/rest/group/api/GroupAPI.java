@@ -33,7 +33,7 @@ import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.group.dal.GroupDAO;
 import org.opensilex.rest.group.dal.GroupModel;
-import org.opensilex.rest.group.dal.GroupUserProfile;
+import org.opensilex.rest.group.dal.GroupUserProfileModel;
 import org.opensilex.rest.profile.dal.ProfileDAO;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.rest.validation.ValidURI;
@@ -65,7 +65,7 @@ public class GroupAPI {
      */
     @Inject
     private AuthenticationService authentication;
-    
+
     /**
      * Create a group and return it's URI
      *
@@ -93,28 +93,26 @@ public class GroupAPI {
         return new ObjectUriResponse(Response.Status.CREATED, group.getUri()).getResponse();
     }
 
-        
-    public GroupModel getModel(GroupGetDTO dto) throws Exception {
+    public GroupModel getModel(GroupCreationDTO dto) throws Exception {
         GroupModel group = new GroupModel();
-        group.setUri(dto.getUri());
         group.setName(dto.getName());
         group.setDescription(dto.getDescription());
-        
+
         UserDAO userDAO = new UserDAO(sparql, authentication);
         ProfileDAO profileDAO = new ProfileDAO(sparql);
-        List<GroupUserProfile> userProfilesModel = new ArrayList<>();
-        for (GroupUserProfileDTO userProfile :  dto.getUserProfiles()) {
-            GroupUserProfile userProfileModel = new GroupUserProfile();
+        List<GroupUserProfileModel> userProfilesModel = new ArrayList<>();
+        for (GroupUserProfileModificationDTO userProfile : dto.getUserProfiles()) {
+            GroupUserProfileModel userProfileModel = new GroupUserProfileModel();
             userProfileModel.setProfile(profileDAO.get(userProfile.getProfileURI()));
             userProfileModel.setUser(userDAO.get(userProfile.getUserURI()));
-            userProfileModel.setUri(userProfile.getUri());
             userProfilesModel.add(userProfileModel);
         };
-        
+
         group.setUserProfiles(userProfilesModel);
 
         return group;
     }
+
     /**
      * Return a group by URI
      *
@@ -232,7 +230,9 @@ public class GroupAPI {
         GroupModel model = dao.get(dto.getUri());
 
         if (model != null) {
-            GroupModel group = dao.update(getModel(dto));
+            GroupModel group = getModel(dto);
+            group.setUri(dto.getUri());
+            group = dao.update(group);
 
             return new ObjectUriResponse(Response.Status.OK, group.getUri()).getResponse();
         } else {

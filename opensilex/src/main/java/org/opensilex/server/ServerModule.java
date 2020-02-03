@@ -20,7 +20,7 @@ import org.opensilex.OpenSilexModule;
  * - Enable Authentication service through configuration
  * </pre>
  *
- * @see org.opensilex.module.base.ServerConfig
+ * @see org.opensilex.server.ServerConfig
  * @author Vincent Migot
  */
 public class ServerModule extends OpenSilexModule {

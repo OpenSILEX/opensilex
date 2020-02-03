@@ -5,6 +5,7 @@
       ref="groupForm"
       @onCreate="callCreateGroupService"
       @onUpdate="callUpdateGroupService"
+      :profiles="profiles"
     ></opensilex-GroupForm>
     <opensilex-GroupList ref="groupList" @onEdit="editGroup" @onDelete="deleteGroup"></opensilex-GroupList>
   </div>
@@ -14,20 +15,39 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { GroupService, GroupCreationDTO, GroupUpdateDTO, GroupGetDTO } from "opensilex-rest/index";
+import {
+  GroupService,
+  GroupCreationDTO,
+  GroupUpdateDTO,
+  GroupGetDTO,
+  ProfileService,
+  ProfileGetDTO
+} from "opensilex-rest/index";
 
 @Component
 export default class GroupView extends Vue {
   $opensilex: any;
   $store: any;
   service: GroupService;
+  profiles: Array<ProfileGetDTO> = [];
 
   get user() {
     return this.$store.state.user;
   }
 
-  created() {
+  async created() {
     this.service = this.$opensilex.getService("opensilex.GroupService");
+    console.debug("Loading profiles list...");
+    let profileService: ProfileService = await this.$opensilex.loadService(
+      "opensilex-rest.ProfileService"
+    );
+    let http: HttpResponse<OpenSilexResponse<
+      Array<ProfileGetDTO>
+    >> = await profileService.getAllProfiles(
+      this.$opensilex.getUser().getAuthorizationHeader()
+    );
+    this.profiles = http.response.result;
+    console.debug("Profiles list loaded !", this.profiles);
   }
 
   showCreateForm() {
@@ -67,11 +87,13 @@ export default class GroupView extends Vue {
   }
 
   deleteGroup(uri: string) {
-    this.service.deleteGroup(this.user.getAuthorizationHeader(), uri).then(() => {
-      let groupList: any = this.$refs.groupList;
-      groupList.refresh();
-    })
-    .catch(this.$opensilex.errorHandler);
+    this.service
+      .deleteGroup(this.user.getAuthorizationHeader(), uri)
+      .then(() => {
+        let groupList: any = this.$refs.groupList;
+        groupList.refresh();
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 }
 </script>

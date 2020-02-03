@@ -5,6 +5,11 @@
 //******************************************************************************
 package org.opensilex.dev;
 
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoDatabase;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -21,11 +25,14 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.ServiceLoader;
 import javax.mail.internet.InternetAddress;
 import opensilex.service.PhisPostgreSQLConfig;
 import opensilex.service.PhisWsConfig;
 import opensilex.service.PhisWsModule;
 import org.apache.jena.riot.Lang;
+import org.bson.Document;
 import org.eclipse.rdf4j.common.io.IOUtil;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -37,6 +44,8 @@ import org.eclipse.rdf4j.repository.config.ConfigTemplate;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigSchema;
+import org.eclipse.rdf4j.repository.config.RepositoryFactory;
+import org.eclipse.rdf4j.repository.config.RepositoryRegistry;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.eclipse.rdf4j.repository.manager.RepositoryProvider;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -44,6 +53,7 @@ import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.opensilex.OpenSilex;
+import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -65,32 +75,51 @@ public class Install {
     private static boolean deleteFirst = false;
 
     public static void main(String[] args) throws Exception {
-        install(false);
+        install(false, null);
     }
 
-    public static void install(boolean deleteFirst) throws Exception  {
+    public static void install(boolean deleteFirst, String baseDirectory) throws Exception {
         Install.deleteFirst = deleteFirst;
-        String configFile = getResourceFile("./config/opensilex.yml").getCanonicalPath();
-        OpenSilex.setup(new HashMap<String, String>() {
+
+        Map<String, String> args = new HashMap<String, String>() {
             {
                 put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);
-                put(OpenSilex.CONFIG_FILE_ARG_KEY, configFile);
-                put(OpenSilex.DEBUG_ARG_KEY, "true");
             }
-        });
+        };
+
+        if (baseDirectory != null) {
+            args.put(OpenSilex.BASE_DIR_ARG_KEY, baseDirectory);
+            args.put(OpenSilex.CONFIG_FILE_ARG_KEY, getConfig(baseDirectory));
+        } else {
+            args.put(OpenSilex.CONFIG_FILE_ARG_KEY, getConfig(System.getProperty("user.dir")));
+        }
+
+        OpenSilex.setup(args);
 
         opensilex = OpenSilex.getInstance();
 
+        LOGGER.info("Initialize PostGreSQL");
         initPGSQL();
+
+        LOGGER.info("Initialize RDF4J");
         initRDF4J();
 
+        LOGGER.info("Initialize MongoDB");
+        initMongo();
+
+        LOGGER.info("Initialize Modules");
         opensilex.install();
+
+        LOGGER.info("Create Super Admin");
         createSuperAdmin();
     }
 
+    private static String getConfig(String baseDirectory) {
+        return Paths.get(baseDirectory).resolve(DevModule.CONFIG_FILE_PATH).toFile().getAbsolutePath();
+    }
+
     private static File getResourceFile(String path) {
-        Path currentDirectory = Paths.get(System.getProperty("user.dir"));
-        return currentDirectory.resolve("./src/main/resources/").resolve(path).toFile();
+        return OpenSilex.getInstance().getBaseDirectory().resolve("./src/main/resources/").resolve(path).toFile();
     }
 
     private static Connection getDBConnection(PhisPostgreSQLConfig pgConfig, String dbId) throws Exception {
@@ -110,15 +139,19 @@ public class Install {
         Statement statement = null;
 
         try {
-            connection = getDBConnection(pgConfig, "postgres");
-            statement = connection.createStatement();
 
             if (deleteFirst) {
+                connection = getDBConnection(pgConfig, "postgres");
+                statement = connection.createStatement();
+                statement.execute("SELECT pg_terminate_backend(pg_stat_activity.pid)\n"
+                        + "FROM pg_stat_activity\n"
+                        + "WHERE pg_stat_activity.datname = '" + pgConfig.database() + "'\n"
+                        + "  AND pid <> pg_backend_pid();");
                 statement.executeUpdate("DROP DATABASE IF EXISTS " + pgConfig.database());
+                statement.executeUpdate("CREATE DATABASE " + pgConfig.database());
+                statement.close();
+                connection.close();
             }
-            statement.executeUpdate("CREATE DATABASE " + pgConfig.database());
-            statement.close();
-            connection.close();
 
             connection = getDBConnection(pgConfig, pgConfig.database());
             statement = connection.createStatement();
@@ -228,11 +261,47 @@ public class Install {
                 .subject(graph.filter(null, RDF.TYPE, RepositoryConfigSchema.REPOSITORY))
                 .orElseThrow(() -> new RepositoryConfigException("missing repository node"));
 
+        RepositoryRegistry registry = RepositoryRegistry.getInstance();
+        ServiceLoader<RepositoryFactory> services = ServiceLoader.load(RepositoryFactory.class, OpenSilex.getClassLoader());
+        services.forEach(action -> {
+            registry.add(action);
+        });
+
         final RepositoryConfig repConfig = RepositoryConfig.create(graph, repositoryNode);
         repConfig.validate();
 
         repositoryManager.addRepositoryConfig(repConfig);
         repositoryManager.shutDown();
+    }
+
+    private static void initMongo() throws Exception {
+        MongoDBConfig config = opensilex.loadConfigPath("big-data.nosql.mongodb", MongoDBConfig.class);
+
+        String host = config.host();
+        int port = config.port();
+        String user = config.username();
+        String password = config.password();
+        String authdb = config.authDB();
+        String url = "mongodb://";
+
+        if (!user.equals("") && !password.equals("")) {
+            url += user + ":" + password + "@";
+        }
+
+        url += host + ":" + port + "/";
+
+        if (!authdb.equals("")) {
+            url += "?authSource=" + authdb;
+        }
+
+        MongoClient mongo = new MongoClient(new MongoClientURI(url));
+
+        MongoDatabase adminDb = mongo.getDatabase("admin");
+        if (!deleteFirst) {
+            adminDb.runCommand(new Document("replSetInitiate", new Document()));
+        } else {
+            mongo.dropDatabase(config.database());
+        }
     }
 
     private static void createSuperAdmin() throws Exception {

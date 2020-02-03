@@ -85,7 +85,7 @@ public class UserAPI {
      * @param userDTO user model to create
      * @param securityContext injected security context to get current user
      * @return User URI
-     * @throws Exception
+     * @throws Exception If creation failed
      */
     @POST
     @Path("create")
@@ -243,7 +243,7 @@ public class UserAPI {
 
         // Get user model from DTO uri
         UserModel model = dao.get(dto.getUri());
-        
+
         if (model != null) {
             // If model exists, update it
             UserModel user = dao.update(

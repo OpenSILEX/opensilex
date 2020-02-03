@@ -12,6 +12,6 @@ package org.opensilex.dev;
 public class InstallReset {
 
     public static void main(String[] args) throws Exception {
-        Install.install(true);
+        Install.install(true, null);
     }
 }

@@ -457,6 +457,8 @@ public class OpenSilex {
 
     /**
      * Restart application
+     *
+     * @throws Exception
      */
     public void restart() throws Exception {
         LOGGER.debug("Shutdown modules");
@@ -475,6 +477,8 @@ public class OpenSilex {
 
     /**
      * Run install method for every modules
+     * 
+     * @throws Exception 
      */
     public void install() throws Exception {
         moduleManager.install();
@@ -645,5 +649,9 @@ public class OpenSilex {
 
     public static InputStream getResourceAsStream(String name) {
         return getClassLoader().getResourceAsStream(name);
+    }
+
+    public File getConfigFile() {
+        return this.configFile;
     }
 }

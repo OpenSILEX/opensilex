@@ -6,6 +6,10 @@
 //******************************************************************************
 package org.opensilex.rest;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import io.swagger.jaxrs.config.BeanConfig;
 import java.util.ArrayList;
 import java.util.List;

@@ -45,7 +45,7 @@ public class MainCommand extends HelpPrinterCommand implements IVersionProvider 
     /**
      * Static main to launch commands directly from the JAR file.
      *
-     * @param args
+     * @param args Command line arguments array
      */
     public static void main(String[] args) {
         // Initialize OpenSilex instance with arguments and return 

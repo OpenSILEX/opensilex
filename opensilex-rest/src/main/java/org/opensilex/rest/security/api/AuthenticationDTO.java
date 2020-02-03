@@ -21,9 +21,8 @@ import org.opensilex.rest.validation.Required;
  * }
  * </pre>
  *
- * @see
- * org.opensilex.server.security.api.SecurityAPI#authenticate(org.opensilex.server.security.api.AuthenticationDTO)
- * @author vincent
+ * @see org.opensilex.rest.security.api.SecurityAPI#authenticate(org.opensilex.rest.security.api.AuthenticationDTO) 
+ * @author Vincent Migot
  */
 @ApiModel
 public class AuthenticationDTO {

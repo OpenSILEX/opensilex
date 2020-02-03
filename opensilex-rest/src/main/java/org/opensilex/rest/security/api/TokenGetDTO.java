@@ -20,6 +20,11 @@ import io.swagger.annotations.ApiModelProperty;
  * }
  * </pre>
  *
+<<<<<<< HEAD
+=======
+ * @see org.opensilex.rest.security.api.SecurityAPI#authenticate(org.opensilex.rest.security.api.AuthenticationDTO) 
+ * @see org.opensilex.rest.security.api.SecurityAPI#renewToken(java.lang.String, javax.ws.rs.core.SecurityContext) 
+>>>>>>> 1123af87d11f910595886240940fbbfe7a99952f
  * @author Vincent Migot
  * @see org.opensilex.server.security.api.SecurityAPI#authenticate(org.opensilex.server.security.api.AuthenticationDTO)
  * @see org.opensilex.server.security.api.SecurityAPI#renewToken(java.lang.String,

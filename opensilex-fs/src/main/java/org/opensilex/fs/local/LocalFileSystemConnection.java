@@ -12,7 +12,7 @@ package org.opensilex.fs.local;
  * TODO create a real implementation with config
  * </pre>
  *
- * @see org.opensilex.fs.FileStorageService
+ * @see org.opensilex.fs.service.FileStorageService
  * @author Vincent Migot
  */
 public class LocalFileSystemConnection {

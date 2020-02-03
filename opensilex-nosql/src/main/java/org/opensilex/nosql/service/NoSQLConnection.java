@@ -16,7 +16,7 @@ import org.opensilex.service.ServiceConnection;
  * to achieve: http://www.datanucleus.org/
  * </pre>
  *
- * @see org.opensilex.nosql.service.BigDataService
+ * @see org.opensilex.nosql.service.NoSQLService
  * @author Vincent Migot
  */
 public interface NoSQLConnection extends ServiceConnection {
@@ -24,21 +24,21 @@ public interface NoSQLConnection extends ServiceConnection {
     /**
      * Start a transaction
      *
-     * @throws NoSQLTransactionException
+     * @throws NoSQLTransactionException if transaction initialization failed
      */
     public void startTransaction() throws NoSQLTransactionException;
 
     /**
      * Commit a transaction
      *
-     * @throws NoSQLTransactionException
+     * @throws NoSQLTransactionException if transaction commit failed
      */
     public void commitTransaction() throws NoSQLTransactionException;
 
     /**
      * Rollback a transaction
      *
-     * @throws NoSQLTransactionException
+     * @throws NoSQLTransactionException if transaction rollback failed
      */
     public void rollbackTransaction() throws NoSQLTransactionException;
 

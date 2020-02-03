@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -192,4 +193,30 @@ public class ProfileAPI {
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
+    
+    @GET
+    @Path("get-all")
+    @ApiOperation("Get all profiles")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return profile list", response = ProfileGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response getAllProfiles(
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("orderBy") List<OrderBy> orderByList
+    ) throws Exception {
+        // Search profiles with Profile DAO
+        ProfileDAO dao = new ProfileDAO(sparql);
+        List<ProfileModel> resultList = dao.getAll(orderByList);
+        // Convert list to DTO
+        List<ProfileGetDTO> resultDTOList = new ArrayList<>();
+        resultList.forEach(result -> {
+            resultDTOList.add(ProfileGetDTO.fromModel(result));
+        });
+
+        // Return list of profiles DTO
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
 }

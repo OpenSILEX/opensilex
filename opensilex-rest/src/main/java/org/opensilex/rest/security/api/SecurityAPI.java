@@ -215,9 +215,9 @@ public class SecurityAPI {
      *      },
      *      ...
      * }
-     * <pre>
+     * </pre>
      *
-     * @see org.opensilex.server.security.api.SecurityAccessDAO
+     * @see org.opensilex.rest.security.dal.SecurityAccessDAO
      * @return Map of existing application credential.
      */
     @GET

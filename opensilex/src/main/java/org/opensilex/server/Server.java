@@ -133,8 +133,12 @@ public class Server extends Tomcat {
             }
         });
 
+        Connector connector = getConnector();
         // Enable GZIP compression
-        enableGzip(getConnector());
+        enableGzip(connector);
+
+        // enable UTF-8
+        enableUTF8(connector);
 
         // Enable admin thread to manage server
         initAdminThread(adminPort);
@@ -167,6 +171,7 @@ public class Server extends Tomcat {
      * @param baseDirectory Resource path of the web application whithin the
      * module
      * @param moduleClass Class of the module where the application belong
+     * @return Application context
      */
     public Context initApp(String name, String contextPath, String baseDirectory, Class<?> moduleClass) {
         try {
@@ -195,7 +200,7 @@ public class Server extends Tomcat {
                     jarModules.add(moduleJarFile.getName());
                 }
             });
-            
+
             // Change application scanner to avoid land and unnecessary library scan
             context.getJarScanner().setJarScanFilter((JarScanType jarScanType, String jarName) -> {
                 if (jarScanType == JarScanType.TLD) {
@@ -285,6 +290,10 @@ public class Server extends Tomcat {
         connector.setProperty("compressionMinSize", "1024");
         connector.setProperty("noCompressionUserAgents", "gozilla, traviata");
         connector.setProperty("compressableMimeType", "text/html,text/xml, text/css, application/json, application/javascript");
+    }
+
+    private void enableUTF8(Connector connector) {
+        connector.setURIEncoding("UTF-8");
     }
 
 }

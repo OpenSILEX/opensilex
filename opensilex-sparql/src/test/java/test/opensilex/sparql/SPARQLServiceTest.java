@@ -19,19 +19,14 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.mapping.NoGetterClass;
-import org.opensilex.sparql.mapping.NoSetterClass;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import test.opensilex.sparql.model.A;
@@ -48,10 +43,6 @@ public abstract class SPARQLServiceTest {
     protected static SPARQLService service;
 
     public static void initialize(SPARQLService service) throws Exception {
-
-        // exclude these two classes from the SPARQLClassObjectMapper initialisation
-        SPARQLClassObjectMapper.excludeResourceClass(NoGetterClass.class);
-        SPARQLClassObjectMapper.excludeResourceClass(NoSetterClass.class);
 
         SPARQLServiceTest.service = service;
         service.startup();
@@ -95,7 +86,7 @@ public abstract class SPARQLServiceTest {
         B b = a.getB();
 
         assertNotNull("Instance object relation should exists", b);
-        assertThat("b Must be an instance of B", b, instanceOf(B.class));
+        assertTrue("b Must be an instance of B", b  instanceof B);
 
         URI bURI = new URI("http://test.opensilex.org/b/001");
 

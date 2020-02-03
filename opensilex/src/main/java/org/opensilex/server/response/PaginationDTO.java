@@ -47,9 +47,9 @@ public class PaginationDTO {
     /**
      * Constructor.
      *
-     * @param pageSize
-     * @param currentPage
-     * @param totalCount
+     * @param pageSize Number of items per page
+     * @param currentPage Current page index (0 based)
+     * @param totalCount Total item count
      */
     public PaginationDTO(long pageSize, long currentPage, long totalCount) {
         this.pageSize = pageSize;

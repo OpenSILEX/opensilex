@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  *
  * Allow for cross-origin requests and allow authorization header.
  *
- * <pre>
+ * </pre>
  * @author Arnaud Charleroy
  */
 @Provider

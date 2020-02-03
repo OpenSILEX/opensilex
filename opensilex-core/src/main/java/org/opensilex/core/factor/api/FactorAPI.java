@@ -59,15 +59,15 @@ public class FactorAPI {
     /**
      * Create a factor model from a FactorCreationDTO object
      * @param dto FactorCreationDTO object
-     * @return
-     * @throws Exception 
+     * @return Factor URI
+     * @throws Exception if creation failed
      */
     @POST
     @ApiOperation("Create an factor")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response create(
+    public Response createFactor(
             @ApiParam("Factor description") @Valid FactorCreationDTO dto
     ) throws Exception {
         FactorDAO dao = new FactorDAO(sparql);
@@ -87,8 +87,8 @@ public class FactorAPI {
     /**
      * Retreive factor by uri
      * @param uri factor uri
-     * @return
-     * @throws Exception
+     * @return Return factor detail
+     * @throws Exception in case of server error
      */
     @GET
     @Path("{uri}")
@@ -96,7 +96,7 @@ public class FactorAPI {
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get(
+    public Response getFactor(
             @ApiParam(value = "Factor URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         FactorDAO dao = new FactorDAO(sparql);
@@ -118,7 +118,7 @@ public class FactorAPI {
     /**
      * Search factors
      *
-     * @see org.opensilex.server.security.dal.FactorDAO
+     * @see org.opensilex.core.factor.dal.FactorDAO
      * @param alias Regex pattern for filtering list by alias
      * @param orderByList List of fields to sort as an array of
      * fieldName=asc|desc
@@ -137,7 +137,7 @@ public class FactorAPI {
         @ApiResponse(code = 200, message = "Return factor list", response = FactorGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
-    public Response search(
+    public Response searchFactors(
             @ApiParam(value = "Regex pattern for filtering list by alias", example = "Irrigation") @QueryParam("alias") String alias,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "alias=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
@@ -165,8 +165,8 @@ public class FactorAPI {
     /**
      * Remove a factor
      * @param uri factor uri
-     * @return
-     * @throws Exception
+     * @return URI of deleted factor
+     * @throws Exception if suppression failed
      */
     @DELETE
     @Path("{uri}")
@@ -174,7 +174,7 @@ public class FactorAPI {
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response delete(
+    public Response deleteFactor(
             @ApiParam(value = "Factor URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         FactorDAO dao = new FactorDAO(sparql);

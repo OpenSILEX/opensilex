@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "serve": "vue-cli-service build --target lib --formats umd-min src/index.ts --mode development --watch",
-        "build": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vue-cli-service build --mode production --target lib src/index.ts",
+        "build": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vue-cli-service build --mode production --target lib --formats commonjs,umd-min src/index.ts",
         "lint": "vue-cli-service lint",
         "check:outdated": "npm outdated || cd ."
     },

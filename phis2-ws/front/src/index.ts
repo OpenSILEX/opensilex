@@ -1,8 +1,10 @@
 import { ApiServiceBinder } from './lib';
 import ImageView from './components/images/ImageView.vue';
 import ImageSearch from './components/images/ImageSearch.vue';
-import ImageGrid from './components/images/ImageGrid.vue';
-import ImageSingle from './components/images/ImageSingle.vue';
+import ImageList from './components/images/ImageList.vue';
+import ImageGrid from './components/images/viewComponents/ImageGrid.vue';
+import ImageSingle from './components/images/viewComponents/ImageSingle.vue';
+import ImageCarousel from './components/images/viewComponents/ImageCarousel.vue';
 import SciObjectSearch from './components/images/searchComponents/SciObjectSearch.vue';
 import ImageTypeSearch from './components/images/searchComponents/ImageTypeSearch.vue';
 import ExperimentSearch from './components/images/searchComponents/ExperimentSearch.vue';
@@ -20,8 +22,10 @@ export default {
     components: {
         'phis2ws-ImageView': ImageView,
         'phis2ws-ImageSearch': ImageSearch,
+        'phis2ws-ImageList': ImageList,
         'phis2ws-ImageGrid': ImageGrid,
-        'phis2ws-Image': ImageSingle,
+        'phis2ws-ImageSingle': ImageSingle,
+        'phis2ws-ImageCarousel': ImageCarousel,
         'phis2ws-SciObjectSearch': SciObjectSearch,
         'phis2ws-ImageTypeSearch': ImageTypeSearch,
         'phis2ws-ExperimentSearch': ExperimentSearch,

@@ -1,8 +1,8 @@
-
 <template>
-<div class="row">
-    <phis2ws-Image v-for="(image, index) in images" v-bind:key="index" :image="image"></phis2ws-Image>
-  </div>
+    <div>
+        <phis2ws-ImageGrid :images="images"></phis2ws-ImageGrid>
+        <phis2ws-ImageCarousel :images="images"></phis2ws-ImageCarousel>
+    </div>
 </template>
 
 <script lang="ts">
@@ -10,7 +10,7 @@ import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
-export default class ImageGrid extends Vue {
+export default class ImageList extends Vue {
   @Prop()
   images: any;
 }

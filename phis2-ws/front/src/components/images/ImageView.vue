@@ -17,7 +17,7 @@
     <b-collapse id="collapse-2" v-model="showImageComponent" class="mt-2">
       <div v-if="totalImages>0">
         <p>Total Image {{totalImages}}</p>
-        <phis2ws-ImageGrid :images="images" ref="imageGrid"></phis2ws-ImageGrid>
+        <phis2ws-ImageList :images="images"></phis2ws-ImageList>
 
         <b-pagination
           v-model="currentPage"
@@ -75,7 +75,6 @@ export default class ImageView extends Vue {
     if (query.currentPage) {
       this.currentPage = parseInt(query.currentPage);
     }
-
   }
 
   showImage() {
@@ -175,7 +174,9 @@ export default class ImageView extends Vue {
 
   imagesFilter(data) {
     const filteredData = [];
-    data.forEach(element => {});
+    data.forEach(element => {
+
+    });
     this.images = filteredData;
   }
 

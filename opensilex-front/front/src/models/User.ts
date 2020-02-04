@@ -57,11 +57,14 @@ export class User {
     private static COOKIE_SUFFIX = "";
 
     private static getCookieName() {
-        return User.COOKIE_NAME + "-" + User.COOKIE_SUFFIX;
+        let cookieName = User.COOKIE_NAME + "-" + User.COOKIE_SUFFIX;
+        console.debug("Read cookie name:", cookieName);
+        return cookieName;
     }
 
     public static setCookieSuffix(suffix: string) {
         User.COOKIE_SUFFIX = suffix;
+        console.debug("Set cookie suffix:", suffix);
     }
 
     public static logout(): User {

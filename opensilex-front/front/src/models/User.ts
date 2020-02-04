@@ -53,16 +53,25 @@ export class User {
         return User.anonymous;
     }
 
+    private static COOKIE_NAME = "opensilex-token";
+    private static COOKIE_SUFFIX = "";
+
+    private static getCookieName() {
+        return User.COOKIE_NAME + "-" + User.COOKIE_SUFFIX;
+    }
+
+    public static setCookieSuffix(suffix: string) {
+        User.COOKIE_SUFFIX = suffix;
+    }
+
     public static logout(): User {
-        $cookies.remove(User.COOKIE_NAME);
+        $cookies.remove(User.getCookieName());
 
         return User.ANONYMOUS();
     }
 
-    private static COOKIE_NAME = "opensilex-token";
-
     public static fromCookie(): User {
-        let token = $cookies.get(User.COOKIE_NAME);
+        let token = $cookies.get(User.getCookieName());
         let user: User = User.ANONYMOUS();
         if (token != null) {
             try {
@@ -111,7 +120,7 @@ export class User {
         this.loggedIn = true;
         this.expire = parseInt(this.getTokenData(User.CLAIM_EXPIRE));
 
-        $cookies.set(User.COOKIE_NAME, token, this.expire + "s", "/", undefined, secure);
+        $cookies.set(User.getCookieName(), token, this.expire + "s", "/", undefined, secure);
     }
 
     public getFirstName() {

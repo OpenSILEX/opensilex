@@ -1,11 +1,6 @@
 import * as jwtDecode from "jwt-decode";
-import { VueCookies } from 'vue-cookies'
-import VueI18n from 'vue-i18n'
-
-declare var $cookies: VueCookies;
 
 export class User {
-    private static INACTIVITY_PERIOD_MIN = 10;
     private firstName: string = "Jean";
     private lastName: string = "Dupont";
     private email: string = "jean.dupont@opensilex.org";
@@ -53,50 +48,8 @@ export class User {
         return User.anonymous;
     }
 
-    private static COOKIE_NAME = "opensilex-token";
-    private static COOKIE_SUFFIX = "";
-
-    private static getCookieName() {
-        let cookieName = User.COOKIE_NAME + "-" + User.COOKIE_SUFFIX;
-        console.debug("Read cookie name:", cookieName);
-        return cookieName;
-    }
-
-    public static setCookieSuffix(suffix: string) {
-        User.COOKIE_SUFFIX = Math.abs(User.hashCode(suffix)) + "";
-        console.debug("Set cookie suffix:", User.COOKIE_SUFFIX);
-    }
-
-    private static hashCode(str: string) {
-        let hash = 0;
-        if (str.length === 0) return hash;
-        for (let i = 0; i < str.length; i++) {
-          let chr   = str.charCodeAt(i);
-          hash  = ((hash << 5) - hash) + chr;
-          hash |= 0; // Convert to 32bit integer
-        }
-        return hash;
-      }
-
-    public static logout(): User {
-        $cookies.remove(User.getCookieName());
-
-        return User.ANONYMOUS();
-    }
-
-    public static fromCookie(): User {
-        let token = $cookies.get(User.getCookieName());
-        console.debug("Loaded token from cookie", token, User.getCookieName());
-        let user: User = User.ANONYMOUS();
-        if (token != null) {
-            try {
-                user = User.fromToken(token);
-            } catch (error) {
-                console.error(error);
-            }
-        }
-
-        return user;
+    public getExpiration() {
+        return this.expire;
     }
 
     public getExpirationMs() {
@@ -122,8 +75,6 @@ export class User {
 
 
     public setToken(token: string) {
-        let secure: boolean = ('https:' == document.location.protocol);
-
         this.token = token;
         this.tokenData = jwtDecode(token);
 
@@ -134,8 +85,6 @@ export class User {
         this.credentials = this.getTokenData(User.CLAIM_CREDENTIALS_LIST);
         this.loggedIn = true;
         this.expire = parseInt(this.getTokenData(User.CLAIM_EXPIRE));
-
-        $cookies.set(User.getCookieName(), token, this.expire + "s", "/", undefined, secure);
     }
 
     public getFirstName() {

@@ -21,6 +21,11 @@ let menu: Array<Menu> = [];
 let inactivityRenewTimeoutInMin = 1;
 let renewStarted = false;
 let currentUser = undefined;
+
+let getOpenSilexPlugin = function(): OpenSilexVuePlugin {
+  return Vue["$opensilex"];
+}
+
 let renewTokenOnEvent = function (event) {
   if (event && event.keyCode
     && (
@@ -44,7 +49,7 @@ let renewTokenOnEvent = function (event) {
     return;
   }
 
-  let $opensilex: OpenSilexVuePlugin = Vue["$opensilex"];
+  let $opensilex: OpenSilexVuePlugin = getOpenSilexPlugin();
 
   $opensilex.getService<SecurityService>("opensilex-rest.SecurityService")
     .renewToken(currentUser.getAuthorizationHeader())
@@ -143,7 +148,8 @@ export default new Vuex.Store({
       }
 
       console.debug("Set user to anonymous");
-      state.user = User.logout();
+      state.user = User.ANONYMOUS();
+      getOpenSilexPlugin().clearCookie();
       state.disconnected = true;
       console.debug("Reset router");
       state.openSilexRouter.resetRouter(state.user);

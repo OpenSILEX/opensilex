@@ -6,6 +6,8 @@ import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import Vue from 'vue';
 import { User } from './User';
 import { Store } from 'vuex';
+import { VueCookies } from 'vue-cookies'
+declare var $cookies: VueCookies;
 
 declare var window: any;
 
@@ -24,6 +26,7 @@ export default class OpenSilexVuePlugin {
         });
         this.baseApi = baseApi;
         this.$store = store;
+        store.commit("setCookieSuffix", baseApi);
         ApiServiceBinder.with(this.container);
     }
 
@@ -254,6 +257,60 @@ export default class OpenSilexVuePlugin {
     public get user(): User {
         return this.$store.state.user;
     }
+
+
+    private static COOKIE_NAME = "opensilex-token";
+
+    private cookieSuffix: string = "";
+
+    public setCookieSuffix(suffix: string) {
+        this.cookieSuffix = Math.abs(OpenSilexVuePlugin.hashCode(suffix)) + "";
+    }
+
+    private getCookieName() {
+        let cookieName = OpenSilexVuePlugin.COOKIE_NAME + "-" + this.cookieSuffix;
+        console.debug("Read cookie name:", cookieName);
+        return cookieName;
+    }
+
+    public clearCookie() {
+        $cookies.remove(this.getCookieName());
+    }
+
+    public loadUserFromCookie(): User {
+        let token = $cookies.get(this.getCookieName());
+        console.debug("Loaded token from cookie", token, this.getCookieName());
+        let user: User = User.ANONYMOUS();
+        if (token != null) {
+            try {
+                user = User.fromToken(token);
+                this.setCookieValue(user);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        return user;
+    }
+
+    public setCookieValue(user: User) {
+        let secure: boolean = ('https:' == document.location.protocol);
+        console.debug("Set cookie value:", this.getCookieName(), user.getToken());
+        $cookies.set(this.getCookieName(), user.getToken(), user.getExpiration() + "s", "/", undefined, secure);
+    }
+
+    public static hashCode(str: string) {
+        let hash = 0;
+        if (str.length === 0) return hash;
+        for (let i = 0; i < str.length; i++) {
+            let chr = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + chr;
+            hash |= 0; // Convert to 32bit integer
+        }
+        return hash;
+    }
+
+
 
     private handleError(error) {
         switch (error.status) {

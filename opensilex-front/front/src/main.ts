@@ -72,7 +72,7 @@ import HttpResponse, { OpenSilexResponse } from './lib/HttpResponse'
 import { User } from './models/User'
 import { ModuleComponentDefinition } from './models/ModuleComponentDefinition'
 import OpenSilexVuePlugin from './models/OpenSilexVuePlugin'
-User.setCookieSuffix(encodeURI(baseApi));
+User.setCookieSuffix(baseApi);
 console.debug("Local file imports done !");
 
 // Initialize cookie management library

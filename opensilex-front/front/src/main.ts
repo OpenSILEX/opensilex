@@ -72,6 +72,7 @@ import HttpResponse, { OpenSilexResponse } from './lib/HttpResponse'
 import { User } from './models/User'
 import { ModuleComponentDefinition } from './models/ModuleComponentDefinition'
 import OpenSilexVuePlugin from './models/OpenSilexVuePlugin'
+User.setCookieSuffix(encodeURI(baseApi));
 console.debug("Local file imports done !");
 
 // Initialize cookie management library
@@ -91,8 +92,6 @@ console.debug("Initialize FontAwesomeIcon plugin...");
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faPowerOff, faTimes, faTrashAlt, faEdit } from '@fortawesome/free-solid-svg-icons'
-import { } from '@fortawesome/free-solid-svg-icons'
-import { } from '@fortawesome/free-solid-svg-icons'
 library.add(faPowerOff, faTimes, faTrashAlt, faEdit);
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 console.debug("FontAwesomeIcon plugin initialized !");

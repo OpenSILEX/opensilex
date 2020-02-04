@@ -1,6 +1,7 @@
 <template>
   <div>
     <b-button @click="showCreateForm" variant="success">Add group</b-button>
+    <div>TEST DEPLOYMENT</div>
     <opensilex-GroupForm
       ref="groupForm"
       @onCreate="callCreateGroupService"

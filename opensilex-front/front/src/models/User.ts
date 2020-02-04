@@ -63,19 +63,19 @@ export class User {
     }
 
     public static setCookieSuffix(suffix: string) {
-        User.COOKIE_SUFFIX = User.hashCode(suffix);
+        User.COOKIE_SUFFIX = Math.abs(User.hashCode(suffix)) + "";
         console.debug("Set cookie suffix:", User.COOKIE_SUFFIX);
     }
 
     private static hashCode(str: string) {
         let hash = 0;
-        if (str.length === 0) return "" + hash;
+        if (str.length === 0) return hash;
         for (let i = 0; i < str.length; i++) {
           let chr   = str.charCodeAt(i);
           hash  = ((hash << 5) - hash) + chr;
           hash |= 0; // Convert to 32bit integer
         }
-        return "" + hash;
+        return hash;
       }
 
     public static logout(): User {
@@ -86,6 +86,7 @@ export class User {
 
     public static fromCookie(): User {
         let token = $cookies.get(User.getCookieName());
+        console.debug("Loaded token from cookie", token, User.getCookieName());
         let user: User = User.ANONYMOUS();
         if (token != null) {
             try {

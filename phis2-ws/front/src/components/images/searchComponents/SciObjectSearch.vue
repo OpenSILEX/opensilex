@@ -1,5 +1,5 @@
 <template>
-  <b-form-group label="Scientific object search">
+  <b-form-group label="Scientific object alias">
     <b-form-tags v-model="value" no-outer-focus class="mb-2">
       <template v-slot="{ tags, disabled }">
         <ul v-if="tags.length > 0" class="list-inline d-inline-block mb-2">
@@ -16,11 +16,15 @@
           v-model="search"
           list="input-list"
           id="input-with-list"
+          placeholder="Enter Alias to search "
+          autocomplete="off"
           @input="onWrite($event);"
           @change="onChange($event);"
-          @keydown.enter.native.prevent="onEnter()"
+          @focus.native="onEnter()"
         ></b-form-input>
-        <b-form-datalist id="input-list" :options="options"></b-form-datalist>
+        <b-form-datalist id="input-list" >
+           <option v-for="option in options" :key="option">{{ option }}</option>
+        </b-form-datalist>
       </template>
     </b-form-tags>
   </b-form-group>
@@ -28,12 +32,13 @@
 
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import Vue from "vue";
 
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 import { ScientificObjectsService } from "../../../lib/api/scientificObjects.service";
 import { ScientificObjectDTO } from "../../../lib/model/scientificObjectDTO";
+import { EventBus } from "./../event-bus";
 
 @Component
 export default class ObjectSearch extends Vue {
@@ -43,83 +48,77 @@ export default class ObjectSearch extends Vue {
     return this.$store.state.user;
   }
 
-  @Prop()
-  selectedExperiment:any;
-  alias:any=undefined;
+  selectedExperiment: any;
+  selectedSoType: any;
+  alias: any = undefined;
 
   currentPage: number = 0;
   pageSize: number = 8000;
   options = [];
   search = "";
   value = [];
-  valueWithURI={};
-  selectedValueWithUri={};
-  get criteria() {
-    // Compute the search criteria
-    return this.search.trim().toLowerCase();
-  }
-
-  get experiment(){
-    return this.selectedExperiment;
-  }
-  get availableOptions() {
-    const criteria = this.criteria;
-    // Filter out already selected options
-    const options = this.options.filter(opt => this.value.indexOf(opt) === -1);
-    if (criteria) {
-      // Show only options that match criteria
-      return options.filter(opt => opt.toLowerCase().indexOf(criteria) > -1);
-    }
-    // Show all options available
-    return options;
-  }
-  get searchDesc() {
-    if (this.criteria && this.availableOptions.length === 0) {
-      return "There are no tags matching your search criteria";
-    }
-    return "";
-  }
+  valueWithURI = {};
+  selectedValueWithUri = {};
 
   created() {
-    this.options= [];
-  }
-  onOptionClick({ option, addTag }) {
-    addTag(option);
-    this.search = "";
-  }
-  onChange(selectedValue) {
-    this.value.push(selectedValue);
-    this.selectedValueWithUri={};
-    this.value.forEach(element => {
-        this.selectedValueWithUri[element]=this.valueWithURI[element];
-      });
-    this.search = "";
-    this.$emit("searchObjectSelected", this.selectedValueWithUri);
-  }
-  onRemove(index) {
-    this.value.splice(index, 1);
-    this.selectedValueWithUri={};
-    this.value.forEach(element => {
-        this.selectedValueWithUri[element]=this.valueWithURI[element];
-      });
-    this.$emit("searchObjectSelected", this.selectedValueWithUri);
+    this.options = [];
+    EventBus.$on("experienceHasChanged", experience => {
+      this.selectedExperiment = experience;
+      this.value = [];
+      this.options = [];
+      this.search = "";
+    });
+    EventBus.$on("soTypeHasChanged", type => {
+      this.selectedSoType = type;
+      this.value = [];
+      this.options = [];
+      this.search = "";
+    });
   }
 
+  onChange(selectedValue) {
+    this.value.push(selectedValue);
+    this.selectedValueWithUri = {};
+    let sciObjectsURI = [];
+    this.value.forEach(element => {
+      this.selectedValueWithUri[element] = this.valueWithURI[element];
+      sciObjectsURI.push(this.valueWithURI[element]);
+    });
+    this.search = "";
+    EventBus.$emit("searchObjectSelected", sciObjectsURI);
+  }
+
+  onRemove(index) {
+    this.value.splice(index, 1);
+    this.selectedValueWithUri = {};
+    let sciObjectsURI = [];
+    this.value.forEach(element => {
+      this.selectedValueWithUri[element] = this.valueWithURI[element];
+      sciObjectsURI.push(this.valueWithURI[element]);
+    });
+    EventBus.$emit("searchObjectSelected", sciObjectsURI);
+  }
 
   onWrite(value) {
     this.alias = value;
     let service: ScientificObjectsService = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"
     );
+    if (this.selectedExperiment === null) {
+      this.selectedExperiment = undefined;
+    }
+    if (this.selectedSoType === null) {
+      this.selectedSoType = undefined;
+    }
     const result = service
       .getScientificObjectsBySearch(
         this.user.getAuthorizationHeader(),
         this.pageSize,
         this.currentPage,
         undefined,
-        this.experiment,
+        this.selectedExperiment,
         this.alias,
-        undefined
+        this.selectedSoType
       )
       .then(
         (http: HttpResponse<OpenSilexResponse<Array<ScientificObjectDTO>>>) => {
@@ -128,12 +127,13 @@ export default class ObjectSearch extends Vue {
           this.options = [];
           data.forEach(element => {
             this.options.push(element.label);
-            this.valueWithURI[element.label]=element.uri;
+            this.valueWithURI[element.label] = element.uri;
           });
         }
       )
       .catch(error => {
         console.log(error);
+        this.options = [];
       });
   }
 

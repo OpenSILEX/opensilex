@@ -1,41 +1,15 @@
 <template>
   <div>
-    <b-form @submit="onSubmit" >
-      <phis2ws-ImageTypeSearch :rdfType="form.rdfType" @imageTypeSelected="onImageTypeSelected"></phis2ws-ImageTypeSearch>
-      <phis2ws-ExperimentSearch
-        :experiment="selectedExperiment"
-        @experimentSelected="onExperimentSelected"
-      ></phis2ws-ExperimentSearch>
-      <phis2ws-SciObjectSearch
-        :selectedExperiment="selectedExperiment"
-        @searchObjectSelected="onSearchObjectSelected"
-      ></phis2ws-SciObjectSearch>
+    <b-form @submit="onSubmit">
+      <phis2ws-ImageTypeSearch></phis2ws-ImageTypeSearch>
 
-      <b-form inline>
-        <label class="mr-sm-2" for="inline-form-custom-select-pref">Start Date</label>
-        <b-input-group class="mt-3 mb-3" size="sm" id="inline-form-custom-select-pref">
-          <datePicker
-            v-model="form.startDate"
-            input-class="form-control"
-            placeholder="Select a date"
-            :clear-button="true"
-            @input="onStartDateSelected"
-            @cleared="onStartDateCleared"
-          ></datePicker>
-        </b-input-group>
+      <phis2ws-TimeSearch></phis2ws-TimeSearch>
 
-        <label class="mr-sm-2 ml-4" for="inline-2">End Date</label>
-        <b-input-group class="mt-3 mb-3" size="sm" id="inline-2">
-          <datePicker
-            v-model="form.endDate"
-            input-class="form-control"
-            placeholder="Select a date"
-            :clear-button="true"
-            @input="onEndDateSelected"
-            @cleared="onEndDateCleared"
-          ></datePicker>
-        </b-input-group>
-      </b-form>
+      <phis2ws-ExperimentSearch></phis2ws-ExperimentSearch>
+
+      <phis2ws-SciObjectTypeSearch></phis2ws-SciObjectTypeSearch>
+
+      <phis2ws-SciObjectSearch></phis2ws-SciObjectSearch>
 
       <b-btn type="submit" variant="primary">Submit</b-btn>
     </b-form>
@@ -47,9 +21,9 @@
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { UriService } from "../../lib/api/uri.service";
-import { Uri } from "../../lib/model/uri";
-import VueRouter from "vue-router";
+import { ScientificObjectsService } from "../../lib/api/scientificObjects.service";
+import { ScientificObjectDTO } from "../../lib/model/scientificObjectDTO";
+import { EventBus } from "./event-bus";
 
 @Component
 export default class ImageSearch extends Vue {
@@ -58,110 +32,101 @@ export default class ImageSearch extends Vue {
   get user() {
     return this.$store.state.user;
   }
-  selectedExperiment: any = "";
-  $router: VueRouter;
   form: any = {
-    rdfType: "",
-    startDate: "",
-    endDate: "",
-    objectList: []
+    rdfType: null,
+    startDate: undefined,
+    endDate: undefined,
+    objectList: [],
+    objectType: null,
+    experiment: null
   };
-  types: any = [];
-
-  imageTypeUri: string = "http://www.opensilex.org/vocabulary/oeso#Image";
-
-  onExperimentSelected(value) {
-    //get the so (objectList) & emit onSearchFormChange event with the result
-    //get the so type
-    
-    this.selectedExperiment = value;
-    this.$router
-      .push({
-        path: this.$route.fullPath,
-        query: {
-          experiment: encodeURI(value)
-        }
-      })
-      .catch(function() {});
-  }
-
-  onImageTypeSelected(value) {
-    this.form.rdfType = value;
-    this.update();
-  }
 
   onSubmit(evt) {
     evt.preventDefault();
-    this.$emit("onSearchFormSubmit");
+    this.$emit("onSearchFormSubmit", this.form);
   }
 
+  getObjectList() {
+    if (this.form.experiment === null && this.form.objectType === null) {
+      this.form.objectList = [];
+    } else {
+      let service: ScientificObjectsService = this.$opensilex.getService(
+        "opensilex.ScientificObjectsService"
+      );
 
-  update() {
-    this.$emit("onSearchFormChange", this.form);
-  }
+      //the fields of rest service must be undefined to be ignored
+      let selectedExperimentField: string;
+      let selectedSoTypeField: string;
+      if (this.form.objectType === null) {
+        selectedSoTypeField = undefined;
+      } else {
+        selectedSoTypeField = this.form.objectType;
+      }
+      if (this.form.experiment === null) {
+        selectedExperimentField = undefined;
+      } else {
+        selectedExperimentField = this.form.experiment;
+      }
 
-  onSearchObjectSelected(value) {
-    this.form.objectList = [];
-    // this.form.objectTagList = [];
-    for (let [key, val] of Object.entries(value)) {
-      this.form.objectList.push(val);
-      //this.form.objectTagList.push(key);
+      const result = service
+        .getScientificObjectsBySearch(
+          this.user.getAuthorizationHeader(),
+          8000,
+          0,
+          undefined,
+          selectedExperimentField,
+          undefined,
+          selectedSoTypeField
+        )
+        .then(
+          (
+            http: HttpResponse<OpenSilexResponse<Array<ScientificObjectDTO>>>
+          ) => {
+            const res = http.response.result as any;
+            const data = res.data;
+            this.form.objectList = [];
+            data.forEach(element => {
+              this.form.objectList.push(element.uri);
+            });
+          }
+        )
+        .catch(error => {
+          console.log(error);
+          this.form.objectList = [];
+        });
     }
-    this.update();
-  }
-
-  onStartDateSelected() {
-    console.log("start date" + this.form.startDate);
-    this.update();
-  }
-
-  onEndDateSelected() {
-    console.log("end date" + this.form.endDate);
-    this.update();
-  }
-
-  onStartDateCleared() {
-    this.form.startDate = "";
-  }
-  onEndDateCleared() {
-    this.form.endDate = "";
   }
 
   created() {
-    let query: any = this.$route.query;
+    EventBus.$on("experienceHasChanged", experience => {
+      this.form.experiment = experience;
+      this.getObjectList();
+    });
+    EventBus.$on("soTypeHasChanged", type => {
+      this.form.objectType = type;
+      this.getObjectList();
+    });
+    EventBus.$on("imageTypeSelected", type => {
+      this.form.rdfType = type;
+    });
+    EventBus.$on("startDateHasChanged", startDate => {
+      this.form.startDate = startDate;
+    });
+    EventBus.$on("endDateHasChanged", endDate => {
+      this.form.endDate = endDate;
+    });
+    EventBus.$on("searchObjectSelected", sciObjects => {
+      if (sciObjects.length === 0) {
+        this.getObjectList();
+      } else {
+        this.form.objectList = [];
+        for (let [key, val] of Object.entries(sciObjects)) {
+          this.form.objectList.push(val);
+        }
+      }
+    });
 
-    if (query.startDate) {
-      this.form.startDate = query.startDate;
-    }
-    if (query.endDate) {
-      this.form.endDate = query.endDate;
-    }
-    if (query.rdfType) {
-      this.form.rdfType = query.rdfType;
-    }
-    if (query.experiment) {
-      this.selectedExperiment = query.experiment;
-    }
-    let service: UriService = this.$opensilex.getService(
-      "opensilex.UriService"
-    );
-    const result = service
-      .getDescendants(
-        this.user.getAuthorizationHeader(),
-        this.imageTypeUri,
-        100,
-        0
-      )
-      .then((http: HttpResponse<OpenSilexResponse<Array<Uri>>>) => {
-        const res = http.response.result as any;
-        res.data.forEach(element => {
-          this.types.push({
-            value: element.uri,
-            text: element.uri.split("#")[1]
-          });
-        });
-      })
-      .catch(this.$opensilex.errorHandler);
+    
   }
 }
 </script>

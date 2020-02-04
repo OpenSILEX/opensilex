@@ -11,24 +11,23 @@
     </b-button>
 
     <b-collapse id="collapse-1" v-model="showSearchComponent" class="mt-2">
-      <phis2ws-ImageSearch
-        @onSearchFormSubmit="onSearchFormSubmit"
-        @onSearchFormChange="onSearchFormChange"
-      ></phis2ws-ImageSearch>
+      <phis2ws-ImageSearch @onSearchFormSubmit="onSearchFormSubmit"></phis2ws-ImageSearch>
     </b-collapse>
 
-    <div v-if="totalImages>0">
-      <p>Total Image {{totalImages}}</p>
-      <phis2ws-ImageGrid :images="images" ref="imageGrid"></phis2ws-ImageGrid>
+    <b-collapse id="collapse-2" v-model="showImageComponent" class="mt-2">
+      <div v-if="totalImages>0">
+        <p>Total Image {{totalImages}}</p>
+        <phis2ws-ImageGrid :images="images" ref="imageGrid"></phis2ws-ImageGrid>
 
-      <b-pagination
-        v-model="currentPage"
-        :total-rows="totalImages"
-        :per-page="pageSize"
-        @change="loadDataWithDelay"
-      ></b-pagination>
-    </div>
-    <div v-else>No images to dispay</div>
+        <b-pagination
+          v-model="currentPage"
+          :total-rows="totalImages"
+          :per-page="pageSize"
+          @change="loadDataWithDelay"
+        ></b-pagination>
+      </div>
+      <div v-else>No images to dispay</div>
+    </b-collapse>
   </div>
 </template>
 
@@ -50,7 +49,7 @@ export default class ImageView extends Vue {
   }
 
   showSearchComponent: boolean = true;
-
+  showImageComponent: boolean = false;
   images = [];
 
   currentPage: number = 1;
@@ -63,7 +62,9 @@ export default class ImageView extends Vue {
     provenance: undefined,
     jsonValueFilter: undefined,
     orderByDate: true,
-    concernedItemsValue: []
+    concernedItemsValue: [],
+    objectType: null,
+    experiment: null
   };
 
   created() {
@@ -74,94 +75,31 @@ export default class ImageView extends Vue {
     if (query.currentPage) {
       this.currentPage = parseInt(query.currentPage);
     }
-    if (query.startDate) {
-      this.searchImagesFields.startDate = query.startDate;
-    }
-    if (query.endDate) {
-      this.searchImagesFields.endDate = query.endDate;
-    }
-    if (query.rdfType) {
-      this.searchImagesFields.rdfType = query.rdfType;
-      this.showImage();
-      this.loadData();
-    }
+
   }
 
   showImage() {
     this.showSearchComponent = false;
+    this.showImageComponent = true;
   }
 
-  onSearchFormSubmit() {
-    this.showImage();
-  }
+  onSearchFormSubmit(form) {
+    if (form.rdfType !== null) {
+      this.currentPage = 1;
+      this.searchImagesFields.experiment = form.experiment;
+      this.searchImagesFields.objectType = form.objectType;
+      this.searchImagesFields.rdfType = form.rdfType;
+      this.searchImagesFields.startDate = form.startDate;
+      this.searchImagesFields.endDate = form.endDate;
+      this.searchImagesFields.concernedItemsValue = [];
+      if (form.objectList) {
+        form.objectList.forEach(element => {
+          this.searchImagesFields.concernedItemsValue.push(element);
+        });
+      }
 
-  onSearchFormChange(form) {
-    this.currentPage = 1;
-
-    this.searchImagesFields.rdfType = form.rdfType;
-   
-      this.$router
-        .push({
-          path: this.$route.fullPath,
-          query: {
-            rdfType: encodeURI(this.searchImagesFields.rdfType)
-          }
-        })
-        .catch(function() {});
-   
-
-    this.searchImagesFields.concernedItemsValue = [];
-    if (form.objectList) {
-      form.objectList.forEach(element => {
-        this.searchImagesFields.concernedItemsValue.push(element);
-      });
+      this.loadData();
     }
-
-    if (form.startDate) {
-      this.searchImagesFields.startDate = this.format(form.startDate);
-      this.$router
-        .push({
-          path: this.$route.fullPath,
-          query: {
-            startDate: this.searchImagesFields.startDate
-          }
-        })
-        .catch(function() {});
-    } else {
-      this.searchImagesFields.startDate = undefined;
-      this.$router
-        .push({
-          path: this.$route.fullPath,
-          query: {
-            startDate: undefined
-          }
-        })
-        .catch(function() {});
-    }
-
-    if (form.endDate) {
-      this.searchImagesFields.endDate = this.format(form.endDate);
-      this.$router
-        .push({
-          path: this.$route.fullPath,
-          query: {
-            endDate: this.searchImagesFields.endDate
-          }
-        })
-        .catch(function() {});
-    } else {
-      this.searchImagesFields.endDate = undefined;
-      this.$router
-        .push({
-          path: this.$route.fullPath,
-          query: {
-            endDate: undefined
-          }
-        })
-        .catch(function() {});
-    }
-
-    this.loadData();
   }
 
   loadDataWithDelay() {
@@ -177,45 +115,68 @@ export default class ImageView extends Vue {
       "opensilex.DataService"
     );
 
-    if (this.searchImagesFields.rdfType != undefined) {
-      dataService
-        .getDataFileDescriptionsBySearch(
-          this.user.getAuthorizationHeader(),
-          this.searchImagesFields.rdfType,
-          this.searchImagesFields.startDate,
-          this.searchImagesFields.endDate,
-          this.searchImagesFields.provenance,
-          this.searchImagesFields.concernedItemsValue,
-          this.searchImagesFields.jsonValueFilter,
-          this.searchImagesFields.orderByDate,
-          this.pageSize,
-          this.currentPage - 1
-        )
-        .then(
-          (
-            http: HttpResponse<OpenSilexResponse<Array<FileDescriptionDTO>>>
-          ) => {
-            this.totalImages = http.response.metadata.pagination.totalCount;
-            this.pageSize = http.response.metadata.pagination.pageSize;
-            const res = http.response.result as any;
-            const data = res.data;
-            this.images = data;
+    if (this.searchImagesFields.rdfType !== undefined) {
+      console.log(this.searchImagesFields.concernedItemsValue);
+      if (
+        (this.searchImagesFields.objectType !== null ||
+          this.searchImagesFields.experiment !== null) &&
+        this.searchImagesFields.concernedItemsValue.length === 0
+      ) {
+        this.images = [];
+        this.totalImages = 0;
+        this.showImage();
+      } else {
+        dataService
+          .getDataFileDescriptionsBySearch(
+            this.user.getAuthorizationHeader(),
+            this.searchImagesFields.rdfType,
+            this.searchImagesFields.startDate,
+            this.searchImagesFields.endDate,
+            this.searchImagesFields.provenance,
+            this.searchImagesFields.concernedItemsValue,
+            this.searchImagesFields.jsonValueFilter,
+            this.searchImagesFields.orderByDate,
+            this.pageSize,
+            this.currentPage - 1
+          )
+          .then(
+            (
+              http: HttpResponse<OpenSilexResponse<Array<FileDescriptionDTO>>>
+            ) => {
+              this.totalImages = http.response.metadata.pagination.totalCount;
+              this.pageSize = http.response.metadata.pagination.pageSize;
+              const res = http.response.result as any;
+              const data = res.data;
+              console.log("data");
+              console.log(data);
 
-            this.$router
-              .push({
-                path: this.$route.fullPath,
-                query: {
-                  currentPage: "" + this.currentPage
-                }
-              })
-              .catch(function() {});
-          }
-        )
-        .catch(error => {
-          this.totalImages = 0;
-          console.log(error);
-        });
+              this.images = data; //before filter
+              // this.imagesFilter(data);
+              this.showImage();
+              this.$router
+                .push({
+                  path: this.$route.fullPath,
+                  query: {
+                    currentPage: "" + this.currentPage
+                  }
+                })
+                .catch(function() {});
+            }
+          )
+          .catch(error => {
+            this.totalImages = 0;
+            this.images = [];
+            console.log(error);
+            this.showImage();
+          });
+      }
     }
+  }
+
+  imagesFilter(data) {
+    const filteredData = [];
+    data.forEach(element => {});
+    this.images = filteredData;
   }
 
   format(date) {
@@ -232,6 +193,7 @@ export default class ImageView extends Vue {
 
   onSearchButtonClick() {
     this.showSearchComponent = !this.showSearchComponent;
+    this.showImageComponent = !this.showImageComponent;
   }
 }
 </script>

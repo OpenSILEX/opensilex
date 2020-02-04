@@ -1,15 +1,9 @@
 <template>
   <div>
     <b-form-group id="input-group-2" label="Experiment:" label-for="experiment">
-      <b-form-select
-        id="experiment"
-        v-model="experiment"
-        :options="experiments"
-        @input="update"
-        required
-      >
+      <b-form-select id="experiment" v-model="experiment" :options="experiments" @input="update">
         <template v-slot:first>
-          <option :value="null" disabled>-- Please select an Experiment --</option>
+          <b-form-select-option :value="null">-- no experiment selected --</b-form-select-option>
         </template>
       </b-form-select>
     </b-form-group>
@@ -18,11 +12,13 @@
 
 
 <script lang="ts">
-import { Component,Prop } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 import { ExperimentsService } from "../../../lib/api/experiments.service";
 import { Experiment } from "../../../lib/model/experiment";
+import VueRouter from "vue-router";
+import { EventBus } from "./../event-bus";
 
 @Component
 export default class ExperimentSearch extends Vue {
@@ -32,15 +28,33 @@ export default class ExperimentSearch extends Vue {
     return this.$store.state.user;
   }
 
-  @Prop()
-  experiment:string;
-  experiments:any = [];
+  $router: VueRouter;
+  experiment: string = null;
+  experiments: any = [];
 
   update() {
-      this.$emit("experimentSelected", this.experiment); 
+    if (this.experiment !== null) {
+      this.$router
+        .push({
+          path: this.$route.fullPath,
+          query: {
+            experiment: encodeURI(this.experiment)
+          }
+        })
+        .catch(function() {});
+    } else {
+      this.$router
+        .push({
+          path: this.$route.fullPath,
+          query: {
+            experiment: undefined
+          }
+        })
+        .catch(function() {});
+    }
+    EventBus.$emit("experienceHasChanged", this.experiment);
   }
   created() {
-
     let service: ExperimentsService = this.$opensilex.getService(
       "opensilex.ExperimentsService"
     );
@@ -68,6 +82,10 @@ export default class ExperimentSearch extends Vue {
             text: element.alias
           });
         });
+        let query: any = this.$route.query;
+        if (query.experiment) {
+          this.experiment = query.experiment;
+        }
       })
       .catch(error => {
         console.log(error);

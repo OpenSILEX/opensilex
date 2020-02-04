@@ -6,6 +6,8 @@ import ImageSingle from './components/images/ImageSingle.vue';
 import SciObjectSearch from './components/images/searchComponents/SciObjectSearch.vue';
 import ImageTypeSearch from './components/images/searchComponents/ImageTypeSearch.vue';
 import ExperimentSearch from './components/images/searchComponents/ExperimentSearch.vue';
+import SciObjectTypeSearch from './components/images/searchComponents/SciObjectTypeSearch.vue';
+import TimeSearch from './components/images/searchComponents/TimeSearch.vue';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faSlidersH, faSearch } from '@fortawesome/free-solid-svg-icons'
@@ -22,6 +24,8 @@ export default {
         'phis2ws-Image': ImageSingle,
         'phis2ws-SciObjectSearch': SciObjectSearch,
         'phis2ws-ImageTypeSearch': ImageTypeSearch,
-        'phis2ws-ExperimentSearch': ExperimentSearch
+        'phis2ws-ExperimentSearch': ExperimentSearch,
+        'phis2ws-SciObjectTypeSearch': SciObjectTypeSearch,
+        'phis2ws-TimeSearch': TimeSearch
     }
 };

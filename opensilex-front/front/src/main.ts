@@ -118,6 +118,7 @@ const i18n = new VueI18n({
 // Enable Vue front plugin manager for OpenSilex API
 console.debug("Enable OpenSilex plugin...");
 let $opensilex = new OpenSilexVuePlugin(baseApi, store);
+$opensilex.setCookieSuffix(baseApi);
 Vue.use($opensilex);
 console.debug("OpenSilex plugin enabled !");
 
@@ -252,13 +253,14 @@ $opensilex.initAsyncComponents(components)
             console.debug("Try to load user from URL token...");
             if (token != null) {
               user = User.fromToken(token);
+              $opensilex.setCookieValue(user);
               console.debug("User sucessfully loaded from URL token !");
             }
           }
 
           if (user == undefined) {
             console.debug("Try to load user from cookie...");
-            user = User.fromCookie();
+            user = $opensilex.loadUserFromCookie();
             console.debug("User sucessfully loaded from cookie !");
           }
 

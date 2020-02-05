@@ -1,8 +1,6 @@
 {
     "component": {
-        "common": {
-            
-        },
+        "common": {},
         "header": {
             "language": {
                 "fr": "Français",
@@ -51,6 +49,45 @@
         },
         "footer": {
             "copyright": "Copyright © 2019 - 2020 INRA Tous Droits Déservés. PHIS {version} version du {date}"
+        }
+    },
+    "credential-groups": {
+        "experiments": "Expérimentations",
+        "groups": "Groupes",
+        "profiles": "Profiles",
+        "projects": "Projets",
+        "users": "Utilisateurs",
+        "variables": "Variables"
+    },
+    "credential": {
+        "experiment": {
+            "modification": "Ajout / Modification des expérimentations",
+            "read": "Visualisation des expérimentations"
+        },
+        "group": {
+            "modification": "Ajout / Modification des groupes",
+            "read": "Visualisation des groupes",
+            "delete": "Supression des groupes"
+        },
+        "profile": {
+            "modification": "Ajout / Modification des profiles",
+            "read": "Visualisation des profiles",
+            "delete": "Supression des profiles"
+        },
+        "project": {
+            "modification": "Ajout / Modification des projets",
+            "read": "Visualisation des projets",
+            "delete": "Supression des projets"
+        },
+        "user": {
+            "modification": "Ajout / Modification des utilisateurs",
+            "read": "Visualisation des utilisateurs",
+            "delete": "Supression des utilisateurs"
+        },
+        "variable": {
+            "modification": "Ajout / Modification des variables",
+            "read": "Visualisation des variables",
+            "delete": "Supression des variables"
         }
     }
 }

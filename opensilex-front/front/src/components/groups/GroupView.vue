@@ -17,11 +17,11 @@ import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
-  GroupService,
+  GroupsService,
   GroupCreationDTO,
   GroupUpdateDTO,
   GroupGetDTO,
-  ProfileService,
+  ProfilesService,
   ProfileGetDTO
 } from "opensilex-rest/index";
 
@@ -29,7 +29,7 @@ import {
 export default class GroupView extends Vue {
   $opensilex: any;
   $store: any;
-  service: GroupService;
+  service: GroupsService;
   profiles: Array<ProfileGetDTO> = [];
 
   get user() {
@@ -37,14 +37,14 @@ export default class GroupView extends Vue {
   }
 
   async created() {
-    this.service = this.$opensilex.getService("opensilex.GroupService");
+    this.service = this.$opensilex.getService("opensilex.GroupsService");
     console.debug("Loading profiles list...");
-    let profileService: ProfileService = await this.$opensilex.loadService(
-      "opensilex-rest.ProfileService"
+    let profilesService: ProfilesService = await this.$opensilex.loadService(
+      "opensilex-rest.ProfilesService"
     );
     let http: HttpResponse<OpenSilexResponse<
       Array<ProfileGetDTO>
-    >> = await profileService.getAllProfiles(
+    >> = await profilesService.getAllProfiles(
       this.$opensilex.getUser().getAuthorizationHeader()
     );
     this.profiles = http.response.result;

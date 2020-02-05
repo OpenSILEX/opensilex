@@ -26,6 +26,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -39,16 +40,34 @@ import org.opensilex.utils.ListWithPagination;
 
 
 
-@Api("Projects")
+@Api(ProjectAPI.CREDENTIAL_PROJECT_GROUP_ID)
 @Path("/core/project")
 public class ProjectAPI {
 
+    public static final String CREDENTIAL_PROJECT_GROUP_ID = "Projects";
+    public static final String CREDENTIAL_PROJECT_GROUP_LABEL_KEY = "credential-groups.projects";
+
+    public static final String CREDENTIAL_PROJECT_MODIFICATION_ID = "project-modification";
+    public static final String CREDENTIAL_PROJECT_MODIFICATION_LABEL_KEY = "credential.project.modification";
+
+    public static final String CREDENTIAL_PROJECT_DELETE_ID = "project-delete";
+    public static final String CREDENTIAL_PROJECT_DELETE_LABEL_KEY = "credential.project.delete";
+    
+    public static final String CREDENTIAL_PROJECT_READ_ID = "project-read";
+    public static final String CREDENTIAL_PROJECT_READ_LABEL_KEY = "credential.project.read";
+    
     @Inject
     private SPARQLService sparql;
 
     @POST
     @ApiOperation("Create a project")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_PROJECT_GROUP_ID,
+            groupLabelKey = CREDENTIAL_PROJECT_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_PROJECT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_PROJECT_MODIFICATION_LABEL_KEY
+    )    
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response create(
@@ -72,6 +91,12 @@ public class ProjectAPI {
     @Path("{uri}")
     @ApiOperation("Update a project")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_PROJECT_GROUP_ID,
+            groupLabelKey = CREDENTIAL_PROJECT_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_PROJECT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_PROJECT_MODIFICATION_LABEL_KEY
+    )        
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response update(
@@ -97,6 +122,12 @@ public class ProjectAPI {
     @Path("{uri}")
     @ApiOperation("Delete a project")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_PROJECT_GROUP_ID,
+            groupLabelKey = CREDENTIAL_PROJECT_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_PROJECT_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_PROJECT_DELETE_LABEL_KEY
+    )       
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response delete(
@@ -111,6 +142,12 @@ public class ProjectAPI {
     @Path("{uri}")
     @ApiOperation("Get a project")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_PROJECT_GROUP_ID,
+            groupLabelKey = CREDENTIAL_PROJECT_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_PROJECT_READ_ID,
+            credentialLabelKey = CREDENTIAL_PROJECT_READ_LABEL_KEY
+    )          
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response get(
@@ -136,6 +173,12 @@ public class ProjectAPI {
     @Path("search")
     @ApiOperation("Search entities corresponding to given criteria")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_PROJECT_GROUP_ID,
+            groupLabelKey = CREDENTIAL_PROJECT_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_PROJECT_READ_ID,
+            credentialLabelKey = CREDENTIAL_PROJECT_READ_LABEL_KEY
+    )              
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response search(

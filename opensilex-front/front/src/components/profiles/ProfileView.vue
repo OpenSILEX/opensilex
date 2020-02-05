@@ -20,7 +20,7 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import {
-  ProfileService,
+  ProfilesService,
   ProfileCreationDTO,
   ProfileUpdateDTO,
   ProfileGetDTO,
@@ -32,7 +32,7 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
 @Component
 export default class ProfileView extends Vue {
   $opensilex: any;
-  service: ProfileService;
+  service: ProfilesService;
   $store: any;
   credentialsGroups: Array<CredentialsGroupDTO> = [];
   credentialsMapping: any = {};
@@ -62,7 +62,7 @@ export default class ProfileView extends Vue {
         this.credentialsMapping[credential.id] = credential.label;
       }
     }
-    this.service = this.$opensilex.getService("opensilex.ProfileService");
+    this.service = this.$opensilex.getService("opensilex.ProfilesService");
   }
 
   showCreateForm() {

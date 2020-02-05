@@ -1,15 +1,16 @@
 package org.opensilex.core.experiment.dal;
 
-import org.eclipse.rdf4j.model.vocabulary.LIST;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.core.AbstractDaoTest;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.utils.ListWithPagination;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,10 +33,8 @@ public class ExperimentDAOTest extends AbstractDaoTest {
     protected static final String projectGraph = "project";
 
     @BeforeClass
-    public static void initialize() throws Exception {
-
-        AbstractDaoTest.initialize();
-
+    public static void setup() throws Exception {
+        AbstractDaoTest.setup();
         xpDao = new ExperimentDAO(service);
         projectDAO = new ProjectDAO(service);
     }
@@ -60,11 +59,12 @@ public class ExperimentDAOTest extends AbstractDaoTest {
         xpModel.setStartDate(LocalDate.now());
         xpModel.setEndDate(LocalDate.now().plusDays(200));
         xpModel.setCampaign(2019);
+        xpModel.setIsPublic(true);
 
         xpModel.setProjects(Collections.singletonList(projectModel));
         xpModel.setComment("a comment about an xp");
         xpModel.setKeywords(Arrays.asList("test", "project", "opensilex"));
-        xpModel.setObjectives("this project has for objective to pass all the TU !");
+        xpModel.setObjective("this project has for objective to pass all the TU !");
 
         return xpModel;
     }
@@ -98,22 +98,25 @@ public class ExperimentDAOTest extends AbstractDaoTest {
         assertEquals("the count must be equals to " + n + " since " + n + " experiment have been created", n, count);
     }
 
-    protected void testEquals(final ExperimentModel xp, final ExperimentModel otherXp) {
+    protected void testEquals(final ExperimentModel xp, final ExperimentModel daoXpModel) {
 
         final String errorMsg = "fetched object different than model";
 
-        assertEquals(errorMsg, otherXp.getUri(), xp.getUri());
-        assertEquals(errorMsg, otherXp.getLabel(), xp.getLabel());
-        assertEquals(errorMsg, otherXp.getStartDate(), xp.getStartDate());
-        assertEquals(errorMsg, otherXp.getEndDate(), xp.getEndDate());
-        assertEquals(errorMsg, otherXp.getCampaign(), xp.getCampaign());
-        assertEquals(errorMsg, otherXp.getObjectives(), xp.getObjectives());
-        assertEquals(errorMsg, otherXp.getComment(), xp.getComment());
-        assertEquals(errorMsg, otherXp.getKeywords(), xp.getKeywords());
-        assertEquals(errorMsg, otherXp.getProjects(), xp.getProjects());
-        assertEquals(errorMsg, otherXp.getScientificSupervisors(), xp.getScientificSupervisors());
-        assertEquals(errorMsg, otherXp.getTechnicalSupervisors(), xp.getTechnicalSupervisors());
-        assertEquals(errorMsg, otherXp.getGroups(), xp.getGroups());
+        assertEquals(errorMsg, daoXpModel.getUri(), xp.getUri());
+        assertEquals(errorMsg, daoXpModel.getLabel(), xp.getLabel());
+        assertEquals(errorMsg, daoXpModel.getStartDate(), xp.getStartDate());
+        assertEquals(errorMsg, daoXpModel.getEndDate(), xp.getEndDate());
+        assertEquals(errorMsg, daoXpModel.getCampaign(), xp.getCampaign());
+        assertEquals(errorMsg, daoXpModel.getObjective(), xp.getObjective());
+        assertEquals(errorMsg, daoXpModel.getComment(), xp.getComment());
+        assertEquals(errorMsg, daoXpModel.getKeywords(), xp.getKeywords());
+        assertEquals(errorMsg, daoXpModel.getProjects(), xp.getProjects());
+        assertEquals(errorMsg, daoXpModel.getScientificSupervisors(), xp.getScientificSupervisors());
+        assertEquals(errorMsg, daoXpModel.getTechnicalSupervisors(), xp.getTechnicalSupervisors());
+        assertEquals(errorMsg, daoXpModel.getGroups(), xp.getGroups());
+        assertEquals(errorMsg, daoXpModel.getVariables(), xp.getVariables());
+        assertEquals(errorMsg, daoXpModel.getSensors(), xp.getSensors());
+
     }
 
     @Test
@@ -155,13 +158,14 @@ public class ExperimentDAOTest extends AbstractDaoTest {
         xpDao.create(xpModel);
 
         ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();
-        searchDTO.setLabel(xpModel.getLabel());
-        searchDTO.setCampaign(xpModel.getCampaign());
-        searchDTO.setStartDate(xpModel.getStartDate());
+        searchDTO.setLabel(xpModel.getLabel())
+                .setCampaign(xpModel.getCampaign())
+                .setStartDate(xpModel.getStartDate().toString())
+                .setIsPublic(true);
 
         ListWithPagination<ExperimentModel> xpModelResults = xpDao.search(searchDTO, null, 0, 10);
         assertNotNull("one experiment should be fetched from db", xpModelResults);
-        assertEquals("one experiment should be fetched from db", xpModelResults.getList().size(), 1);
+        assertEquals("one experiment should be fetched from db", 1,xpModelResults.getList().size());
 
         testEquals(xpModel, xpModelResults.getList().get(0));
     }
@@ -237,7 +241,7 @@ public class ExperimentDAOTest extends AbstractDaoTest {
     }
 
     @Test
-    public void searchArchived() throws Exception {
+    public void searchEnded() throws Exception {
 
         // create an archived and an unarchived xp
         LocalDate currentDate = LocalDate.now();
@@ -280,7 +284,7 @@ public class ExperimentDAOTest extends AbstractDaoTest {
 
         xpModel.setLabel("new label");
         xpModel.setComment("new comments about model");
-        xpModel.setObjectives("new objective");
+        xpModel.setObjective("new objective");
         xpModel.setCampaign(2020);
         xpDao.update(xpModel);
 
@@ -289,6 +293,32 @@ public class ExperimentDAOTest extends AbstractDaoTest {
         assertNotNull("no experiment found from db", daoXpModel);
         testEquals(xpModel, daoXpModel);
     }
+
+    @Test(expected = SPARQLInvalidURIException.class)
+    public void updateWithUnknownURI() throws Exception {
+
+        ExperimentModel xpModel = getModel(0);
+        xpDao.create(xpModel);
+
+        xpModel.setLabel("updateWithUnknownUri");
+        xpModel.setUri(new URI(xpModel.getUri().toString()+"_suffix"));
+        xpDao.update(xpModel);
+    }
+
+//    @Test
+//    public void updateWithObjectList(){
+//
+//    }
+//
+//    @Test
+//    public void updateWithUriList(){
+//
+//    }
+//
+//    @Test
+//    public void updateWithDataList(){
+//
+//    }
 
     @Test
     public void delete() throws Exception {
@@ -306,10 +336,18 @@ public class ExperimentDAOTest extends AbstractDaoTest {
         assertFalse("the experiment URI must no longer exists", xpDao.sparql.uriExists(xpModel.getUri()));
     }
 
+    @Test(expected = SPARQLInvalidURIException.class)
+    public void deleteWithUnknownURI() throws Exception {
+
+        ExperimentModel xpModel = getModel(0);
+        xpDao.create(xpModel);
+        xpDao.delete(new URI(xpModel.getUri().toString()+"_suffix"));
+    }
+
     @Test
     public void deleteAll() throws Exception {
 
-        int n = 20;
+        int n = 10;
         List<ExperimentModel> xps = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             xps.add(getModel(i));
@@ -319,7 +357,7 @@ public class ExperimentDAOTest extends AbstractDaoTest {
         int oldCount = service.count(ExperimentModel.class, null);
         assertEquals(n + " experiments should have been created", oldCount, n);
 
-        xpDao.deleteAll(xps.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()));
+        xpDao.delete(xps.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()));
 
         int newCount = service.count(ExperimentModel.class, null);
         assertEquals("all experiments should have been deleted", 0, newCount);
@@ -328,5 +366,13 @@ public class ExperimentDAOTest extends AbstractDaoTest {
             assertFalse("the ExperimentModel " + xp.getUri() + " should have been deleted", xpDao.sparql.uriExists(xp.getUri()));
         }
     }
+
+//    @Test(expected = IllegalArgumentException.class)
+//    public void testCreateWithUnknownSpecies() throws Exception {
+//        ExperimentModel xp = getModel(0);
+//        xp.setSpecies(new URI("http://www.opensilex.org/id/species/zeamays"));
+//        xpDao.create(xp);
+//    }
+
 
 }

@@ -5,161 +5,23 @@
  */
 package org.opensilex.core.experiment.api;
 
-import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.experiment.dal.ExperimentDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.core.species.SpeciesModel;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.rest.group.dal.GroupModel;
 import org.opensilex.rest.user.dal.UserModel;
-import org.opensilex.rest.validation.Required;
-import org.opensilex.rest.validation.date.DateConstraint;
 
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Vincent MIGOT
  */
-public class ExperimentCreationDTO {
+public class ExperimentCreationDTO extends ExperimentDTO {
 
-    private URI uri;
-
-    private Integer campaign;
-
-    @Required
-    private String label;
-
-    private List<URI> projects = Collections.emptyList();
-
-    @Required
-    @ApiModelProperty(example = "2015-08-07")
-    @DateConstraint()
-    private String startDate;
-
-    @ApiModelProperty(example = "2015-08-07")
-    @DateConstraint()
-    private String endDate;
-
-    private List<URI> scientificSupervisors = Collections.emptyList();
-
-    private List<URI> technicalSupervisors = Collections.emptyList();
-
-    private List<URI> groups = Collections.emptyList();
-
-    List<URI> species = Collections.emptyList();
-
-    private String objectives;
-
-    private List<String> keywords;
-
-    private String comment;
-
-    public URI getUri() {
-        return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    public List<URI> getProjects() {
-        return projects;
-    }
-
-    public void setProjects(List<URI> projects) {
-        this.projects = projects;
-    }
-
-    public String getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(String startDate) {
-        this.startDate = startDate;
-    }
-
-    public String getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(String endDate) {
-        this.endDate = endDate;
-    }
-
-    public List<URI> getScientificSupervisors() {
-        return scientificSupervisors;
-    }
-
-    public void setScientificSupervisors(List<URI> scientificSupervisors) {
-        this.scientificSupervisors = scientificSupervisors;
-    }
-
-    public List<URI> getTechnicalSupervisors() {
-        return technicalSupervisors;
-    }
-
-    public void setTechnicalSupervisors(List<URI> technicalSupervisors) {
-        this.technicalSupervisors = technicalSupervisors;
-    }
-
-    public List<URI> getGroups() {
-        return groups;
-    }
-
-    public void setGroups(List<URI> groups) {
-        this.groups = groups;
-    }
-
-    public String getObjectives() {
-        return objectives;
-    }
-
-    public void setObjectives(String objectives) {
-        this.objectives = objectives;
-    }
-
-    public List<String> getKeywords() {
-        return keywords;
-    }
-
-    public void setKeywords(List<String> keywords) {
-        this.keywords = keywords;
-    }
-
-    public Integer getCampaign() {
-        return campaign;
-    }
-
-    public void setCampaign(Integer campaign) {
-        this.campaign = campaign;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public List<URI> getSpecies() {
-        return species;
-    }
-
-    public void setSpecies(List<URI> species) {
-        this.species = species;
-    }
 
     public ExperimentModel newModel() {
 
@@ -167,14 +29,19 @@ public class ExperimentCreationDTO {
         model.setUri(getUri());
         model.setLabel(getLabel());
         model.setStartDate(LocalDate.parse(startDate));
-
         if (endDate != null) {
             model.setEndDate(LocalDate.parse(endDate));
         }
-        model.setObjectives(getObjectives());
+
+        model.setObjective(getObjective());
         model.setComment(getComment());
         model.setKeywords(keywords);
         model.setCampaign(campaign);
+        model.setSpecies(species);
+        model.setInfrastructures(infrastructures);
+        model.setDevices(devices);
+        model.setIsPublic(isPublic);
+        model.setSensors(sensors);
 
         List<ProjectModel> projectList = new ArrayList<>(projects.size());
         projects.forEach((URI u) -> {
@@ -208,13 +75,14 @@ public class ExperimentCreationDTO {
         });
         model.setGroups(groupList);
 
-        List<SpeciesModel> speciesList = new ArrayList<>(species.size());
-        groups.forEach((URI u) -> {
-            SpeciesModel species = new SpeciesModel();
-            species.setUri(u);
-            speciesList.add(species);
+        List<VariableModel> varList = new ArrayList<>(variables.size());
+        variables.forEach((URI u) -> {
+            VariableModel var = new VariableModel();
+            var.setUri(u);
+            varList.add(var);
         });
-        model.setSpecies(speciesList);
+        model.setVariables(varList);
+
         return model;
     }
 

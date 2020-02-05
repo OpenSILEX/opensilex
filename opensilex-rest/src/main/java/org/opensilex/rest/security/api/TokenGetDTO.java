@@ -26,7 +26,11 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel
 public class TokenGetDTO {
 
-    private final String token;
+    protected String token;
+
+    public TokenGetDTO(){
+
+    }
 
     public TokenGetDTO(String token) {
         this.token = token;
@@ -37,4 +41,7 @@ public class TokenGetDTO {
         return token;
     }
 
+    public void setToken(String token) {
+        this.token = token;
+    }
 }

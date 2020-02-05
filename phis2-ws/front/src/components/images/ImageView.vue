@@ -122,8 +122,13 @@ export default class ImageView extends Vue {
   initScroll() {
     window.onscroll = () => {
       let bottomOfWindow =
-        window.innerHeight + window.scrollY >= document.body.offsetHeight;
-
+        window.innerHeight + window.scrollY >= document.body.offsetHeight-1;
+        console.log("window.innerHeight");
+      console.log(window.innerHeight);
+       console.log("window.scrollY");
+       console.log(window.scrollY);
+       console.log("document.body.offsetHeight");
+       console.log(document.body.offsetHeight);
       if (bottomOfWindow) {
         console.log("reload");
         if (this.canReload) {

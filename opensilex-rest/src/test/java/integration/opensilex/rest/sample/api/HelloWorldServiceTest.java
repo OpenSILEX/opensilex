@@ -5,20 +5,22 @@
 //******************************************************************************
 package integration.opensilex.rest.sample.api;
 
-import integration.opensilex.rest.RestApplicationTest;
+import integration.opensilex.rest.AbstractAPITest;
+import org.junit.Test;
+
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
 import static org.junit.Assert.assertEquals;
-import org.junit.Test;
 
 
 
 /**
  * Test class for HelloWorldServiceTest
  */
-public class HelloWorldServiceTest extends RestApplicationTest {
+public class HelloWorldServiceTest extends AbstractAPITest {
 
     @Test
     public void testHelloWorldResponse() {

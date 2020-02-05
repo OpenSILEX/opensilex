@@ -1,4 +1,4 @@
-package org.opensilex.core;
+package integration.opensilex.rest;
 
 
 import org.apache.jena.shared.PrefixMapping;

@@ -1,4 +1,4 @@
-package org.opensilex.core;
+package integration.opensilex.rest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,6 +29,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +85,9 @@ public abstract class AbstractAPITest extends JerseyTest {
     /**
      * @return
      */
-    protected abstract List<String> getGraphsToCleanNames();
+    protected List<String> getGraphsToCleanNames() {
+        return new ArrayList<>();
+    };
 
 
     protected static ObjectMapper mapper = new ObjectMapper();
@@ -107,7 +110,7 @@ public abstract class AbstractAPITest extends JerseyTest {
         JsonNode node = callResult.readEntity(JsonNode.class);
 
         // need to convert according a TypeReference, because the expected SingleObjectResponse is a generic object
-        SingleObjectResponse<TokenGetDTO> res = mapper.convertValue(node, new TypeReference<>() {
+        SingleObjectResponse<TokenGetDTO> res = mapper.convertValue(node, new TypeReference< SingleObjectResponse<TokenGetDTO> >() {
         });
 
         assertEquals(Response.Status.OK.getStatusCode(), callResult.getStatus());
@@ -208,7 +211,7 @@ public abstract class AbstractAPITest extends JerseyTest {
      */
     protected URI extractUriFromResponse(final Response response) throws URISyntaxException {
         JsonNode node = response.readEntity(JsonNode.class);
-        ObjectUriResponse postResponse = mapper.convertValue(node, new TypeReference<>() {});
+        ObjectUriResponse postResponse = mapper.convertValue(node, new TypeReference<ObjectUriResponse>() {});
         return new URI(postResponse.getResult());
     }
 
@@ -219,7 +222,7 @@ public abstract class AbstractAPITest extends JerseyTest {
      */
     protected List<URI> extractUriListFromResponse(final Response response) {
         JsonNode node = response.readEntity(JsonNode.class);
-        PaginatedListResponse<URI> listResponse = mapper.convertValue(node, new TypeReference<>() {});
+        PaginatedListResponse<URI> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<URI> >() {});
         return listResponse.getResult();
     }
 

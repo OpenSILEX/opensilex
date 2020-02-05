@@ -1,9 +1,8 @@
-package org.opensilex.core;
+package integration.opensilex.rest;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.service.SPARQLService;
 

@@ -181,12 +181,11 @@ public class UserAPI {
         }
     }
 
-    /**
-     * Return a list of users by their URI
-     *
-     * @see org.opensilex.rest.user.dal.UserDAO
-     * @param uri URI of the user
-     * @return Corresponding user
+    /***
+     * Return a list of users corresponding to the given URIs
+     * 
+     * @param uris list of users uri
+     * @return Corresponding list of users
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET

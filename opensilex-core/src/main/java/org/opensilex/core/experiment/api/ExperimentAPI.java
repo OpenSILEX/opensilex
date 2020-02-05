@@ -22,6 +22,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -29,16 +30,31 @@ import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 
-@Api("Experiments")
+@Api(ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_ID)
 @Path("/core/experiment")
 public class ExperimentAPI {
-    
+
+    public static final String CREDENTIAL_EXPERIMENT_GROUP_ID = "Experiments";
+    public static final String CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY = "credential-groups.experiments";
+
+    public static final String CREDENTIAL_EXPERIMENT_MODIFICATION_ID = "experiment-modification";
+    public static final String CREDENTIAL_EXPERIMENT_MODIFICATION_LABEL_KEY = "credential.experiment.modification";
+
+    public static final String CREDENTIAL_EXPERIMENT_READ_ID = "experiment-read";
+    public static final String CREDENTIAL_EXPERIMENT_READ_LABEL_KEY = "credential.experiment.read";
+
     @Inject
     private SPARQLService sparql;
-    
+
     @POST
     @ApiOperation("Create an experiment")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
+            groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_EXPERIMENT_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response create(
@@ -57,11 +73,17 @@ public class ExperimentAPI {
             ).getResponse();
         }
     }
-    
+
     @GET
     @Path("{uri}")
     @ApiOperation("Get an experiment")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
+            groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_EXPERIMENT_READ_ID,
+            credentialLabelKey = CREDENTIAL_EXPERIMENT_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response get(
@@ -69,7 +91,7 @@ public class ExperimentAPI {
     ) throws Exception {
         ExperimentDAO dao = new ExperimentDAO(sparql);
         ExperimentModel model = dao.get(uri);
-        
+
         if (model != null) {
             return new SingleObjectResponse<>(
                     ExperimentGetDTO.fromModel(model)

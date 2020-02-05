@@ -24,8 +24,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DELETE_ID;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DELETE_LABEL_KEY;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_GROUP_LABEL_KEY;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_ID;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_READ_ID;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_READ_LABEL_KEY;
 import org.opensilex.core.variable.dal.EntityDAO;
 import org.opensilex.core.variable.dal.EntityModel;
+import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -36,9 +45,7 @@ import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
-
-
-@Api("Variables")
+@Api(CREDENTIAL_VARIABLE_GROUP_ID)
 @Path("/core/variable/entity")
 public class EntityAPI {
 
@@ -48,6 +55,12 @@ public class EntityAPI {
     @POST
     @ApiOperation("Create an entity")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response create(
@@ -70,7 +83,13 @@ public class EntityAPI {
     @PUT
     @Path("{uri}")
     @ApiOperation("Update an entity")
-    @ApiProtected()
+    @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response update(
@@ -96,6 +115,12 @@ public class EntityAPI {
     @Path("{uri}")
     @ApiOperation("Delete an entity")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response delete(
@@ -110,6 +135,12 @@ public class EntityAPI {
     @Path("{uri}")
     @ApiOperation("Get an entity")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_READ_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response get(
@@ -135,6 +166,12 @@ public class EntityAPI {
     @Path("search")
     @ApiOperation("Search entities corresponding to given criteria")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_READ_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response search(
@@ -148,8 +185,8 @@ public class EntityAPI {
         ListWithPagination<EntityModel> resultList = dao.search(
                 namePattern,
                 commentPattern,
-                orderByList, 
-                page, 
+                orderByList,
+                page,
                 pageSize
         );
         ListWithPagination<EntityGetDTO> resultDTOList = resultList.convert(

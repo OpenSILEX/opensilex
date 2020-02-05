@@ -23,7 +23,7 @@
     >
       <template v-slot:cell(credentials)="data">
         <ul>
-          <li v-for="credential in data.item.credentials" v-bind:key="credential">{{credentialsMapping[credential]}}</li>
+          <li v-for="credential in data.item.credentials" v-bind:key="credential">{{$t(credentialsMapping[credential])}}</li>
         </ul>
       </template>
 
@@ -67,7 +67,7 @@
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { ProfileService, ProfileGetDTO } from "opensilex-rest/index";
+import { ProfilesService, ProfileGetDTO } from "opensilex-rest/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
 
 @Component
@@ -141,8 +141,8 @@ export default class ProfileList extends Vue {
   }
 
   loadData() {
-    let service: ProfileService = this.$opensilex.getService(
-      "opensilex.ProfileService"
+    let service: ProfilesService = this.$opensilex.getService(
+      "opensilex.ProfilesService"
     );
 
     let orderBy = [];

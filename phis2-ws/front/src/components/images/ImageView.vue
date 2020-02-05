@@ -25,6 +25,7 @@
           :per-page="pageSize"
           @change="loadDataWithDelay"
         ></b-pagination>
+        
       </div>
       <div v-else>No images to dispay</div>
     </b-collapse>
@@ -38,6 +39,7 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import { DataService } from "../../lib/api/data.service";
 import { FileDescriptionDTO } from "../../lib/model/fileDescriptionDTO";
 import VueRouter from "vue-router";
+import { Image } from "./image";
 
 @Component
 export default class ImageView extends Vue {
@@ -114,70 +116,96 @@ export default class ImageView extends Vue {
       "opensilex.DataService"
     );
 
-    if (this.searchImagesFields.rdfType !== undefined) {
-      console.log(this.searchImagesFields.concernedItemsValue);
-      if (
-        (this.searchImagesFields.objectType !== null ||
-          this.searchImagesFields.experiment !== null) &&
-        this.searchImagesFields.concernedItemsValue.length === 0
-      ) {
-        this.images = [];
-        this.totalImages = 0;
-        this.showImage();
-      } else {
-        dataService
-          .getDataFileDescriptionsBySearch(
-            this.user.getAuthorizationHeader(),
-            this.searchImagesFields.rdfType,
-            this.searchImagesFields.startDate,
-            this.searchImagesFields.endDate,
-            this.searchImagesFields.provenance,
-            this.searchImagesFields.concernedItemsValue,
-            this.searchImagesFields.jsonValueFilter,
-            this.searchImagesFields.orderByDate,
-            this.pageSize,
-            this.currentPage - 1
-          )
-          .then(
-            (
-              http: HttpResponse<OpenSilexResponse<Array<FileDescriptionDTO>>>
-            ) => {
-              this.totalImages = http.response.metadata.pagination.totalCount;
-              this.pageSize = http.response.metadata.pagination.pageSize;
-              const res = http.response.result as any;
-              const data = res.data;
-              console.log("data");
-              console.log(data);
+    if (
+      (this.searchImagesFields.objectType !== null ||
+        this.searchImagesFields.experiment !== null) &&
+      this.searchImagesFields.concernedItemsValue.length === 0
+    ) {
+      this.images = [];
+      this.totalImages = 0;
+      this.showImage();
+    } else {
+      dataService
+        .getDataFileDescriptionsBySearch(
+          this.user.getAuthorizationHeader(),
+          this.searchImagesFields.rdfType,
+          this.searchImagesFields.startDate,
+          this.searchImagesFields.endDate,
+          this.searchImagesFields.provenance,
+          this.searchImagesFields.concernedItemsValue,
+          this.searchImagesFields.jsonValueFilter,
+          this.searchImagesFields.orderByDate,
+          this.pageSize,
+          this.currentPage - 1
+        )
+        .then(
+          (
+            http: HttpResponse<OpenSilexResponse<Array<FileDescriptionDTO>>>
+          ) => {
+            this.totalImages = http.response.metadata.pagination.totalCount;
+            this.pageSize = http.response.metadata.pagination.pageSize;
+            const res = http.response.result as any;
+            const data = res.data as Array<FileDescriptionDTO>;
+            console.log("data");
+            console.log(data);
 
-              this.images = data; //before filter
-              // this.imagesFilter(data);
-              this.showImage();
-              this.$router
-                .push({
-                  path: this.$route.fullPath,
-                  query: {
-                    currentPage: "" + this.currentPage
-                  }
-                })
-                .catch(function() {});
-            }
-          )
-          .catch(error => {
-            this.totalImages = 0;
-            this.images = [];
-            console.log(error);
-            this.showImage();
-          });
-      }
+            //this.images = data; //before filter
+            this.imagesFilter(data);
+
+            this.$router
+              .push({
+                path: this.$route.fullPath,
+                query: {
+                  currentPage: "" + this.currentPage
+                }
+              })
+              .catch(function() {});
+          }
+        )
+        .catch(error => {
+          this.totalImages = 0;
+          this.images = [];
+          console.log(error);
+          this.showImage();
+        });
     }
   }
 
-  imagesFilter(data) {
-    const filteredData = [];
-    data.forEach(element => {
+  imagesFilter(data: Array<FileDescriptionDTO>) {
+    //pour chaque concerneditem une nouvelle image ..
+    const images = [];
+    if (this.searchImagesFields.objectType !== null) {
+      data.forEach(element => {
+        element.concernedItems.forEach(concernedItem => {
+          if (this.searchImagesFields.objectType === concernedItem.typeURI) {
+            const image = <Image>{};
+            image.objectType = concernedItem.typeURI;
+            image.uri =this.$opensilex.getBaseAPI()+"/data/file/"+encodeURIComponent(element.uri);
+            image.type = element.rdfType;
+            image.objectUri = concernedItem.uri;
+            image.date = element.date;
+            image.provenanceUri = element.provenanceUri;
+            images.push(image);
+          }
+        });
+      });
+    } else {
+      data.forEach(element => {
+        element.concernedItems.forEach(concernedItem => {
+          const image = <Image>{};
+          image.objectType = concernedItem.typeURI;
+          image.uri =this.$opensilex.getBaseAPI() +"/data/file/" +encodeURIComponent(element.uri);
+          image.type = element.rdfType;
+          image.objectUri = concernedItem.uri;
+          image.date = element.date;
+          image.provenanceUri = element.provenanceUri;
+          images.push(image);
+        });
+      });
+    }
 
-    });
-    this.images = filteredData;
+    this.images = images;
+    this.showImage();
   }
 
   format(date) {

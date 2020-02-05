@@ -16,9 +16,11 @@
       <b-carousel-slide
         v-for="(image, index) in images"
         v-bind:key="index"
-        :img-src="imageCall(image)"
+        :img-src="image.uri"
       >
-        <h1>Hello world!</h1>
+        <p>{{getObjectType(image)}}</p> 
+        <p>{{image.objectAlias}}</p>
+        <p>{{formatedDate(image.date)}}</p>
       </b-carousel-slide>
     </b-carousel>
   </b-modal>
@@ -28,28 +30,41 @@
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import { EventBus } from "./../event-bus";
-
+import { Image } from "./../image";
 @Component
 export default class ImageGrid extends Vue {
   $opensilex: any;
   @Prop()
-  images: any;
-  slide=0;
+  images: Array<Image>;
+  slide = 0;
   show: boolean = false;
+  objectType: string = "";
+  objectUri: string = "";
+  formatedDateValue: string = "";
 
   created() {
     EventBus.$on("imageIsClicked", index => {
-      this.slide=index;
+      this.slide = index;
       this.show = true;
     });
   }
 
-  imageCall(image) {
-
-    return (
-      this.$opensilex.getBaseAPI()+"/data/file/"+encodeURIComponent(image.uri)
-    );
+  getObjectType(image) {
+    return image.objectType.split("#")[1];
   }
+
+   formatedDate(date) {
+    const newDate = new Date(date);
+    const options = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    };
+    return newDate.toLocaleDateString("fr-FR", options);
+  }
+  
 }
 </script>
 

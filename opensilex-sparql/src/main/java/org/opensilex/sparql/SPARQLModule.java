@@ -56,7 +56,7 @@ public class SPARQLModule extends OpenSilexModule {
                 sparql.addPrefix(basePrefix + mapper.getResourceGraphPrefix(), resourceNamespace + "#");
             }
         });
-        URIDeserializer.setPrefixes(sparql.getPrefixes());
+        URIDeserializer.setPrefixes(sparql.getPrefixMapping());
 
         SPARQLConfig cfg = OpenSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         sparql.addPrefix(cfg.baseURIAlias(), cfg.baseURI());

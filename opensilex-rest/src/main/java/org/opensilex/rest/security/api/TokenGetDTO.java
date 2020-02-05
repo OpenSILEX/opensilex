@@ -19,14 +19,18 @@ import io.swagger.annotations.ApiModelProperty;
  * }
  * </pre>
  *
- * @see org.opensilex.rest.security.api.SecurityAPI#authenticate(org.opensilex.rest.security.api.AuthenticationDTO) 
- * @see org.opensilex.rest.security.api.SecurityAPI#renewToken(java.lang.String, javax.ws.rs.core.SecurityContext) 
+ * @see org.opensilex.rest.security.api.SecurityAPI#authenticate(org.opensilex.rest.security.api.AuthenticationDTO)
+ * @see org.opensilex.rest.security.api.SecurityAPI#renewToken(java.lang.String, javax.ws.rs.core.SecurityContext)
  * @author Vincent Migot
  */
 @ApiModel
 public class TokenGetDTO {
 
-    private final String token;
+    protected String token;
+
+    public TokenGetDTO(){
+
+    }
 
     public TokenGetDTO(String token) {
         this.token = token;
@@ -37,4 +41,7 @@ public class TokenGetDTO {
         return token;
     }
 
+    public void setToken(String token) {
+        this.token = token;
+    }
 }

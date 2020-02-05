@@ -5,17 +5,25 @@
  */
 package org.opensilex.core.experiment.dal;
 
-import java.time.LocalDate;
-import java.util.List;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.rest.group.dal.GroupModel;
 import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
+
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * @author Vincent MIGOT
+ */
 
 @SPARQLResource(
         ontology = Oeso.class,
@@ -30,70 +38,137 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             property = "label",
             required = true
     )
-    String alias;
-    public static final String ALIAS_FIELD = "alias";
+    String label;
+    public static final String LABEL_FIELD = "label";
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = Oeso.HAS_ENTITY_RELATION
+            property = "hasProject"
     )
     List<ProjectModel> projects;
+    public static final String PROJECT_URI_SPARQL_VAR = "project";
+
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasStartDate",
+            property = "startDate",
             required = true
     )
     LocalDate startDate;
+    public static final String START_DATE_SPARQL_VAR = "startDate";
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasEndDate"
+            property = "endDate"
     )
     LocalDate endDate;
+    public static final String END_DATE_SPARQL_VAR = "endDate";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasScientificSupervisor"
     )
-    List<UserModel> scientificSupervisors;
+    List<UserModel> scientificSupervisors = Collections.emptyList();
+    public static final String SCIENTIFIC_SUPERVISOR_SPARQL_VAR = "scientificSupervisor";
+
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasTechnicalSupervisor"
     )
-    List<UserModel> technicalSupervisors;
+    List<UserModel> technicalSupervisors = Collections.emptyList();
+    public static final String TECHNICAL_SUPERVISOR_SPARQL_VAR = "technicalSupervisor";
+
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasGroup"
     )
-    List<GroupModel> groups;
+    List<GroupModel> groups = Collections.emptyList();
+    public static final String GROUP_SPARQL_VAR = "group";
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasCampaign"
+    )
+    Integer campaign;
+    public static final String CAMPAIGN_SPARQL_FIELD = "campaign";
+
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasObjective"
     )
-    String objectives;
+    String objective;
+    public static final String OBJECTIVE_SPARQL_FIELD = "objective";
+
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasKeyword"
     )
-    List<String> keywords;
+    List<String> keywords = Collections.emptyList();
+    public static final String KEYWORD_SPARQL_FIELD = "keyword";
 
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "comment"
     )
     String comment;
+    public static final String COMMENT_SPARQL_FIELD = "comment";
 
-    public String getAlias() {
-        return alias;
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasSpecies"
+    )
+    URI species;
+    public static final String SPECIES_SPARQL_FIELD = "species";
+
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasInfrastructure"
+    )
+    List<URI> infrastructures = Collections.emptyList();
+    public static final String INFRASTRUCTURE_SPARQL_VAR = "infrastructure";
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasDispositive"
+    )
+    List<URI> devices = Collections.emptyList();
+    public static final String DISPOSITIVES_SPARQL_VAR = "dispositives";
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "isPublic"
+    )
+    protected Boolean isPublic;
+    public static final String IS_PUBLIC_SPARQL_VAR = "isPublic";
+
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "measures"
+    )
+    List<VariableModel> variables = Collections.emptyList();
+    public static final String VARIABLES_SPARQL_VAR = "variables";
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "participatesIn",
+            inverse = true
+    )
+    List<URI> sensors = Collections.emptyList();
+    public static final String SENSORS_SPARQL_VAR = "sensors";
+
+
+    public String getLabel() {
+        return label;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public List<ProjectModel> getProjects() {
@@ -144,12 +219,12 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
         this.groups = groups;
     }
 
-    public String getObjectives() {
-        return objectives;
+    public String getObjective() {
+        return objective;
     }
 
-    public void setObjectives(String objectives) {
-        this.objectives = objectives;
+    public void setObjective(String objective) {
+        this.objective = objective;
     }
 
     public List<String> getKeywords() {
@@ -168,11 +243,66 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
         this.comment = comment;
     }
 
+    public Integer getCampaign() {
+        return campaign;
+    }
+
+    public void setCampaign(Integer campaign) {
+        this.campaign = campaign;
+    }
+
+    public URI getSpecies() {
+        return species;
+    }
+
+    public void setSpecies(URI species) {
+        this.species = species;
+    }
+
+    public List<URI> getInfrastructures() {
+        return infrastructures;
+    }
+
+    public void setInfrastructures(List<URI> infrastructures) {
+        this.infrastructures = infrastructures;
+    }
+
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
+    public List<VariableModel> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(List<VariableModel> variables) {
+        this.variables = variables;
+    }
+
+    public List<URI> getSensors() {
+        return sensors;
+    }
+
+    public void setSensors(List<URI> sensors) {
+        this.sensors = sensors;
+    }
+
+    public List<URI> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(List<URI> devices) {
+        this.devices = devices;
+    }
+
     @Override
     public String[] getUriSegments(ExperimentModel instance) {
         return new String[]{
-            instance.getAlias()
+                instance.getLabel()
         };
     }
-
 }

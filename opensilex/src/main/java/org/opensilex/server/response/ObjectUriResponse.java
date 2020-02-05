@@ -28,4 +28,11 @@ public class ObjectUriResponse extends JsonResponse<String> {
         this.result = uri.toString();
     }
 
+    public ObjectUriResponse(URI uri){
+       this(Status.OK,uri);
+    }
+
+    public ObjectUriResponse() {
+        super(Status.OK);
+    }
 }

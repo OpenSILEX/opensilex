@@ -1,4 +1,4 @@
-<template>
+<template >
   <div>
     <b-button
       :class="showSearchComponent ? null : 'collapsed'"
@@ -17,15 +17,20 @@
     <b-collapse id="collapse-2" v-model="showImageComponent" class="mt-2">
       <div v-if="totalImages>0">
         <p>Total Image {{totalImages}}</p>
+        <p>showed Image {{showedImages}}</p>
         <phis2ws-ImageList :images="images"></phis2ws-ImageList>
 
-        <b-pagination
+        <div v-if="spinner" class="d-flex align-items-center">
+          <strong>Loading...</strong>
+          <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+        </div>
+
+        <!-- <b-pagination
           v-model="currentPage"
           :total-rows="totalImages"
           :per-page="pageSize"
           @change="loadDataWithDelay"
-        ></b-pagination>
-        
+        ></b-pagination>-->
       </div>
       <div v-else>No images to dispay</div>
     </b-collapse>
@@ -49,14 +54,18 @@ export default class ImageView extends Vue {
   get user() {
     return this.$store.state.user;
   }
-
+  dataService: DataService = this.$opensilex.getService(
+    "opensilex.DataService"
+  );
   showSearchComponent: boolean = true;
   showImageComponent: boolean = false;
   images = [];
-
+  spinner: boolean = false;
+  canReload: boolean = true;
   currentPage: number = 1;
   pageSize = 20;
-  totalImages = 0;
+  totalImages: number = 0;
+  showedImages: number = 0;
   private searchImagesFields: any = {
     rdfType: undefined,
     startDate: undefined,
@@ -77,6 +86,7 @@ export default class ImageView extends Vue {
     if (query.currentPage) {
       this.currentPage = parseInt(query.currentPage);
     }
+    this.initScroll();
   }
 
   showImage() {
@@ -98,7 +108,6 @@ export default class ImageView extends Vue {
           this.searchImagesFields.concernedItemsValue.push(element);
         });
       }
-
       this.loadData();
     }
   }
@@ -110,11 +119,31 @@ export default class ImageView extends Vue {
     }, 0);
   }
 
+  initScroll() {
+    window.onscroll = () => {
+      let bottomOfWindow =
+        window.innerHeight + window.scrollY >= document.body.offsetHeight;
+
+      if (bottomOfWindow) {
+        console.log("reload");
+        if (this.canReload) {
+          this.reload();
+        }
+      }
+    };
+  }
+
+  reload() {
+    this.spinner = true;
+    this.currentPage++;
+    this.getData();
+  }
+
   loadData() {
     this.images = [];
-    let dataService: DataService = this.$opensilex.getService(
-      "opensilex.DataService"
-    );
+    this.totalImages = 0;
+    this.showedImages = 0;
+    this.canReload = true;
 
     if (
       (this.searchImagesFields.objectType !== null ||
@@ -123,52 +152,54 @@ export default class ImageView extends Vue {
     ) {
       this.images = [];
       this.totalImages = 0;
+      this.showedImages = 0;
       this.showImage();
     } else {
-      dataService
-        .getDataFileDescriptionsBySearch(
-          this.user.getAuthorizationHeader(),
-          this.searchImagesFields.rdfType,
-          this.searchImagesFields.startDate,
-          this.searchImagesFields.endDate,
-          this.searchImagesFields.provenance,
-          this.searchImagesFields.concernedItemsValue,
-          this.searchImagesFields.jsonValueFilter,
-          this.searchImagesFields.orderByDate,
-          this.pageSize,
-          this.currentPage - 1
-        )
-        .then(
-          (
-            http: HttpResponse<OpenSilexResponse<Array<FileDescriptionDTO>>>
-          ) => {
-            this.totalImages = http.response.metadata.pagination.totalCount;
-            this.pageSize = http.response.metadata.pagination.pageSize;
-            const res = http.response.result as any;
-            const data = res.data as Array<FileDescriptionDTO>;
-            console.log("data");
-            console.log(data);
-
-            //this.images = data; //before filter
-            this.imagesFilter(data);
-
-            this.$router
-              .push({
-                path: this.$route.fullPath,
-                query: {
-                  currentPage: "" + this.currentPage
-                }
-              })
-              .catch(function() {});
-          }
-        )
-        .catch(error => {
-          this.totalImages = 0;
-          this.images = [];
-          console.log(error);
-          this.showImage();
-        });
+      this.getData();
     }
+  }
+
+  getData() {
+    this.dataService
+      .getDataFileDescriptionsBySearch(
+        this.user.getAuthorizationHeader(),
+        this.searchImagesFields.rdfType,
+        this.searchImagesFields.startDate,
+        this.searchImagesFields.endDate,
+        this.searchImagesFields.provenance,
+        this.searchImagesFields.concernedItemsValue,
+        this.searchImagesFields.jsonValueFilter,
+        this.searchImagesFields.orderByDate,
+        this.pageSize,
+        this.currentPage - 1
+      )
+      .then(
+        (http: HttpResponse<OpenSilexResponse<Array<FileDescriptionDTO>>>) => {
+          this.totalImages = http.response.metadata.pagination.totalCount;
+          const res = http.response.result as any;
+          const data = res.data as Array<FileDescriptionDTO>;
+          console.log("data");
+          console.log(data);
+
+          //this.images = data; //before filter
+          this.imagesFilter(data);
+
+          this.$router
+            .push({
+              path: this.$route.fullPath,
+              query: {
+                currentPage: "" + this.currentPage
+              }
+            })
+            .catch(function() {});
+        }
+      )
+      .catch(error => {
+        console.log(error);
+        this.canReload = false;
+        this.spinner = false;
+        this.showImage();
+      });
   }
 
   imagesFilter(data: Array<FileDescriptionDTO>) {
@@ -177,15 +208,20 @@ export default class ImageView extends Vue {
     if (this.searchImagesFields.objectType !== null) {
       data.forEach(element => {
         element.concernedItems.forEach(concernedItem => {
+          console.log(this.searchImagesFields.objectType.split("#")[1]);
+          console.log(concernedItem.typeURI.split("#")[1]);
           if (this.searchImagesFields.objectType === concernedItem.typeURI) {
             const image = <Image>{};
             image.objectType = concernedItem.typeURI;
-            image.uri =this.$opensilex.getBaseAPI()+"/data/file/"+encodeURIComponent(element.uri);
+            image.uri =
+              this.$opensilex.getBaseAPI() +
+              "/data/file/" +
+              encodeURIComponent(element.uri);
             image.type = element.rdfType;
             image.objectUri = concernedItem.uri;
             image.date = element.date;
             image.provenanceUri = element.provenanceUri;
-            images.push(image);
+            this.images.push(image);
           }
         });
       });
@@ -194,17 +230,21 @@ export default class ImageView extends Vue {
         element.concernedItems.forEach(concernedItem => {
           const image = <Image>{};
           image.objectType = concernedItem.typeURI;
-          image.uri =this.$opensilex.getBaseAPI() +"/data/file/" +encodeURIComponent(element.uri);
+          image.uri =
+            this.$opensilex.getBaseAPI() +
+            "/data/file/" +
+            encodeURIComponent(element.uri);
           image.type = element.rdfType;
           image.objectUri = concernedItem.uri;
           image.date = element.date;
           image.provenanceUri = element.provenanceUri;
-          images.push(image);
+          this.images.push(image);
         });
       });
     }
-
-    this.images = images;
+    this.showedImages = this.images.length;
+    this.spinner = false;
+    //mettre une condition;
     this.showImage();
   }
 

@@ -1,31 +1,27 @@
-package integration.opensilex.rest;
+package org.opensilex.core;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.rdf4j.repository.Repository;
-import org.eclipse.rdf4j.repository.sail.SailRepository;
-import org.eclipse.rdf4j.sail.memory.MemoryStore;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.test.JerseyTest;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.mockito.Mockito;
 import org.opensilex.OpenSilex;
+import org.opensilex.rest.RestApplication;
 import org.opensilex.rest.authentication.ApiProtected;
-import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.security.api.AuthenticationDTO;
 import org.opensilex.rest.security.api.TokenGetDTO;
-import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.service.ServiceManager;
-import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
-import org.opensilex.sparql.rdf4j.RDF4JConnection;
-import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
 
-import javax.mail.internet.InternetAddress;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
@@ -41,60 +37,51 @@ import static junit.framework.TestCase.assertEquals;
 
 /**
  * @author Renaud COLIN
+ * Abstract class used for DAO testing
  */
-public abstract class AbstractServiceTest extends RestApplicationTest {
+public abstract class AbstractAPITest extends JerseyTest {
 
-    protected static SPARQLService service;
+    protected static OpenSilexTestContext context;
 
     @Override
     protected ResourceConfig configure() {
-
-        ResourceConfig config = super.configure();
         try {
-
-            // create a new SPARQLService based on a in-memory Rdf4j connection
-            Repository repository = new SailRepository(new MemoryStore());
-            service = new SPARQLService(new RDF4JConnection(repository.getConnection()));
-            service.startup();
-
-            // register the new SPARQLService
-            OpenSilex openSilex = OpenSilex.getInstance();
-            ServiceManager serviceManager = openSilex.getServiceManager();
-            serviceManager.register(SPARQLService.class, "sparql", service);
-
-            // add the admin user
-            AuthenticationService authentication = openSilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
-            UserDAO userDAO = new UserDAO(service, authentication);
-            InternetAddress email = new InternetAddress("admin@opensilex.org");
-            userDAO.create(null, email, "Admin", "OpenSilex", true, "admin");
-
+            // init the OpenSilex instance to use during the API test(s)
+            context = new OpenSilexTestContext();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+          throw new RuntimeException(e);
         }
-        return config;
+
+        ResourceConfig resourceConfig = new RestApplication(OpenSilex.getInstance());
+
+        // create a mock for HttpServletRequest which is not available with grizzly
+        final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        resourceConfig.register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(request).to(HttpServletRequest.class);
+            }
+        });
+
+        resourceConfig.register(JacksonFeature.class);
+        return resourceConfig;
     }
 
     @AfterClass
     public static void end() throws Exception {
-        service.shutdown();
+        context.shutdown();
     }
 
     /**
-     *
      * @throws URISyntaxException
      * @throws SPARQLQueryException
      */
     @After
     public void clearGraph() throws URISyntaxException, SPARQLQueryException {
-
-        for (String graphName : getGraphsToCleanNames()) {
-            service.clearGraph(SPARQLModule.getPlatformDomainGraphURI(graphName));
-        }
-        service.clearGraph(SPARQLModule.getPlatformURI());
+        context.clearGraphs(getGraphsToCleanNames());
     }
 
     /**
-     *
      * @return
      */
     protected abstract List<String> getGraphsToCleanNames();
@@ -129,26 +116,67 @@ public abstract class AbstractServiceTest extends RestApplicationTest {
     }
 
 
+    /**
+     *
+     * @param target
+     * @param entity
+     * @return
+     */
     protected Response getJsonPostResponse(WebTarget target, Object entity) {
         return appendToken(target).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
 
+    /**
+     *
+     * @param target
+     * @param entity
+     * @return
+     */
     protected Response getJsonPutResponse(WebTarget target, Object entity) {
         return appendToken(target).put(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
 
+    /**
+     *
+     * @param target
+     * @param uri
+     * @return
+     */
     protected Response getJsonGetByUriResponse(WebTarget target, String uri) {
         return appendToken(target.resolveTemplate("uri", uri)).get();
     }
 
+    /**
+     *
+     * @param target
+     * @param uri
+     * @return
+     */
     protected Response getDeleteByUriResponse(WebTarget target, String uri) {
         return appendToken(target.resolveTemplate("uri", uri)).delete();
     }
 
+    /**
+     *
+     * @param target
+     * @param page
+     * @param pageSize
+     * @param params
+     * @return
+     */
     protected WebTarget appendSearchParams(WebTarget target, int page, int pageSize, Map<String, Object> params) {
         return appendSearchParams(target, page, pageSize, Collections.emptyList(), params);
     }
 
+    /**
+     *
+     * @param target
+     * @param page
+     * @param pageSize
+     * @param orderByList
+     * @param params
+     * @return
+     */
     protected WebTarget appendSearchParams(WebTarget target, int page, int pageSize, List<OrderBy> orderByList, Map<String, Object> params) {
 
         target.queryParam("page", page)
@@ -161,23 +189,37 @@ public abstract class AbstractServiceTest extends RestApplicationTest {
         return target;
     }
 
+    /**
+     *
+     * @param target
+     * @return
+     */
     protected Invocation.Builder appendToken(WebTarget target) {
         TokenGetDTO token = getToken();
         return target.request(MediaType.APPLICATION_JSON_TYPE)
                 .header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + token.getToken());
     }
 
+    /**
+     *
+     * @param response
+     * @return
+     * @throws URISyntaxException
+     */
     protected URI extractUriFromResponse(final Response response) throws URISyntaxException {
         JsonNode node = response.readEntity(JsonNode.class);
-        ObjectUriResponse postResponse = mapper.convertValue(node, new TypeReference<>() {
-        });
+        ObjectUriResponse postResponse = mapper.convertValue(node, new TypeReference<>() {});
         return new URI(postResponse.getResult());
     }
 
+    /**
+     *
+     * @param response
+     * @return
+     */
     protected List<URI> extractUriListFromResponse(final Response response) {
         JsonNode node = response.readEntity(JsonNode.class);
-        PaginatedListResponse<URI> listResponse = mapper.convertValue(node, new TypeReference<>() {
-        });
+        PaginatedListResponse<URI> listResponse = mapper.convertValue(node, new TypeReference<>() {});
         return listResponse.getResult();
     }
 

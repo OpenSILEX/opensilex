@@ -379,7 +379,7 @@ public class ConfigProxyHandler implements InvocationHandler {
         try {
             ServiceConfig defaultConfig = Service.getDefaultConfig(serviceClass);
             String serviceName = method.getName();
-            ServiceConfig overrideConfig = getInterface(ServiceConfig.class, serviceName, value);
+            ServiceConfig overrideConfig = getInterface(ServiceConfig.class, "", value);
 
             T instance;
             Class<T> implementation = (Class<T>) defaultConfig.implementation();

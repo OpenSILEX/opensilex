@@ -6,9 +6,13 @@
 //******************************************************************************
 package org.opensilex.rest.filters;
 
+import java.net.URI;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import org.opensilex.server.response.ErrorResponse;
@@ -26,6 +30,9 @@ public class ExceptionJsonMapper implements ExceptionMapper<Throwable> {
 
     final private static Logger LOGGER = LoggerFactory.getLogger(ExceptionJsonMapper.class);
 
+    @Context
+    UriInfo uriInfo;
+         
     /**
      * Converts the exception to JSON
      *
@@ -46,8 +53,7 @@ public class ExceptionJsonMapper implements ExceptionMapper<Throwable> {
         } else {
             response = new ErrorResponse(exception).getResponse();
         }
-
-        LOGGER.error("Exception returned to user service call", exception);
+        LOGGER.error("Exception returned to user service call: " + uriInfo.getAbsolutePath().toString(), exception);
         return response;
     }
 

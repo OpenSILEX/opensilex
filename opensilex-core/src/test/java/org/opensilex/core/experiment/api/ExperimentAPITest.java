@@ -1,7 +1,8 @@
 package org.opensilex.core.experiment.api;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import integration.opensilex.rest.AbstractAPITest;
+import integration.opensilex.AbstractIntegrationTest;
 import org.junit.Test;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -19,7 +20,7 @@ import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
-public class ExperimentAPITest extends AbstractAPITest {
+public class ExperimentAPITest extends AbstractIntegrationTest {
 
     protected String path = "/core/experiment";
     protected String uriPath = path + "/{uri}";
@@ -85,7 +86,8 @@ public class ExperimentAPITest extends AbstractAPITest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<ExperimentGetDTO> getResponse = mapper.convertValue(node, SingleObjectResponse.class);
+        SingleObjectResponse<ExperimentGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ExperimentGetDTO>>() {
+        });
         ExperimentGetDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
@@ -123,7 +125,8 @@ public class ExperimentAPITest extends AbstractAPITest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<ExperimentGetDTO> getResponse = mapper.convertValue(node, SingleObjectResponse.class);
+        SingleObjectResponse<ExperimentGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ExperimentGetDTO>>() {
+        });
         ExperimentGetDTO xpGetDto = getResponse.getResult();
         assertNotNull(xpGetDto);
     }

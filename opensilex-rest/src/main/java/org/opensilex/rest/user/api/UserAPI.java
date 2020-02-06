@@ -64,7 +64,7 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author Vincent Migot
  */
-@Api("User")
+@Api(UserAPI.CREDENTIAL_GROUP_USER_ID)
 @Path("/user")
 public class UserAPI {
 
@@ -166,7 +166,7 @@ public class UserAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("{uri}")
+    @Path("get/{uri}")
     @ApiOperation("Get a user by it's URI")
     @ApiProtected
     @ApiCredential(
@@ -214,7 +214,7 @@ public class UserAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("get-by-uri")
+    @Path("get-list-by-uris")
     @ApiOperation("Get a list of users by their URIs")
     @ApiProtected
     @ApiCredential(
@@ -355,7 +355,7 @@ public class UserAPI {
     }
 
     @DELETE
-    @Path("{uri}")
+    @Path("delete/{uri}")
     @ApiOperation("Delete a user")
     @ApiProtected
     @ApiCredential(

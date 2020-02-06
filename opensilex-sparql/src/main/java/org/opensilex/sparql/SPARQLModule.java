@@ -8,12 +8,14 @@ package org.opensilex.sparql;
 import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import org.apache.jena.rdf.model.Resource;
 import org.opensilex.OpenSilex;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.module.ModuleNotFoundException;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,8 +86,15 @@ public class SPARQLModule extends OpenSilexModule {
         }
     }
 
-    public static URI getPlatformDomainGraphURI(String graphSuffix) throws URISyntaxException {
-        return new URI(getPlatformURI().toString() + graphSuffix);
+    public static URI getPlatformDomainGraphURI(String graphSuffix) {
+        return getPlatformURI().resolve(graphSuffix);
+    }
+
+    public static void clearPlatformGraphs(SPARQLService sparql, List<String> graphsSuffixToClear) throws SPARQLQueryException {
+        for (String graphName : graphsSuffixToClear) {
+            sparql.clearGraph(SPARQLModule.getPlatformDomainGraphURI(graphName));
+        }
+        sparql.clearGraph(SPARQLModule.getPlatformURI());
     }
 
 }

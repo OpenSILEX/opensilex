@@ -299,8 +299,9 @@ public class ModuleManager {
                             // Get service instance from configuration
                             Service service = (Service) m.invoke(moduleConfig);
                             service.setModule(module);
+                            Class<? extends Service> serviceInterface = (Class<? extends Service>) m.getReturnType();
                             // Register service instance
-                            services.register(service.getClass(), m.getName(), service);
+                            services.register(serviceInterface, m.getName(), service);
                         }
                     } catch (Exception ex) {
                         LOGGER.error("Fail to load service: " + m.getName() + " in module config: " + module.getConfigId(), ex);

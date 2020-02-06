@@ -29,7 +29,7 @@ public class SPARQLClassAnalyzerTest {
 
     @AfterClass
     public static void shutdown() throws Exception {
-        SPARQLClassObjectMapper.clearResourcesRegistry();
+        SPARQLClassObjectMapper.reset();
         SPARQLServiceTest.destroy();
     }
 

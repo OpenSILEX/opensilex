@@ -86,17 +86,23 @@ public class SPARQLService implements SPARQLConnection, Service {
     @Override
     public void shutdown() throws Exception {
         connection.shutdown();
+        prefixes = getDefaultPrefixes();
+        SPARQLClassObjectMapper.reset();
     }
 
-    private final HashMap<String, String> prefixes = new HashMap<String, String>() {
-        {
-            put(RDFS.PREFIX, RDFS.NAMESPACE);
-            put(FOAF.PREFIX, FOAF.NAMESPACE);
-            put("dc", DCTerms.NS);
-            put("oa", OA.NS);
-            put(XMLSchema.PREFIX, XMLSchema.NAMESPACE);
-        }
-    };
+    private static HashMap<String, String> getDefaultPrefixes() {
+        return new HashMap<String, String>() {
+            {
+                put(RDFS.PREFIX, RDFS.NAMESPACE);
+                put(FOAF.PREFIX, FOAF.NAMESPACE);
+                put("dc", DCTerms.NS);
+                put("oa", OA.NS);
+                put(XMLSchema.PREFIX, XMLSchema.NAMESPACE);
+            }
+        };
+    }
+
+    private HashMap<String, String> prefixes = getDefaultPrefixes();
 
     public void addPrefix(String prefix, String namespace) {
         prefixes.put(prefix, namespace);
@@ -463,7 +469,7 @@ public class SPARQLService implements SPARQLConnection, Service {
 
         UpdateBuilder update = new UpdateBuilder();
         T oldInstance = loadByURI(objectClass, sparqlObjectMapper.getURI(instance));
-        if(oldInstance == null){
+        if (oldInstance == null) {
             throw new SPARQLInvalidURIException(instance.getUri());
         }
 
@@ -487,7 +493,7 @@ public class SPARQLService implements SPARQLConnection, Service {
 
     public <T extends SPARQLResourceModel> void delete(Class<T> objectClass, URI uri) throws Exception {
 
-        if(!uriExists(uri)){
+        if (!uriExists(uri)) {
             throw new SPARQLInvalidURIException(uri);
         }
 

@@ -28,7 +28,6 @@
       
     <properties>
         <skipFrontBuild>true</skipFrontBuild>
-        <maven.compiler.source>1.9</maven.compiler.source>
     </properties>
       
     <modules>

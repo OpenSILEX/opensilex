@@ -53,11 +53,9 @@
     <build>
         <!-- include swagger webapp -->
         <resources>
-            <!-- Default resources folder -->
             <resource>
                 <directory>src/main/resources</directory>
             </resource>
-            
             <!-- Define swagger interface resources -->
             <resource>
                 <directory>src/main/webapp</directory>
@@ -202,6 +200,8 @@
                                     <exclude>jakarta.el:jakarta.el-api</exclude>
                                     <exclude>org.glassfish:jakarta.el</exclude>
                                     <exclude>javax.annotation:javax.annotation-api</exclude>
+                                    <exclude>org.apache.httpcomponents:httpcore-osgi</exclude>
+                                    <exclude>org.apache.httpcomponents:httpclient-osgi</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>

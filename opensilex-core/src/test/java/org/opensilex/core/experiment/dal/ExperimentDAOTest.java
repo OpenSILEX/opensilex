@@ -1,6 +1,5 @@
 package org.opensilex.core.experiment.dal;
 
-import integration.opensilex.rest.AbstractDaoTest;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -17,38 +16,57 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.junit.After;
+import org.junit.AfterClass;
 
 import static org.junit.Assert.*;
+import org.opensilex.OpenSilex;
+import org.opensilex.core.CoreModule;
+import org.opensilex.rest.RestModule;
+import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.service.SPARQLService;
+import test.opensilex.sparql.rdf4j.RDF4JInMemoryService;
 
 /**
  * @author Renaud COLIN
  */
-public class ExperimentDAOTest extends AbstractDaoTest {
+public class ExperimentDAOTest {
 
-    protected static ExperimentDAO xpDao;
+    protected ExperimentDAO xpDao;
     protected static final String xpGraph = "set/experiments";
 
-    protected static ProjectDAO projectDAO;
-    protected static ProjectModel projectModel;
+    protected ProjectDAO projectDAO;
+    protected ProjectModel projectModel;
     protected static final String projectGraph = "project";
+
+    protected static SPARQLService sparql;
 
     @BeforeClass
     public static void setup() throws Exception {
-        AbstractDaoTest.setup();
-        xpDao = new ExperimentDAO(service);
-        projectDAO = new ProjectDAO(service);
+        OpenSilex.registerModule(RestModule.class);
+        OpenSilex.registerModule(CoreModule.class);
+        sparql = new RDF4JInMemoryService();
+        sparql.startup();
     }
 
     @Before
-    public void initGraph() throws Exception {
+    public void init() throws Exception {
         projectModel = new ProjectModel();
         projectModel.setName("TEST PROJECT");
+        projectDAO = new ProjectDAO(sparql);
+        xpDao = new ExperimentDAO(sparql);
         projectDAO.create(projectModel);
     }
 
-    @Override
-    protected List<String> getGraphsToCleanNames() {
-        return Arrays.asList(xpGraph, projectGraph);
+    @After
+    public void clean() throws Exception {
+        SPARQLModule.clearPlatformGraphs(sparql, Arrays.asList(xpGraph, projectGraph));
+    }
+
+    @AfterClass
+    public static void shutdown() throws Exception {
+        sparql.clear();
+        sparql.shutdown();
     }
 
     protected ExperimentModel getModel(int i) {
@@ -72,19 +90,19 @@ public class ExperimentDAOTest extends AbstractDaoTest {
     @Test
     public void create() throws Exception {
 
-        int count = service.count(ExperimentModel.class, null);
+        int count = sparql.count(ExperimentModel.class, null);
         assertEquals("the initial ExperimentModel count must be 0", 0, count);
 
         xpDao.create(getModel(0));
 
-        count = service.count(ExperimentModel.class, null);
+        count = sparql.count(ExperimentModel.class, null);
         assertEquals("the count must be equals to 1 since the experiment has been created", 1, count);
     }
 
     @Test
     public void createAll() throws Exception {
 
-        int count = service.count(ExperimentModel.class, null);
+        int count = sparql.count(ExperimentModel.class, null);
         assertEquals(count, 0);
 
         int n = 20;
@@ -94,7 +112,7 @@ public class ExperimentDAOTest extends AbstractDaoTest {
         }
         xpDao.createAll(xps);
 
-        count = service.count(ExperimentModel.class, null);
+        count = sparql.count(ExperimentModel.class, null);
         assertEquals("the count must be equals to " + n + " since " + n + " experiment have been created", n, count);
     }
 
@@ -165,11 +183,10 @@ public class ExperimentDAOTest extends AbstractDaoTest {
 
         ListWithPagination<ExperimentModel> xpModelResults = xpDao.search(searchDTO, null, 0, 10);
         assertNotNull("one experiment should be fetched from db", xpModelResults);
-        assertEquals("one experiment should be fetched from db", 1,xpModelResults.getList().size());
+        assertEquals("one experiment should be fetched from db", 1, xpModelResults.getList().size());
 
         testEquals(xpModel, xpModelResults.getList().get(0));
     }
-
 
     @Test
     public void searchWithObjectUriType() throws Exception {
@@ -196,7 +213,6 @@ public class ExperimentDAOTest extends AbstractDaoTest {
         testEquals(xpModel, xpModelResults.get(0));
 
         // create a 2nd xp with a shared project with the 1th xp
-
         ExperimentModel xpModel2 = getModel(1);
         xpModel2.setProjects(Collections.singletonList(project2));
         xpDao.create(xpModel2);
@@ -301,7 +317,7 @@ public class ExperimentDAOTest extends AbstractDaoTest {
         xpDao.create(xpModel);
 
         xpModel.setLabel("updateWithUnknownUri");
-        xpModel.setUri(new URI(xpModel.getUri().toString()+"_suffix"));
+        xpModel.setUri(new URI(xpModel.getUri().toString() + "_suffix"));
         xpDao.update(xpModel);
     }
 
@@ -319,19 +335,18 @@ public class ExperimentDAOTest extends AbstractDaoTest {
 //    public void updateWithDataList(){
 //
 //    }
-
     @Test
     public void delete() throws Exception {
 
         ExperimentModel xpModel = getModel(0);
         xpDao.create(xpModel);
 
-        int oldCount = service.count(ExperimentModel.class, null);
+        int oldCount = sparql.count(ExperimentModel.class, null);
         assertEquals("one experiment should have been created", 1, oldCount);
 
         xpDao.delete(xpModel.getUri());
 
-        int newCount = service.count(ExperimentModel.class, null);
+        int newCount = sparql.count(ExperimentModel.class, null);
         assertEquals("the experiment must no longer exists", 0, newCount);
         assertFalse("the experiment URI must no longer exists", xpDao.sparql.uriExists(xpModel.getUri()));
     }
@@ -341,7 +356,7 @@ public class ExperimentDAOTest extends AbstractDaoTest {
 
         ExperimentModel xpModel = getModel(0);
         xpDao.create(xpModel);
-        xpDao.delete(new URI(xpModel.getUri().toString()+"_suffix"));
+        xpDao.delete(new URI(xpModel.getUri().toString() + "_suffix"));
     }
 
     @Test
@@ -354,12 +369,12 @@ public class ExperimentDAOTest extends AbstractDaoTest {
         }
         xpDao.createAll(xps);
 
-        int oldCount = service.count(ExperimentModel.class, null);
+        int oldCount = sparql.count(ExperimentModel.class, null);
         assertEquals(n + " experiments should have been created", oldCount, n);
 
         xpDao.delete(xps.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()));
 
-        int newCount = service.count(ExperimentModel.class, null);
+        int newCount = sparql.count(ExperimentModel.class, null);
         assertEquals("all experiments should have been deleted", 0, newCount);
 
         for (ExperimentModel xp : xps) {
@@ -373,6 +388,4 @@ public class ExperimentDAOTest extends AbstractDaoTest {
 //        xp.setSpecies(new URI("http://www.opensilex.org/id/species/zeamays"));
 //        xpDao.create(xp);
 //    }
-
-
 }

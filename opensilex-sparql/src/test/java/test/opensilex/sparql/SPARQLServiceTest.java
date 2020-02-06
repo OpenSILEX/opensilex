@@ -43,7 +43,6 @@ public abstract class SPARQLServiceTest {
     protected static SPARQLService service;
 
     public static void initialize(SPARQLService service) throws Exception {
-
         SPARQLServiceTest.service = service;
         service.startup();
 
@@ -57,9 +56,10 @@ public abstract class SPARQLServiceTest {
     }
 
     @AfterClass
-    public static void destroy() throws SPARQLQueryException, URISyntaxException {
+    public static void destroy() throws Exception {
         service.clearGraph(SPARQLModule.getPlatformURI());
         service.clearGraph(SPARQLModule.getPlatformDomainGraphURI("data"));
+        service.shutdown();
     }
 
     @Test

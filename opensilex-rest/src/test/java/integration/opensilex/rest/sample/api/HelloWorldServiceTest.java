@@ -5,7 +5,7 @@
 //******************************************************************************
 package integration.opensilex.rest.sample.api;
 
-import integration.opensilex.rest.AbstractAPITest;
+import integration.opensilex.AbstractIntegrationTest;
 import org.junit.Test;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Test class for HelloWorldServiceTest
  */
-public class HelloWorldServiceTest extends AbstractAPITest {
+public class HelloWorldServiceTest extends AbstractIntegrationTest {
 
     @Test
     public void testHelloWorldResponse() {

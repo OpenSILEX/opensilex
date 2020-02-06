@@ -1,16 +1,12 @@
-package integration.opensilex.rest;
+package integration.opensilex;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.glassfish.jersey.internal.inject.AbstractBinder;
-import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.mockito.Mockito;
-import org.opensilex.OpenSilex;
-import org.opensilex.rest.RestApplication;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.security.api.AuthenticationDTO;
 import org.opensilex.rest.security.api.TokenGetDTO;
@@ -20,7 +16,6 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.utils.OrderBy;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
@@ -38,36 +33,24 @@ import static junit.framework.TestCase.assertEquals;
 /**
  * @author Renaud COLIN Abstract class used for DAO testing
  */
-public abstract class AbstractAPITest extends JerseyTest {
+public abstract class AbstractIntegrationTest extends JerseyTest {
 
-    protected static OpenSilexTestContext context;
+    protected static IntegrationTestContext context;
 
     @Override
     protected ResourceConfig configure() {
         try {
             // init the OpenSilex instance to use during the API test(s)
-            context = new OpenSilexTestContext();
+            context = new IntegrationTestContext();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        ResourceConfig resourceConfig = new RestApplication(OpenSilex.getInstance());
-
-        // create a mock for HttpServletRequest which is not available with grizzly
-        final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        resourceConfig.register(new AbstractBinder() {
-            @Override
-            protected void configure() {
-                bind(request).to(HttpServletRequest.class);
-            }
-        });
-
-        resourceConfig.register(JacksonFeature.class);
-        return resourceConfig;
+        return context.getResourceConfig();
     }
 
     @AfterClass
-    public static void end() throws Exception {
+    public static void shutdown() throws Exception {
         context.shutdown();
     }
 
@@ -86,8 +69,6 @@ public abstract class AbstractAPITest extends JerseyTest {
     protected List<String> getGraphsToCleanNames() {
         return new ArrayList<>();
     }
-    ;
-
 
     protected static ObjectMapper mapper = new ObjectMapper();
 
@@ -109,7 +90,8 @@ public abstract class AbstractAPITest extends JerseyTest {
         JsonNode node = callResult.readEntity(JsonNode.class);
 
         // need to convert according a TypeReference, because the expected SingleObjectResponse is a generic object
-        SingleObjectResponse<TokenGetDTO> res = mapper.convertValue(node, SingleObjectResponse.class);
+        SingleObjectResponse<TokenGetDTO> res = mapper.convertValue(node, new TypeReference<SingleObjectResponse<TokenGetDTO>>() {
+        });
 
         assertEquals(Response.Status.OK.getStatusCode(), callResult.getStatus());
         assertEquals(Response.Status.OK, res.getStatus());
@@ -219,7 +201,8 @@ public abstract class AbstractAPITest extends JerseyTest {
      */
     protected List<URI> extractUriListFromResponse(final Response response) {
         JsonNode node = response.readEntity(JsonNode.class);
-        PaginatedListResponse<URI> listResponse = mapper.convertValue(node, PaginatedListResponse.class);
+        PaginatedListResponse<URI> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<URI>>() {
+        });
         return listResponse.getResult();
     }
 

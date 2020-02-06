@@ -24,7 +24,6 @@
           <strong>Loading...</strong>
           <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
         </div>
-
       </div>
       <div v-else>No images to dispay</div>
     </b-collapse>
@@ -188,23 +187,25 @@ export default class ImageView extends Vue {
   }
 
   imagesFilter(data: Array<FileDescriptionDTO>) {
-    //pour chaque concerneditem une nouvelle image ..
+    // pour chaque concerneditem une nouvelle image ..
     if (this.searchImagesFields.objectType !== null) {
       data.forEach(element => {
         element.concernedItems.forEach(concernedItem => {
           console.log(this.searchImagesFields.objectType.split("#")[1]);
           console.log(concernedItem.typeURI.split("#")[1]);
           if (this.searchImagesFields.objectType === concernedItem.typeURI) {
-            const image = <Image>{};
-            image.objectType = concernedItem.typeURI;
-            image.uri =
-              this.$opensilex.getBaseAPI() +
-              "/data/file/" +
-              encodeURIComponent(element.uri);
-            image.type = element.rdfType;
-            image.objectUri = concernedItem.uri;
-            image.date = element.date;
-            image.provenanceUri = element.provenanceUri;
+            const image2 = <Image>{};
+            const image: Image = {
+              objectType: concernedItem.typeURI,
+              uri:
+                this.$opensilex.getBaseAPI() +
+                "/data/file/" +
+                encodeURIComponent(element.uri),
+              type: element.rdfType,
+              objectUri: concernedItem.uri,
+              date: element.date,
+              provenanceUri: element.provenanceUri
+            };
             this.images.push(image);
           }
         });
@@ -212,16 +213,17 @@ export default class ImageView extends Vue {
     } else {
       data.forEach(element => {
         element.concernedItems.forEach(concernedItem => {
-          const image = <Image>{};
-          image.objectType = concernedItem.typeURI;
-          image.uri =
-            this.$opensilex.getBaseAPI() +
-            "/data/file/" +
-            encodeURIComponent(element.uri);
-          image.type = element.rdfType;
-          image.objectUri = concernedItem.uri;
-          image.date = element.date;
-          image.provenanceUri = element.provenanceUri;
+          const image: Image = {
+            objectType: concernedItem.typeURI,
+            uri:
+              this.$opensilex.getBaseAPI() +
+              "/data/file/" +
+              encodeURIComponent(element.uri),
+            type: element.rdfType,
+            objectUri: concernedItem.uri,
+            date: element.date,
+            provenanceUri: element.provenanceUri
+          };
           this.images.push(image);
         });
       });

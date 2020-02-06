@@ -4,6 +4,6 @@ export interface Image{
     date:string,
     objectUri:string,
     objectType:string,
-    objectAlias:string,
+    objectAlias?:string,
     provenanceUri:string
 }

@@ -194,7 +194,6 @@ export default class ImageView extends Vue {
           console.log(this.searchImagesFields.objectType.split("#")[1]);
           console.log(concernedItem.typeURI.split("#")[1]);
           if (this.searchImagesFields.objectType === concernedItem.typeURI) {
-            const image2 = <Image>{};
             const image: Image = {
               objectType: concernedItem.typeURI,
               uri:
@@ -234,7 +233,7 @@ export default class ImageView extends Vue {
   }
 
   format(date) {
-    var d = new Date(date),
+    let d = new Date(date),
       month = "" + (d.getMonth() + 1),
       day = "" + d.getDate(),
       year = d.getFullYear();

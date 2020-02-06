@@ -18,12 +18,10 @@
           id="input-with-list"
           placeholder="Enter Alias to search "
           autocomplete="off"
-          @input="onWrite($event);"
-          @change="onChange($event);"
-          @focus.native="onEnter()"
+          @input="onWrite($event)"
         ></b-form-input>
         <datalist id="input-list">
-           <option v-for="option in options" :key="option" >{{ option }}</option>
+          <option v-for="option in options" :key="option">{{ option }}</option>
         </datalist>
       </template>
     </b-form-tags>
@@ -47,7 +45,6 @@ export default class ObjectSearch extends Vue {
   get user() {
     return this.$store.state.user;
   }
-
   selectedExperiment: any;
   selectedSoType: any;
   alias: any = undefined;
@@ -101,42 +98,49 @@ export default class ObjectSearch extends Vue {
   }
 
   onWrite(value) {
-    console.log("onInput");
-    this.alias = value;
-    let service: ScientificObjectsService = this.$opensilex.getService(
-      "opensilex.ScientificObjectsService"
-    );
-    if (this.selectedExperiment === null) {
-      this.selectedExperiment = undefined;
-    }
-    if (this.selectedSoType === null) {
-      this.selectedSoType = undefined;
-    }
-    const result = service
-      .getScientificObjectsBySearch(
-        this.user.getAuthorizationHeader(),
-        this.pageSize,
-        this.currentPage,
-        undefined,
-        this.selectedExperiment,
-        this.alias,
-        this.selectedSoType
-      )
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<ScientificObjectDTO>>>) => {
-          const res = http.response.result as any;
-          const data = res.data;
+    if (this.options.includes(value)) {
+      this.onChange(value);
+
+    } else {
+      console.log("onInput");
+      this.alias = value;
+      let service: ScientificObjectsService = this.$opensilex.getService(
+        "opensilex.ScientificObjectsService"
+      );
+      if (this.selectedExperiment === null) {
+        this.selectedExperiment = undefined;
+      }
+      if (this.selectedSoType === null) {
+        this.selectedSoType = undefined;
+      }
+      const result = service
+        .getScientificObjectsBySearch(
+          this.user.getAuthorizationHeader(),
+          this.pageSize,
+          this.currentPage,
+          undefined,
+          this.selectedExperiment,
+          this.alias,
+          this.selectedSoType
+        )
+        .then(
+          (
+            http: HttpResponse<OpenSilexResponse<Array<ScientificObjectDTO>>>
+          ) => {
+            const res = http.response.result as any;
+            const data = res.data;
+            this.options = [];
+            data.forEach(element => {
+              this.options.push(element.label);
+              this.valueWithURI[element.label] = element.uri;
+            });
+          }
+        )
+        .catch(error => {
+          console.log(error);
           this.options = [];
-          data.forEach(element => {
-            this.options.push(element.label);
-            this.valueWithURI[element.label] = element.uri;
-          });
-        }
-      )
-      .catch(error => {
-        console.log(error);
-        this.options = [];
-      });
+        });
+    }
   }
 
   onEnter() {

@@ -22,9 +22,9 @@
           @change="onChange($event);"
           @focus.native="onEnter()"
         ></b-form-input>
-        <b-form-datalist id="input-list" >
-           <option v-for="option in options" :key="option">{{ option }}</option>
-        </b-form-datalist>
+        <datalist id="input-list">
+           <option v-for="option in options" :key="option" >{{ option }}</option>
+        </datalist>
       </template>
     </b-form-tags>
   </b-form-group>
@@ -77,6 +77,7 @@ export default class ObjectSearch extends Vue {
   }
 
   onChange(selectedValue) {
+    console.log("onChange");
     this.value.push(selectedValue);
     this.selectedValueWithUri = {};
     let sciObjectsURI = [];
@@ -100,6 +101,7 @@ export default class ObjectSearch extends Vue {
   }
 
   onWrite(value) {
+    console.log("onInput");
     this.alias = value;
     let service: ScientificObjectsService = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"

@@ -20,17 +20,11 @@
         <p>showed Image {{showedImages}}</p>
         <phis2ws-ImageList :images="images"></phis2ws-ImageList>
 
-        <div v-if="spinner" class="d-flex align-items-center">
+        <div v-if="showScrollSpinner" class="d-flex align-items-center">
           <strong>Loading...</strong>
           <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
         </div>
 
-        <!-- <b-pagination
-          v-model="currentPage"
-          :total-rows="totalImages"
-          :per-page="pageSize"
-          @change="loadDataWithDelay"
-        ></b-pagination>-->
       </div>
       <div v-else>No images to dispay</div>
     </b-collapse>
@@ -57,15 +51,18 @@ export default class ImageView extends Vue {
   dataService: DataService = this.$opensilex.getService(
     "opensilex.DataService"
   );
+  images = [];
+
   showSearchComponent: boolean = true;
   showImageComponent: boolean = false;
-  images = [];
-  spinner: boolean = false;
+  showScrollSpinner: boolean = false;
   canReload: boolean = true;
+
   currentPage: number = 1;
   pageSize = 20;
   totalImages: number = 0;
   showedImages: number = 0;
+
   private searchImagesFields: any = {
     rdfType: undefined,
     startDate: undefined,
@@ -112,23 +109,10 @@ export default class ImageView extends Vue {
     }
   }
 
-  loadDataWithDelay() {
-    // Fix: on Pagination component: currentPage is changed after the change event call
-    setTimeout(() => {
-      this.loadData();
-    }, 0);
-  }
-
   initScroll() {
     window.onscroll = () => {
       let bottomOfWindow =
-        window.innerHeight + window.scrollY >= document.body.offsetHeight-1;
-        console.log("window.innerHeight");
-      console.log(window.innerHeight);
-       console.log("window.scrollY");
-       console.log(window.scrollY);
-       console.log("document.body.offsetHeight");
-       console.log(document.body.offsetHeight);
+        window.innerHeight + window.scrollY >= document.body.offsetHeight - 1;
       if (bottomOfWindow) {
         console.log("reload");
         if (this.canReload) {
@@ -139,7 +123,7 @@ export default class ImageView extends Vue {
   }
 
   reload() {
-    this.spinner = true;
+    this.showScrollSpinner = true;
     this.currentPage++;
     this.getData();
   }
@@ -185,10 +169,7 @@ export default class ImageView extends Vue {
           const data = res.data as Array<FileDescriptionDTO>;
           console.log("data");
           console.log(data);
-
-          //this.images = data; //before filter
           this.imagesFilter(data);
-
           this.$router
             .push({
               path: this.$route.fullPath,
@@ -202,14 +183,12 @@ export default class ImageView extends Vue {
       .catch(error => {
         console.log(error);
         this.canReload = false;
-        this.spinner = false;
-        this.showImage();
+        this.showScrollSpinner = false;
       });
   }
 
   imagesFilter(data: Array<FileDescriptionDTO>) {
     //pour chaque concerneditem une nouvelle image ..
-    const images = [];
     if (this.searchImagesFields.objectType !== null) {
       data.forEach(element => {
         element.concernedItems.forEach(concernedItem => {
@@ -248,8 +227,7 @@ export default class ImageView extends Vue {
       });
     }
     this.showedImages = this.images.length;
-    this.spinner = false;
-    //mettre une condition;
+    this.showScrollSpinner = false;
     this.showImage();
   }
 
@@ -258,16 +236,13 @@ export default class ImageView extends Vue {
       month = "" + (d.getMonth() + 1),
       day = "" + d.getDate(),
       year = d.getFullYear();
-
     if (month.length < 2) month = "0" + month;
     if (day.length < 2) day = "0" + day;
-
     return [year, month, day].join("-");
   }
 
   onSearchButtonClick() {
     this.showSearchComponent = !this.showSearchComponent;
-    this.showImageComponent = !this.showImageComponent;
   }
 }
 </script>

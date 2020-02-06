@@ -34,7 +34,7 @@
           <b-tab
             v-for="credentialsGroup in credentialsGroups"
             v-bind:key="credentialsGroup.groupId"
-            v-bind:title="credentialsGroup.groupId"
+            v-bind:title="$t(credentialsGroup.groupKeyLabel)"
           >
             <b-form-checkbox-group
               v-bind:key="credentialsGroup.groupId"
@@ -108,7 +108,7 @@ export default class ProfileForm extends Vue {
       for (let j = 0; j < credentialsGroups[i].credentials.length; j++) {
         let credential = credentialsGroups[i].credentials[j];
         def[credentialsGroups[i].groupId].push({
-          text: credential.label,
+          text: this.$t(credential.label),
           value: credential.id
         });
       }
@@ -144,7 +144,7 @@ export default class ProfileForm extends Vue {
     modalRef.show();
   }
 
-  showEditForm(form: ProfileCreationDTO) {
+  showEditForm(form: ProfileGetDTO) {
     this.form = form;
     this.editMode = true;
     this.title = "Update profile";

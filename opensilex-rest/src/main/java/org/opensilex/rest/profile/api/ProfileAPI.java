@@ -34,6 +34,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import static org.apache.jena.vocabulary.RDF.uri;
+import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.rest.authentication.ApiProtected;
@@ -59,9 +60,21 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author Vincent Migot
  */
-@Api("Profile")
+@Api(ProfileAPI.CREDENTIAL_GROUP_PROFILE_ID)
 @Path("/profile")
 public class ProfileAPI {
+
+    public static final String CREDENTIAL_GROUP_PROFILE_ID = "Profiles";
+    public static final String CREDENTIAL_GROUP_PROFILE_LABEL_KEY = "credential-groups.profiles";
+
+    public static final String CREDENTIAL_PROFILE_MODIFICATION_ID = "profile-modification";
+    public static final String CREDENTIAL_PROFILE_MODIFICATION_LABEL_KEY = "credential.profile.modification";
+
+    public static final String CREDENTIAL_PROFILE_DELETE_ID = "profile-delete";
+    public static final String CREDENTIAL_PROFILE_DELETE_LABEL_KEY = "credential.profile.delete";
+
+    public static final String CREDENTIAL_PROFILE_READ_ID = "profile-read";
+    public static final String CREDENTIAL_PROFILE_READ_LABEL_KEY = "credential.profile.read";
 
     /**
      * Inject SPARQL service
@@ -78,6 +91,12 @@ public class ProfileAPI {
         @ApiResponse(code = 409, message = "Profile name already exists")
     })
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_PROFILE_ID,
+            groupLabelKey = CREDENTIAL_GROUP_PROFILE_LABEL_KEY,
+            credentialId = CREDENTIAL_PROFILE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_PROFILE_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createProfile(
@@ -102,7 +121,7 @@ public class ProfileAPI {
             // Return error response 409 - CONFLICT if user already exists
             return new ErrorResponse(
                     Status.CONFLICT,
-                    "User already exists",
+                    "Profile already exists",
                     "Duplicated name: " + profileDTO.getName()
             ).getResponse();
         }
@@ -112,6 +131,12 @@ public class ProfileAPI {
     @Path("update")
     @ApiOperation("Update a profile")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_PROFILE_ID,
+            groupLabelKey = CREDENTIAL_GROUP_PROFILE_LABEL_KEY,
+            credentialId = CREDENTIAL_PROFILE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_PROFILE_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -119,7 +144,7 @@ public class ProfileAPI {
         @ApiResponse(code = 400, message = "Invalid parameters")
     })
     public Response updateProfile(
-            @ApiParam("Project description") @Valid ProfileUpdateDTO dto
+            @ApiParam("Profile description") @Valid ProfileUpdateDTO dto
     ) throws Exception {
         ProfileDAO dao = new ProfileDAO(sparql);
 
@@ -148,6 +173,12 @@ public class ProfileAPI {
     @Path("{uri}")
     @ApiOperation("Delete a profile")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_PROFILE_ID,
+            groupLabelKey = CREDENTIAL_GROUP_PROFILE_LABEL_KEY,
+            credentialId = CREDENTIAL_PROFILE_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_PROFILE_DELETE_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteProfile(
@@ -162,6 +193,12 @@ public class ProfileAPI {
     @Path("search")
     @ApiOperation("Search profiles")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_PROFILE_ID,
+            groupLabelKey = CREDENTIAL_GROUP_PROFILE_LABEL_KEY,
+            credentialId = CREDENTIAL_PROFILE_READ_ID,
+            credentialLabelKey = CREDENTIAL_PROFILE_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -193,11 +230,16 @@ public class ProfileAPI {
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
-    
     @GET
     @Path("get-all")
     @ApiOperation("Get all profiles")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_PROFILE_ID,
+            groupLabelKey = CREDENTIAL_GROUP_PROFILE_LABEL_KEY,
+            credentialId = CREDENTIAL_PROFILE_READ_ID,
+            credentialLabelKey = CREDENTIAL_PROFILE_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

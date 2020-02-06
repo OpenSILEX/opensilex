@@ -1,7 +1,7 @@
 {
     "component": {
         "common": {
-            
+
         },
         "header": {
             "language": {
@@ -74,6 +74,45 @@
                     "label": "ik-lock"
                 }
             }
+        }
+    },
+    "credential-groups": {
+        "experiments": "Experiments",
+        "groups": "Groups",
+        "profiles": "Profiles",
+        "projects": "Projects",
+        "users": "Users",
+        "variables": "Variables"
+    },
+    "credential": {
+        "experiment": {
+            "modification": "Create / update experiments",
+            "read": "View experiments"
+        },
+        "group": {
+            "modification": "Create / update groups",
+            "read": "View groups",
+            "delete": "Delete groups"
+        },
+        "profile": {
+            "modification": "Create / update profiles",
+            "read": "View profiles",
+            "delete": "Delete profiles"
+        },
+        "project": {
+            "modification": "Create / update projects",
+            "read": "View projects",
+            "delete": "Delete projects"
+        },
+        "user": {
+            "modification": "Create / update users",
+            "read": "View users",
+            "delete": "Delete users"
+        },
+        "variable": {
+            "modification": "Create / update variables",
+            "read": "View variables",
+            "delete": "Delete variables"
         }
     }
 }

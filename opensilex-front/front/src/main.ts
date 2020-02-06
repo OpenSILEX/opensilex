@@ -98,8 +98,6 @@ console.debug("Initialize FontAwesomeIcon plugin...");
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faPowerOff, faTimes, faTrashAlt, faEdit } from '@fortawesome/free-solid-svg-icons'
-import { } from '@fortawesome/free-solid-svg-icons'
-import { } from '@fortawesome/free-solid-svg-icons'
 library.add(faPowerOff, faTimes, faTrashAlt, faEdit);
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 console.debug("FontAwesomeIcon plugin initialized !");
@@ -125,6 +123,7 @@ const i18n = new VueI18n({
 // Enable Vue front plugin manager for OpenSilex API
 console.debug("Enable OpenSilex plugin...");
 let $opensilex = new OpenSilexVuePlugin(baseApi, store);
+$opensilex.setCookieSuffix(baseApi);
 Vue.use($opensilex);
 console.debug("OpenSilex plugin enabled !");
 
@@ -259,13 +258,14 @@ $opensilex.initAsyncComponents(components)
             console.debug("Try to load user from URL token...");
             if (token != null) {
               user = User.fromToken(token);
+              $opensilex.setCookieValue(user);
               console.debug("User sucessfully loaded from URL token !");
             }
           }
 
           if (user == undefined) {
             console.debug("Try to load user from cookie...");
-            user = User.fromCookie();
+            user = $opensilex.loadUserFromCookie();
             console.debug("User sucessfully loaded from cookie !");
           }
 

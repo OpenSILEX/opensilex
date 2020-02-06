@@ -116,7 +116,7 @@
             <artifactId>phis2ws</artifactId>
             <version>${revision}</version>
         </dependency>
-        <!--<dependency>
+<!--        <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>inrae-sixtine</artifactId>
             <version>${revision}</version>

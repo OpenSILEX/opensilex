@@ -58,7 +58,7 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>unpack</id>
+                        <id>unpack-dev</id>
                         <phase>install</phase>
                         <goals>
                             <goal>unpack</goal>
@@ -70,11 +70,94 @@
                                     <artifactId>${project.artifactId}</artifactId>
                                     <version>${revision}</version>
                                     <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/${project.artifactId}-${revision}</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/opensilex</outputDirectory>
                                     <includes>**</includes>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven.resources.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>Copy OpenSilex binaries for deployment</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${project.build.directory}/${project.artifactId}-${revision}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/opensilex</directory>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>Copy development module</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${project.build.directory}/opensilex/modules</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>../opensilex-dev-tools/target/</directory>
+                                    <includes>
+                                        <include>*.jar</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>Copy development scripts</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${project.build.directory}/opensilex</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>../opensilex-dev-tools/src/main/resources/scripts/</directory>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>${maven.antrun.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>set-scripts-permissions</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <target>
+                                <chmod file="target/opensilex/opensilex.sh" perm="755"/>
+                                <chmod file="target/opensilex/opensilex.cmd" perm="755"/>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

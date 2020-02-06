@@ -39,7 +39,13 @@ public class HelpFactory implements IHelpFactory {
             + " .++    `'+++   ++  ++`           |_|\n"
             + "   ++.      '+++'+.++\n"
             + "     ++:+++.`   .++\n"
-            + "      ``````````\n";
+            + "      ``````````\n"
+            + "\n"
+            + "@|bold,underline Global options|@:\n"
+            + "  --DEBUG                 Enable debug logging\n"
+            + "  --CONFIG_FILE=<path>    Define OpenSilex configuration file\n"
+            + "  --BASE_DIRECTORY=<path> Define OpenSilex running directory\n"
+            + "\n";
 
     /**
      * Prefix for "Usage" help section

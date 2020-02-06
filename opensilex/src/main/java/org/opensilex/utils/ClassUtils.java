@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
@@ -24,7 +25,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,7 +35,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.opensilex.OpenSilex;
 import org.reflections.Reflections;
-import org.reflections.scanners.Scanner;
+import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ConfigurationBuilder;
@@ -312,17 +312,16 @@ public class ClassUtils {
                         LOGGER.error("Error in jar file", ex);
                     }
                 });
-
                 reflections = new Reflections(
                         ConfigurationBuilder.build("", OpenSilex.getClassLoader())
                                 .setUrls(urls)
-                                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner())
+                                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
                                 .setExpandSuperTypes(false)
                 );
             } else {
                 reflections = new Reflections(
                         ConfigurationBuilder.build("", OpenSilex.getClassLoader())
-                                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner())
+                                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(),  new MethodAnnotationsScanner())
                                 .setExpandSuperTypes(false)
                 );
             }
@@ -333,6 +332,10 @@ public class ClassUtils {
 
     public static Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> annotation) {
         return getReflectionInstance().getTypesAnnotatedWith(annotation);
+    }
+
+    public static Set<Method> getAnnotatedMethods(Class<? extends Annotation> annotation) {
+        return getReflectionInstance().getMethodsAnnotatedWith(annotation);
     }
 
     public static Map<String, Class<?>> getAnnotatedClassesMap(Class<? extends Annotation> annotation) {

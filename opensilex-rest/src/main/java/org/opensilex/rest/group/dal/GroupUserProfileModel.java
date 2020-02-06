@@ -22,20 +22,22 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = SecurityOntology.class,
         resource = "GroupUserProfile",
-        graph = "groups",
-        prefix = "g"
+        graph = "groupUserProfiles",
+        prefix = "gup"
 )
-public class GroupUserProfile extends SPARQLResourceModel implements ClassURIGenerator<GroupUserProfile> {
+public class GroupUserProfileModel extends SPARQLResourceModel implements ClassURIGenerator<GroupUserProfileModel> {
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,
-            property = "hasUser"
+            property = "hasUser",
+            required = true
     )
     private UserModel user;
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,
-            property = "hasProfile"
+            property = "hasProfile",
+            required = true
     )
     private ProfileModel profile;
 
@@ -55,9 +57,9 @@ public class GroupUserProfile extends SPARQLResourceModel implements ClassURIGen
         this.profile = profile;
     }
     
-    public String[] getUriSegments(GroupUserProfile instance) {
+    public String[] getUriSegments(GroupUserProfileModel instance) {
         return new String[]{
-            instance.toString()
+            "" + System.identityHashCode(instance)
         };
     }
 

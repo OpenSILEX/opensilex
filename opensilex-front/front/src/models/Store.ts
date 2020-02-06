@@ -21,6 +21,11 @@ let menu: Array<Menu> = [];
 let inactivityRenewTimeoutInMin = 1;
 let renewStarted = false;
 let currentUser = undefined;
+
+let getOpenSilexPlugin = function(): OpenSilexVuePlugin {
+  return Vue["$opensilex"];
+}
+
 let renewTokenOnEvent = function (event) {
   if (event && event.keyCode
     && (
@@ -32,7 +37,7 @@ let renewTokenOnEvent = function (event) {
     // If a modifier key is pressed don't consider it as a renewal activity sequence
     return;
   }
-  console.log("Disable renew event listeners");
+  console.debug("Disable renew event listeners");
   window.removeEventListener('mousemove', renewTokenOnEvent);
   window.removeEventListener('click', renewTokenOnEvent);
   window.removeEventListener('keydown', renewTokenOnEvent);
@@ -40,16 +45,16 @@ let renewTokenOnEvent = function (event) {
   if (!renewStarted) {
     renewStarted = true;
   } else {
-    console.log("Ignore renew event");
+    console.debug("Ignore renew event");
     return;
   }
 
-  let $opensilex: OpenSilexVuePlugin = Vue["$opensilex"];
+  let $opensilex: OpenSilexVuePlugin = getOpenSilexPlugin();
 
   $opensilex.getService<SecurityService>("opensilex-rest.SecurityService")
     .renewToken(currentUser.getAuthorizationHeader())
     .then((http) => {
-      console.log("Token renewed", http.response.result.token);
+      console.debug("Token renewed", http.response.result.token);
       currentUser.setToken(http.response.result.token);
       $opensilex.$store.commit("login", currentUser);
     })
@@ -136,14 +141,15 @@ export default new Vuex.Store({
         console.debug("Clear renew timeout");
         clearTimeout(autoRenewTimeout);
         autoRenewTimeout = undefined;
-        console.log("Disable renew event listeners");
+        console.debug("Disable renew event listeners");
         window.removeEventListener('mousemove', renewTokenOnEvent);
         window.removeEventListener('click', renewTokenOnEvent);
         window.removeEventListener('keydown', renewTokenOnEvent);
       }
 
       console.debug("Set user to anonymous");
-      state.user = User.logout();
+      state.user = User.ANONYMOUS();
+      getOpenSilexPlugin().clearCookie();
       state.disconnected = true;
       console.debug("Reset router");
       state.openSilexRouter.resetRouter(state.user);

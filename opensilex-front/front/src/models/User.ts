@@ -1,11 +1,6 @@
 import * as jwtDecode from "jwt-decode";
-import { VueCookies } from 'vue-cookies'
-import VueI18n from 'vue-i18n'
-
-declare var $cookies: VueCookies;
 
 export class User {
-    private static INACTIVITY_PERIOD_MIN = 10;
     private firstName: string = "Jean";
     private lastName: string = "Dupont";
     private email: string = "jean.dupont@opensilex.org";
@@ -53,26 +48,8 @@ export class User {
         return User.anonymous;
     }
 
-    public static logout(): User {
-        $cookies.remove(User.COOKIE_NAME);
-
-        return User.ANONYMOUS();
-    }
-
-    private static COOKIE_NAME = "opensilex-token";
-
-    public static fromCookie(): User {
-        let token = $cookies.get(User.COOKIE_NAME);
-        let user: User = User.ANONYMOUS();
-        if (token != null) {
-            try {
-                user = User.fromToken(token);
-            } catch (error) {
-                console.error(error);
-            }
-        }
-
-        return user;
+    public getExpiration() {
+        return this.expire;
     }
 
     public getExpirationMs() {
@@ -98,8 +75,6 @@ export class User {
 
 
     public setToken(token: string) {
-        let secure: boolean = ('https:' == document.location.protocol);
-
         this.token = token;
         this.tokenData = jwtDecode(token);
 
@@ -110,8 +85,6 @@ export class User {
         this.credentials = this.getTokenData(User.CLAIM_CREDENTIALS_LIST);
         this.loggedIn = true;
         this.expire = parseInt(this.getTokenData(User.CLAIM_EXPIRE));
-
-        $cookies.set(User.COOKIE_NAME, token, this.expire + "s", "/", undefined, secure);
     }
 
     public getFirstName() {

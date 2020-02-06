@@ -6,12 +6,15 @@
 package org.opensilex.rest.group.dal;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
+import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.expr.Expr;
-import org.opensilex.rest.profile.dal.ProfileModel;
-import org.opensilex.rest.user.dal.UserModel;
+import org.apache.jena.sparql.syntax.ElementNamedGraph;
+import org.opensilex.rest.authentication.SecurityOntology;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
@@ -30,21 +33,65 @@ public class GroupDAO {
     }
 
     public GroupModel create(GroupModel group) throws Exception {
-        sparql.create(group);
-        return group;
+        sparql.startTransaction();
+        try {
+            sparql.create(group.getUserProfiles());
+            sparql.create(group);
+            sparql.commitTransaction();
+            return group;
+        } catch (Exception ex) {
+            sparql.rollbackTransaction();
+            throw ex;
+        }
+
     }
 
     public GroupModel get(URI uri) throws Exception {
         return sparql.getByURI(GroupModel.class, uri);
     }
 
-    public void delete(URI instanceURI) throws Exception {
-        sparql.delete(GroupModel.class, instanceURI);
+    private List<URI> getGroupUserProfileURIsList(URI groupURI) throws Exception {
+        List<URI> userProfilesURIs = sparql.searchURIs(GroupUserProfileModel.class, (SelectBuilder select) -> {
+            WhereHandler whereHandler = new WhereHandler();
+            Node groupUriNode =  SPARQLDeserializers.nodeURI(groupURI);
+            whereHandler.addWhere(select.makeTriplePath(groupUriNode, SecurityOntology.hasUserProfile, SPARQLClassObjectMapper.getForClass(GroupModel.class).getURIFieldVar()));
+            Node graph = SPARQLClassObjectMapper.getForClass(GroupModel.class).getDefaultGraph();
+            ElementNamedGraph elementNamedGraph = new ElementNamedGraph(graph, whereHandler.getElement());
+            select.getWhereHandler().getClause().addElement(elementNamedGraph);
+        });
+
+        return userProfilesURIs;
+    }
+
+    public void delete(URI groupURI) throws Exception {
+        sparql.startTransaction();
+        try {
+            List<URI> userProfilesURIs = getGroupUserProfileURIsList(groupURI);
+            sparql.delete(GroupModel.class, groupURI);
+            sparql.delete(GroupUserProfileModel.class, userProfilesURIs);
+            sparql.commitTransaction();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction();
+            throw ex;
+        }
     }
 
     public GroupModel update(GroupModel group) throws Exception {
-        sparql.update(group);
-        return group;
+        sparql.startTransaction();
+        try {
+            List<URI> userProfilesURIs = getGroupUserProfileURIsList(group.getUri());
+            sparql.delete(GroupUserProfileModel.class, userProfilesURIs);
+            Node graph = SPARQLClassObjectMapper.getForClass(GroupModel.class).getDefaultGraph();
+            sparql.deleteObjectRelations(graph, group.getUri(), SecurityOntology.hasUserProfile, userProfilesURIs);
+            sparql.create(group.getUserProfiles());
+            sparql.update(group);
+            sparql.commitTransaction();
+            return group;
+        } catch (Exception ex) {
+            sparql.rollbackTransaction();
+            throw ex;
+        }
+
     }
 
     public ListWithPagination<GroupModel> search(String namePattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {

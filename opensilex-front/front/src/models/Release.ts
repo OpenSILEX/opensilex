@@ -1,6 +1,7 @@
 import moment from 'moment'
 
-const version = require('../../package.json').version;
+// Ne fonctionne pas une fois compilé
+// const version = require('../../package.json').version;
 
 /**
  * Information about the current release of the application
@@ -18,7 +19,7 @@ export class Release {
     date: string;
 
     constructor() {
-        this.version = version;
+        this.version = "4.0.0";
         this.date = moment().format("DD/MM/YYYY"); // TODO: AT add release date
     }
 

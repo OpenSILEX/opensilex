@@ -103,6 +103,10 @@ public class UserDAO {
         return sparql.getByURI(UserModel.class, uri);
     }
 
+    public List<UserModel> getList(List<URI> uri) throws Exception {
+        return sparql.getListByURIs(UserModel.class, uri);
+    }
+
     public void delete(URI instanceURI) throws Exception {
         sparql.delete(UserModel.class, instanceURI);
     }
@@ -126,7 +130,7 @@ public class UserDAO {
         }
 
         sparql.update(user);
-        
+
         return user;
     }
 

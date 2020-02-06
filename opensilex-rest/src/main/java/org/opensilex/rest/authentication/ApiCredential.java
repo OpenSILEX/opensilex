@@ -6,8 +6,6 @@
 //******************************************************************************
 package org.opensilex.rest.authentication;
 
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -24,20 +22,17 @@ import java.lang.annotation.Target;
  * @see org.opensilex.rest.authentication.AuthenticationFilter
  * @author Vincent Migot
  */
-@ApiImplicitParams({
-    @ApiImplicitParam(
-            name = ApiProtected.HEADER_NAME,
-            required = true,
-            dataType = "string",
-            paramType = "header",
-            value = "Authentication token")
-})
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface ApiProtected {
+public @interface ApiCredential {
 
-    public final static String HEADER_NAME = "Authorization";
-    public final static String TOKEN_PARAMETER_PREFIX = "Bearer ";
+    String groupId();
+    
+    String groupLabelKey();
+    
+    String credentialId();
+    
+    String credentialLabelKey();
     
 }

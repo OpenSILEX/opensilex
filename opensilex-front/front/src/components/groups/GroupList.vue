@@ -21,10 +21,11 @@
       :sort-desc.sync="sortDesc"
       no-provider-paging
     >
-      <template v-slot:cell(uri)="data">
-        <a class="uri-info">
-          <small>{{ data.item.uri }}</small>
-        </a>
+
+      <template v-slot:cell(userProfiles)="data">
+          <ul>
+            <li v-for="userProfile in data.item.userProfiles" v-bind:key="userProfile.uri" >{{userProfile.userName}} ({{userProfile.profileName}})</li>
+          </ul>
       </template>
 
       <template v-slot:cell(actions)="data">
@@ -62,7 +63,7 @@ import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
-import { GroupService, GroupGetDTO } from "opensilex-rest/index";
+import { GroupsService, GroupGetDTO } from "opensilex-rest/index";
 
 @Component
 export default class GroupList extends Vue {
@@ -119,10 +120,8 @@ export default class GroupList extends Vue {
       sortable: true
     },
     {
-      key: "profiles"
-    },
-    {
-      key: "users"
+      label: "Users",
+      key: "userProfiles"
     },
     {
       key: "actions"
@@ -135,8 +134,8 @@ export default class GroupList extends Vue {
   }
 
   loadData() {
-    let service: GroupService = this.$opensilex.getService(
-      "opensilex.GroupService"
+    let service: GroupsService = this.$opensilex.getService(
+      "opensilex.GroupsService"
     );
 
     let orderBy = [];

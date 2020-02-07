@@ -1,8 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                          ExperimentModel.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: vincent.migot@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
 package org.opensilex.core.experiment.dal;
 
 import org.apache.jena.vocabulary.RDFS;
@@ -136,7 +137,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             ontology = Oeso.class,
             property = "hasDispositive"
     )
-    List<URI> devices = Collections.emptyList();
+    List<URI> installations = Collections.emptyList();
     public static final String DISPOSITIVES_SPARQL_VAR = "dispositives";
 
     @SPARQLProperty(
@@ -291,12 +292,12 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
         this.sensors = sensors;
     }
 
-    public List<URI> getDevices() {
-        return devices;
+    public List<URI> getInstallations() {
+        return installations;
     }
 
-    public void setDevices(List<URI> devices) {
-        this.devices = devices;
+    public void setInstallations(List<URI> installations) {
+        this.installations = installations;
     }
 
     @Override

@@ -1,3 +1,11 @@
+//******************************************************************************
+//                          AbstractIntegrationTest.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
+
+
 package org.opensilex.integration.test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -32,7 +40,9 @@ import static junit.framework.TestCase.assertEquals;
 import org.junit.experimental.categories.Category;
 
 /**
- * @author Renaud COLIN Abstract class used for DAO testing
+ * Abstract class used for Integration testing
+ * @author Renaud COLIN
+ * @author Vincent MIGOT
  */
 @Category(IntegrationTestCategory.class)
 public abstract class AbstractIntegrationTest extends JerseyTest {

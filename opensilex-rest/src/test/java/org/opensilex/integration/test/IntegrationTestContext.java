@@ -1,3 +1,11 @@
+//******************************************************************************
+//                          IntegrationTestContext.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
+
+
 package org.opensilex.integration.test;
 
 import org.eclipse.rdf4j.repository.Repository;
@@ -22,6 +30,7 @@ import org.opensilex.rest.RestApplication;
 
 /**
  * @author Renaud COLIN
+ * @author Vincent MIGOT
  *
  * An utility class used in order to init an {@link Repository} with an
  * {@link MemoryStore}, for unit and integration tests. This repository will

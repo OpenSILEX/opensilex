@@ -1,3 +1,10 @@
+//******************************************************************************
+//                          ExperimentDTO.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
+
 package org.opensilex.core.experiment.dal;
 
 import org.opensilex.rest.validation.Required;
@@ -40,7 +47,7 @@ public abstract class ExperimentDTO {
 
     protected List<URI> infrastructures = Collections.emptyList();
 
-    protected  List<URI> devices = Collections.emptyList();
+    protected  List<URI> installations = Collections.emptyList();
 
     protected URI species;
 
@@ -204,12 +211,12 @@ public abstract class ExperimentDTO {
         return this;
     }
 
-    public List<URI> getDevices() {
-        return devices;
+    public List<URI> getInstallations() {
+        return installations;
     }
 
-    public ExperimentDTO setDevices(List<URI> devices) {
-        this.devices = devices;
+    public ExperimentDTO setInstallations(List<URI> installations) {
+        this.installations = installations;
         return this;
     }
 }

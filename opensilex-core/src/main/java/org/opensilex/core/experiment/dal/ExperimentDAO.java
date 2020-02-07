@@ -1,8 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                          ExperimentDAO.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: vincent.migot@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
+
 package org.opensilex.core.experiment.dal;
 
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -41,14 +43,6 @@ public class ExperimentDAO {
         checkURIs(instance);
         sparql.create(instance);
         return instance;
-    }
-
-    public List<ExperimentModel> createAll(List<ExperimentModel> instances) throws Exception {
-        for (ExperimentModel instance : instances) {
-            checkURIs(instance);
-        }
-        sparql.create(instances);
-        return instances;
     }
 
     public ExperimentModel update(ExperimentModel instance) throws Exception {
@@ -140,14 +134,21 @@ public class ExperimentDAO {
             }
         }
 
-        // get an Expr build according startDate and endDate
-        LocalDate startDate = searchDTO.getStartDate() != null ? LocalDate.parse(searchDTO.getStartDate()) : null;
-        LocalDate endDate = searchDTO.getEndDate() != null ? LocalDate.parse(searchDTO.getEndDate()) : null;
-
-        Expr dateExpr = SPARQLQueryHelper.dateRange(ExperimentModel.START_DATE_SPARQL_VAR, startDate, ExperimentModel.END_DATE_SPARQL_VAR, endDate);
-        if (dateExpr != null) {
-            exprList.add(dateExpr);
+        if (searchDTO.getStartDate() != null) {
+            exprList.add(SPARQLQueryHelper.eq(ExperimentModel.START_DATE_SPARQL_VAR, LocalDate.parse(searchDTO.getStartDate())));
         }
+        if (searchDTO.getEndDate() != null) {
+            exprList.add(SPARQLQueryHelper.eq(ExperimentModel.END_DATE_SPARQL_VAR,  LocalDate.parse(searchDTO.getEndDate())));
+        }
+
+        // get an Expr build according startDate and endDate
+//        LocalDate startDate = searchDTO.getStartDate() != null ? LocalDate.parse(searchDTO.getStartDate()) : null;
+//        LocalDate endDate = searchDTO.getEndDate() != null ? LocalDate.parse(searchDTO.getEndDate()) : null;
+//
+//        Expr dateExpr = SPARQLQueryHelper.dateRange(ExperimentModel.START_DATE_SPARQL_VAR, startDate, ExperimentModel.END_DATE_SPARQL_VAR, endDate);
+//        if (dateExpr != null) {
+//            exprList.add(dateExpr);
+//        }
 
         return exprList;
     }
@@ -188,8 +189,8 @@ public class ExperimentDAO {
         if(! searchDTO.getInfrastructures().isEmpty()){
             valuesByVar.put(ExperimentModel.INFRASTRUCTURE_SPARQL_VAR, searchDTO.getInfrastructures());
         }
-        if(! searchDTO.getDevices().isEmpty()){
-            valuesByVar.put(ExperimentModel.DISPOSITIVES_SPARQL_VAR, searchDTO.getDevices());
+        if(! searchDTO.getInstallations().isEmpty()){
+            valuesByVar.put(ExperimentModel.DISPOSITIVES_SPARQL_VAR, searchDTO.getInstallations());
         }
         return valuesByVar;
     }

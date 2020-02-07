@@ -20,7 +20,6 @@
       </section>
 
 
-
     </div>
 
     <div id="loader" v-bind:class="{'visible':isLoaderVisible}">

@@ -207,7 +207,7 @@ public abstract class OpenSilexModule {
         Tika tika = new Tika();
         return tika.detect(getFileInputStream(filePath));
     }
-    
+
     /**
      * List a directory inside a module
      *
@@ -261,7 +261,7 @@ public abstract class OpenSilexModule {
      * @param profileId Profile idnetifier
      * @return Inputstream of the configuration file
      */
-    public InputStream getYamlFile(String profileId) {
+    public InputStream getConfigFile(String profileId) {
         String yamlPath = "config/" + profileId + "/opensilex.yml";
 
         try {

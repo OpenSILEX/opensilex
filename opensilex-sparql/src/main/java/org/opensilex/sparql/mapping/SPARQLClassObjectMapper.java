@@ -70,6 +70,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         if (SPARQL_CLASSES_LIST == null) {
             SPARQL_CLASSES_LIST = ClassUtils.getAnnotatedClasses(SPARQLResource.class);
 
+            SPARQL_CLASSES_LIST.forEach((clazz) -> {
+                LOGGER.debug("SPARQL Resource class found: " + clazz.getCanonicalName());
+            });
+            
             SPARQL_CLASSES_LIST.removeIf((Class<?> resource) -> {
                 SPARQLManualLoading manualAnnotation = resource.getAnnotation(SPARQLManualLoading.class);
                 return (manualAnnotation != null);
@@ -128,7 +132,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return SPARQL_CLASSES_LIST.contains(c);
     }
 
-    static void clearResourcesRegistry() {
+    public static void reset() {
         SPARQL_CLASSES_LIST = null;
         SPARQL_CLASSES_MAPPER = new HashMap<>();
         SPARQL_RESOURCES_MAPPER = new HashMap<>();

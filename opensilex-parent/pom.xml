@@ -38,6 +38,7 @@
         <!-- build variation flags -->
         <skipFrontBuild>false</skipFrontBuild>
         <skipFrontAudit>true</skipFrontAudit>
+        <skipIntegrationTest>false</skipIntegrationTest>
 
         <!-- Front-end Node & Yarn version -->
         <node.version>v12.13.1</node.version>
@@ -59,7 +60,7 @@
         <swagger.jersey2.jaxrs.version>1.6.0</swagger.jersey2.jaxrs.version>
         <maven.resolver.version>1.4.1</maven.resolver.version>
         <maven.resolver.provider.version>3.6.3</maven.resolver.provider.version>
-        <rdf4j.version>3.0.4</rdf4j.version>
+        <rdf4j.version>3.1.0</rdf4j.version>
         <jena.query.builder.version>3.14.0</jena.query.builder.version>
         <data.nucleus.version>5.2.2</data.nucleus.version>
         <data.nucleus.api.jdo.version>5.2.3</data.nucleus.api.jdo.version>
@@ -469,6 +470,10 @@
     <build>
         <!-- define front resources folder -->
         <resources>
+            <!-- Default resources folder -->
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
             <resource>
                 <directory>front</directory>
                 <excludes>
@@ -644,6 +649,48 @@
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>${maven.resources.plugin.version}</version>
+                </plugin>
+                
+                <!--mongodb embed testing server--> 
+                <plugin>
+                    <groupId>com.github.joelittlejohn.embedmongo</groupId>
+                    <artifactId>embedmongo-maven-plugin</artifactId>
+                    <version>0.4.2</version>
+                    <executions>
+                        <execution>
+                            <id>start</id>
+                            <phase>pre-integration-test</phase>
+                            <goals>
+                                <goal>start</goal>
+                            </goals>
+                            <configuration>
+                                <port>37017</port>
+                                <bindIp>127.0.0.1</bindIp>
+                                <version>4.0.16</version>
+                                <!--optional, default 2.2.1--> 
+        
+                                <!--<downloadPath>http://internal-mongo-repo/</downloadPath>-->
+                                <!--optional, default is http://fastdl.mongodb.org/--> 
+
+                                <features>ONLY_WITH_SSL, NO_HTTP_INTERFACE_ARG</features>
+                                <storageEngine>wiredTiger</storageEngine>
+                                <!--optional, one of wiredTiger or mmapv1 (default is mmapv1)--> 
+        
+                                <skip>${skipIntegrationTest}</skip>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>stop</id>
+                            <phase>post-integration-test</phase>
+                            <goals>
+                                <goal>stop</goal>
+                            </goals>
+                            <configuration>
+                                <port>37017</port>
+                                <bindIp>127.0.0.1</bindIp>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>

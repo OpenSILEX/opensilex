@@ -32,4 +32,10 @@ public interface SPARQLConfig extends ModuleConfig {
             value = "SPARQL data source"
     )
     public SPARQLService sparql();
+
+    @ConfigDescription(
+            value = "Diasable URI prefixes",
+            defaultBoolean = true
+    )
+    public boolean usePrefixes();
 }

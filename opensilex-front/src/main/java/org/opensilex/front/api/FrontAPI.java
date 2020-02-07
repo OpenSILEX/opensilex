@@ -55,13 +55,10 @@ public class FrontAPI {
     private final static Logger LOGGER = LoggerFactory.getLogger(FrontAPI.class);
 
     @Inject
-    OpenSilex app;
+    private OpenSilex app;
 
     @Inject
-    FrontModule frontModule;
-
-    @Context
-    HttpServletRequest request;
+    private FrontModule frontModule;
 
     @GET
     @Path("/config")

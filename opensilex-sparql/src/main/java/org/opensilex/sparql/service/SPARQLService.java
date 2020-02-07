@@ -32,6 +32,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.DCTerms;
@@ -44,11 +45,7 @@ import org.opensilex.service.Service;
 import org.opensilex.service.ServiceConfigDefault;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
-import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.exceptions.SPARQLQueryException;
-import org.opensilex.sparql.exceptions.SPARQLTransactionException;
-import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
+import org.opensilex.sparql.exceptions.*;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
@@ -89,17 +86,23 @@ public class SPARQLService implements SPARQLConnection, Service {
     @Override
     public void shutdown() throws Exception {
         connection.shutdown();
+        prefixes = getDefaultPrefixes();
+        SPARQLClassObjectMapper.reset();
     }
 
-    private final HashMap<String, String> prefixes = new HashMap<String, String>() {
-        {
-            put(RDFS.PREFIX, RDFS.NAMESPACE);
-            put(FOAF.PREFIX, FOAF.NAMESPACE);
-            put("dc", DCTerms.NS);
-            put("oa", OA.NS);
-            put(XMLSchema.PREFIX, XMLSchema.NAMESPACE);
-        }
-    };
+    private static HashMap<String, String> getDefaultPrefixes() {
+        return new HashMap<String, String>() {
+            {
+                put(RDFS.PREFIX, RDFS.NAMESPACE);
+                put(FOAF.PREFIX, FOAF.NAMESPACE);
+                put("dc", DCTerms.NS);
+                put("oa", OA.NS);
+                put(XMLSchema.PREFIX, XMLSchema.NAMESPACE);
+            }
+        };
+    }
+
+    private HashMap<String, String> prefixes = getDefaultPrefixes();
 
     public void addPrefix(String prefix, String namespace) {
         prefixes.put(prefix, namespace);
@@ -109,18 +112,22 @@ public class SPARQLService implements SPARQLConnection, Service {
         return prefixes;
     }
 
+    public PrefixMapping getPrefixMapping() {
+        return PrefixMapping.Factory.create().setNsPrefixes(prefixes);
+    }
+
     private void addPrefixes(UpdateBuilder builder) {
-        getPrefixes().forEach((key, value) -> {
-            builder.addPrefix(key, value);
-        });
+        getPrefixes().forEach(builder::addPrefix);
     }
 
     private void addPrefixes(AbstractQueryBuilder<?> builder) {
-        getPrefixes().forEach((key, value) -> {
-            builder.addPrefix(key, value);
-        });
+        getPrefixes().forEach(builder::addPrefix);
     }
 
+    public void clearPrefixes() {
+        prefixes.clear();
+    }
+        
     @Override
     public boolean executeAskQuery(AskBuilder ask) throws SPARQLQueryException {
         addPrefixes(ask);
@@ -465,8 +472,12 @@ public class SPARQLService implements SPARQLConnection, Service {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
 
         UpdateBuilder update = new UpdateBuilder();
-        sparqlObjectMapper.addUpdateBuilder(loadByURI(objectClass, sparqlObjectMapper.getURI(instance)), instance, update);
+        T oldInstance = loadByURI(objectClass, sparqlObjectMapper.getURI(instance));
+        if (oldInstance == null) {
+            throw new SPARQLInvalidURIException(instance.getUri());
+        }
 
+        sparqlObjectMapper.addUpdateBuilder(oldInstance, instance, update);
         executeUpdateQuery(update);
     }
 
@@ -485,8 +496,12 @@ public class SPARQLService implements SPARQLConnection, Service {
     }
 
     public <T extends SPARQLResourceModel> void delete(Class<T> objectClass, URI uri) throws Exception {
-        SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
 
+        if (!uriExists(uri)) {
+            throw new SPARQLInvalidURIException(uri);
+        }
+
+        SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
         UpdateBuilder delete = sparqlObjectMapper.getDeleteBuilder(loadByURI(objectClass, uri));
 
         executeDeleteQuery(delete);

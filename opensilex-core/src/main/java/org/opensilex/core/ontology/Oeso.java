@@ -10,8 +10,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.opensilex.sparql.utils.Ontology;
 
 /**
- *
- * @author vincent
+ * @author Vincent MIGOT
  */
 public class Oeso {
 
@@ -49,12 +48,17 @@ public class Oeso {
     public static final Resource Method = Ontology.resource(NS, "Method");
     public static final Resource Unit = Ontology.resource(NS, "Unit");
 
-    public static final String HAS_ENTITY_RELATION = "hasEntity";
-    public static final Property hasEntity = Ontology.property(NS, HAS_ENTITY_RELATION);
-    
+    public static final Property hasEntity = Ontology.property(NS, "hasEntity");
+
     public static final Property hasQuality = Ontology.property(NS, "hasQuality");
     public static final Property hasMethod = Ontology.property(NS, "hasMethod");
     public static final Property hasUnit = Ontology.property(NS, "hasUnit");
+
+    // ----- USERS ------
+
+    public static final Resource ScientificSupervisor = Ontology.resource(NS,"ScientificSupervisor");
+    public static final Resource TechnicalSupervisor = Ontology.resource(NS,"TechnicalSupervisor");
+
 
     // ---- PROJECTS ----
     public static final Resource Project = Ontology.resource(NS, "Project");
@@ -71,12 +75,24 @@ public class Oeso {
     // ---- EXPERIMENTS ----
     public static final Resource Experiment = Ontology.resource(NS, "Experiment");
 
+    public static final Property hasDispositive = Ontology.property(NS,"hasDispositive");
+    public static final Property hasInfrastructure = Ontology.property(NS,"hasInfrastructure");
     public static final Property hasProject = Ontology.property(NS, "hasProject");
-    public static final Property hasStartDate = Ontology.property(NS, "hasStartDate");
-    public static final Property hasEndDate = Ontology.property(NS, "hasEndDate");
     public static final Property hasScientificSupervisor = Ontology.property(NS, "hasScientificSupervisor");
     public static final Property hasTechnicalSupervisor = Ontology.property(NS, "hasTechnicalSupervisor");
     public static final Property hasGroup = Ontology.property(NS, "hasGroup");
+    public static final Property hasCampaign = Ontology.property(NS,"hasCampaign");
+    public static final Property hasSpecies = Ontology.property(NS,"hasSpecies");
+    public static final Property isPublic = Ontology.property(NS,"isPublic");
+
+
+    public static final Property measures = Ontology.property(NS,"measures");
+    public static final Property participatesIn = Ontology.property(NS,"participatesIn");
+
+
+    // ---- SPECIES ----
+    // public static final Resource Species = Ontology.resource(NS, "Species");
+
 
     // ---- FACTORS ----
     public static final Resource Factor = Ontology.resource(NS, "Factor");

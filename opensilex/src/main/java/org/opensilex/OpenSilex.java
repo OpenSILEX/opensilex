@@ -13,6 +13,7 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -425,6 +426,10 @@ public class OpenSilex {
         );
         moduleManager.loadModulesWithDependencies(dependencyManager, baseDirectory);
 
+        moduleManager.getModules().forEach(module -> {
+            OpenSilex.registerModule(module.getClass());
+        });
+
         LOGGER.debug("Build global configuration");
         configManager.build(baseDirectory, moduleManager.getModules(), profileId, configFile);
 
@@ -441,11 +446,10 @@ public class OpenSilex {
         SHUTDOWN_HOOK = new Thread() {
             @Override
             public void run() {
-                LOGGER.debug("Shutdown modules");
                 try {
-                    moduleManager.shutdown();
+                    shutdown();
                 } catch (Exception ex) {
-                    LOGGER.error("Error while shutting down modules", ex);
+                    LOGGER.error("Error while shutting down opensilex", ex);
                 }
             }
         };
@@ -461,9 +465,18 @@ public class OpenSilex {
      * @throws Exception
      */
     public void restart() throws Exception {
+        shutdown();
+        setup(SETUP_ARGS);
+    }
+
+    /**
+     * Shutdown application
+     *
+     * @throws Exception
+     */
+    public void shutdown() throws Exception {
         LOGGER.debug("Shutdown modules");
         moduleManager.shutdown();
-        setup(SETUP_ARGS);
     }
 
     /**
@@ -477,8 +490,8 @@ public class OpenSilex {
 
     /**
      * Run install method for every modules
-     * 
-     * @throws Exception 
+     *
+     * @throws Exception
      */
     public void install() throws Exception {
         moduleManager.install();
@@ -645,6 +658,15 @@ public class OpenSilex {
 
     public static ClassLoader getClassLoader() {
         return Thread.currentThread().getContextClassLoader();
+    }
+
+    public static void registerModule(Class<? extends OpenSilexModule> moduleClass) {
+        try {
+            File f = ClassUtils.getJarFile(moduleClass);
+            ClassUtils.addURLToScan(f.toURI().toURL());
+        } catch (MalformedURLException ex) {
+            LOGGER.warn("Error while adding manually registring a module, should never happend", ex);
+        }
     }
 
     public static InputStream getResourceAsStream(String name) {

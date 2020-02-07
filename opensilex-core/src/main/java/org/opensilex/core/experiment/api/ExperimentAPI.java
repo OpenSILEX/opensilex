@@ -1,8 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                          ExperimentAPI.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: vincent.migot@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
+
 package org.opensilex.core.experiment.api;
 
 import io.swagger.annotations.*;
@@ -64,6 +66,7 @@ public class ExperimentAPI {
      * the created Experiment {@link URI}
      */
     @POST
+    @Path("create")
     @ApiOperation("Create an experiment")
     @ApiProtected
     @ApiCredential(
@@ -143,6 +146,7 @@ public class ExperimentAPI {
      * the updated Experiment {@link URI}
      */
     @PUT
+    @Path("update")
     @ApiOperation("Update an experiment")
     @ApiProtected
     @ApiCredential(
@@ -181,7 +185,7 @@ public class ExperimentAPI {
      * the {@link ExperimentGetDTO}
      */
     @GET
-    @Path("{uri}")
+    @Path("get/{uri}")
     @ApiOperation("Get an experiment by URI")
     @ApiProtected
     @ApiCredential(
@@ -252,7 +256,7 @@ public class ExperimentAPI {
             @ApiParam(value = "Search by scientific(s) supervisor(s)") @QueryParam("scientific_supervisors") List<URI> scientificSupervisors,
             @ApiParam(value = "Search by technical(s) supervisor(s)") @QueryParam("technical_supervisors") List<URI> technicalSupervisors,
             @ApiParam(value = "Search by infrastructure(s)") @QueryParam("infrastructures") List<URI> infrastructures,
-            @ApiParam(value = "Search by devices(s)") @QueryParam("devices") List<URI> devices,
+            @ApiParam(value = "Search by devices(s)") @QueryParam("devices") List<URI> installations,
             @ApiParam(value = "Search by groups(s)") @QueryParam("groups") List<URI> groups,
             @ApiParam(value = "Search by sensor(s)") @QueryParam("sensors") List<URI> sensors,
             @ApiParam(value = "Search by involved variable(s)") @QueryParam("variables") List<URI> variables,
@@ -288,7 +292,7 @@ public class ExperimentAPI {
                     .setSensors(sensors)
                     .setKeywords(keywords)
                     .setInfrastructures(infrastructures)
-                    .setDevices(devices);
+                    .setInstallations(installations);
 
             ListWithPagination<ExperimentModel> resultList = xpDao.search(searchDTO, orderByList, page, pageSize);
             if (resultList.getList().isEmpty()) {
@@ -312,7 +316,7 @@ public class ExperimentAPI {
      * the deleted Experiment {@link URI}
      */
     @DELETE
-    @Path("{uri}")
+    @Path("delete/{uri}")
     @ApiOperation("Delete an experiment")
     @ApiProtected
     @ApiCredential(

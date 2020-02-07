@@ -1,3 +1,10 @@
+//******************************************************************************
+//                          ExperimentAPITest.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
+
 package org.opensilex.core.experiment.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -20,11 +27,19 @@ import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
+/**
+ * @author Vincent MIGOT
+ * @author Renaud COLIN
+ */
 public class ExperimentAPITest extends AbstractIntegrationTest {
 
     protected String path = "/core/experiment";
-    protected String uriPath = path + "/{uri}";
+
+    protected String uriPath = path + "/get/{uri}";
     protected String searchPath = path + "/search";
+    protected String createPath = path + "/create";
+    protected String updatePath = path + "/update";
+    protected String deletePath = path + "/delete/{uri}";
 
     protected ExperimentCreationDTO getCreationDTO() {
 
@@ -41,7 +56,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
     @Test
     public void testCreate() throws URISyntaxException {
 
-        final Response postResult = getJsonPostResponse(target(path), getCreationDTO());
+        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
         assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
@@ -51,19 +66,19 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testCreateAll() {
+    public void testCreateAll() throws URISyntaxException {
 
-        List<ExperimentCreationDTO> xpDtos = Arrays.asList(getCreationDTO(), getCreationDTO());
-        String createAllPath = path + "/experiments";
+        List<ExperimentCreationDTO> creationDTOS = Arrays.asList(getCreationDTO(), getCreationDTO());
 
-        final Response postResult = getJsonPostResponse(target(createAllPath), xpDtos);
-        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        for (ExperimentCreationDTO creationDTO : creationDTOS) {
+            final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+            assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
 
-        List<URI> xpUris = extractUriListFromResponse(postResult);
-        for (URI xpUri : xpUris) {
-            final Response getResult = getJsonGetByUriResponse(target(uriPath), xpUri.toString());
+            URI uri = extractUriFromResponse(postResult);
+            final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
             assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
         }
+
     }
 
     @Test
@@ -71,15 +86,15 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
 
         // create the xp
         ExperimentCreationDTO xpDto = getCreationDTO();
-        final Response postResult = getJsonPostResponse(target(path), xpDto);
+        final Response postResult = getJsonPostResponse(target(createPath), xpDto);
 
         // update the xp
         xpDto.setUri(extractUriFromResponse(postResult));
         xpDto.setLabel("new alias");
         xpDto.setEndDate(LocalDate.now().toString());
 
-        final Response putResult = getJsonPutResponse(target(path), xpDto);
-        assertEquals(Status.OK.getStatusCode(), putResult.getStatus());
+        final Response updateResult = getJsonPutResponse(target(updatePath), xpDto);
+        assertEquals(Status.OK.getStatusCode(), updateResult.getStatus());
 
         // retrieve the new xp and compare to the expected xp
         final Response getResult = getJsonGetByUriResponse(target(uriPath), xpDto.getUri().toString());
@@ -99,25 +114,21 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
     public void testDelete() throws URISyntaxException {
 
         // create object and check if URI exists
-        Response postResponse = getJsonPostResponse(target(path), getCreationDTO());
-        assertEquals(Status.CREATED.getStatusCode(), postResponse.getStatus());
+        Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO());
         String uri = extractUriFromResponse(postResponse).toString();
 
-        Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
-        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
-
-        // delete object and if URI no longer exists
-        Response delResult = getDeleteByUriResponse(target(uriPath), uri);
+        // delete object and check if URI no longer exists
+        Response delResult = getDeleteByUriResponse(target(deletePath), uri);
         assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
 
-        getResult = getJsonGetByUriResponse(target(uriPath), uri);
+        Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
     @Test
     public void testGetByUri() throws URISyntaxException {
 
-        final Response postResult = getJsonPostResponse(target(path), getCreationDTO());
+        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
         URI uri = extractUriFromResponse(postResult);
 
         final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
@@ -134,7 +145,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
     @Test
     public void testGetByUriFail() {
 
-        final Response postResult = getJsonPostResponse(target(path), getCreationDTO());
+        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
         JsonNode node = postResult.readEntity(JsonNode.class);
         ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class);
         String uri = postResponse.getResult();
@@ -148,7 +159,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
     public void testSearch() throws URISyntaxException {
 
         ExperimentCreationDTO creationDTO = getCreationDTO();
-        final Response postResult = getJsonPostResponse(target(path), creationDTO);
+        final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
         URI uri = extractUriFromResponse(postResult);
 
         Map<String, Object> params = new HashMap<String, Object>() {
@@ -160,12 +171,13 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
             }
         };
 
-        WebTarget target = appendSearchParams(target(searchPath), 0, 50, params);
-        final Response getResult = appendToken(target).get();
+        WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 50, params);
+        final Response getResult = appendToken(searchTarget).get();
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         JsonNode node = getResult.readEntity(JsonNode.class);
-        PaginatedListResponse<ExperimentGetDTO> xpListResponse = mapper.convertValue(node, PaginatedListResponse.class);
+        // mapper.convertValue(node, PaginatedListResponse.class);
+        PaginatedListResponse<ExperimentGetDTO> xpListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ExperimentGetDTO>>() {});
         List<ExperimentGetDTO> xps = xpListResponse.getResult();
 
         assertFalse(xps.isEmpty());

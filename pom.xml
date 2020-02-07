@@ -116,7 +116,7 @@
             <artifactId>phis2ws</artifactId>
             <version>${revision}</version>
         </dependency>
-<!--        <dependency>
+        <!--        <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>inrae-sixtine</artifactId>
             <version>${revision}</version>
@@ -188,7 +188,7 @@
                                     <goal>prepare-agent</goal>
                                 </goals>
                                 <configuration>
-                                    <propertyName>jaCoCoArgLine</propertyName>
+                                    <propertyName>surefireArgLine</propertyName>
                                 </configuration>
                             </execution>
                             <execution>
@@ -201,24 +201,24 @@
                                         <fileSet implementation="org.apache.maven.shared.model.fileset.FileSet">
                                             <directory>${maven.multiModuleProjectDirectory}</directory>
                                             <includes>
-                                                <include>**/*.exec</include>
+                                                <include>**/jacoco.exec</include>
                                             </includes>
                                         </fileSet>
                                     </fileSets>
+                                    <destFile>${project.build.directory}/jacoco.exec</destFile>
                                 </configuration>
                             </execution>
                             <!-- Create aggregate code coverage report accross all Maven modules -->
                             <execution>
-                                <id>report-aggregate</id>
-                                <phase>prepare-package</phase>
+                                <id>jacoco report aggregate</id>
+                                <phase>post-integration-test</phase>
                                 <goals>
                                     <goal>report-aggregate</goal>
                                 </goals>
                                 <configuration>
-                                    <title>JaCoCo</title>
-                                    <footer>Code Coverage Report for JaCoCo ${project.version}</footer>
+                                    <dataFileIncludes>**/jacoco.exec</dataFileIncludes>
                                     <includes>
-                                        <!-- Analyze class files only to exclude shaded agent JAR from report -->
+                                        <!--Analyze class files only to exclude shaded agent JAR from report--> 
                                         <include>**/*.class</include>
                                     </includes>
                                     <outputDirectory>${generated.doc.site.directory}/jacoco/</outputDirectory>

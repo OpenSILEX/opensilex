@@ -81,12 +81,12 @@
             <!-- include integration test into integration-test -->
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.0.0-M4</version>
                 <configuration>
                     <includes>
                         <include>**/*</include>
                     </includes>
                     <groups>org.opensilex.integration.test.IntegrationTestCategory</groups>
+                    <argLine>${failsafeArgLine}</argLine>
                     <skip>${skipIntegrationTest}</skip>
                 </configuration>
                 <executions>

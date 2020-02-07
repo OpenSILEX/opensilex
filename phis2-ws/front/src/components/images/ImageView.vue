@@ -7,7 +7,7 @@
       @click="onSearchButtonClick"
       variant="primary"
     >
-      <font-awesome-icon icon="search" size="sm" />
+      Filter's parameters <font-awesome-icon v-if="!showSearchComponent" icon="chevron-down" size="sm" /> <font-awesome-icon v-if="showSearchComponent" icon="chevron-up" size="sm" /> 
     </b-button>
 
     <b-collapse id="collapse-1" v-model="showSearchComponent" class="mt-2">
@@ -16,8 +16,7 @@
 
     <b-collapse id="collapse-2" v-model="showImageComponent" class="mt-2">
       <div v-if="totalImages>0">
-        <p>Total Image {{totalImages}}</p>
-        <p>showed Image {{showedImages}}</p>
+        <p>Showed images: {{showedImages}}/{{totalImages}} ( Scroll Down to see more images)</p>
         <phis2ws-ImageList :images="images"></phis2ws-ImageList>
 
         <div v-if="showScrollSpinner" class="d-flex align-items-center">
@@ -58,7 +57,7 @@ export default class ImageView extends Vue {
   canReload: boolean = true;
 
   currentPage: number = 1;
-  pageSize = 20;
+  pageSize = 30;
   totalImages: number = 0;
   showedImages: number = 0;
 

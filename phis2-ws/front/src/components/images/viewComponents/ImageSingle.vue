@@ -92,6 +92,13 @@ export default class ImageSingle extends Vue {
 .card .card-body {
     padding: 0;
 }
+
+.card {
+  margin-bottom: 5px;
+}
+p {
+    font-size: 9px;
+}
 .card .card-text{
   margin-bottom: 0;
 }

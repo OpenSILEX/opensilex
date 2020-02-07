@@ -11,7 +11,7 @@
 
       <phis2ws-SciObjectSearch></phis2ws-SciObjectSearch>
 
-      <b-btn type="submit" variant="primary">Submit</b-btn>
+      <b-btn type="submit" variant="primary">Submit <font-awesome-icon icon="search" size="sm" /></b-btn>
     </b-form>
   </div>
 </template>

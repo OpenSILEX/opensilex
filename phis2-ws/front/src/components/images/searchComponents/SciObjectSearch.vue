@@ -113,6 +113,7 @@ export default class ObjectSearch extends Vue {
       if (this.selectedSoType === null) {
         this.selectedSoType = undefined;
       }
+      
       const result = service
         .getScientificObjectsBySearch(
           this.user.getAuthorizationHeader(),

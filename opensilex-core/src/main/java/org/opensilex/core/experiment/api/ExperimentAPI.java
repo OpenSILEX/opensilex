@@ -1,8 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                          ExperimentAPI.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: vincent.migot@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
+
 package org.opensilex.core.experiment.api;
 
 import io.swagger.annotations.*;
@@ -64,6 +66,7 @@ public class ExperimentAPI {
      * the created Experiment {@link URI}
      */
     @POST
+    @Path("create")
     @ApiOperation("Create an experiment")
     @ApiProtected
     @ApiCredential(
@@ -95,54 +98,12 @@ public class ExperimentAPI {
     }
 
     /**
-     * Create a list of Experiment
-     *
-     * @param xpDtoList the List of Experiment to create
-     * @return a {@link Response} with a {@link PaginatedListResponse}
-     * containing the list of created Experiment {@link URI}
-     */
-    @POST
-    @Path("experiments")
-    @ApiOperation("Create a list of experiment")
-    @ApiProtected
-    @ApiCredential(
-            groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
-            groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
-            credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_EXPERIMENT_READ_LABEL_KEY
-    )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-
-    @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Create a list of experiments", response = PaginatedListResponse.class),
-        @ApiResponse(code = 409, message = "An experiment with the same URI already exists", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    public Response createAll(
-            @ApiParam("Experiment description") @Valid List<ExperimentCreationDTO> xpDtoList
-    ) {
-        try {
-            ExperimentDAO dao = new ExperimentDAO(sparql);
-
-            List<ExperimentModel> models = xpDtoList.stream().map(ExperimentCreationDTO::newModel).collect(Collectors.toList());
-            dao.createAll(models);
-            List<URI> uris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
-
-            return new PaginatedListResponse<>(uris).setStatus(Response.Status.CREATED).getResponse();
-
-        } catch (SPARQLAlreadyExistingUriException e) {
-            return new ErrorResponse(Response.Status.CONFLICT, "An experiment already exists", e.getMessage()).getResponse();
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
-        }
-    }
-
-    /**
      * @param xpDto the Experiment to update
      * @return a {@link Response} with a {@link ObjectUriResponse} containing
      * the updated Experiment {@link URI}
      */
     @PUT
+    @Path("update")
     @ApiOperation("Update an experiment")
     @ApiProtected
     @ApiCredential(
@@ -181,7 +142,7 @@ public class ExperimentAPI {
      * the {@link ExperimentGetDTO}
      */
     @GET
-    @Path("{uri}")
+    @Path("get/{uri}")
     @ApiOperation("Get an experiment by URI")
     @ApiProtected
     @ApiCredential(
@@ -252,7 +213,7 @@ public class ExperimentAPI {
             @ApiParam(value = "Search by scientific(s) supervisor(s)") @QueryParam("scientific_supervisors") List<URI> scientificSupervisors,
             @ApiParam(value = "Search by technical(s) supervisor(s)") @QueryParam("technical_supervisors") List<URI> technicalSupervisors,
             @ApiParam(value = "Search by infrastructure(s)") @QueryParam("infrastructures") List<URI> infrastructures,
-            @ApiParam(value = "Search by devices(s)") @QueryParam("devices") List<URI> devices,
+            @ApiParam(value = "Search by devices(s)") @QueryParam("devices") List<URI> installations,
             @ApiParam(value = "Search by groups(s)") @QueryParam("groups") List<URI> groups,
             @ApiParam(value = "Search by sensor(s)") @QueryParam("sensors") List<URI> sensors,
             @ApiParam(value = "Search by involved variable(s)") @QueryParam("variables") List<URI> variables,
@@ -288,7 +249,7 @@ public class ExperimentAPI {
                     .setSensors(sensors)
                     .setKeywords(keywords)
                     .setInfrastructures(infrastructures)
-                    .setDevices(devices);
+                    .setInstallations(installations);
 
             ListWithPagination<ExperimentModel> resultList = xpDao.search(searchDTO, orderByList, page, pageSize);
             if (resultList.getList().isEmpty()) {
@@ -312,7 +273,7 @@ public class ExperimentAPI {
      * the deleted Experiment {@link URI}
      */
     @DELETE
-    @Path("{uri}")
+    @Path("delete/{uri}")
     @ApiOperation("Delete an experiment")
     @ApiProtected
     @ApiCredential(

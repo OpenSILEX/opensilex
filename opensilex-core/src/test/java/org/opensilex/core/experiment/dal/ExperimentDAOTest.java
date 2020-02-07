@@ -1,3 +1,11 @@
+//******************************************************************************
+//                          ExperimentDAOTest.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
+
+
 package org.opensilex.core.experiment.dal;
 
 import org.junit.Before;
@@ -29,6 +37,7 @@ import org.opensilex.sparql.rdf4j.RDF4JInMemoryService;
 
 /**
  * @author Renaud COLIN
+ * @author Vincent MIGOT
  */
 public class ExperimentDAOTest {
 
@@ -105,12 +114,10 @@ public class ExperimentDAOTest {
         int count = sparql.count(ExperimentModel.class, null);
         assertEquals(count, 0);
 
-        int n = 20;
-        List<ExperimentModel> xps = new ArrayList<>(n);
+        int n = 10;
         for (int i = 0; i < n; i++) {
-            xps.add(getModel(i));
+            xpDao.create(getModel(i));
         }
-        xpDao.createAll(xps);
 
         count = sparql.count(ExperimentModel.class, null);
         assertEquals("the count must be equals to " + n + " since " + n + " experiment have been created", n, count);
@@ -152,12 +159,10 @@ public class ExperimentDAOTest {
     @Test
     public void getAllXp() throws Exception {
 
-        int n = 100;
-        List<ExperimentModel> xps = new ArrayList<>(n);
+        int n = 10;
         for (int i = 0; i < n; i++) {
-            xps.add(getModel(i));
+            xpDao.create(getModel(i));
         }
-        xpDao.createAll(xps);
 
         int pageSize = 10;
         int nbPage = n / pageSize;
@@ -367,8 +372,9 @@ public class ExperimentDAOTest {
         for (int i = 0; i < n; i++) {
             xps.add(getModel(i));
         }
-        xpDao.createAll(xps);
-
+        for (ExperimentModel xp : xps) {
+            xpDao.create(xp);
+        }
         int oldCount = sparql.count(ExperimentModel.class, null);
         assertEquals(n + " experiments should have been created", oldCount, n);
 

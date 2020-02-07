@@ -11,7 +11,7 @@
 
       <phis2ws-SciObjectSearch></phis2ws-SciObjectSearch>
 
-      <b-btn type="submit" variant="primary">Submit <font-awesome-icon icon="search" size="sm" /></b-btn>
+      <b-btn type="submit" variant="phis">Submit <font-awesome-icon icon="search" size="sm" /></b-btn>
     </b-form>
   </div>
 </template>
@@ -132,4 +132,21 @@ export default class ImageSearch extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.btn-phis {
+  background-color: #00A38D;
+  border:1px solid #00A38D;
+    color: #ffffff !important;
+}
+.btn-phis:hover, .btn-phis:focus, .btn-phis.active {
+    background-color: #00A38D;
+    border: 1px solid #00A38D;
+    color: #ffffff !important;
+}
+.btn-phis:focus{
+    outline: 0;
+    -webkit-box-shadow: none;
+     box-shadow: none;
+
+}
 </style>

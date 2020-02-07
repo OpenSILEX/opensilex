@@ -5,9 +5,11 @@
       :aria-expanded="showSearchComponent ? 'true' : 'false'"
       aria-controls="collapse-1"
       @click="onSearchButtonClick"
-      variant="primary"
+      variant="phis"
     >
-      Filter's parameters <font-awesome-icon v-if="!showSearchComponent" icon="chevron-down" size="sm" /> <font-awesome-icon v-if="showSearchComponent" icon="chevron-up" size="sm" /> 
+      Filter's parameters
+      <font-awesome-icon v-if="!showSearchComponent" icon="chevron-down" size="sm" />
+      <font-awesome-icon v-if="showSearchComponent" icon="chevron-up" size="sm" />
     </b-button>
 
     <b-collapse id="collapse-1" v-model="showSearchComponent" class="mt-2">
@@ -16,7 +18,10 @@
 
     <b-collapse id="collapse-2" v-model="showImageComponent" class="mt-2">
       <div v-if="totalImages>0">
-        <p>Showed images: {{showedImages}}/{{totalImages}} ( Scroll Down to see more images)</p>
+        <p>
+          Showed images: {{showedImages}}/{{totalImages}} (
+          <b>Scroll to see more images</b>)
+        </p>
         <phis2ws-ImageList :images="images"></phis2ws-ImageList>
 
         <div v-if="showScrollSpinner" class="d-flex align-items-center">
@@ -35,14 +40,12 @@ import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import { DataService } from "../../lib/api/data.service";
 import { FileDescriptionDTO } from "../../lib/model/fileDescriptionDTO";
-import VueRouter from "vue-router";
 import { Image } from "./image";
 
 @Component
 export default class ImageView extends Vue {
   $opensilex: any;
   $store: any;
-  $router: VueRouter;
   get user() {
     return this.$store.state.user;
   }
@@ -67,20 +70,13 @@ export default class ImageView extends Vue {
     endDate: undefined,
     provenance: undefined,
     jsonValueFilter: undefined,
-    orderByDate: true,
+    dateSortAsc: false,
     concernedItemsValue: [],
     objectType: null,
     experiment: null
   };
 
   created() {
-    let query: any = this.$route.query;
-    if (query.pageSize) {
-      this.pageSize = parseInt(query.pageSize);
-    }
-    if (query.currentPage) {
-      this.currentPage = parseInt(query.currentPage);
-    }
     this.initScroll();
   }
 
@@ -156,7 +152,7 @@ export default class ImageView extends Vue {
         this.searchImagesFields.provenance,
         this.searchImagesFields.concernedItemsValue,
         this.searchImagesFields.jsonValueFilter,
-        this.searchImagesFields.orderByDate,
+        this.searchImagesFields.dateSortAsc,
         this.pageSize,
         this.currentPage - 1
       )
@@ -168,14 +164,7 @@ export default class ImageView extends Vue {
           console.log("data");
           console.log(data);
           this.imagesFilter(data);
-          this.$router
-            .push({
-              path: this.$route.fullPath,
-              query: {
-                currentPage: "" + this.currentPage
-              }
-            })
-            .catch(function() {});
+         
         }
       )
       .catch(error => {
@@ -190,8 +179,6 @@ export default class ImageView extends Vue {
     if (this.searchImagesFields.objectType !== null) {
       data.forEach(element => {
         element.concernedItems.forEach(concernedItem => {
-          console.log(this.searchImagesFields.objectType.split("#")[1]);
-          console.log(concernedItem.typeURI.split("#")[1]);
           if (this.searchImagesFields.objectType === concernedItem.typeURI) {
             const image: Image = {
               objectType: concernedItem.typeURI,
@@ -248,5 +235,22 @@ export default class ImageView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.btn-phis {
+  background-color: #00a38d;
+  border: 1px solid #00a38d;
+  color: #ffffff !important;
+}
+.btn-phis:hover,
+.btn-phis:focus,
+.btn-phis.active {
+  background-color: #00a38d;
+  border: 1px solid #00a38d;
+  color: #ffffff !important;
+}
+.btn-phis:focus {
+  outline: 0;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
 </style>
 

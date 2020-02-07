@@ -154,4 +154,7 @@ export default class ObjectSearch extends Vue {
 
 
 <style scoped lang="scss">
+.badge-info {
+    background-color: #00A38D;
+}
 </style>

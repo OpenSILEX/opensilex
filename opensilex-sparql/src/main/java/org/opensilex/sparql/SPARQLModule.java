@@ -51,13 +51,18 @@ public class SPARQLModule extends OpenSilexModule {
         }
 
         SPARQLService sparql = sparqlConfig.sparql();
-        SPARQLClassObjectMapper.forEach((Resource resource, SPARQLClassObjectMapper<?> mapper) -> {
-            String resourceNamespace = mapper.getResourceGraphNamespace();
-            String resourcePrefix = mapper.getResourceGraphPrefix();
-            if (resourceNamespace != null && resourcePrefix != null && !resourcePrefix.isEmpty()) {
-                sparql.addPrefix(basePrefix + mapper.getResourceGraphPrefix(), resourceNamespace + "#");
-            }
-        });
+        
+        if (sparqlConfig.usePrefixes()) {
+            SPARQLClassObjectMapper.forEach((Resource resource, SPARQLClassObjectMapper<?> mapper) -> {
+                String resourceNamespace = mapper.getResourceGraphNamespace();
+                String resourcePrefix = mapper.getResourceGraphPrefix();
+                if (resourceNamespace != null && resourcePrefix != null && !resourcePrefix.isEmpty()) {
+                    sparql.addPrefix(basePrefix + mapper.getResourceGraphPrefix(), resourceNamespace + "#");
+                }
+            });
+        } else {
+            sparql.clearPrefixes();
+        }
         URIDeserializer.setPrefixes(sparql.getPrefixMapping());
 
         SPARQLConfig cfg = OpenSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);

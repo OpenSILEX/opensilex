@@ -7,9 +7,11 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
+import org.opensilex.sparql.mapping.SPARQLClassAnalyzer;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.service.SPARQLService;
-import test.opensilex.sparql.SPARQLServiceTest;
+import org.opensilex.sparql.SPARQLServiceTest;
 
 public class SPARQLClassAnalyzerTest {
 

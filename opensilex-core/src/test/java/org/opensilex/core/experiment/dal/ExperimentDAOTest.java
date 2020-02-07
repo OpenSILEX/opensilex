@@ -25,7 +25,7 @@ import org.opensilex.core.CoreModule;
 import org.opensilex.rest.RestModule;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.service.SPARQLService;
-import test.opensilex.sparql.rdf4j.RDF4JInMemoryService;
+import org.opensilex.sparql.rdf4j.RDF4JInMemoryService;
 
 /**
  * @author Renaud COLIN

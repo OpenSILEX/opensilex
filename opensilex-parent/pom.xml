@@ -38,6 +38,7 @@
         <!-- build variation flags -->
         <skipFrontBuild>false</skipFrontBuild>
         <skipFrontAudit>true</skipFrontAudit>
+        <skipIntegrationTest>false</skipIntegrationTest>
 
         <!-- Front-end Node & Yarn version -->
         <node.version>v12.13.1</node.version>
@@ -648,6 +649,48 @@
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>${maven.resources.plugin.version}</version>
+                </plugin>
+                
+                <!--mongodb embed testing server--> 
+                <plugin>
+                    <groupId>com.github.joelittlejohn.embedmongo</groupId>
+                    <artifactId>embedmongo-maven-plugin</artifactId>
+                    <version>0.4.2</version>
+                    <executions>
+                        <execution>
+                            <id>start</id>
+                            <phase>pre-integration-test</phase>
+                            <goals>
+                                <goal>start</goal>
+                            </goals>
+                            <configuration>
+                                <port>37017</port>
+                                <bindIp>127.0.0.1</bindIp>
+                                <version>4.0.16</version>
+                                <!--optional, default 2.2.1--> 
+        
+                                <!--<downloadPath>http://internal-mongo-repo/</downloadPath>-->
+                                <!--optional, default is http://fastdl.mongodb.org/--> 
+
+                                <features>ONLY_WITH_SSL, NO_HTTP_INTERFACE_ARG</features>
+                                <storageEngine>wiredTiger</storageEngine>
+                                <!--optional, one of wiredTiger or mmapv1 (default is mmapv1)--> 
+        
+                                <skip>${skipIntegrationTest}</skip>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>stop</id>
+                            <phase>post-integration-test</phase>
+                            <goals>
+                                <goal>stop</goal>
+                            </goals>
+                            <configuration>
+                                <port>37017</port>
+                                <bindIp>127.0.0.1</bindIp>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>

@@ -124,6 +124,10 @@ public class SPARQLService implements SPARQLConnection, Service {
         getPrefixes().forEach(builder::addPrefix);
     }
 
+    public void clearPrefixes() {
+        prefixes.clear();
+    }
+        
     @Override
     public boolean executeAskQuery(AskBuilder ask) throws SPARQLQueryException {
         addPrefixes(ask);

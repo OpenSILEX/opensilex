@@ -1,6 +1,8 @@
 ontologies:
     baseURI: http://opensilex.test/
     baseURIAlias: test
+    usePrefixes: false
     sparql:
-        implementation: test.opensilex.sparql.rdf4j.RDF4JInMemoryService
+        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryService
+
 

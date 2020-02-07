@@ -2,7 +2,7 @@ package org.opensilex.core.experiment.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import integration.opensilex.AbstractIntegrationTest;
+import org.opensilex.integration.test.AbstractIntegrationTest;
 import org.junit.Test;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;

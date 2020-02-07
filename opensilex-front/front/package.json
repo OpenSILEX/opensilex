@@ -26,12 +26,12 @@
         "vuejs-logger": "1.10.2"
     },
     "devDependencies": {
-        "@vue/cli-plugin-babel": "4.1.2",
-        "@vue/cli-plugin-eslint": "4.1.2",
-        "@vue/cli-plugin-router": "4.1.2",
-        "@vue/cli-plugin-typescript": "4.1.2",
-        "@vue/cli-plugin-vuex": "4.1.2",
-        "@vue/cli-service": "4.1.2",
+        "@vue/cli-plugin-babel": "4.2.2",
+        "@vue/cli-plugin-eslint": "4.2.2",
+        "@vue/cli-plugin-router": "4.2.2",
+        "@vue/cli-plugin-typescript": "4.2.2",
+        "@vue/cli-plugin-vuex": "4.2.2",
+        "@vue/cli-service": "4.2.2",
         "@vue/eslint-config-typescript": "^5.0.1",
         "simple-progress-webpack-plugin": "^1.1.2",
         "yargs-parser": "^16.1.0"

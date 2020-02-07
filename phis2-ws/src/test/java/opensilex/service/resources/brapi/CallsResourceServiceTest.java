@@ -6,7 +6,8 @@
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.resources.brapi;
-import integration.opensilex.rest.RestApplicationTest;
+
+import org.opensilex.integration.test.AbstractIntegrationTest;
 import javax.ws.rs.core.Response;
 import static junit.framework.TestCase.assertEquals;
 import org.junit.Test;
@@ -14,7 +15,7 @@ import org.junit.Test;
 /**
  * Tests for the BrAPI Call service
  */
-public class CallsResourceServiceTest extends RestApplicationTest {
+public class CallsResourceServiceTest extends AbstractIntegrationTest {
 
     /**
      * Test if the returned code is 200 when the call is correct

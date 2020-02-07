@@ -19,9 +19,6 @@
         </main>
       </section>
 
-      <footer v-if="!embed">
-        <component v-bind:is="footerComponent"></component>
-      </footer>
     </div>
 
     <div id="loader" v-bind:class="{'visible':isLoaderVisible}">

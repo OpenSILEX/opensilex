@@ -26,7 +26,6 @@ public class RDF4JInMemoryService extends SPARQLService {
         ShaclSail shacl = new ShaclSail(memoryStore);
         SailRepository repository = new SailRepository(shacl);
         repository.init();
-        shacl.shutDown();
 
         return new RDF4JConnection(repository.getConnection());
     }

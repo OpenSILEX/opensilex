@@ -22,6 +22,8 @@ import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 import { UriService } from "../../../lib/api/uri.service";
 import { Uri } from "../../../lib/model/uri";
+import { ScientificObjectsService } from "../../../lib/api/scientificObjects.service";
+import { ScientificObjectDTO } from "../../../lib/model/scientificObjectDTO";
 import { EventBus } from "./../event-bus";
 
 @Component
@@ -34,7 +36,10 @@ export default class SciObjectTypeSearch extends Vue {
 
   soTypes: any = [];
   type: string = null;
-
+  allTypes: any = [];
+  scientificObjectService: ScientificObjectsService = this.$opensilex.getService(
+    "opensilex.ScientificObjectsService"
+  );
   sciObjectUri: string =
     "http://www.opensilex.org/vocabulary/oeso#ScientificObject";
 
@@ -61,9 +66,55 @@ export default class SciObjectTypeSearch extends Vue {
             text: element.uri.split("#")[1]
           });
         });
-
+        this.allTypes = this.soTypes;
       })
       .catch(this.$opensilex.errorHandler);
+
+    EventBus.$on("experienceHasChanged", experience => {
+      if (experience === null) {
+        this.soTypes = this.allTypes;
+        this.type = null;
+      } else {
+        this.findTypeByExperimentObjects(experience);
+        this.type = null;
+      }
+    });
+  }
+
+  findTypeByExperimentObjects(experience) {
+    const result = this.scientificObjectService
+      .getScientificObjectsBySearch(
+        this.user.getAuthorizationHeader(),
+        8000,
+        0,
+        undefined,
+        experience,
+        undefined,
+        undefined
+      )
+      .then(
+        (http: HttpResponse<OpenSilexResponse<Array<ScientificObjectDTO>>>) => {
+          const res = http.response.result as any;
+          const data = res.data;
+          let uriTypes = [];
+          data.forEach(element => {
+            uriTypes.push(element.rdfType);
+          });
+          uriTypes = [...new Set(uriTypes)];
+          const types = [];
+          uriTypes.forEach(element => {
+            types.push({
+              value: element,
+              text: element.split("#")[1]
+            });
+          });
+          this.soTypes=types;
+          
+        }
+      )
+      .catch(error => {
+        console.log(error);
+      });
   }
 }
 </script>

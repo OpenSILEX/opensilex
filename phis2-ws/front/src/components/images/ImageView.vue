@@ -60,7 +60,7 @@ export default class ImageView extends Vue {
   canReload: boolean = true;
 
   currentPage: number = 1;
-  pageSize = 30;
+  pageSize = 50;
   totalImages: number = 0;
   showedImages: number = 0;
 

@@ -1,10 +1,13 @@
 <template>
   <div class="col-lg-2 col-md-3 col-sm-4">
-    <b-card :img-src="link" img-alt="Image" img-top tag="article" style="max-width: 10rem;" @click="imageClicked" class>
-      <b-card-text>{{objectType}}</b-card-text>
-      <b-card-text>{{objectAlias}}</b-card-text>
-      <b-card-text>{{formatedDateValue}}</b-card-text>
-    </b-card>
+    <article class="card" style="max-width: 10rem;">
+      <b-card-img :src="link" class="card-img-top"  @click="imageClicked"></b-card-img>
+      <div class="card-body">
+        <b-card-text>{{objectType}}</b-card-text>
+        <b-card-text>{{objectUri}}</b-card-text>
+        <b-card-text>{{formatedDateValue}}</b-card-text>
+      </div>
+    </article>
   </div>
 </template>
 
@@ -28,23 +31,23 @@ export default class ImageSingle extends Vue {
   get user() {
     return this.$store.state.user;
   }
- 
-  link:string = "";
-  objectType:string="";
-  objectUri:string="";
-  objectAlias:string="";
-  formatedDateValue:string = "";
+
+  link: string = "";
+  objectType: string = "";
+  objectUri: string = "";
+  objectAlias: string = "";
+  formatedDateValue: string = "";
 
   created() {
     this.link = this.image.uri;
     this.formatedDateValue = this.formatedDate(this.image.date);
-    this.objectType=this.image.objectType.split("#")[1];
-    this.objectUri=this.image.objectUri;
-    this.getObjectAlias();
+    this.objectType = this.image.objectType.split("#")[1];
+    this.objectUri = this.image.objectUri;
+    //this.getObjectAlias();
   }
 
-  getObjectAlias(){
-     let service: ScientificObjectsService = this.$opensilex.getService(
+  getObjectAlias() {
+    let service: ScientificObjectsService = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"
     );
     const result = service
@@ -60,15 +63,14 @@ export default class ImageSingle extends Vue {
       .then(
         (http: HttpResponse<OpenSilexResponse<Array<ScientificObjectDTO>>>) => {
           const res = http.response.result as any;
-          this.image.objectAlias=res.data[0].label;
-          this.objectAlias=res.data[0].label;
+          this.image.objectAlias = res.data[0].label;
+          this.objectAlias = res.data[0].label;
         }
       )
       .catch(error => {
         console.log(error);
       });
   }
-
 
   formatedDate(date) {
     const newDate = new Date(date);
@@ -81,7 +83,7 @@ export default class ImageSingle extends Vue {
     };
     return newDate.toLocaleDateString("fr-FR", options);
   }
-  imageClicked(){
+  imageClicked() {
     console.log(this.index);
     EventBus.$emit("imageIsClicked", this.index);
   }
@@ -90,20 +92,20 @@ export default class ImageSingle extends Vue {
 
 <style scoped lang="scss">
 .card .card-body {
-    padding: 0;
+  padding: 0;
 }
 
 .card {
   margin-bottom: 5px;
 }
 p {
-    font-size: 9px;
+  font-size: 9px;
 }
-.card .card-text{
+.card-text {
   margin-bottom: 0;
 }
 img {
-  width: 100%;
+  width: 100% !important;
   max-width: 400px;
 }
 </style>

@@ -55,12 +55,12 @@ export default class ImageView extends Vue {
   images = [];
 
   showSearchComponent: boolean = true;
-  showImageComponent: boolean = false;
+  showImageComponent: boolean = true;
   showScrollSpinner: boolean = false;
   canReload: boolean = true;
 
   currentPage: number = 1;
-  pageSize = 30;
+  pageSize = 50;
   totalImages: number = 0;
   showedImages: number = 0;
 
@@ -136,7 +136,7 @@ export default class ImageView extends Vue {
       this.images = [];
       this.totalImages = 0;
       this.showedImages = 0;
-      this.showImage();
+      //this.showImage();
     } else {
       this.getData();
     }
@@ -215,7 +215,7 @@ export default class ImageView extends Vue {
     }
     this.showedImages = this.images.length;
     this.showScrollSpinner = false;
-    this.showImage();
+    //this.showImage();
   }
 
   format(date) {

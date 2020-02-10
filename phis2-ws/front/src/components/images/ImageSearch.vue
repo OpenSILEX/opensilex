@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-form @submit="onSubmit">
+    <b-form >
       <phis2ws-ImageTypeSearch></phis2ws-ImageTypeSearch>
 
       <phis2ws-TimeSearch></phis2ws-TimeSearch>
@@ -11,7 +11,6 @@
 
       <phis2ws-SciObjectSearch></phis2ws-SciObjectSearch>
 
-      <b-btn type="submit" variant="phis">Submit <font-awesome-icon icon="search" size="sm" /></b-btn>
     </b-form>
   </div>
 </template>
@@ -41,14 +40,10 @@ export default class ImageSearch extends Vue {
     experiment: null
   };
 
-  onSubmit(evt) {
-    evt.preventDefault();
-    this.$emit("onSearchFormSubmit", this.form);
-  }
-
   getObjectList() {
     if (this.form.experiment === null && this.form.objectType === null) {
       this.form.objectList = [];
+      this.$emit("onSearchFormSubmit", this.form);
     } else {
       let service: ScientificObjectsService = this.$opensilex.getService(
         "opensilex.ScientificObjectsService"
@@ -88,32 +83,48 @@ export default class ImageSearch extends Vue {
             data.forEach(element => {
               this.form.objectList.push(element.uri);
             });
+            this.$emit("onSearchFormSubmit", this.form);
           }
         )
         .catch(error => {
           console.log(error);
           this.form.objectList = [];
+          this.$emit("onSearchFormSubmit", this.form);
         });
     }
   }
 
   created() {
     EventBus.$on("experienceHasChanged", experience => {
+
       this.form.experiment = experience;
-      this.getObjectList();
+      if (experience === null) {
+        this.form.objectList = [];
+        this.$emit("onSearchFormSubmit", this.form);
+      } else {
+        this.getObjectList();
+      }
     });
     EventBus.$on("soTypeHasChanged", type => {
       this.form.objectType = type;
-      this.getObjectList();
+      if (type === null) {
+        this.form.objectList = [];
+        this.$emit("onSearchFormSubmit", this.form);
+      } else {
+        this.getObjectList();
+      }
     });
     EventBus.$on("imageTypeSelected", type => {
       this.form.rdfType = type;
+      this.$emit("onSearchFormSubmit", this.form);
     });
     EventBus.$on("startDateHasChanged", startDate => {
       this.form.startDate = startDate;
+      this.$emit("onSearchFormSubmit", this.form);
     });
     EventBus.$on("endDateHasChanged", endDate => {
       this.form.endDate = endDate;
+      this.$emit("onSearchFormSubmit", this.form);
     });
     EventBus.$on("searchObjectSelected", sciObjects => {
       if (sciObjects.length === 0) {
@@ -123,30 +134,29 @@ export default class ImageSearch extends Vue {
         for (let [key, val] of Object.entries(sciObjects)) {
           this.form.objectList.push(val);
         }
+        this.$emit("onSearchFormSubmit", this.form);
       }
     });
-
-    
   }
 }
 </script>
 
 <style scoped lang="scss">
-
 .btn-phis {
-  background-color: #00A38D;
-  border:1px solid #00A38D;
-    color: #ffffff !important;
+  background-color: #00a38d;
+  border: 1px solid #00a38d;
+  color: #ffffff !important;
 }
-.btn-phis:hover, .btn-phis:focus, .btn-phis.active {
-    background-color: #00A38D;
-    border: 1px solid #00A38D;
-    color: #ffffff !important;
+.btn-phis:hover,
+.btn-phis:focus,
+.btn-phis.active {
+  background-color: #00a38d;
+  border: 1px solid #00a38d;
+  color: #ffffff !important;
 }
-.btn-phis:focus{
-    outline: 0;
-    -webkit-box-shadow: none;
-     box-shadow: none;
-
+.btn-phis:focus {
+  outline: 0;
+  -webkit-box-shadow: none;
+  box-shadow: none;
 }
 </style>

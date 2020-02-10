@@ -19,7 +19,7 @@
         :img-src="image.uri"
       >
         <p>{{getObjectType(image)}}</p> 
-        <p>{{image.objectAlias}}</p>
+        <p>{{image.objectUri}}</p>
         <p>{{formatedDate(image.date)}}</p>
       </b-carousel-slide>
     </b-carousel>

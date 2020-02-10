@@ -31,63 +31,36 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
 import { EventBus } from "./../event-bus";
 
 @Component
 export default class TimeSearch extends Vue {
-  $router: VueRouter;
   startDate: string = "";
   endDate: string = "";
 
   onStartDateSelected() {
     console.log("start date" + this.startDate);
-    this.$router
-      .push({
-        path: this.$route.fullPath,
-        query: {
-          startDate: this.format(this.startDate)
-        }
-      })
-      .catch(function() {});
-    EventBus.$emit("startDateHasChanged", this.format(this.startDate));
+    if (this.startDate !== null) {
+      console.log("ici");
+      EventBus.$emit("startDateHasChanged", this.format(this.startDate));
+    }
   }
 
   onEndDateSelected() {
     console.log("end date" + this.endDate);
-    this.$router
-      .push({
-        path: this.$route.fullPath,
-        query: {
-          endDate: this.format(this.endDate)
-        }
-      })
-      .catch(function() {});
-    EventBus.$emit("endDateHasChanged", this.format(this.endDate));
+    if (this.endDate !== null) {
+      EventBus.$emit("endDateHasChanged", this.format(this.endDate));
+    }
   }
 
   onStartDateCleared() {
+    console.log("start date cleared");
     this.startDate = "";
-    this.$router
-      .push({
-        path: this.$route.fullPath,
-        query: {
-          startDate: undefined
-        }
-      })
-      .catch(function() {});
     EventBus.$emit("startDateHasChanged", undefined);
   }
   onEndDateCleared() {
+    console.log("end date cleared");
     this.endDate = "";
-    this.$router
-      .push({
-        path: this.$route.fullPath,
-        query: {
-          endDate: undefined
-        }
-      })
-      .catch(function() {});
     EventBus.$emit("endDateHasChanged", undefined);
   }
 
@@ -101,18 +74,6 @@ export default class TimeSearch extends Vue {
     if (day.length < 2) day = "0" + day;
 
     return [year, month, day].join("-");
-  }
-
-  created() {
-    let query: any = this.$route.query;
-    if (query.startDate) {
-      this.startDate = query.startDate;
-      EventBus.$emit("startDateHasChanged", this.startDate);
-    }
-    if (query.endDate) {
-      this.endDate = query.endDate;
-      EventBus.$emit("endDateHasChanged", this.endDate);
-    }
   }
 }
 </script>

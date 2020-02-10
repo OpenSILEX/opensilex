@@ -36,7 +36,7 @@ import org.opensilex.sparql.service.SPARQLService;
 /**
  * @author Renaud COLIN Abstract class used for DAO testing
  */
-@Category(IntegrationTestCategory.class)
+//@Category(IntegrationTestCategory.class)
 public abstract class AbstractIntegrationTest extends JerseyTest {
 
     protected static IntegrationTestContext context;
@@ -124,6 +124,10 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return appendToken(target).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
 
+    protected Response getJsonPostPublicResponse(WebTarget target, Object entity) {
+        return target.request(MediaType.APPLICATION_JSON).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
+    }
+
     /**
      *
      * @param target
@@ -132,6 +136,10 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      */
     protected Response getJsonPutResponse(WebTarget target, Object entity) {
         return appendToken(target).put(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
+    }
+
+    protected Response getJsonPutPublicResponse(WebTarget target, Object entity) {
+        return target.request(MediaType.APPLICATION_JSON).put(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
 
     /**
@@ -144,6 +152,14 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return appendToken(target.resolveTemplate("uri", uri)).get();
     }
 
+    protected Response getJsonGetByUriPublicResponse(WebTarget target, String uri) {
+        return target.resolveTemplate("uri", uri).request(MediaType.APPLICATION_JSON).get();
+    }
+
+    protected Response getJsonGetPublicResponse(WebTarget target) {
+        return target.request(MediaType.APPLICATION_JSON).get();
+    }
+    
     /**
      *
      * @param target
@@ -154,6 +170,14 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return appendToken(target.resolveTemplate("uri", uri)).delete();
     }
 
+    protected Response getDeleteByUriPublicResponse(WebTarget target, String uri) {
+        return target.resolveTemplate("uri", uri).request(MediaType.APPLICATION_JSON).delete();
+    }
+    
+    protected Response getDeleteJsonResponse(WebTarget target) {
+        return appendToken(target).delete();
+    }
+    
     /**
      *
      * @param target
@@ -241,11 +265,11 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     }
 
     protected boolean compareMaps(Map<String, String> first, Map<String, String> second) {
-    if (first.size() != second.size()) {
-        return false;
+        if (first.size() != second.size()) {
+            return false;
+        }
+
+        return first.entrySet().stream()
+                .allMatch(e -> e.getValue().equals(second.get(e.getKey())));
     }
- 
-    return first.entrySet().stream()
-      .allMatch(e -> e.getValue().equals(second.get(e.getKey())));
-}
 }

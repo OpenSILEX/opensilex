@@ -82,7 +82,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 409, message = "An experiment with the same URI already exists", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 
-    public Response create(
+    public Response createExperiment(
             @ApiParam("Experiment description") @Valid ExperimentCreationDTO xpDto
     ) {
         try {
@@ -92,6 +92,49 @@ public class ExperimentAPI {
 
         } catch (SPARQLAlreadyExistingUriException e) {
             return new ErrorResponse(Response.Status.CONFLICT, "Experiment already exists", e.getMessage()).getResponse();
+        } catch (Exception e) {
+            return new ErrorResponse(e).getResponse();
+        }
+    }
+
+    /**
+     * Create a list of Experiment
+     *
+     * @param xpDtoList the List of Experiment to create
+     * @return a {@link Response} with a {@link PaginatedListResponse}
+     * containing the list of created Experiment {@link URI}
+     */
+    @POST
+    @Path("experiments")
+    @ApiOperation("Create a list of experiment")
+    @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
+            groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_EXPERIMENT_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Create a list of experiments", response = PaginatedListResponse.class),
+        @ApiResponse(code = 409, message = "An experiment with the same URI already exists", response = ErrorResponse.class),
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+    public Response createAllExperiments(
+            @ApiParam("Experiment description") @Valid List<ExperimentCreationDTO> xpDtoList
+    ) {
+        try {
+            ExperimentDAO dao = new ExperimentDAO(sparql);
+
+            List<ExperimentModel> models = xpDtoList.stream().map(ExperimentCreationDTO::newModel).collect(Collectors.toList());
+            dao.createAll(models);
+            List<URI> uris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
+
+            return new PaginatedListResponse<>(uris).setStatus(Response.Status.CREATED).getResponse();
+
+        } catch (SPARQLAlreadyExistingUriException e) {
+            return new ErrorResponse(Response.Status.CONFLICT, "An experiment already exists", e.getMessage()).getResponse();
         } catch (Exception e) {
             return new ErrorResponse(e).getResponse();
         }
@@ -119,7 +162,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 200, message = "Experiment updated", response = ObjectUriResponse.class),
         @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    public Response update(
+    public Response updateExperiment(
             @ApiParam("Experiment description") @Valid ExperimentCreationDTO xpDto
     ) {
         try {
@@ -158,7 +201,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 200, message = "Experiment retrieved", response = ExperimentGetDTO.class),
         @ApiResponse(code = 404, message = "Experiment not found", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    public Response get(
+    public Response getExperiment(
             @ApiParam(value = "Experiment URI", example = "http://opensilex.dev/set/experiments/ZA17", required = true) @PathParam("uri") @NotNull URI xpUri
     ) {
         try {
@@ -289,7 +332,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 200, message = "Experiment deleted", response = ObjectUriResponse.class),
         @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    public Response delete(
+    public Response deleteExperiment(
             @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) {
         try {

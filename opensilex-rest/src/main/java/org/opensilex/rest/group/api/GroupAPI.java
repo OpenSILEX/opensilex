@@ -152,7 +152,7 @@ public class GroupAPI {
     }
 
     @DELETE
-    @Path("{uri}")
+    @Path("delete/{uri}")
     @ApiOperation("Delete a group")
     @ApiProtected
     @ApiCredential(
@@ -203,7 +203,7 @@ public class GroupAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("{uri}")
+    @Path("get/{uri}")
     @ApiOperation("Get a group by it's URI")
     @ApiProtected
     @ApiCredential(

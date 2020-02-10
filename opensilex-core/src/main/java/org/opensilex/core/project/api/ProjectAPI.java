@@ -70,7 +70,7 @@ public class ProjectAPI {
     )    
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response create(
+    public Response createProject(
             @ApiParam("Project description") @Valid ProjectCreationDTO dto
     ) throws Exception {
         ProjectDAO dao = new ProjectDAO(sparql);
@@ -99,7 +99,7 @@ public class ProjectAPI {
     )        
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response update(
+    public Response updateProject(
             @ApiParam(value = "Project URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam("Project description") @Valid ProjectUpdateDTO dto
     ) throws Exception {
@@ -130,7 +130,7 @@ public class ProjectAPI {
     )       
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response delete(
+    public Response deleteProject(
             @ApiParam(value = "Project URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         ProjectDAO dao = new ProjectDAO(sparql);
@@ -150,7 +150,7 @@ public class ProjectAPI {
     )          
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get(
+    public Response getProject(
             @ApiParam(value = "Project URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         ProjectDAO dao = new ProjectDAO(sparql);
@@ -181,7 +181,7 @@ public class ProjectAPI {
     )              
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response search(
+    public Response searchProjects(
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("orderBy") List<OrderBy> orderByList,
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize

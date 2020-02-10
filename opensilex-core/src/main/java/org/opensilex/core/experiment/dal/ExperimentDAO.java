@@ -44,6 +44,10 @@ public class ExperimentDAO {
         sparql.create(instance);
         return instance;
     }
+    
+    public void createAll(List<ExperimentModel> instances) throws Exception {
+        sparql.create(instances);
+    }
 
     public ExperimentModel update(ExperimentModel instance) throws Exception {
         checkURIs(instance);

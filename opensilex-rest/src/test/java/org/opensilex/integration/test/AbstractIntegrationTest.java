@@ -38,6 +38,8 @@ import java.util.Map;
 
 import static junit.framework.TestCase.assertEquals;
 import org.junit.experimental.categories.Category;
+import org.opensilex.rest.authentication.AuthenticationService;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Abstract class used for Integration testing
@@ -77,6 +79,14 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
 
     protected boolean isDebug() {
         return false;
+    }
+
+    public SPARQLService getSparqlService() {
+        return context.getSparqlService();
+    }
+
+    public AuthenticationService getAuthenticationService() {
+        return context.getAuthenticationService();
     }
 
     /**
@@ -240,4 +250,12 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return listResponse.getResult();
     }
 
+    protected boolean compareMaps(Map<String, String> first, Map<String, String> second) {
+    if (first.size() != second.size()) {
+        return false;
+    }
+ 
+    return first.entrySet().stream()
+      .allMatch(e -> e.getValue().equals(second.get(e.getKey())));
+}
 }

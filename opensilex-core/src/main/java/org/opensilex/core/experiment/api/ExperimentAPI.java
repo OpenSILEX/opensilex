@@ -79,7 +79,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 409, message = "An experiment with the same URI already exists", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 
-    public Response create(
+    public Response createExperiment(
             @ApiParam("Experiment description") @Valid ExperimentCreationDTO xpDto
     ) {
         try {
@@ -118,7 +118,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 201, message = "Create a list of experiments", response = PaginatedListResponse.class),
         @ApiResponse(code = 409, message = "An experiment with the same URI already exists", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    public Response createAll(
+    public Response createAllExperiments(
             @ApiParam("Experiment description") @Valid List<ExperimentCreationDTO> xpDtoList
     ) {
         try {
@@ -158,7 +158,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 200, message = "Experiment updated", response = ObjectUriResponse.class),
         @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    public Response update(
+    public Response updateExperiment(
             @ApiParam("Experiment description") @Valid ExperimentCreationDTO xpDto
     ) {
         try {
@@ -197,7 +197,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 200, message = "Experiment retrieved", response = ExperimentGetDTO.class),
         @ApiResponse(code = 404, message = "Experiment not found", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    public Response get(
+    public Response getExperiment(
             @ApiParam(value = "Experiment URI", example = "http://opensilex.dev/set/experiments/ZA17", required = true) @PathParam("uri") @NotNull URI xpUri
     ) {
         try {
@@ -328,7 +328,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 200, message = "Experiment deleted", response = ObjectUriResponse.class),
         @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    public Response delete(
+    public Response deleteExperiment(
             @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) {
         try {

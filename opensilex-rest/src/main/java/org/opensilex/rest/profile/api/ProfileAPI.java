@@ -40,9 +40,17 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.profile.dal.ProfileDAO;
 import org.opensilex.rest.profile.dal.ProfileModel;
+import static org.opensilex.rest.user.api.UserAPI.CREDENTIAL_GROUP_USER_ID;
+import static org.opensilex.rest.user.api.UserAPI.CREDENTIAL_GROUP_USER_LABEL_KEY;
+import static org.opensilex.rest.user.api.UserAPI.CREDENTIAL_USER_READ_ID;
+import static org.opensilex.rest.user.api.UserAPI.CREDENTIAL_USER_READ_LABEL_KEY;
+import org.opensilex.rest.user.api.UserGetDTO;
+import org.opensilex.rest.user.dal.UserDAO;
+import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.rest.validation.ValidURI;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
@@ -169,8 +177,55 @@ public class ProfileAPI {
         }
     }
 
+    /**
+     * Get a profile by it's URI
+     * 
+     * @param uri uri of the profile
+     * @return corresponding profile
+     * @throws Exception 
+     */
+    @GET
+    @Path("get/{uri}")
+    @ApiOperation("Get a profile by it's URI")
+    @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_USER_ID,
+            groupLabelKey = CREDENTIAL_GROUP_USER_LABEL_KEY,
+            credentialId = CREDENTIAL_USER_READ_ID,
+            credentialLabelKey = CREDENTIAL_USER_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return profile", response = ProfileGetDTO.class),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "User not found", response = ErrorDTO.class)
+    })
+    public Response getUser(
+            @ApiParam(value = "User URI", example = "dev-users:Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+        // Get user from DAO by URI
+        ProfileDAO dao = new ProfileDAO(sparql);
+        ProfileModel model = dao.get(uri);
+
+        // Check if user is found
+        if (model != null) {
+            // Return user converted in UserGetDTO
+            return new SingleObjectResponse<>(
+                    ProfileGetDTO.fromModel(model)
+            ).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Profile not found",
+                    "Unknown profile URI: " + uri.toString()
+            ).getResponse();
+        }
+    }
+    
     @DELETE
-    @Path("{uri}")
+    @Path("delete/{uri}")
     @ApiOperation("Delete a profile")
     @ApiProtected
     @ApiCredential(

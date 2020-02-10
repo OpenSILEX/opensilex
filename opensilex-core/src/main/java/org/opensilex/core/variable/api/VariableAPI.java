@@ -67,7 +67,7 @@ public class VariableAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response create(
+    public Response createVariable(
             @ApiParam("Variable description") @Valid VariableCreationDTO variableDTO
     ) throws Exception {
         VariableDAO dao = new VariableDAO(sparql);
@@ -96,7 +96,7 @@ public class VariableAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response update(
+    public Response updateVariable(
             @ApiParam(value = "Variable URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam("Variable description") @Valid VariableUpdateDTO variableDTO
     ) throws Exception {
@@ -127,7 +127,7 @@ public class VariableAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response delete(
+    public Response deleteVariable(
             @ApiParam(value = "Variable URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         VariableDAO dao = new VariableDAO(sparql);
@@ -147,7 +147,7 @@ public class VariableAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get(
+    public Response getVariable(
             @ApiParam(value = "Variable URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         VariableDAO dao = new VariableDAO(sparql);
@@ -178,7 +178,7 @@ public class VariableAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response search(
+    public Response searchVariables(
             @ApiParam(value = "Name regex pattern") @QueryParam("name") String namePattern,
             @ApiParam(value = "Comment regex pattern") @QueryParam("comment") String commentPattern,
             @ApiParam(value = "Filter by entity URI") @QueryParam("entity") URI entity,

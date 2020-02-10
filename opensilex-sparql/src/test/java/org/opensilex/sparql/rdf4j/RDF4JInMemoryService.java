@@ -23,20 +23,14 @@ public class RDF4JInMemoryService extends SPARQLService {
         super(getInMemoryConnection());
     }
 
-    private static ShaclSail shacl;
-
     public static RDF4JConnection getInMemoryConnection() throws URISyntaxException {
-        shacl = new ShaclSail(new MemoryStore());
-        Repository repository = new SailRepository(shacl);
+        MemoryStore memoryStore = new MemoryStore();
+        ShaclSail shacl = new ShaclSail(memoryStore);
+        SailRepository repository = new SailRepository(shacl);
         repository.init();
+        shacl.shutDown();
 
-        return new RDF4JConnection(repository.getConnection()) {
-            @Override
-            public void shutdown() {
-                shacl = null;
-                super.shutdown();
-            }
-        };
+        return new RDF4JConnection(repository.getConnection());
     }
 
 }

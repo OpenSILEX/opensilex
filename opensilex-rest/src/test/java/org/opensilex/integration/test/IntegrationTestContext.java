@@ -75,6 +75,14 @@ public class IntegrationTestContext {
     public SPARQLService getSparqlService() {
         return OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
     }
+        /**
+     *
+     * @return the {@link AuthenticationService} used for tests
+     */
+    public AuthenticationService getAuthenticationService() {
+        return OpenSilex.getInstance().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
+    }
+    
 
     /**
      * @throws URISyntaxException

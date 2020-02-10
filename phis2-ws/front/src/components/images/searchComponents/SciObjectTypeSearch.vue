@@ -70,6 +70,11 @@ export default class SciObjectTypeSearch extends Vue {
       })
       .catch(this.$opensilex.errorHandler);
 
+    EventBus.$on("imageTypeSelected", type => {
+      this.soTypes = this.allTypes;
+      this.type = null;
+    });
+
     EventBus.$on("experienceHasChanged", experience => {
       if (experience === null) {
         this.soTypes = this.allTypes;
@@ -108,8 +113,7 @@ export default class SciObjectTypeSearch extends Vue {
               text: element.split("#")[1]
             });
           });
-          this.soTypes=types;
-          
+          this.soTypes = types;
         }
       )
       .catch(error => {

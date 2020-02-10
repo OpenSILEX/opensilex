@@ -33,28 +33,12 @@ export default class ExperimentSearch extends Vue {
   experiments: any = [];
 
   update() {
-    if (this.experiment !== null) {
-      this.$router
-        .push({
-          path: this.$route.fullPath,
-          query: {
-            experiment: encodeURI(this.experiment)
-          }
-        })
-        .catch(function() {});
-    } else {
-      this.$router
-        .push({
-          path: this.$route.fullPath,
-          query: {
-            experiment: undefined
-          }
-        })
-        .catch(function() {});
-    }
     EventBus.$emit("experienceHasChanged", this.experiment);
   }
   created() {
+    EventBus.$on("imageTypeSelected", type => {
+      this.experiment = null;
+    });
     let service: ExperimentsService = this.$opensilex.getService(
       "opensilex.ExperimentsService"
     );
@@ -82,10 +66,6 @@ export default class ExperimentSearch extends Vue {
             text: element.alias
           });
         });
-        let query: any = this.$route.query;
-        if (query.experiment) {
-          this.experiment = query.experiment;
-        }
       })
       .catch(error => {
         console.log(error);

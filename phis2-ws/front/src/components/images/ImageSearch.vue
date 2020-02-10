@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-form @submit="onSubmit">
+    <b-form >
       <phis2ws-ImageTypeSearch></phis2ws-ImageTypeSearch>
 
       <phis2ws-TimeSearch></phis2ws-TimeSearch>
@@ -11,10 +11,6 @@
 
       <phis2ws-SciObjectSearch></phis2ws-SciObjectSearch>
 
-      <b-btn type="submit" variant="phis">
-        Submit
-        <font-awesome-icon icon="search" size="sm" />
-      </b-btn>
     </b-form>
   </div>
 </template>
@@ -44,14 +40,10 @@ export default class ImageSearch extends Vue {
     experiment: null
   };
 
-  onSubmit(evt) {
-    evt.preventDefault();
-    this.$emit("onSearchFormSubmit", this.form);
-  }
-
   getObjectList() {
     if (this.form.experiment === null && this.form.objectType === null) {
       this.form.objectList = [];
+      this.$emit("onSearchFormSubmit", this.form);
     } else {
       let service: ScientificObjectsService = this.$opensilex.getService(
         "opensilex.ScientificObjectsService"
@@ -91,11 +83,13 @@ export default class ImageSearch extends Vue {
             data.forEach(element => {
               this.form.objectList.push(element.uri);
             });
+            this.$emit("onSearchFormSubmit", this.form);
           }
         )
         .catch(error => {
           console.log(error);
           this.form.objectList = [];
+          this.$emit("onSearchFormSubmit", this.form);
         });
     }
   }
@@ -106,6 +100,7 @@ export default class ImageSearch extends Vue {
       this.form.experiment = experience;
       if (experience === null) {
         this.form.objectList = [];
+        this.$emit("onSearchFormSubmit", this.form);
       } else {
         this.getObjectList();
       }
@@ -114,18 +109,22 @@ export default class ImageSearch extends Vue {
       this.form.objectType = type;
       if (type === null) {
         this.form.objectList = [];
+        this.$emit("onSearchFormSubmit", this.form);
       } else {
         this.getObjectList();
       }
     });
     EventBus.$on("imageTypeSelected", type => {
       this.form.rdfType = type;
+      this.$emit("onSearchFormSubmit", this.form);
     });
     EventBus.$on("startDateHasChanged", startDate => {
       this.form.startDate = startDate;
+      this.$emit("onSearchFormSubmit", this.form);
     });
     EventBus.$on("endDateHasChanged", endDate => {
       this.form.endDate = endDate;
+      this.$emit("onSearchFormSubmit", this.form);
     });
     EventBus.$on("searchObjectSelected", sciObjects => {
       if (sciObjects.length === 0) {
@@ -135,6 +134,7 @@ export default class ImageSearch extends Vue {
         for (let [key, val] of Object.entries(sciObjects)) {
           this.form.objectList.push(val);
         }
+        this.$emit("onSearchFormSubmit", this.form);
       }
     });
   }

@@ -66,7 +66,7 @@ export default class ImageTypeSearch extends Vue {
         let query: any = this.$route.query;
         if (query.rdfType) {
           this.rdfType = query.rdfType;
-          EventBus.$emit("imageTypeSelected", this.rdfType);
+         
         }
       })
       .catch(this.$opensilex.errorHandler);

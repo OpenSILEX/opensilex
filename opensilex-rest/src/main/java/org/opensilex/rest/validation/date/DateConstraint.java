@@ -13,7 +13,7 @@ import javax.validation.Payload;
  * Date validator.
  * Used to specify if a string has a valid date format.
  * @see DateFormatValidator
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy, Morgane Vidal
  */
 @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})
 @Retention(RUNTIME)

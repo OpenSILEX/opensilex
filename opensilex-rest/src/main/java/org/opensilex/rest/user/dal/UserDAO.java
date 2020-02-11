@@ -13,8 +13,11 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.rest.authentication.AuthenticationService;
+import org.opensilex.rest.group.dal.GroupUserProfileModel;
 import org.opensilex.rest.profile.dal.ProfileDAO;
 import org.opensilex.rest.profile.dal.ProfileModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
@@ -108,7 +111,22 @@ public class UserDAO {
     }
 
     public void delete(URI instanceURI) throws Exception {
-        sparql.delete(UserModel.class, instanceURI);
+        try {
+            sparql.startTransaction();
+            // Find all user association with profile in groups
+            List<URI> userProfileGroupURIs = sparql.searchURIs(GroupUserProfileModel.class, (select) -> {
+                SPARQLClassObjectMapper<GroupUserProfileModel> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(GroupUserProfileModel.class);
+                select.addValueVar(sparqlObjectMapper.getFieldExprVar(GroupUserProfileModel.USER_FIELD), SPARQLDeserializers.nodeURI(instanceURI));
+            });
+            // Delete all user association with profile in groups
+            sparql.delete(GroupUserProfileModel.class, userProfileGroupURIs);
+            // Delete user
+            sparql.delete(UserModel.class, instanceURI);
+            sparql.commitTransaction();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction();
+            throw ex;
+        }
     }
 
     public UserModel update(

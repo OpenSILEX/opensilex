@@ -52,7 +52,7 @@
         
         <!-- dependencies version -->
         <jersey.version>2.30</jersey.version>
-        <tomcat.version>9.0.30</tomcat.version>
+        <tomcat.version>9.0.31</tomcat.version>
         <hibernate.validator.version>6.1.2.Final</hibernate.validator.version>
         <jackson.version>2.10.2</jackson.version>
         <jackson.jaxrs.version>2.10.2.1</jackson.jaxrs.version>

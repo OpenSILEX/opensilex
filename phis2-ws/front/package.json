@@ -1,0 +1,39 @@
+{
+    "name": "phis2ws",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "serve": "vue-cli-service build --target lib --formats umd-min src/index.ts --mode development --watch",
+        "build": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vue-cli-service build --mode production --target lib --formats commonjs,umd-min src/index.ts",
+        "lint": "vue-cli-service lint",
+        "check:outdated": "npm outdated || cd ."
+    },
+    "devDependencies": {
+        "@vue/cli-plugin-babel": "4.2.2",
+        "@vue/cli-plugin-eslint": "4.2.2",
+        "@vue/cli-plugin-router": "4.2.2",
+        "@vue/cli-plugin-typescript": "4.2.2",
+        "@vue/cli-plugin-vuex": "4.2.2",
+        "@vue/cli-service": "4.2.2",
+        "@vue/eslint-config-typescript": "^5.0.1"
+    },
+    "eslintConfig": {
+        "root": true,
+        "env": {
+            "node": true
+        },
+        "extends": [
+            "plugin:vue/essential",
+            "eslint:recommended",
+            "@vue/typescript"
+        ],
+        "rules": {},
+        "parserOptions": {
+            "parser": "@typescript-eslint/parser"
+        }
+    },
+    "browserslist": [
+        "> 1%",
+        "last 2 versions"
+    ]
+}

@@ -1,191 +1,71 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+******************************************************************************
+ OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ Copyright © INRA 2019
+ Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+ 
+ PHIS pom.xml
+ This module is the legacy PHIS web services API integrate as a module of the new
+ modular system.
+******************************************************************************
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.mycompany</groupId>
-    <artifactId>opensilex</artifactId>
-    <version>3.3.1</version>
-    <packaging>war</packaging>
-    <name>opensilex</name>
+    <artifactId>phis2ws</artifactId>
+    <packaging>jar</packaging>
+    <name>phis2ws</name>
+
+    <parent>
+        <groupId>org.opensilex</groupId>
+        <artifactId>opensilex-module</artifactId>
+        <version>${revision}</version>
+        <relativePath>../../opensilex-module/pom.xml</relativePath>
+    </parent>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <logback-version>1.2.3</logback-version>
     </properties>
 
-    <repositories>
-        <!--REPO CRYPTAGE-->
-        <repository>
-            <id>spring-milestones</id>
-            <url>http://repo.spring.io/libs-milestone/</url>
-        </repository>
-    </repositories>
-
-    <profiles>
-        <!-- The configuration of the development profile -->
-        <profile>
-            <id>dev</id>
-            <!-- The development profile is active by default -->
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <build.profile.id>dev</build.profile.id>
-                <target.war.name>${project.artifactId}</target.war.name>
-            </properties>
-        </profile>
-        <!-- The configuration of the production profile -->
-        <profile>
-            <id>prod</id>
-            <properties>
-                <build.profile.id>prod</build.profile.id>
-                <target.war.name>${project.artifactId}-${project.version}</target.war.name>
-            </properties>
-        </profile>
-        <!-- The configuration of the testing profile -->
-        <profile>
-            <id>test</id>
-            <properties>
-                <build.profile.id>test</build.profile.id>
-                <target.war.name>${project.artifactId}</target.war.name>
-            </properties>
-        </profile>
-    </profiles>
-    
     <dependencies>
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-jdbc</artifactId>
-            <version>9.0.0.M6</version>
+            <version>${tomcat.version}</version>
             <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver</artifactId>
-            <version>3.10.1</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-runtime</artifactId>
-            <version>2.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-repository-api</artifactId>
-            <version>2.2</version>
         </dependency>
         <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
-            <version>0.1.53</version>
+            <version>0.1.55</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.8.2</version>
+            <version>2.8.6</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
-            <version>5.1</version>
+            <version>7.9</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>1.10</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.twmacinta</groupId>
+            <groupId>com.joyent.util</groupId>
             <artifactId>fast-md5</artifactId>
             <version>2.7.1</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-web-api</artifactId>
-            <version>7.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-server</artifactId>
-            <version>2.28</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.inject</groupId>
-            <artifactId>jersey-hk2</artifactId>
-            <version>2.28</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>2.28</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-common</artifactId>
-            <version>2.28</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet</artifactId>
-            <version>2.28</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-multipart</artifactId>
-            <version>2.28</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
-            <version>2.28</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-jersey2-jaxrs</artifactId>
-            <version>1.5.22</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>jackson-jaxrs-json-provider</artifactId>
-            <version>2.9.8</version>
-        </dependency>
-        <!-- LOGS -->
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logback-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>${logback-version}</version>
-        </dependency>
-        <!--http://mvnrepository.com/artifact/org.slf4j/slf4j-api-->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
-            <type>jar</type>
-        </dependency>
-        <!--https://mvnrepository.com/artifact/org.codehaus.janino/janino-->
-        <dependency>
-            <groupId>org.codehaus.janino</groupId>
-            <artifactId>janino</artifactId>
-            <version>2.5.16</version>
-        </dependency>
-        <dependency>
-            <groupId>org.postgis</groupId>
+            <groupId>net.postgis</groupId>
             <artifactId>postgis-jdbc</artifactId>
-            <version>1.3.3</version>
+            <version>2.3.0</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
@@ -194,219 +74,132 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>9.4.1212.jre7</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-        <!--To correct this error :
-        java.lang.NoClassDefFoundError: com/fasterxml/jackson/annotation/JsonInclude$Value-->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>2.9.8</version>
+            <version>42.2.8</version>
+            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-            <version>2.9.9</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-validator</groupId>
-            <artifactId>commons-validator</artifactId>
-            <version>1.6</version>
-        </dependency>
-        <!--Manage js file from maven
-        @see http://www.webjars.org/documentation#servlet3
-        The ressource namespace META-INF.resources.webjars.jquery.2.1.4 contains
-        jquery.js the path is the same as the url namespace
-        Ex : http://localhost:8080/phis2ws/webjars/jquery/2.1.4/jquery.js -->
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>swagger-ui</artifactId>
-            <version>2.2.10-1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>bootstrap</artifactId>
-            <version>3.3.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>jquery</artifactId>
-            <version>2.1.4</version>
-        </dependency>
-        <!--validator Bean Validation 2.0 (JSR 380)
-        @see https://beanvalidation.org/2.0/ -->
-        <dependency>
-            <groupId>org.hibernate.validator</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>6.0.10.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>2.0.0.Final</version>
-        </dependency>
-        <!--jersey validator request parameters-->
-        <dependency>
-            <groupId>org.glassfish.jersey.ext</groupId>
-            <artifactId>jersey-bean-validation</artifactId>
-            <version>2.28</version>
-        </dependency>
-        <!-- Java 11 compatibility (@see https://blog.codefx.org/java/java-11-migration-guide/) -->
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.3.1</version>
-        </dependency>        
-        <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>jena-querybuilder</artifactId>
-            <version>3.9.0</version>
+            <version>2.10.5</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
-		<dependency>
-		    <groupId>org.junit.jupiter</groupId>
-		    <artifactId>junit-jupiter-api</artifactId>
-		    <version>5.5.2</version>
-		    <scope>test</scope>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine -->
-		<dependency>
-		    <groupId>org.junit.jupiter</groupId>
-		    <artifactId>junit-jupiter-engine</artifactId>
-		    <version>5.5.2</version>
-		    <scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.5.2</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.5.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
-        <finalName>${target.war.name}</finalName>
-        <filters>
-            <filter>src/main/profiles/${build.profile.id}/config.properties</filter>
-        </filters>
-        <resources>
-            <resource>
-                <filtering>true</filtering>
-                <directory>src/main/resources</directory>
-            </resource>              
-            <resource>
-                <filtering>true</filtering>
-                <directory>src/main/profiles</directory>
-                <includes>
-                    <include>**/*.properties</include>
-                </includes>
-            </resource>       
-        </resources>
         <plugins>
-            <!--Code coverage
-            @see https://www.eclemma.org/jacoco/trunk/index.html -->
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.2</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
                     <compilerArguments>
                         <endorseddirs>${endorsed.dir}</endorseddirs>
                     </compilerArguments>
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>2.3</version>
-                <configuration>
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
-                    <webResources>
-                        <resource>
-                            <filtering>true</filtering>
-                            <targetPath>js</targetPath>
-                            <directory>src/main/resources/js</directory>
-                            <includes>
-                                <include>**/*.js</include>
-                            </includes>
-                        </resource>
-                    </webResources>  
-                </configuration> 
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                    <escapeString>\</escapeString>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.6</version>
+                <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
+                <artifactId>serviceloader-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <phase>validate</phase>
+                        <id>phis-brapi-services</id>
                         <goals>
-                            <goal>copy</goal>
+                            <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${endorsed.dir}</outputDirectory>
-                            <silent>true</silent>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>javax</groupId>
-                                    <artifactId>javaee-endorsed-api</artifactId>
-                                    <version>7.0</version>
-                                    <type>jar</type>
-                                </artifactItem>
-                            </artifactItems>
+                            <services>
+                                <param>opensilex.service.resource.brapi.BrapiCall</param>
+                            </services>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+            
             <plugin>
-                <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
-                <artifactId>serviceloader-maven-plugin</artifactId>
-                <version>1.1.0</version>
-                <configuration>
-                    <services>
-                        <param>opensilex.service.resource.brapi.BrapiCall</param>
-                    </services>
-                </configuration>
+                <groupId>org.opensilex</groupId>
+                <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
+                <version>${revision}</version>
+                    
                 <executions>
                     <execution>
+                        <phase>compile</phase>
                         <goals>
                             <goal>generate</goal>
                         </goals>
+                        <configuration>
+                            <templateDirectory>${project.basedir}/../../opensilex/src/main/resources/swagger/templates/typescript-inversify</templateDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
+              
+            <!-- Front Node & Npm management -->
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${frontend.maven.plugin.version}</version>
+                        
+                <configuration>
+                    <installDirectory>../../.node</installDirectory>
+                </configuration>
+            </plugin>
+            
+            <!--Code coverage @see https://www.eclemma.org/jacoco/trunk/index.html --> 
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.maven.plugin.version}</version>
+                <configuration>
+                    <outputDirectory>../../${generated.doc.site.directory}/${project.name}/jacoco/</outputDirectory>
+                </configuration>
+            </plugin>
+            
+            <plugin>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>${maven.site.plugin.version}</version>
+                <configuration>
+                    <outputDirectory>../../${generated.doc.site.directory}/${project.name}/</outputDirectory>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+    
+    <reporting>
+        <plugins>
+            <plugin>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>${maven.project.info.reports.plugin.version}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        
+            <plugin> 
+                <groupId>org.apache.maven.plugins</groupId> 
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven.javadoc.plugin.version}</version> 
+                <configuration>
+                    <skip>true</skip>
+                    <additionalparam>-Xdoclint:none</additionalparam>
+                    <additionalOptions>-Xdoclint:none</additionalOptions>
+                    <additionalJOption>-Xdoclint:none</additionalJOption>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>

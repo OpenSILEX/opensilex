@@ -38,7 +38,6 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
-import opensilex.service.authentication.TokenManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.URINamespaces;
@@ -364,18 +363,6 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         return value;
     }
 
-    /**
-     * Defines of user object from an id.
-     * @param id
-     */
-    public void setUser(String id) {
-        if (TokenManager.Instance().getSession(id).getUser() == null) {
-            throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
-        } else {
-            this.user = TokenManager.Instance().getSession(id).getUser();
-        }
-    }
-    
     /**
      * Adds object properties to a given object.
      * @param subjectUri the subject URI which will have the object properties URIs.

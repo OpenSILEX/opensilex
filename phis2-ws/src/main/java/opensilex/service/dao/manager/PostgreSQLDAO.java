@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -34,7 +32,6 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.postgis.Geometry;
-import opensilex.service.authentication.TokenManager;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.datasource.PostgreSQLDataSource;
 import opensilex.service.utils.JsonConverter;
@@ -143,17 +140,6 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
      */
     public void setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
-    }
-
-    /**
-     * @param id
-     */
-    public void setUser(String id) {
-        if (TokenManager.Instance().getSession(id).getUser() == null) {
-            throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
-        } else {
-            this.user = TokenManager.Instance().getSession(id).getUser();
-        }
     }
 
     public void setTable(String table) {

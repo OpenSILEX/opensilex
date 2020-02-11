@@ -23,9 +23,10 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 
 /**
- * Validation exception mapper (related to validation annotations).
- * Applied on resource services parameters and return response object with 
- * specific error messages.
+ * Validation exception mapper (related to validation annotations). Applied on
+ * resource services parameters and return response object with specific error
+ * messages.
+ *
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Produces(MediaType.APPLICATION_JSON)
@@ -38,15 +39,19 @@ public class ValidationExceptionMapper implements ExceptionMapper<javax.validati
     public Response toResponse(javax.validation.ValidationException e) {
         ArrayList<Status> statusList = new ArrayList<>();
         // Loop over violated contraint array 
-        for (ConstraintViolation<?> constraintViolation : ((ConstraintViolationException) e).getConstraintViolations()) {
-            //SILEX:info
-            // Message pattern : [object property path] + property name + message + |  invalid value
-            //\SILEX:info
-            // Add violation error and associated message
-            String errorMessage = "[" + constraintViolation.getPropertyPath().toString() + "]" + ((PathImpl) constraintViolation.getPropertyPath()).getLeafNode().getName()
-                    + " " + constraintViolation.getMessage() + "  | Invalid value : "
-                    + constraintViolation.getInvalidValue();
-            statusList.add(new Status(StatusCodeMsg.INVALID_INPUT_PARAMETERS, StatusCodeMsg.ERR, errorMessage));
+        if (e instanceof ConstraintViolationException) {
+            for (ConstraintViolation<?> constraintViolation : ((ConstraintViolationException) e).getConstraintViolations()) {
+                //SILEX:info
+                // Message pattern : [object property path] + property name + message + |  invalid value
+                //\SILEX:info
+                // Add violation error and associated message
+                String errorMessage = "[" + constraintViolation.getPropertyPath().toString() + "]" + ((PathImpl) constraintViolation.getPropertyPath()).getLeafNode().getName()
+                        + " " + constraintViolation.getMessage() + "  | Invalid value : "
+                        + constraintViolation.getInvalidValue();
+                statusList.add(new Status(StatusCodeMsg.INVALID_INPUT_PARAMETERS, StatusCodeMsg.ERR, errorMessage));
+            }
+        } else {
+            statusList.add(new Status(StatusCodeMsg.UNEXPECTED_ERROR, StatusCodeMsg.ERR, e.getMessage()));
         }
 
         ResponseFormGET validationResponse = new ResponseFormGET(statusList);

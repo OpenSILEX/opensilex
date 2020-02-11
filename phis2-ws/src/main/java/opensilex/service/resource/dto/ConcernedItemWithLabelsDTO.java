@@ -39,7 +39,6 @@ public class ConcernedItemWithLabelsDTO extends ConcernedItemDTO {
     }
     
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI)
-    @Required
     public List<String> getLabels() {
         return labels;
     }

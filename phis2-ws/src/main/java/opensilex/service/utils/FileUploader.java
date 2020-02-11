@@ -27,7 +27,7 @@ import opensilex.service.PropertiesFileManager;
  * directories from a complete path
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-public class FileUploader extends JSch{
+public class FileUploader extends JSch {
     final static Logger LOGGER = LoggerFactory.getLogger(FileUploader.class);
     private static final String PROPERTY_FILE_NAME = "service";
     private String SFTPHost;

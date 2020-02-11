@@ -179,7 +179,7 @@ public class ProfileAPI {
      * 
      * @param uri uri of the profile
      * @return corresponding profile
-     * @throws Exception 
+     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
     @Path("get/{uri}")

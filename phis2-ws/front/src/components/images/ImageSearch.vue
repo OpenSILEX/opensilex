@@ -97,24 +97,32 @@ export default class ImageSearch extends Vue {
 
   created() {
     EventBus.$on("experienceHasChanged", experience => {
+      this.form.objectType = null;
       this.form.experiment = experience;
+      this.form.objectList = [];
       if (experience === null) {
-        this.form.objectList = [];
         this.$emit("onSearchFormSubmit", this.form);
       } else {
         this.getObjectList();
       }
     });
+
     EventBus.$on("soTypeHasChanged", type => {
       this.form.objectType = type;
+      this.form.objectList = [];
       if (type === null) {
-        this.form.objectList = [];
         this.$emit("onSearchFormSubmit", this.form);
       } else {
         this.getObjectList();
       }
     });
+    EventBus.$on("soTypeIsInitialized", () => {
+      this.form.objectType = null;
+    });
+
     EventBus.$on("imageTypeSelected", type => {
+      this.form.objectList = [];
+      this.form.objectType = null;
       this.form.rdfType = type;
       this.$emit("onSearchFormSubmit", this.form);
     });
@@ -127,13 +135,10 @@ export default class ImageSearch extends Vue {
       this.$emit("onSearchFormSubmit", this.form);
     });
     EventBus.$on("searchObjectSelected", sciObjects => {
-      if (sciObjects.length === 0) {
+      if (Object.keys(sciObjects).length === 0) {
         this.getObjectList();
       } else {
-        this.form.objectList = [];
-        for (let [key, val] of Object.entries(sciObjects)) {
-          this.form.objectList.push(val);
-        }
+        this.form.objectList = sciObjects;
         this.$emit("onSearchFormSubmit", this.form);
       }
     });

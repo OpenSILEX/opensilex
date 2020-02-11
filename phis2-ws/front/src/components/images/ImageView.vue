@@ -125,18 +125,7 @@ export default class ImageView extends Vue {
     this.totalImages = 0;
     this.showedImages = 0;
     this.canReload = true;
-
-    if (
-      (this.searchImagesFields.objectType !== null ||
-        this.searchImagesFields.experiment !== null) &&
-      Object.keys(this.searchImagesFields.concernedItemsValue).length === 0
-    ) {
-      this.images = [];
-      this.totalImages = 0;
-      this.showedImages = 0;
-    } else {
-      this.getData();
-    }
+    this.getData();
   }
 
   getData() {

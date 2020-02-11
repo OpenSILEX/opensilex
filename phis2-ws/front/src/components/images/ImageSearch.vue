@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-form >
+    <b-form>
       <phis2ws-ImageTypeSearch></phis2ws-ImageTypeSearch>
 
       <phis2ws-TimeSearch></phis2ws-TimeSearch>
@@ -10,7 +10,6 @@
       <phis2ws-SciObjectTypeSearch></phis2ws-SciObjectTypeSearch>
 
       <phis2ws-SciObjectSearch></phis2ws-SciObjectSearch>
-
     </b-form>
   </div>
 </template>
@@ -80,8 +79,10 @@ export default class ImageSearch extends Vue {
             const res = http.response.result as any;
             const data = res.data;
             this.form.objectList = [];
+            console.log("data ?");
+            console.log(data);
             data.forEach(element => {
-              this.form.objectList.push(element.uri);
+              this.form.objectList[element.uri] = element.label;
             });
             this.$emit("onSearchFormSubmit", this.form);
           }
@@ -96,7 +97,6 @@ export default class ImageSearch extends Vue {
 
   created() {
     EventBus.$on("experienceHasChanged", experience => {
-
       this.form.experiment = experience;
       if (experience === null) {
         this.form.objectList = [];

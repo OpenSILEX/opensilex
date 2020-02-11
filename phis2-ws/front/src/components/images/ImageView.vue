@@ -95,9 +95,7 @@ export default class ImageView extends Vue {
       this.searchImagesFields.endDate = form.endDate;
       this.searchImagesFields.concernedItemsValue = [];
       if (form.objectList) {
-        form.objectList.forEach(element => {
-          this.searchImagesFields.concernedItemsValue.push(element);
-        });
+        this.searchImagesFields.concernedItemsValue=form.objectList;
       }
       this.loadData();
     }
@@ -131,12 +129,11 @@ export default class ImageView extends Vue {
     if (
       (this.searchImagesFields.objectType !== null ||
         this.searchImagesFields.experiment !== null) &&
-      this.searchImagesFields.concernedItemsValue.length === 0
+      Object.keys(this.searchImagesFields.concernedItemsValue).length === 0
     ) {
       this.images = [];
       this.totalImages = 0;
       this.showedImages = 0;
-      //this.showImage();
     } else {
       this.getData();
     }
@@ -150,7 +147,7 @@ export default class ImageView extends Vue {
         this.searchImagesFields.startDate,
         this.searchImagesFields.endDate,
         this.searchImagesFields.provenance,
-        this.searchImagesFields.concernedItemsValue,
+        Object.keys(this.searchImagesFields.concernedItemsValue),
         this.searchImagesFields.jsonValueFilter,
         this.searchImagesFields.dateSortAsc,
         this.pageSize,
@@ -189,9 +186,10 @@ export default class ImageView extends Vue {
               type: element.rdfType,
               objectUri: concernedItem.uri,
               date: element.date,
-              provenanceUri: element.provenanceUri
+              provenanceUri: element.provenanceUri,
+              objectAlias:this.searchImagesFields.concernedItemsValue[concernedItem.uri]
             };
-            this.images.push(image);
+           this.images.push(image);
           }
         });
       });
@@ -207,7 +205,8 @@ export default class ImageView extends Vue {
             type: element.rdfType,
             objectUri: concernedItem.uri,
             date: element.date,
-            provenanceUri: element.provenanceUri
+            provenanceUri: element.provenanceUri,
+            objectAlias:this.searchImagesFields.concernedItemsValue[concernedItem.uri]
           };
           this.images.push(image);
         });

@@ -13,14 +13,11 @@
       style="text-shadow: 1px 1px 2px #333;"
     >
       <!-- Slides with custom text -->
-      <b-carousel-slide
-        v-for="(image, index) in images"
-        v-bind:key="index"
-        :img-src="image.uri"
-      >
-        <p>{{getObjectType(image)}}</p> 
-        <p>{{image.objectUri}}</p>
-        <p>{{formatedDate(image.date)}}</p>
+      <b-carousel-slide v-for="(image, index) in images" v-bind:key="index" :img-src="image.uri">
+        <p>{{getObjectType(image)}}</p>
+          <p v-if="image.objectAlias">{{image.objectAlias}}</p>
+          <p v-if="!image.objectAlias"> {{image.objectUri}}</p>
+          <p>{{formatedDate(image.date)}}</p>
       </b-carousel-slide>
     </b-carousel>
   </b-modal>
@@ -53,7 +50,7 @@ export default class ImageGrid extends Vue {
     return image.objectType.split("#")[1];
   }
 
-   formatedDate(date) {
+  formatedDate(date) {
     const newDate = new Date(date);
     const options = {
       year: "numeric",
@@ -64,7 +61,6 @@ export default class ImageGrid extends Vue {
     };
     return newDate.toLocaleDateString("fr-FR", options);
   }
-  
 }
 </script>
 
@@ -74,21 +70,49 @@ export default class ImageGrid extends Vue {
 
 <style scoped lang="scss">
 .carousel-item:after {
-  content:'';
-  position:absolute;
-  left:0; bottom:0;
-  width:100%; height:40%;
-  display:inline-block;
-  background: -moz-linear-gradient(top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.65) 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0.65)), color-stop(100%,rgba(0,0,0,0))); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.65) 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.65) 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.65) 100%); /* IE10+ */
-  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,0.65) 100%); /* W3C */
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 40%;
+  display: inline-block;
+  background: -moz-linear-gradient(
+    top,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.65) 100%
+  ); /* FF3.6+ */
+  background: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    color-stop(0%, rgba(0, 0, 0, 0.65)),
+    color-stop(100%, rgba(0, 0, 0, 0))
+  ); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(
+    top,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.65) 100%
+  ); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(
+    top,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.65) 100%
+  ); /* Opera 11.10+ */
+  background: -ms-linear-gradient(
+    top,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.65) 100%
+  ); /* IE10+ */
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.65) 100%
+  ); /* W3C */
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a6000000', endColorstr='#00000000',GradientType=0 ); /* IE6-9 */
 }
 
 p {
-   margin-bottom: 0px;
+  margin-bottom: 0px;
 }
 </style>

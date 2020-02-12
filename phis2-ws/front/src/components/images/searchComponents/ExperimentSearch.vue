@@ -1,7 +1,13 @@
 <template>
   <div>
     <b-form-group id="input-group-2" label="Experiment:" label-for="experiment">
-      <b-form-select id="experiment" v-model="experiment" :options="experiments" @input="update">
+      <b-form-select
+        id="experiment"
+        v-model="experiment"
+        :options="experiments"
+        @input="update"
+        @focus.native="userAction"
+      >
         <template v-slot:first>
           <b-form-select-option :value="null">-- no experiment selected --</b-form-select-option>
         </template>
@@ -27,16 +33,24 @@ export default class ExperimentSearch extends Vue {
   get user() {
     return this.$store.state.user;
   }
-
+ // the way to see if it is select by a user or by the change of an other element of the form 
+ // In this case the images will be asynch load for nothing
+  userFocus = false; 
   $router: VueRouter;
   experiment: string = null;
   experiments: any = [];
 
   update() {
-    EventBus.$emit("experienceHasChanged", this.experiment);
+    if (this.userFocus) {
+      EventBus.$emit("experienceHasChanged", this.experiment);
+    }
+  }
+  userAction() {
+    this.userFocus = true;
   }
   created() {
     EventBus.$on("imageTypeSelected", type => {
+      this.userFocus=false;
       this.experiment = null;
     });
     let service: ExperimentsService = this.$opensilex.getService(

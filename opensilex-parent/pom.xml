@@ -69,7 +69,7 @@
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
         <bytebuddy.version>1.10.7</bytebuddy.version>
         <java.jwt.version>3.9.0</java.jwt.version>
-        <picocli.version>4.1.4</picocli.version>
+        <picocli.version>4.2.0</picocli.version>
         <bcript.version>0.9.0</bcript.version>
         <commons.io.version>2.6</commons.io.version>
         <logback.version>1.2.3</logback.version>

@@ -1,13 +1,23 @@
 <template>
   <div>
-    <b-button @click="showCreateForm" variant="success">Add group</b-button>
+    <b-button
+      v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
+      @click="showCreateForm"
+      variant="success"
+    >{{$t('component.group.add')}}</b-button>
     <opensilex-GroupForm
       ref="groupForm"
+      v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
       @onCreate="callCreateGroupService"
       @onUpdate="callUpdateGroupService"
       :profiles="profiles"
     ></opensilex-GroupForm>
-    <opensilex-GroupList ref="groupList" @onEdit="editGroup" @onDelete="deleteGroup"></opensilex-GroupList>
+    <opensilex-GroupList
+      ref="groupList"
+      v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_READ_ID)"
+      @onEdit="editGroup"
+      @onDelete="deleteGroup"
+    ></opensilex-GroupList>
   </div>
 </template>
 
@@ -33,6 +43,10 @@ export default class GroupView extends Vue {
 
   get user() {
     return this.$store.state.user;
+  }
+
+  get credentials() {
+    return this.$store.state.credentials;
   }
 
   async created() {

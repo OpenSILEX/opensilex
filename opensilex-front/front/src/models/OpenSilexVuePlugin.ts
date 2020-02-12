@@ -7,39 +7,20 @@ import Vue from 'vue';
 import { User } from './User';
 import { Store } from 'vuex';
 import { VueCookies } from 'vue-cookies'
+import VueI18n from 'vue-i18n';
 declare var $cookies: VueCookies;
 
 declare var window: any;
 
 export default class OpenSilexVuePlugin {
 
-    public static credentials = {
-        CREDENTIAL_EXPERIMENT_MODIFICATION_ID: "experiment-modification",
-        CREDENTIAL_EXPERIMENT_READ_ID: "experiment-read",
-        CREDENTIAL_GROUP_MODIFICATION_ID: "group-modification",
-        CREDENTIAL_GROUP_DELETE_ID: "group-delete",
-        CREDENTIAL_GROUP_READ_ID: "group-read",
-        CREDENTIAL_PROFILE_MODIFICATION_ID: "profile-modification",
-        CREDENTIAL_PROFILE_DELETE_ID: "profile-delete",
-        CREDENTIAL_PROFILE_READ_ID: "profile-read",
-        CREDENTIAL_PROJECT_MODIFICATION_ID: "project-modification",
-        CREDENTIAL_PROJECT_DELETE_ID: "project-delete",
-        CREDENTIAL_PROJECT_READ_ID: "project-read",
-        CREDENTIAL_USER_MODIFICATION_ID: "user-modification",
-        CREDENTIAL_USER_DELETE_ID: "user-delete",
-        CREDENTIAL_USER_READ_ID: "user-read",
-        CREDENTIAL_VARIABLE_MODIFICATION_ID: "variable-modification",
-        CREDENTIAL_VARIABLE_DELETE_ID: "variable-delete",
-        CREDENTIAL_VARIABLE_READ_ID: "variable-read",
-    }
-
-
     private container: Container;
     private baseApi: string;
     private config: FrontConfigDTO;
     public $store: Store<any>;
+    public $i18n: VueI18n;
 
-    constructor(baseApi: string, store: Store<any>) {
+    constructor(baseApi: string, store: Store<any>, i18n: VueI18n) {
         this.container = new Container();
         this.container.bind<IHttpClient>("IApiHttpClient").to(HttpClient).inSingletonScope();
         this.container.bind<IAPIConfiguration>("IAPIConfiguration").toConstantValue({
@@ -47,6 +28,7 @@ export default class OpenSilexVuePlugin {
         });
         this.baseApi = baseApi;
         this.$store = store;
+        this.$i18n = i18n;
         ApiServiceBinder.with(this.container);
     }
 
@@ -199,6 +181,13 @@ export default class OpenSilexVuePlugin {
         return Promise.resolve(this.loadingModules[moduleName]);
     }
 
+    private loadTranslations(lang) {
+        for (let langId in lang) {
+            let translations: any = lang[langId];
+            this.$i18n.mergeLocaleMessage(langId, translations);
+        }
+    }
+
     public loadModule(name) {
         if (window[name]) return window[name];
 
@@ -221,6 +210,11 @@ export default class OpenSilexVuePlugin {
                 self.loadedModules.push(name);
                 const plugin = window[name].default;
                 Vue.use(plugin);
+
+                if (plugin.lang) {
+                    self.loadTranslations(plugin.lang);
+                }
+
                 self.initAsyncComponents(plugin.components)
                     .then(function (_module) {
                         self.hideLoader();
@@ -329,8 +323,6 @@ export default class OpenSilexVuePlugin {
         }
         return hash;
     }
-
-
 
     private handleError(error) {
         switch (error.status) {

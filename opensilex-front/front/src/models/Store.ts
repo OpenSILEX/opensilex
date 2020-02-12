@@ -82,6 +82,25 @@ export default new Vuex.Store({
     menuVisible: true,
     disconnected: false,
     release: new Release(),
+    credentials: {
+      CREDENTIAL_EXPERIMENT_MODIFICATION_ID: "experiment-modification",
+      CREDENTIAL_EXPERIMENT_READ_ID: "experiment-read",
+      CREDENTIAL_GROUP_MODIFICATION_ID: "group-modification",
+      CREDENTIAL_GROUP_DELETE_ID: "group-delete",
+      CREDENTIAL_GROUP_READ_ID: "group-read",
+      CREDENTIAL_PROFILE_MODIFICATION_ID: "profile-modification",
+      CREDENTIAL_PROFILE_DELETE_ID: "profile-delete",
+      CREDENTIAL_PROFILE_READ_ID: "profile-read",
+      CREDENTIAL_PROJECT_MODIFICATION_ID: "project-modification",
+      CREDENTIAL_PROJECT_DELETE_ID: "project-delete",
+      CREDENTIAL_PROJECT_READ_ID: "project-read",
+      CREDENTIAL_USER_MODIFICATION_ID: "user-modification",
+      CREDENTIAL_USER_DELETE_ID: "user-delete",
+      CREDENTIAL_USER_READ_ID: "user-read",
+      CREDENTIAL_VARIABLE_MODIFICATION_ID: "variable-modification",
+      CREDENTIAL_VARIABLE_DELETE_ID: "variable-delete",
+      CREDENTIAL_VARIABLE_READ_ID: "variable-read",
+    }
   },
   mutations: {
     login(state, user: User) {

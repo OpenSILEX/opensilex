@@ -5,6 +5,7 @@
  */
 package org.opensilex.front;
 
+import java.util.List;
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.module.ModuleConfig;
 
@@ -55,4 +56,9 @@ public interface FrontConfig extends ModuleConfig {
             defaultString = "opensilex-front#phis"
     )
     String theme();
+    
+    @ConfigDescription(
+            value = "List of menu identifiers to exclude"
+    )
+    List<String> menuExclusions();
 }

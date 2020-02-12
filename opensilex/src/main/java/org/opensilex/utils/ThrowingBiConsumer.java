@@ -6,9 +6,13 @@
 package org.opensilex.utils;
 
 import java.util.function.BiConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @FunctionalInterface
 public interface ThrowingBiConsumer<T, U, E extends Exception> {
+
+    final static Logger LOGGER = LoggerFactory.getLogger(ThrowingBiConsumer.class);
 
     void accept(T t, U u) throws E;
 
@@ -18,6 +22,7 @@ public interface ThrowingBiConsumer<T, U, E extends Exception> {
             try {
                 throwingConsumer.accept(i, j);
             } catch (Exception ex) {
+                LOGGER.warn("Unexpected silent exception:", ex);
                 try {
                     exceptionClass.cast(ex);
                 } catch (ClassCastException ccEx) {

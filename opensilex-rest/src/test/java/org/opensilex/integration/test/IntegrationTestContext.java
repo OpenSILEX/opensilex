@@ -68,33 +68,18 @@ public class IntegrationTestContext {
         return resourceConfig;
     }
 
-    /**
-     *
-     * @return the {@link SPARQLService} used for tests
-     */
     public SPARQLService getSparqlService() {
         return OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
     }
-        /**
-     *
-     * @return the {@link AuthenticationService} used for tests
-     */
+
     public AuthenticationService getAuthenticationService() {
         return OpenSilex.getInstance().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
     }
-    
 
-    /**
-     * @throws URISyntaxException
-     * @throws SPARQLQueryException
-     */
     public void clearGraphs(List<String> graphsToClear) throws URISyntaxException, SPARQLQueryException {
         SPARQLModule.clearPlatformGraphs(getSparqlService(), graphsToClear);
     }
 
-    /**
-     * @throws Exception
-     */
     public void shutdown() throws Exception {
         OpenSilex.getInstance().shutdown();
     }

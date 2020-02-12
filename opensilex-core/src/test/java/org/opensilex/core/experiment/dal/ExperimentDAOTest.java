@@ -127,14 +127,19 @@ public class ExperimentDAOTest {
         assertEquals(errorMsg, daoXpModel.getCampaign(), xp.getCampaign());
         assertEquals(errorMsg, daoXpModel.getObjective(), xp.getObjective());
         assertEquals(errorMsg, daoXpModel.getComment(), xp.getComment());
-        assertEquals(errorMsg, daoXpModel.getKeywords(), xp.getKeywords());
-        assertEquals(errorMsg, daoXpModel.getProjects(), xp.getProjects());
-        assertEquals(errorMsg, daoXpModel.getScientificSupervisors(), xp.getScientificSupervisors());
-        assertEquals(errorMsg, daoXpModel.getTechnicalSupervisors(), xp.getTechnicalSupervisors());
-        assertEquals(errorMsg, daoXpModel.getGroups(), xp.getGroups());
-        assertEquals(errorMsg, daoXpModel.getVariables(), xp.getVariables());
-        assertEquals(errorMsg, daoXpModel.getSensors(), xp.getSensors());
-
+        compareLists(errorMsg, daoXpModel.getKeywords(), xp.getKeywords());
+        compareLists(errorMsg, daoXpModel.getProjects(), xp.getProjects());
+        compareLists(errorMsg, daoXpModel.getScientificSupervisors(), xp.getScientificSupervisors());
+        compareLists(errorMsg, daoXpModel.getTechnicalSupervisors(), xp.getTechnicalSupervisors());
+        compareLists(errorMsg, daoXpModel.getGroups(), xp.getGroups());
+        compareLists(errorMsg, daoXpModel.getVariables(), xp.getVariables());
+        compareLists(errorMsg, daoXpModel.getSensors(), xp.getSensors());
+    }
+    
+    private void compareLists(String errorMsg, List<?> expectedList, List<?> actualList) {
+        assertTrue(errorMsg, expectedList.size() == actualList.size());
+        assertTrue(errorMsg, expectedList.containsAll(actualList));
+        assertTrue(errorMsg, actualList.containsAll(expectedList));
     }
 
     @Test

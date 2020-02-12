@@ -2,7 +2,11 @@
   <div>
     <b-input-group class="mt-3 mb-3" size="sm">
       <b-input-group>
-        <b-form-input v-model="filterPattern" debounce="300" placeholder="Filter users"></b-form-input>
+        <b-form-input
+          v-model="filterPattern"
+          debounce="300"
+          :placeholder="$t('component.user.filter-placeholder')"
+        ></b-form-input>
         <template v-slot:append>
           <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
             <font-awesome-icon icon="times" size="sm" />
@@ -21,6 +25,13 @@
       :sort-desc.sync="sortDesc"
       no-provider-paging
     >
+      <template v-slot:head(firstName)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(lastName)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(email)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(admin)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
+
       <template v-slot:cell(email)="data">
         <a :href="'mailto:' + data.item.email">{{ data.item.email }}</a>
       </template>
@@ -32,15 +43,15 @@
       </template>
 
       <template v-slot:cell(admin)="data">
-        <small v-if="data.item.admin">Yes</small>
-        <small v-if="!data.item.admin">No</small>
+        <span class="capitalize-first-letter" v-if="data.item.admin">{{$t("component.common.yes")}}</span>
+        <span class="capitalize-first-letter" v-if="!data.item.admin">{{$t("component.common.no")}}</span>
       </template>
 
       <template v-slot:cell(actions)="data">
         <b-button-group>
           <b-button
             size="sm"
-            v-if="user.admin"
+            v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
             @click="$emit('onEdit', data.item)"
             variant="outline-primary"
           >
@@ -48,7 +59,7 @@
           </b-button>
           <b-button
             size="sm"
-            v-if="user.admin && user.email != data.item.email"
+            v-if="user.hasCredential(credentials.CREDENTIAL_USER_DELETE_ID) && user.email != data.item.email"
             @click="$emit('onDelete', data.item.uri)"
             variant="danger"
           >
@@ -81,6 +92,10 @@ export default class UserList extends Vue {
 
   get user() {
     return this.$store.state.user;
+  }
+
+  get credentials() {
+    return this.$store.state.credentials;
   }
 
   currentPage: number = 1;
@@ -121,25 +136,31 @@ export default class UserList extends Vue {
   fields = [
     {
       key: "firstName",
+      label: "component.user.first-name",
       sortable: true
     },
     {
       key: "lastName",
+      label: "component.user.last-name",
       sortable: true
     },
     {
       key: "email",
+      label: "component.user.email",
       sortable: true
     },
     {
       key: "uri",
+      label: "component.common.uri",
       sortable: true
     },
     {
       key: "admin",
+      label: "component.user.admin",
       sortable: true
     },
     {
+      label: "component.common.actions",
       key: "actions"
     }
   ];

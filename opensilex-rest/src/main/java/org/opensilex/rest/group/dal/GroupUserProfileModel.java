@@ -43,6 +43,8 @@ public class GroupUserProfileModel extends SPARQLResourceModel implements ClassU
     )
     private ProfileModel profile;
 
+    public final static String PROFILE_FIELD = "profile";
+    
     public UserModel getUser() {
         return user;
     }

@@ -115,7 +115,7 @@ const i18n = new VueI18n({
 
 // Enable Vue front plugin manager for OpenSilex API
 console.debug("Enable OpenSilex plugin...");
-let $opensilex = new OpenSilexVuePlugin(baseApi, store);
+let $opensilex = new OpenSilexVuePlugin(baseApi, store, i18n);
 $opensilex.setCookieSuffix(baseApi);
 Vue.use($opensilex);
 console.debug("OpenSilex plugin enabled !");

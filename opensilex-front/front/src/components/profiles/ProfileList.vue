@@ -2,7 +2,11 @@
   <div>
     <b-input-group class="mt-3 mb-3" size="sm">
       <b-input-group>
-        <b-form-input v-model="filterPattern" debounce="300" placeholder="Filter profiles"></b-form-input>
+        <b-form-input
+          v-model="filterPattern"
+          debounce="300"
+          :placeholder="$t('component.profile.filter-placeholder')"
+        ></b-form-input>
         <template v-slot:append>
           <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
             <font-awesome-icon icon="times" size="sm" />
@@ -21,9 +25,17 @@
       :sort-desc.sync="sortDesc"
       no-provider-paging
     >
+      <template v-slot:head(name)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(credentials)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
+
       <template v-slot:cell(credentials)="data">
         <ul>
-          <li v-for="credential in data.item.credentials" v-bind:key="credential">{{$t(credentialsMapping[credential])}}</li>
+          <li
+            v-for="credential in data.item.credentials"
+            v-bind:key="credential"
+          >{{$t(credentialsMapping[credential])}}</li>
         </ul>
       </template>
 
@@ -37,7 +49,7 @@
         <b-button-group>
           <b-button
             size="sm"
-            v-if="user.admin"
+            v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
             @click="$emit('onEdit', data.item)"
             variant="outline-primary"
           >
@@ -45,7 +57,7 @@
           </b-button>
           <b-button
             size="sm"
-            v-if="user.admin"
+            v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_DELETE_ID)"
             @click="$emit('onDelete', data.item.uri)"
             variant="danger"
           >
@@ -78,6 +90,10 @@ export default class ProfileList extends Vue {
 
   get user() {
     return this.$store.state.user;
+  }
+
+  get credentials() {
+    return this.$store.state.credentials;
   }
 
   currentPage: number = 1;
@@ -121,16 +137,20 @@ export default class ProfileList extends Vue {
   fields = [
     {
       key: "name",
+      label: "component.common.name",
       sortable: true
     },
     {
+      label: "component.profile.credentials",
       key: "credentials"
     },
     {
       key: "uri",
+      label: "component.common.uri",
       sortable: true
     },
     {
+      label: "component.common.actions",
       key: "actions"
     }
   ];

@@ -78,19 +78,22 @@ menu:
         route: 
           path: /users
           component: opensilex-UserView
-          credentials: []
+          credentials: 
+            - user-read
       - id: groups
         label: component.menu.security.groups
         route: 
           path: /groups
           component: opensilex-GroupView
-          credentials: []
+          credentials: 
+            - group-read
       - id: profiles
         label: component.menu.security.profiles
         route: 
           path: /profiles
           component: opensilex-ProfileView
-          credentials: []
+          credentials: 
+            - profile-read
   - id: factors
     label: Factors
     children:

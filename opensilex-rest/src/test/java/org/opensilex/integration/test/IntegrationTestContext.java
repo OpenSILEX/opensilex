@@ -91,19 +91,11 @@ public class IntegrationTestContext {
     public AuthenticationService getAuthenticationService() {
         return OpenSilex.getInstance().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
     }
-    
 
-    /**
-     * @throws URISyntaxException
-     * @throws SPARQLQueryException
-     */
     public void clearGraphs(List<String> graphsToClear) throws URISyntaxException, SPARQLQueryException {
         SPARQLModule.clearPlatformGraphs(getSparqlService(), graphsToClear);
     }
 
-    /**
-     * @throws Exception
-     */
     public void shutdown() throws Exception {
         OpenSilex.getInstance().shutdown();
     }

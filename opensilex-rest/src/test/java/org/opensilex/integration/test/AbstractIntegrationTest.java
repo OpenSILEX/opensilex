@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 
 import static junit.framework.TestCase.assertEquals;
-import org.junit.experimental.categories.Category;
 import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -68,10 +67,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         context.shutdown();
     }
 
-    /**
-     * @throws URISyntaxException
-     * @throws SPARQLQueryException
-     */
     @After
     public void clearGraph() throws URISyntaxException, SPARQLQueryException {
         context.clearGraphs(getGraphsToCleanNames());
@@ -89,9 +84,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return context.getAuthenticationService();
     }
 
-    /**
-     * @return
-     */
     protected List<String> getGraphsToCleanNames() {
         return new ArrayList<>();
     }
@@ -124,12 +116,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return res.getResult();
     }
 
-    /**
-     *
-     * @param target
-     * @param entity
-     * @return
-     */
     protected Response getJsonPostResponse(WebTarget target, Object entity) {
         return appendToken(target).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
@@ -138,12 +124,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return target.request(MediaType.APPLICATION_JSON).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
 
-    /**
-     *
-     * @param target
-     * @param entity
-     * @return
-     */
     protected Response getJsonPutResponse(WebTarget target, Object entity) {
         return appendToken(target).put(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
@@ -152,12 +132,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return target.request(MediaType.APPLICATION_JSON).put(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
 
-    /**
-     *
-     * @param target
-     * @param uri
-     * @return
-     */
     protected Response getJsonGetByUriResponse(WebTarget target, String uri) {
         return appendToken(target.resolveTemplate("uri", uri)).get();
     }
@@ -170,12 +144,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return target.request(MediaType.APPLICATION_JSON).get();
     }
     
-    /**
-     *
-     * @param target
-     * @param uri
-     * @return
-     */
     protected Response getDeleteByUriResponse(WebTarget target, String uri) {
         return appendToken(target.resolveTemplate("uri", uri)).delete();
     }
@@ -188,27 +156,10 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return appendToken(target).delete();
     }
     
-    /**
-     *
-     * @param target
-     * @param page
-     * @param pageSize
-     * @param params
-     * @return
-     */
     protected WebTarget appendSearchParams(WebTarget target, int page, int pageSize, Map<String, Object> params) {
         return appendSearchParams(target, page, pageSize, Collections.emptyList(), params);
     }
 
-    /**
-     *
-     * @param target
-     * @param page
-     * @param pageSize
-     * @param orderByList
-     * @param params
-     * @return
-     */
     protected WebTarget appendSearchParams(WebTarget target, int page, int pageSize, List<OrderBy> orderByList, Map<String, Object> params) {
 
         target.queryParam("page", page)
@@ -218,12 +169,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return appendQueryParams(target, params);
     }
 
-    /**
-     *
-     * @param target
-     * @param params
-     * @return
-     */
     protected WebTarget appendQueryParams(WebTarget target, Map<String, Object> params) {
 
         for (Map.Entry<String, Object> entry : params.entrySet()) {
@@ -239,34 +184,18 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return target;
     }
 
-    /**
-     *
-     * @param target
-     * @return
-     */
     protected Invocation.Builder appendToken(WebTarget target) {
         TokenGetDTO token = getToken();
         return target.request(MediaType.APPLICATION_JSON_TYPE)
                 .header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + token.getToken());
     }
 
-    /**
-     *
-     * @param response
-     * @return
-     * @throws URISyntaxException
-     */
     protected URI extractUriFromResponse(final Response response) throws URISyntaxException {
         JsonNode node = response.readEntity(JsonNode.class);
         ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class);
         return new URI(postResponse.getResult());
     }
 
-    /**
-     *
-     * @param response
-     * @return
-     */
     protected List<URI> extractUriListFromResponse(final Response response) {
         JsonNode node = response.readEntity(JsonNode.class);
         PaginatedListResponse<URI> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<URI>>() {

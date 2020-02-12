@@ -66,6 +66,7 @@ export default class App extends Vue {
 
 <style lang="scss">
 
+@import './styles/common.scss';
 @import "../node_modules/icon-kit/dist/css/iconkit.min.css";
 @import '../node_modules/bootstrap/scss/bootstrap';
 @import '../node_modules/bootstrap-vue/src/index.scss';

@@ -87,6 +87,8 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             List<MenuItemDTO> globalMenu = new ArrayList<>();
             List<RouteDTO> globalRoutes = new ArrayList<>();
 
+            List<String> menuExclusions = frontConfig.menuExclusions();
+            
             for (OpenSilexModule m : OpenSilex.getInstance().getModules()) {
                 try {
                     if (m.fileExists(FRONT_CONFIG_PATH)) {
@@ -94,8 +96,10 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                         cfg.addSource(m.getFileInputStream(FRONT_CONFIG_PATH));
                         FrontRoutingConfig frontRoutingConfig = cfg.loadConfig("", FrontRoutingConfig.class);
                         for (MenuItem menuItem : frontRoutingConfig.menu()) {
-                            MenuItemDTO menuDTO = MenuItemDTO.fromModel(menuItem);
-                            globalMenu.add(menuDTO);
+                            if (!menuExclusions.contains(menuItem.id())) {
+                                MenuItemDTO menuDTO = MenuItemDTO.fromModel(menuItem);
+                                globalMenu.add(menuDTO);
+                            }
                         }
 
                         for (Route route : frontRoutingConfig.routes()) {

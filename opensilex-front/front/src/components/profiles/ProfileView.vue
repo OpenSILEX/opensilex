@@ -1,14 +1,20 @@
 <template>
   <div>
-    <b-button @click="showCreateForm" variant="success">Add profile</b-button>
+    <b-button
+      v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
+      @click="showCreateForm"
+      variant="success"
+    >{{$t('component.profile.add')}}</b-button>
     <opensilex-ProfileForm
       ref="profileForm"
+      v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
       v-bind:credentialsGroups="credentialsGroups"
       @onCreate="callCreateProfileService"
       @onUpdate="callUpdateProfileService"
     ></opensilex-ProfileForm>
     <opensilex-ProfileList
       ref="profileList"
+      v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_READ_ID)"
       v-bind:credentialsMapping="credentialsMapping"
       @onEdit="editProfile"
       @onDelete="deleteProfile"
@@ -39,6 +45,10 @@ export default class ProfileView extends Vue {
 
   get user() {
     return this.$store.state.user;
+  }
+
+  get credentials() {
+    return this.$store.state.credentials;
   }
 
   static credentialsGroups = [];

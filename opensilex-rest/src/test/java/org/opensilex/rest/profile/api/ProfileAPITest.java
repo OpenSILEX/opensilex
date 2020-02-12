@@ -18,10 +18,8 @@ import org.opensilex.server.response.SingleObjectResponse;
 
 public class ProfileAPITest extends AbstractIntegrationTest {
 
-    /**
+    /*
      * Uncomment this method to enable test debug logging
-     *
-     * @return true to enable debug and false otherwise
      */
 //    protected boolean isDebug() {
 //        return true;

@@ -2,7 +2,11 @@
   <div>
     <b-input-group class="mt-3 mb-3" size="sm">
       <b-input-group>
-        <b-form-input v-model="filterPattern" debounce="300" placeholder="Filter groups"></b-form-input>
+        <b-form-input
+          v-model="filterPattern"
+          debounce="300"
+          :placeholder="$t('component.group.filter-placeholder')"
+        ></b-form-input>
         <template v-slot:append>
           <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
             <font-awesome-icon icon="times" size="sm" />
@@ -21,18 +25,25 @@
       :sort-desc.sync="sortDesc"
       no-provider-paging
     >
+      <template v-slot:head(name)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(description)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(userProfiles)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
 
       <template v-slot:cell(userProfiles)="data">
-          <ul>
-            <li v-for="userProfile in data.item.userProfiles" v-bind:key="userProfile.uri" >{{userProfile.userName}} ({{userProfile.profileName}})</li>
-          </ul>
+        <ul>
+          <li
+            v-for="userProfile in data.item.userProfiles"
+            v-bind:key="userProfile.uri"
+          >{{userProfile.userName}} ({{userProfile.profileName}})</li>
+        </ul>
       </template>
 
       <template v-slot:cell(actions)="data">
         <b-button-group>
           <b-button
             size="sm"
-            v-if="user.admin"
+            v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
             @click="$emit('onEdit', data.item)"
             variant="outline-primary"
           >
@@ -40,7 +51,7 @@
           </b-button>
           <b-button
             size="sm"
-            v-if="user.admin"
+            v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_DELETE_ID)"
             @click="$emit('onDelete', data.item.uri)"
             variant="danger"
           >
@@ -73,6 +84,10 @@ export default class GroupList extends Vue {
 
   get user() {
     return this.$store.state.user;
+  }
+
+  get credentials() {
+    return this.$store.state.credentials;
   }
 
   currentPage: number = 1;
@@ -113,17 +128,20 @@ export default class GroupList extends Vue {
   fields = [
     {
       key: "name",
+      label: "component.common.name",
       sortable: true
     },
     {
+      label: "component.common.description",
       key: "description",
       sortable: true
     },
     {
-      label: "Users",
+      label: "component.user.users",
       key: "userProfiles"
     },
     {
+      label: "component.common.actions",
       key: "actions"
     }
   ];

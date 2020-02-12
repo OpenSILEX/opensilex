@@ -21,14 +21,13 @@ import org.opensilex.server.response.SingleObjectResponse;
 
 public class GroupAPITest extends AbstractIntegrationTest {
 
-    /**
+    /*
      * Uncomment this method to enable test debug logging
-     *
-     * @return true to enable debug and false otherwise
      */
 //    protected boolean isDebug() {
 //        return true;
 //    }
+    
     protected String path = "/group";
     protected String createPath = path + "/create";
     protected String updatePath = path + "/update";

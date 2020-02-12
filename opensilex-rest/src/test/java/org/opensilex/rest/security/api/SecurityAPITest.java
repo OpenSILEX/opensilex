@@ -20,14 +20,13 @@ import org.opensilex.server.response.PaginatedListResponse;
 
 public class SecurityAPITest extends AbstractIntegrationTest {
 
-    /**
+    /*
      * Uncomment this method to enable test debug logging
-     *
-     * @return true to enable debug and false otherwise
      */
 //    protected boolean isDebug() {
 //        return true;
 //    }
+    
     protected String path = "/security";
     protected String renewTokenPath = path + "/renew-token";
     protected String logoutPath = path + "/logout";

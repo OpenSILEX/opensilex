@@ -127,7 +127,7 @@ public class SPARQLService implements SPARQLConnection, Service {
     public void clearPrefixes() {
         prefixes.clear();
     }
-        
+
     @Override
     public boolean executeAskQuery(AskBuilder ask) throws SPARQLQueryException {
         addPrefixes(ask);
@@ -518,6 +518,14 @@ public class SPARQLService implements SPARQLConnection, Service {
 
             executeDeleteQuery(delete);
         }
+    }
+
+    public <T extends SPARQLResourceModel> void deleteByObjectRelation(Class<T> objectClass, String relationField, URI objectURI) throws Exception {
+        List<URI> relatedObjectURIs = this.searchURIs(objectClass, (select) -> {
+            SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
+            select.addValueVar(sparqlObjectMapper.getFieldExprVar(relationField), SPARQLDeserializers.nodeURI(objectURI));
+        });
+        this.delete(objectClass, relatedObjectURIs);
     }
 
     public boolean uriExists(URI uri) throws SPARQLException {

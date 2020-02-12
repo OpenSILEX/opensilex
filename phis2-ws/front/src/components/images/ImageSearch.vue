@@ -1,15 +1,19 @@
 <template>
   <div>
     <b-form>
-      <phis2ws-ImageTypeSearch></phis2ws-ImageTypeSearch>
 
       <phis2ws-TimeSearch></phis2ws-TimeSearch>
+      <div class="row">
+        <div class="col-sm">
+          <phis2ws-ExperimentSearch></phis2ws-ExperimentSearch>
+          <phis2ws-SciObjectTypeSearch></phis2ws-SciObjectTypeSearch>
+          <phis2ws-SciObjectSearch></phis2ws-SciObjectSearch>
+        </div>
+        <div class="col-sm">
+          <phis2ws-ImageTypeSearch></phis2ws-ImageTypeSearch>
+        </div>
+      </div>
 
-      <phis2ws-ExperimentSearch></phis2ws-ExperimentSearch>
-
-      <phis2ws-SciObjectTypeSearch></phis2ws-SciObjectTypeSearch>
-
-      <phis2ws-SciObjectSearch></phis2ws-SciObjectSearch>
     </b-form>
   </div>
 </template>

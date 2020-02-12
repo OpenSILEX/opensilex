@@ -2,13 +2,13 @@
   <div>
     <b-form-group
       id="input-group-3"
-      label="Scientific object type:"
+      label="Scientific Object Type:"
       label-for="sciObjectTypeSearch"
       label-class="required"
     >
       <b-form-select id="sciObjectTypeSearch" v-model="type" :options="soTypes" @input="update" @focus.native="userAction">
         <template v-slot:first>
-          <b-form-select-option :value="null">--No object Type selected--</b-form-select-option>
+          <b-form-select-option :value="null">--no object type selected--</b-form-select-option>
         </template>
       </b-form-select>
     </b-form-group>

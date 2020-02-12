@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-form-group id="input-group-1" label="Image type:" label-for="type" label-class="required">
+    <b-form-group id="input-group-1" label="Image Type:" label-for="type" label-class="required">
       <b-form-select id="type" v-model="rdfType" :options="types" @input="update" required>
         <template v-slot:first>
           <b-form-select-option :value="null" disabled>-- Please select an Image type --</b-form-select-option>

@@ -1,5 +1,5 @@
 <template>
-  <b-form-group label="Scientific object alias">
+  <b-form-group label="Scientific Object Alias">
     <b-form-tags v-model="value" no-outer-focus class="mb-2">
       <template v-slot="{ tags, disabled }">
         <ul v-if="tags.length > 0" class="list-inline d-inline-block mb-2">
@@ -81,7 +81,7 @@ export default class ObjectSearch extends Vue {
       this.options = [];
       this.search = "";
     });
-    
+
   }
 
   onChange(selectedValue) {

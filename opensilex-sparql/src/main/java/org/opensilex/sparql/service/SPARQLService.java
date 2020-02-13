@@ -47,6 +47,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.exceptions.SPARQLTransactionException;
 import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;

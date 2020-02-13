@@ -62,7 +62,7 @@ variables:
         git checkout $COMMIT_SHA_OPENSILEX_DEV
       fi
     - rm -r $CI_PROJECT_DIR/phis-ws
-    - git clone https://forgemia.inra.fr/OpenSILEX/phis-ws.git --branch modularity
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/phis-ws.git --branch modularity
   stage: build
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   artifacts:

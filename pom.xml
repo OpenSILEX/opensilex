@@ -43,7 +43,7 @@
         <module>opensilex-front</module>
         
         <!-- Extension modules -->
-        <module>inrae-sixtine</module>
+        <!--<module>inrae-sixtine</module>-->
         <module>phis-ws/phis2-ws</module>
             
         <!-- Development module -->

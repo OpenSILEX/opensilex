@@ -66,6 +66,12 @@ variables:
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   except:
     - schedules
+  artifacts:
+    expire_in: "3 week"  
+    
+# ########################
+# ##  DEFAULT BUILD CACHE 
+# ########################
 
 opensilex:build:
   <<: *build_template_with_opensilex
@@ -77,7 +83,6 @@ opensilex:build:
       - $CI_PROJECT_DIR/$REVISION
       - $MAVEN_CACHE_FOLDER
       - $NODE_MODULE_DEV_CACHE
-    expire_in: "3 week"
 
 # Trigger pipeline for test deployment
 opensilex:sixitine:build:

@@ -82,8 +82,7 @@ opensilex:build:
     paths:
       - $CI_PROJECT_DIR/$REVISION
       - $MAVEN_CACHE_FOLDER
-      - $NODE_MODULE_DEV_CACHE
-
+      
 # Trigger pipeline for test deployment
 opensilex:sixitine:build:
   stage: build

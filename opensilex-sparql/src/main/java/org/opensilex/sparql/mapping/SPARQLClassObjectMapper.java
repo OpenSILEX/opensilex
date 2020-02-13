@@ -66,6 +66,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         SPARQL_RESOURCES_MAPPER.forEach(lambda);
     }
 
+    @SuppressWarnings("unchecked")
     public static void initialize() throws SPARQLInvalidClassDefinitionException {
         if (SPARQL_CLASSES_LIST == null) {
             SPARQL_CLASSES_LIST = ClassUtils.getAnnotatedClasses(SPARQLResource.class);
@@ -195,6 +196,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     }
 
+    @SuppressWarnings("unchecked")
     public T createInstance(SPARQLResult result, SPARQLService service) throws Exception {
         String realType = result.getStringValue(SPARQLQueryHelper.typeDefVar.getName());
         if (!realType.equals(getRDFType().toString())) {
@@ -265,6 +267,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return instance;
     }
 
+    
+    @SuppressWarnings("unchecked")
     public List<T> createInstanceList(List<URI> uris, SPARQLService service) throws Exception {
         SPARQLProxyResourceList<T> proxy = new SPARQLProxyResourceList<>(getDefaultGraph(), uris, objectClass, service);
         List<T> instances = proxy.loadIfNeeded();

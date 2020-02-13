@@ -83,6 +83,7 @@ public class ConfigManager {
         return config;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T loadConfigPath(String path, Class<T> configClass) {
 
         JsonNode baseNode = root;

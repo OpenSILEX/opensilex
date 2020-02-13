@@ -283,6 +283,7 @@ public class ModuleManager {
      * @param serviceManager Service manager to use
      * @throws Exception rethrow exceptions on service registring
      */
+    @SuppressWarnings("unchecked")
     public void registerServices(ServiceManager serviceManager) throws Exception {
         this.services = serviceManager;
         // Iterate over modules
@@ -360,6 +361,7 @@ public class ModuleManager {
      * @param extensionInterface Interface class
      * @return List of found modules as T interface
      */
+    @SuppressWarnings("unchecked")
     public <T> List<T> getModulesImplementingInterface(Class<T> extensionInterface) {
         List<T> modules = new ArrayList<>();
         forEachModule((OpenSilexModule m) -> {
@@ -402,6 +404,7 @@ public class ModuleManager {
      * @return Module instance
      * @throws ModuleNotFoundException Throw exception if module is not found
      */
+    @SuppressWarnings("unchecked")
     public <T extends OpenSilexModule> T getModuleByClass(Class<T> moduleClass) throws ModuleNotFoundException {
         for (OpenSilexModule module : getModules()) {
             if (module.getClass().equals(moduleClass)) {

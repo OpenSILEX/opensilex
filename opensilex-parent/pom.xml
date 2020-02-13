@@ -709,7 +709,10 @@
                 <configuration>
                     <source>${java.compiler.version}</source>
                     <target>${java.compiler.version}</target>
-                    <compilerArgument>-proc:none</compilerArgument>
+                    <compilerArgs>
+                        <arg>-proc:none</arg>
+                        <arg>-Xlint:all</arg>
+                    </compilerArgs>
                     <!-- Add hibernate validation -->
                     <annotationProcessorPaths>
                         <path>

@@ -61,6 +61,7 @@ public class ConfigProxyHandler implements InvocationHandler {
         return nodeToObject(method.getGenericReturnType(), key, rootNode, method);
     }
 
+    @SuppressWarnings("unchecked")
     private Object nodeToObject(Type type, String key, JsonNode node, Method method) throws InvalidConfigException {
         Object result;
 
@@ -332,6 +333,7 @@ public class ConfigProxyHandler implements InvocationHandler {
         return list;
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T getInterface(Class<T> interfaceClass, String key, JsonNode node) {
         return (T) Proxy.newProxyInstance(OpenSilex.getClassLoader(),
                 new Class<?>[]{interfaceClass},
@@ -374,6 +376,7 @@ public class ConfigProxyHandler implements InvocationHandler {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private <T extends Service> T getService(Class<T> serviceClass, JsonNode value, Method method) throws InvalidConfigException {
 
         try {

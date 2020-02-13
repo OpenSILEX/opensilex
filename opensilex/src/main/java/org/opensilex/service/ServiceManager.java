@@ -37,6 +37,7 @@ public class ServiceManager {
         serviceInstanceRegistry.forEach(lambda);
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends Service> T getServiceInstance(String name, Class<T> serviceInterface) {
         return (T) serviceByNameRegistry.get(name);
     }

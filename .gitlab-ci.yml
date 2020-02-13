@@ -60,7 +60,6 @@ variables:
       if [ ! -z "$COMMIT_SHA_OPENSILEX_DEV" ]; then
         git checkout $COMMIT_SHA_OPENSILEX_DEV
       fi
-    - cd $CI_PROJECT_DIR/phis-ws
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/phis-ws.git modularity
     - cd $CI_PROJECT_DIR/
   stage: build

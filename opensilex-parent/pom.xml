@@ -81,7 +81,7 @@
         <jaxb.version>2.3.0.1</jaxb.version>
         <jaxb.impl.version>2.3.2</jaxb.impl.version>
         <javax.activation.api.version>1.2.0</javax.activation.api.version>
-        <reflections.version>0.9.11</reflections.version>
+        <reflections.version>0.9.12</reflections.version>
         <httpclient.version>4.5.11</httpclient.version>
         <httpcore.version>4.4.13</httpcore.version>
         <javaee.web.api.version>8.0.1</javaee.web.api.version>
@@ -709,7 +709,10 @@
                 <configuration>
                     <source>${java.compiler.version}</source>
                     <target>${java.compiler.version}</target>
-                    <compilerArgument>-proc:none</compilerArgument>
+                    <compilerArgs>
+                        <arg>-proc:none</arg>
+                        <arg>-Xlint:all</arg>
+                    </compilerArgs>
                     <!-- Add hibernate validation -->
                     <annotationProcessorPaths>
                         <path>

@@ -285,6 +285,7 @@ public class ClassUtils {
         return projectId;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Constructor<T> getConstructorWithParameterImplementing(Class<T> classToInspect, Class<?> constructorParameterSuperClass) {
         for (Constructor<?> constructor : classToInspect.getConstructors()) {
             if (constructor.getParameterCount() == 1) {

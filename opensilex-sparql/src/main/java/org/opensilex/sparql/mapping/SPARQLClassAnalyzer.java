@@ -73,6 +73,7 @@ public class SPARQLClassAnalyzer {
 
     private final URIGenerator<? extends SPARQLResourceModel> uriGenerator;
 
+    @SuppressWarnings("unchecked")
     public SPARQLClassAnalyzer(Class<?> objectClass) throws SPARQLInvalidClassDefinitionException {
         LOGGER.debug("Start SPARQL model class analyze for: " + objectClass.getName());
         this.objectClass = objectClass;

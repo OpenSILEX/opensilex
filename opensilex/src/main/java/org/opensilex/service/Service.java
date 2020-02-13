@@ -109,6 +109,7 @@ public interface Service {
         moduleByService.put(serviceClass, module);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T extends OpenSilexModule> T getModule(Class<? extends Service> serviceClass, Class<T> moduleClass) {
         return (T) moduleByService.get(serviceClass);
     }

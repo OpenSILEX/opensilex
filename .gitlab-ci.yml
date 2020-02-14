@@ -80,7 +80,7 @@ opensilex:build:
     - mv $CI_PROJECT_DIR/$BUILD_PATH-$REVISION $CI_PROJECT_DIR/../../$REVISION
   artifacts:
     paths:
-      - $CI_PROJECT_DIR/$REVISION
+      - $CI_PROJECT_DIR/../../$REVISION
       
 # Trigger pipeline for test deployment
 opensilex:sixitine:build:

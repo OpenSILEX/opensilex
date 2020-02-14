@@ -27,7 +27,7 @@
 
     <properties>
         <!-- common projects version -->
-        <revision>4.0.0-SNAPSHOT</revision>
+        <revision>BUILD-SNAPSHOT</revision>
         
         <!-- global encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

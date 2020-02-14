@@ -77,7 +77,7 @@ opensilex:build:
   <<: *build_template_with_opensilex
   script: 
     - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
-    - mv $CI_PROJECT_DIR/$BUILD_PATH-$REVISION $REVISION
+    - mv $MAVEN_CACHE_FOLDER/org/opensilex $REVISION
   artifacts:
     paths:
       - $REVISION
@@ -88,7 +88,7 @@ opensilex:sixitine:build:
   stage: deploy
   image: curlimages/curl
   script:
-    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master"  https://forgemia.inra.fr/api/v4/projects/1675/trigger/pipeline
+    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master"  https://forgemia.inra.fr/api/v4/projects/1757/trigger/pipeline
   needs: 
     - job: "opensilex:build"
 

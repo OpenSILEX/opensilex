@@ -1079,7 +1079,7 @@
                             
                             <!-- Build typescript definition for auto-generated webservice access service library -->
                             <execution>
-                                <id>build typescript definition</id>
+                                <id>build-typescript-definition</id>
                                 <phase>process-classes</phase>
                                 <goals>
                                     <goal>yarn</goal>

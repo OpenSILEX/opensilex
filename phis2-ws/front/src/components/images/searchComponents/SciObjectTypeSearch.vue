@@ -2,13 +2,13 @@
   <div>
     <b-form-group
       id="input-group-3"
-      label="Scientific object type:"
+      label="Scientific Object Type:"
       label-for="sciObjectTypeSearch"
       label-class="required"
     >
-      <b-form-select id="sciObjectTypeSearch" v-model="type" :options="soTypes" @input="update">
+      <b-form-select id="sciObjectTypeSearch" v-model="type" :options="soTypes" @input="update" @focus.native="userAction">
         <template v-slot:first>
-          <b-form-select-option :value="null">--No object Type selected--</b-form-select-option>
+          <b-form-select-option :value="null">--no object type selected--</b-form-select-option>
         </template>
       </b-form-select>
     </b-form-group>
@@ -34,6 +34,10 @@ export default class SciObjectTypeSearch extends Vue {
     return this.$store.state.user;
   }
 
+ // the way to see if it is select by a user or by the change of an other element of the form 
+ // In this case the images will be asynch load for nothing
+  userFocus=false; 
+
   soTypes: any = [];
   type: string = null;
   allTypes: any = [];
@@ -44,7 +48,14 @@ export default class SciObjectTypeSearch extends Vue {
     "http://www.opensilex.org/vocabulary/oeso#ScientificObject";
 
   update() {
+    if(this.userFocus){ // i don't want the spread
     EventBus.$emit("soTypeHasChanged", this.type);
+    } else {
+      EventBus.$emit("soTypeIsInitialized");
+    }
+  }
+  userAction(){
+    this.userFocus=true;
   }
 
   created() {
@@ -71,11 +82,14 @@ export default class SciObjectTypeSearch extends Vue {
       .catch(this.$opensilex.errorHandler);
 
     EventBus.$on("imageTypeSelected", type => {
+      this.userFocus=false;
       this.soTypes = this.allTypes;
       this.type = null;
     });
 
     EventBus.$on("experienceHasChanged", experience => {
+
+      this.userFocus=false;
       if (experience === null) {
         this.soTypes = this.allTypes;
         this.type = null;

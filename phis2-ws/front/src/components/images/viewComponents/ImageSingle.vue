@@ -1,10 +1,11 @@
 <template>
   <div class="col-lg-2 col-md-3 col-sm-4">
     <article class="card" style="max-width: 10rem;">
-      <b-card-img :src="link" class="card-img-top"  @click="imageClicked"></b-card-img>
+      <b-card-img :src="link" class="card-img-top" @click="imageClicked"></b-card-img>
       <div class="card-body">
         <b-card-text>{{objectType}}</b-card-text>
         <b-card-text>{{objectUri}}</b-card-text>
+        <b-card-text>{{objectAlias}}</b-card-text>
         <b-card-text>{{formatedDateValue}}</b-card-text>
       </div>
     </article>
@@ -42,13 +43,15 @@ export default class ImageSingle extends Vue {
     this.link = this.image.uri;
     this.formatedDateValue = this.formatedDate(this.image.date);
     this.objectType = this.image.objectType.split("#")[1];
-    this.objectUri = this.image.objectUri;
-   
+    if (this.image.objectAlias) {
+      this.objectAlias = this.image.objectAlias;
+    } else {
+      this.objectUri = this.image.objectUri;
+    }
   }
 
-  mounted(){
-     //this.getObjectAlias();
-
+  mounted() {
+    //this.getObjectAlias();
   }
 
   getObjectAlias() {

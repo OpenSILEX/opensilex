@@ -1,5 +1,5 @@
 <template>
-  <b-form-group label="Scientific object alias">
+  <b-form-group label="Scientific Object Alias">
     <b-form-tags v-model="value" no-outer-focus class="mb-2">
       <template v-slot="{ tags, disabled }">
         <ul v-if="tags.length > 0" class="list-inline d-inline-block mb-2">
@@ -59,42 +59,51 @@ export default class ObjectSearch extends Vue {
 
   created() {
     this.options = [];
+
+     EventBus.$on("imageTypeSelected", type => {
+      this.selectedExperiment = null;
+      this.selectedSoType = null;
+      this.value = [];
+      this.options = [];
+      this.search = "";
+    });
+
     EventBus.$on("experienceHasChanged", experience => {
       this.selectedExperiment = experience;
       this.value = [];
       this.options = [];
       this.search = "";
     });
+
     EventBus.$on("soTypeHasChanged", type => {
       this.selectedSoType = type;
       this.value = [];
       this.options = [];
       this.search = "";
     });
+
   }
 
   onChange(selectedValue) {
     console.log("onChange");
     this.value.push(selectedValue);
     this.selectedValueWithUri = {};
-    let sciObjectsURI = [];
     this.value.forEach(element => {
-      this.selectedValueWithUri[element] = this.valueWithURI[element];
-      sciObjectsURI.push(this.valueWithURI[element]);
+      this.selectedValueWithUri[this.valueWithURI[element]] = element;
     });
     this.search = "";
-    EventBus.$emit("searchObjectSelected", sciObjectsURI);
+    EventBus.$emit("searchObjectSelected", this.selectedValueWithUri);
   }
 
   onRemove(index) {
     this.value.splice(index, 1);
     this.selectedValueWithUri = {};
-    let sciObjectsURI = [];
     this.value.forEach(element => {
-      this.selectedValueWithUri[element] = this.valueWithURI[element];
-      sciObjectsURI.push(this.valueWithURI[element]);
+      this.selectedValueWithUri[this.valueWithURI[element]] = element;
     });
-    EventBus.$emit("searchObjectSelected", sciObjectsURI);
+
+    this.search = "";
+    EventBus.$emit("searchObjectSelected", this.selectedValueWithUri);
   }
 
   onWrite(value) {
@@ -102,7 +111,6 @@ export default class ObjectSearch extends Vue {
       this.onChange(value);
 
     } else {
-      console.log("onInput");
       this.alias = value;
       let service: ScientificObjectsService = this.$opensilex.getService(
         "opensilex.ScientificObjectsService"

@@ -77,10 +77,10 @@ opensilex:build:
   <<: *build_template_with_opensilex
   script: 
     - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
-    - mv $CI_PROJECT_DIR/$BUILD_PATH-$REVISION $CI_PROJECT_DIR/../../$REVISION
+    - mv $CI_PROJECT_DIR/$BUILD_PATH-$REVISION $REVISION
   artifacts:
     paths:
-      - $CI_PROJECT_DIR/../../$REVISION
+      - $REVISION
       
 # Trigger pipeline for test deployment
 opensilex:sixitine:build:

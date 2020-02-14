@@ -1,7 +1,94 @@
+ 
+########################
+##  GLOBAL VARIABLES 
+########################
+variables:
+ GIT_DEPTH: 5
+ GIT_OPTIONS: "--allow-unrelated-histories"
+ # GLOBAL
+ # As of Maven 3.3.0 instead of this you may define these options in `.mvn/maven.config` so the same config is used
+ # when running from the command line.
+ MAVEN_CLI_OPTS: "--batch-mode --show-version "
+ BUILD_PATH: "opensilex-release/target/opensilex-release"
+ # DEFAULT SERVER MAVEN VERSION
+ MVN_VERSION: 3.6.3
+ # DEFAULT SERVER JAVA VERSION
+ JAVA_VERSION: 11
+ REVISION: 'INSTANCE-SNAPSHOT'
+ # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
+ # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
+ MAVEN_CACHE_FOLDER: "$CI_PROJECT_DIR/.m2/repository"
+ MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+ YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/cache_yarn"
+ NODE_MODULE_DEV_CACHE: "$CI_PROJECT_DIR/node_modules"
+ NODE_MODULE_FRONT_CACHE: "$CI_PROJECT_DIR/opensilex-front/front/node_modules"
+ NODE_MODULE_CORE_CACHE: "$CI_PROJECT_DIR/opensilex-core/front/node_modules"
+ NODE_MODULE_REST_CACHE: "$CI_PROJECT_DIR/opensilex-rest/front/node_modules"
+ NODE_MODULE_PHIS_CACHE: "$CI_PROJECT_DIR/phis-ws/front/node_modules"
+ NODE_MODULE_SIXTINE_CACHE: "$CI_PROJECT_DIR/inrae-sixtine/front/node_modules"
+ NODE_CACHE: "$CI_PROJECT_DIR/.node"
+ EMBDED_MONGO_CACHE: "/root/.embedmongo/"
+
+########################
+##  CACHE TEMPLATE
+########################
+
+# Cache downloaded dependencies and plugins between builds.
+# To keep cache across branches add 'key: "$CI_BUILD_JOB_NAME"'
+.cache_dependencies: &cache_dependencies
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - $YARN_CACHE_FOLDER
+      - $MAVEN_CACHE_FOLDER
+      - $NODE_MODULE_DEV_CACHE
+      - $NODE_MODULE_FRONT_CACHE
+      - $NODE_MODULE_CORE_CACHE
+      - $NODE_MODULE_REST_CACHE
+      - $NODE_CACHE
+      - $NODE_MODULE_PHIS_CACHE
+      - $EMBDED_MONGO_CACHE
+
+########################
+##  BUILD TEMPLATE
+########################
+
+.build:instance: &build_template_with_opensilex
+  <<: *cache_dependencies
+  before_script: 
+    - |
+      if [ ! -z "$COMMIT_SHA_OPENSILEX_DEV" ]; then
+        git checkout $COMMIT_SHA_OPENSILEX_DEV
+      fi
+    - rm -r $CI_PROJECT_DIR/phis-ws
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/phis-ws.git --branch modularity
+  stage: build
+  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
+  except:
+    - schedules
+  artifacts:
+    expire_in: "3 week"  
+    
+# ########################
+# ##  DEFAULT BUILD CACHE 
+# ########################
+
+opensilex:build:
+  <<: *build_template_with_opensilex
+  script: 
+    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
+    - mv $CI_PROJECT_DIR/$BUILD_PATH-$REVISION $REVISION
+  artifacts:
+    paths:
+      - $REVISION
+      
 # Trigger pipeline for test deployment
-deploy:webservice:
-  image: curlimages/curl
+opensilex:sixitine:build:
+  stage: build
   stage: deploy
+  image: curlimages/curl
   script:
-    - echo $CI_COMMIT_SHA
-    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA"  https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master"  https://forgemia.inra.fr/api/v4/projects/1757/trigger/pipeline
+  needs: 
+    - job: "opensilex:build"
+

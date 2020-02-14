@@ -110,7 +110,7 @@ public class ExperimentAPI {
             groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
             groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_EXPERIMENT_READ_LABEL_KEY
+            credentialLabelKey = CREDENTIAL_EXPERIMENT_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -280,7 +280,7 @@ public class ExperimentAPI {
             groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
             groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_EXPERIMENT_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_EXPERIMENT_READ_LABEL_KEY
+            credentialLabelKey = CREDENTIAL_EXPERIMENT_DELETE_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

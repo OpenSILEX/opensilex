@@ -10,6 +10,7 @@ package opensilex.service.resource.dto.data;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.model.Data;
 import org.bson.types.Decimal128;
@@ -30,7 +31,7 @@ public class DataDTO {
      * URI of the provenance from which data come.
      * @example http://www.phenome-fppn.fr/mtp/2018/s18003
      */
-    protected String provenanceUri;
+    protected DataProvenanceDTO provenance;
     
     /**
      * URI of the scientific object on which data is related.
@@ -55,6 +56,8 @@ public class DataDTO {
      * @example 1.2
      */
     protected Object value;
+    
+    protected Map<String, Object> metadata;
 
     public DataDTO(Data data) {
         SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
@@ -64,7 +67,7 @@ public class DataDTO {
         }
         
         setUri(data.getUri());
-        setProvenanceUri(data.getProvenanceUri());
+        setProvenance(new DataProvenanceDTO(data.getProvenance()));
         setVariableUri(data.getVariableUri());
         setObjectUri(data.getObjectUri());
         
@@ -76,14 +79,18 @@ public class DataDTO {
         } else {
             setValue(dataValue);
         }
+        
+        if (data.getMetadata() != null) {
+            setMetadata(data.getMetadata());
+        }
     }
 
-    public String getProvenanceUri() {
-        return provenanceUri;
+    public DataProvenanceDTO getProvenance() {
+        return provenance;
     }
 
-    public void setProvenanceUri(String provenanceUri) {
-        this.provenanceUri = provenanceUri;
+    public void setProvenance(DataProvenanceDTO provenance) {
+        this.provenance = provenance;
     }
 
     public String getObjectUri() {
@@ -125,4 +132,13 @@ public class DataDTO {
     public void setUri(String uri) {
         this.uri = uri;
     }
+
+    public Map<String, Object> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map<String, Object> metadata) {
+        this.metadata = metadata;
+    }
+    
 }

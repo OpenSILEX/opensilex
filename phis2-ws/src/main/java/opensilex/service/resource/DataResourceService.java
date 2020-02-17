@@ -773,13 +773,13 @@ public class DataResourceService extends ResourceService {
                     objectsUrisAndLabels.put(data.getObjectUri(), scientificObjectDAO.findLabelsForUri(data.getObjectUri()));
                 }
                 
-                if (!provenancesUrisAndLabels.containsKey(data.getProvenanceUri())) {
+                if (!provenancesUrisAndLabels.containsKey(data.getProvenance().getUri())) {
                     //We need to get the label of the provenance
-                    provenancesUrisAndLabels.put(data.getProvenanceUri(), provenanceDAO.findLabelByUri(data.getProvenanceUri()));
+                    provenancesUrisAndLabels.put(data.getProvenance().getUri(), provenanceDAO.findLabelByUri(data.getProvenance().getUri()));
                 }
                 
                 //Get provenance label
-                String dataProvenanceLabel = provenancesUrisAndLabels.get(data.getProvenanceUri());
+                String dataProvenanceLabel = provenancesUrisAndLabels.get(data.getProvenance().getUri());
                 //Get object labels
                 List<String> dataObjectLabels = new ArrayList<>();
                 if (objectsUrisAndLabels.get(data.getObjectUri()) != null) {

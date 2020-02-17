@@ -10,6 +10,7 @@ package opensilex.service.resource.dto.data;
 import io.swagger.annotations.ApiModelProperty;
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.util.Map;
 import javax.validation.constraints.NotNull;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.documentation.DocumentationAnnotation;
@@ -29,7 +30,7 @@ public class DataPostDTO extends AbstractVerifiedClass {
      * URI of the provenance from which data come.
      * @example http://www.phenome-fppn.fr/mtp/2018/s18003
      */
-    protected String provenanceUri;
+    protected DataProvenance provenance;
     
     /**
      * URI of the scientific object on which data is related.
@@ -54,6 +55,8 @@ public class DataPostDTO extends AbstractVerifiedClass {
      * @example 1.2
      */
     protected Object value;
+    
+    protected Map<String, Object> metadata;
 
     @URL
     @Required
@@ -98,24 +101,31 @@ public class DataPostDTO extends AbstractVerifiedClass {
         this.value = value;
     }
 
-    @URL
-    @Required
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROVENANCE_URI)
-    public String getProvenanceUri() {
-        return provenanceUri;
+    public DataProvenance getProvenance() {
+        return provenance;
     }
 
-    public void setProvenanceUri(String provenanceUri) {
-        this.provenanceUri = provenanceUri;
+    public void setProvenance(DataProvenance provenance) {
+        this.provenance = provenance;
     }
 
+    public Map<String, Object> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map<String, Object> metadata) {
+        this.metadata = metadata;
+    }
+    
+    
     @Override
     public Data createObjectFromDTO() throws ParseException {
         Data data = new Data();
 
         data.setObjectUri(objectUri);
         data.setVariableUri(variableUri);
-        data.setProvenanceUri(provenanceUri);
+        data.setProvenance(provenance);
+        data.setMetadata(metadata);
 
         data.setDate(DateFormat.parseDateOrDateTime(date, false));
 

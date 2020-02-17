@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.ws.rs.core.Response;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
@@ -41,6 +42,7 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Data;
+import opensilex.service.resource.dto.data.DataProvenance;
 
 /**
  * Data DAO.
@@ -58,13 +60,17 @@ public class DataDAO extends MongoDAO<Data> {
     private final static String DB_FIELD_DATE = "date";
     private final static String DB_FIELD_VALUE = "value";
     private final static String DB_FIELD_SENSOR = "sensor";
+    private final static String DB_FIELD_PROVENANCE_URI = "uri";
+    private final static String DB_FIELD_PROV_USED = "prov:used";
+    private final static String DB_FIELD_PROV_STARTED_AT = "prov:startedAt";
+    private final static String DB_FIELD_METADATA = "metadata";
     
     public String variableUri;
     public String startDate;
     public String endDate;
     public String objectUri;
     public String provenanceUri;
-    public boolean dateSortAsc;
+    public boolean dateSortAsc; 
     
 
     /**
@@ -95,10 +101,11 @@ public class DataDAO extends MongoDAO<Data> {
                         "Unknown object : " + data.getObjectUri()));
             }
             // 3. Check if the provenance uri exist and is a provenance
-            if (!provenanceDAO.existProvenanceUri(data.getProvenanceUri())) {
+            DataProvenance provenance = data.getProvenance();
+            if (!provenanceDAO.existProvenanceUri(provenance.getUri())) {
                 dataOk = false;
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                    "Unknown provenance : " + data.getProvenanceUri()));
+                    "Unknown provenance : " + provenance.getUri()));
             }
         }
 
@@ -116,7 +123,7 @@ public class DataDAO extends MongoDAO<Data> {
     private Document prepareInsertDataDocument(Data data) {
         Document document = new Document();
 
-        String key = data.getVariableUri() + data.getObjectUri() + data.getProvenanceUri() + data.getDate();
+        String key = data.getVariableUri() + data.getObjectUri() + data.getProvenance() + data.getDate();
         try {
             String uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
 
@@ -130,8 +137,13 @@ public class DataDAO extends MongoDAO<Data> {
             document.append(DB_FIELD_OBJECT, data.getObjectUri());
             document.append(DB_FIELD_VARIABLE, data.getVariableUri());
             document.append(DB_FIELD_DATE, data.getDate());
-            document.append(DB_FIELD_PROVENANCE, data.getProvenanceUri());
+            Document provenance = new Document();
+            provenance.append(DB_FIELD_PROVENANCE_URI, data.getProvenance().getUri());
+            provenance.append(DB_FIELD_PROV_USED, data.getProvenance().getProvUsed());
+            provenance.append(DB_FIELD_PROV_STARTED_AT, data.getProvenance().getProvStartedAt());
+            document.append(DB_FIELD_PROVENANCE, provenance);
             document.append(DB_FIELD_VALUE, data.getValue());
+            document.append(DB_FIELD_METADATA, data.getMetadata());
 
             LOGGER.debug(document.toJson());
         } catch (Exception e) {
@@ -318,7 +330,15 @@ public class DataDAO extends MongoDAO<Data> {
                 data.setDate(dataDocument.getDate(DB_FIELD_DATE));
                 data.setValue(dataDocument.get(DB_FIELD_VALUE));
                 data.setObjectUri(dataDocument.getString(DB_FIELD_OBJECT));
-                data.setProvenanceUri(dataDocument.getString(DB_FIELD_PROVENANCE));
+                
+                Document prov = (Document) dataDocument.get(DB_FIELD_PROVENANCE);
+                DataProvenance provenance = new DataProvenance();
+                provenance.setUri(prov.getString(DB_FIELD_PROVENANCE_URI));
+                provenance.setProvUsed(prov.getString(DB_FIELD_PROV_USED));
+                provenance.setProvStartedAt(prov.getDate(DB_FIELD_PROV_STARTED_AT));
+                data.setProvenance(provenance);
+                
+                data.setMetadata((Map<String, Object>) dataDocument.get(DB_FIELD_METADATA));
                 
                 // Add data to the list
                 dataList.add(data);
@@ -568,9 +588,13 @@ public class DataDAO extends MongoDAO<Data> {
                 }
                 
                 if (dataDocument.getString(DB_FIELD_PROVENANCE) != null) {
-                    data.setProvenanceUri(dataDocument.getString(DB_FIELD_PROVENANCE));
+                    DataProvenance provenance = new DataProvenance();
+                    provenance.setUri(dataDocument.getString(DB_FIELD_PROVENANCE_URI));
+                    provenance.setProvUsed(dataDocument.getString(DB_FIELD_PROV_USED));
+                    provenance.setProvStartedAt(dataDocument.getDate(DB_FIELD_PROV_STARTED_AT));
+                    data.setProvenance(provenance);
                 } else {
-                    data.setProvenanceUri(dataDocument.getString(DB_FIELD_SENSOR));
+                    //data.setProvenanceUri(dataDocument.getString(DB_FIELD_SENSOR));
                 }
                 
                 // Add data to the list

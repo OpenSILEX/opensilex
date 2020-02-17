@@ -1297,6 +1297,7 @@
                 <skipFrontBuild>true</skipFrontBuild>
                 <skipFrontAudit>true</skipFrontAudit>
                 <skipIntegrationTest>true</skipIntegrationTest>
+                <maven.test.skip>true</maven.test.skip>
                 <ignoreMavenPluginVersion>true</ignoreMavenPluginVersion>
             </properties>
         </profile>

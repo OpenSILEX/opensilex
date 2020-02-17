@@ -1298,6 +1298,7 @@
                 <skipFrontAudit>true</skipFrontAudit>
                 <skipIntegrationTest>true</skipIntegrationTest>
                 <ignoreMavenPluginVersion>true</ignoreMavenPluginVersion>
+                <skipTests>true</skipTests>
             </properties>
         </profile>
     </profiles>

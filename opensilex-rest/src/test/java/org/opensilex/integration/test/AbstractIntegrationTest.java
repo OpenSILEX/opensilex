@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 import static junit.framework.TestCase.assertEquals;
+import org.junit.experimental.categories.Category;
 import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -45,7 +46,7 @@ import org.opensilex.sparql.service.SPARQLService;
  * @author Renaud COLIN
  * @author Vincent MIGOT
  */
-//@Category(IntegrationTestCategory.class)
+@Category(IntegrationTestCategory.class)
 public abstract class AbstractIntegrationTest extends JerseyTest {
 
     protected static IntegrationTestContext context;

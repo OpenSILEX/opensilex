@@ -81,7 +81,7 @@
                 <file>
             <source>${project.basedir}/../opensilex-rest/target/classes/opensilex-pom.xml</source>
             <outputDirectory>tests</outputDirectory>
-            <destName>opensilex-rest-pom.xmlr</destName>
+            <destName>opensilex-rest-pom.xml</destName>
         </file> 
         <file>
             <source>${project.basedir}/../opensilex-front/target/opensilex-front-${project.version}-tests.jar</source>

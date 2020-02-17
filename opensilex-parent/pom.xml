@@ -70,7 +70,7 @@
         <data.nucleus.jdo.version>3.2.0-m12</data.nucleus.jdo.version>
         <data.nucleus.jta.version>5.10.4.Final</data.nucleus.jta.version>
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
-        <bytebuddy.version>1.10.7</bytebuddy.version>
+        <bytebuddy.version>1.10.8</bytebuddy.version>
         <java.jwt.version>3.9.0</java.jwt.version>
         <picocli.version>4.2.0</picocli.version>
         <bcript.version>0.9.0</bcript.version>

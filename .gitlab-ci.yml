@@ -20,12 +20,6 @@ variables:
  MAVEN_CACHE_FOLDER: "$CI_PROJECT_DIR/.m2/repository"
  MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
  YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/cache_yarn"
- NODE_MODULE_DEV_CACHE: "$CI_PROJECT_DIR/node_modules"
- NODE_MODULE_FRONT_CACHE: "$CI_PROJECT_DIR/opensilex-front/front/node_modules"
- NODE_MODULE_CORE_CACHE: "$CI_PROJECT_DIR/opensilex-core/front/node_modules"
- NODE_MODULE_REST_CACHE: "$CI_PROJECT_DIR/opensilex-rest/front/node_modules"
- NODE_MODULE_PHIS_CACHE: "$CI_PROJECT_DIR/phis-ws/phis2-ws/front/node_modules"
- NODE_MODULE_SIXTINE_CACHE: "$CI_PROJECT_DIR/inrae-sixtine/front/node_modules"
  NODE_CACHE: "$CI_PROJECT_DIR/.node"
  EMBDED_MONGO_CACHE: "/root/.embedmongo/"
 
@@ -41,12 +35,7 @@ variables:
     paths:
       - $YARN_CACHE_FOLDER
       - $MAVEN_CACHE_FOLDER
-      - $NODE_MODULE_DEV_CACHE
-      - $NODE_MODULE_FRONT_CACHE
-      - $NODE_MODULE_CORE_CACHE
-      - $NODE_MODULE_REST_CACHE
       - $NODE_CACHE
-      - $NODE_MODULE_PHIS_CACHE
       - $EMBDED_MONGO_CACHE
 
 ########################

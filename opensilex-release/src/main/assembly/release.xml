@@ -104,12 +104,12 @@
             <destName>opensilex-core-pom.xml</destName>
         </file>
         <file>
-            <source>${project.basedir}/../phis-ws/phis2ws/target/phis2ws-${project.version}-tests.jar</source>
+            <source>${project.basedir}/../phis-ws/phis2-ws/target/phis2ws-${project.version}-tests.jar</source>
             <outputDirectory>tests</outputDirectory>
             <destName>phis-tests.jar</destName>
         </file>
         <file>
-            <source>${project.basedir}/../phis-ws/phis2ws/target/classes/opensilex-pom.xml</source>
+            <source>${project.basedir}/../phis-ws/phis2-ws/target/classes/opensilex-pom.xml</source>
             <outputDirectory>tests</outputDirectory>
             <destName>phis-pom.xml</destName>
         </file>

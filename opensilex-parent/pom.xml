@@ -39,7 +39,10 @@
         <skipFrontBuild>false</skipFrontBuild>
         <skipFrontAudit>true</skipFrontAudit>
         <skipIntegrationTest>false</skipIntegrationTest>
-
+        <skipTypeScriptLibBuild>false</skipTypeScriptLibBuild>
+        <skipFrontLibInstall>false</skipFrontLibInstall>
+        <ignoreMavenPluginVersion>false</ignoreMavenPluginVersion>
+        
         <!-- Front-end Node & Yarn version -->
         <node.version>v12.13.1</node.version>
         <yarn.version>v1.19.2</yarn.version>
@@ -555,6 +558,10 @@
                     <artifactId>versions-maven-plugin</artifactId>
                     <version>${versions.maven.plugin.version}</version>
               
+                    <configuration>
+                        <skip>${ignoreMavenPluginVersion}</skip>
+                    </configuration>
+                    
                     <executions>
                         <execution>
                             <phase>generate-resources</phase>
@@ -613,7 +620,7 @@
                     <version>${revision}</version>
                     
                     <configuration>
-                        <skip>${skipFrontBuild}</skip>
+                        <skip>${skipTypeScriptLibBuild}</skip>
                     </configuration>
                     
                     <executions>
@@ -646,7 +653,6 @@
                     <version>${frontend.maven.plugin.version}</version>
                         
                     <configuration>
-                        <skip>${skipFrontBuild}</skip>
                         <nodeVersion>${node.version}</nodeVersion>
                         <yarnVersion>${yarn.version}</yarnVersion>
                         <installDirectory>../.node</installDirectory>
@@ -894,7 +900,7 @@
                             <goal>clean</goal>
                         </goals>
                         <configuration>
-                            <skip>${skipFrontBuild}</skip>
+                            <skip>${skipTypeScriptLibBuild}</skip>
                             <filesets>
                                 <fileset>
                                     <directory>front/src/lib</directory>
@@ -1073,6 +1079,7 @@
                                 </goals>
 
                                 <configuration>
+                                    <skip>${skipFrontLibInstall}</skip>
                                     <arguments>--network-timeout 1000000 install</arguments>
                                 </configuration>
                             </execution>
@@ -1086,6 +1093,7 @@
                                 </goals>
 
                                 <configuration>
+                                    <skip>${skipFrontLibInstall}</skip>
                                     <arguments>run build:types</arguments>
                                     <workingDirectory>front/src/lib</workingDirectory>
                                 </configuration>
@@ -1100,6 +1108,7 @@
                                 </goals>
 
                                 <configuration>
+                                    <skip>${skipFrontBuild}</skip>
                                     <arguments>run build</arguments>
                                 </configuration>
                             </execution>
@@ -1280,6 +1289,17 @@
                     </plugins>
                 </pluginManagement>
             </build>
+        </profile>
+        
+        <profile>
+            <id>for-module</id>
+            <properties>
+                <skipFrontBuild>true</skipFrontBuild>
+                <skipFrontAudit>true</skipFrontAudit>
+                <skipIntegrationTest>true</skipIntegrationTest>
+                <maven.test.skip>true</maven.test.skip>
+                <ignoreMavenPluginVersion>true</ignoreMavenPluginVersion>
+            </properties>
         </profile>
     </profiles>
 </project>

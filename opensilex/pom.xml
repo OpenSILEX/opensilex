@@ -73,6 +73,7 @@
                 <version>${versions.maven.plugin.version}</version>
                 <configuration>
                     <rulesUri>file:////${project.basedir}/src/main/resources/version-rules.xml</rulesUri>
+                    <skip>${ignoreMavenPluginVersion}</skip>
                 </configuration>
             </plugin>
             

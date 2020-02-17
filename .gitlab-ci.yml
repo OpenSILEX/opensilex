@@ -9,7 +9,7 @@ variables:
  # As of Maven 3.3.0 instead of this you may define these options in `.mvn/maven.config` so the same config is used
  # when running from the command line.
  MAVEN_CLI_OPTS: "--batch-mode --show-version "
- BUILD_PATH: "opensilex-release/target/opensilex-release"
+ BUILD_PATH: "opensilex-release/target"
  # DEFAULT SERVER MAVEN VERSION
  MVN_VERSION: 3.6.3
  # DEFAULT SERVER JAVA VERSION
@@ -77,12 +77,11 @@ opensilex:build:
   <<: *build_template_with_opensilex
   script: 
     - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
-    - mv $MAVEN_CACHE_FOLDER/org/opensilex $REVISION
   artifacts:
     paths:
-      - $REVISION
+      - $BUILD_PATH/opensilex-release-$REVISION
       
-# Trigger pipeline for test deployment
+# Trigger pipeline for sixtine module build
 opensilex:sixitine:build:
   stage: build
   stage: deploy

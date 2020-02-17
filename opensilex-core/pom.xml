@@ -126,6 +126,7 @@
                 <version>${versions.maven.plugin.version}</version>
                 <configuration>
                     <rulesUri>classpath:///version-rules.xml</rulesUri>
+                    <skip>${ignoreMavenPluginVersion}</skip>
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -167,7 +168,7 @@
             </plugin>
             
             <!--mongodb embed testing server--> 
-<!--            <plugin>
+            <!--            <plugin>
                 <groupId>com.github.joelittlejohn.embedmongo</groupId>
                 <artifactId>embedmongo-maven-plugin</artifactId>
             </plugin>-->

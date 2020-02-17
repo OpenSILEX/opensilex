@@ -47,7 +47,8 @@ public class UserDAO {
             String firstName,
             String lastName,
             boolean admin,
-            String password
+            String password,
+            String lang
     ) throws Exception {
         UserModel user = new UserModel();
         user.setUri(uri);
@@ -55,6 +56,7 @@ public class UserDAO {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setAdmin(admin);
+        user.setLang(lang);
 
         if (password != null) {
             user.setPasswordHash(authentication.getPasswordHash(password));
@@ -127,7 +129,9 @@ public class UserDAO {
             InternetAddress email,
             String firstName,
             String lastName,
-            boolean admin, String password
+            boolean admin, 
+            String password,
+            String lang
     ) throws Exception {
         UserModel user = new UserModel();
         user.setUri(uri);
@@ -135,7 +139,8 @@ public class UserDAO {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setAdmin(admin);
-
+        user.setLang(lang);
+        
         if (password != null) {
             user.setPasswordHash(authentication.getPasswordHash(password));
         }

@@ -36,7 +36,7 @@
           id="password"
           v-model="form.password"
           type="password"
-              :placeholder="$t('component.user.form-password-placeholder')"
+          :placeholder="$t('component.user.form-password-placeholder')"
           autocomplete="new-password"
         ></b-form-input>
       </b-form-group>
@@ -49,7 +49,7 @@
           :placeholder="$t('component.user.form-first-name-placeholder')"
         ></b-form-input>
       </b-form-group>
-      <b-form-group :label="$t('component.user.last-name') + ':'"  label-for="lastName" required>
+      <b-form-group :label="$t('component.user.last-name') + ':'" label-for="lastName" required>
         <b-form-input
           id="lastName"
           v-model="form.lastName"
@@ -94,7 +94,8 @@ export default class UserForm extends Vue {
     firstName: "",
     lastName: "",
     admin: false,
-    password: ""
+    password: "",
+    lang: "en-US"
   };
 
   title = "";
@@ -108,7 +109,8 @@ export default class UserForm extends Vue {
       firstName: "",
       lastName: "",
       admin: false,
-      password: ""
+      password: "",
+      lang: "en-US"
     };
   }
 

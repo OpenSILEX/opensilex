@@ -12,6 +12,7 @@ import javax.ws.rs.client.WebTarget;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
+import org.opensilex.OpenSilex;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 
@@ -40,6 +41,7 @@ public class UserAPITest extends AbstractIntegrationTest {
         dto.setFirstName("user1");
         dto.setLastName("user1 last name");
         dto.setPassword("1234");
+        dto.setLang(OpenSilex.DEFAULT_LANGUAGE);
         return dto;
     }
 
@@ -50,6 +52,7 @@ public class UserAPITest extends AbstractIntegrationTest {
         dto.setFirstName("user2");
         dto.setLastName("user2 last name");
         dto.setPassword("6789");
+        dto.setLang(OpenSilex.DEFAULT_LANGUAGE);
         return dto;
     }
 
@@ -87,6 +90,7 @@ public class UserAPITest extends AbstractIntegrationTest {
         dto.setFirstName("a");
         dto.setLastName("b");
         dto.setAdmin(false);
+        dto.setLang("fr-FR");
 
         final Response putResult = getJsonPutResponse(target(updatePath), dto);
         assertEquals(Response.Status.OK.getStatusCode(), putResult.getStatus());
@@ -206,6 +210,7 @@ public class UserAPITest extends AbstractIntegrationTest {
         assertEquals(expectedUserDTO.getFirstName(), actualUserDTO.getFirstName());
         assertEquals(expectedUserDTO.getLastName(), actualUserDTO.getLastName());
         assertEquals(expectedUserDTO.isAdmin(), actualUserDTO.isAdmin());
+        assertEquals(expectedUserDTO.getLang(), actualUserDTO.getLang());
     }
 
     @Override

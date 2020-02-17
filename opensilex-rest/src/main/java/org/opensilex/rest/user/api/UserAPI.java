@@ -44,7 +44,6 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.authentication.AuthenticationService;
-import org.opensilex.rest.profile.api.ProfileGetDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.rest.user.dal.UserModel;
@@ -144,7 +143,8 @@ public class UserAPI {
                     userDTO.getFirstName(),
                     userDTO.getLastName(),
                     userDTO.isAdmin(),
-                    userDTO.getPassword()
+                    userDTO.getPassword(),
+                    userDTO.getLang()
             );
             // return user URI
             return new ObjectUriResponse(Response.Status.CREATED, user.getUri()).getResponse();
@@ -342,7 +342,8 @@ public class UserAPI {
                     dto.getFirstName(),
                     dto.getLastName(),
                     dto.isAdmin(),
-                    dto.getPassword()
+                    dto.getPassword(),
+                    dto.getLang()
             );
 
             return new ObjectUriResponse(Response.Status.OK, user.getUri()).getResponse();

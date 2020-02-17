@@ -14,6 +14,7 @@ import javax.ws.rs.client.WebTarget;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
+import org.opensilex.OpenSilex;
 import org.opensilex.rest.profile.dal.ProfileDAO;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -43,8 +44,8 @@ public class GroupAPITest extends AbstractIntegrationTest {
     protected void createTestEnv() throws Exception {
         UserDAO userDao = new UserDAO(this.getSparqlService(), this.getAuthenticationService());
 
-        userDao.create(new URI(USER1_URI), new InternetAddress("user1@opensilex.org"), "user1", "anonymous", true, "azerty");
-        userDao.create(new URI(USER2_URI), new InternetAddress("user2@opensilex.org"), "user2", "anonymous", false, "azerty");
+        userDao.create(new URI(USER1_URI), new InternetAddress("user1@opensilex.org"), "user1", "anonymous", true, "azerty", OpenSilex.DEFAULT_LANGUAGE);
+        userDao.create(new URI(USER2_URI), new InternetAddress("user2@opensilex.org"), "user2", "anonymous", false, "azerty", OpenSilex.DEFAULT_LANGUAGE);
 
         ProfileDAO profileDao = new ProfileDAO(this.getSparqlService());
         profileDao.create(new URI(PROFILE1_URI), "profile1", new ArrayList<>());

@@ -70,7 +70,7 @@ public class IntegrationTestContext {
         AuthenticationService authentication = opensilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
         UserDAO userDAO = new UserDAO(sparqlService, authentication);
         InternetAddress email = new InternetAddress("admin@opensilex.org");
-        userDAO.create(null, email, "Admin", "OpenSilex", true, "admin");
+        userDAO.create(null, email, "Admin", "OpenSilex", true, "admin", "en-US");
     }
 
     public ResourceConfig getResourceConfig() {

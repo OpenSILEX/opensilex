@@ -55,6 +55,8 @@ public class OpenSilex {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(OpenSilex.class);
 
+    public final static String DEFAULT_LANGUAGE = "en-US";
+    
     /**
      * Production profile identifier
      */

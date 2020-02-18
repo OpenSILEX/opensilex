@@ -78,7 +78,7 @@ opensilex:build:
       - $REVISION
       
 # Trigger pipeline for sixtine module deployment
-opensilex:sixitine:build:
+trigger:sixtine:build:
   stage: deploy
   image: curlimages/curl
   script:

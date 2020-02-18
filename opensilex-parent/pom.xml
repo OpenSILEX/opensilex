@@ -71,7 +71,7 @@
         <data.nucleus.jta.version>5.10.4.Final</data.nucleus.jta.version>
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
         <bytebuddy.version>1.10.8</bytebuddy.version>
-        <java.jwt.version>3.9.0</java.jwt.version>
+        <java.jwt.version>3.10.0</java.jwt.version>
         <picocli.version>4.2.0</picocli.version>
         <bcript.version>0.9.0</bcript.version>
         <commons.io.version>2.6</commons.io.version>

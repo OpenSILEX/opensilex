@@ -1058,7 +1058,41 @@
                 </plugins>
             </build>
         </profile>
-        <!-- Build Vue app if present -->
+        <!-- Build Swagger typescript library if needed -->
+        <profile>
+            <id>with-swagger-ts-lib</id>
+            <activation>
+                <file>
+                    <exists>front/src/lib/package.json</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <version>${frontend.maven.plugin.version}</version>
+                        <executions>
+                            <!-- Build typescript definition for auto-generated webservice access service library -->
+                            <execution>
+                                <id>build-typescript-definition</id>
+                                <phase>process-classes</phase>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+
+                                <configuration>
+                                    <skip>${skipFrontLibInstall}</skip>
+                                    <arguments>run build:types</arguments>
+                                    <workingDirectory>front/src/lib</workingDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>    
+         <!-- Build Vue app if present -->    
         <profile>
             <id>with-vue-app</id>
             <activation>
@@ -1084,21 +1118,6 @@
                                 <configuration>
                                     <skip>${skipFrontLibInstall}</skip>
                                     <arguments>--network-timeout 1000000 install</arguments>
-                                </configuration>
-                            </execution>
-                            
-                            <!-- Build typescript definition for auto-generated webservice access service library -->
-                            <execution>
-                                <id>build-typescript-definition</id>
-                                <phase>process-classes</phase>
-                                <goals>
-                                    <goal>yarn</goal>
-                                </goals>
-
-                                <configuration>
-                                    <skip>${skipFrontLibInstall}</skip>
-                                    <arguments>run build:types</arguments>
-                                    <workingDirectory>front/src/lib</workingDirectory>
                                 </configuration>
                             </execution>
                             
@@ -1154,7 +1173,7 @@
                             <!-- Copy Vue.js compiled application into generated Jar file -->
                             <execution>
                                 <id>Copy Vue application dist files</id>
-                                <phase>process-classes</phase>
+                                <phase>prepare-package</phase>
                                 <goals>
                                     <goal>copy-resources</goal>
                                 </goals>
@@ -1255,7 +1274,7 @@
                     </plugin>
                 </plugins>
             </build>
-             <reporting>
+            <reporting>
                 <plugins>
                     <plugin>
                         <groupId>org.owasp</groupId>

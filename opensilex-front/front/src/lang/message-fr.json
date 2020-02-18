@@ -113,7 +113,8 @@
     "credential": {
         "experiment": {
             "modification": "Ajout / Modification des expérimentations",
-            "read": "Visualisation des expérimentations"
+            "read": "Visualisation des expérimentations",
+            "delete": "Supression des expérimentations"
         },
         "group": {
             "modification": "Ajout / Modification des groupes",

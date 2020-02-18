@@ -240,6 +240,7 @@ public class ModuleManager {
         List<URL> modulesJarURLs = new ArrayList<>();
         if (modulesList != null) {
             for (File moduleFile : modulesList) {
+                LOGGER.debug("Module found: " + moduleFile.getName());
                 URL jarURL = getModuleURLFromFile(moduleFile);
                 if (jarURL != null) {
                     modulesJarURLs.add(jarURL);

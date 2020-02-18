@@ -113,7 +113,8 @@
     "credential": {
         "experiment": {
             "modification": "Create / update experiments",
-            "read": "View experiments"
+            "read": "View experiments",
+            "delete": "Delete experiments"
         },
         "group": {
             "modification": "Create / update groups",

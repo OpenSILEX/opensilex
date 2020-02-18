@@ -105,8 +105,7 @@ public class ProfileAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createProfile(
-            @ApiParam("Profile creation informations") @Valid ProfileCreationDTO profileDTO,
-            @Context SecurityContext securityContext
+            @ApiParam("Profile creation informations") @Valid ProfileCreationDTO profileDTO
     ) throws Exception {
         // Create profile DAO
         ProfileDAO profileDAO = new ProfileDAO(sparql);

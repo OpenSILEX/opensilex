@@ -51,6 +51,10 @@ variables:
       fi
     - rm -r $CI_PROJECT_DIR/phis-ws
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/phis-ws.git --branch modularity
+    - |
+      if [ ! -z "$COMMIT_SHA_PHIS" ]; then
+        git checkout $COMMIT_SHA_PHIS
+      fi    
   stage: build
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   except:
@@ -71,9 +75,8 @@ opensilex:build:
     paths:
       - $REVISION
       
-# Trigger pipeline for sixtine module build
+# Trigger pipeline for sixtine module deployment
 opensilex:sixitine:build:
-  stage: build
   stage: deploy
   image: curlimages/curl
   script:

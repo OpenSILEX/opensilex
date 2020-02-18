@@ -591,6 +591,9 @@
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
                     <version>${owasp.dependency.check.maven.plugin.version}</version>
+                    <configuration>
+                        <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                    </configuration>
                 </plugin>
                 <!-- Generate swagger.json file -->
                 <plugin>
@@ -1137,7 +1140,7 @@
 
                                 <configuration>
                                     <skip>${skipFrontAudit}</skip>
-                                    <arguments>audit</arguments>
+                                    <arguments>run check:security</arguments>
                                 </configuration>
                             </execution>
                             
@@ -1233,6 +1236,9 @@
         <!-- Profile which enable OWASP security check for libraries, could be VERY slow -->
         <profile>
             <id>with-security-check</id>
+            <properties>
+                <skipFrontAudit>false</skipFrontAudit>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -1249,6 +1255,21 @@
                     </plugin>
                 </plugins>
             </build>
+             <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <reportSets>
+                            <reportSet>
+                                <reports>
+                                    <report>check</report>
+                                </reports>
+                            </reportSet>
+                        </reportSets>
+                    </plugin>
+                </plugins>
+            </reporting>
         </profile>
         
         <!-- Profile to enable in eclipse to avoid build errors -->

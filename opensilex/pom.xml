@@ -142,7 +142,7 @@
 
                         <configuration>
                             <skip>${skipFrontAudit}</skip>
-                            <arguments>audit</arguments>
+                            <arguments>run check:security</arguments>
                             <workingDirectory>../</workingDirectory>
                         </configuration>
                     </execution>

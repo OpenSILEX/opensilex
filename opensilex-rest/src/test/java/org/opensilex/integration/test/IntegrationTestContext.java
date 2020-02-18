@@ -8,9 +8,11 @@
 
 package org.opensilex.integration.test;
 
-import org.eclipse.rdf4j.repository.Repository;
-import org.eclipse.rdf4j.sail.memory.MemoryStore;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.mockito.Mockito;
 import org.opensilex.OpenSilex;
+import org.opensilex.rest.RestApplication;
 import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.sparql.SPARQLModule;
@@ -18,23 +20,15 @@ import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.mail.internet.InternetAddress;
-import java.net.URISyntaxException;
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
-import org.glassfish.jersey.internal.inject.AbstractBinder;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.mockito.Mockito;
-import org.opensilex.rest.RestApplication;
 
 /**
  * @author Renaud COLIN
- * @author Vincent MIGOT
  *
- * An utility class used in order to init an {@link Repository} with an
- * {@link MemoryStore}, for unit and integration tests. This repository will
- * then be used by the {@link OpenSilex} {@link SPARQLService}.
+ * An utility class used in order to init an {@link OpenSilex} instance for unit and integration testing.
  */
 public class IntegrationTestContext {
 
@@ -42,7 +36,7 @@ public class IntegrationTestContext {
 
     public IntegrationTestContext(boolean debug) throws Exception {
 
-        Map<String, String> args = new HashMap<String, String>();
+        Map<String, String> args = new HashMap<>();
         args.put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.TEST_PROFILE_ID);
 
         if (debug) {
@@ -84,7 +78,7 @@ public class IntegrationTestContext {
     public SPARQLService getSparqlService() {
         return OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
     }
-        /**
+    /**
      *
      * @return the {@link AuthenticationService} used for tests
      */
@@ -92,10 +86,19 @@ public class IntegrationTestContext {
         return OpenSilex.getInstance().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
     }
 
-    public void clearGraphs(List<String> graphsToClear) throws URISyntaxException, SPARQLQueryException {
+
+    /**
+     * Clear the list of SPARQL graph to clear after each test execution
+     *
+     * @throws SPARQLQueryException if an errors occurs during SPARQL query execution
+     */
+    public void clearGraphs(List<String> graphsToClear) throws SPARQLQueryException {
         SPARQLModule.clearPlatformGraphs(getSparqlService(), graphsToClear);
     }
 
+    /**
+     * @throws Exception if any Exception was encountered during context shutdown.
+     */
     public void shutdown() throws Exception {
         OpenSilex.getInstance().shutdown();
     }

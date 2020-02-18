@@ -31,7 +31,7 @@ public class ExperimentModelToExperiment {
      *
      * @see Experiment#getSensors()
      * @see ExperimentModel#getSensors()
-      */
+     */
     public ExperimentModelToExperiment(SensorDAO sensorDAO) {
         this.sensorDAO = sensorDAO;
     }
@@ -78,16 +78,15 @@ public class ExperimentModelToExperiment {
             oldXpModel.getSensors().put(sensor.getUri(),sensor.getLabel());
         }
 
-//        if(xp.getInfrastructures() != null){
-//            InfrastructureDAO infraDao = new InfrastructureDAO();
-//            infraDao.uri = xp.getInfrastructures().toString();
-//            List<Infrastructure> allInfras = infraDao.allPaginate();
-//
-//            // the old model use the label and not the URI of an infrastructure
-//            if(! allInfras.isEmpty()){
-//                oldXpModel.setPlace(allInfras.get(0).getLabel());
-//            }
-//        }
+
+        // convert infrastructure to field
+        if(xp.getInfrastructures().isEmpty()){
+            oldXpModel.setField(xp.getInfrastructures().get(0).toString());
+        }
+        // convert devices to place
+        if(xp.getDevices().isEmpty()){
+            oldXpModel.setPlace(xp.getDevices().get(0).toString());
+        }
 
         for(UserModel scientific : xp.getScientificSupervisors()){
             ContactPostgreSQL contact = new ContactPostgreSQL();

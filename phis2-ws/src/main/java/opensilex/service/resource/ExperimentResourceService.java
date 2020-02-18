@@ -299,7 +299,7 @@ public class ExperimentResourceService extends ResourceService {
             SpeciesDAO speciesDAO = new SpeciesDAO();
 
             // use DAO(s) in order to validate URI(s) from ExperimentPostDTO
-            DtoToExperimentModel postDtoToNewModel = new DtoToExperimentModel(speciesDAO, projectDAO, userDAO);
+            ExperimentDtoToExperimentModel postDtoToNewModel = new ExperimentDtoToExperimentModel(speciesDAO, projectDAO, userDAO);
 
             List<ExperimentModel> xpModels = new ArrayList<>(experiments.size());
             for (ExperimentDTO xpDto : experiments) {

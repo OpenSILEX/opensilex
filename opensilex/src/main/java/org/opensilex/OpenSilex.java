@@ -223,7 +223,7 @@ public class OpenSilex {
         }
 
         // Return remaining arguments list
-        return (String[]) cliArgsList.toArray(new String[0]);
+        return cliArgsList.toArray(new String[0]);
     }
 
     /**

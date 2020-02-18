@@ -272,7 +272,7 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
     public void runUpdate(
             @Parameters(description = "Update class to execute") String updateClassName
     ) throws Exception {
-        Class updateClass = Class.forName(updateClassName, true, OpenSilex.getClassLoader());
+        Class<?> updateClass = Class.forName(updateClassName, true, OpenSilex.getClassLoader());
         OpenSilexModuleUpdate updateInstance = (OpenSilexModuleUpdate) updateClass.getConstructor().newInstance();
         updateInstance.execute();
     }

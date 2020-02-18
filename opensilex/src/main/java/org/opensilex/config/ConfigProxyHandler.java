@@ -311,7 +311,7 @@ public class ConfigProxyHandler implements InvocationHandler {
         return result;
     }
 
-    private List getList(Type genericParameter, JsonNode value, Method method) throws IOException, InvalidConfigException {
+    private List<?> getList(Type genericParameter, JsonNode value, Method method) throws IOException, InvalidConfigException {
         List<Object> list = new ArrayList<>();
 
         JsonNode currentValue = value;
@@ -341,7 +341,7 @@ public class ConfigProxyHandler implements InvocationHandler {
         );
     }
 
-    private Map getMap(Type genericParameter, JsonNode value, Method method) throws InvalidConfigException, IOException {
+    private Map<?,?> getMap(Type genericParameter, JsonNode value, Method method) throws InvalidConfigException, IOException {
         Map<String, Object> map = new HashMap<>();
 
         JsonNode currentValue = value;
@@ -467,7 +467,7 @@ public class ConfigProxyHandler implements InvocationHandler {
                     try {
                         Constructor<T> constructorWithConnection = ClassUtils.getConstructorWithParameterImplementing(implementation, ServiceConnection.class);
                         if (constructorWithConnection != null) {
-                            instance = (T) constructorWithConnection.newInstance(connection);
+                            instance = constructorWithConnection.newInstance(connection);
                         } else {
                             String errorMessage = "No valid constructor found for service with connection: " + serviceName + " - " + connectionClass.getName();
                             LOGGER.error(errorMessage);
@@ -511,7 +511,7 @@ public class ConfigProxyHandler implements InvocationHandler {
                 }
             } else if (hasEmptyConstructor) {
                 try {
-                    instance = (T) implementation.getConstructor().newInstance();
+                    instance = implementation.getConstructor().newInstance();
                 } catch (Exception ex) {
                     LOGGER.error("Error while creating service with no parameters: " + serviceName);
                     throw ex;

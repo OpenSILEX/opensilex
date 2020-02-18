@@ -40,7 +40,7 @@ public class ExperimentCreationDTO extends ExperimentDTO {
         model.setCampaign(campaign);
         model.setSpecies(species);
         model.setInfrastructures(infrastructures);
-        model.setInstallations(installations);
+        model.setDevices(installations);
         model.setIsPublic(isPublic);
         model.setSensors(sensors);
 

@@ -135,10 +135,10 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasDispositive"
+            property = "hasDevice"
     )
-    List<URI> installations = Collections.emptyList();
-    public static final String DISPOSITIVES_SPARQL_VAR = "dispositives";
+    List<URI> devices = Collections.emptyList();
+    public static final String DISPOSITIVES_SPARQL_VAR = "devices";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -292,12 +292,12 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
         this.sensors = sensors;
     }
 
-    public List<URI> getInstallations() {
-        return installations;
+    public List<URI> getDevices() {
+        return devices;
     }
 
-    public void setInstallations(List<URI> installations) {
-        this.installations = installations;
+    public void setDevices(List<URI> devices) {
+        this.devices = devices;
     }
 
     @Override

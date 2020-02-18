@@ -48,7 +48,7 @@ public class ExperimentGetDTO extends ExperimentDTO {
                 .setKeywords(model.getKeywords())
                 .setSpecies(model.getSpecies())
                 .setInfrastructures(model.getInfrastructures())
-                .setInstallations(model.getInstallations())
+                .setInstallations(model.getDevices())
                 .setIsPublic(model.getIsPublic())
                 .setSensors(model.getSensors());
 

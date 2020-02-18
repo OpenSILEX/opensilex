@@ -75,7 +75,7 @@ public class Oeso {
     // ---- EXPERIMENTS ----
     public static final Resource Experiment = Ontology.resource(NS, "Experiment");
 
-    public static final Property hasDispositive = Ontology.property(NS,"hasDispositive");
+    public static final Property hasDevice = Ontology.property(NS,"hasDevice");
     public static final Property hasInfrastructure = Ontology.property(NS,"hasInfrastructure");
     public static final Property hasProject = Ontology.property(NS, "hasProject");
     public static final Property hasScientificSupervisor = Ontology.property(NS, "hasScientificSupervisor");

@@ -20,6 +20,7 @@ import org.opensilex.rest.user.dal.UserModel;
 
 import javax.mail.internet.InternetAddress;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,10 +36,9 @@ public class PostDtoToExperimentModel {
     protected final UserDAO userDAO;
 
     /**
-     *
      * @param speciesDAO Dao needed to resolve {@link Species} URI from {@link ExperimentPostDTO#getCropSpecies()}
      * @param projectDAO Dao needed to get {@link ProjectModel} from {@link ExperimentPostDTO#getProjectsUris()}
-     * @param userDAO Dao needed to get an {@link UserModel} from {@link ExperimentPostDTO#getContacts()}
+     * @param userDAO    Dao needed to get an {@link UserModel} from {@link ExperimentPostDTO#getContacts()}
      */
     public PostDtoToExperimentModel(SpeciesDAO speciesDAO, ProjectDAO projectDAO, UserDAO userDAO) {
         this.speciesDAO = speciesDAO;
@@ -51,7 +51,7 @@ public class PostDtoToExperimentModel {
         ExperimentModel xpModel = new ExperimentModel();
 
         xpModel.setLabel(xpPostDto.getAlias());
-        if(xpPostDto.getCampaign() != null){
+        if (xpPostDto.getCampaign() != null) {
             xpModel.setCampaign(Integer.parseInt(xpPostDto.getCampaign()));
         }
         xpModel.setObjective(xpPostDto.getObjective());
@@ -63,49 +63,63 @@ public class PostDtoToExperimentModel {
         }
 
         xpModel.setStartDate(LocalDate.parse(xpPostDto.getStartDate()));
-        if(xpPostDto.getEndDate() != null){
+        if (xpPostDto.getEndDate() != null) {
             xpModel.setEndDate(LocalDate.parse(xpPostDto.getEndDate()));
         }
 
-        if( xpPostDto.getCropSpecies() != null){
+        if (xpPostDto.getCropSpecies() != null) {
             Species searchSpecies = new Species();
             searchSpecies.setLabel(xpPostDto.getCropSpecies());
             ArrayList<Species> daoSpecies = speciesDAO.searchWithFilter(searchSpecies, null);
 
-            if(daoSpecies.isEmpty()){
-                throw new IllegalArgumentException("Unknown species label "+xpPostDto.getCropSpecies());
+            if (daoSpecies.isEmpty()) {
+                throw new IllegalArgumentException("Unknown species label " + xpPostDto.getCropSpecies());
             }
             xpModel.setSpecies(new URI(daoSpecies.get(0).getUri()));
         }
 
-        if(xpPostDto.getProjectsUris() != null){
+        if (xpPostDto.getProjectsUris() != null) {
 
-            for(String projectURI : xpPostDto.getProjectsUris()){
+            for (String projectURI : xpPostDto.getProjectsUris()) {
                 ProjectModel projectModel = projectDAO.get(new URI(projectURI));
-                if(projectModel == null){
-                    throw new IllegalArgumentException("Unknown project URI :" +projectURI);
+                if (projectModel == null) {
+                    throw new IllegalArgumentException("Unknown project URI :" + projectURI);
                 }
                 xpModel.getProjects().add(projectModel);
             }
         }
 
-        if(xpPostDto.getContacts() != null){
-            for(ContactPostgreSQL contact : xpPostDto.getContacts()){
+        if (xpPostDto.getContacts() != null) {
+            for (ContactPostgreSQL contact : xpPostDto.getContacts()) {
 
                 UserModel userModel = userDAO.getByEmail(new InternetAddress(contact.getEmail()));
-                if(userModel == null){
-                    throw new IllegalArgumentException("Unknown User email :" +contact.getEmail());
+                if (userModel == null) {
+                    throw new IllegalArgumentException("Unknown User email :" + contact.getEmail());
                 }
 
-                if(contact.getType().equals(Oeso.ScientificSupervisor.getURI())){
+                if (contact.getType().equals(Oeso.ScientificSupervisor.getURI())) {
                     xpModel.getScientificSupervisors().add(userModel);
-                }
-                else if(contact.getType().equals(Oeso.TechnicalSupervisor.getURI())){
+                } else if (contact.getType().equals(Oeso.TechnicalSupervisor.getURI())) {
                     xpModel.getTechnicalSupervisors().add(userModel);
+                } else {
+                    throw new IllegalArgumentException("Bad contact type : " + contact.getType());
                 }
-                else{
-                    throw new IllegalArgumentException("Bad contact type : "+contact.getType());
-                }
+            }
+        }
+
+        // try to get the Infrastructures/field URI
+        if (!xpPostDto.getField().isEmpty()) {
+            try {
+                xpModel.getInfrastructures().add(new URI(xpPostDto.getField()));
+            } catch (URISyntaxException ignored) {
+            }
+        }
+
+        // try to get the devices/place URI
+        if (!xpPostDto.getPlace().isEmpty()) {
+            try {
+                xpModel.getDevices().add(new URI(xpPostDto.getPlace()));
+            } catch (URISyntaxException ignored) {
             }
         }
         return xpModel;

@@ -53,7 +53,8 @@ import opensilex.service.model.Annotation;
  * Annotations DAO.
  * @update [Andréas Garcia] 15 Feb. 2019: search parameters are no longer class 
  * attributes but parameters sent through search functions
- * @update [Andréas Garcia] 8 Apr. 2019: Use DAO generic function create, update, checkBeforeCreation and use exceptions 
+ * @update [Andréas Garcia] 8 Apr. 2019: Use DAO generic function create, update, checkBeforeCreation and use exceptions 
+ * @update [Julien Bonnefont] 17 Dec 2019: Get annotations order by Date and add Date asc or desc filter field
  * to handle errors.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
@@ -114,6 +115,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      * @param target
      * @param bodyValue
      * @param motivatedBy
+     * @param dateSortAsc
      * @example
      * SELECT DISTINCT ?uri 
      * WHERE { 
@@ -124,7 +126,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      * LIMIT 20
      * @return query generated with the searched parameter above
      */
-    private SPARQLQueryBuilder prepareSearchQueryWithoutBodyValues(String uri, String creator, String target, String bodyValue, String motivatedBy) {
+    private SPARQLQueryBuilder prepareSearchQueryWithoutBodyValues(String uri, String creator, String target, String bodyValue, String motivatedBy, boolean dateSortAsc) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
 
         String annotationUri;
@@ -167,7 +169,12 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
             query.appendFilter("regex(STR(?" + BODY_VALUE + "), '" + bodyValue + "', 'i')");
         }
         query.appendLimit(this.getPageSize());
-        query.appendOffset(this.getPage() * this.getPageSize());
+        query.appendOffset(this.getPage() * this.getPageSize()); 
+        if(dateSortAsc){
+            query.appendOrderBy("ASC(?" + CREATED + ")");
+        } else {
+             query.appendOrderBy("DESC(?" + CREATED + ")");
+        }
         LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
@@ -178,17 +185,19 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      * @param searchTarget
      * @param searchBodyValue
      * @param searchMotivatedBy
+     * @param dateSortAsc
      * @return number of total annotation returned with the search field
      * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public Integer count(String searchUri, String searchCreator, String searchTarget, String searchBodyValue, String searchMotivatedBy) 
+    public Integer count(String searchUri, String searchCreator, String searchTarget, String searchBodyValue, String searchMotivatedBy, boolean dateSortAsc) 
             throws DAOPersistenceException, Exception {
         SPARQLQueryBuilder prepareCount = prepareCount(
                 searchUri, 
                 searchCreator, 
                 searchTarget, 
                 searchBodyValue, 
-                searchMotivatedBy);
+                searchMotivatedBy,
+                dateSortAsc);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
         Integer count = 0;
         try {
@@ -221,17 +230,19 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      * }
      * @return query generated with the searched parameters
      */
-    private SPARQLQueryBuilder prepareCount(String searchUri, String searchCreator, String searchTarget, String searchBodyValue, String searchMotivatedBy) {
+    private SPARQLQueryBuilder prepareCount(String searchUri, String searchCreator, String searchTarget, String searchBodyValue, String searchMotivatedBy, boolean dateSortAsc) {
         SPARQLQueryBuilder query = prepareSearchQueryWithoutBodyValues(
                 searchUri, 
                 searchCreator, 
                 searchTarget, 
                 searchBodyValue, 
-                searchMotivatedBy);
+                searchMotivatedBy,
+                dateSortAsc);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
         query.clearGroupBy();
+        query.clearOrderBy();
         query.appendSelect("(COUNT(DISTINCT ?" + URI + ") AS ?" + COUNT_ELEMENT_QUERY + ")");
         LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         return query;
@@ -376,7 +387,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      * @return the list of the annotations found
      * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    public ArrayList<Annotation> find(String uri, String creator, String target, String bodyValue, String motivatedBy, int page, int pageSize) 
+    public ArrayList<Annotation> find(String uri, String creator, String target, String bodyValue, String motivatedBy, boolean dateSortAsc, int page, int pageSize) 
             throws DAOPersistenceException {
         setPage(page);
         setPageSize(pageSize);
@@ -387,7 +398,8 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
                 creator, 
                 target, 
                 bodyValue, 
-                motivatedBy);
+                motivatedBy,
+                dateSortAsc);
         ArrayList<Annotation> annotations = null;
         try {
             TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
@@ -519,7 +531,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
     @Override
     public Annotation findById(String id) throws DAOPersistenceException, Exception {
         try {
-            List<Annotation> annotations = find(id, null, null, null, null, 0, 1);
+            List<Annotation> annotations = find(id, null, null, null, null, true, 0, 1);
             if(!annotations.isEmpty()) {
                 return annotations.get(0);
             }

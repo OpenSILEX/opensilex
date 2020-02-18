@@ -60,6 +60,7 @@ import org.joda.time.format.DateTimeFormatter;
  * accesses handling into a new ConcernedItemDAO class.
  * @update [Andréas Garcia] 8 Apr. 2019: Use DAO generic function create,
  * update, checkBeforeCreation and use exceptions to handle errors.
+ *
  * @author Andreas Garcia <andreas.garcia@inra.fr>
  */
 public class EventDAO extends Rdf4jDAO<Event> {
@@ -387,11 +388,12 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 // Annotations
                 AnnotationDAO annotationDAO = new AnnotationDAO(this.user);
                 event.setAnnotations(annotationDAO.find(
+                        null, 
+                        null, 
+                        event.getUri(), 
+                        null, 
                         null,
-                        null,
-                        event.getUri(),
-                        null,
-                        null,
+                        true,
                         0,
                         pageSizeMaxValue));
             }

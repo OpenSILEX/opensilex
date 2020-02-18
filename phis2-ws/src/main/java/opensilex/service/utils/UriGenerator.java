@@ -27,6 +27,7 @@ import opensilex.service.dao.GroupDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
 import opensilex.service.dao.AnnotationDAO;
 import opensilex.service.dao.EventDAO;
+import opensilex.service.dao.FactorDAO;
 import opensilex.service.dao.MethodDAO;
 import opensilex.service.dao.ProjectDAO;
 import opensilex.service.dao.RadiometricTargetDAO;
@@ -73,8 +74,10 @@ public class UriGenerator {
     private static final String URI_CODE_UNIT = "u";
     private static final String URI_CODE_VARIABLE = "v";
     private static final String URI_CODE_VECTOR = "v";
-
-    private static final String PLATFORM_CODE =  PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructureCode") ;
+    private static final String URI_CODE_GERMPLASM = "g";
+    private static final String URI_CODE_FACTOR = "f";
+    private static final String PLATFORM_CODE = 
+            PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructureCode") ;
     private static final String PLATFORM_URI = Contexts.PLATFORM.toString();
     private static final String PLATFORM_URI_ID = PLATFORM_URI + "id/";
     private static final String PLATFORM_URI_ID_AGENT = PLATFORM_URI_ID + "agent/";
@@ -86,9 +89,14 @@ public class UriGenerator {
     public static final String PLATFORM_URI_ID_TRAITS = PLATFORM_URI_ID + "traits/" + URI_CODE_TRAIT;
     public static final String PLATFORM_URI_ID_UNITS = PLATFORM_URI_ID + "units/" + URI_CODE_UNIT;
     public static final String PLATFORM_URI_ID_VARIABLES = PLATFORM_URI_ID + "variables/" + URI_CODE_VARIABLE;
-    private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI + "v/";
+    private static final String PLATFORM_URI_ID_VARIETY = PLATFORM_URI_ID + "variety/";
     private static final String PLATFORM_URI_ID_PROVENANCE = PLATFORM_URI_ID + "provenance/";
-    
+    public static final String PLATFORM_URI_ID_GERMPLASM = PLATFORM_URI_ID + "germplasm/" + URI_CODE_GERMPLASM;
+    private static final String PLATFORM_URI_ID_ACCESSION = PLATFORM_URI_ID + "accession/";
+    private static final String PLATFORM_URI_ID_PLANT_MATERIAL_LOT = PLATFORM_URI_ID + "plantMaterialLot/";
+    private static final String PLATFORM_URI_ID_SPECIES = PLATFORM_URI_ID + "species/";
+    private static final String PLATFORM_URI_ID_GENUS = PLATFORM_URI_ID + "genus/";
+    public static final String PLATFORM_URI_ID_FACTORS = PLATFORM_URI_ID + "factors/" + URI_CODE_FACTOR;
     private static final String EXPERIMENT_URI_SEPARATOR = "-";
 
     /**
@@ -499,7 +507,28 @@ public class UriGenerator {
      * @return the new variety uri
      */
     private static String generateVarietyUri(String variety) {
-        return PLATFORM_URI_ID_VARIETY + variety.toLowerCase();
+        return PLATFORM_URI_ID_VARIETY + variety;
+    }
+    
+    /**
+     * 
+     * @param accessionNumber
+     * @return 
+     */
+    private static String generateAccessionUri(String accessionNumber) {
+        return PLATFORM_URI_ID_ACCESSION + accessionNumber;
+    }
+    
+    private static String generateLotUri(String seedlot) {
+        return PLATFORM_URI_ID_PLANT_MATERIAL_LOT + seedlot;
+    }
+    
+    private static String generateSpeciesUri(String species) {
+        return PLATFORM_URI_ID_SPECIES + species;
+    }
+    
+    private static String generateGenusUri(String genus) {
+        return PLATFORM_URI_ID_GENUS + genus;
     }
 
     /**
@@ -709,6 +738,47 @@ public class UriGenerator {
         return uri;
     }
     
+     /**
+     * Generates a new factor URI. a factor URI follows the pattern:
+     * <prefix>:id/factors/<unic_code>
+     * <unic_code> = 1 letter type + auto incremented number with 3 digits.
+     * @example  http://www.opensilex.org/sunagri/id/factors/f001
+     * @return the new generated uri
+     * @throws Exception 
+     */
+    private static String generateFactorUri() throws Exception {
+        // Generate factor URI based on next id
+        String factorId = Integer.toString(getNextFactorID());        
+
+        while (factorId.length() < 3) {
+            factorId = "0" + factorId;
+        }
+
+        return PLATFORM_URI_ID_FACTORS + factorId;
+    
+    }
+    
+    /**
+     * Internal variable to store the last factor ID
+     */
+    private static Integer factorLastID;
+    
+    /**
+     * Return the next factor ID by incrementing variableLastID variable and initializing it before if needed
+     * @return next factor ID
+     */
+    private static int getNextFactorID() {
+        if (factorLastID == null) {
+            FactorDAO factorDAO = new FactorDAO();
+            factorLastID = factorDAO.getLastId();
+        }
+        
+        factorLastID++;
+        
+        return factorLastID;
+    }
+    
+    
     private static String getUniqueHash(String key) throws NoSuchAlgorithmException {
         // Generate SHA-256 hash
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -778,8 +848,17 @@ public class UriGenerator {
             return generateUnitUri();
         } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString())) {
             return generateScientificObjectUri(year);
+        } else if (Oeso.CONCEPT_GENUS.toString().equals(instanceType)) {
+            return generateGenusUri(additionalInformation);
+        } else if (Oeso.CONCEPT_SPECIES.toString().equals(instanceType)) {
+            return generateSpeciesUri(additionalInformation);
         } else if (Oeso.CONCEPT_VARIETY.toString().equals(instanceType)) {
             return generateVarietyUri(additionalInformation);
+        } else if (Oeso.CONCEPT_ACCESSION.toString().equals(instanceType)) {
+            return generateAccessionUri(additionalInformation);
+        } else if (Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString().equals(instanceType)
+                || uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString())) {
+            return generateLotUri(additionalInformation);            
         } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_IMAGE.toString())) {
             return generateImageUri(year, additionalInformation);
         } else if (instanceType.equals(Foaf.CONCEPT_AGENT.toString()) 
@@ -807,7 +886,10 @@ public class UriGenerator {
             return generateDataFileUri(year, additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_ACTUATOR.toString())) {
             return generateActuatorUri(year);
+        } else if (instanceType.equals(Oeso.CONCEPT_FACTOR.toString())) {
+            return generateFactorUri();
         }
         return null;
     }
+
 }

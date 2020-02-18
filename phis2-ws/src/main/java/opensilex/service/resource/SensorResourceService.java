@@ -7,6 +7,7 @@
 //******************************************************************************
 package opensilex.service.resource;
 
+import com.mongodb.BasicDBObjectBuilder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -15,10 +16,10 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
 import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -36,11 +37,14 @@ import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
+import opensilex.service.dao.DataDAO;
+import opensilex.service.dao.ProvenanceDAO;
 import opensilex.service.dao.SensorDAO;
 import opensilex.service.dao.SensorProfileDAO;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
+import opensilex.service.model.Data;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
@@ -51,12 +55,14 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Sensor;
+import opensilex.service.resource.dto.data.DataDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.resource.dto.sensor.SensorDTO;
 import opensilex.service.resource.dto.sensor.SensorDetailDTO;
 import opensilex.service.resource.dto.sensor.SensorPostDTO;
 import opensilex.service.resource.dto.sensor.SensorProfileDTO;
+import opensilex.service.view.model.provenance.Provenance;
 
 /**
  * Sensor resource service.
@@ -175,10 +181,12 @@ public class SensorResourceService extends ResourceService {
         SensorDAO sensorDAO = new SensorDAO();
         //1. Get count
         Integer totalCount = sensorDAO.count(uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
-        
-        //2. Get sensors
-        ArrayList<Sensor> sensorsFounded = sensorDAO.find(page, pageSize, uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
-        
+        ArrayList<Sensor> sensorsFounded = new ArrayList<>();
+         //2. Get sensors
+        if(totalCount > 0){
+            sensorsFounded = sensorDAO.find(page, pageSize, uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+        }
+       
         //3. Return result
         ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<SensorDTO> sensorsToReturn = new ArrayList<>();
@@ -648,5 +656,132 @@ public class SensorResourceService extends ResourceService {
         }
         
         return Response.status(result.getHttpStatus()).entity(postResponse).build();
+    }
+    
+    /**
+     * Sensor Data GET service.
+     * @param pageSize
+     * @param page
+     * @param provenanceUri
+     * @param variablesUri
+     * @param startDate
+     * @param endDate
+     * @param object
+     * @param uri
+     * @return list of the data corresponding to the search params given
+     * @example
+     * {
+     *      "metadata": {
+     *          "pagination": {
+     *              "pageSize": 20,
+     *              "currentPage": 0,
+     *              "totalCount": 3,
+     *              "totalPages": 1
+     *          },
+     *          "status": [],
+     *          "datafiles": []
+     *      },
+     *      "result": {
+     *          "data": [
+     *               {
+     *                 "uri": "http://www.phenome-fppn.fr/diaphen/id/data/d2plf65my4rc2odiv2lbjgukc2zswkqyoddh25jtoy4b5pf3le3q4ec5c332f5cd44ce82977e404cebf83c",
+     *                 "provenanceUri": "http://www.phenome-fppn.fr/mtp/2018/pv181515071552",
+     *                 "objectUri": "http://www.phenome-fppn.fr/diaphen/2018/o18001199",
+     *                 "variableUri": "http://www.phenome-fppn.fr/diaphen/id/variables/v009",
+     *                 "date": "2017-06-15T00:00:00+0200",
+     *                 "value": 2.4
+     *               },
+     *               {
+     *                 "uri": "http://www.phenome-fppn.fr/diaphen/id/data/pttdrrqybxoyku4img323dyrhmpp267mhnpiw3vld2wm6tap3vwq93b344c429ec45bb9b185edfe5bc2b64",
+     *                 "provenanceUri": "http://www.phenome-fppn.fr/mtp/2018/pv181515071552",
+     *                 "objectUri": "http://www.phenome-fppn.fr/diaphen/2018/o18001199",
+     *                 "variableUri": "http://www.phenome-fppn.fr/diaphen/id/variables/v009",
+     *                 "date": "2017-06-16T00:00:00+0200",
+     *                 "value": "2017-06-15T00:00:00+0200"
+     *               }
+     *          ]
+     *      }
+     * }
+     */
+    @GET
+    @Path("{uri}/data")
+    @ApiOperation(value = "Get data mesured by a sensor")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Data mesured by a sensor", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSensorData(
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+            @ApiParam(value = "Search by variable", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("variable") @Required String variablesUri,
+            @ApiParam(value = "Search by provenance", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_URI) @QueryParam("provenance") String provenanceUri,
+            @ApiParam(value = "Search by minimal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("startDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String startDate,
+            @ApiParam(value = "Search by maximal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("endDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String endDate,
+            @ApiParam(value = "Search by object uri", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("object")  @URL String object,
+            @PathParam("uri") @Required @URL String uri
+        ) {
+        DataDAO dataDAO = new DataDAO();
+        dataDAO.setPage(page);
+        dataDAO.setPageSize(pageSize);
+
+        ProvenanceDAO provenanceDAO  = new ProvenanceDAO();
+        provenanceDAO.setPage(1);
+        provenanceDAO.setPageSize(500);
+        
+        ArrayList<String> provenanceUrisAssociatedToSensor = new ArrayList<>();
+        if (provenanceUri != null){
+            provenanceUrisAssociatedToSensor.add(provenanceUri);
+        }else{
+            Provenance searchProvenance = new Provenance();
+            String jsonFilter = BasicDBObjectBuilder.start("metadata.prov:Agent.oeso:SensingDevice", uri).get().toString();
+            ArrayList<Provenance> provenances = provenanceDAO.getProvenances(searchProvenance, jsonFilter);
+
+            for (Provenance provenance : provenances) {
+                provenanceUrisAssociatedToSensor.add(provenance.getUri());
+            }
+        }
+        List<String> objectsUris = new ArrayList<>();
+        if(object != null){
+           objectsUris.add(object);
+        }
+        
+        //1. Get sensor data count
+        Integer totalCount = dataDAO.count(variablesUri, startDate, endDate, objectsUris, provenanceUrisAssociatedToSensor);
+        List<Data> dataFounded = new ArrayList<>();
+        //2. Get sensor data
+        if(totalCount > 0){
+            dataFounded = dataDAO.find(page, pageSize, variablesUri,  startDate, endDate, objectsUris, provenanceUrisAssociatedToSensor);
+        }
+        
+        //3. Return result
+        ArrayList<Status> statusList = new ArrayList<>();
+        ArrayList<DataDTO> sensorsToReturn = new ArrayList<>();
+        ResultForm<DataDTO> getResponse;
+        if (dataFounded == null) { //Request failure
+            getResponse = new ResultForm<>(0, 0, sensorsToReturn, true);
+            return noResultFound(getResponse, statusList);
+        } else if (dataFounded.isEmpty()) { //No result found
+            getResponse = new ResultForm<>(0, 0, sensorsToReturn, true);
+            return noResultFound(getResponse, statusList);
+        } else { //Results
+            //Convert all objects to DTOs
+            dataFounded.forEach((data) -> {
+                sensorsToReturn.add(new DataDTO(data));
+            });
+            
+            getResponse = new ResultForm<>(pageSize, page, sensorsToReturn, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        }
     }
 }

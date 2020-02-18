@@ -72,16 +72,16 @@ public class BrapiVariable {
         return observationVariableDbId;
     }
 
-    public void setObservationVariableDbId(String ObservationVariableDbId) {
-        this.observationVariableDbId = ObservationVariableDbId;
+    public void setObservationVariableDbId(String observationVariableDbId) {
+        this.observationVariableDbId = observationVariableDbId;
     }
 
     public String getObservationVariableName() {
-        return observationVariableName;
+        return observationVariableDbId;
     }
 
-    public void setObservationVariableName(String ObservationVariableName) {
-        this.observationVariableName = ObservationVariableName;
+    public void setObservationVariableName(String observationVariableName) {
+        this.observationVariableName = observationVariableName;
     }
 
     public String getOntologyReference() {

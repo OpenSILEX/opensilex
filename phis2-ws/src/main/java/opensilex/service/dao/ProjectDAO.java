@@ -113,7 +113,6 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
                 spql.addInsert(graph, projectURI, relationHasRelatedProject, relatedProjectURI);
             }
         }
-        
         //oeso:hasFinancialFunding
         if (project.getFinancialFunding() != null) {
             Property relationHasFinancialFunfing = ResourceFactory.createProperty(Oeso.RELATION_HAS_FINANCIAL_FUNDING.toString());

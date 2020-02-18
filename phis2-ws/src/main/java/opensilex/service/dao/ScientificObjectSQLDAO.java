@@ -171,7 +171,7 @@ public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, Object> {
         
         return postResult;
     }
-
+    
     @Override
     public Map<String, String> pkeySQLFieldLink() {
        Map<String, String> pkeySQLFieldLink = new HashMap<>();
@@ -352,7 +352,7 @@ public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, Object> {
         
         return scientificObject;
     }
-
+    
     @Override
     public List<ScientificObject> create(List<ScientificObject> objects) throws DAOPersistenceException, Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

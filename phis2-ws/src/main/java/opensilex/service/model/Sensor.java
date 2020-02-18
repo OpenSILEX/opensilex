@@ -1,8 +1,8 @@
 //******************************************************************************
-//                                       Sensor.java
+//                              Sensor.java
 // SILEX-PHIS
 // Copyright © INRA 2018
-// Creation date: 14 mars 2018
+// Creation date: 14 Mar. 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package opensilex.service.model;
@@ -10,10 +10,10 @@ package opensilex.service.model;
 import java.util.HashMap;
 
 /**
- * Represents a sensor model
+ * Sensor model.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-public class Sensor extends Device {    
+public class Sensor extends Device {
     /**
      * Variables measured by the sensor.
      */

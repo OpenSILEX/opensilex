@@ -8,7 +8,8 @@
 package opensilex.service.resource.dto.annotation;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.ArrayList;
+import java.util.List;
+
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import org.joda.time.DateTime;
@@ -39,14 +40,14 @@ public class AnnotationPostDTO extends AbstractVerifiedClass {
      * Represents the annotation's body values.
      * @link https://www.w3.org/TR/annotation-model/#cardinality-of-bodies-and-targets
      */
-    private ArrayList<String> bodyValues;
+    private List<String> bodyValues;
 
     /**
      * URIs concerned by this annotation.
      * @example http://www.phenome-fppn.fr/diaphen/2017/o1032481
      * @link https://www.w3.org/TR/annotation-model/#cardinality-of-bodies-and-targets
      */
-    private ArrayList<String> targets;
+    private List<String> targets;
     
     /**
      * Constructor to create a DTO from an annotation model.
@@ -87,11 +88,11 @@ public class AnnotationPostDTO extends AbstractVerifiedClass {
     }
 
     @ApiModelProperty(notes = "Need to be an array of text")
-    public ArrayList<String> getBodyValues() {
+    public List<String> getBodyValues() {
         return bodyValues;
     }
 
-    public void setBodyValues(ArrayList<String> bodyValues) {
+    public void setBodyValues(List<String> bodyValues) {
         this.bodyValues = bodyValues;
     }
 
@@ -99,10 +100,10 @@ public class AnnotationPostDTO extends AbstractVerifiedClass {
     @NotEmpty
     @NotNull
     @ApiModelProperty(notes = "Need to be an array of URI")
-    public ArrayList<String> getTargets() {
+    public List<String> getTargets() {
         return targets;
     }
-    public void setTargets(ArrayList<String> targets) {
+    public void setTargets(List<String> targets) {
         this.targets = targets;
     }
 }

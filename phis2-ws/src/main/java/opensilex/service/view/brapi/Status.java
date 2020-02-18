@@ -18,6 +18,10 @@ public class Status {
 
     public Status() {
     }
+    
+    public Status(String message) {
+    	this.message = message;
+    }
 
     public Status(String message, StatusException exception) {
         this.exception = exception;

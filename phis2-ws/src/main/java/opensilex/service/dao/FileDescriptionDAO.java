@@ -311,6 +311,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
                     //3. Insert metadata first
                     fileDescriptionCollection.insertOne(session, fileDescription);
                     createdResources.add(fileDescription.getUri());
+                    status.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, ""));
                 } catch (MongoException ex) {
                     // Define that an error occurs
                     hasError = true;

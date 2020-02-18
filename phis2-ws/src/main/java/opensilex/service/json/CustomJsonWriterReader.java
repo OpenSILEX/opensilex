@@ -26,10 +26,21 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.stream.JsonReader;
+import com.worldturner.medeia.api.SchemaSource;
+import com.worldturner.medeia.api.UrlSchemaSource;
+import com.worldturner.medeia.api.ValidationFailedException;
+import com.worldturner.medeia.api.gson.MedeiaGsonApi;
+import com.worldturner.medeia.schema.validation.SchemaValidator;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.net.URL;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
@@ -43,6 +54,8 @@ import opensilex.service.model.Dataset;
  * Custom JSON handler.
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  * @param <T>
+ * For json validation schema
+ * @see https://github.com/worldturner/medeia-validator
  */
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -54,7 +67,25 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
      * Logs
      */
     final static Logger LOGGER = LoggerFactory.getLogger(CustomJsonWriterReader.class);
-
+    /**
+     * JsonSchema validator
+     */
+    private static final MedeiaGsonApi VALIDATION_GSON_API = new MedeiaGsonApi();
+    /**
+     * Serializer/deserializer object
+     */
+    private static final Gson GSON = new Gson();
+    
+    /**
+     * Extract class from List generic string type
+     */
+    private static final Pattern EXTRACT_CLASS_PATTERN = Pattern.compile(".*<(.*)>");
+    
+    /**
+     * Validation schema internal ressources directory
+     */
+    private static final String INTERNAL_VALIDATION_SCHEMAS_DIR = "validationSchemas";
+    
     /**
      * Permits to filter visible classes.
      * @param type
@@ -85,11 +116,21 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
     public T readFrom(Class<T> type, Type genericType, Annotation[] annotations, MediaType mediaType,
             MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
             throws IOException, WebApplicationException {
-        final Gson g = new Gson();
         try {
+            // 1. read input
             final BufferedReader reader = new BufferedReader(new InputStreamReader(entityStream));
-            return g.fromJson(reader, genericType);
-        } catch (JsonIOException | JsonSyntaxException e) {
+
+            // 2. load validation schema if it exists
+            SchemaValidator entitySchemaValidator = this.loadSchema(type,genericType.getTypeName());
+            
+            // 3. read input with or without schema
+            if(entitySchemaValidator != null){
+                JsonReader validatedReader = VALIDATION_GSON_API.createJsonReader(entitySchemaValidator, reader);
+                return GSON.fromJson(validatedReader, genericType);
+            }else{
+                return GSON.fromJson(reader, genericType);
+            }
+        } catch (JsonIOException | JsonSyntaxException | ValidationFailedException e) {
             LOGGER.warn(e.getMessage(), e);
             final ResponseFormPOST postResponse = new ResponseFormPOST(new Status(
                     "Unexpected JSON format", 
@@ -156,4 +197,41 @@ public final class CustomJsonWriterReader<T> implements MessageBodyWriter<T>,
                     "Error serializing a " + type + " to the output stream", gsonEx);
         }
     }
+    
+    /**
+     * Load validation schema corresponding to Input entity type
+     * @param type type of generic entity to test if it is a list or other collection
+     * @param genericEntityTypetype of the entity can be a class type or an array of this class type
+     * @return A java json schema validator
+     * @see https://github.com/worldturner/medeia-validator
+     */
+    private SchemaValidator loadSchema(Class<T> type, String genericEntityType) {
+        // 1. get class name from class type
+        // E.g. java.util.ArrayList<opensilex.service.ressource.dto.ProvenancePostDTO>
+        if(List.class.isAssignableFrom(type)){
+            Matcher matcher = EXTRACT_CLASS_PATTERN.matcher(genericEntityType);
+            if (matcher.find()) {
+               genericEntityType = matcher.group(1);
+            }
+        }
+        // E.g. opensilex.service.ressource.dto.ProvenancePostDTO
+        String[] enstityDTOPath = genericEntityType.split("[.]");
+        String entityType = enstityDTOPath[enstityDTOPath.length - 1]; 
+
+        // E.g. ProvenancePostDTO
+        if(entityType == null){
+            return null;
+        }
+        
+        // 2. load corresponding schema or return null
+        URL schemaResource = getClass().getResource("/" + INTERNAL_VALIDATION_SCHEMAS_DIR +"/" + entityType + ".json");
+
+        if (schemaResource == null) {
+            return null;
+        } else {
+            SchemaSource source = new UrlSchemaSource(schemaResource);
+            return VALIDATION_GSON_API.loadSchema(source);
+        }
+    }
 }
+

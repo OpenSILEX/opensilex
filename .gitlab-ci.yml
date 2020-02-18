@@ -53,7 +53,9 @@ variables:
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/phis-ws.git --branch modularity
     - |
       if [ ! -z "$COMMIT_SHA_PHIS" ]; then
+        cd phis-ws
         git checkout $COMMIT_SHA_PHIS
+        cd ..
       fi    
   stage: build
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
@@ -80,7 +82,7 @@ opensilex:sixitine:build:
   stage: deploy
   image: curlimages/curl
   script:
-    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" https://forgemia.inra.fr/api/v4/projects/1757/trigger/pipeline
+    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/1757/trigger/pipeline
   needs: 
     - job: "opensilex:build"
 

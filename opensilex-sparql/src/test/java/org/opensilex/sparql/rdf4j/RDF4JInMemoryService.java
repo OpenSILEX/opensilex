@@ -6,6 +6,7 @@
 package org.opensilex.sparql.rdf4j;
 
 import java.net.URISyntaxException;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.eclipse.rdf4j.sail.shacl.ShaclSail;
@@ -17,6 +18,8 @@ import org.opensilex.sparql.service.SPARQLService;
  */
 public class RDF4JInMemoryService extends SPARQLService {
 
+    public static RepositoryConnection rdf4jRepositoryConnection;
+    
     public RDF4JInMemoryService() throws URISyntaxException {
         super(getInMemoryConnection());
     }
@@ -27,7 +30,8 @@ public class RDF4JInMemoryService extends SPARQLService {
         SailRepository repository = new SailRepository(shacl);
         repository.init();
 
-        return new RDF4JConnection(repository.getConnection());
+        rdf4jRepositoryConnection = repository.getConnection();
+        return new RDF4JConnection(rdf4jRepositoryConnection);
     }
 
 }

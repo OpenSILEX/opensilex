@@ -42,7 +42,7 @@ public class SensorDTO extends AbstractVerifiedClass {
     private String dateOfLastCalibration;
     //email of the person in charge of the sensor
     private String personInCharge;
-
+    
     public SensorDTO(Sensor sensor) {
         uri = sensor.getUri();
         rdfType = sensor.getRdfType();

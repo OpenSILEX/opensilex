@@ -78,7 +78,7 @@ public class ScientificObjectResourceService extends ResourceService {
      * Enters a set of scientific objects into the storage and associate them to 
      * an experiment if given.
      * @param scientificObjectsDTO scientific objects to save
-     * @param context query context element to get the IP address information of the user
+     * @param context query context element to get the ip address information of the user
      * @example 
      * [
         {
@@ -92,7 +92,8 @@ public class ScientificObjectResourceService extends ResourceService {
            }
           ]
         }
-     * @return the creation result
+     * 
+     * @return 
      */
     @POST
     @ApiOperation(value = "Post scientific object(s)",
@@ -118,33 +119,32 @@ public class ScientificObjectResourceService extends ResourceService {
         //if there is at least one scientific object
         if (!scientificObjectsDTO.isEmpty()) {
             try {
-                ScientificObjectRdf4jDAO scientificObjectRdf4jDao = new ScientificObjectRdf4jDAO();
+                ScientificObjectRdf4jDAO scientificObjectDaoSesame = new ScientificObjectRdf4jDAO();
                 if (context.getRemoteAddr() != null) {
-                    scientificObjectRdf4jDao.remoteUserAdress = context.getRemoteAddr();
+                    scientificObjectDaoSesame.remoteUserAdress = context.getRemoteAddr();
                 }
                 
-                scientificObjectRdf4jDao.user = userSession.getUser();
+                scientificObjectDaoSesame.user = userSession.getUser();
                 
                 //Check the scientific objects and insert them in triplestore
-                POSTResultsReturn result = scientificObjectRdf4jDao.checkAndInsert(scientificObjectPostsDTOsToScientificObjects(scientificObjectsDTO));
-                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                POSTResultsReturn resultSesame = scientificObjectDaoSesame.checkAndInsert(scientificObjectPostsDTOsToScientificObjects(scientificObjectsDTO));
+                if (resultSesame.getHttpStatus().equals(Response.Status.CREATED)) {
                     //scientific objects inserted (201)
-                    postResponse = new ResponseFormPOST(result.statusList);
-                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-                    return Response.status(result.getHttpStatus()).entity(postResponse).build();
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
+                    postResponse = new ResponseFormPOST(resultSesame.statusList);
+                    postResponse.getMetadata().setDatafiles(resultSesame.getCreatedResources());
+                    return Response.status(resultSesame.getHttpStatus()).entity(postResponse).build();
+                } else if (resultSesame.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                        || resultSesame.getHttpStatus().equals(Response.Status.OK)
+                        || resultSesame.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                    postResponse = new ResponseFormPOST(resultSesame.statusList);
                 }
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
+                return Response.status(resultSesame.getHttpStatus()).entity(postResponse).build();
             } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);
                 return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
             }
         } else {
-            postResponse = new ResponseFormPOST(
-                    new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty scientific objects list"));
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty scientific objects list"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
@@ -271,6 +271,9 @@ public class ScientificObjectResourceService extends ResourceService {
         //1. Get count
         Integer totalCount = scientificObjectDaoSesame.count(uri, rdfType, experimentURI, alias);
         
+        //2. Get list of scientific objects
+        scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias);
+
         // If scientific objects found
         if(totalCount > 0){
             //2. Get list of scientific objects

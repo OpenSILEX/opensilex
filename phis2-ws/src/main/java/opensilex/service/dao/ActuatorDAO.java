@@ -249,8 +249,8 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
             if (maxId != null) {
                 return Integer.valueOf(maxId.stringValue());
             }
-        } 
-        
+        }
+
         return 0;
     }
 
@@ -390,8 +390,8 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      * SELECT DISTINCT  ?rdfType ?uri ?label ?brand ?serialNumber ?model ?inServiceDate 
      * ?dateOfPurchase ?dateOfLastCalibration ?personInCharge 
      * WHERE {
-     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
      *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#Actuator> . 
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
      *      OPTIONAL {
      *          ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?label . 
      *      }
@@ -431,8 +431,8 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
             rdfType = "";
         }
         query.appendSelect("?" + RDF_TYPE);
-        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_ACTUATOR.toString(), null);
+        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendAndFilter("REGEX ( str(?" + RDF_TYPE + "),\".*" + rdfType + ".*\",\"i\")");
         
         //URI filter

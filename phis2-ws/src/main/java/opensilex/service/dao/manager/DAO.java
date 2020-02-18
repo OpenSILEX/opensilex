@@ -8,6 +8,7 @@
 package opensilex.service.dao.manager;
 
 import java.util.List;
+
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
@@ -24,7 +25,25 @@ public abstract class DAO<T> {
      * Remote user address for logging
      */
     public String remoteUserAdress;
-    public User user;
+
+	public User user;
+	
+	
+    public String getRemoteUserAdress() {
+		return remoteUserAdress;
+	}
+
+	public void setRemoteUserAdress(String remoteUserAdress) {
+		this.remoteUserAdress = remoteUserAdress;
+	}
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
 
     /**
      * Creates in the storage the list of objects given.
@@ -94,6 +113,7 @@ public abstract class DAO<T> {
         initConnection();
         List<T> objectsCreated;
         try {
+        	startTransaction();
             objectsCreated = create(objects);
             commitTransaction();
         } catch (Exception ex) {
@@ -118,6 +138,7 @@ public abstract class DAO<T> {
         initConnection();
         List<T> objectsUpdated;
         try {
+        	startTransaction();
             objectsUpdated = update(objects);
             commitTransaction();
         } catch (Exception ex) {

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -38,8 +39,10 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.commons.io.FilenameUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import opensilex.service.PropertiesFileManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
@@ -334,22 +337,26 @@ public class DataResourceService extends ResourceService {
     }
     
     /**
-     * Save the metadata of a file already stored in an accessible storage (webPath).
+     * Save the metadata of a file already stored in an accessible storage.
+     * The absolute path of the file will be ${ws.updir.doc property}/relativePath
+     * ${ws.updir.doc property} refers to the <ws.updir.doc> property defined in the config.properties file used for building the webservice.
      * @param descriptionsDto
      * @param context
      * @example
      * [
      *      {
-     *  	"rdfType": "http://www.opensilex.org/vocabulary/oeso#HemisphericalImage",
-     *  	"date": "2017-06-15T10:51:00+0200",
-     *  	"webPath": "http://www.opensilex.org/images/example.jpg",
-     *  	"concernedItems": [{
-     *           	"uri": "http://www.opensilex.org/demo/DMO2018-1",
-     *			"typeURI": "http://www.opensilex.org/vocabulary/oeso#Experiment"
-     *           }],
-     *  	"provenanceUri": "http://www.opensilex.org/opensilex/id/provenance/1551805521606",
-     *  	"metadata": {}
-     *      }
+	 *  		"rdfType": "http://www.opensilex.org/vocabulary/oeso#HemisphericalImage",
+	 *  		"date": "2017-06-15T10:51:00+0200",
+	 *  		"provenanceUri": "http://www.opensilex.org/opensilex/id/provenance/1551805521606",
+	 *  		"relativePath" : "4P/464/proc.txt",
+	 *  		"concernedItems": [{
+	 *  		     "uri": "http://www.opensilex.org/demo/DMO2018-1",
+	 *  			"typeURI": "http://www.opensilex.org/vocabulary/oeso#Experiment"
+	 *  		}],
+	 *  		"metadata": {
+	 *  		  	"sensorUri": "http://www.phenome-fppn.fr/diaphen/2018/s18001"
+	 *  		}     
+	 *  	}
      * ]
      * @return the insertion result. 
      * @example
@@ -364,10 +371,10 @@ public class DataResourceService extends ResourceService {
      * }
      */
     @POST
-    @Path("files")
-    @ApiOperation(value = "Post data file")
+    @Path("filepaths")
+    @ApiOperation(value = "Post data about existing files")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data file and metadata saved", response = ResponseFormPOST.class),
+        @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
@@ -379,28 +386,49 @@ public class DataResourceService extends ResourceService {
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)  
-    public Response postDataFilePath(
+    public Response postDataFilePaths(
         @ApiParam(value = "Metadata of the file", required = true) @NotNull @Valid List<FileDescriptionWebPathPostDTO> descriptionsDto,
         @Context HttpServletRequest context
     ) {
         
         FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO();
         AbstractResultForm postResponse = null;
-        try {
-            List<FileDescription> descriptions = new ArrayList<>();
-            for (FileDescriptionWebPathPostDTO description : descriptionsDto) {
-                descriptions.add(description.createObjectFromDTO());
-            }
+        POSTResultsReturn result = new POSTResultsReturn();
+        
+        try {      
+            String fileStorageDirectory = PropertiesFileManager.getConfigFileProperty("service", "uploadFileServerDirectory");           
+            List<FileDescription> descriptions = new ArrayList<>();           
+            Optional<String> checkFsError = Optional.empty();
             
-            POSTResultsReturn result = fileDescriptionDao.checkAndInsertWithWebPath(descriptions);
+            for (FileDescriptionWebPathPostDTO description : descriptionsDto) {            	
+            	FileDescription fileDescription = description.createObjectFromDTO();          
+            	// get the the absolute file path according to the fileStorageDirectory
+            	File realFile = new File(FilenameUtils.separatorsToSystem(fileStorageDirectory+'/'+fileDescription.getPath()));
+            	checkFsError = checkFilePath(realFile);                	
+	        	if(checkFsError.isPresent()) { // check if a error msg was returned
+	 	            break;
+	            }       	
+            	fileDescription.setPath(realFile.getAbsolutePath());
+            	fileDescription.setFilename(realFile.getName());
+                descriptions.add(fileDescription);	        	      	
+            }  
+            
+            if(! checkFsError.isPresent()) { // check if a error msg was returned
+            	result = fileDescriptionDao.checkAndInsertWithWebPath(descriptions); // insert description with DAO
+            }
+            else {
+             	result.setErrorMsg(checkFsError.get());
+             	result.setDataState(false);
+ 	            result.setHttpStatus(Response.Status.BAD_REQUEST);
+            }
 
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                 postResponse = new ResponseFormPOST(result.statusList);
                 postResponse.getMetadata().setDatafiles(result.getCreatedResources());
             } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                postResponse = new ResponseFormPOST(result.statusList);
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+            	postResponse = new ResponseFormPOST(result.statusList);
             }
 
             return Response.status(result.getHttpStatus()).entity(postResponse).build();
@@ -408,6 +436,24 @@ public class DataResourceService extends ResourceService {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
+    }
+    
+    /**
+     * Check if a file exists, if it's a file and if it's readable
+     * @param file : the file to check
+     * @return a {@link Optional} of {@link String} which describe an error msg 
+     * if an error was encountered <br> return {@link Optional#empty()}  else
+     * 
+     */
+    protected Optional<String> checkFilePath(File file) {
+    	
+    	if(! file.exists()) 
+    		return Optional.of("File not found : "+file.getPath());
+    	else if(! file.isFile()) 
+    		return Optional.of(file.getPath()+" is not a file"); 
+    	else if(! file.canRead())         		
+    		return Optional.of(file.getPath()+" is not readable");        	
+        return Optional.empty();    
     }
     
     /**

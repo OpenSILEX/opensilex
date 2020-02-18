@@ -36,10 +36,23 @@ public class Provenance {
      * Additional information for the provenance. 
      * Its content depends on the type of the provenance. 
      * @example 
-     * [ 
-     *   "SensingDevice" => "http://www.opensilex.org/demo/s001",
-     *   "Vector" => "http://www.opensilex.org/demo/v001"
-     * ]
+     * {
+     *   namespaces" : {
+     *      "prov" : "http://www.w3.org/ns/prov#",
+     *      "oeso" : "http://www.opensilex.org/vocabulary/oeso#",
+     *      "rdf" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     *   ,
+     *   creationDate" : "2019-10-30T11:16:23+0100",
+     *   prov:Agent" : {
+     *      "oeso:SensingDevice" : [ 
+     *          "http://www.opensilex.org/sunagri/2018/s18002", 
+     *          "http://www.opensilex.org/sunagri/2018/s18003"
+     *      ],
+     *      "oeso:Operator" : [ 
+     *          "perrine.fortin@sunr.fr", 
+     *          "perrine.juillion@itk.fr"
+     *      ]
+     *  }
      */
     protected Object metadata = new HashMap<>();
 

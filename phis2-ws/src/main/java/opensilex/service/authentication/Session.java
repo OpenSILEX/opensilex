@@ -19,4 +19,6 @@ import opensilex.service.model.User;
 public interface Session {
     
     public User getUser();
+    
+    public org.opensilex.rest.user.dal.UserModel getOpenSilexUser();
 }

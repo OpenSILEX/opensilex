@@ -1,11 +1,10 @@
-//**********************************************************************************************
-//                               ScientificObjectDAOSesame.java 
-//
+///******************************************************************************
+//                       ScientificObjectRdf4jDAO.java 
 // SILEX-PHIS
-// Copyright © INRA 2018
-// Creation date: august 2017
+// Copyright © INRA 2017
+// Creation date: Aug. 2017
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-//***********************************************************************************************
+//******************************************************************************
 package opensilex.service.dao;
 
 import java.net.MalformedURLException;
@@ -74,6 +73,8 @@ import org.eclipse.rdf4j.model.Value;
 /**
  * Allows CRUD methods of scientific objects in the triplestore.
  * @update [Morgane Vidal] 29 March, 2019: add update scientific objects and refactor to the new DAO conception.
+ * @update [Renaud COLIN] 20 September, 2019: update create(List<ScientificObject> scientificObjects) method to not create RDF triple
+ * with oeso:isPartOf as property and a literal as object. 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
@@ -761,7 +762,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         
         return sparqlQuery;
     }
-    
+     
     /**
      * Checks if the scientific object exists.
      * @param uri
@@ -846,7 +847,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     }
     
     @Override
-    public List create(List<ScientificObject> scientificObjects) throws Exception {
+    public List<ScientificObject> create(List<ScientificObject> scientificObjects) throws Exception {
         
         boolean resultState = false; // To know if the data are ok and have been inserted.
         boolean annotationInsert = true; // True if the insertion have been done.
@@ -881,7 +882,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             
             spql.addInsert(graph, scientificObjectUri, RDF.type, scientificObjectType);
             
-            // Properties associated to the scientific object
             for (Property property : scientificObject.getProperties()) {
                 if (property.getRdfType() != null && !property.getRdfType().equals("")) {//Typed properties
                     if (property.getRdfType().equals(Oeso.CONCEPT_VARIETY.toString())) {
@@ -906,7 +906,10 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                         spql.addInsert(graph, propertyNode, RDF.type, propertyType);
                         spql.addInsert(graph, scientificObjectUri, propertyRelation, propertyNode);
                     }
-                } else {
+                } else if(Oeso.RELATION_IS_PART_OF.toString().equals(property.getRelation())){              	
+                	continue; // Oeso:isPartOf relation will be handled just after
+                }
+                else {
                     Literal propertyLiteral = ResourceFactory.createStringLiteral(property.getValue());
                     org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
 

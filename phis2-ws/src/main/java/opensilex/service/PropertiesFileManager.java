@@ -15,6 +15,7 @@ package opensilex.service;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -23,6 +24,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import javax.ws.rs.WebApplicationException;
@@ -32,6 +34,7 @@ import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * Gère les méthodes appelant tous types de propriétés à partir de fichier de
@@ -82,12 +85,62 @@ public class PropertiesFileManager {
         return props;
     }
 
-    public static RSAPublicKey parseBinaryPublicKey(String fileName) {
-        //property is in /src/main/resources By default in maven project
+    /**
+     * Read yaml file and return a Map.
+     * @param fileName
+     * @return null | Map<String,Object>
+     */
+    public static Map<String,Object> parseYAMLConfigFile(String fileName) {
+        InputStream inputStream = null;
+        
+        final String filePath = "/" + fileName + ".yml";
+        Yaml yaml = new Yaml();
+        
+        inputStream = PropertiesFileManager.class.getResourceAsStream(filePath);
+        Map<String, Object> ymalMap = yaml.load(inputStream);
+         if (inputStream != null) { 
+            try { 
+                inputStream.close(); 
+            } catch (IOException ex) { 
+                LOGGER.error(ex.getMessage(), ex); 
+            } 
+        } 
+            
+        return ymalMap;
+    }
+    
+    /**
+     * Write yaml file and from Map.
+     * @param mapObject
+     * @param yamlFilePath
+     * @return boolean 
+     */
+    public static boolean writeYAMLFile(Map<String,Object> mapObject, String  yamlFilePath) {
+        boolean resultStatus = false;
+        Yaml yaml = new Yaml();
+        FileWriter writer;
+        try {
+            writer = new FileWriter(yamlFilePath);
+            
+            yaml.dump(mapObject, writer);
+            LOGGER.debug(yaml.dump(mapObject));
+            resultStatus = true;
+        } catch (IOException ex) {
+           LOGGER.error("Can't write file", ex);
+        }
+        return resultStatus;
+    }
+        
+    /**
+     * Parses a binary public key.
+     * @param configurationFileName
+     * @return the key parsed
+     */
+    public static RSAPublicKey parseBinaryPublicKey(String configurationFileName) {
         RSAPublicKey generatedRSAPublicKey = null;
         DataInputStream dataInputStream = null;
         try {
-            URL resource = PropertiesFileManager.class.getResource("/" + fileName + ".der");
+            URL resource = PropertiesFileManager.class.getResource("/" + configurationFileName + ".der");
             File publicKeyFile = new File(resource.getPath());
             dataInputStream = new DataInputStream(new FileInputStream(publicKeyFile));
             byte[] keyBytes = new byte[(int) publicKeyFile.length()];

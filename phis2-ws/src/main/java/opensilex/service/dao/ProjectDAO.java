@@ -7,6 +7,8 @@
 //******************************************************************************
 package opensilex.service.dao;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ws.rs.NotFoundException;
@@ -116,7 +118,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         //oeso:hasFinancialFunding
         if (project.getFinancialFunding() != null) {
             Property relationHasFinancialFunfing = ResourceFactory.createProperty(Oeso.RELATION_HAS_FINANCIAL_FUNDING.toString());
-            Resource financialFunding = ResourceFactory.createResource(project.getFinancialFunding().getUri());
+            Resource financialFunding = ResourceFactory.createResource(project.getFinancialFunding().getUri().toString());
             spql.addInsert(graph, projectURI, relationHasFinancialFunfing, financialFunding);
         }
         //oeso:hasFinancialReference
@@ -259,7 +261,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         //financial funding
         if (project.getFinancialFunding() != null) {
             Property relationHasFinancialFunding = ResourceFactory.createProperty(Oeso.RELATION_HAS_FINANCIAL_FUNDING.toString());
-            Resource financialFunding = ResourceFactory.createResource(project.getFinancialFunding().getUri());
+            Resource financialFunding = ResourceFactory.createResource(project.getFinancialFunding().getUri().toString());
             updateBuilder.addDelete(graph, projectURI, relationHasFinancialFunding, financialFunding);
         }
         
@@ -382,7 +384,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
      * @param bindingSet
      * @return the project.
      */
-    private Project getProjectFromBindingSet(BindingSet bindingSet) {
+    private Project getProjectFromBindingSet(BindingSet bindingSet) throws URISyntaxException {
         Project project = new Project();
         if (bindingSet.getValue(URI) != null) {
             project.setUri(bindingSet.getValue(URI).stringValue());
@@ -398,7 +400,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         
         if (bindingSet.getValue(FINANCIAL_FUNDING_URI) != null) {
             FinancialFunding financialFunding = new FinancialFunding();
-            financialFunding.setUri(bindingSet.getValue(FINANCIAL_FUNDING_URI).stringValue());
+            financialFunding.setUri(new URI(bindingSet.getValue(FINANCIAL_FUNDING_URI).stringValue()));
             financialFunding.setLabel(bindingSet.getValue(FINANCIAL_FUNDING_LABEL).stringValue());
             project.setFinancialFunding(financialFunding);
         }
@@ -468,7 +470,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
      * @return the list of projects that matches the filter parameters.
      */
     public ArrayList<Project> find(Integer page, Integer pageSize, String uri, String name, String shortname, String financialfunding, 
-            String financialReference, String description, String startDate, String endDate, String homePage, String objective,String financialFundingLang) {
+            String financialReference, String description, String startDate, String endDate, String homePage, String objective,String financialFundingLang) throws URISyntaxException {
         
         SPARQLQueryBuilder query = prepareSearchQuery(page, pageSize, uri, name, shortname, financialfunding, financialReference, description, startDate, endDate, homePage, objective,financialFundingLang);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
@@ -658,7 +660,7 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
                     //financial funding
                     if (project.getFinancialFunding() == null && bindingSet.getValue(FINANCIAL_FUNDING_URI) != null) {
                         FinancialFunding financialFunding = new FinancialFunding();
-                        financialFunding.setUri(bindingSet.getValue(FINANCIAL_FUNDING_URI).stringValue());
+                        financialFunding.setUri(new URI(bindingSet.getValue(FINANCIAL_FUNDING_URI).stringValue()));
                         financialFunding.setLabel(bindingSet.getValue(FINANCIAL_FUNDING_LABEL).stringValue());
                         
                         project.setFinancialFunding(financialFunding);
@@ -802,11 +804,11 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
             //3. Check if the given financial funding exist.
             if (project.getFinancialFunding() != null 
                     && !financialFundingCache.contains(project.getFinancialFunding().getUri())) {
-                if (!existUri(project.getFinancialFunding().getUri())) {
+                if (!existUri(project.getFinancialFunding().getUri().toString())) {
                     dataOk = false;
                     checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown financial funding: " + project.getFinancialFunding().getUri()));
                 } else {
-                    financialFundingCache.add(project.getFinancialFunding().getUri());
+                    financialFundingCache.add(project.getFinancialFunding().getUri().toString());
                 }
             }
 

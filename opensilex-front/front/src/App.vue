@@ -1,5 +1,5 @@
 <template>
-  <div id="page-wrapper" class="wrapper customized">
+  <div id="page-wrapper" class="wrapper customized" v-bind:class="{ embed: embed }">
     <component
       class="header-logo"
       v-bind:is="headerComponent"
@@ -14,7 +14,7 @@
       <section id="content-wrapper" v-if="user.isLoggedIn() && !disconnected">
         <component v-if="!embed" v-bind:is="menuComponent"></component>
 
-        <main v-bind:style= "[!embed ? {} : {'margin-top': '0px !important','margin-left':'0px !important'}]">
+        <main>
           <router-view />
         </main>
       </section>
@@ -168,6 +168,11 @@ main {
 
 .header-top.logged-out {
   box-shadow: none;
+}
+
+.embed main {
+    margin-top: 0px;
+    margin-left: 0px;
 }
 
 </style>

@@ -71,7 +71,7 @@ public class Oeso {
     public static final Property hasScientificContact = Ontology.property(NS, "hasScientificContact");
 
     public static final Property hasRelatedProject = Ontology.property(NS, "hasRelatedProject");
-
+    
     // ---- EXPERIMENTS ----
     public static final Resource Experiment = Ontology.resource(NS, "Experiment");
 

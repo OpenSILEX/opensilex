@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.AskBuilder;
@@ -580,6 +581,32 @@ public class SPARQLService implements SPARQLConnection, Service {
 
             executeDeleteQuery(delete);
         }
+    }
+    
+    public void updateObjectRelation(Node g, URI s, Property p, URI n) throws SPARQLException {
+        SelectBuilder select = new SelectBuilder();
+        select.addVar("x");
+        select.addGraph(g, SPARQLDeserializers.nodeURI(s), p.asNode(), "?x");
+        
+        
+        List<URI> oldValues = new ArrayList<>();
+        
+        executeSelectQuery(select, (result) -> {
+            try {
+                oldValues.add(new URI(result.getStringValue("x")));
+            } catch (URISyntaxException ex) {
+                LOGGER.error("Invalid URI provided: " + result.getStringValue("x"));
+            }
+        });
+        
+        UpdateBuilder update = new UpdateBuilder();
+        
+        for (URI uri : oldValues) {
+            update.addDelete(g, SPARQLDeserializers.nodeURI(s), p.asNode(), SPARQLDeserializers.nodeURI(uri));
+        }
+        
+        update.addInsert(g, SPARQLDeserializers.nodeURI(s), p.asNode(), SPARQLDeserializers.nodeURI(n));
+        executeUpdateQuery(update);
     }
 
 }

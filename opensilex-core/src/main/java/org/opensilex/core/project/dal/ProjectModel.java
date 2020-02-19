@@ -27,8 +27,8 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerator<ProjectModel> {
 
     @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "label",
+            ontology = FOAF.class,
+            property = "name",
             required = true
     )
     private String name;

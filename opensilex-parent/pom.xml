@@ -726,7 +726,7 @@
                     <source>${java.compiler.version}</source>
                     <target>${java.compiler.version}</target>
                     <compilerArgs>
-                        <arg>-proc:none</arg>
+                        <!--<arg>-proc:none</arg>-->
                         <arg>-Xlint:all</arg>
                     </compilerArgs>
                     <!-- Add hibernate validation -->

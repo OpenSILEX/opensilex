@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  * class attributes but parameters sent through the search functions.
  * @update [Andreas Garcia] 19 Mar. 2019: make getAnnotations public to be 
  * able to use it from another service.
- * @update [Andréas Garcia] 8 Apr. 2019: Refactor generic functions into the ResourceService class
+ * @update [Andréas Garcia] 8 Apr. 2019: Refactor generic functions into the ResourceService class
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
 @Api("/annotations")
@@ -162,12 +162,13 @@ public class AnnotationResourceService extends ResourceService {
             @ApiParam(value = "Search by creator", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_CREATOR) @QueryParam("creator") @URL String creator,
             @ApiParam(value = "Search by target", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("target") @URL String target,
             @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_BODY_VALUE) @QueryParam("description") String bodyValue,
-            @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATED_BY) @QueryParam("motivatedBy") @URL String motivatedBy) {
+            @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATED_BY) @QueryParam("motivatedBy") @URL String motivatedBy,
+            @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)",example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc) {
 
         AnnotationDAO annotationDao = new AnnotationDAO(userSession.getUser());
         ArrayList<Annotation> annotations;
         try {
-            annotations = annotationDao.find(uri, creator, target, bodyValue, motivatedBy, page, pageSize);
+            annotations = annotationDao.find(uri, creator, target, bodyValue, motivatedBy, dateSortAsc, page, pageSize);
         
         // handle search exceptions
         } catch (DAOPersistenceException ex) {
@@ -183,7 +184,7 @@ public class AnnotationResourceService extends ResourceService {
         } else {
             // count
             try {
-                int totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy);
+                int totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy, dateSortAsc);
                 return getGETResponseWhenSuccess(annotations, pageSize, page, totalCount);
                 
             // handle count exceptions

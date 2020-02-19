@@ -295,7 +295,8 @@ public class ProjectDAO extends Rdf4jDAO<Project> {
         
         //home page
         if (project.getHomePage() != null) {
-            updateBuilder.addDelete(graph, projectURI, FOAF.homepage, project.getHomePage());
+            Resource homePageURI = ResourceFactory.createResource(project.getHomePage());
+            updateBuilder.addDelete(graph, projectURI, FOAF.homepage, homePageURI);
         }
         
         //administrative contacts

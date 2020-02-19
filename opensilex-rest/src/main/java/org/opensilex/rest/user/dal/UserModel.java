@@ -63,6 +63,12 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
     )
     private Boolean admin = Boolean.FALSE;
 
+    @SPARQLProperty(
+            ontology = SecurityOntology.class,
+            property = "hasLang"
+    )
+    private String lang = "";
+
     private String token;
 
     public String getFirstName() {
@@ -116,6 +122,14 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
     @Override
     public String getName() {
         return getFirstName() + " " + getLastName() + " <" + getEmail().toString() + ">";
+    }
+
+    public String getLang() {
+        return lang;
+    }
+
+    public void setLang(String lang) {
+        this.lang = lang;
     }
 
     @Override

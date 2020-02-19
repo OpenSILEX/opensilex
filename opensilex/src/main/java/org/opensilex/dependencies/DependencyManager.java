@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.DefaultModelBuilderFactory;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
@@ -284,8 +286,8 @@ public class DependencyManager {
      * @throws ModelBuildingException In case of bad pom files
      * @throws DependencyResolutionException In case of dependency resolution error
      */
-    public List<URL> loadModulesDependencies(List<URL> jarModulesURLs) throws IOException, DependencyResolutionException, ModelBuildingException {
-        List<URL> dependenciesUrl = new ArrayList<>();
+    public Set<URL> loadModulesDependencies(Set<URL> jarModulesURLs) throws IOException, DependencyResolutionException, ModelBuildingException {
+        Set<URL> dependenciesUrl = new HashSet<>();
 
         // Register all pom files
         for (URL jarURL : jarModulesURLs) {

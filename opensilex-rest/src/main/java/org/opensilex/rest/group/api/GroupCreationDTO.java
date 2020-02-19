@@ -45,7 +45,8 @@ public class GroupCreationDTO {
         this.name = name;
     }
 
-    @ApiModelProperty(value = "Group description", example = "Group for all experiments managers")
+    @ApiModelProperty(value = "Group description", example = "Group for all experiments managers", required = true)
+    @Required
     public String getDescription() {
         return description;
     }
@@ -55,6 +56,7 @@ public class GroupCreationDTO {
     }
 
     @ApiModelProperty(value = "Group user with profile")
+    @NotNull
     public List<GroupUserProfileModificationDTO> getUserProfiles() {
         return userProfiles;
     }

@@ -19,7 +19,9 @@
         </main>
       </section>
 
-
+      <footer v-if="!embed">
+        <component v-bind:is="footerComponent"></component>
+      </footer>
     </div>
 
     <div id="loader" v-bind:class="{'visible':isLoaderVisible}">
@@ -66,6 +68,7 @@ export default class App extends Vue {
 
 <style lang="scss">
 
+@import './styles/common.scss';
 @import "../node_modules/icon-kit/dist/css/iconkit.min.css";
 @import '../node_modules/bootstrap/scss/bootstrap';
 @import '../node_modules/bootstrap-vue/src/index.scss';

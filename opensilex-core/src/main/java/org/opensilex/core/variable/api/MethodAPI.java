@@ -63,7 +63,7 @@ public class MethodAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response create(
+    public Response createMethod(
             @ApiParam("Method description") @Valid MethodCreationDTO dto
     ) throws Exception {
         MethodDAO dao = new MethodDAO(sparql);
@@ -92,7 +92,7 @@ public class MethodAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response update(
+    public Response updateMethod(
             @ApiParam(value = "Method URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam("Method description") @Valid MethodUpdateDTO dto
     ) throws Exception {
@@ -123,7 +123,7 @@ public class MethodAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response delete(
+    public Response deleteMethod(
             @ApiParam(value = "Method URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         MethodDAO dao = new MethodDAO(sparql);
@@ -143,7 +143,7 @@ public class MethodAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get(
+    public Response getMethod(
             @ApiParam(value = "Method URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         MethodDAO dao = new MethodDAO(sparql);
@@ -174,7 +174,7 @@ public class MethodAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response search(
+    public Response searchMethods(
             @ApiParam(value = "Name regex pattern") @QueryParam("name") String namePattern,
             @ApiParam(value = "Comment regex pattern") @QueryParam("comment") String commentPattern,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("orderBy") List<OrderBy> orderByList,

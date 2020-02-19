@@ -64,7 +64,7 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author Vincent Migot
  */
-@Api("User")
+@Api(UserAPI.CREDENTIAL_GROUP_USER_ID)
 @Path("/user")
 public class UserAPI {
 
@@ -143,7 +143,8 @@ public class UserAPI {
                     userDTO.getFirstName(),
                     userDTO.getLastName(),
                     userDTO.isAdmin(),
-                    userDTO.getPassword()
+                    userDTO.getPassword(),
+                    userDTO.getLang()
             );
             // return user URI
             return new ObjectUriResponse(Response.Status.CREATED, user.getUri()).getResponse();
@@ -166,7 +167,7 @@ public class UserAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("{uri}")
+    @Path("get/{uri}")
     @ApiOperation("Get a user by it's URI")
     @ApiProtected
     @ApiCredential(
@@ -214,7 +215,7 @@ public class UserAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("get-by-uri")
+    @Path("get-list-by-uris")
     @ApiOperation("Get a list of users by their URIs")
     @ApiProtected
     @ApiCredential(
@@ -341,7 +342,8 @@ public class UserAPI {
                     dto.getFirstName(),
                     dto.getLastName(),
                     dto.isAdmin(),
-                    dto.getPassword()
+                    dto.getPassword(),
+                    dto.getLang()
             );
 
             return new ObjectUriResponse(Response.Status.OK, user.getUri()).getResponse();
@@ -355,7 +357,7 @@ public class UserAPI {
     }
 
     @DELETE
-    @Path("{uri}")
+    @Path("delete/{uri}")
     @ApiOperation("Delete a user")
     @ApiProtected
     @ApiCredential(

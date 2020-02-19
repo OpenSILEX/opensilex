@@ -11,15 +11,12 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.List;
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Pattern;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -55,13 +52,10 @@ public class FrontAPI {
     private final static Logger LOGGER = LoggerFactory.getLogger(FrontAPI.class);
 
     @Inject
-    OpenSilex app;
+    private OpenSilex app;
 
     @Inject
-    FrontModule frontModule;
-
-    @Context
-    HttpServletRequest request;
+    private FrontModule frontModule;
 
     @GET
     @Path("/config")

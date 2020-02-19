@@ -7,11 +7,6 @@ package org.opensilex.service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.opensilex.OpenSilex;
-import org.opensilex.module.ModuleConfig;
-import org.opensilex.module.ModuleNotFoundException;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.utils.ClassUtils;
 
@@ -114,6 +109,7 @@ public interface Service {
         moduleByService.put(serviceClass, module);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T extends OpenSilexModule> T getModule(Class<? extends Service> serviceClass, Class<T> moduleClass) {
         return (T) moduleByService.get(serviceClass);
     }

@@ -42,9 +42,8 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
 
     private static PrefixMapping prefixes = null;
 
-    public static void setPrefixes(Map<String, String> prefixesMap) {
-        prefixes = PrefixMapping.Factory.create();
-        prefixes.setNsPrefixes(prefixesMap);
+    public static void setPrefixes(PrefixMapping prefixesMap) {
+        prefixes = prefixesMap;
     }
 
 }

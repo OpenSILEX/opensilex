@@ -63,7 +63,7 @@ public class UnitAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response create(
+    public Response createUnit(
             @ApiParam("Unit description") @Valid UnitCreationDTO dto
     ) throws Exception {
         UnitDAO dao = new UnitDAO(sparql);
@@ -92,7 +92,7 @@ public class UnitAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response update(
+    public Response updateUnit(
             @ApiParam(value = "Unit URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam("Unit description") @Valid UnitUpdateDTO dto
     ) throws Exception {
@@ -123,7 +123,7 @@ public class UnitAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response delete(
+    public Response deleteUnit(
             @ApiParam(value = "Unit URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         UnitDAO dao = new UnitDAO(sparql);
@@ -143,7 +143,7 @@ public class UnitAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get(
+    public Response getUnit(
             @ApiParam(value = "Unit URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         UnitDAO dao = new UnitDAO(sparql);
@@ -174,7 +174,7 @@ public class UnitAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response search(
+    public Response searchUnits(
             @ApiParam(value = "Name regex pattern") @QueryParam("name") String namePattern,
             @ApiParam(value = "Comment regex pattern") @QueryParam("comment") String commentPattern,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("orderBy") List<OrderBy> orderByList,

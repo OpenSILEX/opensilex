@@ -5,8 +5,6 @@
 //******************************************************************************
 package org.opensilex.dev;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
@@ -25,7 +23,6 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.ServiceLoader;
 import javax.mail.internet.InternetAddress;
 import opensilex.service.PhisPostgreSQLConfig;
@@ -311,6 +308,6 @@ public class Install {
         UserDAO userDAO = new UserDAO(sparql, authentication);
 
         InternetAddress email = new InternetAddress("admin@opensilex.org");
-        userDAO.create(null, email, "Admin", "OpenSilex", true, "admin");
+        userDAO.create(null, email, "Admin", "OpenSilex", true, "admin", "en-US");
     }
 }

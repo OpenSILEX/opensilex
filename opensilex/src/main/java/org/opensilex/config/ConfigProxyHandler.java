@@ -61,6 +61,7 @@ public class ConfigProxyHandler implements InvocationHandler {
         return nodeToObject(method.getGenericReturnType(), key, rootNode, method);
     }
 
+    @SuppressWarnings("unchecked")
     private Object nodeToObject(Type type, String key, JsonNode node, Method method) throws InvalidConfigException {
         Object result;
 
@@ -310,7 +311,7 @@ public class ConfigProxyHandler implements InvocationHandler {
         return result;
     }
 
-    private List getList(Type genericParameter, JsonNode value, Method method) throws IOException, InvalidConfigException {
+    private List<?> getList(Type genericParameter, JsonNode value, Method method) throws IOException, InvalidConfigException {
         List<Object> list = new ArrayList<>();
 
         JsonNode currentValue = value;
@@ -332,6 +333,7 @@ public class ConfigProxyHandler implements InvocationHandler {
         return list;
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T getInterface(Class<T> interfaceClass, String key, JsonNode node) {
         return (T) Proxy.newProxyInstance(OpenSilex.getClassLoader(),
                 new Class<?>[]{interfaceClass},
@@ -339,7 +341,7 @@ public class ConfigProxyHandler implements InvocationHandler {
         );
     }
 
-    private Map getMap(Type genericParameter, JsonNode value, Method method) throws InvalidConfigException, IOException {
+    private Map<?,?> getMap(Type genericParameter, JsonNode value, Method method) throws InvalidConfigException, IOException {
         Map<String, Object> map = new HashMap<>();
 
         JsonNode currentValue = value;
@@ -374,12 +376,13 @@ public class ConfigProxyHandler implements InvocationHandler {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private <T extends Service> T getService(Class<T> serviceClass, JsonNode value, Method method) throws InvalidConfigException {
 
         try {
             ServiceConfig defaultConfig = Service.getDefaultConfig(serviceClass);
             String serviceName = method.getName();
-            ServiceConfig overrideConfig = getInterface(ServiceConfig.class, serviceName, value);
+            ServiceConfig overrideConfig = getInterface(ServiceConfig.class, "", value);
 
             T instance;
             Class<T> implementation = (Class<T>) defaultConfig.implementation();
@@ -464,7 +467,7 @@ public class ConfigProxyHandler implements InvocationHandler {
                     try {
                         Constructor<T> constructorWithConnection = ClassUtils.getConstructorWithParameterImplementing(implementation, ServiceConnection.class);
                         if (constructorWithConnection != null) {
-                            instance = (T) constructorWithConnection.newInstance(connection);
+                            instance = constructorWithConnection.newInstance(connection);
                         } else {
                             String errorMessage = "No valid constructor found for service with connection: " + serviceName + " - " + connectionClass.getName();
                             LOGGER.error(errorMessage);
@@ -508,7 +511,7 @@ public class ConfigProxyHandler implements InvocationHandler {
                 }
             } else if (hasEmptyConstructor) {
                 try {
-                    instance = (T) implementation.getConstructor().newInstance();
+                    instance = implementation.getConstructor().newInstance();
                 } catch (Exception ex) {
                     LOGGER.error("Error while creating service with no parameters: " + serviceName);
                     throw ex;

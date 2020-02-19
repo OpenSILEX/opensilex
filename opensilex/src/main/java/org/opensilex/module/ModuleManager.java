@@ -17,8 +17,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.function.Consumer;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.OpenSilex;
@@ -50,7 +52,6 @@ public class ModuleManager {
      * Dependencies cache file to avoid unneeded multiple downloads
      */
     private final static String DEPENDENCIES_LIST_CACHE_FILE = ".opensilex.dependencies";
-
     /**
      * Subfolder where JAR modules are located
      */
@@ -64,18 +65,25 @@ public class ModuleManager {
      */
     public void loadModulesWithDependencies(DependencyManager dependencyManager, Path baseDirectory) {
         // Read existing dependencies from cache file
-        List<URL> readDependencies = ModuleManager.readDependenciesList(baseDirectory);
+        Set<URL> readDependencies = ModuleManager.readDependencies(baseDirectory);
 
-        // If no existing dependencies
-        if (readDependencies.size() == 0) {
-            // Get list of modules URL
-            List<URL> modulesUrl = ModuleManager.listModulesURLs(baseDirectory);
+        // Get list of modules URL
+        Set<URL> modulesUrl = ModuleManager.listModulesURLs(baseDirectory);
+
+        // If some modules are not listed in dependencies or no dependencies were read
+        if (!readDependencies.containsAll(modulesUrl)) {
+            // If some modules have not been previously registred
+            List<URL> missingModules = new ArrayList<URL>(modulesUrl);
+            missingModules.removeAll(readDependencies);
 
             // Get modules dependencies and load them
-            List<URL> dependencies = loadModulesWithDependencies(dependencyManager, modulesUrl);
-
-            // Write those dependencies in cache file
-            ModuleManager.writeDependenciesList(baseDirectory, dependencies);
+            Set<URL> dependencies = loadModulesWithDependencies(dependencyManager, modulesUrl);
+            
+            // Rewrite old & new dependencies in cache file
+            dependencies.addAll(readDependencies);
+            ModuleManager.writeDependencies(baseDirectory, dependencies);
+            
+            registerDependencies(readDependencies);
         } else {
             // Otherwise simply register known dependencies
             registerDependencies(readDependencies);
@@ -89,11 +97,11 @@ public class ModuleManager {
      *
      * @return Lsit of JAR dependencies URL
      */
-    private static List<URL> readDependenciesList(Path baseDirectory) {
+    private static Set<URL> readDependencies(Path baseDirectory) {
         try {
             // Check if depndency file exist
             File dependencyFile = baseDirectory.resolve(DEPENDENCIES_LIST_CACHE_FILE).toFile();
-            List<URL> dependencyURLs = new ArrayList<>();
+            Set<URL> dependencyURLs = new HashSet<>();
 
             if (dependencyFile.isFile()) {
                 // If it's a file read all lines and add in the dependencyURLs list
@@ -116,7 +124,7 @@ public class ModuleManager {
      * @param baseDirectory Directory where dependency cache file is.
      * @param dependencies Depndencies JAR URL list.
      */
-    private static void writeDependenciesList(Path baseDirectory, List<URL> dependencies) {
+    private static void writeDependencies(Path baseDirectory, Set<URL> dependencies) {
         try {
             File dependencyFile = baseDirectory.resolve(DEPENDENCIES_LIST_CACHE_FILE).toFile();
             if (dependencies.size() > 0) {
@@ -144,10 +152,10 @@ public class ModuleManager {
      * @param modulesJarURLs List of module JAR URLs
      * @return List of all dependencies for modules and the modules themselves
      */
-    private List<URL> loadModulesWithDependencies(DependencyManager dependencyManager, List<URL> modulesJarURLs) {
+    private Set<URL> loadModulesWithDependencies(DependencyManager dependencyManager, Set<URL> modulesJarURLs) {
         try {
             // Load module dependencies and get the list
-            List<URL> dependenciesURL = dependencyManager.loadModulesDependencies(modulesJarURLs);
+            Set<URL> dependenciesURL = dependencyManager.loadModulesDependencies(modulesJarURLs);
             dependenciesURL.addAll(modulesJarURLs);
 
             // Register all dependencies and modules
@@ -166,7 +174,7 @@ public class ModuleManager {
      *
      * @param dependenciesURL List of dependencies to register
      */
-    private void registerDependencies(List<URL> dependenciesURL) {
+    private void registerDependencies(Set<URL> dependenciesURL) {
         if (LOGGER.isDebugEnabled()) {
             dependenciesURL.forEach((dependencyURL) -> {
                 LOGGER.debug("Loaded dependency: " + dependencyURL.toString());
@@ -227,7 +235,7 @@ public class ModuleManager {
      * @param baseDirectory Directory to look in
      * @return List of modules JAR URL found
      */
-    private static List<URL> listModulesURLs(Path baseDirectory) {
+    private static Set<URL> listModulesURLs(Path baseDirectory) {
         // Find the subdirectory
         File modulesDirectory = baseDirectory.resolve(MODULES_JAR_FOLDER).toFile();
 
@@ -237,9 +245,10 @@ public class ModuleManager {
         LOGGER.debug("Start listing jar module files in directory: " + modulesDirectory.getPath());
 
         // Filter all JAR found
-        List<URL> modulesJarURLs = new ArrayList<>();
+        Set<URL> modulesJarURLs = new HashSet<>();
         if (modulesList != null) {
             for (File moduleFile : modulesList) {
+                LOGGER.debug("Module found: " + moduleFile.getName());
                 URL jarURL = getModuleURLFromFile(moduleFile);
                 if (jarURL != null) {
                     modulesJarURLs.add(jarURL);
@@ -283,6 +292,7 @@ public class ModuleManager {
      * @param serviceManager Service manager to use
      * @throws Exception rethrow exceptions on service registring
      */
+    @SuppressWarnings("unchecked")
     public void registerServices(ServiceManager serviceManager) throws Exception {
         this.services = serviceManager;
         // Iterate over modules
@@ -299,8 +309,9 @@ public class ModuleManager {
                             // Get service instance from configuration
                             Service service = (Service) m.invoke(moduleConfig);
                             service.setModule(module);
+                            Class<? extends Service> serviceInterface = (Class<? extends Service>) m.getReturnType();
                             // Register service instance
-                            services.register(service.getClass(), m.getName(), service);
+                            services.register(serviceInterface, m.getName(), service);
                         }
                     } catch (Exception ex) {
                         LOGGER.error("Fail to load service: " + m.getName() + " in module config: " + module.getConfigId(), ex);
@@ -337,7 +348,7 @@ public class ModuleManager {
 
     /**
      * Shutdown all modules and their services
-     * 
+     *
      * @throws Exception In case of error during moduules shutdown
      */
     public void shutdown() throws Exception {
@@ -359,6 +370,7 @@ public class ModuleManager {
      * @param extensionInterface Interface class
      * @return List of found modules as T interface
      */
+    @SuppressWarnings("unchecked")
     public <T> List<T> getModulesImplementingInterface(Class<T> extensionInterface) {
         List<T> modules = new ArrayList<>();
         forEachModule((OpenSilexModule m) -> {
@@ -401,6 +413,7 @@ public class ModuleManager {
      * @return Module instance
      * @throws ModuleNotFoundException Throw exception if module is not found
      */
+    @SuppressWarnings("unchecked")
     public <T extends OpenSilexModule> T getModuleByClass(Class<T> moduleClass) throws ModuleNotFoundException {
         for (OpenSilexModule module : getModules()) {
             if (module.getClass().equals(moduleClass)) {

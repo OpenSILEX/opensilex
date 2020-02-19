@@ -7,12 +7,12 @@
         "build": "vue-cli-service build",
         "lint": "vue-cli-service lint",
         "check:outdated": "yarn outdated || cd .",
-        "build:types": "dts-generator --project ./ --out ./types/opensilex-front.d.ts --prefix opensilex-front"
+        "check:security": "yarn audit || cd ."
     },
     "dependencies": {
         "@kazupon/vue-i18n-loader": "0.5.0",
         "bootstrap": "^4.4.1",
-        "bootstrap-vue": "2.3.0",
+        "bootstrap-vue": "2.4.1",
         "css-loader": "3.4.2",
         "d3": "5.15.0",
         "icon-kit": "^1.0.0",
@@ -27,15 +27,15 @@
         "vuejs-logger": "1.10.2"
     },
     "devDependencies": {
-        "@vue/cli-plugin-babel": "4.1.2",
-        "@vue/cli-plugin-eslint": "4.1.2",
-        "@vue/cli-plugin-router": "4.1.2",
-        "@vue/cli-plugin-typescript": "4.1.2",
-        "@vue/cli-plugin-vuex": "4.1.2",
-        "@vue/cli-service": "4.1.2",
+        "@vue/cli-plugin-babel": "4.2.2",
+        "@vue/cli-plugin-eslint": "4.2.2",
+        "@vue/cli-plugin-router": "4.2.2",
+        "@vue/cli-plugin-typescript": "4.2.2",
+        "@vue/cli-plugin-vuex": "4.2.2",
+        "@vue/cli-service": "4.2.2",
         "@vue/eslint-config-typescript": "^5.0.1",
         "simple-progress-webpack-plugin": "^1.1.2",
-        "yargs-parser": "^16.1.0"
+        "yargs-parser": "17.0.0"
     },
     "eslintConfig": {
         "root": true,

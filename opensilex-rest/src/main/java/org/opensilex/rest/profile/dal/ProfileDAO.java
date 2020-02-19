@@ -15,7 +15,8 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.rest.authentication.SecurityOntology;
-import org.opensilex.rest.group.dal.GroupModel;
+import org.opensilex.rest.group.dal.GroupUserProfileModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -54,7 +55,17 @@ public class ProfileDAO {
     }
 
     public void delete(URI instanceURI) throws Exception {
-        sparql.delete(ProfileModel.class, instanceURI);
+        try {
+            sparql.startTransaction();
+            // Delete existing user profile group relations
+            sparql.deleteByObjectRelation(GroupUserProfileModel.class, GroupUserProfileModel.PROFILE_FIELD, instanceURI);
+            // Delete user
+            sparql.delete(ProfileModel.class, instanceURI);
+            sparql.commitTransaction();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction();
+            throw ex;
+        }
     }
 
     public ProfileModel update(
@@ -111,13 +122,13 @@ public class ProfileDAO {
                 (SelectBuilder select) -> {
                     SPARQLClassObjectMapper<SPARQLResourceModel> profileMapper = SPARQLClassObjectMapper.getForClass(ProfileModel.class);
                     Var profileURIVar = profileMapper.getURIFieldVar();
-                    Var groupURIVar = makeVar("__groupURI");
+                    Var groupURIVar = makeVar("__userProfileURI");
                     WhereHandler whereHandler = new WhereHandler();
                     whereHandler.addWhere(select.makeTriplePath(groupURIVar, SecurityOntology.hasProfile, profileURIVar));
-                    whereHandler.addWhere(select.makeTriplePath(groupURIVar, SecurityOntology.hasUser, uri));
+                    whereHandler.addWhere(select.makeTriplePath(groupURIVar, SecurityOntology.hasUser,  SPARQLDeserializers.nodeURI(uri)));
 
-                    SPARQLClassObjectMapper<SPARQLResourceModel> groupMapper = SPARQLClassObjectMapper.getForClass(GroupModel.class);
-                    ElementNamedGraph elementNamedGraph = new ElementNamedGraph(groupMapper.getDefaultGraph(), whereHandler.getElement());
+                    SPARQLClassObjectMapper<GroupUserProfileModel> groupUserProfileMapper = SPARQLClassObjectMapper.getForClass(GroupUserProfileModel.class);
+                    ElementNamedGraph elementNamedGraph = new ElementNamedGraph(groupUserProfileMapper.getDefaultGraph(), whereHandler.getElement());
                     select.getWhereHandler().getClause().addElement(elementNamedGraph);
                 }
         );

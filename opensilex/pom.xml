@@ -53,11 +53,9 @@
     <build>
         <!-- include swagger webapp -->
         <resources>
-            <!-- Default resources folder -->
             <resource>
                 <directory>src/main/resources</directory>
             </resource>
-            
             <!-- Define swagger interface resources -->
             <resource>
                 <directory>src/main/webapp</directory>
@@ -75,6 +73,7 @@
                 <version>${versions.maven.plugin.version}</version>
                 <configuration>
                     <rulesUri>file:////${project.basedir}/src/main/resources/version-rules.xml</rulesUri>
+                    <skip>${ignoreMavenPluginVersion}</skip>
                 </configuration>
             </plugin>
             
@@ -143,7 +142,7 @@
 
                         <configuration>
                             <skip>${skipFrontAudit}</skip>
-                            <arguments>audit</arguments>
+                            <arguments>run check:security</arguments>
                             <workingDirectory>../</workingDirectory>
                         </configuration>
                     </execution>
@@ -155,7 +154,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -202,6 +200,8 @@
                                     <exclude>jakarta.el:jakarta.el-api</exclude>
                                     <exclude>org.glassfish:jakarta.el</exclude>
                                     <exclude>javax.annotation:javax.annotation-api</exclude>
+                                    <exclude>org.apache.httpcomponents:httpcore-osgi</exclude>
+                                    <exclude>org.apache.httpcomponents:httpclient-osgi</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>

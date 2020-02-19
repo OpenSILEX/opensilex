@@ -34,6 +34,8 @@ public class GroupUserProfileModel extends SPARQLResourceModel implements ClassU
     )
     private UserModel user;
 
+    public final static String USER_FIELD = "user";
+    
     @SPARQLProperty(
             ontology = SecurityOntology.class,
             property = "hasProfile",
@@ -41,6 +43,8 @@ public class GroupUserProfileModel extends SPARQLResourceModel implements ClassU
     )
     private ProfileModel profile;
 
+    public final static String PROFILE_FIELD = "profile";
+    
     public UserModel getUser() {
         return user;
     }

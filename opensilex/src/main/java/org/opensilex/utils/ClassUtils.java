@@ -16,7 +16,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -25,6 +24,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -285,6 +285,7 @@ public class ClassUtils {
         return projectId;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Constructor<T> getConstructorWithParameterImplementing(Class<T> classToInspect, Class<?> constructorParameterSuperClass) {
         for (Constructor<?> constructor : classToInspect.getConstructors()) {
             if (constructor.getParameterCount() == 1) {
@@ -299,29 +300,26 @@ public class ClassUtils {
 
     private static Reflections reflections;
 
+    private static final Set<URL> REFLECTION_URLS = new HashSet<>();
+
+    public static void addURLToScan(URL url) {
+        reflections = null;
+        REFLECTION_URLS.add(url);
+    }
+
     public static Reflections getReflectionInstance() {
         if (reflections == null) {
-            List<URL> urls = new ArrayList<>();
-            if (OpenSilex.getInstance() != null) {
-                OpenSilex.getInstance().getModules().forEach(module -> {
-                    File jar = getJarFile(module.getClass());
-                    try {
-                        URL url = jar.toURI().toURL();
-                        urls.add(url);
-                    } catch (MalformedURLException ex) {
-                        LOGGER.error("Error in jar file", ex);
-                    }
-                });
+            if (!REFLECTION_URLS.isEmpty()) {
                 reflections = new Reflections(
                         ConfigurationBuilder.build("", OpenSilex.getClassLoader())
-                                .setUrls(urls)
+                                .setUrls(REFLECTION_URLS)
                                 .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
                                 .setExpandSuperTypes(false)
                 );
             } else {
                 reflections = new Reflections(
                         ConfigurationBuilder.build("", OpenSilex.getClassLoader())
-                                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(),  new MethodAnnotationsScanner())
+                                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
                                 .setExpandSuperTypes(false)
                 );
             }

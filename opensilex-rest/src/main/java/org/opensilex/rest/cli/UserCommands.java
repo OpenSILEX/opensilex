@@ -6,39 +6,14 @@
 //******************************************************************************
 package org.opensilex.rest.cli;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.ServiceLoader;
-import java.util.Set;
-import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import org.opensilex.OpenSilex;
 import org.opensilex.cli.help.HelpPrinterCommand;
-import org.opensilex.OpenSilexModule;
 import org.opensilex.cli.OpenSilexCommand;
 import org.opensilex.cli.help.HelpOption;
-import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Parameters;
-import org.opensilex.module.OpenSilexModuleUpdate;
 import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.rest.user.dal.UserModel;
@@ -78,6 +53,7 @@ public class UserCommands extends HelpPrinterCommand implements OpenSilexCommand
             @CommandLine.Option(names = {"--email"}, description = "Define user email", defaultValue = "admin@opensilex.org") String email,
             @CommandLine.Option(names = {"--password"}, description = "Define user password", defaultValue = "admin") String password,
             @CommandLine.Option(names = {"--admin"}, description = "Define if user is admin", defaultValue = "false") boolean isAdmin,
+            @CommandLine.Option(names = {"--lang"}, description = "Define if user default language", defaultValue = OpenSilex.DEFAULT_LANGUAGE) String lang,
             @CommandLine.Mixin HelpOption help
     ) throws Exception {
         
@@ -88,7 +64,7 @@ public class UserCommands extends HelpPrinterCommand implements OpenSilexCommand
 
         UserDAO userDAO = new UserDAO(sparql, authentication);
 
-        UserModel user = userDAO.create(null, new InternetAddress(email), firstName, lastName, isAdmin, password);
+        UserModel user = userDAO.create(null, new InternetAddress(email), firstName, lastName, isAdmin, password, lang);
         
         LOGGER.info("User created: " + user.getUri());
     }

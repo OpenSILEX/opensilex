@@ -144,8 +144,8 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
      * SELECT DISTINCT  ?rdfType ?uri ?label ?brand ?serialNumber ?inServiceDate 
      * ?dateOfPurchase ?personInCharge 
      * WHERE {
-     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
      *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#Vector> . 
+     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
      *      OPTIONAL {
      *          ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?label . 
      *      }
@@ -178,8 +178,8 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
             rdfType = "";
         }
         query.appendSelect("?" + RDF_TYPE);
-        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_VECTOR.toString(), null);
+        query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendAndFilter("REGEX ( str(?" + RDF_TYPE + "),\".*" + rdfType + ".*\",\"i\")");
         
         //URI filter

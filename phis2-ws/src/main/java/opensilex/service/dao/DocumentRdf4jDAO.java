@@ -661,76 +661,74 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
                         document.setUri(bindingSet.getValue(URI).stringValue());
                     }
                 }
-                if(!uriList.contains(document.getUri())){
-                    // See SILEX:info above
-                    if(document.getUri() != null){
-                        if (documentType != null) {
-                            document.setDocumentType(documentType);
-                        } else {
-                            document.setDocumentType(bindingSet.getValue(DOCUMENT_TYPE).stringValue());
-                        }
+                // See SILEX:info above
+                if(document.getUri() != null){
+                    if (documentType != null) {
+                        document.setDocumentType(documentType);
+                    } else {
+                        document.setDocumentType(bindingSet.getValue(DOCUMENT_TYPE).stringValue());
+                    }
 
-                        document.setCreator(bindingSet.getValue(CREATOR).stringValue());
+                    document.setCreator(bindingSet.getValue(CREATOR).stringValue());
 
-                        if (language != null) {
-                            document.setLanguage(language);
-                        } else {
-                            document.setLanguage(bindingSet.getValue(LANGUAGE).stringValue());
-                        }
+                    if (language != null) {
+                        document.setLanguage(language);
+                    } else {
+                        document.setLanguage(bindingSet.getValue(LANGUAGE).stringValue());
+                    }
 
-                        document.setTitle(bindingSet.getValue(TITLE).stringValue());
+                    document.setTitle(bindingSet.getValue(TITLE).stringValue());
 
-                        if (creationDate != null) {
-                            document.setCreationDate(creationDate);
-                        } else {
-                            document.setCreationDate(bindingSet.getValue(CREATION_DATE).stringValue());
-                        }
+                    if (creationDate != null) {
+                        document.setCreationDate(creationDate);
+                    } else {
+                        document.setCreationDate(bindingSet.getValue(CREATION_DATE).stringValue());
+                    }
 
-                        if (format != null) {
-                            document.setFormat(format);
-                        } else {
-                            document.setFormat(bindingSet.getValue(FORMAT).stringValue());
-                        }
+                    if (format != null) {
+                        document.setFormat(format);
+                    } else {
+                        document.setFormat(bindingSet.getValue(FORMAT).stringValue());
+                    }
 
-                        if (status != null) {
-                            document.setStatus(status);
-                        } else {
-                            document.setStatus(bindingSet.getValue(STATUS).stringValue());
-                        }
+                    if (status != null) {
+                        document.setStatus(status);
+                    } else {
+                        document.setStatus(bindingSet.getValue(STATUS).stringValue());
+                    }
 
-                        if (bindingSet.getValue(COMMENTS) != null) {
+                    if (bindingSet.getValue(COMMENTS) != null) {
+                        //SILEX:info
+                        // concat query return a list with comma separated value in one column
+                        //\SILEX:info
+                        ArrayList<String> comments = new ArrayList<>(Arrays.asList(bindingSet.getValue(COMMENTS).stringValue().split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
+                        if (comments != null && !comments.isEmpty()) {
                             //SILEX:info
-                            // concat query return a list with comma separated value in one column
+                            // for now only one comment can be linked to document
                             //\SILEX:info
-                            ArrayList<String> comments = new ArrayList<>(Arrays.asList(bindingSet.getValue(COMMENTS).stringValue().split(SPARQLQueryBuilder.GROUP_CONCAT_SEPARATOR)));
-                            if (comments != null && !comments.isEmpty()) {
-                                //SILEX:info
-                                // for now only one comment can be linked to document
-                                //\SILEX:info
-                                document.setComment(comments.get(0));
-                            } 
-                        }
+                            document.setComment(comments.get(0));
+                        } 
+                    }
 
-                        //Check if document is linked to other elements
-                        SPARQLQueryBuilder sparqlQueryConcernedItem = prepareSearchConcernedItemsQuery(document.getUri());
-                        TupleQuery tupleQueryConcernedItem = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryConcernedItem.toString());
-                        TupleQueryResult resultConcernedItem = tupleQueryConcernedItem.evaluate();
-                        while (resultConcernedItem.hasNext()) {
-                            BindingSet bindingSetConcernedItem = resultConcernedItem.next();
-                            if (bindingSetConcernedItem.getValue(CONCERNED_ITEM_URI) != null) {
-                                ConcernedItemDTO concernedItem = new ConcernedItemDTO();
-                                concernedItem.setTypeURI(bindingSetConcernedItem.getValue(CONCERNED_ITEM_TYPE).stringValue());
-                                concernedItem.setUri(bindingSetConcernedItem.getValue(CONCERNED_ITEM_URI).stringValue());
-                                document.addConcernedItem(concernedItem);
-                            }
-                        }
-
-                        if (canUserSeeDocument(user, document)) {
-                            documents.add(document);
+                    //Check if document is linked to other elements
+                    SPARQLQueryBuilder sparqlQueryConcernedItem = prepareSearchConcernedItemsQuery(document.getUri());
+                    TupleQuery tupleQueryConcernedItem = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryConcernedItem.toString());
+                    TupleQueryResult resultConcernedItem = tupleQueryConcernedItem.evaluate();
+                    while (resultConcernedItem.hasNext()) {
+                        BindingSet bindingSetConcernedItem = resultConcernedItem.next();
+                        if (bindingSetConcernedItem.getValue(CONCERNED_ITEM_URI) != null) {
+                            ConcernedItemDTO concernedItem = new ConcernedItemDTO();
+                            concernedItem.setTypeURI(bindingSetConcernedItem.getValue(CONCERNED_ITEM_TYPE).stringValue());
+                            concernedItem.setUri(bindingSetConcernedItem.getValue(CONCERNED_ITEM_URI).stringValue());
+                            document.addConcernedItem(concernedItem);
                         }
                     }
-                    uriList.add(document.getUri());
+
+                    if (canUserSeeDocument(user, document)) {
+                        documents.add(document);
+                    }
                 }
+                uriList.add(document.getUri());
             }
         }
         return documents;

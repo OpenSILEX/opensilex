@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.ws.rs.core.Response;
+import opensilex.service.PropertiesFileManager;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
@@ -41,6 +42,7 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Data;
+import opensilex.service.model.DataQueryLog;
 
 /**
  * Data DAO.
@@ -66,7 +68,30 @@ public class DataDAO extends MongoDAO<Data> {
     public String provenanceUri;
     public boolean dateSortAsc;
     
+    private Boolean activeLogDataQuery = false;
 
+    public DataDAO() {
+        super();
+        String logDataQuery = PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "logDataQuery");
+        setActiveLogDataQuery(logDataQuery);
+    }
+
+    /**
+     * 
+     * @return 
+     */
+    public Boolean getActiveLogDataQuery() {
+        return activeLogDataQuery;
+    }
+
+    /**
+     * 
+     * @param activeLogDataQuery 
+     */
+    public void setActiveLogDataQuery(String activeLogDataQuery) {
+        this.activeLogDataQuery = Boolean.valueOf(activeLogDataQuery);
+    }
+    
     /**
      * Checks the given list of data.
      * @param dataList
@@ -375,7 +400,13 @@ public class DataDAO extends MongoDAO<Data> {
         query.append(DB_FIELD_VARIABLE, variableUri);
         
         LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
-        
+          // Log access to data log collection
+        if(this.getActiveLogDataQuery()){
+            DataQueryLogDAO dataAccessLogDao = new DataQueryLogDAO();
+            dataAccessLogDao.user = this.user;
+            dataAccessLogDao.remoteUserAdress = this.remoteUserAdress;
+            dataAccessLogDao.insert(query);
+        }
         return query;
     }
 
@@ -468,6 +499,13 @@ public class DataDAO extends MongoDAO<Data> {
         
         LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
         
+        // Log access to data log collection
+        if(this.getActiveLogDataQuery()){
+            DataQueryLogDAO dataAccessLogDao = new DataQueryLogDAO();
+            dataAccessLogDao.user = this.user;
+            dataAccessLogDao.remoteUserAdress = this.remoteUserAdress;
+            dataAccessLogDao.insert(query);
+        }
         return query;
     }
     
@@ -520,7 +558,7 @@ public class DataDAO extends MongoDAO<Data> {
         MongoCollection<Document> dataVariableCollection = database.getCollection(variableCollection);
         
         // Get the filter query
-        BasicDBObject query = prepareSearchQuery(variableUri, startDate, endDate, objectsUris, provenancesUris);
+        BasicDBObject query = prepareSearchQuery(variableUri, startDate, endDate, objectsUris, provenancesUris);      
         
         // Get paginated documents
         FindIterable<Document> dataMongo = dataVariableCollection.find(query);

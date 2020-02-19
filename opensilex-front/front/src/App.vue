@@ -3,7 +3,7 @@
     <component
       class="header-logo"
       v-bind:is="headerComponent"
-      v-if="user.isLoggedIn() && !disconnected"
+      v-if="user.isLoggedIn() && !disconnected &&!embed"
     ></component>
 
     <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
@@ -14,7 +14,7 @@
       <section id="content-wrapper" v-if="user.isLoggedIn() && !disconnected">
         <component v-if="!embed" v-bind:is="menuComponent"></component>
 
-        <main>
+        <main v-bind:style= "[!embed ? {} : {'margin-top': '0px !important','margin-left':'0px !important'}]">
           <router-view />
         </main>
       </section>

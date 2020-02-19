@@ -130,7 +130,6 @@ public class ScientificAppDAO extends DAO<ScientificAppDescription> {
      * @return list of document metadata
      */
     private ArrayList<Document> listScientificAppMetadataFromTripleStore(String uri) {
-        ArrayList<Document> documentsMetadata = new ArrayList<>();
         DocumentRdf4jDAO documentRdf4jDao = new DocumentRdf4jDAO();
         User userAdmin = new User(DocumentationAnnotation.EXAMPLE_USER_EMAIL);
         documentRdf4jDao.user = userAdmin;
@@ -141,7 +140,7 @@ public class ScientificAppDAO extends DAO<ScientificAppDescription> {
             documentRdf4jDao.uri = uri;
         }
         // Retreive all documents for this specific type
-        documentsMetadata = documentRdf4jDao.allPaginate();
+        ArrayList<Document> documentsMetadata = documentRdf4jDao.allPaginate();
         return documentsMetadata;
     }
 }

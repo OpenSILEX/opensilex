@@ -13,6 +13,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.DatatypeConverter;
@@ -137,18 +138,8 @@ public class ScientificAppDescription {
     }
 
     public final void setId(String documentUri) {
-        MessageDigest md;
-        try {
-            md = MessageDigest.getInstance("MD5");
-            md.update(documentUri.getBytes());
-            byte[] digest = md.digest();
-            String idHash = DatatypeConverter
-                    .printHexBinary(digest).toLowerCase();
-            this.id = idHash;
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(ScientificAppDescription.class.getName()).log(Level.SEVERE, null, ex);
-
-        }
+        String uniqueID = UUID.randomUUID().toString();
+        this.id = uniqueID;
     }
 
     @Override

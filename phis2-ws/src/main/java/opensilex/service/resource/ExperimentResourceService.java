@@ -55,13 +55,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import opensilex.service.result.ResultForm;
+import opensilex.service.view.brapi.Status;
 
 /**
  * Experiment resource service.
+ *
  * @update [Morgane Vidal] 31 Oct. 2017: refactor trial to experiment
- * @update [Morgane Vidal] 20 Dec. 2018: add PUT services:
- *                          - experiment/{uri}/variables
- *                          - experiment/{uri}/sensors
+ * @update [Morgane Vidal] 20 Dec. 2018: add PUT services: -
+ * experiment/{uri}/variables - experiment/{uri}/sensors
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/experiments")
@@ -91,15 +93,15 @@ public class ExperimentResourceService extends ResourceService {
     @ApiOperation(value = "Get all experiments corresponding to the searched params given",
             notes = "Retrieve all experiments authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve all experiments", response = Experiment.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
+        @ApiResponse(code = 200, message = "Retrieve all experiments", response = Experiment.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", required = true,
-                    dataType = "string", paramType = "header",
-                    value = DocumentationAnnotation.ACCES_TOKEN,
-                    example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+        @ApiImplicitParam(name = "Authorization", required = true,
+                dataType = "string", paramType = "header",
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExperimentsBySearch(
@@ -137,25 +139,34 @@ public class ExperimentResourceService extends ResourceService {
             // use the new DAO in order to get paginated model List
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
             ListWithPagination<ExperimentModel> resultList = xpDao.search(searchDTO, Collections.emptyList(), page, limit);
-            if (resultList.getList().isEmpty()) {
-                return new ErrorResponse(Response.Status.NOT_FOUND, "No experiment found", "").getResponse();
-            }
+//            if (resultList.getList().isEmpty()) {
+//                return new ErrorResponse(Response.Status.NOT_FOUND, "No experiment found", "").getResponse();
+//            }
 
             // convert model list to dto list
             ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment(new SensorDAO());
-            List<Experiment> xps = new ArrayList<>(resultList.getList().size());
+            ArrayList<Experiment> xps = new ArrayList<>(resultList.getList().size());
             for (ExperimentModel xpModel : resultList.getList()) {
                 xps.add(modelToExperiment.convert(xpModel));
             }
 
             // return paginated response
-            ListWithPagination<Experiment> resultDTOList = new ListWithPagination<>(xps, resultList.getPage(), resultList.getPageSize(), resultList.getTotal());
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
+            ArrayList<Status> statusList = new ArrayList<>();
+            ResultForm<Experiment> getResponse;
+            if (xps.isEmpty()) { //Request failure || No result found
+                getResponse = new ResultForm<Experiment>(0, 0, xps, true);
+                return noResultFound(getResponse, statusList);
+            } else { //Results
+
+                getResponse = new ResultForm<>(resultList.getPageSize(), resultList.getPage(), xps, true, resultList.getTotal());
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
+
         } catch (Exception e) {
             return new ErrorResponse(e).getResponse();
         }
     }
-
 
     /**
      * Get an experiment.
@@ -170,16 +181,16 @@ public class ExperimentResourceService extends ResourceService {
     @ApiOperation(value = "Get an experiment",
             notes = "Retrieve an experiment. Need URL encoded experiment URI (Unique resource identifier).")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve an experiment.", response = Experiment.class),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+        @ApiResponse(code = 200, message = "Retrieve an experiment.", response = Experiment.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", required = true,
-                    dataType = "string", paramType = "header",
-                    value = DocumentationAnnotation.ACCES_TOKEN,
-                    example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+        @ApiImplicitParam(name = "Authorization", required = true,
+                dataType = "string", paramType = "header",
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExperimentDetail(
@@ -214,16 +225,16 @@ public class ExperimentResourceService extends ResourceService {
     @ApiOperation(value = "Post a experiment",
             notes = "Register a new experiment in the database")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Experiment saved", response = ResponseFormPOST.class),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+        @ApiResponse(code = 201, message = "Experiment saved", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", required = true,
-                    dataType = "string", paramType = "header",
-                    value = DocumentationAnnotation.ACCES_TOKEN,
-                    example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+        @ApiImplicitParam(name = "Authorization", required = true,
+                dataType = "string", paramType = "header",
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -270,23 +281,22 @@ public class ExperimentResourceService extends ResourceService {
     @PUT
     @ApiOperation(value = "Update experiment")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Experiment updated", response = ResponseFormPOST.class),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 404, message = "Experiment not found"),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+        @ApiResponse(code = 200, message = "Experiment updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 404, message = "Experiment not found"),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", required = true,
-                    dataType = "string", paramType = "header",
-                    value = DocumentationAnnotation.ACCES_TOKEN,
-                    example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+        @ApiImplicitParam(name = "Authorization", required = true,
+                dataType = "string", paramType = "header",
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putExperiment(
             @ApiParam(value = DocumentationAnnotation.EXPERIMENT_POST_DATA_DEFINITION) @Valid ArrayList<ExperimentDTO> experiments,
             @Context HttpServletRequest context) {
-
 
         if (experiments == null || experiments.isEmpty()) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "No experiments provided", "").getResponse();
@@ -326,43 +336,28 @@ public class ExperimentResourceService extends ResourceService {
      * @param experimentURI
      * @param context
      * @return the result
-     * @example [
-     * "http://www.opensilex.fr/platform/id/variables/v001",
-     * "http://www.opensilex.fr/platform/id/variables/v003"
-     * ]
-     * @example {
-     * "metadata": {
-     * "pagination": null,
-     * "status": [
-     * {
-     * "message": "Resources updated",
-     * "exception": {
-     * "type": "Info",
-     * "href": null,
-     * "details": "The experiment http://www.opensilex.fr/platform/OSL2015-1 has now 2 linked variables"
-     * }
-     * }
-     * ],
-     * "datafiles": [
-     * "http://www.opensilex.fr/platform/OSL2015-1"
-     * ]
-     * }
-     * }
+     * @example [ "http://www.opensilex.fr/platform/id/variables/v001",
+     * "http://www.opensilex.fr/platform/id/variables/v003" ]
+     * @example { "metadata": { "pagination": null, "status": [ { "message":
+     * "Resources updated", "exception": { "type": "Info", "href": null,
+     * "details": "The experiment http://www.opensilex.fr/platform/OSL2015-1 has
+     * now 2 linked variables" } } ], "datafiles": [
+     * "http://www.opensilex.fr/platform/OSL2015-1" ] } }
      */
     @PUT
     @Path("{uri}/variables")
     @ApiOperation(value = "Update the observed variables of an experiment")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Measured observed variables of the experiment updated", response = ResponseFormPOST.class),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+        @ApiResponse(code = 201, message = "Measured observed variables of the experiment updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                    dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                    value = DocumentationAnnotation.ACCES_TOKEN,
-                    example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -410,42 +405,27 @@ public class ExperimentResourceService extends ResourceService {
      * @param uri
      * @param context
      * @return the query result
-     * @example [
-     * "http://www.phenome-fppn.fr/opensilex/2018/s18001"
-     * ]
-     * @example {
-     * "metadata": {
-     * "pagination": null,
-     * "status": [
-     * {
-     * "message": "Resources updated",
-     * "exception": {
-     * "type": "Info",
-     * "href": null,
-     * "details": "The experiment http://www.opensilex.fr/platform/OSL2018-1 has now 1 linked sensors"
-     * }
-     * }
-     * ],
-     * "datafiles": [
-     * "http://www.opensilex.fr/platform/OSL2015-1"
-     * ]
-     * }
-     * }
+     * @example [ "http://www.phenome-fppn.fr/opensilex/2018/s18001" ]
+     * @example { "metadata": { "pagination": null, "status": [ { "message":
+     * "Resources updated", "exception": { "type": "Info", "href": null,
+     * "details": "The experiment http://www.opensilex.fr/platform/OSL2018-1 has
+     * now 1 linked sensors" } } ], "datafiles": [
+     * "http://www.opensilex.fr/platform/OSL2015-1" ] } }
      */
     @PUT
     @Path("{uri}/sensors")
     @ApiOperation(value = "Update the sensors which participates in an experiment")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "The list of sensors which participates in the experiment updated", response = ResponseFormPOST.class),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+        @ApiResponse(code = 201, message = "The list of sensors which participates in the experiment updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                    dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                    value = DocumentationAnnotation.ACCES_TOKEN,
-                    example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

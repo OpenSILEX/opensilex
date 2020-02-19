@@ -318,7 +318,6 @@ public class GroupDAO extends PhisDAO<Group, GroupDTO> {
         return groupUsers;
     }
     
-    @Override
     public ArrayList<Group> allPaginate() {
         ResultSet queryResult = null;
         Connection connection = null;

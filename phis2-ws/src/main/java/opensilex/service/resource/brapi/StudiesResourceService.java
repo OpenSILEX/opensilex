@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -56,6 +57,7 @@ import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.BrapiMultiResponseForm;
 import opensilex.service.view.brapi.form.BrapiSingleResponseForm;
+import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,6 +73,9 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
     
     final static Logger LOGGER = LoggerFactory.getLogger(StudiesResourceService.class);
        
+    @Inject
+    private SPARQLService sparql;
+    
     /**
      * Overriding BrapiCall method
      * @date 27 Aug 2018
@@ -654,7 +659,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiParam(value = "observationLevel", example = "Plot" ) @QueryParam("observationLevel") String  observationLevel,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
-    ) throws SQLException {           
+    ) throws SQLException, Exception {           
 
         ArrayList<Status> statusList = new ArrayList<>();                  
 
@@ -671,8 +676,9 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         experimentDAO.setPageSize(1);
         experimentDAO.user = userSession.getUser();
         
-        if (!experimentDAO.allPaginate().isEmpty()) {
-            Experiment experiment = experimentDAO.allPaginate().get(0);
+        ArrayList<Experiment> expe = experimentDAO.allPaginate(sparql);
+        if (!expe.isEmpty()) {
+            Experiment experiment = expe.get(0);
             ArrayList<BrapiObservationUnitDTO> observationUnits= getObservationUnitsResult(scientificObjects,experiment);
 
             if (observationUnits.isEmpty()) {
@@ -684,7 +690,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             }  
             
         } else {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, experimentDAO.allPaginate(), true);
+            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, expe, true);
             return noResultFound(getResponse, statusList);
         }        
 

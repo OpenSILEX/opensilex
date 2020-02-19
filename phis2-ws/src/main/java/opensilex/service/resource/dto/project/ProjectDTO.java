@@ -8,12 +8,17 @@
 package opensilex.service.resource.dto.project;
 
 import io.swagger.annotations.ApiModelProperty;
+import java.net.URI;
+import java.time.format.DateTimeFormatter;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.FinancialFunding;
 import opensilex.service.model.Project;
 import opensilex.service.resource.ProjectResourceService;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDTO;
+import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * This class is the project DTO for the get project by search.
@@ -56,7 +61,34 @@ public class ProjectDTO extends AbstractVerifiedClass {
         
         if (project.getFinancialFunding() != null) {
             FinancialFunding financialFundingObject = project.getFinancialFunding();
-            financialFunding = new RdfResourceDTO(financialFundingObject.getUri(), financialFundingObject.getLabel());
+            financialFunding = new RdfResourceDTO(financialFundingObject.getUri().toString(), financialFundingObject.getLabel());
+        }
+    }
+
+    public ProjectDTO(ProjectModel project, SPARQLService sparql) throws Exception {
+        uri = project.getUri().toString();
+        name = project.getName();
+        shortname = project.getShortname();
+
+        description = project.getDescription();
+        startDate = project.getStartDate().format(DateTimeFormatter.ISO_DATE);
+        endDate = project.getEndDate().format(DateTimeFormatter.ISO_DATE);
+        homePage = project.getHomePage().toString();
+        objective = project.getObjective();
+        
+        String financialFundingURI = null;
+        for (SPARQLModelRelation modelRelation : project.getRelations() ){
+            if (modelRelation.getProperty().equals(ProjectResourceService.hasFinancialFunding)) {
+                financialFundingURI = modelRelation.getValue();
+            }
+            if (modelRelation.getProperty().equals(ProjectResourceService.hasFinancialReference)) {
+                financialReference = modelRelation.getValue();
+            }
+        }
+        
+        if (financialFundingURI != null) {
+            FinancialFunding financialFundingModel = sparql.getByURI(FinancialFunding.class , new URI(financialFundingURI));
+            financialFunding = new RdfResourceDTO(financialFundingURI, financialFundingModel.getLabel());
         }
     }
 

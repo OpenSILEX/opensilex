@@ -103,7 +103,6 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
     }
 
     
-    @Override
     public ArrayList<StudyDTO> allPaginate() {
         ResultSet queryResult = null;
         Connection connection = null;

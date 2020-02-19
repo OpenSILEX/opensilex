@@ -537,12 +537,6 @@ public abstract class PostgreSQLDAO<T> extends DAO<T> {
     public abstract T get(ResultSet resultReturnedFromDatabase) throws SQLException;
 
     /**
-     * Gets the paginated results from the query.
-     * @return the list of the objects found
-     */
-    public abstract ArrayList<T> allPaginate();
-
-    /**
      * Counts the results returned by the query.
      * @return Integer
      */

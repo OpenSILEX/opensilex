@@ -8,8 +8,11 @@
 package opensilex.service.resource.dto.project;
 
 import io.swagger.annotations.ApiModelProperty;
+import java.net.URI;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import javax.mail.internet.InternetAddress;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.Contact;
@@ -20,13 +23,19 @@ import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
+import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * The DTO for the PUT projects service.
- * @see ProjectResourceService#put(java.util.ArrayList, javax.servlet.http.HttpServletRequest) 
+ *
+ * @see ProjectResourceService#put(java.util.ArrayList,
+ * javax.servlet.http.HttpServletRequest)
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProjectPutDTO extends AbstractVerifiedClass {
+
     //URI of the project to update.
     private String uri;
     //The name of the project.
@@ -56,54 +65,54 @@ public class ProjectPutDTO extends AbstractVerifiedClass {
     private List<String> scientificContacts = new ArrayList<>();
     //The objective of the project.
     private String objective;
-    
+
     @Override
-    public Project createObjectFromDTO() {
+    public Project createObjectFromDTO() throws Exception {
         Project project = new Project();
         project.setUri(uri);
         project.setName(name);
         project.setShortname(shortname);
-        
+
         for (String relatedProjectUri : relatedProjects) {
             Project relatedProject = new Project();
             relatedProject.setUri(relatedProjectUri);
             project.addRelatedProject(relatedProject);
         }
-        
+
         if (financialFunding != null) {
             FinancialFunding financialFundingObject = new FinancialFunding();
-            financialFundingObject.setUri(financialFunding);
+            financialFundingObject.setUri(new URI(financialFunding));
             project.setFinancialFunding(financialFundingObject);
         }
-        
+
         project.setFinancialReference(financialReference);
-        
+
         project.setDescription(description);
         project.setStartDate(startDate);
         project.setEndDate(endDate);
         project.setKeywords(keywords);
         project.setHomePage(homePage);
-        
+
         for (String administrativeContactUri : administrativeContacts) {
             Contact contact = new Contact();
             contact.setUri(administrativeContactUri);
             project.addAdministrativeContact(contact);
         }
-        
+
         for (String coordinatorUri : coordinators) {
             Contact contact = new Contact();
             contact.setUri(coordinatorUri);
             project.addCoordinator(contact);
         }
-        
+
         for (String scientificContactUri : scientificContacts) {
             Contact contact = new Contact();
             contact.setUri(scientificContactUri);
             project.addScientificContact(contact);
         }
-        
+
         project.setObjective(objective);
-        
+
         return project;
     }
 
@@ -134,7 +143,7 @@ public class ProjectPutDTO extends AbstractVerifiedClass {
     public void setName(String name) {
         this.name = name;
     }
-    
+
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_SHORTNAME)
     public String getShortname() {
@@ -152,7 +161,7 @@ public class ProjectPutDTO extends AbstractVerifiedClass {
     public void setRelatedProjects(List<String> relatedProjects) {
         this.relatedProjects = relatedProjects;
     }
-    
+
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_FINANCIAL_URI)
     public String getFinancialFunding() {
         return financialFunding;
@@ -161,7 +170,7 @@ public class ProjectPutDTO extends AbstractVerifiedClass {
     public void setFinancialFunding(String financialFunding) {
         this.financialFunding = financialFunding;
     }
-    
+
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_DESCRIPTION)
     public String getDescription() {
         return description;
@@ -170,7 +179,7 @@ public class ProjectPutDTO extends AbstractVerifiedClass {
     public void setDescription(String description) {
         this.description = description;
     }
-    
+
     @Date(DateFormat.YMD)
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_DATE_START)
@@ -200,7 +209,7 @@ public class ProjectPutDTO extends AbstractVerifiedClass {
     public void setKeywords(List<String> keywords) {
         this.keywords = keywords;
     }
-    
+
     @URL
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_HOME_PAGE)
     public String getHomePage() {
@@ -242,5 +251,65 @@ public class ProjectPutDTO extends AbstractVerifiedClass {
 
     public void setObjective(String objective) {
         this.objective = objective;
+    }
+
+    public ProjectModel getProjectModel(SPARQLService sparql) throws Exception {
+        ProjectModel project = new ProjectModel();
+
+        project.setUri(new URI(this.getUri()));
+
+        project.setName(this.getName());
+        project.setShortname(this.getShortname());
+        project.setDescription(this.getDescription());
+        project.setObjective(this.getObjective());
+
+        project.setStartDate(LocalDate.parse(this.getStartDate()));
+        project.setEndDate(LocalDate.parse(this.getEndDate()));
+
+        project.setKeywords(this.getKeywords());
+        project.setHomePage(new URI(this.getHomePage()));
+
+        List<InternetAddress> addresses = new ArrayList<>();
+        for (String contact : this.getAdministrativeContacts()) {
+            addresses.add(new InternetAddress(contact));
+        }
+        project.setAdministrativeContacts(addresses);
+
+        addresses = new ArrayList<>();
+        for (String contact : this.getCoordinators()) {
+            addresses.add(new InternetAddress(contact));
+        }
+        project.setCoordinators(addresses);
+
+        addresses = new ArrayList<>();
+        for (String contact : this.getScientificContacts()) {
+            addresses.add(new InternetAddress(contact));
+        }
+        project.setScientificContacts(addresses);
+
+        List<URI> uriList = new ArrayList<>();
+        for (String projectUri : this.getRelatedProjects()) {
+            uriList.add(new URI(projectUri));
+        }
+        project.setRelatedProjects(sparql.getListByURIs(ProjectModel.class, uriList));
+
+        ArrayList<SPARQLModelRelation> sparqlRelations = new ArrayList<SPARQLModelRelation>();
+        if (this.getFinancialReference() != null && !this.getFinancialReference().isEmpty()) {
+            SPARQLModelRelation financialRefRelation = new SPARQLModelRelation();
+            financialRefRelation.setProperty(ProjectResourceService.hasFinancialReference);
+            financialRefRelation.setValue(this.getFinancialReference());
+            sparqlRelations.add(financialRefRelation);
+        }
+
+        if (this.getFinancialFunding()!= null && !this.getFinancialReference().isEmpty()) {
+            SPARQLModelRelation financialRefRelation = new SPARQLModelRelation();
+            financialRefRelation.setProperty(ProjectResourceService.hasFinancialFunding);
+            financialRefRelation.setValue(this.getFinancialFunding());
+            financialRefRelation.setType(URI.class);
+            sparqlRelations.add(financialRefRelation);
+        }
+        
+        project.setRelations(sparqlRelations);
+        return project;
     }
 }

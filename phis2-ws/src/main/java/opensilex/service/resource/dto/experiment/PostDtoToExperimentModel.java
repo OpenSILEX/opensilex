@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Renaud COLIN
@@ -67,7 +68,7 @@ public class PostDtoToExperimentModel {
             xpModel.setEndDate(LocalDate.parse(xpPostDto.getEndDate()));
         }
 
-        if (xpPostDto.getCropSpecies() != null) {
+        if (xpPostDto.getCropSpecies() != null && !xpPostDto.getCropSpecies().isEmpty()) {
             Species searchSpecies = new Species();
             searchSpecies.setLabel(xpPostDto.getCropSpecies());
             ArrayList<Species> daoSpecies = speciesDAO.searchWithFilter(searchSpecies, null);
@@ -80,13 +81,16 @@ public class PostDtoToExperimentModel {
 
         if (xpPostDto.getProjectsUris() != null) {
 
+            List<ProjectModel> projects = new ArrayList<>();
             for (String projectURI : xpPostDto.getProjectsUris()) {
                 ProjectModel projectModel = projectDAO.get(new URI(projectURI));
                 if (projectModel == null) {
                     throw new IllegalArgumentException("Unknown project URI :" + projectURI);
                 }
-                xpModel.getProjects().add(projectModel);
+                projects.add(projectModel);
             }
+            
+            xpModel.setProjects(projects);
         }
 
         if (xpPostDto.getContacts() != null) {

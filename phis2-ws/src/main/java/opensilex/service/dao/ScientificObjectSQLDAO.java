@@ -216,7 +216,6 @@ public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, Object> {
         return scientificObject;
     }
 
-    @Override
     public ArrayList<ScientificObject> allPaginate() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

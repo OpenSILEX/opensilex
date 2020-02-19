@@ -7,6 +7,7 @@
 //******************************************************************************
 package opensilex.service.dao;
 
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,6 +40,9 @@ import opensilex.service.model.ContactPostgreSQL;
 import opensilex.service.model.Group;
 import opensilex.service.model.Experiment;
 import opensilex.service.model.Project;
+import org.opensilex.core.project.dal.ProjectDAO;
+import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Experiment DAO for a relational database. 
@@ -248,8 +252,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
         return experiments;
     }
 
-    @Override
-    public ArrayList<Experiment> allPaginate() {
+    public ArrayList<Experiment> allPaginate(SPARQLService sparql) throws Exception {
         ResultSet queryResult = null;
         Connection connection = null;
         Statement statement = null;
@@ -286,7 +289,7 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
             //SILEX:dbjoin
             experiments = getExperimentsContacts(experiments, statement);
             //\SILEX:dbjoin
-            experiments = getExperimentsProjects(experiments, statement);
+            experiments = getExperimentsProjects(experiments, statement, sparql);
             for (Experiment experiment : experiments) {
                 experiment.setGroupList(this.getExperimentGroups(experiment));
             }
@@ -329,8 +332,8 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
      * experiment
      * @throws SQLException 
      */
-    private ArrayList<Experiment> getExperimentsProjects(ArrayList<Experiment> experiments, Statement statement) 
-            throws SQLException {
+    private ArrayList<Experiment> getExperimentsProjects(ArrayList<Experiment> experiments, Statement statement, SPARQLService sparql) 
+            throws SQLException, Exception {
         for (Experiment experiment : experiments) {
             //1. Get projects linked to the experiment
             SQLQueryBuilder query = new SQLQueryBuilder();
@@ -339,13 +342,14 @@ public class ExperimentSQLDAO extends PhisDAO<Experiment, ExperimentDTO> {
             query.appendANDWhereConditionIfNeeded("trial_uri", experiment.getUri(), "=", null, "tp");
             
             ResultSet queryResult = statement.executeQuery(query.toString());
-            ProjectDAO projectDAO = new ProjectDAO();
+            ProjectDAO projectDAO = new ProjectDAO(sparql);
             while (queryResult.next()) {
                 Project project = new Project();
                 project.setUri(queryResult.getString("project_uri"));
                 
                 //2. Get project shortname
-                project.setShortname(projectDAO.getShortnameFromURI(project.getUri()));
+                ProjectModel model = projectDAO.get(new URI(project.getUri()));
+                project.setShortname(model.getShortname());
                 
                 experiment.addProject(project);
             }

@@ -44,9 +44,11 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.DataDAO;
+import opensilex.service.dao.DataQueryLogDAO;
 import opensilex.service.dao.FileDescriptionDAO;
 import opensilex.service.dao.ProvenanceDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
+import opensilex.service.dao.UserDAO;
 import opensilex.service.dao.VariableDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
@@ -63,10 +65,14 @@ import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Data;
+import opensilex.service.model.DataQueryLog;
 import opensilex.service.model.FileDescription;
+import opensilex.service.model.User;
 import opensilex.service.ontology.Oeso;
+import opensilex.service.resource.dto.data.DataQueryLogSearchDTO;
 import opensilex.service.resource.dto.data.DataSearchDTO;
 import opensilex.service.resource.dto.data.FileDescriptionWebPathPostDTO;
+import org.bson.Document;
 
 /**
  * Data resource service.
@@ -166,6 +172,7 @@ public class DataResourceService extends ResourceService {
      * @param object
      * @param provenance
      * @param dateSortAsc
+     * @param requestContext
      * @return list of the data corresponding to the search params given
      * @example
      * {
@@ -227,10 +234,13 @@ public class DataResourceService extends ResourceService {
         @ApiParam(value = "Search by maximal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("endDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String endDate,
         @ApiParam(value = "Search by object uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("object")  @URL String object,
         @ApiParam(value = "Search by provenance uri", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_URI) @QueryParam("provenance")  @URL String provenance,
-        @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc
+        @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc,
+        @Context HttpServletRequest requestContext
     ) {
         // 1. Initialize dataDAO with parameters
         DataDAO dataDAO = new DataDAO();
+        
+        dataDAO.remoteUserAdress = requestContext.getRemoteAddr();
         
         dataDAO.variableUri = variable;
 
@@ -793,5 +803,103 @@ public class DataResourceService extends ResourceService {
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
+    }
+    
+    /**
+     * Returns the content of the file corresponding to the URI given.No authentication on this service because image file must be accessible directly.
+     * @param pageSize
+     * @param page
+     * @param userUri
+     * @param user
+     * @param startDate
+     * @param endDate
+     * @param dateSortAsc
+     * @return The file content or null with a 404 status if it doesn't exists
+     */
+    @GET
+    @Path("querylog")
+    @ApiOperation(value = "Get data query logs")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve data query logs", response = DataQueryLog.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                          dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                          value = DocumentationAnnotation.ACCES_TOKEN,
+                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+    })
+    @Produces(MediaType.APPLICATION_JSON)  
+    public Response getDataQueryLogSearch(
+        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+        @ApiParam(value = "Search by user uri", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("userUri") @URL String userUri,
+        @ApiParam(value = "Search by minimal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("startDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String startDate,
+        @ApiParam(value = "Search by maximal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("endDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String endDate,
+        @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc
+    ) {
+        
+        ArrayList<DataQueryLogSearchDTO> list = new ArrayList<>();
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResultForm<DataQueryLogSearchDTO> getResponse;
+        
+        DataQueryLogDAO dataDAO = new DataQueryLogDAO();
+         
+       
+        //4. Get count
+        Integer totalCount = dataDAO.count(userUri, startDate, endDate, null);
+        
+        //5. Get data
+        List<DataQueryLog> dataQueryLogList = dataDAO.find(page, pageSize, userUri, startDate, endDate, null);      
+        
+        //6. Get User informations
+        UserDAO userDao = new UserDAO();
+        userDao.setPageSize(300);
+        ArrayList<User> listOfUsers = userDao.allPaginate();
+        
+        //7. Return result
+        if (dataQueryLogList == null) {
+            // Request failure
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else if (dataQueryLogList.isEmpty()) {
+            // No results
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else {
+            // Convert all data object to DTO's
+            for (DataQueryLog queryLog : dataQueryLogList) {
+                User foundUser = this.lookupUser(listOfUsers, queryLog.getUserUri());
+                list.add(
+                    new DataQueryLogSearchDTO(
+                            foundUser,
+                            queryLog.getQuery(),
+                            queryLog.getDate(),
+                            queryLog.getRemoteAdress()
+                    )
+                );
+            }
+            
+            // Return list of DTO
+            getResponse = new ResultForm<>(pageSize, page, list, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
+        }
+    }
+    
+    private User lookupUser(List<User> personList, String userUri) {
+        User foundUser = personList.stream().
+        filter(p -> p.getUri() != null && p.getUri().equals(userUri)).
+        findAny().orElse(null);
+        if(foundUser != null){
+            User returnedUser = new User(foundUser.getEmail());
+            returnedUser.setUri(foundUser.getUri());
+            returnedUser.setFirstName(foundUser.getFamilyName());
+            returnedUser.setFamilyName(foundUser.getFirstName());
+            return returnedUser;
+        }
+        return null;
     }
 }

@@ -603,6 +603,7 @@ public class SPARQLService implements SPARQLConnection, Service {
         
         for (URI uri : oldValues) {
             update.addDelete(g, SPARQLDeserializers.nodeURI(s), p.asNode(), SPARQLDeserializers.nodeURI(uri));
+            update.addWhere(SPARQLDeserializers.nodeURI(s), p.asNode(), SPARQLDeserializers.nodeURI(uri));
         }
         
         update.addInsert(g, SPARQLDeserializers.nodeURI(s), p.asNode(), SPARQLDeserializers.nodeURI(n));

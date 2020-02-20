@@ -1,9 +1,9 @@
 //******************************************************************************
 //                                  DataQueryLogDAO.java
 // SILEX-PHIS
-// Copyright © INRA 2019
-// Creation date: 1 March 2019
-// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Copyright © INRAE 2020
+// Creation date: February 2020
+// Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
 package opensilex.service.dao;
 
@@ -16,6 +16,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
@@ -28,7 +29,7 @@ import opensilex.service.model.Data;
 import opensilex.service.model.DataQueryLog;
 
 /**
- * Data DAO.
+ * DataQueryLogDAO DAO.
  * @author Arnaud Chaleroy
  */
 public class DataQueryLogDAO extends MongoDAO<Data> {
@@ -52,8 +53,6 @@ public class DataQueryLogDAO extends MongoDAO<Data> {
     private final static String QUERY_MAX_DATE_VARIABLE = "$lte";
     private final static String QUERY_MAX_DATE_LABEL = "lte";
 
-
-            
     public String userUri;
     public String startDate;
     public String endDate;
@@ -64,23 +63,19 @@ public class DataQueryLogDAO extends MongoDAO<Data> {
         super();
         this.collection = database.getCollection(DB_COLLECTION_QUERY_LOG);
     }
-
+    
     /**
      * 
-     * @param query useQuery to log
+     * @param query get query map values to log
+     * @param date date of the query
      */
-    public void insert(BasicDBObject query){
+    public void insert(Map<String, Object> query, Date date){
         Document document = new Document();
         document.append(DB_FIELD_USER_IP, this.remoteUserAdress);
         document.append(DB_FIELD_USER_URI, this.user.getUri());
-        String preparedRequest = query.toJson()
-                                    .replace(QUERY_DATE_VARIABLE, QUERY_DATE_LABEL)
-                                    .replace(QUERY_MIN_DATE_VARIABLE, QUERY_MIN_DATE_LABEL)
-                                    .replace(QUERY_MAX_DATE_VARIABLE,  QUERY_MAX_DATE_LABEL);
+        document.append(DB_FIELD_USER_QUERY, query);
+        document.append(DB_FIELD_QUERY_DATE, date);
 
-        document.append(DB_FIELD_USER_QUERY, Document.parse(preparedRequest));
-        Date now = new Date(); 
-        document.append(DB_FIELD_QUERY_DATE, now);
         this.collection.insertOne(document);
     }
     
@@ -132,6 +127,10 @@ public class DataQueryLogDAO extends MongoDAO<Data> {
 
     /**
      * Prepares and returns the AccessLog search useQuery with the given parameters.
+     * @param userUri
+     * @param startDate
+     * @param endDate
+     * @param remoteAddress
      * @return The AccessLog search useQuery
      * @example
      *  {
@@ -185,6 +184,10 @@ public class DataQueryLogDAO extends MongoDAO<Data> {
 
     /**
     * Gets AccessLog count according to the prepareSearchQuery.
+     * @param userUri
+     * @param startDate
+     * @param endDate
+     * @param remoteAddress
     * @return the AccessLog count
     */
     public int count(String userUri, String startDate, String endDate, String remoteAddress) {

@@ -1,9 +1,9 @@
 //******************************************************************************
 //                            DataResourceService.java
 // SILEX-PHIS
-// Copyright © INRA 2018
-// Creation date: 1 March 2019
-// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Copyright © INRAE 2020
+// Creation date: February 2020
+// Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
 package opensilex.service.resource;
 
@@ -69,14 +69,14 @@ import opensilex.service.model.DataQueryLog;
 import opensilex.service.model.FileDescription;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Oeso;
+import opensilex.service.resource.dto.data.DataLogAccessUserDTO;
 import opensilex.service.resource.dto.data.DataQueryLogSearchDTO;
 import opensilex.service.resource.dto.data.DataSearchDTO;
 import opensilex.service.resource.dto.data.FileDescriptionWebPathPostDTO;
-import org.bson.Document;
 
 /**
  * Data resource service.
- * @Author Vincent Migot <vincent.migot@inra.fr>
+ * @Author Arnaud Charleroy
  */
 @Api("/data")
 @Path("/data")
@@ -239,8 +239,6 @@ public class DataResourceService extends ResourceService {
     ) {
         // 1. Initialize dataDAO with parameters
         DataDAO dataDAO = new DataDAO();
-        
-        dataDAO.remoteUserAdress = requestContext.getRemoteAddr();
         
         dataDAO.variableUri = variable;
 
@@ -866,12 +864,11 @@ public class DataResourceService extends ResourceService {
             return noResultFound(getResponse, statusList);
         } else if (dataQueryLogList.isEmpty()) {
             // No results
-            getResponse = new ResultForm<>(0, 0, list, true, 0);
-            return noResultFound(getResponse, statusList);
+            getResponse = new ResultForm<>(0, 0, list, true, 0); 
         } else {
             // Convert all data object to DTO's
             for (DataQueryLog queryLog : dataQueryLogList) {
-                User foundUser = this.lookupUser(listOfUsers, queryLog.getUserUri());
+                DataLogAccessUserDTO foundUser = this.lookupUser(listOfUsers, queryLog.getUserUri());
                 list.add(
                     new DataQueryLogSearchDTO(
                             foundUser,
@@ -881,20 +878,20 @@ public class DataResourceService extends ResourceService {
                     )
                 );
             }
-            
             // Return list of DTO
             getResponse = new ResultForm<>(pageSize, page, list, true, totalCount);
-            getResponse.setStatus(statusList);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
+            
         }
+        getResponse.setStatus(statusList); 
+        return Response.status(Response.Status.OK).entity(getResponse).build();
     }
     
-    private User lookupUser(List<User> personList, String userUri) {
+    private DataLogAccessUserDTO lookupUser(List<User> personList, String userUri) {
         User foundUser = personList.stream().
         filter(p -> p.getUri() != null && p.getUri().equals(userUri)).
         findAny().orElse(null);
         if(foundUser != null){
-            User returnedUser = new User(foundUser.getEmail());
+            DataLogAccessUserDTO returnedUser = new DataLogAccessUserDTO();
             returnedUser.setUri(foundUser.getUri());
             returnedUser.setFirstName(foundUser.getFamilyName());
             returnedUser.setFamilyName(foundUser.getFirstName());

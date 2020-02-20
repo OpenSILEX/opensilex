@@ -161,6 +161,18 @@
                 </configuration>
             </plugin>
               
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>${maven.pmd.plugin.version}</version>
+                <configuration>
+                    <linkXref>true</linkXref>
+                    <sourceEncoding>utf-8</sourceEncoding>
+                    <minimumTokens>100</minimumTokens>
+                    <targetJdk>${java.compiler.version}</targetJdk>
+                    <aggregate>true</aggregate>
+                </configuration>
+            </plugin>
         </plugins>
     </reporting>
     

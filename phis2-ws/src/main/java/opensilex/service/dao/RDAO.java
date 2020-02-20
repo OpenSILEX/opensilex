@@ -3,7 +3,7 @@
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 27 août 2019
-// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
 package opensilex.service.dao;
 
@@ -18,7 +18,7 @@ import opensilex.service.PropertiesFileManager;
 /**
  * RDAO
  * Interact with an OpenCPUServer 
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Arnaud Charleroy
  */
 public class RDAO {
     static {

@@ -29,6 +29,10 @@ public class ScientificAppDTO extends AbstractVerifiedClass{
      */
     private String documentUri;
     /**
+     * Rdf document date
+     */
+    private String documentCreationDate;
+    /**
      * Scientific application displayed name
      */
     public String display_name;
@@ -62,6 +66,7 @@ public class ScientificAppDTO extends AbstractVerifiedClass{
     public ScientificAppDTO(ScientificAppDescription scientificAppDescription) {
         this.id = scientificAppDescription.getId();
         this.documentUri = scientificAppDescription.getDocumentUri();
+        this.documentCreationDate = scientificAppDescription.getDocumentDate();
         this.display_name = scientificAppDescription.displayName;
         this.description = scientificAppDescription.description;
                 this.container_cmd = scientificAppDescription.containerCmd;

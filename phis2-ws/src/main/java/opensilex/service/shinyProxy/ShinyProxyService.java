@@ -3,7 +3,7 @@
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 5 sept. 2019
-// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
 package opensilex.service.shinyProxy;
 
@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 /**
  * ShinyProxyService
  * Manage the link with ShinyProxy Service
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Arnaud Charleroy
  */
 public class ShinyProxyService {
 
@@ -62,9 +62,6 @@ public class ShinyProxyService {
     public final static String SHINYPROXY_APP_DOCTYPE = "http://www.opensilex.org/vocabulary/oeso#ShinyAppPackage";
     public static ArrayList<ScientificAppDescription> SHINYPROXY_APPS_LIST;
 
-    /**
-     *
-     */
     public ShinyProxyService() {
         // Initialize directory variables
         setConstantsVariables();

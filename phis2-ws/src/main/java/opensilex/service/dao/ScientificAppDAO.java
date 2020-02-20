@@ -3,7 +3,7 @@
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 15 sept. 2019
-// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
 package opensilex.service.dao;
 
@@ -25,7 +25,7 @@ import static opensilex.service.shinyProxy.ShinyProxyService.SHINYPROXY_APP_DOCT
 /**
  * ScientificAppDAO
  * Manage Scientific applications in R or Python
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Arnaud Charleroy
  */
 public class ScientificAppDAO extends DAO<ScientificAppDescription> {
 
@@ -116,6 +116,7 @@ public class ScientificAppDAO extends DAO<ScientificAppDescription> {
         for (Document documentMetadata : documentsMetadata) {
             ScientificAppDescription shinyAppDescription = new ScientificAppDescription(
                     documentMetadata.getUri(),
+                    documentMetadata.getCreationDate(),
                     documentMetadata.getTitle(),
                     documentMetadata.getComment(),
                     sessionId);

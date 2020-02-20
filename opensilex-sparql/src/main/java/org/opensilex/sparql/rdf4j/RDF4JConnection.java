@@ -16,17 +16,11 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.BooleanQuery;
-import org.eclipse.rdf4j.query.GraphQuery;
-import org.eclipse.rdf4j.query.GraphQueryResult;
-import org.eclipse.rdf4j.query.QueryLanguage;
-import org.eclipse.rdf4j.query.QueryResult;
-import org.eclipse.rdf4j.query.TupleQuery;
-import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.Update;
+import org.eclipse.rdf4j.query.*;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLConnection;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLStatement;
@@ -128,6 +122,19 @@ public class RDF4JConnection implements SPARQLConnection {
     public void clearGraph(URI graph) throws SPARQLQueryException {
         rdf4JConnection.clear(SimpleValueFactory.getInstance().createIRI(graph.toString()));
     }
+
+    @Override
+    public void renameGraph(URI oldGraphURI, URI newGraphURI) throws SPARQLException {
+
+        try {
+            String moveQuery = "MOVE <" + oldGraphURI + "> TO <" + newGraphURI+ ">";
+            rdf4JConnection.prepareUpdate(QueryLanguage.SPARQL, moveQuery).execute();
+
+        } catch (UpdateExecutionException | RepositoryException | MalformedQueryException e) {
+            throw new SPARQLException(e);
+        }
+    }
+
 
     @Override
     public void clear() throws SPARQLQueryException {

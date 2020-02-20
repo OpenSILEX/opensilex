@@ -221,6 +221,12 @@ public class SPARQLService implements SPARQLConnection, Service {
     }
 
     @Override
+    public void renameGraph(URI oldGraphURI, URI newGraphURI) throws SPARQLException {
+        LOGGER.debug("MOVE GRAPH "+oldGraphURI+" TO "+newGraphURI);
+        connection.renameGraph(oldGraphURI,newGraphURI);
+    }
+
+    @Override
     public void clear() throws SPARQLQueryException {
         LOGGER.debug("SPARQL CLEAR REPOSITORY");
         connection.clear();

@@ -163,9 +163,14 @@ public class ShinyProxyService {
 
         Map<String, Object> proxy = (Map) parsedYAMLFile.get("proxy");
         ArrayList<Map> specs = new ArrayList<>();
+        // 20-02-2020 : applicationIds => Fix due to duplicate triplestore document metadata issues
+        ArrayList<String> applicationIds = new ArrayList<>();
         for (ScientificAppDescription shinyAppDescription : SHINYPROXY_APPS_LIST) {
             if (shinyAppDescription.getExtractDockerFilesState()) {
-                specs.add(shinyAppDescription.convertToYamlFormatMap());
+                if(!applicationIds.contains(shinyAppDescription.getId())){
+                    specs.add(shinyAppDescription.convertToYamlFormatMap());
+                    applicationIds.add(shinyAppDescription.getId());
+                }
             }
         }
         proxy.put("specs", specs);

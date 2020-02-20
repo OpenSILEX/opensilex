@@ -1,9 +1,9 @@
 //******************************************************************************
 //                                DataSearchDTO.java
 // SILEX-PHIS
-// Copyright © INRA 2019
-// Creation date: 21 mai 2019
-// Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Copyright © INRAE 2020
+// Creation date: February 2020
+// Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
 package opensilex.service.resource.dto.data;
 
@@ -15,13 +15,13 @@ import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import org.bson.Document;
 
 /**
- * Data search DTO.
+ * Data Query Log SearchDTO.
  * @author Arnaud Charleroy
  */
 public class DataQueryLogSearchDTO extends AbstractVerifiedClass {
     //URI of the data
     //@example http://www.sunagri.fr/sunagri/id/agent/admin_sunagri 
-    protected User user;
+    protected DataLogAccessUserDTO user;
     //Remote address of the user query
     protected String remoteIpAddress; 
     //Variable of the data 
@@ -30,7 +30,7 @@ public class DataQueryLogSearchDTO extends AbstractVerifiedClass {
     //@example 2017-05-21 23:51:00.000Z
     protected String date; 
 
-     public DataQueryLogSearchDTO(User user, Document query, Date date,String remoteAddress ) {
+     public DataQueryLogSearchDTO(DataLogAccessUserDTO user, Document query, Date date,String remoteAddress ) {
         this.user = user;
         this.userQuery = query;
         SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());

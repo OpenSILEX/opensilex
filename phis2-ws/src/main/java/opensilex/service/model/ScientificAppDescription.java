@@ -138,8 +138,17 @@ public class ScientificAppDescription {
     }
 
     public final void setId(String documentUri) {
-        String uniqueID = UUID.randomUUID().toString();
-        this.id = uniqueID;
+          MessageDigest md;
+        try {
+            md = MessageDigest.getInstance("MD5");
+            md.update(documentUri.getBytes());
+            byte[] digest = md.digest();
+            String idHash = DatatypeConverter
+                    .printHexBinary(digest).toLowerCase();
+            this.id = idHash ;
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(ScientificAppDescription.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override

@@ -3,7 +3,7 @@
 // SILEX-PHIS
 // Copyright © INRA 2019
 // Creation date: 9 sept. 2019
-// Contact: arnaud.charleroy@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
 package opensilex.service.model;
 
@@ -13,7 +13,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.DatatypeConverter;
@@ -23,7 +22,7 @@ import opensilex.service.shinyProxy.ShinyProxyService;
 /**
  * ScientificAppDescription
  * Describe a Scientific application
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Arnaud Charleroy
  */
 public class ScientificAppDescription {
     
@@ -35,6 +34,10 @@ public class ScientificAppDescription {
      * Rdf documentUri
      */
     private String documentUri;
+    /**
+     * Rdf document date
+     */
+    private String documentCreationDate;
     /**
      * Scientific application displayed name
      */
@@ -72,8 +75,9 @@ public class ScientificAppDescription {
      */
     public static String containerNetwork = ShinyProxyService.SHINYPROXY_NETWORK_ID; 
 
-    public ScientificAppDescription(String uri, String display_name, String description, String sessionId) {
+    public ScientificAppDescription(String uri, String documentCreationDate, String display_name, String description, String sessionId) {
         this.documentUri = uri;
+        this.documentCreationDate = documentCreationDate;
         setId(uri);
         this.displayName = display_name;
         this.description = description;
@@ -129,6 +133,14 @@ public class ScientificAppDescription {
         return id;
     }
 
+    public String getDocumentDate() {
+        return documentCreationDate;
+    }
+
+    public void setDocumentDate(String documentCreationDate) {
+        this.documentCreationDate = documentCreationDate;
+    }
+    
     public Boolean getExtractDockerFilesState() {
         return extractDockerFilesState;
     }

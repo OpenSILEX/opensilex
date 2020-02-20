@@ -1,10 +1,9 @@
 //******************************************************************************
 //                            DataAnalysisResourceService.java
 // SILEX-PHIS
-// Copyright © INRA 2018
-// Creation date: 18 June 2018
-// Contact: morgane.vidal@inra.fr, arnaud.charleroy@inra.fr, anne.tireau@inra.fr, 
-//          pascal.neveu@inra.fr
+// Copyright © INRA 2019
+// Creation date: 18 June 2019
+// Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
 package opensilex.service.resource;
 
@@ -46,7 +45,7 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 /**
  * DataAnalysis resource service.
  *
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
+ * @author Arnaud Charleroy
  */
 @Api("/dataAnalysis")
 @Path("/dataAnalysis")
@@ -182,7 +181,7 @@ public class DataAnalysisResourceService extends ResourceService {
         }
 
         if (shinyProxyAppDTOList.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseFormGET()).build();
+            return Response.status(Response.Status.OK).entity(new ResponseFormGET()).build();
         }
         return Response
                 .status(Response.Status.OK)

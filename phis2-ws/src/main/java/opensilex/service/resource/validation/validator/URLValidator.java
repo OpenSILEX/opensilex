@@ -9,6 +9,10 @@
 package opensilex.service.resource.validation.validator;
 
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import opensilex.service.resource.validation.interfaces.URL;
@@ -35,11 +39,11 @@ public class URLValidator implements ConstraintValidator<URL, String> {
     }
 
     public static boolean validateURL(String url) {
-        final java.net.URL finalUrl;
+        final URI finalUrl;
         try {
-            finalUrl = new java.net.URL(url);
-        } catch (MalformedURLException e1) {
-            return false;
+            finalUrl = new URI(url);
+        } catch (URISyntaxException ex) {
+             return false;
         }
         return true;
     }

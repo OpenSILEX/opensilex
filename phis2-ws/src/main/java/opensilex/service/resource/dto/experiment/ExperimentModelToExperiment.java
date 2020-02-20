@@ -80,11 +80,11 @@ public class ExperimentModelToExperiment {
 
 
         // convert infrastructure to field
-        if(xp.getInfrastructures().isEmpty()){
+        if(!xp.getInfrastructures().isEmpty()){
             oldXpModel.setField(xp.getInfrastructures().get(0).toString());
         }
         // convert devices to place
-        if(xp.getDevices().isEmpty()){
+        if(!xp.getDevices().isEmpty()){
             oldXpModel.setPlace(xp.getDevices().get(0).toString());
         }
 

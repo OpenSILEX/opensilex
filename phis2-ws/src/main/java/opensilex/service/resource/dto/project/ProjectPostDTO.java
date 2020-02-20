@@ -252,7 +252,9 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
         project.setEndDate(LocalDate.parse(this.getEndDate()));
 
         project.setKeywords(this.getKeywords());
-        project.setHomePage(new URI(this.getHomePage()));
+        if (this.getHomePage() != null && !this.getHomePage().isEmpty()) {
+            project.setHomePage(new URI(this.getHomePage()));
+        }
 
         List<InternetAddress> addresses = new ArrayList<>();
         for (String contact : this.getAdministrativeContacts()) {
@@ -286,7 +288,7 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
             sparqlRelations.add(financialRefRelation);
         }
 
-        if (this.getFinancialFunding() != null && !this.getFinancialReference().isEmpty()) {
+        if (this.getFinancialFunding() != null && !this.getFinancialFunding().isEmpty()) {
             SPARQLModelRelation financialRefRelation = new SPARQLModelRelation();
             financialRefRelation.setProperty(ProjectResourceService.hasFinancialFunding);
             financialRefRelation.setValue(this.getFinancialFunding());

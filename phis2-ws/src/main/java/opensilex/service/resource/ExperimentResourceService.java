@@ -202,14 +202,23 @@ public class ExperimentResourceService extends ResourceService {
             ExperimentDAO dao = new ExperimentDAO(sparql);
             ExperimentModel xpModel = dao.get(experimentURI);
 
+            ArrayList<Status> statusList = new ArrayList<>();
+            ResultForm<Experiment> getResponse;
+
             if (xpModel != null) {
 
                 ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment(new SensorDAO());
-                return new SingleObjectResponse<>(modelToExperiment.convert(xpModel)).getResponse();
+
+                ArrayList<Experiment> xps = new ArrayList<>();
+                xps.add(modelToExperiment.convert(xpModel));
+
+                getResponse = new ResultForm<>(20, 1, xps, true, 1);
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
             } else {
-                return new ErrorResponse(
-                        Response.Status.NOT_FOUND, "Experiment not found", "Unknown Experiment URI: " + experimentURI.toString()
-                ).getResponse();
+                ArrayList<Experiment> xps = new ArrayList<>();
+                getResponse = new ResultForm<Experiment>(0, 0, xps, true);
+                return noResultFound(getResponse, statusList);
             }
         } catch (Exception e) {
             return new ErrorResponse(e).getResponse();
@@ -262,8 +271,20 @@ public class ExperimentResourceService extends ResourceService {
                 xpDao.create(model);
                 createdXpUris.add(model.getUri());
             }
-            return new PaginatedListResponse<>(createdXpUris).getResponse();
 
+            // convert model list to dto list
+            // return paginated response
+            ArrayList<Status> statusList = new ArrayList<>();
+            ResultForm<URI> getResponse;
+            if (createdXpUris.isEmpty()) { //Request failure || No result found
+                getResponse = new ResultForm<URI>(0, 0, new ArrayList<>(createdXpUris), true);
+                return noResultFound(getResponse, statusList);
+            } else { //Results
+
+                getResponse = new ResultForm<>(0, 0, new ArrayList<>(createdXpUris), true, 0);
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
         } catch (IllegalArgumentException | URISyntaxException e) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Bad request", e.getMessage()).getResponse();
         } catch (Exception e) {
@@ -387,7 +408,22 @@ public class ExperimentResourceService extends ResourceService {
 
                 SensorDAO sensorDAO = new SensorDAO();
                 ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment(sensorDAO);
-                return new SingleObjectResponse<>(modelToExperiment.convert(xpModel)).getResponse();
+
+                Experiment xp = modelToExperiment.convert(xpModel);
+                ArrayList<Experiment> xps = new ArrayList<>();
+                xps.add(xp);
+                
+                ArrayList<Status> statusList = new ArrayList<>();
+                ResultForm<Experiment> getResponse;
+                if (xps.isEmpty()) { //Request failure || No result found
+                    getResponse = new ResultForm<Experiment>(0, 0, new ArrayList<>(), true);
+                    return noResultFound(getResponse, statusList);
+                } else { //Results
+
+                    getResponse = new ResultForm<>(0, 0, xps, true, 0);
+                    getResponse.setStatus(statusList);
+                    return Response.status(Response.Status.OK).entity(getResponse).build();
+                }
             } else {
                 return new ErrorResponse(
                         Response.Status.NOT_FOUND, "Experiment not found", "Unknown Experiment URI: " + experimentURI
@@ -447,7 +483,22 @@ public class ExperimentResourceService extends ResourceService {
 
                 SensorDAO sensorDAO = new SensorDAO();
                 ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment(sensorDAO);
-                return new SingleObjectResponse<>(modelToExperiment.convert(xpModel)).getResponse();
+
+                Experiment xp = modelToExperiment.convert(xpModel);
+                ArrayList<Experiment> xps = new ArrayList<>();
+                xps.add(xp);
+                
+                ArrayList<Status> statusList = new ArrayList<>();
+                ResultForm<Experiment> getResponse;
+                if (xps.isEmpty()) { //Request failure || No result found
+                    getResponse = new ResultForm<Experiment>(0, 0, new ArrayList<>(), true);
+                    return noResultFound(getResponse, statusList);
+                } else { //Results
+
+                    getResponse = new ResultForm<>(0, 0, xps, true, 0);
+                    getResponse.setStatus(statusList);
+                    return Response.status(Response.Status.OK).entity(getResponse).build();
+                }
             } else {
                 return new ErrorResponse(
                         Response.Status.NOT_FOUND, "Experiment not found", "Unknown Experiment URI: " + uri

@@ -606,33 +606,6 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
     }
     
     /**
-     * Check if the given user has the right to see the document
-     * @param u the user
-     * @param document
-     * @return true if the user can see the document
-     *         false if not
-     */
-    private boolean canUserSeeDocument(User u, Document document) {
-        UserDAO userDao = new UserDAO();
-        userDao.isAdmin(u);
-        if (u.getAdmin().equals("t") || u.getAdmin().equals("true")) {
-            return true;
-        } else {
-            ExperimentSQLDAO experimentDao = new ExperimentSQLDAO();
-            for (ConcernedItemDTO concernedItem : document.getConcernedItems()) {
-                if (concernedItem.getTypeURI().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
-                    Experiment experiment = new Experiment(concernedItem.getUri());
-                    
-                    if (experimentDao.canUserSeeExperiment(u, experiment)) {
-                        return true;
-                    }
-                } 
-            }
-            return false;
-        }
-    }
-    
-    /**
      * Retreive the list of the searched documents.
      * @return  a list of documents
      */
@@ -722,9 +695,7 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
                         }
                     }
 
-                    if (canUserSeeDocument(user, document)) {
-                        documents.add(document);
-                    }
+                    documents.add(document);
                 }
             }
         }

@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.net.URI;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,7 +36,6 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.DataDAO;
-import opensilex.service.dao.ExperimentSQLDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
 import opensilex.service.dao.VariableDAO;
 import opensilex.service.model.Call;
@@ -57,6 +57,9 @@ import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.BrapiMultiResponseForm;
 import opensilex.service.view.brapi.form.BrapiSingleResponseForm;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -671,15 +674,10 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         ScientificObjectRdf4jDAO scientificObjectsDAO = new ScientificObjectRdf4jDAO();
         ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, observationLevel, studyDbId, null);
 
-        ExperimentSQLDAO experimentDAO = new ExperimentSQLDAO();
-        experimentDAO.uri = studyDbId;
-        experimentDAO.setPageSize(1);
-        experimentDAO.user = userSession.getUser();
-        
-        ArrayList<Experiment> expe = experimentDAO.allPaginate(sparql);
-        if (!expe.isEmpty()) {
-            Experiment experiment = expe.get(0);
-            ArrayList<BrapiObservationUnitDTO> observationUnits= getObservationUnitsResult(scientificObjects,experiment);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql);
+        ExperimentModel xp = experimentDAO.get(new URI(studyDbId));
+        if (xp != null) {
+            ArrayList<BrapiObservationUnitDTO> observationUnits= getObservationUnitsResult(scientificObjects,xp);
 
             if (observationUnits.isEmpty()) {
                 BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observationUnits, true);
@@ -690,7 +688,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             }  
             
         } else {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, expe, true);
+            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, new ArrayList<>(), true);
             return noResultFound(getResponse, statusList);
         }        
 
@@ -816,7 +814,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
      * @param experiment Experiment linked to those scientific objects (user query filter)
      * @return observationUnits list 
      */
-    private ArrayList<BrapiObservationUnitDTO> getObservationUnitsResult(ArrayList<ScientificObject> scientificObjects, Experiment experiment) {
+    private ArrayList<BrapiObservationUnitDTO> getObservationUnitsResult(ArrayList<ScientificObject> scientificObjects, ExperimentModel experiment) {
         SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
         VariableDAO variableDaoSesame = new VariableDAO();
         ArrayList<Variable> variablesList = variableDaoSesame.allPaginate(); 
@@ -828,8 +826,8 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             String unitType[] = rdfUnitType.split("#");
             unit.setObservationLevel(unitType[1]);
             unit.setObservationUnitName(object.getLabel());
-            unit.setStudyDbId(experiment.getUri());
-            unit.setStudyName(experiment.getAlias());
+            unit.setStudyDbId(experiment.getUri().toString());
+            unit.setStudyName(experiment.getLabel());
             ArrayList<BrapiObservationSummaryDTO> observationsPerObsUnit = new ArrayList(); 
             for (Variable variable:variablesList) {
                 //retrieve observations

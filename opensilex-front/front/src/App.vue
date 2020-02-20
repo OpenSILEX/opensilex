@@ -1,9 +1,9 @@
 <template>
-  <div id="page-wrapper" class="wrapper customized">
+  <div id="page-wrapper" class="wrapper customized" v-bind:class="{ embed: embed }">
     <component
       class="header-logo"
       v-bind:is="headerComponent"
-      v-if="user.isLoggedIn() && !disconnected"
+      v-if="user.isLoggedIn() && !disconnected &&!embed"
     ></component>
 
     <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
@@ -168,6 +168,11 @@ main {
 
 .header-top.logged-out {
   box-shadow: none;
+}
+
+.embed main {
+    margin-top: 0px;
+    margin-left: 0px;
 }
 
 </style>

@@ -33,6 +33,9 @@ public class ScientificAppDAO extends DAO<ScientificAppDescription> {
      * User session
      */
     public Session session;
+    public String creationDate;
+    public String name;
+    public String applicationName;
 
     @Override
     public List<ScientificAppDescription> create(List<ScientificAppDescription> objects) throws DAOPersistenceException, Exception {
@@ -136,6 +139,8 @@ public class ScientificAppDAO extends DAO<ScientificAppDescription> {
         documentRdf4jDao.user = userAdmin;
         documentRdf4jDao.documentType = SHINYPROXY_APP_DOCTYPE;
         documentRdf4jDao.sortByDate = "desc";
+        documentRdf4jDao.title = this.applicationName;   
+        documentRdf4jDao.creationDate = creationDate;
         documentRdf4jDao.setPageSize(100);
         if (uri != null) {
             documentRdf4jDao.uri = uri;

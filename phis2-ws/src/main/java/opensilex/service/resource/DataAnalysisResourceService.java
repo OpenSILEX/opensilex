@@ -28,6 +28,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.RDAO;
@@ -38,6 +39,7 @@ import opensilex.service.model.ScientificAppDescription;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
 import opensilex.service.resource.dto.ScientificAppDTO;
+import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.shinyProxy.ShinyProxyService;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
@@ -116,7 +118,7 @@ public class DataAnalysisResourceService extends ResourceService {
         @ApiResponse(code = 200, message = "Server Running"),
         @ApiResponse(code = 201, message = "Server Updating"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 404, message = "Not running"),
+        @ApiResponse(code = 503, message = "Not running"),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
@@ -148,6 +150,8 @@ public class DataAnalysisResourceService extends ResourceService {
     /**
      * Shiny Proxy Server Status
      *
+     * @param name
+     * @param creationDate
      * @param limit
      * @param page
      * @return Response
@@ -170,10 +174,14 @@ public class DataAnalysisResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response shinyProxyServerAppList(
+            @ApiParam(value = "Application name") @QueryParam("name") @DefaultValue("App 1") String name,
+            @ApiParam(value = "Date of creation") @QueryParam("creationDate") @DefaultValue(DocumentationAnnotation.EXAMPLE_DATE) @Date(DateFormat.YMD) String creationDate,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
         ScientificAppDAO scientificAppDAO = new ScientificAppDAO();
         scientificAppDAO.session = userSession;
+        scientificAppDAO.creationDate = creationDate;
+        scientificAppDAO.applicationName = name;
         ArrayList<ScientificAppDescription> shinyProxyAppList = scientificAppDAO.find(null, null);
         ArrayList<ScientificAppDTO> shinyProxyAppDTOList = new ArrayList<>();
         for (ScientificAppDescription scientificApplicationDescription : shinyProxyAppList) {

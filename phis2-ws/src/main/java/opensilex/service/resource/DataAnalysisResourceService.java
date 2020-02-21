@@ -174,8 +174,8 @@ public class DataAnalysisResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response shinyProxyServerAppList(
-            @ApiParam(value = "Application name") @QueryParam("name") @DefaultValue("App 1") String name,
-            @ApiParam(value = "Date of creation") @QueryParam("creationDate") @DefaultValue(DocumentationAnnotation.EXAMPLE_DATE) @Date(DateFormat.YMD) String creationDate,
+            @ApiParam(value = "Application name" ,example = "Regression R application") @QueryParam("name") String name,
+            @ApiParam(value = "Date of creation" ,example = DocumentationAnnotation.EXAMPLE_DATE ) @QueryParam("creationDate") @Date(DateFormat.YMD) String creationDate,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
         ScientificAppDAO scientificAppDAO = new ScientificAppDAO();

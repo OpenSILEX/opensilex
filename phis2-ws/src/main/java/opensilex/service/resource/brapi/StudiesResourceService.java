@@ -664,7 +664,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             rdfType =  Oeso.NAMESPACE + observationLevel;
         }
         
-        ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, rdfType, studyDbId, null);
+        ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, rdfType, studyDbId, null, true);
 
         ExperimentSQLDAO experimentDAO = new ExperimentSQLDAO();
         experimentDAO.uri = studyDbId;
@@ -735,7 +735,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
 
         ArrayList<BrapiObservationDTO> observations = new ArrayList();  
         ScientificObjectRdf4jDAO objectDAO = new ScientificObjectRdf4jDAO();
-        ArrayList<ScientificObject> objectsList = objectDAO.find(null, null, null, null, studyDAO.studyDbIds.get(0), null);
+        ArrayList<ScientificObject> objectsList = objectDAO.find(null, null, null, null, studyDAO.studyDbIds.get(0), null, true);
         ArrayList<Variable> variablesList = new ArrayList();
 
         if (variableURIs.isEmpty()) {  

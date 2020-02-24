@@ -606,8 +606,11 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * @param alias
      * @return scientific objects list, result of the user query, empty if no result
      */
-    public ArrayList<ScientificObject> find(Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias) {
+    public ArrayList<ScientificObject> find(Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias, Boolean withProperties) {
         try {
+            long startFind = System.nanoTime();
+
+       
             SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(false, page, pageSize, uri, rdfType, experiment, alias);
             //SILEX:test
             //For pool connection issues
@@ -618,7 +621,9 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             
             TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
             Map<String, ScientificObject> foundedScientificObjects = new HashMap<>();
-            
+            long query = System.nanoTime();
+
+             System.out.println("Execution time in milliseconds (query) : " + ( query - startFind) / 1000000);
             try (TupleQueryResult result = tupleQuery.evaluate()) {
                 while (result.hasNext()) {
                     BindingSet bindingSet = result.next();
@@ -652,14 +657,17 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                             scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
                         }
                     }
-                    
-                    //Get scientific object properties
-                    scientificObject.setProperties(findScientificObjectProperties(actualUri));
+                    if(withProperties){
+                        //Get scientific object properties
+                        scientificObject.setProperties(findScientificObjectProperties(actualUri));
+                    }
                     
                     foundedScientificObjects.put(actualUri, scientificObject);
                 }
             }
-            
+             long loopObject = System.nanoTime();
+
+            System.out.println("Execution time in milliseconds (loopObject) : " + (  loopObject - query) / 1000000);
             ArrayList<String> scientificObjectsUris = new ArrayList<>();
             ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
             foundedScientificObjects.entrySet().forEach((entry) -> {
@@ -667,6 +675,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                 scientificObjectsUris.add(entry.getKey());
             });
             
+            long geom = System.nanoTime();
+
             //Get geometries in relational database
             ScientificObjectSQLDAO scientificObjectDao = new ScientificObjectSQLDAO();
             HashMap<String, String> geometries = scientificObjectDao.getGeometries(scientificObjectsUris);
@@ -674,7 +684,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             scientificObjects.forEach((scientificObject) -> {
                 scientificObject.setGeometry(geometries.get(scientificObject.getUri()));
             });
-            
+            System.out.println("Execution time in milliseconds (geom) : " + (   geom- loopObject) / 1000000);
+
             return scientificObjects;
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(ScientificObjectRdf4jDAO.class.getName()).log(Level.SEVERE, null, ex);
@@ -996,7 +1007,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      *         null if this scientific object does not exist.
      */
     public ScientificObject getScientificObjectInContext(String uri, String context) {
-        ArrayList<ScientificObject> scientificObjects = find(null, null, uri, null, context, null);
+        ArrayList<ScientificObject> scientificObjects = find(null, null, uri, null, context, null,true);
         if (!scientificObjects.isEmpty()) {
             return scientificObjects.get(0);
         } else {

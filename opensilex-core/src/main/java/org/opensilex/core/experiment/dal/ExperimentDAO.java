@@ -53,18 +53,19 @@ public class ExperimentDAO {
 
     /**
      * Check that all URI(s) which refers to a non {@link org.opensilex.sparql.annotations.SPARQLResource}-compliant model exists.
+     *
      * @param model the experiment for which we check if all URI(s) exists
      * @throws SPARQLException
      * @throws IllegalArgumentException if the given model contains a unknown URI
      */
     protected void checkURIs(ExperimentModel model) throws SPARQLException, IllegalArgumentException {
 
-        if(model.getSpecies() != null && ! sparql.uriExists(model.getSpecies())){
-            throw new IllegalArgumentException("Trying to insert an experiment with an unknown species : "+model.getSpecies());
+        if (model.getSpecies() != null && !sparql.uriExists(model.getSpecies())) {
+            throw new IllegalArgumentException("Trying to insert an experiment with an unknown species : " + model.getSpecies());
         }
-        for(URI infraUri : model.getInfrastructures()){
-            if(! sparql.uriExists(infraUri)){
-                throw new IllegalArgumentException("Trying to insert an experiment with an unknown infrastructure : "+infraUri);
+        for (URI infraUri : model.getInfrastructures()) {
+            if (!sparql.uriExists(infraUri)) {
+                throw new IllegalArgumentException("Trying to insert an experiment with an unknown infrastructure : " + infraUri);
             }
         }
 
@@ -102,10 +103,10 @@ public class ExperimentDAO {
         if (searchDTO.getCampaign() != null) {
             exprList.add(SPARQLQueryHelper.eq(ExperimentModel.CAMPAIGN_SPARQL_FIELD, searchDTO.getCampaign()));
         }
-        if(searchDTO.getSpecies() != null){
+        if (searchDTO.getSpecies() != null) {
             exprList.add(SPARQLQueryHelper.eq(ExperimentModel.SPECIES_SPARQL_FIELD, searchDTO.getSpecies()));
         }
-        if(searchDTO.getIsPublic() != null){
+        if (searchDTO.getIsPublic() != null) {
             exprList.add(SPARQLQueryHelper.eq(ExperimentModel.IS_PUBLIC_SPARQL_VAR, searchDTO.getIsPublic()));
         }
 
@@ -138,7 +139,7 @@ public class ExperimentDAO {
             exprList.add(SPARQLQueryHelper.eq(ExperimentModel.START_DATE_SPARQL_VAR, LocalDate.parse(searchDTO.getStartDate())));
         }
         if (searchDTO.getEndDate() != null) {
-            exprList.add(SPARQLQueryHelper.eq(ExperimentModel.END_DATE_SPARQL_VAR,  LocalDate.parse(searchDTO.getEndDate())));
+            exprList.add(SPARQLQueryHelper.eq(ExperimentModel.END_DATE_SPARQL_VAR, LocalDate.parse(searchDTO.getEndDate())));
         }
 
         // get an Expr build according startDate and endDate
@@ -180,23 +181,23 @@ public class ExperimentDAO {
         if (!searchDTO.getGroups().isEmpty()) {
             valuesByVar.put(ExperimentModel.GROUP_SPARQL_VAR, searchDTO.getGroups());
         }
-        if(! searchDTO.getVariables().isEmpty()){
+        if (!searchDTO.getVariables().isEmpty()) {
             valuesByVar.put(ExperimentModel.VARIABLES_SPARQL_VAR, searchDTO.getVariables());
         }
-        if(! searchDTO.getSensors().isEmpty()){
+        if (!searchDTO.getSensors().isEmpty()) {
             valuesByVar.put(ExperimentModel.SENSORS_SPARQL_VAR, searchDTO.getSensors());
         }
-        if(! searchDTO.getInfrastructures().isEmpty()){
+        if (!searchDTO.getInfrastructures().isEmpty()) {
             valuesByVar.put(ExperimentModel.INFRASTRUCTURE_SPARQL_VAR, searchDTO.getInfrastructures());
         }
-        if(! searchDTO.getInstallations().isEmpty()){
+        if (!searchDTO.getInstallations().isEmpty()) {
             valuesByVar.put(ExperimentModel.DISPOSITIVES_SPARQL_VAR, searchDTO.getInstallations());
         }
         return valuesByVar;
     }
 
     /**
-     * @param searchDTO a search DTO which contains all attributes about an {@link ExperimentModel} search
+     * @param searchDTO   a search DTO which contains all attributes about an {@link ExperimentModel} search
      * @param orderByList an OrderBy List
      * @param page        the current page
      * @param pageSize    the page size
@@ -213,13 +214,12 @@ public class ExperimentDAO {
                     extractFilters(searchDTO).forEach(select::addFilter);
 
                     // add a WHERE { ?var} VALUES { v1 v2} clause for each non empty data/object list property
-                    getValuesByVarName(searchDTO).forEach((var, values) -> {
-                        try {
-                            SPARQLQueryHelper.addWhereValues(select, var, values);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
+                    try {
+                        SPARQLQueryHelper.addWhereValues(select, getValuesByVarName(searchDTO));
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+
                 },
                 orderByList,
                 page,

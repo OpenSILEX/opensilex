@@ -20,6 +20,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -46,7 +47,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             ontology = Oeso.class,
             property = "hasProject"
     )
-    List<ProjectModel> projects;
+    List<ProjectModel> projects = new LinkedList<>();
     public static final String PROJECT_URI_SPARQL_VAR = "project";
 
 
@@ -69,7 +70,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             ontology = Oeso.class,
             property = "hasScientificSupervisor"
     )
-    List<UserModel> scientificSupervisors = Collections.emptyList();
+    List<UserModel> scientificSupervisors = new LinkedList<>();
     public static final String SCIENTIFIC_SUPERVISOR_SPARQL_VAR = "scientificSupervisor";
 
 
@@ -77,7 +78,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             ontology = Oeso.class,
             property = "hasTechnicalSupervisor"
     )
-    List<UserModel> technicalSupervisors = Collections.emptyList();
+    List<UserModel> technicalSupervisors = new LinkedList<>();
     public static final String TECHNICAL_SUPERVISOR_SPARQL_VAR = "technicalSupervisor";
 
 
@@ -85,7 +86,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             ontology = Oeso.class,
             property = "hasGroup"
     )
-    List<GroupModel> groups = Collections.emptyList();
+    List<GroupModel> groups = new LinkedList<>();
     public static final String GROUP_SPARQL_VAR = "group";
 
     @SPARQLProperty(
@@ -108,7 +109,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             ontology = Oeso.class,
             property = "hasKeyword"
     )
-    List<String> keywords = Collections.emptyList();
+    List<String> keywords = new LinkedList<>();
     public static final String KEYWORD_SPARQL_FIELD = "keyword";
 
     @SPARQLProperty(
@@ -130,14 +131,14 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             ontology = Oeso.class,
             property = "hasInfrastructure"
     )
-    List<URI> infrastructures = Collections.emptyList();
+    List<URI> infrastructures = new LinkedList<>();
     public static final String INFRASTRUCTURE_SPARQL_VAR = "infrastructure";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasDevice"
     )
-    List<URI> devices = Collections.emptyList();
+    List<URI> devices = new LinkedList<>();
     public static final String DISPOSITIVES_SPARQL_VAR = "devices";
 
     @SPARQLProperty(
@@ -152,7 +153,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             ontology = Oeso.class,
             property = "measures"
     )
-    List<VariableModel> variables = Collections.emptyList();
+    List<URI> variables = new LinkedList<>();
     public static final String VARIABLES_SPARQL_VAR = "variables";
 
     @SPARQLProperty(
@@ -160,7 +161,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             property = "participatesIn",
             inverse = true
     )
-    List<URI> sensors = Collections.emptyList();
+    List<URI> sensors = new LinkedList<>();
     public static final String SENSORS_SPARQL_VAR = "sensors";
 
 
@@ -276,11 +277,11 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
         this.isPublic = isPublic;
     }
 
-    public List<VariableModel> getVariables() {
+    public List<URI> getVariables() {
         return variables;
     }
 
-    public void setVariables(List<VariableModel> variables) {
+    public void setVariables(List<URI> variables) {
         this.variables = variables;
     }
 

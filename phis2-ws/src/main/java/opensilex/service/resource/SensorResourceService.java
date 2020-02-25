@@ -743,7 +743,7 @@ public class SensorResourceService extends ResourceService {
             provenanceUrisAssociatedToSensor.add(provenanceUri);
         }else{
             Provenance searchProvenance = new Provenance();
-            String jsonFilter = BasicDBObjectBuilder.start("metadata.prov:Agent.oeso:SensingDevice", uri).get().toString();
+            String jsonFilter = BasicDBObjectBuilder.start("metadata.prov:Agent.prov:id", uri).get().toString();
             ArrayList<Provenance> provenances = provenanceDAO.getProvenances(searchProvenance, jsonFilter);
 
             for (Provenance provenance : provenances) {

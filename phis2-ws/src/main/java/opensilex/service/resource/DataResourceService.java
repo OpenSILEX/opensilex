@@ -447,9 +447,9 @@ public class DataResourceService extends ResourceService {
      */
     protected Optional<String> checkFilePath(File file) {
     	
-    	if(! file.exists()) 
-    		return Optional.of("File not found : "+file.getPath());
-    	else if(! file.isFile()) 
+    if(! file.exists()) 
+            return Optional.of("File not found : "+file.getPath());
+    else if(! file.isFile()) 
     		return Optional.of(file.getPath()+" is not a file"); 
     	else if(! file.canRead())         		
     		return Optional.of(file.getPath()+" is not readable");        	
@@ -819,13 +819,13 @@ public class DataResourceService extends ResourceService {
                     objectsUrisAndLabels.put(data.getObjectUri(), scientificObjectDAO.findLabelsForUri(data.getObjectUri()));
                 }
                 
-                if (!provenancesUrisAndLabels.containsKey(data.getProvenance().getUri())) {
+                if (!provenancesUrisAndLabels.containsKey(data.getProvenanceUri())) {
                     //We need to get the label of the provenance
-                    provenancesUrisAndLabels.put(data.getProvenance().getUri(), provenanceDAO.findLabelByUri(data.getProvenance().getUri()));
+                    provenancesUrisAndLabels.put(data.getProvenanceUri(), provenanceDAO.findLabelByUri(data.getProvenanceUri()));
                 }
                 
                 //Get provenance label
-                String dataProvenanceLabel = provenancesUrisAndLabels.get(data.getProvenance().getUri());
+                String dataProvenanceLabel = provenancesUrisAndLabels.get(data.getProvenanceUri());
                 //Get object labels
                 List<String> dataObjectLabels = new ArrayList<>();
                 if (objectsUrisAndLabels.get(data.getObjectUri()) != null) {

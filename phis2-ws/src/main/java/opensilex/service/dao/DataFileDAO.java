@@ -271,7 +271,7 @@ public class DataFileDAO extends MongoDAO<FileDescription> {
             // 1. Check if the provenance uri exist and is a provenance
             dataOk = false;
             checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                "Unknown provenance : " + fileDescription.getProvenanceUri()));
+                "Unknown provenance uri: " + fileDescription.getProvenanceUri()));
         } else if (!scientificObjectDao.existUri(fileDescription.getRdfType())) {
             // 2. Check if the rdf type uri exist, 
             // we use scientificObjectDao for convenience to access existUri method

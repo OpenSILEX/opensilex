@@ -9,7 +9,6 @@ package opensilex.service.model;
 
 import java.util.Date;
 import java.util.Map;
-import opensilex.service.resource.dto.data.DataProvenance;
 
 /**
  * Data model
@@ -23,10 +22,10 @@ public class Data {
     protected String uri;
     
     /**
-     * Provenance object
-     * @example 
+     * Provenance URI from which data comes.
+     * @example http://www.phenome-fppn.fr/mtp/2018/s18003
      */
-    protected DataProvenance provenance;
+    protected String provenanceUri;
     
     /**
      * Related scientific object URI.
@@ -51,7 +50,18 @@ public class Data {
      * @example 1.2
      */
     protected Object value;
-    
+
+    /**
+     * Metadata. Anything that seems useful to be stored
+     * @example 
+     * {
+            "labelView": "Top270",
+            "prov:used": {
+                "oeso:BinaryImage":"binary image uri from which the data has been computed"
+            },
+            "oeso:RGBImage": "raw image uri which the binary image comes from"
+        }
+     */
     protected Map<String, Object> metadata;
 
     public String getObjectUri() {
@@ -86,12 +96,12 @@ public class Data {
         this.value = value;
     }
 
-    public DataProvenance getProvenance() {
-        return provenance;
+    public String getProvenanceUri() {
+        return provenanceUri;
     }
 
-    public void setProvenance(DataProvenance provenance) {
-        this.provenance = provenance;
+    public void setProvenanceUri(String provenanceUri) {
+        this.provenanceUri = provenanceUri;
     }
 
     public String getUri() {

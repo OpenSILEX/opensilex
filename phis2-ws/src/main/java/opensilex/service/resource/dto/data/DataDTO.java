@@ -31,7 +31,7 @@ public class DataDTO {
      * URI of the provenance from which data come.
      * @example http://www.phenome-fppn.fr/mtp/2018/s18003
      */
-    protected DataProvenanceDTO provenance;
+    protected String provenanceUri;
     
     /**
      * URI of the scientific object on which data is related.
@@ -67,7 +67,7 @@ public class DataDTO {
         }
         
         setUri(data.getUri());
-        setProvenance(new DataProvenanceDTO(data.getProvenance()));
+        setProvenanceUri(data.getProvenanceUri());
         setVariableUri(data.getVariableUri());
         setObjectUri(data.getObjectUri());
         
@@ -85,12 +85,12 @@ public class DataDTO {
         }
     }
 
-    public DataProvenanceDTO getProvenance() {
-        return provenance;
+    public String getProvenanceUri() {
+        return provenanceUri;
     }
 
-    public void setProvenance(DataProvenanceDTO provenance) {
-        this.provenance = provenance;
+    public void setProvenanceUri(String provenanceUri) {
+        this.provenanceUri = provenanceUri;
     }
 
     public String getObjectUri() {

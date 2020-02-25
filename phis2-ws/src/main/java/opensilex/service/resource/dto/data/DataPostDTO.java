@@ -30,7 +30,7 @@ public class DataPostDTO extends AbstractVerifiedClass {
      * URI of the provenance from which data come.
      * @example http://www.phenome-fppn.fr/mtp/2018/s18003
      */
-    protected DataProvenance provenance;
+    protected String provenanceUri;
     
     /**
      * URI of the scientific object on which data is related.
@@ -59,7 +59,8 @@ public class DataPostDTO extends AbstractVerifiedClass {
     protected Map<String, Object> metadata;
 
     @URL
-    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI)
+    @Required
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_URI)
     public String getObjectUri() {
         return objectUri;
     }
@@ -79,7 +80,7 @@ public class DataPostDTO extends AbstractVerifiedClass {
         this.variableUri = variableUri;
     }
 
-    @Date({DateFormat.YMDTHMSZ, DateFormat.YMD})
+    @Date({DateFormat.YMDTHMSZ, DateFormat.YMD, DateFormat.YMDTHMS3SZ})
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_XSDDATETIME)
     public String getDate() {
@@ -100,12 +101,15 @@ public class DataPostDTO extends AbstractVerifiedClass {
         this.value = value;
     }
 
-    public DataProvenance getProvenance() {
-        return provenance;
+    @URL
+    @Required
+    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROVENANCE_URI)
+    public String getProvenanceUri() {
+        return provenanceUri;
     }
 
-    public void setProvenance(DataProvenance provenance) {
-        this.provenance = provenance;
+    public void setProvenanceUri(String provenanceUri) {
+        this.provenanceUri = provenanceUri;
     }
 
     public Map<String, Object> getMetadata() {
@@ -123,7 +127,7 @@ public class DataPostDTO extends AbstractVerifiedClass {
 
         data.setObjectUri(objectUri);
         data.setVariableUri(variableUri);
-        data.setProvenance(provenance);
+        data.setProvenanceUri(provenanceUri);
         data.setMetadata(metadata);
 
         data.setDate(DateFormat.parseDateOrDateTime(date, false));

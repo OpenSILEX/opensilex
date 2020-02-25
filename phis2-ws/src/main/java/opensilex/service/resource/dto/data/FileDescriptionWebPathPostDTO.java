@@ -82,7 +82,7 @@ public class FileDescriptionWebPathPostDTO extends AbstractVerifiedClass {
         this.rdfType = rdfType;
     }
 
-    @Date(DateFormat.YMDTHMSZ)
+    @Date({DateFormat.YMDTHMSZ, DateFormat.YMD, DateFormat.YMDTHMS3SZ})
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_XSDDATETIME)
     public String getDate() {
@@ -135,10 +135,8 @@ public class FileDescriptionWebPathPostDTO extends AbstractVerifiedClass {
     public FileDescription createObjectFromDTO() throws ParseException {
         FileDescription description = new FileDescription();
         
-        description.setRdfType(getRdfType());
-        
-        SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
-        description.setDate(df.parse(getDate()));
+        description.setRdfType(getRdfType());        
+        description.setDate(DateFormat.parseDateOrDateTime(getDate(),false));
         
         List<ConcernedItem> items = new ArrayList<>();
         if(concernedItems != null) {

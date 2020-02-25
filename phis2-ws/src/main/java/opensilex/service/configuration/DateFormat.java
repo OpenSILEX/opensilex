@@ -45,6 +45,12 @@ public enum DateFormat {
         public String toString(){
             return "yyyy-MM-dd";
         }
+    },
+    YMDTHMS3SZ {
+        @Override
+        public String toString(){
+            return "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+        }
     };
     
     /**
@@ -76,6 +82,7 @@ public enum DateFormat {
         }
         
         SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
+        SimpleDateFormat df2 = new SimpleDateFormat(DateFormat.YMDTHMS3SZ.toString());
                 
         if (dateStringToParse.matches("\\d{4}-\\d{2}-\\d{2}")) {
             // Set time depending of isEndDate flag
@@ -89,6 +96,10 @@ public enum DateFormat {
         }
         
         // Parse datetime
-        return df.parse(dateStringToParse);
+        if (dateStringToParse.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[+-]\\d{4}")) {
+            return df.parse(dateStringToParse);
+        } else {
+            return df2.parse(dateStringToParse);
+        }
     }
 }

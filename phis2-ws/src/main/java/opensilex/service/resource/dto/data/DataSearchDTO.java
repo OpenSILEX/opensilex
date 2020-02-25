@@ -40,7 +40,7 @@ public class DataSearchDTO extends AbstractVerifiedClass {
 
     public DataSearchDTO(Data data, String provenanceLabel, List<String> objectLabels, String variableLabel) {
         uri = data.getUri();
-        provenance = new RdfResourceDTO(data.getProvenance().getUri(), provenanceLabel);
+        provenance = new RdfResourceDTO(data.getProvenanceUri(), provenanceLabel);
         if (data.getObjectUri() != null) {
             object = new ObjectResourceDTO(data.getObjectUri(), objectLabels);
         }

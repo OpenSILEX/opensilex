@@ -120,6 +120,7 @@ if (urlParams.has('lang')) {
     lang = urlParams.get("lang");
 }
 
+console.debug("Detected language", lang);
 
 const i18n = new VueI18n({
   fallbackLocale: 'en-US',

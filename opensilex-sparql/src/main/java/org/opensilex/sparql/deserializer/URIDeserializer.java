@@ -36,7 +36,7 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
     }
 
     public static String getExpandedURI(String value) {
-         if (prefixes == null) {
+         if (prefixes == null || value == null) {
             return value;
         }
         return prefixes.expandPrefix(value);

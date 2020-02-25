@@ -35,6 +35,13 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
         return getNode(new URI(prefixes.expandPrefix(value)));
     }
 
+    public static String getExpandedURI(String value) {
+         if (prefixes == null) {
+            return value;
+        }
+        return prefixes.expandPrefix(value);
+    }
+    
     @Override
     public Node getNode(Object value) throws Exception {
         return NodeFactory.createURI(value.toString());

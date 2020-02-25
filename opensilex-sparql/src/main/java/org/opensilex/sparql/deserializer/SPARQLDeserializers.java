@@ -105,7 +105,10 @@ public class SPARQLDeserializers {
         } catch (Exception ex) {
             throw new SPARQLInvalidURIException(uri);
         }
+    }
 
+    public static String getExpandedURI(String value) {
+        return URIDeserializer.getExpandedURI(value);
     }
 
     public static List<Node> nodeListURI(List<URI> uris) throws Exception {

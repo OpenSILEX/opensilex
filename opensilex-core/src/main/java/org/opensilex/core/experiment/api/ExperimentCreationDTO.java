@@ -9,7 +9,6 @@ package org.opensilex.core.experiment.api;
 import org.opensilex.core.experiment.dal.ExperimentDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.rest.group.dal.GroupModel;
 import org.opensilex.rest.user.dal.UserModel;
 
@@ -43,6 +42,7 @@ public class ExperimentCreationDTO extends ExperimentDTO {
         model.setDevices(installations);
         model.setIsPublic(isPublic);
         model.setSensors(sensors);
+        model.setVariables(variables);
 
         List<ProjectModel> projectList = new ArrayList<>(projects.size());
         projects.forEach((URI u) -> {
@@ -75,14 +75,6 @@ public class ExperimentCreationDTO extends ExperimentDTO {
             groupList.add(group);
         });
         model.setGroups(groupList);
-
-        List<VariableModel> varList = new ArrayList<>(variables.size());
-        variables.forEach((URI u) -> {
-            VariableModel var = new VariableModel();
-            var.setUri(u);
-            varList.add(var);
-        });
-        model.setVariables(varList);
 
         return model;
     }

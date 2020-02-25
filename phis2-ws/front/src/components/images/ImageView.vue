@@ -86,17 +86,19 @@ export default class ImageView extends Vue {
   }
 
   onSearchFormSubmit(form) {
+    console.log("form");
+    console.log(form);
+    this.currentPage = 1;
+    this.searchImagesFields.experiment = form.experiment;
+    this.searchImagesFields.objectType = form.objectType;
+    this.searchImagesFields.rdfType = form.rdfType;
+    this.searchImagesFields.startDate = form.startDate;
+    this.searchImagesFields.endDate = form.endDate;
+    this.searchImagesFields.concernedItemsValue = [];
+    if (form.objectList) {
+      this.searchImagesFields.concernedItemsValue = form.objectList;
+    }
     if (form.rdfType !== null) {
-      this.currentPage = 1;
-      this.searchImagesFields.experiment = form.experiment;
-      this.searchImagesFields.objectType = form.objectType;
-      this.searchImagesFields.rdfType = form.rdfType;
-      this.searchImagesFields.startDate = form.startDate;
-      this.searchImagesFields.endDate = form.endDate;
-      this.searchImagesFields.concernedItemsValue = [];
-      if (form.objectList) {
-        this.searchImagesFields.concernedItemsValue=form.objectList;
-      }
       this.loadData();
     }
   }
@@ -129,6 +131,8 @@ export default class ImageView extends Vue {
   }
 
   getData() {
+    console.log("this.searchImagesFields");
+    console.log(this.searchImagesFields);
     this.dataService
       .getDataFileDescriptionsBySearch(
         this.user.getAuthorizationHeader(),
@@ -136,7 +140,7 @@ export default class ImageView extends Vue {
         this.searchImagesFields.startDate,
         this.searchImagesFields.endDate,
         this.searchImagesFields.provenance,
-        Object.keys(this.searchImagesFields.concernedItemsValue),
+        this.searchImagesFields.concernedItemsValue,
         this.searchImagesFields.jsonValueFilter,
         this.searchImagesFields.dateSortAsc,
         this.pageSize,
@@ -147,10 +151,9 @@ export default class ImageView extends Vue {
           this.totalImages = http.response.metadata.pagination.totalCount;
           const res = http.response.result as any;
           const data = res.data as Array<FileDescriptionDTO>;
-          console.log("data");
+          console.log("RESULT");
           console.log(data);
           this.imagesFilter(data);
-         
         }
       )
       .catch(error => {
@@ -175,10 +178,9 @@ export default class ImageView extends Vue {
               type: element.rdfType,
               objectUri: concernedItem.uri,
               date: element.date,
-              provenanceUri: element.provenanceUri,
-              objectAlias:this.searchImagesFields.concernedItemsValue[concernedItem.uri]
+              provenanceUri: element.provenanceUri
             };
-           this.images.push(image);
+            this.images.push(image);
           }
         });
       });
@@ -194,8 +196,7 @@ export default class ImageView extends Vue {
             type: element.rdfType,
             objectUri: concernedItem.uri,
             date: element.date,
-            provenanceUri: element.provenanceUri,
-            objectAlias:this.searchImagesFields.concernedItemsValue[concernedItem.uri]
+            provenanceUri: element.provenanceUri
           };
           this.images.push(image);
         });

@@ -33,9 +33,9 @@ export default class ExperimentSearch extends Vue {
   get user() {
     return this.$store.state.user;
   }
- // the way to see if it is select by a user or by the change of an other element of the form 
- // In this case the images will be asynch load for nothing
-  userFocus = false; 
+  // the way to see if it is select by a user or by the change of an other element of the form
+  // In this case the images will be asynch load for nothing
+  userFocus = false;
   $router: VueRouter;
   experiment: string = null;
   experiments: any = [];
@@ -49,10 +49,10 @@ export default class ExperimentSearch extends Vue {
     this.userFocus = true;
   }
   created() {
-    EventBus.$on("imageTypeSelected", type => {
-      this.userFocus=false;
-      this.experiment = null;
-    });
+    // EventBus.$on("imageTypeSelected", type => {
+    //   this.userFocus = false;
+    //   this.experiment = null;
+    // });
     let service: ExperimentsService = this.$opensilex.getService(
       "opensilex.ExperimentsService"
     );
@@ -73,10 +73,13 @@ export default class ExperimentSearch extends Vue {
       )
       .then((http: HttpResponse<OpenSilexResponse<Array<Experiment>>>) => {
         const res = http.response.result as any;
-        const data = res.data;
+        const data = res;
+
         data.forEach(element => {
+          const fix = "http://www.opensilex.org/set/experiments#";
+          let uri = fix + element.uri.split(":")[1];
           this.experiments.push({
-            value: element.uri,
+            value: uri,
             text: element.alias
           });
         });

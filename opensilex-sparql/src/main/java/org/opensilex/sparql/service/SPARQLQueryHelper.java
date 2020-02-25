@@ -1,8 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: vincent.migot@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
 package org.opensilex.sparql.service;
 
 import org.apache.jena.arq.querybuilder.ExprFactory;
@@ -25,13 +25,14 @@ import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+
 import java.time.LocalDate;
-import java.util.List;
+import java.util.*;
+
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 
 /**
- *
- * @author vidalmor
+ * @author Vincent MIGOT
  */
 public class SPARQLQueryHelper {
 
@@ -102,21 +103,20 @@ public class SPARQLQueryHelper {
 
     /**
      * @param varName the variable name
-     * @param object the object to compare with the given variable
+     * @param object  the object to compare with the given variable
      * @return an E_Equals expression between the given variable and the given object
      * @throws SPARQLDeserializerNotFoundException if no {@link SPARQLDeserializer} is found for object
-     * 
      * @see ExprFactory#eq(Object, Object)
      * @see SPARQLDeserializers#getForClass(Class)
      */
     public static Expr eq(String varName, Object object) throws Exception {
         Node node = SPARQLDeserializers.getForClass(object.getClass()).getNode(object);
-        return eq(varName,node);
+        return eq(varName, node);
     }
 
     /**
      * @param varName the variable name
-     * @param node the Jena node to compare with the given variable
+     * @param node    the Jena node to compare with the given variable
      * @return an E_Equals expression between the given variable and the given object
      * @see ExprFactory#eq(Object, Object)
      */
@@ -130,9 +130,7 @@ public class SPARQLQueryHelper {
      * @param select  the SelectBuilder to update
      * @param varName the variable name
      * @param values  the list of values to put in the VALUES set
-     *
-     * @throws SPARQLDeserializerNotFoundException  if no {@link SPARQLDeserializer} is found for an element of values
-     *
+     * @throws SPARQLDeserializerNotFoundException if no {@link SPARQLDeserializer} is found for an element of values
      * @see <a href=www.w3.org/TR/2013/REC-sparql11-query-20130321/#inline-data>W3C SPARQL VALUES specifications</a>
      * @see SelectBuilder#addWhereValueVar(Object, Object...)
      * @see SPARQLDeserializers#getForClass(Class)
@@ -140,7 +138,7 @@ public class SPARQLQueryHelper {
     public static void addWhereValues(SelectBuilder select, String varName, List<?> values) throws Exception {
 
         if (values.isEmpty())
-           return;
+            return;
 
         // convert list to JENA node array and return the new SelectBuilder
         Object[] nodes = new Node[values.size()];
@@ -152,10 +150,74 @@ public class SPARQLQueryHelper {
     }
 
     /**
-     * @param startDateVarName  the name of the startDate variable , should not be null if startDate is not null
-     * @param startDate the start date
-     * @param endDateVarName the name of the endDate variable , should not be null if endDate is not null
-     * @param endDate the end date
+     *
+     * Update the given {@link SelectBuilder} by adding a list of FILTER clause or a VALUES ( ?var1 ?var2 ). <br>
+     * If each {@link List} from varValuesMap has the same {@link List#size()}, then a VALUES clause is build. <br>
+     *
+     * e.g. given the following map :  { var1 -> {v1,v2} , var2 -> {v3,v4}}, the following VALUES clause will be built
+     * <pre>
+     * VALUES (?var1 ?var2) { (v1 v3) (v2 v4)}
+     *</pre>
+     *
+     * Else we use a FILTER clause
+     * e.g. given the following map { var1 -> {v1,v2} , var2 -> {v3,v4,v5}}, the following list of FILTER clause will be built
+     *
+     * <pre>
+     * FILTER(?v1 = v1 || ?v1 = v2)
+     * FILTER(?v2 = v3 || ?v2 = v4 || ?v2 = v5)
+     *</pre>
+     *
+     * @param select the SelectBuilder to update
+     * @param varValuesMap a map between variable name and the list of values for this variable
+     * @throws Exception
+     *
+     *
+     * @see <a href=www.w3.org/TR/2013/REC-sparql11-query-20130321/#inline-data> SPARQL VALUES</a>
+     * @see <a href=https://www.w3.org/TR/sparql11-query/#func-logical-or> SPARQL LOGICAL OR</a>
+     * @see <a href=https://www.w3.org/TR/sparql11-query/#expressions> SPARQL FILTER </a>
+     */
+    public static void addWhereValues(SelectBuilder select, Map<String, List<?>> varValuesMap) throws Exception {
+
+        if (varValuesMap.isEmpty())
+            return;
+
+        // we use the VALUES clause only if all values list have the same size
+        boolean useValues = true;
+        Iterator<Map.Entry<String, List<?>>> mapIt = varValuesMap.entrySet().iterator();
+
+        int firstElemSize = mapIt.next().getValue().size();
+        while (useValues && mapIt.hasNext()) {
+            useValues = mapIt.next().getValue().size() == firstElemSize;
+        }
+
+        if (useValues) {
+            for (Map.Entry<String, List<?>> entry : varValuesMap.entrySet()) {
+                addWhereValues(select, entry.getKey(), entry.getValue());
+            }
+            return;
+        }
+
+        // else we use filter
+        for (Map.Entry<String, List<?>> entry : varValuesMap.entrySet()) {
+
+            List<?> values = entry.getValue();
+            Expr[] eqExprList = new Expr[values.size()];
+            int i = 0;
+
+            for (Object object : values) {
+                Node objNode = SPARQLDeserializers.getForClass(object.getClass()).getNode(object);
+                eqExprList[i++] = exprFactory.eq(makeVar(entry.getKey()), objNode);
+            }
+            select.addFilter(or(eqExprList));
+        }
+
+    }
+
+    /**
+     * @param startDateVarName the name of the startDate variable , should not be null if startDate is not null
+     * @param startDate        the start date
+     * @param endDateVarName   the name of the endDate variable , should not be null if endDate is not null
+     * @param endDate          the end date
      * @return an Expr according the two given LocalDate and variable names
      * <pre>
      *     null if startDate and endDate are both null

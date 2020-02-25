@@ -117,10 +117,17 @@ export const languages = {
 };
 
 const messages = Object.assign(languages);
+          
+let lang = navigator.language;
+
+if (urlParams.has('lang')) {
+    lang = urlParams.get("lang");
+}
+
 
 const i18n = new VueI18n({
   fallbackLocale: 'en-US',
-  locale: navigator.language,
+  locale: lang,
   messages
 });
 

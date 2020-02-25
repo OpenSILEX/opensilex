@@ -5,14 +5,6 @@
 //******************************************************************************
 package org.opensilex.sparql;
 
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -20,18 +12,24 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
-import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.A;
 import org.opensilex.sparql.model.B;
 import org.opensilex.sparql.model.TEST_ONTOLOGY;
+import org.opensilex.sparql.service.SPARQLService;
+
+import java.io.InputStream;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 
 /**
@@ -208,4 +206,25 @@ public abstract class SPARQLServiceTest {
 
         assertTrue("URI must exists and be of type B", service.uriExists(B.class, bURI));
     }
+
+    @Test
+    public void testRenameGraph() throws Exception{
+
+        B b = new B();
+        b.setUri(new URI("http://test.opensilex.org/a/testUriExistsWithClass"));
+        service.create(b);
+        SPARQLClassObjectMapper<B> objectMapper = SPARQLClassObjectMapper.getForClass(B.class);
+
+        List<B> bList = service.search(B.class);
+        assertFalse(bList.isEmpty());
+        Node oldGraphNode = objectMapper.getDefaultGraph();
+        URI newGraphUri =  new URI(oldGraphNode.getURI()+"new_suffix");
+        service.renameGraph(new URI(oldGraphNode.getURI()),newGraphUri);
+
+        // the graph have changed so no B should be found from the old graph
+        bList = service.search(B.class);
+        assertTrue(bList.isEmpty());
+
+    }
+
 }

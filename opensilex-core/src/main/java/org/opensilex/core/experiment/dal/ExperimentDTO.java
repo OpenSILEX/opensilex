@@ -7,6 +7,7 @@
 
 package org.opensilex.core.experiment.dal;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.rest.validation.Required;
 
 import java.net.URI;
@@ -21,12 +22,10 @@ public abstract class ExperimentDTO {
 
     protected URI uri;
 
-    @Required
     protected String label;
 
     protected List<URI> projects = Collections.emptyList();
 
-    @Required
     protected String startDate;
 
     protected String endDate;
@@ -67,6 +66,8 @@ public abstract class ExperimentDTO {
         return this;
     }
 
+    @Required
+    @ApiModelProperty(example = "ZA17")
     public String getLabel() {
         return label;
     }
@@ -76,6 +77,7 @@ public abstract class ExperimentDTO {
         return this;
     }
 
+    @ApiModelProperty(example = "http://www.phenome-fppn.fr/id/species/zeamays")
     public List<URI> getProjects() {
         return projects;
     }
@@ -85,6 +87,8 @@ public abstract class ExperimentDTO {
         return this;
     }
 
+    @Required
+    @ApiModelProperty(example = "2020-02-20")
     public String getStartDate() {
         return startDate;
     }
@@ -94,6 +98,8 @@ public abstract class ExperimentDTO {
         return this;
     }
 
+    @Required
+    @ApiModelProperty(example = "2020-02-20")
     public String getEndDate() {
         return endDate;
     }
@@ -103,6 +109,7 @@ public abstract class ExperimentDTO {
         return this;
     }
 
+    @ApiModelProperty(example = "objective")
     public String getObjective() {
         return objective;
     }
@@ -112,6 +119,7 @@ public abstract class ExperimentDTO {
         return this;
     }
 
+    @ApiModelProperty(example = "comment")
     public String getComment() {
         return comment;
     }
@@ -121,6 +129,7 @@ public abstract class ExperimentDTO {
         return this;
     }
 
+    @ApiModelProperty(example = "2020")
     public Integer getCampaign() {
         return campaign;
     }
@@ -165,7 +174,7 @@ public abstract class ExperimentDTO {
         this.groups = groups;
         return this;
     }
-
+    @ApiModelProperty(example = "http://www.phenome-fppn.fr/id/species/zeamays")
     public URI getSpecies() {
         return species;
     }
@@ -175,6 +184,7 @@ public abstract class ExperimentDTO {
         return this;
     }
 
+    @ApiModelProperty(example = "true")
     public Boolean getIsPublic() {
         return isPublic;
     }

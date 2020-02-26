@@ -6,6 +6,10 @@
 //******************************************************************************
 package org.opensilex.fs.local;
 
+import java.io.File;
+import java.nio.file.Path;
+import org.opensilex.fs.service.FileStorageConnection;
+
 /**
  * Local filesystem connection for file storage service
  * <pre>
@@ -15,6 +19,32 @@ package org.opensilex.fs.local;
  * @see org.opensilex.fs.service.FileStorageService
  * @author Vincent Migot
  */
-public class LocalFileSystemConnection {
+public class LocalFileSystemConnection implements FileStorageConnection {
+
+    private final LocalFileSystemConfig config;
+
+    public LocalFileSystemConnection(LocalFileSystemConfig config) {
+        this.config = config;
+    }
+
+    @Override
+    public void readFile(Path filePath) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void writeFile(Path filePath, String content) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void writeFile(Path filePath, File file) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void createDirectories(Path directoryPath) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
 }

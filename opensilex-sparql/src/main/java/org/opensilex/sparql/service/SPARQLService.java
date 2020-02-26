@@ -14,8 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-
 import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;

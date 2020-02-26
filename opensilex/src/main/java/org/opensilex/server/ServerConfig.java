@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.server;
 
+import org.opensilex.config.ConfigDescription;
 import org.opensilex.module.ModuleConfig;
 
 /**
@@ -15,5 +16,9 @@ import org.opensilex.module.ModuleConfig;
  */
 public interface ServerConfig extends ModuleConfig {
 
-
+    @ConfigDescription(
+        value = "Server public URI",
+        defaultString = "http://localhost:8666/"
+    )
+    public String publicURI();
 }

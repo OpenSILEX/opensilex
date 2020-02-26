@@ -1,5 +1,5 @@
 ontologies:
-    baseURI: http://www.opensilex.org/
+    baseURI: http://opensilex.dev/
     baseURIAlias: dev
     sparql:
         rdf4j:
@@ -7,7 +7,8 @@ ontologies:
             repository: opensilex
 
 file-system: 
-    storageBasePath: /home/bonnefoj/Documents/opensilexFiles
+    local:
+        storageBasePath: /home/opensilex/data
 
 big-data:   
     nosql:
@@ -17,24 +18,4 @@ big-data:
             database: opensilex
 
 phisws:
-    postgreSQL:
-        host: localhost
-        port: 8669
-        database: opensilex
-        username: opensilex
-        password: opensilex
-        
-    ontologyBaseURI: http://www.opensilex.org/
-    vocabulary: http://www.opensilex.org/vocabulary/oeso
     infrastructure: opensilex
-    
-#    uploadFileServerIP: localhost
-    uploadFileServerUsername: bonnefoj
-    uploadFileServerPassword: pic3.14
-    
-    layerFileServerDirectory: /var/www/html/layers
-    layerFileServerAddress: http://localhost/layers
-    
-    uploadImageServerDirectory: /var/www/html/images
-    imageFileServerDirectory: http://localhost/images
-        

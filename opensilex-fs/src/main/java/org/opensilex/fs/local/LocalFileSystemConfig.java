@@ -16,10 +16,10 @@ import org.opensilex.config.ConfigDescription;
  */
 public interface LocalFileSystemConfig {
 
+
     @ConfigDescription(
-            value = "Path to OpenSilex storage directory",
-            defaultString = "/path/to/storage/"
+        value = "Base path for file storage"
     )
-    String directory();
+    public String storageBasePath();
 
 }

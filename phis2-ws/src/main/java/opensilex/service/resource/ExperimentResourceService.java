@@ -14,8 +14,10 @@ import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.SensorDAO;
 import opensilex.service.dao.SpeciesDAO;
+import opensilex.service.dao.VariableDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.Experiment;
+import opensilex.service.model.Variable;
 import opensilex.service.resource.dto.experiment.*;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
@@ -27,13 +29,10 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
 import org.opensilex.core.project.dal.ProjectDAO;
-import org.opensilex.core.variable.dal.VariableDAO;
-import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -144,7 +143,7 @@ public class ExperimentResourceService extends ResourceService {
 //            }
 
             // convert model list to dto list
-            ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment(new SensorDAO());
+            ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment();
             ArrayList<Experiment> xps = new ArrayList<>(resultList.getList().size());
             for (ExperimentModel xpModel : resultList.getList()) {
                 xps.add(modelToExperiment.convert(xpModel));
@@ -207,7 +206,7 @@ public class ExperimentResourceService extends ResourceService {
 
             if (xpModel != null) {
 
-                ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment(new SensorDAO());
+                ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment();
 
                 ArrayList<Experiment> xps = new ArrayList<>();
                 xps.add(modelToExperiment.convert(xpModel));
@@ -396,18 +395,19 @@ public class ExperimentResourceService extends ResourceService {
 
             if (xpModel != null) {
 
-                VariableDAO varDao = new VariableDAO(sparql);
+                VariableDAO varDao = new VariableDAO();
                 for (String variableUri : variableUris) {
-                    VariableModel variable = varDao.get(new URI(variableUri));
+                    URI varURI = new URI(variableUri);
+                    Variable variable = varDao.findById(variableUri);
                     if (variable == null) {
                         return new ErrorResponse(Response.Status.NOT_FOUND, "Variable not found", "Unknown Variable URI: " + variableUri).getResponse();
                     }
-                    xpModel.getVariables().add(variable);
+                    xpModel.getVariables().add(varURI);
                 }
                 xpDao.update(xpModel);
 
                 SensorDAO sensorDAO = new SensorDAO();
-                ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment(sensorDAO);
+                ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment();
 
                 Experiment xp = modelToExperiment.convert(xpModel);
                 ArrayList<Experiment> xps = new ArrayList<>();
@@ -482,7 +482,7 @@ public class ExperimentResourceService extends ResourceService {
                 xpDao.update(xpModel);
 
                 SensorDAO sensorDAO = new SensorDAO();
-                ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment(sensorDAO);
+                ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment();
 
                 Experiment xp = modelToExperiment.convert(xpModel);
                 ArrayList<Experiment> xps = new ArrayList<>();

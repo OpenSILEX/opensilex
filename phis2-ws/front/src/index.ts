@@ -5,7 +5,8 @@ import ImageList from './components/images/ImageList.vue';
 import ImageGrid from './components/images/viewComponents/ImageGrid.vue';
 import ImageSingle from './components/images/viewComponents/ImageSingle.vue';
 import ImageCarousel from './components/images/viewComponents/ImageCarousel.vue';
-import SciObjectSearch from './components/images/searchComponents/SciObjectSearch.vue';
+import SciObjectURISearch from './components/images/searchComponents/SciObjectURISearch.vue';
+import SciObjectAliasSearch from './components/images/searchComponents/SciObjectAliasSearch.vue';
 import ImageTypeSearch from './components/images/searchComponents/ImageTypeSearch.vue';
 import ExperimentSearch from './components/images/searchComponents/ExperimentSearch.vue';
 import SciObjectTypeSearch from './components/images/searchComponents/SciObjectTypeSearch.vue';
@@ -26,7 +27,8 @@ export default {
         'phis2ws-ImageGrid': ImageGrid,
         'phis2ws-ImageSingle': ImageSingle,
         'phis2ws-ImageCarousel': ImageCarousel,
-        'phis2ws-SciObjectSearch': SciObjectSearch,
+        'phis2ws-SciObjectURISearch': SciObjectURISearch,
+        'phis2ws-SciObjectAliasSearch': SciObjectAliasSearch,
         'phis2ws-ImageTypeSearch': ImageTypeSearch,
         'phis2ws-ExperimentSearch': ExperimentSearch,
         'phis2ws-SciObjectTypeSearch': SciObjectTypeSearch,

@@ -49,6 +49,7 @@ import opensilex.service.resource.dto.scientificObject.ScientificObjectDTO;
 import opensilex.service.resource.dto.scientificObject.ScientificObjectPostDTO;
 import opensilex.service.resource.dto.scientificObject.ScientificObjectPutDTO;
 import opensilex.service.resource.validation.interfaces.Required;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
  * Scientific objects resource service.
@@ -268,6 +269,7 @@ public class ScientificObjectResourceService extends ResourceService {
         scientificObjectDaoSesame.setPage(page);
         scientificObjectDaoSesame.setPageSize(pageSize);
         
+        experimentURI = SPARQLDeserializers.getExpandedURI(experimentURI);
         //1. Get count
         Integer totalCount = scientificObjectDaoSesame.count(uri, rdfType, experimentURI, alias);
         

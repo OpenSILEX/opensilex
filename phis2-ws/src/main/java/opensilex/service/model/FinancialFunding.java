@@ -5,33 +5,33 @@
  */
 package opensilex.service.model;
 
+import opensilex.service.resource.ProjectResourceService;
+import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.sparql.annotations.SPARQLProperty;
+import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+
 /**
  *
  * @author vincent
  */
-public class FinancialFunding {
-
-    /**
-     * Instance URI.
-     *
-     * @example http://www.opensilex.org/vocabulary/oeso#internationalfunding
-     */
-    protected String uri;
+@SPARQLResource(
+        ontology = ProjectResourceService.class,
+        resource = "FinancialFunding"
+)
+public class FinancialFunding extends SPARQLResourceModel {
 
     /**
      * The rdfs:label of the instance.
      *
      * @example International
      */
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "label",
+            required = true
+    )
     protected String label;
-
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
 
     public String getLabel() {
         return label;
@@ -40,7 +40,5 @@ public class FinancialFunding {
     public void setLabel(String label) {
         this.label = label;
     }
-    
-    
 
 }

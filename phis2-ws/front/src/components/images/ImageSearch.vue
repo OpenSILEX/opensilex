@@ -1,19 +1,18 @@
 <template>
   <div>
     <b-form>
-
       <phis2ws-TimeSearch></phis2ws-TimeSearch>
       <div class="row">
         <div class="col-sm">
           <phis2ws-ExperimentSearch></phis2ws-ExperimentSearch>
           <phis2ws-SciObjectTypeSearch></phis2ws-SciObjectTypeSearch>
-          <phis2ws-SciObjectSearch></phis2ws-SciObjectSearch>
+          <phis2ws-SciObjectAliasSearch></phis2ws-SciObjectAliasSearch>
+          <phis2ws-SciObjectURISearch></phis2ws-SciObjectURISearch>
         </div>
         <div class="col-sm">
           <phis2ws-ImageTypeSearch></phis2ws-ImageTypeSearch>
         </div>
       </div>
-
     </b-form>
   </div>
 </template>
@@ -34,6 +33,10 @@ export default class ImageSearch extends Vue {
   get user() {
     return this.$store.state.user;
   }
+
+  aliasObjectList = [];
+  uriObjectList = [];
+
   form: any = {
     rdfType: null,
     startDate: undefined,
@@ -86,7 +89,7 @@ export default class ImageSearch extends Vue {
             console.log("data ?");
             console.log(data);
             data.forEach(element => {
-              this.form.objectList[element.uri] = element.label;
+              this.form.objectList.push(element.uri);
             });
             this.$emit("onSearchFormSubmit", this.form);
           }
@@ -101,9 +104,12 @@ export default class ImageSearch extends Vue {
 
   created() {
     EventBus.$on("experienceHasChanged", experience => {
+      console.log("experienceHasChanged" + ": Event In ImageSearch");
       this.form.objectType = null;
       this.form.experiment = experience;
       this.form.objectList = [];
+      this.aliasObjectList = [];
+      this.uriObjectList = [];
       if (experience === null) {
         this.$emit("onSearchFormSubmit", this.form);
       } else {
@@ -112,39 +118,73 @@ export default class ImageSearch extends Vue {
     });
 
     EventBus.$on("soTypeHasChanged", type => {
+      console.log("soTypeHasChanged" + ": Event In ImageSearch");
       this.form.objectType = type;
       this.form.objectList = [];
-      if (type === null) {
-        this.$emit("onSearchFormSubmit", this.form);
-      } else {
-        this.getObjectList();
-      }
+      this.aliasObjectList = [];
+      this.uriObjectList = [];
+      this.getObjectList();
     });
+
     EventBus.$on("soTypeIsInitialized", () => {
+      console.log("soTypeIsInitialized" + ": Event In ImageSearch");
+
       this.form.objectType = null;
     });
 
     EventBus.$on("imageTypeSelected", type => {
-      this.form.objectList = [];
-      this.form.objectType = null;
+      console.log("imageTypeSelected" + ": Event In ImageSearch");
+      // this.form.objectList = [];
+      // this.aliasObjectList = [];
+      // this.uriObjectList = [];
+      // this.form.objectType = null;
       this.form.rdfType = type;
       this.$emit("onSearchFormSubmit", this.form);
     });
+
     EventBus.$on("startDateHasChanged", startDate => {
+      console.log("startDateHasChanged" + ": Event In ImageSearch");
       this.form.startDate = startDate;
       this.$emit("onSearchFormSubmit", this.form);
     });
+
     EventBus.$on("endDateHasChanged", endDate => {
+      console.log("endDateHasChanged" + ": Event In ImageSearch");
       this.form.endDate = endDate;
       this.$emit("onSearchFormSubmit", this.form);
     });
-    EventBus.$on("searchObjectSelected", sciObjects => {
-      if (Object.keys(sciObjects).length === 0) {
+
+    EventBus.$on("aliasObjectSelected", sciObjects => {
+      this.aliasObjectList = sciObjects;
+      if (
+        this.aliasObjectList.length === 0 && this.uriObjectList.length === 0
+      ) {
         this.getObjectList();
       } else {
-        this.form.objectList = sciObjects;
+        if (this.uriObjectList.length !== 0) {
+          this.form.objectList = this.aliasObjectList.concat(this.uriObjectList);
+        } else {
+          this.form.objectList = this.aliasObjectList;
+        }
+
         this.$emit("onSearchFormSubmit", this.form);
       }
+    });
+
+    EventBus.$on("URIObjectSelected", sciObjects => {
+      this.uriObjectList = sciObjects;
+      if ( this.aliasObjectList.length === 0 && this.uriObjectList.length === 0
+      ) {
+        this.getObjectList();
+      } else {
+        if (this.aliasObjectList.length !== 0) {
+          this.form.objectList = this.aliasObjectList.concat(this.uriObjectList);
+        } else {
+          this.form.objectList = this.uriObjectList;
+        }
+         this.$emit("onSearchFormSubmit", this.form);
+      }
+     
     });
   }
 }

@@ -16,11 +16,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.net.URI;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -34,7 +36,6 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.DataDAO;
-import opensilex.service.dao.ExperimentSQLDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
 import opensilex.service.dao.VariableDAO;
 import opensilex.service.model.Call;
@@ -56,6 +57,10 @@ import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.BrapiMultiResponseForm;
 import opensilex.service.view.brapi.form.BrapiSingleResponseForm;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
+import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,6 +76,9 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
     
     final static Logger LOGGER = LoggerFactory.getLogger(StudiesResourceService.class);
        
+    @Inject
+    private SPARQLService sparql;
+    
     /**
      * Overriding BrapiCall method
      * @date 27 Aug 2018
@@ -654,7 +662,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiParam(value = "observationLevel", example = "Plot" ) @QueryParam("observationLevel") String  observationLevel,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
-    ) throws SQLException {           
+    ) throws SQLException, Exception {           
 
         ArrayList<Status> statusList = new ArrayList<>();                  
 
@@ -666,14 +674,10 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         ScientificObjectRdf4jDAO scientificObjectsDAO = new ScientificObjectRdf4jDAO();
         ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, observationLevel, studyDbId, null);
 
-        ExperimentSQLDAO experimentDAO = new ExperimentSQLDAO();
-        experimentDAO.uri = studyDbId;
-        experimentDAO.setPageSize(1);
-        experimentDAO.user = userSession.getUser();
-        
-        if (!experimentDAO.allPaginate().isEmpty()) {
-            Experiment experiment = experimentDAO.allPaginate().get(0);
-            ArrayList<BrapiObservationUnitDTO> observationUnits= getObservationUnitsResult(scientificObjects,experiment);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql);
+        ExperimentModel xp = experimentDAO.get(new URI(studyDbId));
+        if (xp != null) {
+            ArrayList<BrapiObservationUnitDTO> observationUnits= getObservationUnitsResult(scientificObjects,xp);
 
             if (observationUnits.isEmpty()) {
                 BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observationUnits, true);
@@ -684,7 +688,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             }  
             
         } else {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, experimentDAO.allPaginate(), true);
+            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, new ArrayList<>(), true);
             return noResultFound(getResponse, statusList);
         }        
 
@@ -810,7 +814,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
      * @param experiment Experiment linked to those scientific objects (user query filter)
      * @return observationUnits list 
      */
-    private ArrayList<BrapiObservationUnitDTO> getObservationUnitsResult(ArrayList<ScientificObject> scientificObjects, Experiment experiment) {
+    private ArrayList<BrapiObservationUnitDTO> getObservationUnitsResult(ArrayList<ScientificObject> scientificObjects, ExperimentModel experiment) {
         SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
         VariableDAO variableDaoSesame = new VariableDAO();
         ArrayList<Variable> variablesList = variableDaoSesame.allPaginate(); 
@@ -822,8 +826,8 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             String unitType[] = rdfUnitType.split("#");
             unit.setObservationLevel(unitType[1]);
             unit.setObservationUnitName(object.getLabel());
-            unit.setStudyDbId(experiment.getUri());
-            unit.setStudyName(experiment.getAlias());
+            unit.setStudyDbId(experiment.getUri().toString());
+            unit.setStudyName(experiment.getLabel());
             ArrayList<BrapiObservationSummaryDTO> observationsPerObsUnit = new ArrayList(); 
             for (Variable variable:variablesList) {
                 //retrieve observations

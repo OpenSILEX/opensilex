@@ -8,8 +8,11 @@
 package opensilex.service.resource.dto.project;
 
 import io.swagger.annotations.ApiModelProperty;
+import java.net.URI;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import javax.mail.internet.InternetAddress;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.Contact;
 import opensilex.service.model.FinancialFunding;
@@ -18,16 +21,20 @@ import opensilex.service.resource.ProjectResourceService;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.dto.provenance.ContactDTO;
 import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDTO;
+import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Details of a project.
+ *
  * @see http://www.dublincore.org/specifications/dublin-core/dcmi-terms/
  * @see http://xmlns.com/foaf/spec/
- * @see ProjectResourceService#getById(java.lang.String, int, int) 
+ * @see ProjectResourceService#getById(java.lang.String, int, int)
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProjectDetailDTO extends AbstractVerifiedClass {
-    
+
     //URI of the project
     private String uri;
     //Foaf:name of the project
@@ -58,7 +65,59 @@ public class ProjectDetailDTO extends AbstractVerifiedClass {
     private List<ContactDTO> scientificContacts = new ArrayList<>();
     //Objective of the project
     private String objective;
-    
+
+    public ProjectDetailDTO(ProjectModel project, SPARQLService sparql) throws Exception {
+        uri = project.getUri().toString();
+        name = project.getName();
+        shortname = project.getShortname();
+//        financialReference = project.getFinancialReference();
+        description = project.getDescription();
+        startDate = project.getStartDate().format(DateTimeFormatter.ISO_DATE);
+        endDate = project.getEndDate().format(DateTimeFormatter.ISO_DATE);
+        keywords = project.getKeywords();
+        if (project.getHomePage() != null) {
+            homePage = project.getHomePage().toString();
+        }
+        objective = project.getObjective();
+
+        String financialFundingURI = null;
+        for (SPARQLModelRelation modelRelation : project.getRelations()) {
+            if (modelRelation.getProperty().equals(ProjectResourceService.hasFinancialFunding)) {
+                financialFundingURI = modelRelation.getValue();
+            }
+            if (modelRelation.getProperty().equals(ProjectResourceService.hasFinancialReference)) {
+                financialReference = modelRelation.getValue();
+            }
+        }
+
+        if (financialFundingURI != null) {
+            FinancialFunding financialFundingModel = sparql.getByURI(FinancialFunding.class, new URI(financialFundingURI));
+            financialFunding = new RdfResourceDTO(financialFundingURI, financialFundingModel.getLabel());
+        }
+
+        for (ProjectModel relatedProject : project.getRelatedProjects()) {
+            relatedProjects.add(new RdfResourceDTO(relatedProject.getUri().toString(), relatedProject.getName()));
+        }
+
+        for (InternetAddress contact : project.getAdministrativeContacts()) {
+            Contact c = new Contact();
+            c.setEmail(contact.toString());
+            administrativeContacts.add(new ContactDTO(c));
+        }
+
+        for (InternetAddress contact : project.getCoordinators()) {
+            Contact c = new Contact();
+            c.setEmail(contact.toString());
+            coordinators.add(new ContactDTO(c));
+        }
+
+        for (InternetAddress contact : project.getScientificContacts()) {
+            Contact c = new Contact();
+            c.setEmail(contact.toString());
+            scientificContacts.add(new ContactDTO(c));
+        }
+    }
+
     public ProjectDetailDTO(Project project) {
         uri = project.getUri();
         name = project.getName();
@@ -70,29 +129,29 @@ public class ProjectDetailDTO extends AbstractVerifiedClass {
         keywords = project.getKeywords();
         homePage = project.getHomePage();
         objective = project.getObjective();
-        
+
         if (project.getFinancialFunding() != null) {
             FinancialFunding financialFundingObject = project.getFinancialFunding();
-            financialFunding = new RdfResourceDTO(financialFundingObject.getUri(), financialFundingObject.getLabel());
+            financialFunding = new RdfResourceDTO(financialFundingObject.getUri().toString(), financialFundingObject.getLabel());
         }
-        
+
         for (Project relatedProject : project.getRelatedProjects()) {
             relatedProjects.add(new RdfResourceDTO(relatedProject.getUri(), relatedProject.getName()));
         }
-        
+
         for (Contact contact : project.getAdministrativeContacts()) {
             administrativeContacts.add(new ContactDTO(contact));
         }
-        
+
         for (Contact contact : project.getCoordinators()) {
             coordinators.add(new ContactDTO(contact));
         }
-        
+
         for (Contact contact : project.getScientificContacts()) {
             scientificContacts.add(new ContactDTO(contact));
         }
     }
-    
+
     @Override
     public Object createObjectFromDTO() throws Exception {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -106,7 +165,7 @@ public class ProjectDetailDTO extends AbstractVerifiedClass {
     public void setUri(String uri) {
         this.uri = uri;
     }
-    
+
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_PROJECT_NAME)
     public String getName() {
         return name;
@@ -132,7 +191,7 @@ public class ProjectDetailDTO extends AbstractVerifiedClass {
     public void setRelatedProjects(List<RdfResourceDTO> relatedProjects) {
         this.relatedProjects = relatedProjects;
     }
-    
+
     public RdfResourceDTO getFinancialFunding() {
         return financialFunding;
     }

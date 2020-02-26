@@ -103,7 +103,6 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
     }
 
     
-    @Override
     public ArrayList<StudyDTO> allPaginate() {
         ResultSet queryResult = null;
         Connection connection = null;
@@ -152,14 +151,11 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
                     study.setActive("false");                        
                 }
                 
-                //SILEX:INFO
+                //SILEX:TODO
                 //check if the user has access to the study  
                 Experiment experiment = new Experiment(study.getStudyDbId());
-                ExperimentSQLDAO expDAO = new ExperimentSQLDAO();
-                if (isAdmin || expDAO.canUserSeeExperiment(user, experiment)) {
-                    studies.add(study);
-                }
-                //\SILEX:INFO
+                studies.add(study);
+                //\SILEX:TODO
                 
             }
             
@@ -179,7 +175,7 @@ public class StudySQLDAO extends PostgreSQLDAO<StudyDTO> {
                     connection.close();
                 }
             } catch (SQLException ex) {
-                java.util.logging.Logger.getLogger(ExperimentSQLDAO.class.getName()).log(Level.SEVERE, null, ex);
+                java.util.logging.Logger.getLogger(StudySQLDAO.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         

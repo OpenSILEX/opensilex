@@ -391,7 +391,6 @@ public class UserDAO extends PhisDAO<User, UserDTO> {
         return users;
     }
     
-    @Override
     public ArrayList<User> allPaginate() {
         ResultSet queryResult = null;
         Connection connection = null;

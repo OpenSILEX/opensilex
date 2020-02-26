@@ -20,6 +20,7 @@ import org.opensilex.rest.user.dal.UserModel;
 
 import javax.mail.internet.InternetAddress;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,19 +29,18 @@ import java.util.Arrays;
  * @author Renaud COLIN
  * DTO used to convert from {@link ExperimentDTO} (old model) to {@link ExperimentModel} (new model)
  */
-public class DtoToExperimentModel {
+public class ExperimentDtoToExperimentModel {
 
     protected final SpeciesDAO speciesDAO;
     protected final ProjectDAO projectDAO;
     protected final UserDAO userDAO;
 
     /**
-     *
      * @param speciesDAO Dao needed to resolve {@link Species} URI from {@link ExperimentPostDTO#getCropSpecies()}
      * @param projectDAO Dao needed to get {@link ProjectModel} from {@link ExperimentPostDTO#getProjectsUris()}
-     * @param userDAO Dao needed to get an {@link UserModel} from {@link ExperimentPostDTO#getContacts()}
+     * @param userDAO    Dao needed to get an {@link UserModel} from {@link ExperimentPostDTO#getContacts()}
      */
-    public DtoToExperimentModel(SpeciesDAO speciesDAO, ProjectDAO projectDAO, UserDAO userDAO) {
+    public ExperimentDtoToExperimentModel(SpeciesDAO speciesDAO, ProjectDAO projectDAO, UserDAO userDAO) {
         this.speciesDAO = speciesDAO;
         this.projectDAO = projectDAO;
         this.userDAO = userDAO;
@@ -58,8 +58,8 @@ public class DtoToExperimentModel {
         xpModel.setComment(xpDto.getComment());
 
         if (!StringUtils.isEmpty(xpDto.getKeywords())) {
-           String[] keywords = xpDto.getKeywords().split("\\s+");
-           xpModel.setKeywords(Arrays.asList(keywords));
+            String[] keywords = xpDto.getKeywords().split("\\s+");
+            xpModel.setKeywords(Arrays.asList(keywords));
         }
 
         xpModel.setStartDate(LocalDate.parse(xpDto.getStartDate()));
@@ -104,6 +104,21 @@ public class DtoToExperimentModel {
                 } else {
                     throw new IllegalArgumentException("Bad contact type : " + contact.getType());
                 }
+            }
+        }
+        // try to get the Infrastructures/field URI
+        if (!xpDto.getField().isEmpty()) {
+            try {
+                xpModel.getInfrastructures().add(new URI(xpDto.getField()));
+            } catch (URISyntaxException ignored) {
+            }
+        }
+
+        // try to get the devices/place URI
+        if (!xpDto.getPlace().isEmpty()) {
+            try {
+                xpModel.getDevices().add(new URI(xpDto.getPlace()));
+            } catch (URISyntaxException ignored) {
             }
         }
         return xpModel;

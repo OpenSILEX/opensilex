@@ -21,7 +21,6 @@ import org.apache.commons.codec.binary.Base32;
 import org.apache.jena.sparql.AlreadyExists;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.dao.ActuatorDAO;
-import opensilex.service.dao.ExperimentSQLDAO;
 import opensilex.service.dao.ImageMetadataMongoDAO;
 import opensilex.service.dao.GroupDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
@@ -29,7 +28,6 @@ import opensilex.service.dao.AnnotationDAO;
 import opensilex.service.dao.EventDAO;
 import opensilex.service.dao.FactorDAO;
 import opensilex.service.dao.MethodDAO;
-import opensilex.service.dao.ProjectDAO;
 import opensilex.service.dao.RadiometricTargetDAO;
 import opensilex.service.dao.SensorDAO;
 import opensilex.service.dao.UriDAO;
@@ -635,44 +633,7 @@ public class UriGenerator {
             return PLATFORM_URI + year + nbImagesByYear;
         }
     }
-    
-    /**
-     * Generates a new project URI. A project URI follows the pattern:
-     * <prefix>:<projectAcronyme>
-     * @example http://www.opensilex.org/demo/PA
-     * @param projectAcronyme the project acronym
-     * @return the new URI
-     */
-    private static String generateProjectUri(String projectAcronyme) throws Exception {
-        //1. generates URI
-        String projectUri = PLATFORM_URI + projectAcronyme;
-        //2. check if URI exists
-        ProjectDAO projectDAO = new ProjectDAO();
-        if (projectDAO.existUri(projectUri)) {
-            throw new AlreadyExists("The project uri " + projectUri + " already exist in the triplestore.");
-        }
-        
-        return projectUri;
-    }
-    
-    /**
-     * Generates a new experiment URI. An experiment URI follows this pattern:
-     * <prefix>:<unic_code>
-     * <unic_code> = infrastructure code + 4 digits year + auto increment digit (per year)
-     * @example http://www.opensilex.org/demo/DMO2019-1
-     * @param campaign the year of the campaign of the experiment
-     * @return the new URI
-     */
-    private static String generateExperimentUri(String campaign) {
-        //1. Get the campaign last experiment URI
-        Integer campaignLastExperimentUri = (new ExperimentSQLDAO()).getCampaignLastExperimentUri(campaign);
-        //2. Generate the URI of the experiment
-        
-        Integer newExperimentNumber = campaignLastExperimentUri + 1;
-        
-        return PLATFORM_URI + PLATFORM_CODE + campaign + EXPERIMENT_URI_SEPARATOR + newExperimentNumber;
-    }
-    
+   
     /**
      * Generate a new group URI. A group URI follows the pattern:
      * <prefix>:<groupName>
@@ -868,10 +829,6 @@ public class UriGenerator {
             return generateAnnotationUri();
         } else if (instanceType.equals(Oeso.CONCEPT_RADIOMETRIC_TARGET.toString())) {
             return generateRadiometricTargetUri();
-        } else if (instanceType.equals(Oeso.CONCEPT_PROJECT.toString())) {
-            return generateProjectUri(additionalInformation);
-        } else if (instanceType.equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
-            return generateExperimentUri(year);
         } else if (instanceType.equals(Foaf.CONCEPT_GROUP.toString())) {
             return generateGroupUri(additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_PROVENANCE.toString())) {

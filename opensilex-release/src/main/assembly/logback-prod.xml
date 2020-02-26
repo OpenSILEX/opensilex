@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false" scan="true">
+    <!-- configuration variables-->
+    <property name="log.pattern" value="%d{dd MMM yyyy;HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n" />
+    <property name="default.log.level" value="WARN"/>
+    <property name="opensilex.log.level" value="${opensilex.log.level:-DEBUG}"/>
+    
+    <!-- output -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="org.opensilex.utils.LogFilter">
+            <!-- Default application log level (for libraries) -->
+            <level>${default.log.level}</level>
+            <!-- Log level for included and excluded patterns -->
+            <customLevel>${opensilex.log.level}</customLevel>
+            <!-- List of logger name pattern to include at custom log level -->
+            <include>org.opensilex</include>
+            <include>test.opensilex</include>
+            <!-- List of classes to include at DEBUG log level -->
+            <!-- <debug>org.opensilex.server.Server</debug> -->
+        </filter>
+	
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
+    
+    <property name="log.path" value="."/>
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="org.opensilex.utils.LogFilter">
+            <!-- Default application log level (for libraries) -->
+            <level>${default.log.level}</level>
+            <!-- Log level for included and excluded patterns -->
+            <customLevel>${opensilex.log.level}</customLevel>
+            <!-- List of logger name pattern to include at custom log level -->
+            <include>org.opensilex</include>
+            <include>test.opensilex</include>
+            <!-- List of classes to include at DEBUG log level -->
+            <!-- <debug>org.opensilex.server.Server</debug> -->
+        </filter>
+	
+        <file>${log.path}/opensilex.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <maxHistory>30</maxHistory>
+            <fileNamePattern>${log.path}/opensilex.log-%d{yyyy-MM-dd}.log.zip</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender> 
+
+    
+    <root>
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+    </root>
+</configuration>

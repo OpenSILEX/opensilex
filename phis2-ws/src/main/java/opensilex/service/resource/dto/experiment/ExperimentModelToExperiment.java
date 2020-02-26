@@ -7,6 +7,7 @@
 package opensilex.service.resource.dto.experiment;
 
 import opensilex.service.dao.SensorDAO;
+import opensilex.service.dao.VariableDAO;
 import opensilex.service.model.*;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
@@ -24,18 +25,12 @@ import java.net.URI;
 public class ExperimentModelToExperiment {
 
     protected final SensorDAO sensorDAO;
+    protected final VariableDAO variableDAO;
 
-    /**
-     *
-     * @param sensorDAO Dao needed to build {@link Experiment}  sensor URI -> sensor label map from an {@link ExperimentModel}
-     *
-     * @see Experiment#getSensors()
-     * @see ExperimentModel#getSensors()
-     */
-    public ExperimentModelToExperiment(SensorDAO sensorDAO) {
-        this.sensorDAO = sensorDAO;
+    public ExperimentModelToExperiment() {
+        sensorDAO = new SensorDAO();
+        variableDAO = new VariableDAO();
     }
-
 
     public Experiment convert(ExperimentModel xp) throws Exception {
 
@@ -64,8 +59,12 @@ public class ExperimentModelToExperiment {
             oldProjectMOdel.setName(projectModel.getName());
             oldXpModel.addProject(oldProjectMOdel);
         }
-        for(VariableModel variable : xp.getVariables()){
-            oldXpModel.getVariables().put(variable.getUri().toString(),variable.getLabel());
+        for(URI varURI : xp.getVariables()){
+            Variable variable = variableDAO.findById(varURI.toString());
+            if(variable == null){
+                throw new IllegalArgumentException("Unknown variable URI "+varURI);
+            }
+            oldXpModel.getVariables().put(variable.getUri(),variable.getLabel());
         }
 
 
@@ -73,7 +72,7 @@ public class ExperimentModelToExperiment {
         for(URI sensorUri : xp.getSensors()){
             Sensor sensor = sensorDAO.findById(sensorUri.toString());
             if(sensor == null){
-                throw new IllegalArgumentException("Unknown species URI "+sensorUri);
+                throw new IllegalArgumentException("Unknown sensor URI "+sensorUri);
             }
             oldXpModel.getSensors().put(sensor.getUri(),sensor.getLabel());
         }

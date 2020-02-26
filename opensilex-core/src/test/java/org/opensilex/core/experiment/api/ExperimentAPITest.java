@@ -122,7 +122,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
         assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
 
         Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
-        assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+        assertEquals(Status.NO_CONTENT.getStatusCode(), getResult.getStatus());
     }
 
     @Test
@@ -152,7 +152,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
 
         // call the service with a non existing pseudo random URI
         final Response getResult = getJsonGetByUriResponse(target(uriPath), uri + "7FG4FG89FG4GH4GH57");
-        assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+        assertEquals(Status.NO_CONTENT.getStatusCode(), getResult.getStatus());
     }
 
     @Test

@@ -253,10 +253,7 @@ public class ScientificObjectSQLDAO extends PhisDAO<ScientificObject, Object> {
             query.appendSelect("ST_AsGeoJSON(ST_Transform(" + GEOMETRY + ", 4326)), ao." + URI);
             query.appendFrom(table, tableAlias);
 
-            for (String scientificObjectURI : scientificObjectsURIs) {
-                query.appendORWhereConditionIfNeeded(URI, scientificObjectURI, "=", null, tableAlias);
-            }
-
+            query.appendINConditions(URI, scientificObjectsURIs, tableAlias);
             LOGGER.debug(getTraceabilityLogs() + " quert : " + query.toString());
 
             ResultSet queryResult = statement.executeQuery(query.toString());

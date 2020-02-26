@@ -608,8 +608,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      */
     public ArrayList<ScientificObject> find(Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias, Boolean withProperties) {
         try {
-            long startFind = System.nanoTime();
-
        
             SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(false, page, pageSize, uri, rdfType, experiment, alias);
             //SILEX:test
@@ -621,9 +619,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             
             TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
             Map<String, ScientificObject> foundedScientificObjects = new HashMap<>();
-            long query = System.nanoTime();
 
-             System.out.println("Execution time in milliseconds (query) : " + ( query - startFind) / 1000000);
             try (TupleQueryResult result = tupleQuery.evaluate()) {
                 while (result.hasNext()) {
                     BindingSet bindingSet = result.next();
@@ -665,9 +661,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     foundedScientificObjects.put(actualUri, scientificObject);
                 }
             }
-             long loopObject = System.nanoTime();
 
-            System.out.println("Execution time in milliseconds (loopObject) : " + (  loopObject - query) / 1000000);
             ArrayList<String> scientificObjectsUris = new ArrayList<>();
             ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
             foundedScientificObjects.entrySet().forEach((entry) -> {
@@ -675,17 +669,15 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                 scientificObjectsUris.add(entry.getKey());
             });
             
-            long geom = System.nanoTime();
-
-            //Get geometries in relational database
+            //Get geometries in relational database 
             ScientificObjectSQLDAO scientificObjectDao = new ScientificObjectSQLDAO();
             HashMap<String, String> geometries = scientificObjectDao.getGeometries(scientificObjectsUris);
-            
+
             scientificObjects.forEach((scientificObject) -> {
                 scientificObject.setGeometry(geometries.get(scientificObject.getUri()));
             });
-            System.out.println("Execution time in milliseconds (geom) : " + (   geom- loopObject) / 1000000);
-
+            
+            
             return scientificObjects;
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(ScientificObjectRdf4jDAO.class.getName()).log(Level.SEVERE, null, ex);
@@ -732,7 +724,20 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             sparqlQuery.appendAndFilter("REGEX ( str(?" + URI + "),\".*" + uri + ".*\",\"i\")");
         }
 
-        //Label filter
+       
+        //Rdf type filter
+        if (rdfType != null) {
+            sparqlQuery.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), rdfType, null);
+        } else {
+            sparqlQuery.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
+            sparqlQuery.appendTriplet(
+                    "?" + RDF_TYPE, 
+                    "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", 
+                    Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), null);
+            sparqlQuery.appendSelect(" ?" + RDF_TYPE);
+        }
+        
+         //Label filter
         sparqlQuery.appendSelect("?" + ALIAS);
         if (alias == null && !count) {
             sparqlQuery.beginBodyOptional();
@@ -751,17 +756,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             sparqlQuery.appendOptional("?" + URI + " <" + Oeso.RELATION_PARTICIPATES_IN.toString() + "> " + "?" + EXPERIMENT + " . ");
         }
         
-        //Rdf type filter
-        if (rdfType != null) {
-            sparqlQuery.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), rdfType, null);
-        } else {
-            sparqlQuery.appendSelect(" ?" + RDF_TYPE);
-            sparqlQuery.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
-            sparqlQuery.appendTriplet(
-                    "?" + RDF_TYPE, 
-                    "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", 
-                    Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), null);
-        }
         
         if (page != null && pageSize != null) {
             sparqlQuery.appendLimit(pageSize);

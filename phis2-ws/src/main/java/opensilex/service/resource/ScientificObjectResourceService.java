@@ -261,7 +261,7 @@ public class ScientificObjectResourceService extends ResourceService {
     ) {
         ArrayList<ScientificObjectDTO> scientificObjectsToReturn = new ArrayList<>();
         ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
-        long startTime = System.nanoTime();
+
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ScientificObjectDTO> getResponse;
         
@@ -272,9 +272,6 @@ public class ScientificObjectResourceService extends ResourceService {
         
         //1. Get count
         Integer totalCount = scientificObjectDaoSesame.count(uri, rdfType, experimentURI, alias);
-        long count = System.nanoTime();
-
-        System.out.println("Execution time in milliseconds (count) : " + ( count - startTime) / 1000000);
         
        
         // If scientific objects found
@@ -283,8 +280,7 @@ public class ScientificObjectResourceService extends ResourceService {
             scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias, withProperties);
         }
        
-        long get = System.nanoTime();
-        System.out.println("Execution time in milliseconds (get) : " + ( get - count) / 1000000);
+
         if (scientificObjects == null) { //Request failure
             getResponse = new ResultForm<>(0, 0, scientificObjectsToReturn, true);
             return noResultFound(getResponse, statusList);
@@ -298,8 +294,7 @@ public class ScientificObjectResourceService extends ResourceService {
             scientificObjects.forEach((scientificObject) -> {
                 scientificObjectsToReturn.add(new ScientificObjectDTO(scientificObject));
             });
-            long scientific = System.nanoTime();
-            System.out.println("Execution time in milliseconds (scientific) : " + ( scientific - get) / 1000000);
+
             getResponse = new ResultForm<>(scientificObjectDaoSesame.getPageSize(), scientificObjectDaoSesame.getPage(), scientificObjectsToReturn, true, totalCount);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);

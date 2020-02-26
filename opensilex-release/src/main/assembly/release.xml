@@ -27,5 +27,10 @@
             <outputDirectory>.</outputDirectory>
             <destName>opensilex.jar</destName>
         </file>
+        <file>
+            <source>${project.basedir}/src/main/assembly/logback-prod.xml</source>
+            <outputDirectory>.</outputDirectory>
+            <destName>logback-prod.xml</destName>
+        </file>        
     </files>
 </assembly>

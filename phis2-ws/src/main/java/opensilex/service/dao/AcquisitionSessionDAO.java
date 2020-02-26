@@ -58,10 +58,6 @@ public class AcquisitionSessionDAO extends Rdf4jDAO<MetadataFileDTO> {
         if (uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_FIELD_ROBOT.toString())
                 || uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
             //Common metadata
-            //2. get the number of pilots
-            UserDAO userDAO = new UserDAO();
-            sizes.add(userDAO.count());
-            
             //3. platform
             sizes.add(1);
             
@@ -109,13 +105,6 @@ public class AcquisitionSessionDAO extends Rdf4jDAO<MetadataFileDTO> {
         if (uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_FIELD_ROBOT.toString())
                 || uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
             //Common metadata
-            //2. get the pilots list
-            UserDAO userDAO = new UserDAO();
-            userDAO.setPage(page);
-            userDAO.setPageSize(pageSize);
-            users = userDAO.getAllUsersEmails();
-            sizes.add(users.size());
-            
             //3. platform
             installations.add(Oeso.PLATFORM_URI.toString());
             

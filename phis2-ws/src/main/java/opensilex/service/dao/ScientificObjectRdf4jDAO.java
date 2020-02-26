@@ -621,39 +621,38 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             
             TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
             Map<String, ScientificObject> foundedScientificObjects = new HashMap<>();
+            
+            TupleQueryResult result = tupleQuery.evaluate();
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                boolean alreadyFoundedUri = false;
 
-            try (TupleQueryResult result = tupleQuery.evaluate()) {
-                while (result.hasNext()) {
-                    BindingSet bindingSet = result.next();
-                    boolean alreadyFoundedUri = false;
-                    
-                    String actualUri = bindingSet.getValue(URI).stringValue();
-                    
-                    if (foundedScientificObjects.containsKey(actualUri)) {
-                        alreadyFoundedUri = true;
+                String actualUri = bindingSet.getValue(URI).stringValue();
+
+                if (foundedScientificObjects.containsKey(actualUri)) {
+                    alreadyFoundedUri = true;
+                }
+
+                ScientificObject scientificObject = null;
+
+                if (alreadyFoundedUri) {
+                    scientificObject = foundedScientificObjects.get(actualUri);
+                } else {
+                    scientificObject = new ScientificObject();
+                    scientificObject.setUri(actualUri);
+
+                    if (experiment != null) {
+                        scientificObject.setUriExperiment(experiment);
+                    } else if (bindingSet.getValue(EXPERIMENT) != null) {
+                        scientificObject.setExperiment(bindingSet.getValue(EXPERIMENT).stringValue());
                     }
-                    
-                    ScientificObject scientificObject = null;
-                                      
-                    if (alreadyFoundedUri) {
-                        scientificObject = foundedScientificObjects.get(actualUri);
+
+                    scientificObject.setLabel(bindingSet.getValue(ALIAS).stringValue());
+
+                    if (rdfType != null) {
+                        scientificObject.setRdfType(rdfType);
                     } else {
-                        scientificObject = new ScientificObject();
-                        scientificObject.setUri(actualUri);
-                        
-                        if (experiment != null) {
-                            scientificObject.setUriExperiment(experiment);
-                        } else if (bindingSet.getValue(EXPERIMENT) != null) {
-                            scientificObject.setExperiment(bindingSet.getValue(EXPERIMENT).stringValue());
-                        }
-                        
-                        scientificObject.setLabel(bindingSet.getValue(ALIAS).stringValue());
-                        
-                        if (rdfType != null) {
-                            scientificObject.setRdfType(rdfType);
-                        } else {
-                            scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
-                        }
+                        scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
                     }
                     if(withProperties){
                         //Get scientific object properties
@@ -662,6 +661,11 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     
                     foundedScientificObjects.put(actualUri, scientificObject);
                 }
+
+                //Get scientific object properties
+                scientificObject.setProperties(findScientificObjectProperties(actualUri));
+
+                foundedScientificObjects.put(actualUri, scientificObject);
             }
 
             ArrayList<String> scientificObjectsUris = new ArrayList<>();
@@ -1192,9 +1196,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         } catch (MalformedQueryException e) { //an error occurred, rollback
             this.getConnection().rollback();
             throw new MalformedQueryException(e.getMessage());
-        } catch (SQLException e) { //an error occurred, rollback
-            this.getConnection().rollback();
-            throw new SQLException(e.getMessage());
         }
         
         return scientificObject;  

@@ -496,54 +496,51 @@ public class EventDAO extends Rdf4jDAO<Event> {
             throws DAOPersistenceException, DAODataErrorAggregateException, NotAnAdminException {
         ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
 
-        // Check if user is admin
-        UserDAO userDAO = new UserDAO();
-        if (!userDAO.isAdmin(user)) {
-            throw new NotAnAdminException();
-        } else {
-            ConcernedItemDAO concernedItemDao
-                    = new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
-            PropertyDAO propertyDao = new PropertyDAO();
-            AnnotationDAO annotationDao = new AnnotationDAO();
-            try {
-                for (Event event : events) {
+        ConcernedItemDAO concernedItemDao = 
+                new ConcernedItemDAO(user, Contexts.EVENTS.toString(), Oeev.concerns.getURI());
+        PropertyDAO propertyDao = new PropertyDAO();
+        AnnotationDAO annotationDao = new AnnotationDAO();
+        try {
+            for (Event event : events) {
 
-                    // Check the event URI if given (in case of an update)
-                    if (event.getUri() != null) {
-                        if (!existUri(event.getUri())) {
-                            exceptions.add(new UnknownUriException(event.getUri(), "the event"));
-                        }
-                    }
-
-                    // Check Type
-                    if (!existUri(event.getType())) {
-                        exceptions.add(new UnknownUriException(event.getType(), "the event type"));
-                    }
-
-                    // Check concerned items
-                    try {
-                        concernedItemDao.validate(event.getConcernedItems());
-                    } catch (DAODataErrorAggregateException ex) {
-                        exceptions.addAll(ex.getExceptions());
-                    }
-
-                    // Check properties
-                    try {
-                        propertyDao.checkExistenceRangeDomain(event.getUri(), event.getType(), event.getProperties());
-                    } catch (DAODataErrorAggregateException ex) {
-                        exceptions.addAll(ex.getExceptions());
-                    }
-
-                    // Check annotations
-                    try {
-                        annotationDao.validate(event.getAnnotations());
-                    } catch (DAODataErrorAggregateException ex) {
-                        exceptions.addAll(ex.getExceptions());
+                // Check the event URI if given (in case of an update)
+                if (event.getUri() != null) {
+                    if (!existUri(event.getUri())){
+                        exceptions.add(new UnknownUriException(event.getUri(), "the event"));
                     }
                 }
-            } catch (RepositoryException | MalformedQueryException | QueryEvaluationException ex) {
-                handleTriplestoreException(ex);
+
+                // Check Type
+                if (!existUri(event.getType())) {
+                    exceptions.add(new UnknownUriException(event.getType(), "the event type"));
+                }
+
+                // Check concerned items
+                try {
+                    concernedItemDao.validate(event.getConcernedItems());
+                }
+                catch (DAODataErrorAggregateException ex) {
+                    exceptions.addAll(ex.getExceptions());
+                }
+
+                // Check properties
+                try {
+                    propertyDao.checkExistenceRangeDomain(event.getUri(), event.getType(), event.getProperties());
+                }
+                catch (DAODataErrorAggregateException ex) {
+                    exceptions.addAll(ex.getExceptions());
+                }
+
+                // Check annotations
+                try {
+                    annotationDao.validate(event.getAnnotations());
+                }
+                catch (DAODataErrorAggregateException ex) {
+                    exceptions.addAll(ex.getExceptions());
+                }
             }
+        } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
+            handleTriplestoreException(ex);
         }
 
         if (exceptions.size() > 0) {

@@ -517,32 +517,21 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
         List<Status> checkStatus = new ArrayList<>();
         boolean dataOk = true;
 
-        //1. check if user is an administrator
-        UserDAO userDao = new UserDAO();
-        if (userDao.isAdmin(user)) {
-            //2. check data
-            for (VectorDTO vectorDTO : vectorsDTO) {
-                try {
-                    //2.1 check type (subclass of Vector)
-                    UriDAO uriDao = new UriDAO();
-                    if (!uriDao.isSubClassOf(vectorDTO.getRdfType(), Oeso.CONCEPT_VECTOR.toString())) {
-                        dataOk = false;
-                        checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Bad vector type given"));
-                    }
-
-                    //2.2 check if person in charge exist
-                    User u = new User(vectorDTO.getPersonInCharge());
-                    if (!userDao.existInDB(u)) {
-                        dataOk = false;
-                        checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown person in charge email"));
-                    }
-                } catch (Exception ex) {
-                    java.util.logging.Logger.getLogger(VectorDAO.class.getName()).log(Level.SEVERE, null, ex);
+        //2. check data
+        for (VectorDTO vectorDTO : vectorsDTO) {
+            try {
+                //2.1 check type (subclass of Vector)
+                UriDAO uriDao = new UriDAO();
+                if (!uriDao.isSubClassOf(vectorDTO.getRdfType(), Oeso.CONCEPT_VECTOR.toString())) {
+                    dataOk = false;
+                    checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Bad vector type given"));
                 }
+
+                //2.2 check if person in charge exist
+                User u = new User(vectorDTO.getPersonInCharge());
+            } catch (Exception ex) {
+                java.util.logging.Logger.getLogger(VectorDAO.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } else {
-            dataOk = false;
-            checkStatus.add(new Status(StatusCodeMsg.ACCESS_DENIED, StatusCodeMsg.ERR, StatusCodeMsg.ADMINISTRATOR_ONLY));
         }
         
         vectorsCheck = new POSTResultsReturn(dataOk, null, dataOk);

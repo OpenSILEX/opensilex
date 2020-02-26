@@ -9,7 +9,6 @@
 package opensilex.service.dao.manager;
 
 import java.util.List;
-import opensilex.service.datasource.PostgreSQLDataSource;
 import opensilex.service.utils.POSTResultsReturn;
 
 /**
@@ -18,12 +17,9 @@ import opensilex.service.utils.POSTResultsReturn;
  * @param <T>
  * @param <D> Object handled in the database
  */
-public abstract class PhisDAO<T, D> extends PostgreSQLDAO<T> {
+public abstract class PhisDAO<T, D> {
 
     public PhisDAO() {
-        if (dataSource == null) {
-            dataSource = PostgreSQLDataSource.getInstance();
-        }
     }
     
     /**

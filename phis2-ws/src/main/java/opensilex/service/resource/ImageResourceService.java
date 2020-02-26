@@ -20,6 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Year;
@@ -32,6 +35,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -61,7 +65,6 @@ import opensilex.service.ontology.Oeso;
 import opensilex.service.resource.dto.ImageMetadataDTO;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
-import opensilex.service.utils.FileUploader;
 import opensilex.service.utils.ImageWaitingCheck;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
@@ -70,6 +73,7 @@ import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.ImageMetadata;
+import org.opensilex.fs.service.FileStorageService;
 
 /**
  * Image resource service.
@@ -213,7 +217,7 @@ public class ImageResourceService extends ResourceService {
      * 
      */
     private String getServerImagesDirectory() {
-        return PropertiesFileManager.getConfigFileProperty("service", "uploadImageServerDirectory") + "/"
+        return "/images/"
                 + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructure") + "/" 
                 + Year.now().toString();
     }
@@ -223,9 +227,7 @@ public class ImageResourceService extends ResourceService {
      * @example http://localhost/images/platform/2017/i170000000000)
      */
     private String getWebAccessImagesDirectory() {
-        return PropertiesFileManager.getConfigFileProperty("service", "imageFileServerDirectory") + "/"
-                + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructure") + "/" 
-                + Year.now().toString();
+        return PropertiesFileManager.getPublicURI() + "rest/data/file/";
     }
     
     /**
@@ -238,6 +240,9 @@ public class ImageResourceService extends ResourceService {
         return imageUri.substring(imageUri.lastIndexOf("/") + 1, imageUri.length());
     }
     
+    @Inject
+    private FileStorageService fs;
+        
     /**
      * @param in File
      * @param imageUri Metadata uri
@@ -294,33 +299,39 @@ public class ImageResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
         
-        FileUploader jsch = new FileUploader();
-        
         final String serverFileName = getImageName(imageUri) + "." + WAITING_METADATA_INFORMATION.get(imageUri).getFileInformations().getExtension();
         final String serverImagesDirectory = getServerImagesDirectory();
         final String webAccessImagesDirectory = getWebAccessImagesDirectory();
     
         try {
             WAITING_METADATA_FILE_CHECK.put(imageUri, Boolean.TRUE);
-            //SILEX:test
-            jsch.getChannelSftp().cd(serverImagesDirectory);
-            //\SILEX:test
-        } catch (SftpException e) {
-            try {
-                //Create repository if it does not exist
-                jsch.createNestedDirectories(serverImagesDirectory);
-                jsch.getChannelSftp().cd(serverImagesDirectory);
-                LOGGER.debug("Create directory : " + serverImagesDirectory);
-            } catch (SftpException ex) {
-                statusList.add(new Status(StatusCodeMsg.SFTP_EXCEPTION, StatusCodeMsg.ERR, e.getMessage()));
-                LOGGER.error(e.getMessage(), serverImagesDirectory + " " + ex);
+            fs.createDirectories(Paths.get(serverImagesDirectory));
+            fs.writeFile(Paths.get(serverImagesDirectory, serverFileName), in);
+            
+            WAITING_METADATA_INFORMATION.get(imageUri)
+                .getFileInformations()
+                .setServerFilePath(webAccessImagesDirectory + URLEncoder.encode(serverFileName, StandardCharsets.UTF_8.toString()));
+        
+            ImageMetadataMongoDAO imageMetadataMongoDao = new ImageMetadataMongoDAO();
+            imageMetadataMongoDao.user = userSession.getUser();
+
+            final POSTResultsReturn insertMetadata = imageMetadataMongoDao.insert(Arrays.asList(WAITING_METADATA_INFORMATION.get(imageUri)));
+            postResponse = new ResponseFormPOST(insertMetadata.statusList);
+
+            if (insertMetadata.getDataState()) {
+                WAITING_METADATA_FILE_CHECK.remove(imageUri);
+                WAITING_METADATA_INFORMATION.remove(imageUri);
+
+                if (insertMetadata.getHttpStatus() == Response.Status.CREATED) {
+                    postResponse.getMetadata().setDatafiles((ArrayList) insertMetadata.createdResources);
+                    final URI newUri = new URI(uri.getPath());
+                    return Response.status(insertMetadata.getHttpStatus()).location(newUri).entity(postResponse).build();
+                } else {
+                    return Response.status(insertMetadata.getHttpStatus()).entity(postResponse).build();
+                }
             }
-        }
-        
-        boolean fileTransfered = jsch.fileTransfer(in, serverFileName);
-        jsch.closeConnection();
-        
-        if (!fileTransfered) { //If the image has not been register
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormPOST()).build();
+        } catch (Exception ex) {
             statusList.add(new Status(
                     "Image upload error", 
                     StatusCodeMsg.ERR, 
@@ -328,30 +339,6 @@ public class ImageResourceService extends ResourceService {
             postResponse = new ResponseFormPOST(statusList);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
-        
-        WAITING_METADATA_INFORMATION.get(imageUri)
-                .getFileInformations()
-                .setServerFilePath(webAccessImagesDirectory + "/" + serverFileName);
-        
-        ImageMetadataMongoDAO imageMetadataMongoDao = new ImageMetadataMongoDAO();
-        imageMetadataMongoDao.user = userSession.getUser();
-        
-        final POSTResultsReturn insertMetadata = imageMetadataMongoDao.insert(Arrays.asList(WAITING_METADATA_INFORMATION.get(imageUri)));
-        postResponse = new ResponseFormPOST(insertMetadata.statusList);
-        
-        if (insertMetadata.getDataState()) {
-            WAITING_METADATA_FILE_CHECK.remove(imageUri);
-            WAITING_METADATA_INFORMATION.remove(imageUri);
-            
-            if (insertMetadata.getHttpStatus() == Response.Status.CREATED) {
-                postResponse.getMetadata().setDatafiles((ArrayList) insertMetadata.createdResources);
-                final URI newUri = new URI(uri.getPath());
-                return Response.status(insertMetadata.getHttpStatus()).location(newUri).entity(postResponse).build();
-            } else {
-                return Response.status(insertMetadata.getHttpStatus()).entity(postResponse).build();
-            }
-        }
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormPOST()).build();
     }
     
     /**

@@ -24,7 +24,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.UserDAO;
 import opensilex.service.dao.TripletDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resource.dto.TripletDTO;
@@ -99,45 +98,29 @@ public class TripletsResourceService extends ResourceService {
         
         //If there are at least one list of triplets
         if (triplets != null && !triplets.isEmpty()) {
-            if (canUserAddTriplets()) { //If the user has the rights to insert triplets
-                TripletDAO tripletDao = new TripletDAO();
-                if (context.getRemoteAddr() != null) {
-                    tripletDao.remoteUserAdress = context.getRemoteAddr();
-                }
-                tripletDao.user = userSession.getUser();
-                
-                String graphUri = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "baseURI") 
-                        + Long.toString(new Timestamp(System.currentTimeMillis()).getTime());
-                
-                POSTResultsReturn insertResult = tripletDao.checkAndInsert(triplets, graphUri);
-                
-                //triplets inserted
-                if (insertResult.getHttpStatus().equals(Response.Status.CREATED)){
-                    postResponse = new ResponseFormPOST(insertResult.statusList);
-                    postResponse.getMetadata().setDatafiles(insertResult.getCreatedResources());
-                } else if (insertResult.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || insertResult.getHttpStatus().equals(Response.Status.OK)
-                        || insertResult.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    postResponse = new ResponseFormPOST(insertResult.statusList);
-                }
-                return Response.status(insertResult.getHttpStatus()).entity(postResponse).build();
-            } else {
-                return Response.status(Response.Status.FORBIDDEN).entity(new ResponseFormPOST()).build();
+            TripletDAO tripletDao = new TripletDAO();
+            if (context.getRemoteAddr() != null) {
+                tripletDao.remoteUserAdress = context.getRemoteAddr();
             }
-            
+            tripletDao.user = userSession.getUser();
+
+            String graphUri = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "baseURI") 
+                    + Long.toString(new Timestamp(System.currentTimeMillis()).getTime());
+
+            POSTResultsReturn insertResult = tripletDao.checkAndInsert(triplets, graphUri);
+
+            //triplets inserted
+            if (insertResult.getHttpStatus().equals(Response.Status.CREATED)){
+                postResponse = new ResponseFormPOST(insertResult.statusList);
+                postResponse.getMetadata().setDatafiles(insertResult.getCreatedResources());
+            } else if (insertResult.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || insertResult.getHttpStatus().equals(Response.Status.OK)
+                    || insertResult.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(insertResult.statusList);
+            }
+            return Response.status(insertResult.getHttpStatus()).entity(postResponse).build();
         } else {
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST()).build();
+            return Response.status(Response.Status.FORBIDDEN).entity(new ResponseFormPOST()).build();
         }
-    }
-    
-    /**
-     * Checks if the user can insert triplets in the triplestore. 
-     * Only admins can insert triplets.
-     * @return true if the user can insert triplets, 
-     *         false if user cannot insert triplets
-     */
-    private boolean canUserAddTriplets() {
-        UserDAO userDao = new UserDAO();
-        return userDao.isAdmin(userSession.getUser());
     }
 }

@@ -10,6 +10,9 @@ package opensilex.service.dao;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
@@ -52,8 +55,7 @@ public class LayerDAO extends DAO<LayerDTO>{
     public String fileWebPath;
     public HashMap<String, ScientificObject> children = new HashMap<>();
     
-    private static final String LAYER_FILE_SERVER_DIRECTORY = PropertiesFileManager.getConfigFileProperty("service", "layerFileServerDirectory");
-    private static final String LAYER_FILE_SERVER_ADDRESS = PropertiesFileManager.getConfigFileProperty("service", "layerFileServerAddress");
+    private static final String LAYER_FILE_SERVER_DIRECTORY = "/layers";
      
     /**
      * Searches and updates children.
@@ -87,11 +89,11 @@ public class LayerDAO extends DAO<LayerDTO>{
         return LAYER_FILE_SERVER_DIRECTORY + "/" + filename;
     }
     
-    public String getObjectURILayerFileWebPath(String objectURI) {
+    public String getObjectURILayerFileWebPath(String objectURI) throws UnsupportedEncodingException {
         String[] splitUri = objectURI.split("/");
         String layerName = splitUri[splitUri.length-1];
         String filename = layerName + ".geojson";
-        return LAYER_FILE_SERVER_ADDRESS + "/" + filename;
+        return PropertiesFileManager.getPublicURI() + "rest/data/file/" + URLEncoder.encode(filename, StandardCharsets.UTF_8.toString());
     }
       
     /**
@@ -178,18 +180,11 @@ public class LayerDAO extends DAO<LayerDTO>{
                 
                 writer.write("]}");
                 
-                //SILEX:warning ///!\ To uncomment in PROD
-//                java.nio.file.Path path = Paths.get(filePath);
-//                UserPrincipalLookupService lookupService = FileSystems.getDefault().getUserPrincipalLookupService();
-//                UserPrincipal up = lookupService.lookupPrincipalByName("www-data");
-//                Files.setOwner(path, up); 
-                //\SILEX:warning
-                
                 File f = new File(filePath);
                 final Set<PosixFilePermission> perms = PosixFilePermissions.fromString("rw-rw-r--");
                 Files.setPosixFilePermissions(f.toPath(), perms);
                 
-                fileWebPath = LAYER_FILE_SERVER_ADDRESS + "/" + filename;
+                fileWebPath = PropertiesFileManager.getPublicURI() + "rest/data/file/" + URLEncoder.encode(filename, StandardCharsets.UTF_8.toString());
                 
                 createdResourcesFilesPaths.add(filePath);
                 createStatusList.add(new Status("Resources created", StatusCodeMsg.INFO, createdResourcesFilesPaths.size() + " new resources created"));

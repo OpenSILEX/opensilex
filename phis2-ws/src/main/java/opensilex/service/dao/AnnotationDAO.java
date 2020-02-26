@@ -350,7 +350,6 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
     @Override
     public void validate(List<Annotation> annotations) throws DAODataErrorAggregateException, DAOPersistenceException {
         UriDAO uriDao = new UriDAO();
-        UserDAO userDao = new UserDAO();
         ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
         try {
             annotations.forEach((annotation) -> {
@@ -360,11 +359,6 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
                 }
                 else if (!uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
                     exceptions.add(new WrongTypeException(annotation.getMotivatedBy(), "the motivation"));
-                }
-
-                // check person
-                if (!userDao.existUserUri(annotation.getCreator())) {
-                    exceptions.add(new UnknownUriException(annotation.getCreator(), "the person"));
                 }
 
                 // check target

@@ -43,7 +43,6 @@ import opensilex.service.PropertiesFileManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.URINamespaces;
-import opensilex.service.dao.UserDAO;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
@@ -600,9 +599,6 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     	
     	if(user == null || StringUtils.isEmpty(user.getAdmin())) {
     		throw new IllegalArgumentException("No user/bad user provided");
-    	}
-    	if(! new UserDAO().isAdmin(user)) { // the user is not an admin
-    		throw new IllegalArgumentException("Error : only an admin user can delete an object");
     	}
     	
     	StringBuilder errorMsgs = new StringBuilder();

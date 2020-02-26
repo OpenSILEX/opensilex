@@ -76,7 +76,7 @@ public class DocumentMongoDAO extends MongoDAO<Document> {
         GridFSDBFile out = (GridFSDBFile) gridFS.findOne(new BasicDBObject("uri", documentURI));
         InputStream is = out.getInputStream();
         
-        File file = new File(PropertiesFileManager.getConfigFileProperty("service", "uploadFileServerDirectory") + out.get("filename"));
+        File file = new File(PropertiesFileManager.getConfigFileProperty("service", "uploadFileServerDirectory") + "/" + out.get("filename"));
         
         try {
             OutputStream outputStream = new FileOutputStream(file);

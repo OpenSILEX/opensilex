@@ -17,11 +17,6 @@ public interface PhisWsConfig extends ModuleConfig {
     PhisPostgreSQLConfig postgreSQL();
 
     @ConfigDescription(
-            value = "Base URI for plateform URI generation"
-    )
-    String ontologyBaseURI();
-
-    @ConfigDescription(
             value = "Infrastructure name used for URI generation"
     )
     String infrastructure();
@@ -31,42 +26,6 @@ public interface PhisWsConfig extends ModuleConfig {
             defaultString = "http://www.opensilex.org/vocabulary/oeso"
     )
     String vocabulary();
-
-    @ConfigDescription(
-            value = "Server host for sftp file upload",
-            defaultString = "localhost"
-    )
-    String uploadFileServerIP();
-
-    @ConfigDescription(
-            value = "Username for sftp file upload"
-    )
-    String uploadFileServerUsername();
-
-    @ConfigDescription(
-            value = "Password for sftp file upload"
-    )
-    String uploadFileServerPassword();
-
-    @ConfigDescription(
-            value = "Directory to store layers"
-    )
-    String layerFileServerDirectory();
-
-    @ConfigDescription(
-            value = "Public base URL for layers web access"
-    )
-    String layerFileServerAddress();
-
-    @ConfigDescription(
-            value = "Directory to store images"
-    )
-    String uploadImageServerDirectory();
-
-    @ConfigDescription(
-            value = "Public base URL for images web access"
-    )
-    String imageFileServerDirectory();
 
     @ConfigDescription(
             value = "GnpIS public key filename",

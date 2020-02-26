@@ -558,34 +558,24 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         List<Status> checkStatus = new ArrayList<>();
         boolean dataOk = true;
         //1. checl if user is an admin
-        UserDAO userDao = new UserDAO();
-        if (userDao.isAdmin(user)) {
-            //2. check data
-            UriDAO uriDao = new UriDAO();
-            for (Sensor sensor : sensors) {
-                try {
-                    //2.1 check type (subclass of SensingDevice)
-                    if (!uriDao.isSubClassOf(sensor.getRdfType(), Oeso.CONCEPT_SENSING_DEVICE.toString())) {
-                        dataOk = false;
-                        checkStatus.add(new Status(
-                                StatusCodeMsg.DATA_ERROR, 
-                                StatusCodeMsg.ERR, 
-                                "Bad sensor type given. Must be sublass of SensingDevice concept"));
-                    }
-
-                    //2.2 check if person in charge exist
-                    User u = new User(sensor.getPersonInCharge());
-                    if (!userDao.existInDB(u)) {
-                        dataOk = false;
-                        checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown person in charge email"));
-                    }
-                } catch (Exception ex) {
-                    java.util.logging.Logger.getLogger(SensorDAO.class.getName()).log(Level.SEVERE, null, ex);
+        //2. check data
+        UriDAO uriDao = new UriDAO();
+        for (Sensor sensor : sensors) {
+            try {
+                //2.1 check type (subclass of SensingDevice)
+                if (!uriDao.isSubClassOf(sensor.getRdfType(), Oeso.CONCEPT_SENSING_DEVICE.toString())) {
+                    dataOk = false;
+                    checkStatus.add(new Status(
+                            StatusCodeMsg.DATA_ERROR, 
+                            StatusCodeMsg.ERR, 
+                            "Bad sensor type given. Must be sublass of SensingDevice concept"));
                 }
+
+                //2.2 check if person in charge exist
+                User u = new User(sensor.getPersonInCharge());
+            } catch (Exception ex) {
+                java.util.logging.Logger.getLogger(SensorDAO.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } else { //user is not an admin
-            dataOk = false;
-            checkStatus.add(new Status(StatusCodeMsg.ACCESS_DENIED, StatusCodeMsg.ERR, StatusCodeMsg.ADMINISTRATOR_ONLY));
         }
         
         check = new POSTResultsReturn(dataOk, null, dataOk);

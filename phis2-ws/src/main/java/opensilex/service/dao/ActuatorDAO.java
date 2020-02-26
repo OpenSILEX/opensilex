@@ -726,35 +726,24 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         List<Status> checkStatus = new ArrayList<>();
         boolean dataOk = true;
         
-        //1. check if user is an admin
-        UserDAO userDao = new UserDAO();
-        if (userDao.isAdmin(user)) {
-            //2. check data
-            for (Actuator actuator : actuators) {
-                //2.1 Check if the uri of the actuator exist and corresponds to an actuator.
-                if (actuator.getUri() != null) {
-                    if (!existAndIsActuator(actuator.getUri())) {
-                         dataOk = false;
-                        checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown actuator : " + actuator.getUri()));
-                    }
-                }
-                //2.2 check type (subclass of Actuator)
-                UriDAO uriDAO = new UriDAO();
-                if (!uriDAO.isSubClassOf(actuator.getRdfType(), Oeso.CONCEPT_ACTUATOR.toString())) {
-                    dataOk = false;
-                    checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Bad actuator type given. Must be sublass of Actuator concept"));
-                }
-
-                //2.3 check if person in charge exist
-                User u = new User(actuator.getPersonInCharge());
-                if (!userDao.existInDB(u)) {
-                    dataOk = false;
-                    checkStatus.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, "Unknown person in charge email"));
+        //2. check data
+        for (Actuator actuator : actuators) {
+            //2.1 Check if the uri of the actuator exist and corresponds to an actuator.
+            if (actuator.getUri() != null) {
+                if (!existAndIsActuator(actuator.getUri())) {
+                     dataOk = false;
+                    checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown actuator : " + actuator.getUri()));
                 }
             }
-        } else { //user is not an admin
-            dataOk = false;
-            checkStatus.add(new Status(StatusCodeMsg.ACCESS_DENIED, StatusCodeMsg.ERR, StatusCodeMsg.ADMINISTRATOR_ONLY));
+            //2.2 check type (subclass of Actuator)
+            UriDAO uriDAO = new UriDAO();
+            if (!uriDAO.isSubClassOf(actuator.getRdfType(), Oeso.CONCEPT_ACTUATOR.toString())) {
+                dataOk = false;
+                checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Bad actuator type given. Must be sublass of Actuator concept"));
+            }
+
+            //2.3 check if person in charge exist
+            User u = new User(actuator.getPersonInCharge());
         }
         
         check = new POSTResultsReturn(dataOk, null, dataOk);

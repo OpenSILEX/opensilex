@@ -22,6 +22,7 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Sorts;
 import java.io.File;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -32,19 +33,18 @@ import org.bson.BSONObject;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.PropertiesFileManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.dao.manager.MongoDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.ontology.Oeso;
-import opensilex.service.utils.FileUploader;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.ConcernedItem;
 import opensilex.service.model.FileDescription;
+import org.opensilex.fs.service.FileStorageService;
 
 /**
  * Data file DAO.
@@ -244,10 +244,10 @@ public class DataFileDAO extends MongoDAO<FileDescription> {
      * @return true if file and its metadata are saved
      *         false in case of errors
      */
-    public POSTResultsReturn checkAndInsert(FileDescription fileDescription, File file) {
+    public POSTResultsReturn checkAndInsert(FileDescription fileDescription, File file, FileStorageService fs) {
         POSTResultsReturn checkResult = check(fileDescription);
         if (checkResult.getDataState()) {
-            return insert(fileDescription, file);
+            return insert(fileDescription, file, fs);
         } else { //Errors in the data
             return checkResult;
         }
@@ -304,7 +304,7 @@ public class DataFileDAO extends MongoDAO<FileDescription> {
      * @param dataList
      * @return the insertion result
      */
-    private POSTResultsReturn insert(FileDescription fileDescription, File file) {
+    private POSTResultsReturn insert(FileDescription fileDescription, File file, FileStorageService fs) {
         // 1. Initialize transaction
         MongoClient client = MongoDAO.getMongoClient();
         ClientSession session = client.startSession();
@@ -323,11 +323,8 @@ public class DataFileDAO extends MongoDAO<FileDescription> {
         
         boolean hasError = false;
             
-        FileUploader uploader = new FileUploader();
         try {
-            final String fileServerDirectory = PropertiesFileManager.getConfigFileProperty("service", "uploadFileServerDirectory") 
-                      + "/dataFiles/"
-                      + fileCollectionName + "/";
+            final String fileServerDirectory = "./dataFiles/" + fileCollectionName + "/";
             
             String key = fileDescription.getFilename() + fileDescription.getDate();
             String uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
@@ -344,21 +341,19 @@ public class DataFileDAO extends MongoDAO<FileDescription> {
             fileDescriptionCollection.insertOne(session, fileDescription);
 
             //4. Copy file to directory
-            uploader.createNestedDirectories(fileServerDirectory);
+            fs.createDirectories(Paths.get(fileServerDirectory));
             
-            ChannelSftp channel = uploader.getChannelSftp();
-            channel.stat(fileServerDirectory);
-            channel.cd(fileServerDirectory);
-        
-            if (uploader.fileTransfer(file, fileDescription.getPath())) { 
-                status.add(new Status(
+            try {
+                fs.writeFile(Paths.get(fileDescription.getPath()), file);
+                
+                 status.add(new Status(
                     StatusCodeMsg.RESOURCES_CREATED,
                     StatusCodeMsg.INFO,
                     StatusCodeMsg.DATA_INSERTED + " for the file " + fileDescription.getFilename()
                 ));
                             
                 createdResources.add(fileDescription.getUri());                
-            } else {
+            } catch(Exception ex) {
                 status.add(new Status(
                         StatusCodeMsg.UNEXPECTED_ERROR,
                         StatusCodeMsg.ERR,
@@ -401,8 +396,6 @@ public class DataFileDAO extends MongoDAO<FileDescription> {
                     "Unexpected exception, try to submit it again: " + ex.getMessage()
             ));
             hasError = true;
-        } finally {
-            uploader.closeConnection();
         }
 
         // 5. Prepare result to return

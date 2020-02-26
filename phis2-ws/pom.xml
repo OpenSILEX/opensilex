@@ -32,12 +32,14 @@
     </properties>
 
     <dependencies>
+        <!--
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-jdbc</artifactId>
             <version>${tomcat.version}</version>
             <type>jar</type>
         </dependency>
+        -->
         <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
@@ -62,6 +64,7 @@
             <version>2.7.1</version>
             <type>jar</type>
         </dependency>
+        <!--
         <dependency>
             <groupId>net.postgis</groupId>
             <artifactId>postgis-jdbc</artifactId>
@@ -80,6 +83,7 @@
             <version>42.2.8</version>
             <type>jar</type>
         </dependency>
+        -->
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>

@@ -15,6 +15,7 @@ import org.opensilex.OpenSilexModule;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.rest.extensions.APIExtension;
+import org.opensilex.sparql.SPARQLConfig;
 
 /**
  * Phis opensilex module implementation
@@ -38,8 +39,10 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension {
         PropertiesFileManager.setOpensilexConfigs(
                 getConfig(PhisWsConfig.class),
                 app.loadConfigPath("ontologies.sparql.rdf4j", RDF4JConfig.class),
+                app.loadConfigPath("ontologies", SPARQLConfig.class),
                 app.loadConfigPath("big-data.nosql.mongodb", MongoDBConfig.class),
-                app.loadConfigPath("file-system.storageBasePath", String.class)
+                app.loadConfigPath("file-system.local.storageBasePath", String.class),
+                app.loadConfigPath("server.publicURI", String.class)
         );
     }
 

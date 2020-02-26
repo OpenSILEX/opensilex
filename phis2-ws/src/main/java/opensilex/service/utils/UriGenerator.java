@@ -22,7 +22,6 @@ import org.apache.jena.sparql.AlreadyExists;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.dao.ActuatorDAO;
 import opensilex.service.dao.ImageMetadataMongoDAO;
-import opensilex.service.dao.GroupDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
 import opensilex.service.dao.AnnotationDAO;
 import opensilex.service.dao.EventDAO;
@@ -633,28 +632,6 @@ public class UriGenerator {
             return PLATFORM_URI + year + nbImagesByYear;
         }
     }
-   
-    /**
-     * Generate a new group URI. A group URI follows the pattern:
-     * <prefix>:<groupName>
-     * @example http://www.opensilex.org/demo/INRA-MISTEA.GAMMA
-     * @param name the group name
-     * @return the new generated URI
-     * @throws Exception 
-     */
-    private static String generateGroupUri(String name) throws Exception {
-        //1. Generate URI
-        String groupUri = PLATFORM_URI + name;
-        //2. Check if the generated URI already exists
-        GroupDAO groupDao = new GroupDAO();
-        Group group = new Group(groupUri);
-        
-        if (groupDao.existInDB(group)) {
-            throw new AlreadyExists("The group uri " + groupUri + " already exist in the triplestore.");
-        }
-        
-        return groupUri;
-    }
     
     /**
      * Generates a new provenance URI. A provenance URI follows the pattern :
@@ -829,8 +806,6 @@ public class UriGenerator {
             return generateAnnotationUri();
         } else if (instanceType.equals(Oeso.CONCEPT_RADIOMETRIC_TARGET.toString())) {
             return generateRadiometricTargetUri();
-        } else if (instanceType.equals(Foaf.CONCEPT_GROUP.toString())) {
-            return generateGroupUri(additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_PROVENANCE.toString())) {
             return generateProvenanceUri();
         } else if (instanceType.equals(Oeso.CONCEPT_DATA.toString())) {

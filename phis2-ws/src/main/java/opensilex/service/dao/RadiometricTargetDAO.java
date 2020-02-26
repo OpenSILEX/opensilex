@@ -188,50 +188,44 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
         boolean validData = true;
         
         //1. check if the user is an administrator
-        UserDAO userDAO = new UserDAO();
-        if (userDAO.isAdmin(user)) {
-            PropertyDAO propertyDAO = new PropertyDAO();
-            for (RadiometricTarget radiometricTarget : radiometricTargets) {
-                //1. check the radiometric target if given (for example in case of an update)
-                if (radiometricTarget.getUri() != null) {
-                    uri = radiometricTarget.getUri();
-                    ArrayList<RadiometricTarget> radiometricTargetCorresponding = allPaginate();
-                    
-                    //Unknown radiometric target uri
-                    if (radiometricTargetCorresponding.isEmpty()) {
-                        validData = false;
-                        status.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, 
-                                            "Unknown radiometric target uri " + radiometricTarget.getUri()));
-                    }
-                }
-                
-                //2. check properties
-                for (Property property : radiometricTarget.getProperties()) {
-                    //2.1 check if the property exist
-                    if (existUri(property.getRelation())) {
-                        //2.2 check the domain of the property
-                        if (!propertyDAO.isRelationDomainCompatibleWithRdfType(property.getRelation(), Oeso.CONCEPT_RADIOMETRIC_TARGET.toString())) {
-                            validData = false;
-                            status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
-                                            "the type of the given uri is not in the domain of the relation " + property.getRelation()));
-                        }
-                    } else {
-                        validData = false;
-                        status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
-                                            StatusCodeMsg.UNKNOWN_URI + " " + property.getRelation()));
-                    }
-                    //SILEX:todo
-                    //add the check range and the cardinality check
-                    //\SILEX:todo
-                    
-                    //SILEX:todo
-                    //add the check buisiness rules (e.g. the size property depends on the shape type)
-                    //\SILEX:todo
+        PropertyDAO propertyDAO = new PropertyDAO();
+        for (RadiometricTarget radiometricTarget : radiometricTargets) {
+            //1. check the radiometric target if given (for example in case of an update)
+            if (radiometricTarget.getUri() != null) {
+                uri = radiometricTarget.getUri();
+                ArrayList<RadiometricTarget> radiometricTargetCorresponding = allPaginate();
+
+                //Unknown radiometric target uri
+                if (radiometricTargetCorresponding.isEmpty()) {
+                    validData = false;
+                    status.add(new Status(StatusCodeMsg.UNKNOWN_URI, StatusCodeMsg.ERR, 
+                                        "Unknown radiometric target uri " + radiometricTarget.getUri()));
                 }
             }
-        } else {
-            validData = false;
-            status.add(new Status(StatusCodeMsg.ACCESS_DENIED, StatusCodeMsg.ERR, StatusCodeMsg.ADMINISTRATOR_ONLY));
+
+            //2. check properties
+            for (Property property : radiometricTarget.getProperties()) {
+                //2.1 check if the property exist
+                if (existUri(property.getRelation())) {
+                    //2.2 check the domain of the property
+                    if (!propertyDAO.isRelationDomainCompatibleWithRdfType(property.getRelation(), Oeso.CONCEPT_RADIOMETRIC_TARGET.toString())) {
+                        validData = false;
+                        status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
+                                        "the type of the given uri is not in the domain of the relation " + property.getRelation()));
+                    }
+                } else {
+                    validData = false;
+                    status.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, 
+                                        StatusCodeMsg.UNKNOWN_URI + " " + property.getRelation()));
+                }
+                //SILEX:todo
+                //add the check range and the cardinality check
+                //\SILEX:todo
+
+                //SILEX:todo
+                //add the check buisiness rules (e.g. the size property depends on the shape type)
+                //\SILEX:todo
+            }
         }
         
         checkResult = new POSTResultsReturn(validData, null, validData);

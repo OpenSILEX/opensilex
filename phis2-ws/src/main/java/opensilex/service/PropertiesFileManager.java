@@ -29,8 +29,8 @@ import java.util.Objects;
 import java.util.Properties;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
+import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +48,10 @@ public class PropertiesFileManager {
 
     final static Logger LOGGER = LoggerFactory.getLogger(PropertiesFileManager.class.getName());
     private static RDF4JConfig rdf4jConfig;
+    private static SPARQLConfig sparqlConfig;
     private static MongoDBConfig mongoConfig;
     private static String storageBasePath;
+    private static String publicURI;
 
     /**
      * Lit le fichier de configuration et retourne un objet Proprietes
@@ -191,14 +193,18 @@ public class PropertiesFileManager {
     public static void setOpensilexConfigs(
         PhisWsConfig phisConfig,
         RDF4JConfig rdf4jConfig,
+        SPARQLConfig sparqlConfig,
         MongoDBConfig mongoConfig,
-        String storageBasePath
+        String storageBasePath,
+        String publicURI
     ) {
         PropertiesFileManager.phisConfig = phisConfig;
         PropertiesFileManager.rdf4jConfig = rdf4jConfig;
+        PropertiesFileManager.sparqlConfig = sparqlConfig;
         PropertiesFileManager.mongoConfig = mongoConfig;
         PropertiesFileManager.pgConfig = phisConfig.postgreSQL();
         PropertiesFileManager.storageBasePath = storageBasePath;
+        PropertiesFileManager.publicURI = publicURI;
     }
     
     /**
@@ -252,33 +258,12 @@ public class PropertiesFileManager {
             case "waitingFileTime":
                 value = phisConfig.waitingFileTime();
                 break;                
-            case "uploadFileServerIP":
-                value = phisConfig.uploadFileServerIP();
-                break;
-            case "uploadFileServerUsername":
-                value = phisConfig.uploadFileServerUsername();
-                break;
-            case "uploadFileServerPassword":
-                value = phisConfig.uploadFileServerPassword();
-                break;
             case "uploadFileServerDirectory":
                 value = storageBasePath;
-                break;
-            case "layerFileServerDirectory":
-                value = phisConfig.layerFileServerDirectory();
-                break;
-            case "layerFileServerAddress":
-                value = phisConfig.layerFileServerAddress();
                 break;
             case "defaultLanguage":
                 value = "en";
                 break;
-            case "uploadImageServerDirectory":
-                value = phisConfig.uploadImageServerDirectory();
-                break;
-            case "imageFileServerDirectory":
-                value = phisConfig.imageFileServerDirectory();
-                break;     
             case "gnpisPublicKeyFileName":
                 value = phisConfig.gnpisPublicKeyFileName();
                 break;   
@@ -295,6 +280,10 @@ public class PropertiesFileManager {
         return value;
     }
 
+    public static String getPublicURI() {
+        return publicURI;
+    }
+    
     private static String getPgSQLProperty(String prop) {
          String value = null;
         
@@ -385,7 +374,7 @@ public class PropertiesFileManager {
                 value = phisConfig.infrastructure();
                 break;
             case "baseURI":
-                value = phisConfig.ontologyBaseURI();
+                value = sparqlConfig.baseURI();
                 break;
             case "vocabularyContext":
                 value = phisConfig.vocabulary();
@@ -460,86 +449,6 @@ public class PropertiesFileManager {
             throw new WebApplicationException(Response
                     .status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Error : Cannot find " + fileName + " configuration file for the wanted database\n" + ex.getMessage()).build());
-        }
-    }
-
-    /**
-     * Lit un fichier de configuration et un objet PoolPropreties permettant de
-     * configurer un jeu de connexion de base de donnée relationelle
-     *
-     * @see https://tomcat.apache.org/tomcat-8.0-doc/jdbc-pool.html
-     * @param fileName nom du fichier à lire
-     * @return null | Properties
-     */
-    public static PoolProperties getSQLPoolDataSourceProperties(String fileName) {
-        try {
-            final PoolProperties p = new PoolProperties();
-            //  minimal configuration
-            p.setUrl(getConfigFileProperty(fileName, "url"));
-            p.setDriverClassName(getConfigFileProperty(fileName, "driver"));
-            p.setUsername(getConfigFileProperty(fileName, "username"));
-            p.setPassword(getConfigFileProperty(fileName, "password"));
-            // Optional 
-            if (!Objects.equals(getConfigFileProperty(fileName, "jmxEnabled"), "null")) {
-                p.setJmxEnabled(Boolean.valueOf(getConfigFileProperty(fileName, "jmxEnabled")));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "defaultAutoCommit"), "null")) {
-                p.setDefaultAutoCommit(Boolean.valueOf(getConfigFileProperty(fileName, "defaultAutoCommit")));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "testWhileIdle"), "null")) {
-                p.setTestWhileIdle(Boolean.valueOf(getConfigFileProperty(fileName, "testWhileIdle")));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "testOnBorrow"), "null")) {
-                p.setTestOnBorrow(Boolean.valueOf(getConfigFileProperty(fileName, "testOnBorrow")));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "validationQuery"), "null")) {
-                p.setValidationQuery(getConfigFileProperty(fileName, "validationQuery"));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "testOnReturn"), "null")) {
-                p.setTestOnReturn(Boolean.valueOf(getConfigFileProperty(fileName, "testOnReturn")));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "validationInterval"), "null")) {
-                p.setValidationInterval(Long.valueOf(getConfigFileProperty(fileName, "validationInterval")));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "timeBetweenEvictionRunsMillis"), "null")) {
-                p.setTimeBetweenEvictionRunsMillis(Integer.valueOf(getConfigFileProperty(fileName, "timeBetweenEvictionRunsMillis")));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "maxActive"), "null")) {
-                p.setMaxActive(Integer.valueOf(getConfigFileProperty(fileName, "maxActive")));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "minIdle"), "null")) {
-                p.setMinIdle(Integer.valueOf(getConfigFileProperty(fileName, "minIdle")));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "maxIdle"), "null")) {
-                p.setMaxIdle(Integer.valueOf(getConfigFileProperty(fileName, "maxIdle")));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "initialSize"), "null")) {
-                p.setInitialSize(Integer.valueOf(getConfigFileProperty(fileName, "initialSize")));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "maxWait"), "null")) {
-                p.setMaxWait(Integer.valueOf(getConfigFileProperty(fileName, "maxWait")));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "removeAbandonedTimeout"), "null")) {
-                p.setRemoveAbandonedTimeout(Integer.valueOf(getConfigFileProperty(fileName, "removeAbandonedTimeout")));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "maxAge"), "null")) {
-                p.setMaxAge(Long.valueOf(getConfigFileProperty(fileName, "maxAge")));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "logAbandoned"), "null")) {
-                p.setLogAbandoned(Boolean.valueOf(getConfigFileProperty(fileName, "logAbandoned")));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "removeAbandoned"), "null")) {
-                p.setRemoveAbandoned(Boolean.valueOf(getConfigFileProperty(fileName, "removeAbandoned")));
-            }
-            if (!Objects.equals(getConfigFileProperty(fileName, "jdbcInterceptors"), "null")) {
-                p.setJdbcInterceptors(getConfigFileProperty(fileName, "jdbcInterceptors"));
-            }
-
-            return p;
-
-        } catch (Exception ex) {
-            LOGGER.error("Error : Cannot find " + fileName + " configuration file \n", ex);
-            return null;
         }
     }
 }

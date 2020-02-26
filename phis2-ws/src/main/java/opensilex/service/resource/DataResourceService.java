@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -76,6 +77,7 @@ import opensilex.service.resource.dto.data.DataLogAccessUserDTO;
 import opensilex.service.resource.dto.data.DataQueryLogSearchDTO;
 import opensilex.service.resource.dto.data.DataSearchDTO;
 import opensilex.service.resource.dto.data.FileDescriptionWebPathPostDTO;
+import org.opensilex.fs.service.FileStorageService;
 
 /**
  * Data resource service.
@@ -84,6 +86,9 @@ import opensilex.service.resource.dto.data.FileDescriptionWebPathPostDTO;
 @Api("/data")
 @Path("/data")
 public class DataResourceService extends ResourceService {
+    
+    @Inject
+    private FileStorageService fs;
     
     /**
      * Service to insert data. 
@@ -324,7 +329,8 @@ public class DataResourceService extends ResourceService {
             description.setFilename(fileContentDisposition.getFileName());
             POSTResultsReturn result = fileDescriptionDao.checkAndInsert(
                 description,
-                file
+                file,
+                fs
             );
 
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {

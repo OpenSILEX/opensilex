@@ -57,10 +57,14 @@ public class DataDTO {
      */
     protected Object value;
     
+    /**
+     * Metadata
+     *
+     */
     protected Map<String, Object> metadata;
 
     public DataDTO(Data data) {
-        SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
+        SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSMSZ.toString());
         
         if (data.getDate() != null) {
             setDate(df.format(data.getDate()));

@@ -67,7 +67,7 @@ public class FileDescriptionDTO {
      * @param description 
      */
     public FileDescriptionDTO(FileDescription description) {
-        SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
+        SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSMSZ.toString());
         
         if (description.getDate() != null) {
             setDate(df.format(description.getDate()));

@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.model.Data;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
@@ -37,6 +38,11 @@ public class DataSearchDTO extends AbstractVerifiedClass {
     //Value of the data
     //@example 1.3
     protected Object value;
+    /**
+     * Metadata
+     *
+     */
+    protected Map<String, Object> metadata;
 
     public DataSearchDTO(Data data, String provenanceLabel, List<String> objectLabels, String variableLabel) {
         uri = data.getUri();
@@ -45,7 +51,7 @@ public class DataSearchDTO extends AbstractVerifiedClass {
             object = new ObjectResourceDTO(data.getObjectUri(), objectLabels);
         }
         variable = new RdfResourceDTO(data.getVariableUri(), variableLabel);
-        SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
+        SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSMSZ.toString());
         if (data.getDate() != null) {
             date = df.format(data.getDate());
         }
@@ -57,6 +63,7 @@ public class DataSearchDTO extends AbstractVerifiedClass {
         } else {
             value = dataValue;
         }
+        metadata = data.getMetadata();
     }
     
     @Override

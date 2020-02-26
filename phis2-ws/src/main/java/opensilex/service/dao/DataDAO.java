@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.ws.rs.core.Response;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
@@ -58,6 +59,7 @@ public class DataDAO extends MongoDAO<Data> {
     private final static String DB_FIELD_DATE = "date";
     private final static String DB_FIELD_VALUE = "value";
     private final static String DB_FIELD_SENSOR = "sensor";
+    private final static String DB_FIELD_METADATA = "metadata";
     
     public String variableUri;
     public String startDate;
@@ -132,7 +134,8 @@ public class DataDAO extends MongoDAO<Data> {
             document.append(DB_FIELD_DATE, data.getDate());
             document.append(DB_FIELD_PROVENANCE, data.getProvenanceUri());
             document.append(DB_FIELD_VALUE, data.getValue());
-
+            document.append(DB_FIELD_METADATA, data.getMetadata());
+            
             LOGGER.debug(document.toJson());
         } catch (Exception e) {
             LOGGER.error("Exception while generating uri, should never append", e);
@@ -319,6 +322,7 @@ public class DataDAO extends MongoDAO<Data> {
                 data.setValue(dataDocument.get(DB_FIELD_VALUE));
                 data.setObjectUri(dataDocument.getString(DB_FIELD_OBJECT));
                 data.setProvenanceUri(dataDocument.getString(DB_FIELD_PROVENANCE));
+                data.setMetadata((Map<String, Object>) dataDocument.get(DB_FIELD_METADATA));
                 
                 // Add data to the list
                 dataList.add(data);
@@ -572,6 +576,8 @@ public class DataDAO extends MongoDAO<Data> {
                 } else {
                     data.setProvenanceUri(dataDocument.getString(DB_FIELD_SENSOR));
                 }
+                
+                data.setMetadata((Map<String, Object>) dataDocument.get(DB_FIELD_METADATA));
                 
                 // Add data to the list
                 dataList.add(data);

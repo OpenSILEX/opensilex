@@ -82,7 +82,7 @@ public class FileDescriptionWebPathPostDTO extends AbstractVerifiedClass {
         this.rdfType = rdfType;
     }
 
-    @Date({DateFormat.YMDTHMSZ, DateFormat.YMD, DateFormat.YMDTHMS3SZ})
+    @Date({DateFormat.YMDTHMSZ, DateFormat.YMD, DateFormat.YMDTHMSMSZ})
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_XSDDATETIME)
     public String getDate() {

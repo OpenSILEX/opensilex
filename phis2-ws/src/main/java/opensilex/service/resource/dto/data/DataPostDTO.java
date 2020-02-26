@@ -80,7 +80,7 @@ public class DataPostDTO extends AbstractVerifiedClass {
         this.variableUri = variableUri;
     }
 
-    @Date({DateFormat.YMDTHMSZ, DateFormat.YMD, DateFormat.YMDTHMS3SZ})
+    @Date({DateFormat.YMDTHMSZ, DateFormat.YMD, DateFormat.YMDTHMSMSZ})
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_XSDDATETIME)
     public String getDate() {

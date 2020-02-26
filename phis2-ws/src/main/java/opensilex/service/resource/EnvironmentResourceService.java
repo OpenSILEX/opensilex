@@ -7,7 +7,6 @@
 //******************************************************************************
 package opensilex.service.resource;
 
-import com.mongodb.BasicDBObjectBuilder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -15,11 +14,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import opensilex.service.resource.validation.interfaces.Date;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -37,32 +32,32 @@ import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.DataDAO;
-import opensilex.service.dao.ProvenanceDAO;
+import opensilex.service.dao.EnvironmentMeasureDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.model.Data;
+import opensilex.service.resource.dto.environment.EnvironmentMeasureDTO;
 import opensilex.service.resource.dto.environment.EnvironmentMeasurePostDTO;
+import opensilex.service.resource.validation.interfaces.Date;
+import opensilex.service.resource.validation.interfaces.Required;
+import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
-import opensilex.service.model.EnvironmentMeasure;
-import opensilex.service.resource.dto.data.DataDTO;
-import opensilex.service.resource.dto.environment.EnvironmentMeasureDTO;
-import opensilex.service.resource.validation.interfaces.Required;
-import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.result.ResultForm;
-import opensilex.service.view.model.provenance.Provenance;
+import opensilex.service.model.EnvironmentMeasure;
 
 /**
  * Environmental measure resource service.
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Morgane Vidal
  */
 @Api("/environments")
 @Path("/environments")
 @Deprecated
 public class EnvironmentResourceService extends ResourceService {
+    
+    private final Status deprecatedStatus = new Status(StatusCodeMsg.WARNING, StatusCodeMsg.WARNING, StatusCodeMsg.API_DEPRECATED_INFO_MESSAGE);
+    
     /**
      * Generates environmental measures from a given list of environmental measures DTOs.
      * @param environmentMeasureDTOs
@@ -116,90 +111,44 @@ public class EnvironmentResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     @Deprecated
     public Response postEnvironmentMeasures(
-        @ApiParam(value = DocumentationAnnotation.ENVIRONMENT_POST_DEFINITION) @Valid ArrayList<EnvironmentMeasurePostDTO> data,
+        @ApiParam(value = DocumentationAnnotation.ENVIRONMENT_POST_DEFINITION) @Valid ArrayList<EnvironmentMeasurePostDTO> environmentMeasures,
         @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
-         try {
-            if (data != null && !data.isEmpty()) {
-                DataDAO dataDAO = new DataDAO();
+        if (environmentMeasures != null && !environmentMeasures.isEmpty()) {
+            EnvironmentMeasureDAO environmentDAO = new EnvironmentMeasureDAO();
+            
+            environmentDAO.user = userSession.getUser();
+            
+            POSTResultsReturn result = environmentDAO.checkAndInsert(environmentMeasurePostDTOsToEnvironmentMeasure(environmentMeasures));
+            result.statusList.add(deprecatedStatus);
 
-                dataDAO.user = userSession.getUser();
-
-                POSTResultsReturn result = dataDAO.checkAndInsert(environmentMeasurePostDTOTOsToData(data));
-
-                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                }
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
-            } else {
-                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "No data to add"));
-                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
-            }       
-        } catch (ParseException e) {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+            }
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } else {
+            List statusList = new ArrayList<>();
+            statusList.add(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty environment measure(s) to add"));
+            statusList.add(deprecatedStatus);
+            postResponse = new ResponseFormPOST(statusList);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
-        }
+        }       
     }
     
-    /**
-     * Generates an data list from a given list of EnvironmentMeasurePostDTO.
-     * @param dataDTOs
-     * @return the list of data
-     */
-    private List<Data> environmentMeasurePostDTOTOsToData(List<EnvironmentMeasurePostDTO> dataDTOs) throws ParseException {
-        ArrayList<Data> dataList = new ArrayList<>();
-        
-        for (EnvironmentMeasurePostDTO dataDTO : dataDTOs) {
-            Data data = new Data();
-            SimpleDateFormat parser = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
-            java.util.Date date = parser.parse(dataDTO.getDate());
-            data.setDate(date);
-            data.setObjectUri(null);
-            data.setProvenanceUri(dataDTO.getDate());
-            data.setValue(dataDTO.getValue());
-            data.setVariableUri(dataDTO.getVariableUri());
-            dataList.add(data);            
-        }
-        
-        return dataList;
-    }    
-    
-    
-      /**
-     * Generates an data list from a given list of EnvironmentMeasurePostDTO.
-     * @param dataDTOs
-     * @return the list of data
-     */
-    private List<EnvironmentMeasurePostDTO> DataenvironmentToMeasurePostDTOTOs(List<Data> dataDTOs) throws ParseException {
-        ArrayList<EnvironmentMeasurePostDTO> dataList = new ArrayList<>();
-        
-        for (Data dataDTO : dataDTOs) {
-            EnvironmentMeasurePostDTO environmentMeasurePostDTO = new EnvironmentMeasurePostDTO();
-            SimpleDateFormat formatter = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
-             environmentMeasurePostDTO.setDate(formatter.format(dataDTO.getDate()));
-             environmentMeasurePostDTO.setProvenanceUri(dataDTO.getDate());
-            environmentMeasurePostDTO.setValue((BigDecimal) dataDTO.getValue());
-            environmentMeasurePostDTO.setVariableUri(dataDTO.getVariableUri());
-            dataList.add(environmentMeasurePostDTO);            
-        }
-        
-        return dataList;
-    }  
-
     /**
      * Service to get environment measures.
      * @param pageSize
      * @param page
-     * @param variableUri
+     * @param variable
      * @param startDate
      * @param endDate
-     * @param sensorUri
+     * @param sensor
      * @param dateSortAsc
      * @return list of the environment measures corresponding to the search parameters given
      * @example
@@ -255,60 +204,53 @@ public class EnvironmentResourceService extends ResourceService {
     public Response getEnvironmentMeasures(
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-        @ApiParam(value = "Search by variable uri", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("variable") @URL @Required String variableUri,
+        @ApiParam(value = "Search by variable uri", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI, required = true) @QueryParam("variable") @URL @Required String variable,
         @ApiParam(value = "Search by minimal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("startDate") @Date(DateFormat.YMDTHMSZ) String startDate,
         @ApiParam(value = "Search by maximal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("endDate") @Date(DateFormat.YMDTHMSZ) String endDate,
-        @ApiParam(value = "Search by sensor uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor")  @URL String sensorUri,
+        @ApiParam(value = "Search by sensor uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor")  @URL String sensor,
         @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc
     ) {
-        // 1. Initialize dataDAO with parameters
-        DataDAO dataDAO = new DataDAO();
-         
-        dataDAO.user = userSession.getUser();
-        dataDAO.setPage(page);
-        dataDAO.setPageSize(pageSize); 
+        // 1. Initialize environmentDAO with parameters
+        EnvironmentMeasureDAO environmentMeasureDAO = new EnvironmentMeasureDAO();
+        
+        environmentMeasureDAO.variableUri = variable;
 
-        ProvenanceDAO provenanceDAO  = new ProvenanceDAO();
-        provenanceDAO.setPage(1);
-        provenanceDAO.setPageSize(1000);
+        environmentMeasureDAO.startDate = startDate;
+        environmentMeasureDAO.endDate = endDate;
+        environmentMeasureDAO.sensorUri = sensor;
+        environmentMeasureDAO.dateSortAsc = dateSortAsc;
         
-        ArrayList<String> provenanceUrisAssociatedToSensor = new ArrayList<>();
-        if (sensorUri != null){
-            Provenance searchProvenance = new Provenance();
-            String jsonFilter = BasicDBObjectBuilder.start("metadata.prov:Agent.prov:id", sensorUri).get().toString();
-            ArrayList<Provenance> provenances = provenanceDAO.getProvenances(searchProvenance, jsonFilter);
-
-            for (Provenance provenance : provenances) {
-                provenanceUrisAssociatedToSensor.add(provenance.getUri());
-            }
-        }
+        environmentMeasureDAO.user = userSession.getUser();
+        environmentMeasureDAO.setPage(page);
+        environmentMeasureDAO.setPageSize(pageSize);
         
+        // 2. Get environment measures count
+        int totalCount = environmentMeasureDAO.count();
         
-        //1. Get sensor data count
-        Integer totalCount = dataDAO.count(variableUri, startDate, endDate, null, provenanceUrisAssociatedToSensor);
-        List<Data> dataFounded = new ArrayList<>();
-        //2. Get sensor data
-        if(totalCount > 0){
-            dataFounded = dataDAO.find(page, pageSize, variableUri,  startDate, endDate, null, provenanceUrisAssociatedToSensor);
-        }
+        // 3. Get environment measures page list
+        ArrayList<EnvironmentMeasure> measures = environmentMeasureDAO.allPaginate();
         
-        //3. Return result
+        // 4. Initialize return variables
+        ArrayList<EnvironmentMeasureDTO> list = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
-        ArrayList<DataDTO> sensorsToReturn = new ArrayList<>();
-        ResultForm<DataDTO> getResponse;
-        if (dataFounded == null) { //Request failure
-            getResponse = new ResultForm<>(0, 0, sensorsToReturn, true);
+        ResultForm<EnvironmentMeasureDTO> getResponse;
+        statusList.add(deprecatedStatus);
+        if (measures == null) {
+            // Request failure
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
-        } else if (dataFounded.isEmpty()) { //No result found
-            getResponse = new ResultForm<>(0, 0, sensorsToReturn, true);
+        } else if (measures.isEmpty()) {
+            // No results
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
             return noResultFound(getResponse, statusList);
-        } else { //Results
-            //Convert all objects to DTOs
-            dataFounded.forEach((data) -> {
-                sensorsToReturn.add(new DataDTO(data));
+        } else {
+            // Convert all measures object to DTO's
+            measures.forEach((measure) -> {
+                list.add(new EnvironmentMeasureDTO(measure));
             });
             
-            getResponse = new ResultForm<>(pageSize, page, sensorsToReturn, true, totalCount);
+            // Return list of DTO
+            getResponse = new ResultForm<>(environmentMeasureDAO.getPageSize(), environmentMeasureDAO.getPage(), list, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }

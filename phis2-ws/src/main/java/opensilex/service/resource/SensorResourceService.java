@@ -16,7 +16,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -67,7 +66,7 @@ import opensilex.service.view.model.provenance.Provenance;
 /**
  * Sensor resource service.
  * @update [Andreas Garcia] 15 Apr. 2019: handle DAO persistence exceptions thrown by property DAO functions.
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Morgane Vidal
  */
 @Api("/sensors")
 @Path("/sensors")

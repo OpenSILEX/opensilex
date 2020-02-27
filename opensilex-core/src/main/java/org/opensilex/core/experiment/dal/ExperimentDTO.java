@@ -12,6 +12,7 @@ import org.opensilex.rest.validation.Required;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -24,7 +25,7 @@ public abstract class ExperimentDTO {
 
     protected String label;
 
-    protected List<URI> projects = Collections.emptyList();
+    protected List<URI> projects = new LinkedList<>();
 
     protected String startDate;
 
@@ -36,25 +37,25 @@ public abstract class ExperimentDTO {
 
     protected Integer campaign;
 
-    protected List<String> keywords = Collections.emptyList();
+    protected List<String> keywords = new LinkedList<>();
 
-    protected List<URI> scientificSupervisors = Collections.emptyList();
+    protected List<URI> scientificSupervisors = new LinkedList<>();
 
-    protected List<URI> technicalSupervisors = Collections.emptyList();
+    protected List<URI> technicalSupervisors = new LinkedList<>();
 
-    protected List<URI> groups = Collections.emptyList();
+    protected List<URI> groups = new LinkedList<>();
 
-    protected List<URI> infrastructures = Collections.emptyList();
+    protected List<URI> infrastructures = new LinkedList<>();
 
-    protected  List<URI> installations = Collections.emptyList();
+    protected  List<URI> installations = new LinkedList<>();
 
     protected URI species;
 
     protected Boolean isPublic;
 
-    protected List<URI> variables = Collections.emptyList();
+    protected List<URI> variables = new LinkedList<>();
 
-    protected List<URI> sensors = Collections.emptyList();
+    protected List<URI> sensors = new LinkedList<>();
 
 
     public URI getUri() {

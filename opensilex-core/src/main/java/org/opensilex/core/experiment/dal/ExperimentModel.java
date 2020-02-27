@@ -41,7 +41,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             required = true
     )
     String label;
-    public static final String LABEL_FIELD = "label";
+    public static final String LABEL_VAR = "label";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -94,7 +94,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             property = "hasCampaign"
     )
     Integer campaign;
-    public static final String CAMPAIGN_SPARQL_FIELD = "campaign";
+    public static final String CAMPAIGN_SPARQL_VAR = "campaign";
 
 
     @SPARQLProperty(
@@ -102,7 +102,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             property = "hasObjective"
     )
     String objective;
-    public static final String OBJECTIVE_SPARQL_FIELD = "objective";
+    public static final String OBJECTIVE_SPARQL_VAR = "objective";
 
 
     @SPARQLProperty(
@@ -110,21 +110,21 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             property = "hasKeyword"
     )
     List<String> keywords = new LinkedList<>();
-    public static final String KEYWORD_SPARQL_FIELD = "keyword";
+    public static final String KEYWORD_SPARQL_VAR = "keyword";
 
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "comment"
     )
     String comment;
-    public static final String COMMENT_SPARQL_FIELD = "comment";
+    public static final String COMMENT_SPARQL_VAR = "comment";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasSpecies"
     )
     URI species;
-    public static final String SPECIES_SPARQL_FIELD = "species";
+    public static final String SPECIES_SPARQL_VAR = "species";
 
 
     @SPARQLProperty(
@@ -139,7 +139,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             property = "hasDevice"
     )
     List<URI> devices = new LinkedList<>();
-    public static final String DISPOSITIVES_SPARQL_VAR = "devices";
+    public static final String DEVICES_SPARQL_VAR = "devices";
 
     @SPARQLProperty(
             ontology = Oeso.class,

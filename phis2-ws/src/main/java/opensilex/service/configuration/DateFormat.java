@@ -73,7 +73,8 @@ public enum DateFormat {
         }
 
         // Check if the date match format with ":" in timezone offset
-        if (dateStringToParse.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[+-]\\d{2}:\\d{2}")) {
+        if (dateStringToParse.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[+-]\\d{2}:\\d{2}") 
+                || dateStringToParse.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[.]\\d{3}[+-]\\d{2}:\\d{2}")) {
             int start = dateStringToParse.lastIndexOf(":");
             StringBuilder builder = new StringBuilder();
             builder.append(dateStringToParse.substring(0, start));

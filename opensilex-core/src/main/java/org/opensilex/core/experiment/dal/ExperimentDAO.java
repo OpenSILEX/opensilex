@@ -10,12 +10,18 @@ package org.opensilex.core.experiment.dal;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.vocabulary.RDF;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
@@ -25,7 +31,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
+
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+
 
 /**
  * @author Vincent MIGOT
@@ -55,7 +63,7 @@ public class ExperimentDAO {
      * Check that all URI(s) which refers to a non {@link org.opensilex.sparql.annotations.SPARQLResource}-compliant model exists.
      *
      * @param model the experiment for which we check if all URI(s) exists
-     * @throws SPARQLException
+     * @throws SPARQLException if the SPARQL uri checking query fail
      * @throws IllegalArgumentException if the given model contains a unknown URI
      */
     protected void checkURIs(ExperimentModel model) throws SPARQLException, IllegalArgumentException {
@@ -68,6 +76,7 @@ public class ExperimentDAO {
                 throw new IllegalArgumentException("Trying to insert an experiment with an unknown infrastructure : " + infraUri);
             }
         }
+        // #TODO use a method to test in one query if all URI(s) exists
 
     }
 
@@ -84,15 +93,15 @@ public class ExperimentDAO {
     }
 
     /**
+     * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty simple attribute ( not a {@link List} from the {@link ExperimentSearchDTO}
      * @param searchDTO a search DTO which contains all attributes about an {@link ExperimentModel} search
-     * @return the list of {@link Expr} extracted from the given searchDTO.
-     * @throws Exception
+     *
      * @see SPARQLQueryHelper the utility class used to build Expr
      */
-    protected List<Expr> extractFilters(ExperimentSearchDTO searchDTO) throws Exception {
+    protected void appendFilters(ExperimentSearchDTO searchDTO, SelectBuilder select) throws Exception {
 
         if (searchDTO == null)
-            return Collections.emptyList();
+            return;
 
         List<Expr> exprList = new ArrayList<>();
 
@@ -101,10 +110,10 @@ public class ExperimentDAO {
             exprList.add(SPARQLQueryHelper.eq(SPARQLResourceModel.URI_FIELD, searchDTO.getUri()));
         }
         if (searchDTO.getCampaign() != null) {
-            exprList.add(SPARQLQueryHelper.eq(ExperimentModel.CAMPAIGN_SPARQL_FIELD, searchDTO.getCampaign()));
+            exprList.add(SPARQLQueryHelper.eq(ExperimentModel.CAMPAIGN_SPARQL_VAR, searchDTO.getCampaign()));
         }
         if (searchDTO.getSpecies() != null) {
-            exprList.add(SPARQLQueryHelper.eq(ExperimentModel.SPECIES_SPARQL_FIELD, searchDTO.getSpecies()));
+            exprList.add(SPARQLQueryHelper.eq(ExperimentModel.SPECIES_SPARQL_VAR, searchDTO.getSpecies()));
         }
         if (searchDTO.getIsPublic() != null) {
             exprList.add(SPARQLQueryHelper.eq(ExperimentModel.IS_PUBLIC_SPARQL_VAR, searchDTO.getIsPublic()));
@@ -112,13 +121,13 @@ public class ExperimentDAO {
 
         // build regex based filter
         if (searchDTO.getObjective() != null) {
-            exprList.add(SPARQLQueryHelper.regexFilter(ExperimentModel.OBJECTIVE_SPARQL_FIELD, searchDTO.getObjective()));
+            exprList.add(SPARQLQueryHelper.regexFilter(ExperimentModel.OBJECTIVE_SPARQL_VAR, searchDTO.getObjective()));
         }
         if (searchDTO.getLabel() != null) {
-            exprList.add(SPARQLQueryHelper.regexFilter(ExperimentModel.LABEL_FIELD, searchDTO.getLabel()));
+            exprList.add(SPARQLQueryHelper.regexFilter(ExperimentModel.LABEL_VAR, searchDTO.getLabel()));
         }
         if (searchDTO.getComment() != null) {
-            exprList.add(SPARQLQueryHelper.regexFilter(ExperimentModel.COMMENT_SPARQL_FIELD, searchDTO.getComment()));
+            exprList.add(SPARQLQueryHelper.regexFilter(ExperimentModel.COMMENT_SPARQL_VAR, searchDTO.getComment()));
         }
 
         Boolean isEnded = searchDTO.isEnded();
@@ -134,7 +143,6 @@ public class ExperimentDAO {
                 exprList.add(SPARQLQueryHelper.getExprFactory().gt(endDateVar, currentDateNode));
             }
         }
-
         if (searchDTO.getStartDate() != null) {
             exprList.add(SPARQLQueryHelper.eq(ExperimentModel.START_DATE_SPARQL_VAR, LocalDate.parse(searchDTO.getStartDate())));
         }
@@ -142,59 +150,80 @@ public class ExperimentDAO {
             exprList.add(SPARQLQueryHelper.eq(ExperimentModel.END_DATE_SPARQL_VAR, LocalDate.parse(searchDTO.getEndDate())));
         }
 
-        // get an Expr build according startDate and endDate
-//        LocalDate startDate = searchDTO.getStartDate() != null ? LocalDate.parse(searchDTO.getStartDate()) : null;
-//        LocalDate endDate = searchDTO.getEndDate() != null ? LocalDate.parse(searchDTO.getEndDate()) : null;
-//
-//        Expr dateExpr = SPARQLQueryHelper.dateRange(ExperimentModel.START_DATE_SPARQL_VAR, startDate, ExperimentModel.END_DATE_SPARQL_VAR, endDate);
-//        if (dateExpr != null) {
-//            exprList.add(dateExpr);
-//        }
-
-        return exprList;
+        for (Expr filterExpr : exprList) {
+            select.addFilter(filterExpr);
+        }
     }
 
     /**
+     * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty {@link List} from the {@link ExperimentSearchDTO}
+     * @param select the {@link SelectBuilder} to update
      * @param searchDTO a search DTO which contains all attributes about an {@link ExperimentModel} search
-     * @return a {@link Map} between SPARQL variable name and the list of values for this variable.
      */
-    protected Map<String, List<?>> getValuesByVarName(ExperimentSearchDTO searchDTO) {
+    protected void appendListFilters(ExperimentSearchDTO searchDTO, SelectBuilder select) throws Exception {
 
-        if (searchDTO == null) {
-            return Collections.emptyMap();
-        }
+        if (searchDTO == null)
+            return;
 
         Map<String, List<?>> valuesByVar = new HashMap<>();
 
         if (!searchDTO.getKeywords().isEmpty()) {
-            valuesByVar.put(ExperimentModel.KEYWORD_SPARQL_FIELD, searchDTO.getKeywords());
+            addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasKeyword, ExperimentModel.KEYWORD_SPARQL_VAR);
+            valuesByVar.put(ExperimentModel.KEYWORD_SPARQL_VAR, searchDTO.getKeywords());
         }
         if (!searchDTO.getProjects().isEmpty()) {
+            addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasProject, ExperimentModel.PROJECT_URI_SPARQL_VAR);
             valuesByVar.put(ExperimentModel.PROJECT_URI_SPARQL_VAR, searchDTO.getProjects());
         }
         if (!searchDTO.getScientificSupervisors().isEmpty()) {
+            addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasScientificSupervisor, ExperimentModel.SCIENTIFIC_SUPERVISOR_SPARQL_VAR);
             valuesByVar.put(ExperimentModel.SCIENTIFIC_SUPERVISOR_SPARQL_VAR, searchDTO.getScientificSupervisors());
         }
         if (!searchDTO.getTechnicalSupervisors().isEmpty()) {
+            addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasTechnicalSupervisor, ExperimentModel.TECHNICAL_SUPERVISOR_SPARQL_VAR);
             valuesByVar.put(ExperimentModel.TECHNICAL_SUPERVISOR_SPARQL_VAR, searchDTO.getTechnicalSupervisors());
         }
         if (!searchDTO.getGroups().isEmpty()) {
+            addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasGroup, ExperimentModel.GROUP_SPARQL_VAR);
             valuesByVar.put(ExperimentModel.GROUP_SPARQL_VAR, searchDTO.getGroups());
         }
         if (!searchDTO.getVariables().isEmpty()) {
+            addWhere(select, ExperimentModel.URI_FIELD, Oeso.measures, ExperimentModel.VARIABLES_SPARQL_VAR);
             valuesByVar.put(ExperimentModel.VARIABLES_SPARQL_VAR, searchDTO.getVariables());
         }
         if (!searchDTO.getSensors().isEmpty()) {
             valuesByVar.put(ExperimentModel.SENSORS_SPARQL_VAR, searchDTO.getSensors());
+            addWhere(select, ExperimentModel.SENSORS_SPARQL_VAR, Oeso.participatesIn, ExperimentModel.URI_FIELD);
+
+            // append a restriction on ?sensors variable to make sure that only instance of SensingDevice are retrieved
+            String SENSOR_TYPE_VARIABLE_NAME = "SensingDeviceType";
+            TriplePath typePath = select.makeTriplePath(makeVar(ExperimentModel.SENSORS_SPARQL_VAR), RDF.type, makeVar(SENSOR_TYPE_VARIABLE_NAME));
+            TriplePath subClassPath = select.makeTriplePath(makeVar(SENSOR_TYPE_VARIABLE_NAME), Ontology.subClassAny, Oeso.SensingDevice.asNode());
+            select.addWhere(subClassPath).addWhere(typePath);
         }
         if (!searchDTO.getInfrastructures().isEmpty()) {
+            addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasInfrastructure, ExperimentModel.INFRASTRUCTURE_SPARQL_VAR);
             valuesByVar.put(ExperimentModel.INFRASTRUCTURE_SPARQL_VAR, searchDTO.getInfrastructures());
         }
         if (!searchDTO.getInstallations().isEmpty()) {
-            valuesByVar.put(ExperimentModel.DISPOSITIVES_SPARQL_VAR, searchDTO.getInstallations());
+            addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasDevice, ExperimentModel.DEVICES_SPARQL_VAR);
+            valuesByVar.put(ExperimentModel.DEVICES_SPARQL_VAR, searchDTO.getInstallations());
         }
-        return valuesByVar;
+        SPARQLQueryHelper.addWhereValues(select, valuesByVar);
     }
+
+    /**
+     * Append a triple on the WHERE clause of the given {@link SelectBuilder}
+     *
+     * @param select the {@link SelectBuilder} to update
+     * @param subjectVar the subject variable name
+     * @param property the property between the subject and the object
+     * @param objectVar the object variable name
+     */
+    protected void addWhere(SelectBuilder select, String subjectVar, Property property, String objectVar) {
+        select.getWhereHandler().getClause().addTriplePattern(new Triple( makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
+    }
+
 
     /**
      * @param searchDTO   a search DTO which contains all attributes about an {@link ExperimentModel} search
@@ -202,24 +231,14 @@ public class ExperimentDAO {
      * @param page        the current page
      * @param pageSize    the page size
      * @return the ExperimentModel list
-     * @throws Exception
      */
     public ListWithPagination<ExperimentModel> search(ExperimentSearchDTO searchDTO, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
 
         return sparql.searchWithPagination(
                 ExperimentModel.class,
                 (SelectBuilder select) -> {
-
-                    // add a filter for each non null data/object property
-                    extractFilters(searchDTO).forEach(select::addFilter);
-
-                    // add a WHERE { ?var} VALUES { v1 v2} clause for each non empty data/object list property
-                    try {
-                        SPARQLQueryHelper.addWhereValues(select, getValuesByVarName(searchDTO));
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-
+                    appendFilters(searchDTO, select);
+                    appendListFilters(searchDTO, select);
                 },
                 orderByList,
                 page,

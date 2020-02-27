@@ -96,4 +96,8 @@ public class Oeso {
 
     // ---- FACTORS ----
     public static final Resource Factor = Ontology.resource(NS, "Factor");
+
+    public static final Resource SensingDevice = Ontology.resource(NS, "SensingDevice");
+
+
 }

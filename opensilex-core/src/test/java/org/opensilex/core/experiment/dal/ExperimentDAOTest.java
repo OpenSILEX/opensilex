@@ -11,6 +11,7 @@ package org.opensilex.core.experiment.dal;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
@@ -24,10 +25,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.junit.After;
 import org.junit.AfterClass;
 
 import static org.junit.Assert.*;
+
 import org.opensilex.OpenSilex;
 import org.opensilex.core.CoreModule;
 import org.opensilex.rest.RestModule;
@@ -142,7 +145,7 @@ public class ExperimentDAOTest {
         compareLists(errorMsg, daoXpModel.getVariables(), xp.getVariables());
         compareLists(errorMsg, daoXpModel.getSensors(), xp.getSensors());
     }
-    
+
     private void compareLists(String errorMsg, List<?> expectedList, List<?> actualList) {
         assertTrue(errorMsg, expectedList.size() == actualList.size());
         assertTrue(errorMsg, expectedList.containsAll(actualList));
@@ -196,6 +199,41 @@ public class ExperimentDAOTest {
         assertEquals("one experiment should be fetched from db", 1, xpModelResults.getList().size());
 
         testEquals(xpModel, xpModelResults.getList().get(0));
+    }
+
+    @Test
+    public void searchWithDataTypeList() throws Exception {
+
+        ExperimentModel model = getModel(0);
+        ExperimentModel model2 = getModel(1);
+
+        URI varUri = new URI(Oeso.Variable.getURI() + "/var1");
+        URI var2Uri = new URI(Oeso.Variable.getURI() + "/var2");
+        model.getVariables().addAll(Arrays.asList(varUri, var2Uri));
+        model2.getVariables().add(varUri);
+
+        xpDao.create(model);
+        xpDao.create(model2);
+
+        ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();
+        searchDTO.getVariables().add(var2Uri);
+
+        // search all xp with the two variable URI
+        ListWithPagination<ExperimentModel> searchXps = xpDao.search(searchDTO, Collections.emptyList(), 0, 20);
+        List<ExperimentModel> xpList = searchXps.getList();
+
+        assertEquals(1, xpList.size());
+        assertTrue(xpList.contains(model));
+
+        // search all xp with only one variable URI
+        searchDTO = new ExperimentSearchDTO();
+        searchDTO.getVariables().add(varUri);
+        searchXps = xpDao.search(searchDTO, Collections.emptyList(), 0, 20);
+        xpList = searchXps.getList();
+
+        assertEquals(2, xpList.size());
+        assertTrue(xpList.contains(model));
+        assertTrue(xpList.contains(model2));
     }
 
     @Test
@@ -330,21 +368,7 @@ public class ExperimentDAOTest {
         xpModel.setUri(new URI(xpModel.getUri().toString() + "_suffix"));
         xpDao.update(xpModel);
     }
-
-//    @Test
-//    public void updateWithObjectList(){
-//
-//    }
-//
-//    @Test
-//    public void updateWithUriList(){
-//
-//    }
-//
-//    @Test
-//    public void updateWithDataList(){
-//
-//    }
+    
     @Test
     public void delete() throws Exception {
 

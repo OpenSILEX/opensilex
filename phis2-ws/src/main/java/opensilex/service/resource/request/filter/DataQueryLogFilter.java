@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.DataQueryLogDAO;
 import opensilex.service.resource.DataResourceService;
+import opensilex.service.resource.EnvironmentResourceService;
 
 /**
  *  Filters web service requests to log query done on data.
@@ -70,7 +71,12 @@ public class DataQueryLogFilter implements ContainerRequestFilter {
             if (resourcePath != null
                     && httpMethod.equals("GET") 
                     && !resourcePath.contains("querylog")
-                    && (resourcePath.contains("data") || resourceInfo.getResourceClass() == DataResourceService.class)
+                    &&  (
+                        resourcePath.contains("data") 
+                        || resourceInfo.getResourceClass() == DataResourceService.class 
+                        || resourcePath.contains("environment") 
+                        || resourceInfo.getResourceClass() == EnvironmentResourceService.class
+                        )
                     ) {
                 MultivaluedMap<String, String> queryPathParameters = uriInfo.getQueryParameters();
                 

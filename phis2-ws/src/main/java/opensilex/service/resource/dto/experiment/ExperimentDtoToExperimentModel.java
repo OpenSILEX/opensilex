@@ -107,7 +107,7 @@ public class ExperimentDtoToExperimentModel {
             }
         }
         // try to get the Infrastructures/field URI
-        if (!xpDto.getField().isEmpty()) {
+        if (! StringUtils.isEmpty(xpDto.getField())) {
             try {
                 xpModel.getInfrastructures().add(new URI(xpDto.getField()));
             } catch (URISyntaxException ignored) {
@@ -115,7 +115,7 @@ public class ExperimentDtoToExperimentModel {
         }
 
         // try to get the devices/place URI
-        if (!xpDto.getPlace().isEmpty()) {
+        if (! StringUtils.isEmpty(xpDto.getPlace())) {
             try {
                 xpModel.getDevices().add(new URI(xpDto.getPlace()));
             } catch (URISyntaxException ignored) {

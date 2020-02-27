@@ -73,13 +73,12 @@ export default class ExperimentSearch extends Vue {
       )
       .then((http: HttpResponse<OpenSilexResponse<Array<Experiment>>>) => {
         const res = http.response.result as any;
-        const data = res;
+        const data = res.data;
 
         data.forEach(element => {
-          const fix = "http://www.opensilex.org/set/experiments#";
-          let uri = fix + element.uri.split(":")[1];
+        
           this.experiments.push({
-            value: uri,
+            value: element.uri,
             text: element.alias
           });
         });

@@ -26,11 +26,13 @@ import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 
@@ -234,7 +236,7 @@ public class ExperimentDAO {
      */
     public ListWithPagination<ExperimentModel> search(ExperimentSearchDTO searchDTO, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
 
-        return sparql.searchWithPagination(
+        ListWithPagination<ExperimentModel> xps =  sparql.searchWithPagination(
                 ExperimentModel.class,
                 (SelectBuilder select) -> {
                     appendFilters(searchDTO, select);
@@ -244,5 +246,17 @@ public class ExperimentDAO {
                 page,
                 pageSize
         );
+        for(ExperimentModel xp : xps.getList()){
+            if(xp.getSensors().isEmpty())
+                continue;
+
+            // #TODO don't fetch URI which don't represents sensors
+            xp.getSensors().removeIf(sensor -> {
+                try {
+                    return ! sparql.uriExists(new URI(Oeso.SensingDevice.getURI()),sensor);
+                } catch (SPARQLException | URISyntaxException e) { throw new RuntimeException(e); }
+            });
+        }
+        return xps;
     }
 }

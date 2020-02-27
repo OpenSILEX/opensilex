@@ -442,7 +442,7 @@ public class DataDAO extends MongoDAO<Data> {
         }
         
         // Objects filter
-        if (!objectsUris.isEmpty()) {
+        if (objectsUris != null && !objectsUris.isEmpty()) {
             if (objectsUris.size() > 1) {
                 BasicDBList or = new BasicDBList();
                 for (String objectUri : objectsUris) {
@@ -456,7 +456,7 @@ public class DataDAO extends MongoDAO<Data> {
         }
         
         //Provenance filter
-        if (!provenancesUris.isEmpty()) {
+        if (provenancesUris != null && !provenancesUris.isEmpty()) {
             if (provenancesUris.size() > 1) {
                 BasicDBList or = new BasicDBList();
                 for (String provenanceUri : provenancesUris) {

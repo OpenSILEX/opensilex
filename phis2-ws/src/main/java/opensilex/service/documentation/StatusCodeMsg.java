@@ -12,7 +12,7 @@ import javax.inject.Singleton;
 /**
  * Web service return messages.
  * @see phenomeapi.service.view.brapi.Status
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Arnaud Charleroy, Morgane Vidal
  */
 @Singleton
 public final class StatusCodeMsg {
@@ -28,6 +28,7 @@ public final class StatusCodeMsg {
     public static final String DATA_ERROR = "Data error";
     public static final String DATA_INSERTED = "Data inserted";
     public static final String DATA_REJECTED = "Data rejected";
+    public static final String API_DEPRECATED_INFO_MESSAGE = "This api service should no longer be used. It will be change or removed";
     public static final String ERR = "Error";
     public static final String ERROR_WHILE_COMMITTING_OR_ROLLING_BACK_TRIPLESTORE_STATEMENT = "Error while committing or rolling back Triplestore statements: ";
     public static final String EMPTY_EVENT_LIST = "The event list to create is empty";
@@ -36,6 +37,7 @@ public final class StatusCodeMsg {
     public static final String FILE_ERROR = "File error";
     public static final String INFO = "Info";
     public static final String INTERNAL_ERROR = "An internal error occured. Please contact the administrator.";
+    public static final String INVALID_INPUT_PARAMETERS = "Wrong format parameter(s)";
     public static final String MALFORMED_CREATE_QUERY = "Malformed create query";
     public static final String MALFORMED_UPDATE_QUERY = "Malformed update query";
     public static final String MALFORMED_URI = "Malformed URI";
@@ -57,5 +59,7 @@ public final class StatusCodeMsg {
     public static final String UNKNOWN_TYPE = "Unknown type %s";
     public static final String UNKNOWN_EVENT_URI = "Unknown event URI";
     public static final String WRONG_VALUE = "Wrong value";    
-    public static final String INVALID_INPUT_PARAMETERS = "Wrong format parameter(s)";
+    public static final String WARNING = "Warning";
+
+    
 }

@@ -82,12 +82,16 @@ public abstract class MongoDAO<T> extends DAO<T> {
     public MongoDAO() {
         // Add feature to automatically serialize/deserialize class object in mongodb
         // @see http://mongodb.github.io/mongo-java-driver/3.10/bson/pojos/
-        CodecProvider pojoCodecProvider = PojoCodecProvider.builder().automatic(true).build();
-        CodecRegistry pojoCodecRegistry = fromRegistries(MongoClient.getDefaultCodecRegistry(), fromProviders(pojoCodecProvider));
-        
-        this.setDatabase(MONGO_CLIENT.getDatabase(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "db")).withCodecRegistry(pojoCodecRegistry));
+        this.setDatabase(getStaticDataBase());
     }
 
+    public static MongoDatabase getStaticDataBase() {
+        CodecProvider pojoCodecProvider = PojoCodecProvider.builder().automatic(true).build();
+        CodecRegistry pojoCodecRegistry = fromRegistries(MongoClient.getDefaultCodecRegistry(), fromProviders(pojoCodecProvider));
+
+        return MONGO_CLIENT.getDatabase(PropertiesFileManager.getConfigFileProperty("mongodb_nosql_config", "db")).withCodecRegistry(pojoCodecRegistry);
+    }
+    
     public static MongoClient getMongoClient() {
         return MONGO_CLIENT;
     }

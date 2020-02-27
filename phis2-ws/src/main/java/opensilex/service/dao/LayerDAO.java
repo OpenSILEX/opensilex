@@ -64,7 +64,7 @@ public class LayerDAO extends DAO<LayerDTO>{
      */
       public void searchAndUpdateChildren(LayerDTO layerDTO) throws SQLException {
         ScientificObjectRdf4jDAO agronomicalObjectDao = new ScientificObjectRdf4jDAO();
-        ScientificObjectSQLDAO agronomicalObject = new ScientificObjectSQLDAO();
+        ScientificObjectMongoDAO agronomicalObject = new ScientificObjectMongoDAO();
         
         HashMap<String, ScientificObject> scientificObjectChildren = agronomicalObjectDao.searchChildren(layerDTO);
         

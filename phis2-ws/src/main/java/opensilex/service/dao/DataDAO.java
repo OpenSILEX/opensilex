@@ -67,8 +67,7 @@ public class DataDAO extends MongoDAO<Data> {
     public String objectUri;
     public String provenanceUri;
     public boolean dateSortAsc;
-    
-
+   
     /**
      * Checks the given list of data.
      * @param dataList
@@ -379,7 +378,7 @@ public class DataDAO extends MongoDAO<Data> {
         query.append(DB_FIELD_VARIABLE, variableUri);
         
         LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
-        
+
         return query;
     }
 
@@ -524,7 +523,7 @@ public class DataDAO extends MongoDAO<Data> {
         MongoCollection<Document> dataVariableCollection = database.getCollection(variableCollection);
         
         // Get the filter query
-        BasicDBObject query = prepareSearchQuery(variableUri, startDate, endDate, objectsUris, provenancesUris);
+        BasicDBObject query = prepareSearchQuery(variableUri, startDate, endDate, objectsUris, provenancesUris);      
         
         // Get paginated documents
         FindIterable<Document> dataMongo = dataVariableCollection.find(query);

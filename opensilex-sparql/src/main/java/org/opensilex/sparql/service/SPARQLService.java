@@ -15,8 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.logging.Level;
+
 import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
+
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.DescribeBuilder;
@@ -222,8 +225,8 @@ public class SPARQLService implements SPARQLConnection, Service {
 
     @Override
     public void renameGraph(URI oldGraphURI, URI newGraphURI) throws SPARQLException {
-        LOGGER.debug("MOVE GRAPH "+oldGraphURI+" TO "+newGraphURI);
-        connection.renameGraph(oldGraphURI,newGraphURI);
+        LOGGER.debug("MOVE GRAPH " + oldGraphURI + " TO " + newGraphURI);
+        connection.renameGraph(oldGraphURI, newGraphURI);
     }
 
     @Override
@@ -558,6 +561,20 @@ public class SPARQLService implements SPARQLConnection, Service {
         return executeAskQuery(getUriExistsQuery(objectClass, uri));
     }
 
+    /**
+     *
+     * @param rdfType the {@link RDF#type} to check
+     * @param uri the {@link URI} to check
+     * @return true if uri exists in the TripleStore and if it's an instance of rdfType
+     */
+    public boolean uriExists(URI rdfType, URI uri) throws SPARQLException {
+
+        return executeAskQuery(new AskBuilder()
+                .addWhere(SPARQLDeserializers.nodeURI(uri), RDF.type, SPARQLQueryHelper.typeDefVar)
+                .addWhere(SPARQLQueryHelper.typeDefVar, Ontology.subClassAny, SPARQLDeserializers.nodeURI(rdfType))
+        );
+    }
+
     public <T extends SPARQLResourceModel> AskBuilder getUriExistsQuery(Class<T> objectClass, URI uri) throws SPARQLException {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
 
@@ -583,20 +600,21 @@ public class SPARQLService implements SPARQLConnection, Service {
             UpdateBuilder delete = new UpdateBuilder();
             for (URI uri : uris) {
                 delete.addDelete(g, SPARQLDeserializers.nodeURI(s), p.asNode(), SPARQLDeserializers.nodeURI(uri));
-            };
+            }
+            ;
 
             executeDeleteQuery(delete);
         }
     }
-    
+
     public void updateObjectRelation(Node g, URI s, Property p, URI n) throws SPARQLException {
         SelectBuilder select = new SelectBuilder();
         select.addVar("x");
         select.addGraph(g, SPARQLDeserializers.nodeURI(s), p.asNode(), "?x");
-        
-        
+
+
         List<URI> oldValues = new ArrayList<>();
-        
+
         executeSelectQuery(select, (result) -> {
             try {
                 oldValues.add(new URI(result.getStringValue("x")));
@@ -604,14 +622,14 @@ public class SPARQLService implements SPARQLConnection, Service {
                 LOGGER.error("Invalid URI provided: " + result.getStringValue("x"));
             }
         });
-        
+
         UpdateBuilder update = new UpdateBuilder();
-        
+
         for (URI uri : oldValues) {
             update.addDelete(g, SPARQLDeserializers.nodeURI(s), p.asNode(), SPARQLDeserializers.nodeURI(uri));
             update.addWhere(SPARQLDeserializers.nodeURI(s), p.asNode(), SPARQLDeserializers.nodeURI(uri));
         }
-        
+
         update.addInsert(g, SPARQLDeserializers.nodeURI(s), p.asNode(), SPARQLDeserializers.nodeURI(n));
         executeUpdateQuery(update);
     }

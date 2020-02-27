@@ -43,16 +43,7 @@ public class DataQueryLogDAO extends MongoDAO<Data> {
     private final static String DB_FIELD_QUERY_DATE = "date";
     
     private final static String DB_COLLECTION_QUERY_LOG = "data_access_query_log";
-
-    private final static String QUERY_DATE_VARIABLE = "$date";
-    private final static String QUERY_DATE_LABEL = "date";
-
-    private final static String QUERY_MIN_DATE_VARIABLE = "$gte";
-    private final static String QUERY_MIN_DATE_LABEL = "gte";
-
-    private final static String QUERY_MAX_DATE_VARIABLE = "$lte";
-    private final static String QUERY_MAX_DATE_LABEL = "lte";
-
+    
     public String userUri;
     public String startDate;
     public String endDate;
@@ -79,52 +70,6 @@ public class DataQueryLogDAO extends MongoDAO<Data> {
         this.collection.insertOne(document);
     }
     
-    public ArrayList<DataQueryLog> allPaginate() {
-        // Get the filter useQuery
-        BasicDBObject query = prepareSearchQuery(); 
-        
-        
-        // Get paginated documents
-        FindIterable<Document> dataMongo = this.collection.find(query);
-        
-        //SILEX:info
-        //Measures are always sort by date, either ascending or descending depending on dateSortAsc parameter
-        //If dateSortAsc=true, sort by date ascending
-        //If dateSortAsc=false, sort by date descending
-        //\SILEX:info
-        if (dateSortAsc) {
-            dataMongo = dataMongo.sort(Sorts.ascending(DB_FIELD_QUERY_DATE));
-        } else {
-            dataMongo = dataMongo.sort(Sorts.descending(DB_FIELD_QUERY_DATE));
-        }
-        
-        // Define pagination for the request
-        if (page != null && pageSize != null) {
-            dataMongo = dataMongo.skip(page * pageSize).limit(pageSize);
-        }
-
-        ArrayList<DataQueryLog> dataAccessLogList = new ArrayList<>();
-        
-        // For each document, create a AccessLog Instance and add it to the result list
-        try (MongoCursor<Document> accessLogCursor = dataMongo.iterator()) {
-            while (accessLogCursor.hasNext()) {
-                Document dataDocument = accessLogCursor.next();
-                
-                // Create and define the AccessLog object
-                DataQueryLog AccessLog = new DataQueryLog();
-                AccessLog.setUserUri(dataDocument.getString(DB_FIELD_USER_URI));
-                AccessLog.setDate(dataDocument.getDate(DB_FIELD_QUERY_DATE));
-                AccessLog.setQuery(dataDocument.get(DB_FIELD_USER_QUERY, Document.class));
-                AccessLog.setRemoteAdress(dataDocument.getString(DB_FIELD_USER_IP));
-                
-                // Add AccessLog to the list
-                dataAccessLogList.add(AccessLog);
-            }
-        }
-        
-        return dataAccessLogList;
-    }
-
     /**
      * Prepares and returns the AccessLog search useQuery with the given parameters.
      * @param userUri

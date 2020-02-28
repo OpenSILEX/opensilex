@@ -125,6 +125,7 @@
         <maven.surefire.report.plugin.version>3.0.0-M3</maven.surefire.report.plugin.version>
         <maven.jxr.plugin.version>3.0.0</maven.jxr.plugin.version>
         <spotbugs.maven.plugin.version>3.1.12.2</spotbugs.maven.plugin.version>
+        <logstash-logback-encoder>5.2</logstash-logback-encoder>
     </properties>
 
     <dependencyManagement>
@@ -318,6 +319,13 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
             <version>${logback.version}</version>
+        </dependency>
+        
+        <!--logback encoder for logstash-->
+        <dependency> 
+            <groupId>net.logstash.logback</groupId> 
+            <artifactId>logstash-logback-encoder</artifactId> 
+            <version>${logstash-logback-encoder}</version> 
         </dependency>
         
         <!--allow condition evaluation in logback configuration file--> 

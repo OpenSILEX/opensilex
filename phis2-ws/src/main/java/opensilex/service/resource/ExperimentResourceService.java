@@ -16,12 +16,14 @@ import opensilex.service.dao.SensorDAO;
 import opensilex.service.dao.SpeciesDAO;
 import opensilex.service.dao.VariableDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
+import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.Experiment;
 import opensilex.service.model.Variable;
 import opensilex.service.resource.dto.experiment.*;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
+import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.OpenSilex;
@@ -54,16 +56,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import opensilex.service.result.ResultForm;
 import opensilex.service.view.brapi.Status;
 
 /**
  * Experiment resource service.
  *
+ * @author Morgane Vidal <morgane.vidal@inra.fr>
  * @update [Morgane Vidal] 31 Oct. 2017: refactor trial to experiment
  * @update [Morgane Vidal] 20 Dec. 2018: add PUT services: -
  * experiment/{uri}/variables - experiment/{uri}/sensors
- * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/experiments")
 @Path("experiments")
@@ -92,15 +95,15 @@ public class ExperimentResourceService extends ResourceService {
     @ApiOperation(value = "Get all experiments corresponding to the searched params given",
             notes = "Retrieve all experiments authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all experiments", response = Experiment.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
+            @ApiResponse(code = 200, message = "Retrieve all experiments", response = Experiment.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+            @ApiImplicitParam(name = "Authorization", required = true,
+                    dataType = "string", paramType = "header",
+                    value = DocumentationAnnotation.ACCES_TOKEN,
+                    example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExperimentsBySearch(
@@ -138,9 +141,7 @@ public class ExperimentResourceService extends ResourceService {
             // use the new DAO in order to get paginated model List
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
             ListWithPagination<ExperimentModel> resultList = xpDao.search(searchDTO, Collections.emptyList(), page, limit);
-//            if (resultList.getList().isEmpty()) {
-//                return new ErrorResponse(Response.Status.NOT_FOUND, "No experiment found", "").getResponse();
-//            }
+
 
             // convert model list to dto list
             ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment();
@@ -163,7 +164,8 @@ public class ExperimentResourceService extends ResourceService {
             }
 
         } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
         }
     }
 
@@ -180,16 +182,16 @@ public class ExperimentResourceService extends ResourceService {
     @ApiOperation(value = "Get an experiment",
             notes = "Retrieve an experiment. Need URL encoded experiment URI (Unique resource identifier).")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve an experiment.", response = Experiment.class),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+            @ApiResponse(code = 200, message = "Retrieve an experiment.", response = Experiment.class),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+            @ApiImplicitParam(name = "Authorization", required = true,
+                    dataType = "string", paramType = "header",
+                    value = DocumentationAnnotation.ACCES_TOKEN,
+                    example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExperimentDetail(
@@ -216,11 +218,12 @@ public class ExperimentResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             } else {
                 ArrayList<Experiment> xps = new ArrayList<>();
-                getResponse = new ResultForm<Experiment>(0, 0, xps, true);
+                getResponse = new ResultForm<>(0, 0, xps, true);
                 return noResultFound(getResponse, statusList);
             }
         } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
         }
     }
 
@@ -233,16 +236,16 @@ public class ExperimentResourceService extends ResourceService {
     @ApiOperation(value = "Post a experiment",
             notes = "Register a new experiment in the database")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Experiment saved", response = ResponseFormPOST.class),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+            @ApiResponse(code = 201, message = "Experiment saved", response = ResponseFormPOST.class),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+            @ApiImplicitParam(name = "Authorization", required = true,
+                    dataType = "string", paramType = "header",
+                    value = DocumentationAnnotation.ACCES_TOKEN,
+                    example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -251,18 +254,16 @@ public class ExperimentResourceService extends ResourceService {
             @Context HttpServletRequest context) {
 
         if (experiments == null || experiments.isEmpty()) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "No experiments provided", "").getResponse();
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "No experiments provided"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
 
         try {
             AuthenticationService authentication = OpenSilex.getInstance().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
-            UserDAO userDAO = new UserDAO(sparql, authentication);
-            ProjectDAO projectDAO = new ProjectDAO(sparql);
-            SpeciesDAO speciesDAO = new SpeciesDAO();
 
             // use DAO(s) in order to validate URI(s) from ExperimentPostDTO
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
-            PostDtoToExperimentModel postDtoToNewModel = new PostDtoToExperimentModel(speciesDAO, projectDAO, userDAO);
+            PostDtoToExperimentModel postDtoToNewModel = new PostDtoToExperimentModel(authentication, sparql);
 
             List<URI> createdXpUris = new ArrayList<>(experiments.size());
             for (ExperimentPostDTO xpDto : experiments) {
@@ -285,9 +286,11 @@ public class ExperimentResourceService extends ResourceService {
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
         } catch (IllegalArgumentException | URISyntaxException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "Bad request", e.getMessage()).getResponse();
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
         }
     }
 
@@ -301,16 +304,16 @@ public class ExperimentResourceService extends ResourceService {
     @PUT
     @ApiOperation(value = "Update experiment")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Experiment updated", response = ResponseFormPOST.class),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 404, message = "Experiment not found"),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+            @ApiResponse(code = 200, message = "Experiment updated", response = ResponseFormPOST.class),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 404, message = "Experiment not found"),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+            @ApiImplicitParam(name = "Authorization", required = true,
+                    dataType = "string", paramType = "header",
+                    value = DocumentationAnnotation.ACCES_TOKEN,
+                    example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -319,17 +322,15 @@ public class ExperimentResourceService extends ResourceService {
             @Context HttpServletRequest context) {
 
         if (experiments == null || experiments.isEmpty()) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "No experiments provided", "").getResponse();
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "No experiments provided"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
 
         try {
             AuthenticationService authentication = OpenSilex.getInstance().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
-            UserDAO userDAO = new UserDAO(sparql, authentication);
-            ProjectDAO projectDAO = new ProjectDAO(sparql);
-            SpeciesDAO speciesDAO = new SpeciesDAO();
 
             // use DAO(s) in order to validate URI(s) from ExperimentPostDTO
-            ExperimentDtoToExperimentModel postDtoToNewModel = new ExperimentDtoToExperimentModel(speciesDAO, projectDAO, userDAO);
+            ExperimentDtoToExperimentModel postDtoToNewModel = new ExperimentDtoToExperimentModel(authentication, sparql);
 
             List<ExperimentModel> xpModels = new ArrayList<>(experiments.size());
             for (ExperimentDTO xpDto : experiments) {
@@ -343,9 +344,11 @@ public class ExperimentResourceService extends ResourceService {
             return new PaginatedListResponse<>(xpModels.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList())).getResponse();
 
         } catch (IllegalArgumentException | URISyntaxException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "Bad request", e.getMessage()).getResponse();
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
         }
     }
 
@@ -353,7 +356,7 @@ public class ExperimentResourceService extends ResourceService {
      * Updates the variables linked to an experiment.
      *
      * @param variableUris
-     * @param experimentURI
+     * @param uri
      * @param context
      * @return the result
      * @example [ "http://www.opensilex.fr/platform/id/variables/v001",
@@ -368,16 +371,16 @@ public class ExperimentResourceService extends ResourceService {
     @Path("{uri}/variables")
     @ApiOperation(value = "Update the observed variables of an experiment")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Measured observed variables of the experiment updated", response = ResponseFormPOST.class),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+            @ApiResponse(code = 201, message = "Measured observed variables of the experiment updated", response = ResponseFormPOST.class),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+            @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                    dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                    value = DocumentationAnnotation.ACCES_TOKEN,
+                    example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -387,50 +390,46 @@ public class ExperimentResourceService extends ResourceService {
                     value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION,
                     example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI,
                     required = true)
-            @PathParam("uri") @Required URI experimentURI,
+            @PathParam("uri") URI uri,
             @Context HttpServletRequest context) {
         try {
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
-            ExperimentModel xpModel = xpDao.get(experimentURI);
+            ExperimentModel xpModel = xpDao.get(uri);
 
-            if (xpModel != null) {
-
-                VariableDAO varDao = new VariableDAO();
-                for (String variableUri : variableUris) {
-                    URI varURI = new URI(variableUri);
-                    Variable variable = varDao.findById(variableUri);
-                    if (variable == null) {
-                        return new ErrorResponse(Response.Status.NOT_FOUND, "Variable not found", "Unknown Variable URI: " + variableUri).getResponse();
-                    }
-                    xpModel.getVariables().add(varURI);
-                }
-                xpDao.update(xpModel);
-
-                SensorDAO sensorDAO = new SensorDAO();
-                ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment();
-
-                Experiment xp = modelToExperiment.convert(xpModel);
-                ArrayList<Experiment> xps = new ArrayList<>();
-                xps.add(xp);
-                
-                ArrayList<Status> statusList = new ArrayList<>();
-                ResultForm<Experiment> getResponse;
-                if (xps.isEmpty()) { //Request failure || No result found
-                    getResponse = new ResultForm<Experiment>(0, 0, new ArrayList<>(), true);
-                    return noResultFound(getResponse, statusList);
-                } else { //Results
-
-                    getResponse = new ResultForm<>(0, 0, xps, true, 0);
-                    getResponse.setStatus(statusList);
-                    return Response.status(Response.Status.OK).entity(getResponse).build();
-                }
-            } else {
-                return new ErrorResponse(
-                        Response.Status.NOT_FOUND, "Experiment not found", "Unknown Experiment URI: " + experimentURI
-                ).getResponse();
+            if (xpModel == null) {
+                AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, "Experiment not found", "Unknown Experiment URI: " + uri));
+                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
             }
+
+            for (String variableUri : variableUris) {
+                xpModel.getVariables().add(new URI(variableUri));
+            }
+            xpDao.update(xpModel);
+
+            ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment();
+
+            Experiment xp = modelToExperiment.convert(xpModel);
+            ArrayList<Experiment> xps = new ArrayList<>();
+            xps.add(xp);
+
+            ArrayList<Status> statusList = new ArrayList<>();
+            ResultForm<Experiment> getResponse;
+            if (xps.isEmpty()) { //Request failure || No result found
+                getResponse = new ResultForm<>(0, 0, new ArrayList<>(), true);
+                return noResultFound(getResponse, statusList);
+            } else { //Results
+
+                getResponse = new ResultForm<>(0, 0, xps, true, 0);
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
+
+        } catch (IllegalArgumentException | URISyntaxException e) {
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
         }
     }
 
@@ -452,60 +451,62 @@ public class ExperimentResourceService extends ResourceService {
     @Path("{uri}/sensors")
     @ApiOperation(value = "Update the sensors which participates in an experiment")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "The list of sensors which participates in the experiment updated", response = ResponseFormPOST.class),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+            @ApiResponse(code = 201, message = "The list of sensors which participates in the experiment updated", response = ResponseFormPOST.class),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+            @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                    dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                    value = DocumentationAnnotation.ACCES_TOKEN,
+                    example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putSensors(
             @ApiParam(value = DocumentationAnnotation.LINK_SENSORS_DEFINITION) @URL ArrayList<String> sensors,
             @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI, required = true)
-            @PathParam("uri") @Required URI uri,
+            @PathParam("uri") URI uri,
             @Context HttpServletRequest context) {
         try {
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
             ExperimentModel xpModel = xpDao.get(uri);
 
-            if (xpModel != null) {
-
-                for (String sensor : sensors) {
-                    xpModel.getSensors().add(new URI(sensor));
-                }
-                xpDao.update(xpModel);
-
-                SensorDAO sensorDAO = new SensorDAO();
-                ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment();
-
-                Experiment xp = modelToExperiment.convert(xpModel);
-                ArrayList<Experiment> xps = new ArrayList<>();
-                xps.add(xp);
-                
-                ArrayList<Status> statusList = new ArrayList<>();
-                ResultForm<Experiment> getResponse;
-                if (xps.isEmpty()) { //Request failure || No result found
-                    getResponse = new ResultForm<Experiment>(0, 0, new ArrayList<>(), true);
-                    return noResultFound(getResponse, statusList);
-                } else { //Results
-
-                    getResponse = new ResultForm<>(0, 0, xps, true, 0);
-                    getResponse.setStatus(statusList);
-                    return Response.status(Response.Status.OK).entity(getResponse).build();
-                }
-            } else {
-                return new ErrorResponse(
-                        Response.Status.NOT_FOUND, "Experiment not found", "Unknown Experiment URI: " + uri
-                ).getResponse();
+            if (xpModel == null) {
+                AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, "Experiment not found", "Unknown Experiment URI: " + uri));
+                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
             }
+
+            for (String sensor : sensors) {
+                xpModel.getSensors().add(new URI(sensor));
+            }
+            xpDao.update(xpModel);
+
+            ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment();
+
+            Experiment xp = modelToExperiment.convert(xpModel);
+            ArrayList<Experiment> xps = new ArrayList<>();
+            xps.add(xp);
+
+            ArrayList<Status> statusList = new ArrayList<>();
+            ResultForm<Experiment> getResponse;
+            if (xps.isEmpty()) { //Request failure || No result found
+                getResponse = new ResultForm<>(0, 0, new ArrayList<>(), true);
+                return noResultFound(getResponse, statusList);
+            } else { //Results
+
+                getResponse = new ResultForm<>(0, 0, xps, true, 0);
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
+
+        } catch (IllegalArgumentException | URISyntaxException e) {
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
         }
     }
 

@@ -15,8 +15,10 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.sparql.service.SPARQLService;
 
 import javax.mail.internet.InternetAddress;
 import java.net.URI;
@@ -35,15 +37,10 @@ public class ExperimentDtoToExperimentModel {
     protected final ProjectDAO projectDAO;
     protected final UserDAO userDAO;
 
-    /**
-     * @param speciesDAO Dao needed to resolve {@link Species} URI from {@link ExperimentPostDTO#getCropSpecies()}
-     * @param projectDAO Dao needed to get {@link ProjectModel} from {@link ExperimentPostDTO#getProjectsUris()}
-     * @param userDAO    Dao needed to get an {@link UserModel} from {@link ExperimentPostDTO#getContacts()}
-     */
-    public ExperimentDtoToExperimentModel(SpeciesDAO speciesDAO, ProjectDAO projectDAO, UserDAO userDAO) {
-        this.speciesDAO = speciesDAO;
-        this.projectDAO = projectDAO;
-        this.userDAO = userDAO;
+    public ExperimentDtoToExperimentModel(AuthenticationService authentication, SPARQLService sparqlService) {
+        this.speciesDAO = new SpeciesDAO();
+        this.projectDAO = new ProjectDAO(sparqlService);
+        this.userDAO = new UserDAO(sparqlService,authentication);
     }
 
     public ExperimentModel convert(ExperimentDTO xpDto) throws Exception {

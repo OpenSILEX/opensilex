@@ -256,11 +256,13 @@ public class ScientificObjectResourceService extends ResourceService {
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("uri") String uri,
         @ApiParam(value = "Search by experiment URI", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("experiment") @URL String experimentURI,
         @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
-        @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE) @QueryParam("rdfType") @URL String rdfType
+        @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE) @QueryParam("rdfType") @URL String rdfType,
+        @ApiParam(value = "Retreive detailled properties", example = "true") @DefaultValue("true") @QueryParam("withProperties") Boolean withProperties
+
     ) {
         ArrayList<ScientificObjectDTO> scientificObjectsToReturn = new ArrayList<>();
         ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
-        
+
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ScientificObjectDTO> getResponse;
         
@@ -272,15 +274,13 @@ public class ScientificObjectResourceService extends ResourceService {
         experimentURI = SPARQLDeserializers.getExpandedURI(experimentURI);
         //1. Get count
         Integer totalCount = scientificObjectDaoSesame.count(uri, rdfType, experimentURI, alias);
-        
-        //2. Get list of scientific objects
-        scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias);
-
+       
         // If scientific objects found
         if(totalCount > 0){
             //2. Get list of scientific objects
-            scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias);
+            scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias, withProperties);
         }
+       
 
         if (scientificObjects == null) { //Request failure
             getResponse = new ResultForm<>(0, 0, scientificObjectsToReturn, true);
@@ -289,11 +289,13 @@ public class ScientificObjectResourceService extends ResourceService {
             getResponse = new ResultForm<>(0, 0, scientificObjectsToReturn, true);
             return noResultFound(getResponse, statusList);
         } else {
+            
+
             //Convert all scientific objects to DTO
             scientificObjects.forEach((scientificObject) -> {
                 scientificObjectsToReturn.add(new ScientificObjectDTO(scientificObject));
             });
-            
+
             getResponse = new ResultForm<>(scientificObjectDaoSesame.getPageSize(), scientificObjectDaoSesame.getPage(), scientificObjectsToReturn, true, totalCount);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);

@@ -670,7 +670,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         }
         
         ScientificObjectRdf4jDAO scientificObjectsDAO = new ScientificObjectRdf4jDAO();
-        ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, observationLevel, studyDbId, null);
+        ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, rdfType, studyDbId, null, true);
 
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql);
         ExperimentModel xp = experimentDAO.get(new URI(studyDbId));
@@ -738,7 +738,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         ArrayList<BrapiObservationDTO> observations = new ArrayList();  
         ScientificObjectRdf4jDAO objectDAO = new ScientificObjectRdf4jDAO();
 
-        ArrayList<ScientificObject> objectsList = objectDAO.find(null, null, null, null, studyDbId, null);
+        ArrayList<ScientificObject> objectsList = objectDAO.find(null, null, null, null, studyDbId, null, false);
 
         ArrayList<Variable> variablesList = new ArrayList();
 

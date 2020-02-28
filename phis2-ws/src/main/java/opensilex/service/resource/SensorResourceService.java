@@ -67,7 +67,7 @@ import opensilex.service.view.model.provenance.Provenance;
 /**
  * Sensor resource service.
  * @update [Andreas Garcia] 15 Apr. 2019: handle DAO persistence exceptions thrown by property DAO functions.
- * @author Morgane Vidal <morgane.vidal@inra.fr>
+ * @author Morgane Vidal
  */
 @Api("/sensors")
 @Path("/sensors")
@@ -743,7 +743,7 @@ public class SensorResourceService extends ResourceService {
             provenanceUrisAssociatedToSensor.add(provenanceUri);
         }else{
             Provenance searchProvenance = new Provenance();
-            String jsonFilter = BasicDBObjectBuilder.start("metadata.prov:Agent.oeso:SensingDevice", uri).get().toString();
+            String jsonFilter = BasicDBObjectBuilder.start("metadata.prov:Agent.prov:id", uri).get().toString();
             ArrayList<Provenance> provenances = provenanceDAO.getProvenances(searchProvenance, jsonFilter);
 
             for (Provenance provenance : provenances) {

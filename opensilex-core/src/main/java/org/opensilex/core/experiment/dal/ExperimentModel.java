@@ -61,7 +61,8 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "endDate"
+            property = "endDate",
+            required = true
     )
     LocalDate endDate;
     public static final String END_DATE_SPARQL_VAR = "endDate";

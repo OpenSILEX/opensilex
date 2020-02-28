@@ -9,6 +9,7 @@ package org.opensilex.core.experiment.dal;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.rest.validation.Required;
+import org.opensilex.rest.validation.date.DateConstraint;
 
 import java.net.URI;
 import java.util.Collections;
@@ -90,6 +91,7 @@ public abstract class ExperimentDTO {
 
     @Required
     @ApiModelProperty(example = "2020-02-20")
+    @DateConstraint
     public String getStartDate() {
         return startDate;
     }
@@ -101,6 +103,7 @@ public abstract class ExperimentDTO {
 
     @Required
     @ApiModelProperty(example = "2020-02-20")
+    @DateConstraint
     public String getEndDate() {
         return endDate;
     }

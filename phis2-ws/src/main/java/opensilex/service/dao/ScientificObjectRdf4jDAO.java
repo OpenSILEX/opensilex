@@ -40,6 +40,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.Rdf4jDAO;
@@ -876,7 +877,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             
             Node graph = null;
             if (scientificObject.getUriExperiment() != null) {
-                graph = NodeFactory.createURI(scientificObject.getUriExperiment());
+
+                graph = NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(scientificObject.getUriExperiment()));
                 
                 // Add participates in (scientific object participates in experiment)
                 Node participatesIn = NodeFactory.createURI(Oeso.RELATION_PARTICIPATES_IN.toString());

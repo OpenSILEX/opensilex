@@ -338,7 +338,7 @@ public class ExperimentResourceService extends ResourceService {
     /**
      * Updates the variables linked to an experiment.
      *
-     * @param variableUris
+     * @param variables
      * @param uri
      * @param context
      * @return the result
@@ -354,7 +354,7 @@ public class ExperimentResourceService extends ResourceService {
     @Path("{uri}/variables")
     @ApiOperation(value = "Update the observed variables of an experiment")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Measured observed variables of the experiment updated", response = ResponseFormPOST.class),
+            @ApiResponse(code = 200, message = "Measured observed variables of the experiment updated", response = ResponseFormPOST.class),
             @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
             @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
             @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
@@ -368,7 +368,7 @@ public class ExperimentResourceService extends ResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putVariables(
-            @ApiParam(value = DocumentationAnnotation.LINK_VARIABLES_DEFINITION) @URL ArrayList<String> variableUris,
+            @ApiParam(value = DocumentationAnnotation.LINK_VARIABLES_DEFINITION) @URL ArrayList<String> variables,
             @ApiParam(
                     value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION,
                     example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI,
@@ -385,12 +385,12 @@ public class ExperimentResourceService extends ResourceService {
             }
 
             xpModel.getVariables().clear();
-            for (String variableUri : variableUris) {
+            for (String variableUri : variables) {
                 xpModel.getVariables().add(new URI(variableUri));
             }
             xpDao.update(xpModel);
 
-            AbstractResultForm postResponse = new ResponseFormPOST(new Status("The Experiment " + uri + " has now " + xpModel.getVariables().size() + " linked variables"));
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, "The experiment " + uri + " has now " + variables.size() + " linked variables"));
             return Response.status(Response.Status.OK).entity(postResponse).build();
 
         } catch (IllegalArgumentException | URISyntaxException e) {
@@ -452,7 +452,7 @@ public class ExperimentResourceService extends ResourceService {
                 xpModel.getSensors().add(new URI(sensor));
             }
             xpDao.update(xpModel);
-            AbstractResultForm postResponse = new ResponseFormPOST(new Status("The Experiment " + uri + " has now " + xpModel.getSensors().size() + " linked sensors"));
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, "The experiment " + uri + " has now " + sensors.size() + " linked sensors"));
             return Response.status(Response.Status.OK).entity(postResponse).build();
 
         } catch (IllegalArgumentException | URISyntaxException e) {

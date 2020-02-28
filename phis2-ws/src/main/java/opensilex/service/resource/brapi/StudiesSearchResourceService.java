@@ -8,9 +8,7 @@
 package opensilex.service.resource.brapi;
 
 import opensilex.service.resource.dto.experiment.StudySearchDTO;
-import opensilex.service.dao.StudyRDFDAO;
 import opensilex.service.resource.dto.experiment.StudyDTO;
-import opensilex.service.dao.StudySQLDAO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -18,8 +16,11 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.sql.SQLException;
+import java.net.URI;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -35,6 +36,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
+import opensilex.service.dao.SpeciesDAO;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.model.Call;
 import opensilex.service.documentation.DocumentationAnnotation;
@@ -45,6 +47,14 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.BrapiMultiResponseForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.apache.commons.lang3.StringUtils;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
+import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.OrderBy;
+import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +67,8 @@ import org.slf4j.LoggerFactory;
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class StudiesSearchResourceService extends ResourceService implements BrapiCall {    
+    @Inject
+    private SPARQLService sparql;
     
     final static Logger LOGGER = LoggerFactory.getLogger(StudiesSearchResourceService.class);
     
@@ -108,90 +120,65 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
             @ApiParam(value = DocumentationAnnotation.EXPERIMENT_POST_DATA_DEFINITION) @Valid StudySearchDTO studySearch,
             @Context HttpServletRequest context) throws DAOPersistenceException {
         AbstractResultForm postResponse = null;
-     
-        if (studySearch != null) {                    
-            // get studies from postgresql DB
-            StudySQLDAO studySqlDAO = new StudySQLDAO();
-            
-//          //get studies from rdf4j based on germplasms --> to implement when germplasm services implemented;
-//            if (studySearch.getGermplasmDbIds() != null) {
-//                StudyRDFDAO studyRdfDAO = new StudyRDFDAO();            
-//                studyRdfDAO.germplasmDbIds = studySearch.getGermplasmDbIds();            
-//                ArrayList<String> studyURIs = studyRdfDAO.getStudiesFromGermplasms();
-//                if (!studyURIs.isEmpty()) {
-//                    studySqlDAO.studyDbIds = studyURIs;
-//                } else {
-//                    studyURIs.add("noStudyCorresponding"); //to have no study found in studySQLDAO if no study used those germplasms 
-//                    studySqlDAO.studyDbIds = studyURIs;
-//                }
-//            }
-            
-            if (studySearch.getStudyDbIds() != null) {
-//                if (studySqlDAO.germplasmDbIds != null) {   //if there are studyDbIds and germplasmDbIds, we check if studies and germplasms correspond
-//                    ArrayList<String> studiesList = new ArrayList();
-//                    for (String study:studySearch.getStudyDbIds()) {                    
-//                        if (studySqlDAO.studyDbIds.contains(study))  {
-//                            studiesList.add(study);
-//                        }
-//                    }
-//                    if (studiesList.isEmpty()) {
-//                        studiesList.add("noStudyCorresponding");
-//                        studySqlDAO.studyDbIds = studiesList;
-//                    }
-//                    studySqlDAO.studyDbIds = studiesList;                
-//                } else {
-//                    studySqlDAO.studyDbIds = studySearch.getStudyDbIds();
-//                }
-                studySqlDAO.studyDbIds = studySearch.getStudyDbIds();
-            } 
-            
-            if (studySearch.getCommonCropName() != null) {
-                studySqlDAO.commonCropName = studySearch.getCommonCropName();
+        
+        if (studySearch != null) {          
+            try {
+                int page = 0;
+                int pageSize = 1000;
+                ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();  
+                ArrayList<OrderBy> orderByList = new ArrayList();
+                
+                if (studySearch.getStudyDbIds()!= null) {
+                    searchDTO.setUri(URI.create(studySearch.getStudyDbIds().get(0)));   
+                }
+                
+                if (studySearch.getStudyNames()!= null) {
+                    searchDTO.setLabel(studySearch.getStudyNames().get(0));
+                } 
+                
+                if (studySearch.getSeasonDbId() != null) {
+                    searchDTO.setCampaign(Integer.parseInt(studySearch.getSeasonDbId()));
+                }    
+                
+                if (studySearch.getPage() != null) {
+                    page = studySearch.getPage();
+                }
+                
+                if (studySearch.getPageSize()!= null) {
+                    pageSize = studySearch.getPageSize();
+                }
+                
+                if (studySearch.getSortBy() != null) {
+
+                    if (studySearch.getSortOrder()!= null) {
+                        String orderByStr = studySearch.getSortBy() + "=" + studySearch.getSortOrder();
+                    } else {
+                        String orderByStr = studySearch.getSortBy() + "=" + "desc";
+                    }
+                    OrderBy order = new OrderBy(studySearch.getSortOrder());
+                    orderByList.add(order);
+                }
+
+                ExperimentDAO xpDao = new ExperimentDAO(sparql);
+                ListWithPagination<ExperimentModel> resultList = xpDao.search(searchDTO, orderByList, page, pageSize);
+
+                ArrayList<StudyDTO> studies = new ArrayList();
+                for (ExperimentModel exp:resultList.getList()) {
+                    StudiesResourceService service = new StudiesResourceService();
+                    StudyDTO study = service.convert(exp);
+                    studies.add(study);                
+                }
+                ArrayList<Status> statusList = new ArrayList<>();
+                if (studies.isEmpty()) {
+                    BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, studies, true);
+                    return noResultFound(getResponse, statusList);
+                } else {
+                    BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(resultList.getPageSize(), resultList.getPage(), studies, true, resultList.getTotal());
+                    return Response.status(Response.Status.OK).entity(getResponse).build();
+                }  
+            } catch (Exception e) {
+                return new ErrorResponse(e).getResponse();
             }
-            
-            if (studySearch.getPage() != null) {
-                studySqlDAO.setPage(studySearch.getPage()) ;
-            } else {
-                studySqlDAO.setPage(0);
-            }
-            
-            if (studySearch.getPageSize()!= null) {
-                studySqlDAO.setPageSize(studySearch.getPageSize()) ;
-            } else {
-                studySqlDAO.setPageSize(20);
-            }
-            
-            if (studySearch.getSeasonDbId()!= null) {
-                studySqlDAO.seasonDbIds = new ArrayList();
-                studySqlDAO.seasonDbIds.add(studySearch.getSeasonDbId());
-            }
-            
-            if (studySearch.getSortBy()!= null) {
-                studySqlDAO.sortBy = studySearch.getSortBy();
-                //SILEX:info
-                //can't sort on germplasm
-                //\SILEX:info
-            }
-            
-            if (studySearch.getSortOrder()!= null) {
-                studySqlDAO.sortOrder = studySearch.getSortOrder();
-            }
-            
-            if (studySearch.getStudyNames()!= null) {
-                studySqlDAO.studyNames = studySearch.getStudyNames();
-            }
-            studySqlDAO.user=userSession.getUser();
-            Integer studiesCount = studySqlDAO.count();
-            ArrayList<StudyDTO> studies = studySqlDAO.allPaginate();
-            ArrayList<Status> statusList = new ArrayList(); 
-            
-            if (studies.isEmpty()) {
-                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, studies, true);
-                return noResultFound(getResponse, statusList);
-            } else {
-                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(studySqlDAO.getPageSize(), studySqlDAO.getPage(), studies, true, studiesCount);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            } 
 
         } else {
             postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty search parameters"));
@@ -283,48 +270,57 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
         @ApiParam(value = "Sort order direction - ASC or DESC") @QueryParam("sortOrder") String sortOrder,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
-        ) throws SQLException {               
+        ){     
+        try {
+            ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();  
+            ArrayList<OrderBy> orderByList = new ArrayList();
+            
+            if (!StringUtils.isEmpty(studyDbId)) {
+                searchDTO.setUri(URI.create(studyDbId));
+            }   
 
-         StudySQLDAO studySqlDAO = new StudySQLDAO();
+            if (!StringUtils.isEmpty(seasonDbId)) {
+                searchDTO.setCampaign(Integer.parseInt(seasonDbId));
+            }
+            if (!StringUtils.isEmpty(active)) {
+                searchDTO.setEnded(!Boolean.parseBoolean(active));
+            }
+            if (!StringUtils.isEmpty(sortBy)) {
+                
+                if (!StringUtils.isEmpty(sortOrder)) {
+                    String orderByStr = sortBy + "=" + sortOrder;
+                } else {
+                    String orderByStr = sortBy + "=" + "desc";
+                }
+                OrderBy order = new OrderBy(sortOrder);
+                orderByList.add(order);
+            }
 
-        if (studyDbId != null) {
-            studySqlDAO.studyDbIds = new ArrayList();
-            studySqlDAO.studyDbIds.add(studyDbId);
-        }     
-        if (commonCropName != null) {
-            studySqlDAO.commonCropName = commonCropName;
-        }    
-        if (seasonDbId != null) {
-            studySqlDAO.seasonDbIds = new ArrayList();
-            studySqlDAO.seasonDbIds.add(seasonDbId);
-        }         
-        if (sortBy != null) {
-            studySqlDAO.sortBy = sortBy;
+            ExperimentDAO xpDao = new ExperimentDAO(sparql);
+            ListWithPagination<ExperimentModel> resultList = xpDao.search(searchDTO, orderByList, page, pageSize);
+            
+            ArrayList<StudyDTO> studies = new ArrayList();
+            for (ExperimentModel exp:resultList.getList()) {
+                StudiesResourceService service = new StudiesResourceService();
+                StudyDTO study = service.convert(exp);
+                studies.add(study);                
+            }
+            ArrayList<Status> statusList = new ArrayList<>();
+            if (studies.isEmpty()) {
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, studies, true);
+                return noResultFound(getResponse, statusList);
+            } else {
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(resultList.getPageSize(), resultList.getPage(), studies, true, resultList.getTotal());
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }  
+        } catch (Exception e) {
+            return new ErrorResponse(e).getResponse();
         }
-        if (sortOrder != null) {
-            studySqlDAO.sortOrder = sortOrder;
-        } 
-        if (active != null) {
-            studySqlDAO.active = active;
-        }
-        
-        studySqlDAO.setPageSize(pageSize);
-        studySqlDAO.setPage(page);
-        studySqlDAO.user=userSession.getUser();
-        
-        ArrayList<Status> statusList = new ArrayList<>(); 
-        Integer studiesCount = studySqlDAO.count();
-        ArrayList<StudyDTO> studies = studySqlDAO.allPaginate();
-        
-        if (studies.isEmpty()) {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, studies, true);
-            return noResultFound(getResponse, statusList);
-        } else {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(pageSize, page, studies, true, studiesCount);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
-        }  
         
     }   
+    
+    
+
 
     private Response noResultFound(BrapiMultiResponseForm getResponse, ArrayList<Status> insertStatusList) {
         insertStatusList.add(new Status("No result", StatusCodeMsg.INFO, "no result for this query"));

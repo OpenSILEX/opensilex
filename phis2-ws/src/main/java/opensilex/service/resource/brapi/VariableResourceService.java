@@ -35,7 +35,6 @@ import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.DataDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
-import opensilex.service.dao.StudySQLDAO;
 import opensilex.service.dao.VariableDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
@@ -341,20 +340,12 @@ public class VariableResourceService extends ResourceService implements BrapiCal
         @ApiParam(value = "studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @QueryParam("studyDbId") @URL @Required String studyDbId,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
-    ) throws SQLException {               
+    ) throws SQLException {   
+        
 
-        StudySQLDAO studyDAO = new StudySQLDAO();
-
-        if (studyDbId != null) {
-            studyDAO.studyDbIds = new ArrayList();
-            studyDAO.studyDbIds.add(studyDbId);
-        }      
-
-        studyDAO.setPageSize(1);
-        studyDAO.user = userSession.getUser();
         ArrayList<Status> statusList = new ArrayList<>();  
 
-        ArrayList<BrapiObservationDTO> observationsList = getObservationsList(studyDAO, new ArrayList());
+        ArrayList<BrapiObservationDTO> observationsList = getObservationsList(studyDbId, new ArrayList());
         ArrayList<String> variableURIs = new ArrayList();
         ArrayList<BrapiVariable> obsVariablesList = new ArrayList();
         for (BrapiObservationDTO obs:observationsList) {  
@@ -386,11 +377,12 @@ public class VariableResourceService extends ResourceService implements BrapiCal
      * @param page the page number
      * @return observations list 
      */
-    private ArrayList<BrapiObservationDTO> getObservationsList(StudySQLDAO studyDAO, List<String> variableURIs) {
+    private ArrayList<BrapiObservationDTO> getObservationsList(String studyDbId, List<String> variableURIs) {
 
         ArrayList<BrapiObservationDTO> observations = new ArrayList();  
         ScientificObjectRdf4jDAO objectDAO = new ScientificObjectRdf4jDAO();
-        ArrayList<ScientificObject> objectsList = objectDAO.find(null, null, null, null, studyDAO.studyDbIds.get(0), null);
+        ArrayList<ScientificObject> objectsList = objectDAO.find(null, null, null, null, studyDbId, null, false);
+
         ArrayList<Variable> variablesList = new ArrayList();
 
         if (variableURIs.isEmpty()) {  

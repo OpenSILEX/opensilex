@@ -1,9 +1,9 @@
 //******************************************************************************
 //                            DataResourceService.java
 // SILEX-PHIS
-// Copyright © INRA 2018
-// Creation date: 1 March 2019
-// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Copyright © INRAE 2020
+// Creation date: February 2020
+// Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
 package opensilex.service.resource;
 
@@ -47,9 +47,11 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.DataDAO;
+import opensilex.service.dao.DataQueryLogDAO;
 import opensilex.service.dao.FileDescriptionDAO;
 import opensilex.service.dao.ProvenanceDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
+import opensilex.service.dao.UserDAO;
 import opensilex.service.dao.VariableDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
@@ -66,14 +68,18 @@ import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Data;
+import opensilex.service.model.DataQueryLog;
 import opensilex.service.model.FileDescription;
+import opensilex.service.model.User;
 import opensilex.service.ontology.Oeso;
+import opensilex.service.resource.dto.data.DataLogAccessUserDTO;
+import opensilex.service.resource.dto.data.DataQueryLogSearchDTO;
 import opensilex.service.resource.dto.data.DataSearchDTO;
 import opensilex.service.resource.dto.data.FileDescriptionWebPathPostDTO;
 
 /**
  * Data resource service.
- * @Author Vincent Migot <vincent.migot@inra.fr>
+ * @Author Arnaud Charleroy
  */
 @Api("/data")
 @Path("/data")
@@ -169,6 +175,7 @@ public class DataResourceService extends ResourceService {
      * @param object
      * @param provenance
      * @param dateSortAsc
+     * @param requestContext
      * @return list of the data corresponding to the search params given
      * @example
      * {

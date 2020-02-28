@@ -67,8 +67,7 @@ public class DataDAO extends MongoDAO<Data> {
     public String objectUri;
     public String provenanceUri;
     public boolean dateSortAsc;
-    
-
+   
     /**
      * Checks the given list of data.
      * @param dataList
@@ -90,13 +89,7 @@ public class DataDAO extends MongoDAO<Data> {
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
                         "Unknown variable : " + data.getVariableUri()));
             } 
-            // 2. Check if the object uri exist
-            if (!variableDAO.existUri(data.getObjectUri())) {
-                dataOk = false;
-                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
-                        "Unknown object : " + data.getObjectUri()));
-            }
-            // 3. Check if the provenance uri exist and is a provenance
+            // 2. Check if the provenance uri exist and is a provenance
             if (!provenanceDAO.existProvenanceUri(data.getProvenanceUri())) {
                 dataOk = false;
                 checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
@@ -385,7 +378,7 @@ public class DataDAO extends MongoDAO<Data> {
         query.append(DB_FIELD_VARIABLE, variableUri);
         
         LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
-        
+
         return query;
     }
 
@@ -449,7 +442,7 @@ public class DataDAO extends MongoDAO<Data> {
         }
         
         // Objects filter
-        if (!objectsUris.isEmpty()) {
+        if (objectsUris != null && !objectsUris.isEmpty()) {
             if (objectsUris.size() > 1) {
                 BasicDBList or = new BasicDBList();
                 for (String objectUri : objectsUris) {
@@ -463,7 +456,7 @@ public class DataDAO extends MongoDAO<Data> {
         }
         
         //Provenance filter
-        if (!provenancesUris.isEmpty()) {
+        if (provenancesUris != null && !provenancesUris.isEmpty()) {
             if (provenancesUris.size() > 1) {
                 BasicDBList or = new BasicDBList();
                 for (String provenanceUri : provenancesUris) {
@@ -530,7 +523,7 @@ public class DataDAO extends MongoDAO<Data> {
         MongoCollection<Document> dataVariableCollection = database.getCollection(variableCollection);
         
         // Get the filter query
-        BasicDBObject query = prepareSearchQuery(variableUri, startDate, endDate, objectsUris, provenancesUris);
+        BasicDBObject query = prepareSearchQuery(variableUri, startDate, endDate, objectsUris, provenancesUris);      
         
         // Get paginated documents
         FindIterable<Document> dataMongo = dataVariableCollection.find(query);

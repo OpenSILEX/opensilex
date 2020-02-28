@@ -9,7 +9,6 @@ package opensilex.service.resource.dto.experiment;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import javax.validation.constraints.NotNull;
 
 /**
  * Represents the request body of POST studies-search 
@@ -19,7 +18,7 @@ public class StudySearchDTO {
     private String commonCropName;
     //private ArrayList<String> germplasmDbIds;
     //private ArrayList<String> locationDbIds;
-    //private ArrayList<String> observationVariableDbIds;
+    private ArrayList<String> observationVariableDbIds;
     //private ArrayList<String> programDbIds;
     //private ArrayList<String> programNames;
     private String seasonDbId;
@@ -106,6 +105,14 @@ public class StudySearchDTO {
 
     public void setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
+    }
+
+    public ArrayList<String> getObservationVariableDbIds() {
+        return observationVariableDbIds;
+    }
+
+    public void setObservationVariableDbIds(ArrayList<String> observationVariableDbIds) {
+        this.observationVariableDbIds = observationVariableDbIds;
     }
     
 }

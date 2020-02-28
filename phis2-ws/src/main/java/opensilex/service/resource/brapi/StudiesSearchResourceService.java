@@ -140,6 +140,14 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
                     searchDTO.setCampaign(Integer.parseInt(studySearch.getSeasonDbId()));
                 }    
                 
+                if (studySearch.getObservationVariableDbIds() != null) {
+                    ArrayList<URI> variableURIs = new ArrayList();
+                    for (String var:studySearch.getObservationVariableDbIds()) {
+                        variableURIs.add(new URI(var));
+                    }
+                    searchDTO.setVariables(variableURIs);
+                } 
+                
                 if (studySearch.getPage() != null) {
                     page = studySearch.getPage();
                 }
@@ -149,13 +157,27 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
                 }
                 
                 if (studySearch.getSortBy() != null) {
-
-                    if (studySearch.getSortOrder()!= null) {
-                        String orderByStr = studySearch.getSortBy() + "=" + studySearch.getSortOrder();
-                    } else {
-                        String orderByStr = studySearch.getSortBy() + "=" + "desc";
+                    String sortBy = studySearch.getSortBy();
+                    if (null == sortBy) {
+                    sortBy = "";
+                    } else switch (sortBy) {
+                        case "studyDbId":
+                            sortBy = "uri";
+                            break;
+                        case "seasonDbId":
+                            sortBy = "campaign";
+                            break;
+                        default:
+                            sortBy = "";
+                            break;
                     }
-                    OrderBy order = new OrderBy(studySearch.getSortOrder());
+                    String orderByStr = new String();
+                    if (studySearch.getSortOrder()!= null) {
+                        orderByStr = sortBy + "=" + studySearch.getSortOrder();
+                    } else {
+                        orderByStr = sortBy + "=" + "desc";
+                    }
+                    OrderBy order = new OrderBy(orderByStr);
                     orderByList.add(order);
                 }
 
@@ -191,6 +213,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
      * @param studyDbId
      * @param commonCropName
      * @param studyTypeDbId - not covered
+     * @param observationVariableDbIds
      * @param programDbId - not covered
      * @param locationDbId - not covered
      * @param seasonDbId
@@ -259,11 +282,12 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
 
     public Response getStudiesSearch (
         @ApiParam(value = "Search by studyDbId", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @QueryParam("studyDbId") @URL String studyDbId,
-        @ApiParam(value = "Search by commonCropName", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_CROP_SPECIES ) @QueryParam("commonCropName") String commonCropName,
+        //@ApiParam(value = "Search by commonCropName", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_CROP_SPECIES ) @QueryParam("commonCropName") String commonCropName,
         //@ApiParam(value = "Search by studyTypeDbId - NOT COVERED YET") @QueryParam("studyTypeDbId") String studyTypeDbId,
         //@ApiParam(value = "Search by programDbId - NOT COVERED YET ") @QueryParam("programDbId ") String programDbId,
         //@ApiParam(value = "Search by locationDbId - NOT COVERED YET") @QueryParam("locationDbId") String locationDbId,
         @ApiParam(value = "Search by seasonDbId", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_CAMPAIGN ) @QueryParam("seasonDbId") String seasonDbId,
+        @ApiParam(value = "Search by observationVariableDbIds", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("observationVariableDbIds") List<String> observationVariableDbIds,
         //@ApiParam(value = "Search by trialDbId - NOT COVERED YET") @QueryParam("trialDbId") String trialDbId,
         @ApiParam(value = "Filter active status true/false") @QueryParam("active") String active,
         @ApiParam(value = "Name of the field to sort by: studyDbId, commonCropName or seasonDbId") @QueryParam("sortBy") String sortBy,
@@ -285,14 +309,36 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
             if (!StringUtils.isEmpty(active)) {
                 searchDTO.setEnded(!Boolean.parseBoolean(active));
             }
-            if (!StringUtils.isEmpty(sortBy)) {
-                
-                if (!StringUtils.isEmpty(sortOrder)) {
-                    String orderByStr = sortBy + "=" + sortOrder;
-                } else {
-                    String orderByStr = sortBy + "=" + "desc";
+            
+            if (observationVariableDbIds != null) {
+                ArrayList<URI> variableURIs = new ArrayList();
+                for (String v:observationVariableDbIds) {
+                    variableURIs.add(URI.create(v));
                 }
-                OrderBy order = new OrderBy(sortOrder);
+                searchDTO.setVariables(variableURIs);
+            } 
+
+            if (!StringUtils.isEmpty(sortBy)) {
+                if (null == sortBy) {
+                    sortBy = "";
+                } else switch (sortBy) {
+                    case "studyDbId":
+                        sortBy = "uri";
+                        break;
+                    case "seasonDbId":
+                        sortBy = "campaign";
+                        break;
+                    default:
+                        sortBy = "";
+                        break;
+                }
+                String orderByStr = new String();
+                if (!StringUtils.isEmpty(sortOrder)) {
+                    orderByStr = sortBy + "=" + sortOrder;
+                } else {
+                    orderByStr = sortBy + "=" + "desc";
+                }
+                OrderBy order = new OrderBy(orderByStr);
                 orderByList.add(order);
             }
 

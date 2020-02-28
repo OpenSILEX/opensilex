@@ -200,7 +200,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
         ) throws SQLException {               
 
-    try {
+        try {
             ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();  
             ArrayList<OrderBy> orderByList = new ArrayList();
             
@@ -215,13 +215,26 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
                 searchDTO.setEnded(!Boolean.parseBoolean(active));
             }
             if (!StringUtils.isEmpty(sortBy)) {
-
-                if (!StringUtils.isEmpty(sortOrder)) {
-                    String orderByStr = sortBy + "=" + sortOrder;
-                } else {
-                    String orderByStr = sortBy + "=" + "desc";
+                if (null == sortBy) {
+                    sortBy = "";
+                } else switch (sortBy) {
+                    case "studyDbId":
+                        sortBy = "uri";
+                        break;
+                    case "seasonDbId":
+                        sortBy = "campaign";
+                        break;
+                    default:
+                        sortBy = "";
+                        break;
                 }
-                OrderBy order = new OrderBy(sortOrder);
+                String orderByStr = new String();
+                if (!StringUtils.isEmpty(sortOrder)) {
+                    orderByStr = sortBy + "=" + sortOrder;
+                } else {
+                    orderByStr = sortBy + "=" + "desc";
+                }
+                OrderBy order = new OrderBy(orderByStr);
                 orderByList.add(order);
             }
 
@@ -670,7 +683,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         }
         
         ScientificObjectRdf4jDAO scientificObjectsDAO = new ScientificObjectRdf4jDAO();
-        ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, rdfType, studyDbId, null, true);
+        ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, rdfType, studyDbId, null, false);
 
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql);
         ExperimentModel xp = experimentDAO.get(new URI(studyDbId));

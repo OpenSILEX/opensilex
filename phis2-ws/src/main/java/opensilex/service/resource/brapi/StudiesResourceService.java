@@ -671,6 +671,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             rdfType =  Oeso.NAMESPACE + observationLevel;
         }
         
+        ScientificObjectRdf4jDAO scientificObjectsDAO = new ScientificObjectRdf4jDAO();
         ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, rdfType, studyDbId, null, true);
 
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql);

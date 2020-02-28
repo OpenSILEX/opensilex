@@ -57,10 +57,12 @@ public class DataQueryLogDAO extends MongoDAO<Data> {
     
     /**
      * 
+     * @param userUri
+     * @param remoteUserAdress
      * @param query get query map values to log
      * @param date date of the query
      */
-    public void insert(Map<String, Object> query, Date date){
+    public void insert(String userUri, String  remoteUserAdress, Date date , Map<String, Object> query){
         Document document = new Document();
         document.append(DB_FIELD_USER_IP, this.remoteUserAdress);
         document.append(DB_FIELD_USER_URI, this.user.getUri());

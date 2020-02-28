@@ -15,7 +15,7 @@ import java.util.ArrayList;
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
 public class StudySearchDTO {
-    private String commonCropName;
+    //private String commonCropName;
     //private ArrayList<String> germplasmDbIds;
     //private ArrayList<String> locationDbIds;
     private ArrayList<String> observationVariableDbIds;
@@ -35,13 +35,13 @@ public class StudySearchDTO {
     public StudySearchDTO() {
     }
 
-    public String getCommonCropName() {
-        return commonCropName;
-    }
-
-    public void setCommonCropName(String commonCropName) {
-        this.commonCropName = commonCropName;
-    }
+//    public String getCommonCropName() {
+//        return commonCropName;
+//    }
+//
+//    public void setCommonCropName(String commonCropName) {
+//        this.commonCropName = commonCropName;
+//    }
 
 //    public ArrayList<String> getGermplasmDbIds() {
 //        return germplasmDbIds;

@@ -290,7 +290,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
         @ApiParam(value = "Search by observationVariableDbIds", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("observationVariableDbIds") List<String> observationVariableDbIds,
         //@ApiParam(value = "Search by trialDbId - NOT COVERED YET") @QueryParam("trialDbId") String trialDbId,
         @ApiParam(value = "Filter active status true/false") @QueryParam("active") String active,
-        @ApiParam(value = "Name of the field to sort by: studyDbId, commonCropName or seasonDbId") @QueryParam("sortBy") String sortBy,
+        @ApiParam(value = "Name of the field to sort by: studyDbId or seasonDbId") @QueryParam("sortBy") String sortBy,
         @ApiParam(value = "Sort order direction - ASC or DESC") @QueryParam("sortOrder") String sortOrder,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page

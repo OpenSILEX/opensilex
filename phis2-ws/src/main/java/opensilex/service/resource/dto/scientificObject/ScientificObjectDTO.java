@@ -8,7 +8,6 @@
 package opensilex.service.resource.dto.scientificObject;
 
 import java.util.ArrayList;
-import opensilex.service.dao.GeneticInformationDAO;
 import opensilex.service.model.Property;
 import opensilex.service.model.ScientificObject;
 import opensilex.service.model.GeneticInformation;
@@ -43,7 +42,7 @@ public class ScientificObjectDTO extends AbstractVerifiedClass {
     //properties of the scientific object
     private ArrayList<PropertyDTO> properties = new ArrayList<>();
     //genetic Information
-    private GeneticInformation geneticInformation;
+    //private GeneticInformation geneticInformation;
 
     public ScientificObjectDTO() {
        

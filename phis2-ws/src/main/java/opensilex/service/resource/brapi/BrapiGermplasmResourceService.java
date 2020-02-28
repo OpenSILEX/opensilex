@@ -41,8 +41,8 @@ import org.slf4j.LoggerFactory;
  * BRAPI Germplasm resource service
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-@Api("/brapi/v1/germplasm")
-@Path("/brapi/v1/germplasm")
+//@Api("/brapi/v1/germplasm")
+//@Path("/brapi/v1/germplasm")
 public class BrapiGermplasmResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(BrapiGermplasmResourceService.class);
     

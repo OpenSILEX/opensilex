@@ -305,9 +305,9 @@ public class Install {
         SPARQLService sparql = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
         AuthenticationService authentication = opensilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
 
-        UserDAO userDAO = new UserDAO(sparql, authentication);
+        UserDAO userDAO = new UserDAO(sparql);
 
         InternetAddress email = new InternetAddress("admin@opensilex.org");
-        userDAO.create(null, email, "Admin", "OpenSilex", true, "admin", "en-US");
+        userDAO.create(null, email, "Admin", "OpenSilex", true, authentication.getPasswordHash("admin"), "en-US");
     }
 }

@@ -14,6 +14,7 @@
             <customLevel>${opensilex.log.level}</customLevel>
             <!-- List of logger name pattern to include at custom log level -->
             <include>org.opensilex</include>
+            <include>opensilex.service</include>
             <include>test.opensilex</include>
             <!-- List of classes to include at DEBUG log level -->
             <!-- <debug>org.opensilex.server.Server</debug> -->

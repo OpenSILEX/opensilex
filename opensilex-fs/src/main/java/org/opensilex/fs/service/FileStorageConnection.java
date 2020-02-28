@@ -15,7 +15,7 @@ import org.opensilex.service.ServiceConnection;
  */
 public interface FileStorageConnection extends ServiceConnection {
 
-    public void readFile(Path filePath) throws Exception;
+    public String readFile(Path filePath) throws Exception;
     
     public void writeFile(Path filePath, String content) throws Exception;
     

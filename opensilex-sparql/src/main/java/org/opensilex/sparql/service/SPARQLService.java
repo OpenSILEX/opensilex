@@ -81,7 +81,7 @@ public class SPARQLService implements SPARQLConnection, Service {
 
     private final SPARQLConnection connection;
 
-    public SPARQLService(SPARQLConnection connection) throws URISyntaxException {
+    public SPARQLService(SPARQLConnection connection) {
         this.connection = connection;
     }
 
@@ -419,6 +419,10 @@ public class SPARQLService implements SPARQLConnection, Service {
         }
     }
 
+    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Class<T> objectClass, ThrowingConsumer<SelectBuilder, Exception> filterHandler, Integer page, Integer pageSize) throws Exception {
+        return searchWithPagination(objectClass, filterHandler, null, page, pageSize);
+    }
+    
     public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Class<T> objectClass, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         int total = count(objectClass, filterHandler);
 

@@ -123,8 +123,7 @@ ontologies:
 
 file-system: 
     # Path to root file data storage directory
-    local:
-        storageBasePath: </home/opensilex/data>
+    storageBasePath: </home/opensilex/data>
 
 big-data:   
     nosql:

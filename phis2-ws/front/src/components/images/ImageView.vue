@@ -99,7 +99,16 @@ export default class ImageView extends Vue {
       this.searchImagesFields.concernedItemsValue = form.objectList;
     }
     if (form.rdfType !== null) {
-      this.loadData();
+      if (
+        this.searchImagesFields.experiment !== null &&
+        form.objectList.length === 0
+      ) {
+        this.images = [];
+        this.totalImages = 0;
+        this.showedImages = 0;
+      } else {
+        this.loadData();
+      }
     }
   }
 
@@ -148,9 +157,17 @@ export default class ImageView extends Vue {
       )
       .then(
         (http: HttpResponse<OpenSilexResponse<Array<FileDescriptionDTO>>>) => {
-          this.totalImages = http.response.metadata.pagination.totalCount;
           const res = http.response.result as any;
           const data = res.data as Array<FileDescriptionDTO>;
+          if (http.response.metadata.pagination !== null) {
+            this.totalImages = http.response.metadata.pagination.totalCount;
+          } else {
+            if (data.length === 1) {
+              this.totalImages = 1;
+            } else {
+              this.totalImages = 0;
+            }
+          }
           console.log("RESULT");
           console.log(data);
           this.imagesFilter(data);

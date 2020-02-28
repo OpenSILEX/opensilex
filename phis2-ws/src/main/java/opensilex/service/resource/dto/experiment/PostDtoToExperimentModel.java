@@ -15,8 +15,10 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.sparql.service.SPARQLService;
 
 import javax.mail.internet.InternetAddress;
 import java.net.URI;
@@ -36,15 +38,10 @@ public class PostDtoToExperimentModel {
     protected final ProjectDAO projectDAO;
     protected final UserDAO userDAO;
 
-    /**
-     * @param speciesDAO Dao needed to resolve {@link Species} URI from {@link ExperimentPostDTO#getCropSpecies()}
-     * @param projectDAO Dao needed to get {@link ProjectModel} from {@link ExperimentPostDTO#getProjectsUris()}
-     * @param userDAO    Dao needed to get an {@link UserModel} from {@link ExperimentPostDTO#getContacts()}
-     */
-    public PostDtoToExperimentModel(SpeciesDAO speciesDAO, ProjectDAO projectDAO, UserDAO userDAO) {
-        this.speciesDAO = speciesDAO;
-        this.projectDAO = projectDAO;
-        this.userDAO = userDAO;
+    public PostDtoToExperimentModel(AuthenticationService authentication, SPARQLService sparqlService) {
+        this.speciesDAO = new SpeciesDAO();
+        this.projectDAO = new ProjectDAO(sparqlService);
+        this.userDAO = new UserDAO(sparqlService,authentication);
     }
 
     public ExperimentModel convert(ExperimentPostDTO xpPostDto) throws Exception {
@@ -68,7 +65,8 @@ public class PostDtoToExperimentModel {
             xpModel.setEndDate(LocalDate.parse(xpPostDto.getEndDate()));
         }
 
-        if (xpPostDto.getCropSpecies() != null && !xpPostDto.getCropSpecies().isEmpty()) {
+
+        if (!StringUtils.isEmpty(xpPostDto.getCropSpecies())) {
             Species searchSpecies = new Species();
             searchSpecies.setLabel(xpPostDto.getCropSpecies());
             ArrayList<Species> daoSpecies = speciesDAO.searchWithFilter(searchSpecies, null);
@@ -89,7 +87,7 @@ public class PostDtoToExperimentModel {
                 }
                 projects.add(projectModel);
             }
-            
+
             xpModel.setProjects(projects);
         }
 
@@ -112,7 +110,7 @@ public class PostDtoToExperimentModel {
         }
 
         // try to get the Infrastructures/field URI
-        if (! StringUtils.isEmpty(xpPostDto.getField())) {
+        if (!StringUtils.isEmpty(xpPostDto.getField())) {
             try {
                 xpModel.getInfrastructures().add(new URI(xpPostDto.getField()));
             } catch (URISyntaxException ignored) {
@@ -120,7 +118,7 @@ public class PostDtoToExperimentModel {
         }
 
         // try to get the devices/place URI
-        if (! StringUtils.isEmpty(xpPostDto.getPlace())) {
+        if (!StringUtils.isEmpty(xpPostDto.getPlace())) {
             try {
                 xpModel.getDevices().add(new URI(xpPostDto.getPlace()));
             } catch (URISyntaxException ignored) {

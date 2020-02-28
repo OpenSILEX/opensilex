@@ -31,6 +31,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
@@ -219,7 +221,7 @@ public class ScientificObjectResourceService extends ResourceService {
         
         ScientificObject scientificObject = scientificObjectDTO.createObjectFromDTO();
         scientificObject.setUri(uri);
-        POSTResultsReturn result = scientificObjectDAO.checkAndUpdateInContext(scientificObject, experiment);
+        POSTResultsReturn result = scientificObjectDAO.checkAndUpdateInContext(scientificObject, SPARQLDeserializers.getExpandedURI(experiment));
         
         AbstractResultForm putResponse = null;
         if (result.getHttpStatus().equals(Response.Status.OK)

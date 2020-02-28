@@ -74,12 +74,6 @@ public class GroupAPI {
     private SPARQLService sparql;
 
     /**
-     * Inject Authentication service
-     */
-    @Inject
-    private AuthenticationService authentication;
-
-    /**
      * Create a group and return it's URI
      *
      * @see org.opensilex.rest.group.dal.GroupDAO
@@ -179,7 +173,7 @@ public class GroupAPI {
         group.setName(dto.getName());
         group.setDescription(dto.getDescription());
 
-        UserDAO userDAO = new UserDAO(sparql, authentication);
+        UserDAO userDAO = new UserDAO(sparql);
         ProfileDAO profileDAO = new ProfileDAO(sparql);
         List<GroupUserProfileModel> userProfilesModel = new ArrayList<>();
         for (GroupUserProfileModificationDTO userProfile : dto.getUserProfiles()) {

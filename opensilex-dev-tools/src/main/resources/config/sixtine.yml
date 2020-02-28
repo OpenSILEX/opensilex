@@ -7,8 +7,7 @@ ontologies:
             repository: opensilex
 
 file-system:   
-    local:
-        storageBasePath: <TO CONFIGURE>  
+    storageBasePath: <TO CONFIGURE>  
     
 big-data:   
     nosql:

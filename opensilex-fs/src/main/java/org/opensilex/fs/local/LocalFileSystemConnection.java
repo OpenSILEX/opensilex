@@ -7,44 +7,37 @@
 package org.opensilex.fs.local;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import org.apache.commons.io.FileUtils;
 import org.opensilex.fs.service.FileStorageConnection;
 
 /**
  * Local filesystem connection for file storage service
- * <pre>
- * TODO create a real implementation with config
- * </pre>
  *
  * @see org.opensilex.fs.service.FileStorageService
  * @author Vincent Migot
  */
 public class LocalFileSystemConnection implements FileStorageConnection {
 
-    private final LocalFileSystemConfig config;
-
-    public LocalFileSystemConnection(LocalFileSystemConfig config) {
-        this.config = config;
-    }
-
     @Override
-    public void readFile(Path filePath) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public String readFile(Path filePath) throws Exception {
+        return FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8);
     }
 
     @Override
     public void writeFile(Path filePath, String content) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        FileUtils.writeStringToFile(filePath.toFile(), content, StandardCharsets.UTF_8);
     }
 
     @Override
     public void writeFile(Path filePath, File file) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        FileUtils.copyFile(file, filePath.toFile());
     }
 
     @Override
     public void createDirectories(Path directoryPath) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        FileUtils.forceMkdir(directoryPath.toFile());
     }
 
 }

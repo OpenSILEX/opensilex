@@ -131,7 +131,7 @@ public class UserAPI {
         }
 
         // Create user DAO
-        UserDAO userDAO = new UserDAO(sparql, authentication);
+        UserDAO userDAO = new UserDAO(sparql);
 
         // check if user email already exists
         InternetAddress userEmail = new InternetAddress(userDTO.getEmail());
@@ -143,7 +143,7 @@ public class UserAPI {
                     userDTO.getFirstName(),
                     userDTO.getLastName(),
                     userDTO.isAdmin(),
-                    userDTO.getPassword(),
+                    authentication.getPasswordHash(userDTO.getPassword()),
                     userDTO.getLang()
             );
             // return user URI
@@ -187,7 +187,7 @@ public class UserAPI {
             @ApiParam(value = "User URI", example = "dev-users:Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         // Get user from DAO by URI
-        UserDAO dao = new UserDAO(sparql, authentication);
+        UserDAO dao = new UserDAO(sparql);
         UserModel model = dao.get(uri);
 
         // Check if user is found
@@ -235,7 +235,7 @@ public class UserAPI {
             @ApiParam(value = "Users URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
         // Get user list from DAO by URIs
-        UserDAO dao = new UserDAO(sparql, authentication);
+        UserDAO dao = new UserDAO(sparql);
         List<UserModel> models = dao.getList(uris);
 
         // Check if users are found
@@ -292,7 +292,7 @@ public class UserAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         // Search users with User DAO
-        UserDAO dao = new UserDAO(sparql, authentication);
+        UserDAO dao = new UserDAO(sparql);
         ListWithPagination<UserModel> resultList = dao.search(
                 pattern,
                 orderByList,
@@ -329,7 +329,7 @@ public class UserAPI {
     public Response updateUser(
             @ApiParam("User description") @Valid UserUpdateDTO dto
     ) throws Exception {
-        UserDAO dao = new UserDAO(sparql, authentication);
+        UserDAO dao = new UserDAO(sparql);
 
         // Get user model from DTO uri
         UserModel model = dao.get(dto.getUri());
@@ -342,7 +342,7 @@ public class UserAPI {
                     dto.getFirstName(),
                     dto.getLastName(),
                     dto.isAdmin(),
-                    dto.getPassword(),
+                    authentication.getPasswordHash(dto.getPassword()),
                     dto.getLang()
             );
 
@@ -371,7 +371,7 @@ public class UserAPI {
     public Response deleteUser(
             @ApiParam(value = "User URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
-        UserDAO dao = new UserDAO(sparql, authentication);
+        UserDAO dao = new UserDAO(sparql);
         dao.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }

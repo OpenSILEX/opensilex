@@ -8,6 +8,7 @@ package org.opensilex.rest.cli;
 
 import javax.mail.internet.InternetAddress;
 import org.opensilex.OpenSilex;
+import org.opensilex.cli.MainCommand;
 import org.opensilex.cli.help.HelpPrinterCommand;
 import org.opensilex.cli.OpenSilexCommand;
 import org.opensilex.cli.help.HelpOption;
@@ -62,10 +63,21 @@ public class UserCommands extends HelpPrinterCommand implements OpenSilexCommand
         SPARQLService sparql = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
         AuthenticationService authentication = opensilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
 
-        UserDAO userDAO = new UserDAO(sparql, authentication);
+        UserDAO userDAO = new UserDAO(sparql);
 
-        UserModel user = userDAO.create(null, new InternetAddress(email), firstName, lastName, isAdmin, password, lang);
+        String passwordHash = authentication.getPasswordHash(password);
+        UserModel user = userDAO.create(null, new InternetAddress(email), firstName, lastName, isAdmin, passwordHash, lang);
         
         LOGGER.info("User created: " + user.getUri());
     }
+    
+    public static void main(String[] args) {
+        MainCommand.main(new String[]{
+            "user",
+            "add",
+            "--admin",
+            "--CONFIG_FILE=/home/vmigot/sources/opensilex-dev/opensilex-dev-tools/src/main/resources/config/opensilex.yml"
+        });
+    }
+    
 }

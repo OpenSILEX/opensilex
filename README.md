@@ -84,7 +84,7 @@ Be careful if you change host and port of databases as you will have to update d
 Be sure to configure properly read and write rights for your user on configured folders.
 
 The only mandatory options to setup are:
-- file-system.local.storageBasePath: Base directory for file storage
+- file-system.storageBasePath: Base directory for file storage
 - phisws.uploadFileServerUsername: Name of your Linux user running the application
 - phisws.uploadFileServerPassword: Password of your Linux user running the application
 

@@ -7,8 +7,7 @@ ontologies:
             repository: opensilex
 
 file-system: 
-    local:
-        storageBasePath: /home/opensilex/data
+    storageBasePath: /home/vmigot/sources/opensilex-data
 
 big-data:   
     nosql:

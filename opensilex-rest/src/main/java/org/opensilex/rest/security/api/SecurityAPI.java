@@ -98,7 +98,7 @@ public class SecurityAPI {
             @ApiParam("User authentication informations") @Valid AuthenticationDTO authenticationDTO
     ) throws Exception {
         // Create user DAO
-        UserDAO userDAO = new UserDAO(sparql, authentication);
+        UserDAO userDAO = new UserDAO(sparql);
 
         // Get user by email or by uri
         UserModel user;
@@ -115,7 +115,7 @@ public class SecurityAPI {
         }
 
         // Authenticate found user with provided password
-        if (userDAO.authenticate(user, authenticationDTO.getPassword())) {
+        if (authentication.authenticate(user, authenticationDTO.getPassword(), userDAO.getAccessList(user.getUri()))) {
             // Return user token
             return new SingleObjectResponse<TokenGetDTO>(new TokenGetDTO(user.getToken())).getResponse();
         } else {
@@ -148,8 +148,7 @@ public class SecurityAPI {
             @Context SecurityContext securityContext
     ) throws Exception {
         UserModel user = authentication.getCurrentUser(securityContext);
-        UserDAO userDAO = new UserDAO(sparql, authentication);
-        userDAO.renewToken(user);
+        authentication.renewToken(user);
 
         return new SingleObjectResponse<TokenGetDTO>(new TokenGetDTO(user.getToken())).getResponse();
     }
@@ -170,8 +169,7 @@ public class SecurityAPI {
     public Response logout(
             @Context SecurityContext securityContext
     ) {
-        UserDAO userDAO = new UserDAO(sparql, authentication);
-        userDAO.logout(authentication.getCurrentUser(securityContext));
+        authentication.logout(authentication.getCurrentUser(securityContext));
         return Response.ok().build();
     }
 

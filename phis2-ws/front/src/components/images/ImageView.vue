@@ -150,7 +150,7 @@ export default class ImageView extends Vue {
         (http: HttpResponse<OpenSilexResponse<Array<FileDescriptionDTO>>>) => {
           const res = http.response.result as any;
           const data = res.data as Array<FileDescriptionDTO>;
-          if (http.response.metadata.pagination.totalCount) {
+          if (http.response.metadata.pagination!==null) {
             this.totalImages = http.response.metadata.pagination.totalCount;
           } else {
             if (data.length === 1) {

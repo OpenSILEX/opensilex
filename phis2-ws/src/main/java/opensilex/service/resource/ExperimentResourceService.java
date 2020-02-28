@@ -12,17 +12,14 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DateFormats;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.SensorDAO;
-import opensilex.service.dao.SpeciesDAO;
-import opensilex.service.dao.VariableDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.Experiment;
-import opensilex.service.model.Variable;
 import opensilex.service.resource.dto.experiment.*;
 import opensilex.service.resource.validation.interfaces.Date;
-import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
+import opensilex.service.result.ResultForm;
+import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import org.apache.commons.lang3.StringUtils;
@@ -30,12 +27,7 @@ import org.opensilex.OpenSilex;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
-import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.rest.authentication.AuthenticationService;
-import org.opensilex.rest.user.dal.UserDAO;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
@@ -54,11 +46,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import opensilex.service.result.ResultForm;
-import opensilex.service.view.brapi.Status;
 
 /**
  * Experiment resource service.
@@ -265,26 +252,19 @@ public class ExperimentResourceService extends ResourceService {
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
             PostDtoToExperimentModel postDtoToNewModel = new PostDtoToExperimentModel(authentication, sparql);
 
-            List<URI> createdXpUris = new ArrayList<>(experiments.size());
+            ArrayList<URI> createdXpUris = new ArrayList<>(experiments.size());
             for (ExperimentPostDTO xpDto : experiments) {
                 ExperimentModel model = postDtoToNewModel.convert(xpDto);
                 xpDao.create(model);
                 createdXpUris.add(model.getUri());
             }
 
-            // convert model list to dto list
-            // return paginated response
             ArrayList<Status> statusList = new ArrayList<>();
-            ResultForm<URI> getResponse;
-            if (createdXpUris.isEmpty()) { //Request failure || No result found
-                getResponse = new ResultForm<URI>(0, 0, new ArrayList<>(createdXpUris), true);
-                return noResultFound(getResponse, statusList);
-            } else { //Results
+            statusList.add(new Status(createdXpUris.size()+" experiments created"));
+            ResultForm<URI> getResponse = new ResultForm<>(0, 0, createdXpUris, true, 0);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
 
-                getResponse = new ResultForm<>(0, 0, new ArrayList<>(createdXpUris), true, 0);
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
         } catch (IllegalArgumentException | URISyntaxException e) {
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
@@ -331,17 +311,20 @@ public class ExperimentResourceService extends ResourceService {
 
             // use DAO(s) in order to validate URI(s) from ExperimentPostDTO
             ExperimentDtoToExperimentModel postDtoToNewModel = new ExperimentDtoToExperimentModel(authentication, sparql);
-
-            List<ExperimentModel> xpModels = new ArrayList<>(experiments.size());
-            for (ExperimentDTO xpDto : experiments) {
-                xpModels.add(postDtoToNewModel.convert(xpDto));
-            }
-
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
-            for (ExperimentModel xpModel : xpModels) {
+            ArrayList<URI> updatedXpUris = new ArrayList<>(experiments.size());
+
+            for (ExperimentDTO xpDto : experiments) {
+                ExperimentModel xpModel = postDtoToNewModel.convert(xpDto);
                 xpDao.update(xpModel);
+                updatedXpUris.add(xpModel.getUri());
             }
-            return new PaginatedListResponse<>(xpModels.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList())).getResponse();
+
+            ArrayList<Status> statusList = new ArrayList<>();
+            statusList.add(new Status(updatedXpUris+" Experiments updated"));
+            ResultForm<URI> getResponse = new ResultForm<>(0, 0, updatedXpUris, true, 0);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
 
         } catch (IllegalArgumentException | URISyntaxException e) {
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
@@ -401,28 +384,14 @@ public class ExperimentResourceService extends ResourceService {
                 return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
             }
 
+            xpModel.getVariables().clear();
             for (String variableUri : variableUris) {
                 xpModel.getVariables().add(new URI(variableUri));
             }
             xpDao.update(xpModel);
 
-            ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment();
-
-            Experiment xp = modelToExperiment.convert(xpModel);
-            ArrayList<Experiment> xps = new ArrayList<>();
-            xps.add(xp);
-
-            ArrayList<Status> statusList = new ArrayList<>();
-            ResultForm<Experiment> getResponse;
-            if (xps.isEmpty()) { //Request failure || No result found
-                getResponse = new ResultForm<>(0, 0, new ArrayList<>(), true);
-                return noResultFound(getResponse, statusList);
-            } else { //Results
-
-                getResponse = new ResultForm<>(0, 0, xps, true, 0);
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status("The Experiment " + uri + " has now " + xpModel.getVariables().size() + " linked variables"));
+            return Response.status(Response.Status.OK).entity(postResponse).build();
 
         } catch (IllegalArgumentException | URISyntaxException e) {
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
@@ -478,28 +447,13 @@ public class ExperimentResourceService extends ResourceService {
                 return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
             }
 
+            xpModel.getSensors().clear();
             for (String sensor : sensors) {
                 xpModel.getSensors().add(new URI(sensor));
             }
             xpDao.update(xpModel);
-
-            ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment();
-
-            Experiment xp = modelToExperiment.convert(xpModel);
-            ArrayList<Experiment> xps = new ArrayList<>();
-            xps.add(xp);
-
-            ArrayList<Status> statusList = new ArrayList<>();
-            ResultForm<Experiment> getResponse;
-            if (xps.isEmpty()) { //Request failure || No result found
-                getResponse = new ResultForm<>(0, 0, new ArrayList<>(), true);
-                return noResultFound(getResponse, statusList);
-            } else { //Results
-
-                getResponse = new ResultForm<>(0, 0, xps, true, 0);
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status("The Experiment " + uri + " has now " + xpModel.getSensors().size() + " linked sensors"));
+            return Response.status(Response.Status.OK).entity(postResponse).build();
 
         } catch (IllegalArgumentException | URISyntaxException e) {
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));

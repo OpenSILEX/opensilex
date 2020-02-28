@@ -84,19 +84,21 @@ public class Oeso {
     public static final Property hasCampaign = Ontology.property(NS,"hasCampaign");
     public static final Property hasSpecies = Ontology.property(NS,"hasSpecies");
     public static final Property isPublic = Ontology.property(NS,"isPublic");
-
-
     public static final Property measures = Ontology.property(NS,"measures");
     public static final Property participatesIn = Ontology.property(NS,"participatesIn");
 
+    // ---- INFRASTRUCTURES AND INSTALLATION
+
+    public static final Resource Infrastructure = Ontology.resource(NS, "Infrastructure");
+    public static final Resource Installation = Ontology.resource(NS, "Installation");
+
 
     // ---- SPECIES ----
-    // public static final Resource Species = Ontology.resource(NS, "Species");
+     public static final Resource Species = Ontology.resource(NS, "Species");
 
 
     // ---- FACTORS ----
     public static final Resource Factor = Ontology.resource(NS, "Factor");
-
     public static final Resource SensingDevice = Ontology.resource(NS, "SensingDevice");
 
 

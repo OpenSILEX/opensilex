@@ -12,6 +12,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDF;
@@ -61,24 +62,44 @@ public class ExperimentDAO {
         return instance;
     }
 
+
+    /**
+     * check if all URI from uris have the typeResource as {@link RDF#type} into the SPARQL graph
+     *
+     * @param uris         the {@link List} of {@link URI} to check
+     * @param typeResource the {@link Resource} indicating the {@link RDF#type
+     */
+    protected void checkURIs(List<URI> uris, Resource typeResource) throws URISyntaxException, SPARQLException {
+
+        if (uris == null || uris.isEmpty()) {
+            return;
+        }
+        for (URI uri : uris) {
+            if (!sparql.uriExists(new URI(typeResource.getURI()), uri)) {
+                throw new IllegalArgumentException("Trying to insert an experiment with an unknown " + typeResource.getLocalName() + " : " + uri);
+            }
+        }
+    }
+
     /**
      * Check that all URI(s) which refers to a non {@link org.opensilex.sparql.annotations.SPARQLResource}-compliant model exists.
      *
      * @param model the experiment for which we check if all URI(s) exists
-     * @throws SPARQLException if the SPARQL uri checking query fail
+     * @throws SPARQLException          if the SPARQL uri checking query fail
      * @throws IllegalArgumentException if the given model contains a unknown URI
      */
-    protected void checkURIs(ExperimentModel model) throws SPARQLException, IllegalArgumentException {
+    protected void checkURIs(ExperimentModel model) throws SPARQLException, IllegalArgumentException, URISyntaxException {
 
-        if (model.getSpecies() != null && !sparql.uriExists(model.getSpecies())) {
+        // #TODO use a method to test in one query if multiple URI(s) exists and are of a given type, or use SHACL validation
+
+        checkURIs(model.getInfrastructures(), (Oeso.Infrastructure));
+        checkURIs(model.getSensors(), (Oeso.SensingDevice));
+        checkURIs(model.getVariables(), (Oeso.Variable));
+        checkURIs(model.getDevices(), (Oeso.Installation));
+
+        if (model.getSpecies() != null && !sparql.uriExists(new URI(Oeso.Species.getURI()), model.getSpecies())) {
             throw new IllegalArgumentException("Trying to insert an experiment with an unknown species : " + model.getSpecies());
         }
-        for (URI infraUri : model.getInfrastructures()) {
-            if (!sparql.uriExists(infraUri)) {
-                throw new IllegalArgumentException("Trying to insert an experiment with an unknown infrastructure : " + infraUri);
-            }
-        }
-        // #TODO use a method to test in one query if all URI(s) exists
 
     }
 
@@ -91,13 +112,17 @@ public class ExperimentDAO {
     }
 
     public ExperimentModel get(URI xpUri) throws Exception {
-        return sparql.getByURI(ExperimentModel.class, xpUri);
+        ExperimentModel xp = sparql.getByURI(ExperimentModel.class, xpUri);
+        if (xp != null) {
+            filterExperimentSensors(xp);
+        }
+        return xp;
     }
 
     /**
      * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty simple attribute ( not a {@link List} from the {@link ExperimentSearchDTO}
-     * @param searchDTO a search DTO which contains all attributes about an {@link ExperimentModel} search
      *
+     * @param searchDTO a search DTO which contains all attributes about an {@link ExperimentModel} search
      * @see SPARQLQueryHelper the utility class used to build Expr
      */
     protected void appendFilters(ExperimentSearchDTO searchDTO, SelectBuilder select) throws Exception {
@@ -159,7 +184,8 @@ public class ExperimentDAO {
 
     /**
      * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty {@link List} from the {@link ExperimentSearchDTO}
-     * @param select the {@link SelectBuilder} to update
+     *
+     * @param select    the {@link SelectBuilder} to update
      * @param searchDTO a search DTO which contains all attributes about an {@link ExperimentModel} search
      */
     protected void appendListFilters(ExperimentSearchDTO searchDTO, SelectBuilder select) throws Exception {
@@ -217,15 +243,34 @@ public class ExperimentDAO {
     /**
      * Append a triple on the WHERE clause of the given {@link SelectBuilder}
      *
-     * @param select the {@link SelectBuilder} to update
+     * @param select     the {@link SelectBuilder} to update
      * @param subjectVar the subject variable name
-     * @param property the property between the subject and the object
-     * @param objectVar the object variable name
+     * @param property   the property between the subject and the object
+     * @param objectVar  the object variable name
      */
     protected void addWhere(SelectBuilder select, String subjectVar, Property property, String objectVar) {
-        select.getWhereHandler().getClause().addTriplePattern(new Triple( makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
+        select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
     }
 
+    /**
+     * Remove all URI from {@link ExperimentModel#getSensors()} method which don't represents a {@link Oeso#SensingDevice}
+     * in the SPARQL Graph
+     *
+     * @param xp the {@link ExperimentModel} to filter
+     */
+    protected void filterExperimentSensors(ExperimentModel xp) {
+        if (xp.getSensors().isEmpty())
+            return;
+
+        // #TODO don't fetch URI which don't represents sensors and delete this method
+        xp.getSensors().removeIf(sensor -> {
+            try {
+                return !sparql.uriExists(new URI(Oeso.SensingDevice.getURI()), sensor);
+            } catch (SPARQLException | URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
 
     /**
      * @param searchDTO   a search DTO which contains all attributes about an {@link ExperimentModel} search
@@ -236,7 +281,7 @@ public class ExperimentDAO {
      */
     public ListWithPagination<ExperimentModel> search(ExperimentSearchDTO searchDTO, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
 
-        ListWithPagination<ExperimentModel> xps =  sparql.searchWithPagination(
+        ListWithPagination<ExperimentModel> xps = sparql.searchWithPagination(
                 ExperimentModel.class,
                 (SelectBuilder select) -> {
                     appendFilters(searchDTO, select);
@@ -246,16 +291,8 @@ public class ExperimentDAO {
                 page,
                 pageSize
         );
-        for(ExperimentModel xp : xps.getList()){
-            if(xp.getSensors().isEmpty())
-                continue;
-
-            // #TODO don't fetch URI which don't represents sensors
-            xp.getSensors().removeIf(sensor -> {
-                try {
-                    return ! sparql.uriExists(new URI(Oeso.SensingDevice.getURI()),sensor);
-                } catch (SPARQLException | URISyntaxException e) { throw new RuntimeException(e); }
-            });
+        for (ExperimentModel xp : xps.getList()) {
+            filterExperimentSensors(xp);
         }
         return xps;
     }

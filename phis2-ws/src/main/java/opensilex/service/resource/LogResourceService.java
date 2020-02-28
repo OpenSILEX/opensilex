@@ -16,6 +16,9 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -32,13 +35,14 @@ import opensilex.service.dao.UserDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.DataQueryLog;
 import opensilex.service.model.User;
-import opensilex.service.resource.dto.ApiDescriptionDTO;
 import opensilex.service.resource.dto.data.DataLogAccessUserDTO;
 import opensilex.service.resource.dto.data.DataQueryLogSearchDTO;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.result.ResultForm;
 import opensilex.service.view.brapi.Status;
+import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * LogResourceService ressource service
@@ -48,6 +52,10 @@ import opensilex.service.view.brapi.Status;
 @Path("/log")
 public class LogResourceService extends ResourceService {
 
+    
+    @Inject
+    SPARQLService sparql;
+        
     /**
      * Returns the logs create by the search of data from environment services or data services
      * @param pageSize
@@ -98,11 +106,14 @@ public class LogResourceService extends ResourceService {
         if(totalCount > 0){
             dataQueryLogList = dataDAO.find(page, pageSize, userUri, startDate, endDate, null);      
         }
-        //3. Get User informations
-        UserDAO userDao = new UserDAO();
-        userDao.setPageSize(300);
-        ArrayList<User> listOfUsers = userDao.allPaginate();
-        
+         List<UserModel> listOfUsers = new ArrayList<>();
+        try {
+            //3. Get User informations
+            listOfUsers = sparql.search(UserModel.class);
+        } catch (Exception ex) {
+            Logger.getLogger(LogResourceService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+              
         //4. Return result
         if (dataQueryLogList == null) {
             // Request failure
@@ -132,14 +143,14 @@ public class LogResourceService extends ResourceService {
         return Response.status(Response.Status.OK).entity(getResponse).build();
     }
     
-    private DataLogAccessUserDTO lookupUser(List<User> personList, String userUri) {
-        User foundUser = personList.stream().
-        filter(p -> p.getUri() != null && p.getUri().equals(userUri)).
+    private DataLogAccessUserDTO lookupUser(List<UserModel> personList, String userUri) {
+        UserModel foundUser = personList.stream().
+        filter(p -> p.getUri() != null && p.getUri().toString().equals(userUri)).
         findAny().orElse(null);
         if(foundUser != null){
             DataLogAccessUserDTO returnedUser = new DataLogAccessUserDTO();
-            returnedUser.setUri(foundUser.getUri());
-            returnedUser.setFirstName(foundUser.getFamilyName());
+            returnedUser.setUri(foundUser.getUri().toString());
+            returnedUser.setFirstName(foundUser.getLastName());
             returnedUser.setFamilyName(foundUser.getFirstName());
             return returnedUser;
         }

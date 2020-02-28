@@ -451,7 +451,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
         boolean hasError = false;
             
         try {
-            final String fileServerDirectory =  "/dataFiles/" + fileCollectionName + "/";
+            final String fileServerDirectory =  "./dataFiles/" + fileCollectionName + "/";
             
             String key = fileDescription.getFilename() + fileDescription.getDate();
             String uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);

@@ -7,6 +7,7 @@
 
 package opensilex.service.resource.dto.experiment;
 
+import java.net.MalformedURLException;
 import opensilex.service.dao.SpeciesDAO;
 import opensilex.service.model.ContactPostgreSQL;
 import opensilex.service.model.Species;
@@ -23,10 +24,13 @@ import org.opensilex.sparql.service.SPARQLService;
 import javax.mail.internet.InternetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Renaud COLIN
@@ -38,10 +42,10 @@ public class PostDtoToExperimentModel {
     protected final ProjectDAO projectDAO;
     protected final UserDAO userDAO;
 
-    public PostDtoToExperimentModel(AuthenticationService authentication, SPARQLService sparqlService) {
+    public PostDtoToExperimentModel(SPARQLService sparqlService) {
         this.speciesDAO = new SpeciesDAO();
         this.projectDAO = new ProjectDAO(sparqlService);
-        this.userDAO = new UserDAO(sparqlService,authentication);
+        this.userDAO = new UserDAO(sparqlService);
     }
 
     public ExperimentModel convert(ExperimentPostDTO xpPostDto) throws Exception {
@@ -112,16 +116,20 @@ public class PostDtoToExperimentModel {
         // try to get the Infrastructures/field URI
         if (!StringUtils.isEmpty(xpPostDto.getField())) {
             try {
-                xpModel.getInfrastructures().add(new URI(xpPostDto.getField()));
+                xpModel.getInfrastructures().add(new URL(xpPostDto.getField()).toURI());
             } catch (URISyntaxException ignored) {
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(PostDtoToExperimentModel.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
         // try to get the devices/place URI
         if (!StringUtils.isEmpty(xpPostDto.getPlace())) {
             try {
-                xpModel.getDevices().add(new URI(xpPostDto.getPlace()));
+                xpModel.getDevices().add(new URL(xpPostDto.getPlace()).toURI());
             } catch (URISyntaxException ignored) {
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(PostDtoToExperimentModel.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return xpModel;

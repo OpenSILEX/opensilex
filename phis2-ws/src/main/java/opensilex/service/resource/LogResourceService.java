@@ -31,7 +31,6 @@ import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.DataQueryLogDAO;
-import opensilex.service.dao.UserDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.DataQueryLog;
 import opensilex.service.model.User;

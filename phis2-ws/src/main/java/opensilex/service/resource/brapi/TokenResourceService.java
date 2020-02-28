@@ -155,13 +155,13 @@ public class TokenResourceService implements BrapiCall{
             // user is already logged
             // we trust the client
             //\SILEX:info
-            org.opensilex.rest.user.dal.UserDAO userDAO = new org.opensilex.rest.user.dal.UserDAO(sparql, authentication);
+            org.opensilex.rest.user.dal.UserDAO userDAO = new org.opensilex.rest.user.dal.UserDAO(sparql);
             org.opensilex.rest.user.dal.UserModel user;
             try {
                 user = userDAO.getByEmail(new InternetAddress(username));
 
                 if (!isJWT) {
-                    if (!userDAO.authenticate(user, password)) {
+                    if (!authentication.authenticate(user, password, userDAO.getAccessList(user.getUri()))) {
                         user = null;
                     }
                 }
@@ -175,7 +175,7 @@ public class TokenResourceService implements BrapiCall{
                 statusList.add(new Status("User/password doesn't exist", StatusCodeMsg.ERR, null));
             } else {
                 try {
-                    userDAO.authenticate(user);
+                    authentication.authenticate(user, userDAO.getAccessList(user.getUri()));
                     Response.Status reponseStatus = Response.Status.OK;
                     String expires_in = "" + authentication.getExpiresInSec();
                     TokenResponseStructure res = new TokenResponseStructure(user.getToken(), user.getFirstName() + " " + user.getLastName(), expires_in);

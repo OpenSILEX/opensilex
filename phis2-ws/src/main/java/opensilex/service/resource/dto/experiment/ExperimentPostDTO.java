@@ -17,7 +17,6 @@ import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.model.ContactPostgreSQL;
 import opensilex.service.model.Group;
-import opensilex.service.model.ProjectPostgres;
 import opensilex.service.model.Experiment;
 import opensilex.service.model.Project;
 

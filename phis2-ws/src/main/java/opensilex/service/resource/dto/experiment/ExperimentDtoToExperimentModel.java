@@ -37,10 +37,10 @@ public class ExperimentDtoToExperimentModel {
     protected final ProjectDAO projectDAO;
     protected final UserDAO userDAO;
 
-    public ExperimentDtoToExperimentModel(AuthenticationService authentication, SPARQLService sparqlService) {
+    public ExperimentDtoToExperimentModel(SPARQLService sparqlService) {
         this.speciesDAO = new SpeciesDAO();
         this.projectDAO = new ProjectDAO(sparqlService);
-        this.userDAO = new UserDAO(sparqlService,authentication);
+        this.userDAO = new UserDAO(sparqlService);
     }
 
     public ExperimentModel convert(ExperimentDTO xpDto) throws Exception {

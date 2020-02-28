@@ -24,6 +24,8 @@ import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.rest.authentication.AuthenticationService;
+import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -240,7 +242,7 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
         this.objective = objective;
     }
 
-    public ProjectModel getProjectModel(SPARQLService sparql) throws Exception {
+    public ProjectModel getProjectModel(SPARQLService sparql, AuthenticationService authentication) throws Exception {
         ProjectModel project = new ProjectModel();
 
         project.setName(this.getName());
@@ -256,21 +258,28 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
             project.setHomePage(new URI(this.getHomePage()));
         }
 
+        UserDAO userDAO = new UserDAO(sparql);
         List<InternetAddress> addresses = new ArrayList<>();
         for (String contact : this.getAdministrativeContacts()) {
-            addresses.add(new InternetAddress(contact));
+            if (contact != null && !contact.isEmpty()) {
+                addresses.add(userDAO.get(new URI(contact)).getEmail());
+            }
         }
         project.setAdministrativeContacts(addresses);
 
         addresses = new ArrayList<>();
         for (String contact : this.getCoordinators()) {
-            addresses.add(new InternetAddress(contact));
+            if (contact != null && !contact.isEmpty()) {
+                addresses.add(userDAO.get(new URI(contact)).getEmail());
+            }
         }
         project.setCoordinators(addresses);
 
         addresses = new ArrayList<>();
         for (String contact : this.getScientificContacts()) {
-            addresses.add(new InternetAddress(contact));
+            if (contact != null && !contact.isEmpty()) {
+                addresses.add(userDAO.get(new URI(contact)).getEmail());
+            }
         }
         project.setScientificContacts(addresses);
 
@@ -285,6 +294,7 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
             SPARQLModelRelation financialRefRelation = new SPARQLModelRelation();
             financialRefRelation.setProperty(ProjectResourceService.hasFinancialReference);
             financialRefRelation.setValue(this.getFinancialReference());
+            financialRefRelation.setType(String.class);
             sparqlRelations.add(financialRefRelation);
         }
 

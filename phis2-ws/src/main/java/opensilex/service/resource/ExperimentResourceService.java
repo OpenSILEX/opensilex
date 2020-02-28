@@ -8,6 +8,7 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.*;
+import java.net.URI;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DateFormats;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
@@ -18,16 +19,13 @@ import opensilex.service.model.Experiment;
 import opensilex.service.resource.dto.experiment.*;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.URL;
-import opensilex.service.result.ResultForm;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import org.apache.commons.lang3.StringUtils;
-import org.opensilex.OpenSilex;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
-import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
@@ -42,10 +40,14 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import opensilex.service.dao.SpeciesDAO;
+import opensilex.service.result.ResultForm;
+import org.opensilex.core.project.dal.ProjectDAO;
+import org.opensilex.rest.user.dal.UserDAO;
 
 /**
  * Experiment resource service.
@@ -246,25 +248,36 @@ public class ExperimentResourceService extends ResourceService {
         }
 
         try {
-            AuthenticationService authentication = OpenSilex.getInstance().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
-
             // use DAO(s) in order to validate URI(s) from ExperimentPostDTO
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
-            PostDtoToExperimentModel postDtoToNewModel = new PostDtoToExperimentModel(authentication, sparql);
+            PostDtoToExperimentModel postDtoToNewModel = new PostDtoToExperimentModel(sparql);
 
+            List<String> createdURIs = new ArrayList<>();
             ArrayList<URI> createdXpUris = new ArrayList<>(experiments.size());
+            
             for (ExperimentPostDTO xpDto : experiments) {
                 ExperimentModel model = postDtoToNewModel.convert(xpDto);
                 xpDao.create(model);
                 createdXpUris.add(model.getUri());
+                createdURIs.add(model.getUri().toString());
             }
 
             ArrayList<Status> statusList = new ArrayList<>();
+            
+            ResultForm<URI> getResponse;
+            
             statusList.add(new Status(createdXpUris.size()+" experiments created"));
-            ResultForm<URI> getResponse = new ResultForm<>(0, 0, createdXpUris, true, 0);
-            getResponse.setStatus(statusList);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
 
+            if (createdXpUris.isEmpty()) { //Request failure || No result found
+                getResponse = new ResultForm<URI>(0, 0, new ArrayList<>(createdXpUris), true);
+                return noResultFound(getResponse, statusList);
+            } else { //Results
+
+                getResponse = new ResultForm<>(0, 0, new ArrayList<>(createdXpUris), true, 0);
+                getResponse.setStatus(statusList);
+                getResponse.getMetadata().setDatafiles(createdURIs);
+                return Response.status(Response.Status.CREATED).entity(getResponse).build();
+            }
         } catch (IllegalArgumentException | URISyntaxException e) {
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
@@ -307,10 +320,12 @@ public class ExperimentResourceService extends ResourceService {
         }
 
         try {
-            AuthenticationService authentication = OpenSilex.getInstance().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
+            UserDAO userDAO = new UserDAO(sparql);
+            ProjectDAO projectDAO = new ProjectDAO(sparql);
+            SpeciesDAO speciesDAO = new SpeciesDAO();
 
             // use DAO(s) in order to validate URI(s) from ExperimentPostDTO
-            ExperimentDtoToExperimentModel postDtoToNewModel = new ExperimentDtoToExperimentModel(authentication, sparql);
+            ExperimentDtoToExperimentModel postDtoToNewModel = new ExperimentDtoToExperimentModel(sparql);
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
             ArrayList<URI> updatedXpUris = new ArrayList<>(experiments.size());
 

@@ -7,22 +7,17 @@
 //******************************************************************************
 package opensilex.service.dao;
 
-import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
@@ -39,6 +34,7 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.ScientificObject;
 import opensilex.service.model.Property;
+import org.opensilex.fs.service.FileStorageService;
 
 /**
  * Layer DAO.
@@ -55,7 +51,7 @@ public class LayerDAO extends DAO<LayerDTO>{
     public String fileWebPath;
     public HashMap<String, ScientificObject> children = new HashMap<>();
     
-    private static final String LAYER_FILE_SERVER_DIRECTORY = "/layers";
+    private static final String LAYER_FILE_SERVER_DIRECTORY = "./layers";
      
     /**
      * Searches and updates children.
@@ -121,7 +117,7 @@ public class LayerDAO extends DAO<LayerDTO>{
      * @return 
      * @throws java.io.IOException 
      */
-    public POSTResultsReturn createLayerFile(LayerDTO layerDTO) throws IOException {
+    public POSTResultsReturn createLayerFile(LayerDTO layerDTO, FileStorageService fs) throws IOException {
         POSTResultsReturn createLayerFile;
         List<Status> createStatusList = new ArrayList<>();
         List<String> createdResourcesFilesPaths = new ArrayList<>();
@@ -134,9 +130,8 @@ public class LayerDAO extends DAO<LayerDTO>{
             String[] splitUri = layerDTO.getObjectUri().split("/");
             String layerName = splitUri[splitUri.length-1];
             String filename = layerName + ".geojson";
-            filePath = LAYER_FILE_SERVER_DIRECTORY + "/" + filename;
             
-            try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(filePath))) {
+            try (StringWriter writer = new StringWriter()) {
                 //1. Write parent and file start
                 //SILEX:todo
                 //code to improve
@@ -179,18 +174,17 @@ public class LayerDAO extends DAO<LayerDTO>{
                 }
                 
                 writer.write("]}");
+                writer.flush();
                 
-                File f = new File(filePath);
-                final Set<PosixFilePermission> perms = PosixFilePermissions.fromString("rw-rw-r--");
-                Files.setPosixFilePermissions(f.toPath(), perms);
-                
+                filePath = fs.getStorageBasePath().resolve(LAYER_FILE_SERVER_DIRECTORY) .resolve(filename).toAbsolutePath().toString();
+                fs.writeFile(Paths.get(filePath), writer.toString());
                 fileWebPath = PropertiesFileManager.getPublicURI() + "rest/data/file/" + URLEncoder.encode(filename, StandardCharsets.UTF_8.toString());
                 
                 createdResourcesFilesPaths.add(filePath);
                 createStatusList.add(new Status("Resources created", StatusCodeMsg.INFO, createdResourcesFilesPaths.size() + " new resources created"));
                 //\SILEX:test
                 // The file is normally closed automatically
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 java.util.logging.Logger.getLogger(LayerDAO.class.getName()).log(Level.SEVERE, null, ex);
                 createLayerFileOk = false;
                 createStatusList.add(new Status("Error while create layer file", StatusCodeMsg.ERR, new StringBuilder().append(StatusCodeMsg.ERR).toString()));

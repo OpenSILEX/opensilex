@@ -39,7 +39,6 @@ import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.model.Project;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
@@ -50,13 +49,12 @@ import opensilex.service.resource.dto.project.ProjectDTO;
 import opensilex.service.resource.dto.project.ProjectDetailDTO;
 import opensilex.service.resource.dto.project.ProjectPostDTO;
 import opensilex.service.resource.dto.project.ProjectPutDTO;
-import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.opensilex.core.ontology.Oeso;
-import static org.opensilex.core.ontology.Oeso.NS;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -79,6 +77,10 @@ public class ProjectResourceService extends ResourceService {
 
     @Inject
     private SPARQLService sparql;
+    
+    @Inject
+    private AuthenticationService authentication;
+
 
     /**
      * Service to insert projects.
@@ -120,7 +122,7 @@ public class ProjectResourceService extends ResourceService {
 
             List<ProjectModel> projectModels = new ArrayList<>();
             for (ProjectPostDTO project : projects) {
-                projectModels.add(project.getProjectModel(sparql));
+                projectModels.add(project.getProjectModel(sparql, authentication));
             };
 
             projectDAO.create(projectModels);

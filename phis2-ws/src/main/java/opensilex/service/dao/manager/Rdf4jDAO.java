@@ -291,7 +291,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
             throw (e);
         }
     }
-    
+
     /**
      * Check if a given URI exist in a given Graph in the triplestore.
      * @param uri the uri to test

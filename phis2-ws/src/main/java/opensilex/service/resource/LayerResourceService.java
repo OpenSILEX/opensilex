@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -37,6 +38,7 @@ import opensilex.service.utils.ResourcesUtils;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.opensilex.fs.service.FileStorageService;
 
 /**
  * Layer resource service.
@@ -45,6 +47,9 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 @Api("/layers")
 @Path("layers")
 public class LayerResourceService extends ResourceService {
+    
+    @Inject
+    FileStorageService fs;
     
     /**
      * Layer POST service.
@@ -89,7 +94,7 @@ public class LayerResourceService extends ResourceService {
                 For the moment, done for a single layer (the first of the list sent)
                 Then it should be done for the rest.
                 */
-                POSTResultsReturn resultCreateFile = layerDao.createLayerFile(layers.get(0));
+                POSTResultsReturn resultCreateFile = layerDao.createLayerFile(layers.get(0), fs);
 
                 
                 /*

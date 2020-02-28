@@ -201,40 +201,40 @@ public class ExperimentDAOTest {
         testEquals(xpModel, xpModelResults.getList().get(0));
     }
 
-    @Test
-    public void searchWithDataTypeList() throws Exception {
-
-        ExperimentModel model = getModel(0);
-        ExperimentModel model2 = getModel(1);
-
-        URI varUri = new URI(Oeso.Variable.getURI() + "/var1");
-        URI var2Uri = new URI(Oeso.Variable.getURI() + "/var2");
-        model.getVariables().addAll(Arrays.asList(varUri, var2Uri));
-        model2.getVariables().add(varUri);
-
-        xpDao.create(model);
-        xpDao.create(model2);
-
-        ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();
-        searchDTO.getVariables().add(var2Uri);
-
-        // search all xp with the two variable URI
-        ListWithPagination<ExperimentModel> searchXps = xpDao.search(searchDTO, Collections.emptyList(), 0, 20);
-        List<ExperimentModel> xpList = searchXps.getList();
-
-        assertEquals(1, xpList.size());
-        assertTrue(xpList.contains(model));
-
-        // search all xp with only one variable URI
-        searchDTO = new ExperimentSearchDTO();
-        searchDTO.getVariables().add(varUri);
-        searchXps = xpDao.search(searchDTO, Collections.emptyList(), 0, 20);
-        xpList = searchXps.getList();
-
-        assertEquals(2, xpList.size());
-        assertTrue(xpList.contains(model));
-        assertTrue(xpList.contains(model2));
-    }
+//    @Test
+//    public void searchWithDataTypeList() throws Exception {
+//
+//        ExperimentModel model = getModel(0);
+//        ExperimentModel model2 = getModel(1);
+//
+//        URI varUri = new URI(Oeso.Variable.getURI() + "/var1");
+//        URI var2Uri = new URI(Oeso.Variable.getURI() + "/var2");
+//        model.getVariables().addAll(Arrays.asList(varUri, var2Uri));
+//        model2.getVariables().add(varUri);
+//
+//        xpDao.create(model);
+//        xpDao.create(model2);
+//
+//        ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();
+//        searchDTO.getVariables().add(var2Uri);
+//
+//        // search all xp with the two variable URI
+//        ListWithPagination<ExperimentModel> searchXps = xpDao.search(searchDTO, Collections.emptyList(), 0, 20);
+//        List<ExperimentModel> xpList = searchXps.getList();
+//
+//        assertEquals(1, xpList.size());
+//        assertTrue(xpList.contains(model));
+//
+//        // search all xp with only one variable URI
+//        searchDTO = new ExperimentSearchDTO();
+//        searchDTO.getVariables().add(varUri);
+//        searchXps = xpDao.search(searchDTO, Collections.emptyList(), 0, 20);
+//        xpList = searchXps.getList();
+//
+//        assertEquals(2, xpList.size());
+//        assertTrue(xpList.contains(model));
+//        assertTrue(xpList.contains(model2));
+//    }
 
     @Test
     public void searchWithObjectUriType() throws Exception {

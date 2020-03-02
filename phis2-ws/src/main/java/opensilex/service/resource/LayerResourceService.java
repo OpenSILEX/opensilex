@@ -114,7 +114,7 @@ public class LayerResourceService extends ResourceService {
                     return Response.status(resultCreateFile.getHttpStatus()).entity(postResponse).build();
                 }
             } else { // The file mustn't be generated
-                String fileWebPath = layerDao.getObjectURILayerFilePath(layers.get(0).getObjectUri());
+                String fileWebPath = layerDao.getObjectURILayerFilePath(layers.get(0).getObjectUri(), fs);
                 File f = new File(fileWebPath);
                 
                 if (f.exists()) { // Return the URL is existing

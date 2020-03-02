@@ -78,11 +78,11 @@ public class LayerDAO extends DAO<LayerDTO>{
      * @param objectURI
      * @return the link to the GeoSON corresponding to the layer.
      */
-    public String getObjectURILayerFilePath(String objectURI) {
+    public String getObjectURILayerFilePath(String objectURI, FileStorageService fs) throws UnsupportedEncodingException {
         String[] splitUri = objectURI.split("/");
         String layerName = splitUri[splitUri.length-1];
-        String filename = layerName + ".geojson";
-        return LAYER_FILE_SERVER_DIRECTORY + "/" + filename;
+        String filename = LAYER_FILE_SERVER_DIRECTORY + "/" + layerName + ".geojson";
+        return fs.getStorageBasePath().resolve(LAYER_FILE_SERVER_DIRECTORY) .resolve(filename).toAbsolutePath().toString();
     }
     
     public String getObjectURILayerFileWebPath(String objectURI) throws UnsupportedEncodingException {

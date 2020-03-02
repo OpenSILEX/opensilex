@@ -25,7 +25,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;

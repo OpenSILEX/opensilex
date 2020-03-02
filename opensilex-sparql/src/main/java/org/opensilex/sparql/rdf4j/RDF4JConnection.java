@@ -166,4 +166,9 @@ public class RDF4JConnection implements SPARQLConnection {
 
         return resultList;
     }
+
+    @Deprecated
+    public RepositoryConnection getRepositoryConnectionImpl() {
+        return rdf4JConnection;
+    }
 }

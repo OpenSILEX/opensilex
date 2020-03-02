@@ -43,6 +43,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceConfigDefault;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
@@ -639,6 +640,12 @@ public class SPARQLService implements SPARQLConnection, Service {
 
     public Map<String, String> getOtherTranslations(URI resourceURI, Property labelProperty, boolean reverseRelation, String lang) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Deprecated
+    public RepositoryConnection getRepositoryConnection() {
+        RDF4JConnection cnt = (RDF4JConnection) this.connection;
+        return cnt.getRepositoryConnectionImpl();
     }
 
 }

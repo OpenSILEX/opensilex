@@ -46,7 +46,7 @@ public class FactorDAO {
     }
 
     public FactorModel get(URI instanceURI) throws Exception {
-        return sparql.getByURI(FactorModel.class, instanceURI);
+        return sparql.getByURI(FactorModel.class, instanceURI, null);
     }
 
     public ListWithPagination<FactorModel> search(String aliasPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
@@ -55,6 +55,7 @@ public class FactorDAO {
         Expr aliasFilter = SPARQLQueryHelper.regexFilter(FactorModel.ALIAS_FIELD, aliasPattern);
         return sparql.searchWithPagination(
                 FactorModel.class,
+                null,
                 (SelectBuilder select) -> {
                     // TODO implements filters
                     if (aliasFilter != null) {

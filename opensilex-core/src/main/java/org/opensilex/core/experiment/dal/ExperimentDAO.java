@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.stream.Collectors;
 
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 
@@ -112,7 +111,7 @@ public class ExperimentDAO {
     }
 
     public ExperimentModel get(URI xpUri) throws Exception {
-        ExperimentModel xp = sparql.getByURI(ExperimentModel.class, xpUri);
+        ExperimentModel xp = sparql.getByURI(ExperimentModel.class, xpUri, null);
         if (xp != null) {
             filterExperimentSensors(xp);
         }
@@ -283,6 +282,7 @@ public class ExperimentDAO {
 
         ListWithPagination<ExperimentModel> xps = sparql.searchWithPagination(
                 ExperimentModel.class,
+                null,
                 (SelectBuilder select) -> {
                     appendFilters(searchDTO, select);
                     appendListFilters(searchDTO, select);

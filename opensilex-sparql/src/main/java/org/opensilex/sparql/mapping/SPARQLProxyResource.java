@@ -18,8 +18,8 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 class SPARQLProxyResource<T extends SPARQLResourceModel> extends SPARQLProxy<T> {
     
     
-    SPARQLProxyResource(Node graph, URI uri, Class<T> type, SPARQLService service) {
-        super(graph, type, service);
+    SPARQLProxyResource(Node graph, URI uri, Class<T> type, String lang, SPARQLService service) {
+        super(graph, type, lang, service);
         this.uri = uri;
     }
     
@@ -27,7 +27,7 @@ class SPARQLProxyResource<T extends SPARQLResourceModel> extends SPARQLProxy<T> 
 
     @Override
     protected T loadData() throws Exception {
-        return service.loadByURI(type, uri);
+        return service.loadByURI(type, uri, lang);
     }
 
 }

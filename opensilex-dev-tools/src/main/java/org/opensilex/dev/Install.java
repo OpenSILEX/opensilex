@@ -95,8 +95,8 @@ public class Install {
 
         opensilex = OpenSilex.getInstance();
 
-        LOGGER.info("Initialize PostGreSQL");
-        initPGSQL();
+//        LOGGER.info("Initialize PostGreSQL");
+//        initPGSQL();
 
         LOGGER.info("Initialize RDF4J");
         initRDF4J();

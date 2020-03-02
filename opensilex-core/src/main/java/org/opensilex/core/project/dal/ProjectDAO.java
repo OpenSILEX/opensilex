@@ -20,9 +20,11 @@ import org.opensilex.utils.ListWithPagination;
 public class ProjectDAO {
 
     protected final SPARQLService sparql;
+    protected final String lang;
 
-    public ProjectDAO(SPARQLService sparql) {
+    public ProjectDAO(SPARQLService sparql, String lang) {
         this.sparql = sparql;
+        this.lang = lang;
     }
 
     public ProjectModel create(ProjectModel instance) throws Exception {
@@ -44,7 +46,7 @@ public class ProjectDAO {
     }
 
     public ProjectModel get(URI instanceURI) throws Exception {
-        return sparql.getByURI(ProjectModel.class, instanceURI);
+        return sparql.getByURI(ProjectModel.class, instanceURI, lang);
     }
 
     public ListWithPagination<ProjectModel> search(String uri,
@@ -54,6 +56,7 @@ public class ProjectDAO {
 
         return sparql.searchWithPagination(
                 ProjectModel.class,
+                lang,
                 (SelectBuilder select) -> {
                     // TODO implements filters
                 },
@@ -70,6 +73,7 @@ public class ProjectDAO {
     public ListWithPagination<ProjectModel> search(List<OrderBy> orderByList, int page, int pageSize) throws Exception {
         return sparql.searchWithPagination(
                 ProjectModel.class,
+                lang,
                 (SelectBuilder select) -> {
                     // TODO implements filters
                 },

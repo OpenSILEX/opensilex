@@ -23,8 +23,8 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
  */
 public class SPARQLProxyListObject<T extends SPARQLResourceModel> extends SPARQLProxyList<T> {
 
-    public SPARQLProxyListObject(Node graph, URI uri, Property property, Class<T> genericType, boolean isReverseRelation, SPARQLService service) {
-        super(graph, uri, property, genericType, isReverseRelation, service);
+    public SPARQLProxyListObject(Node graph, URI uri, Property property, Class<T> genericType, boolean isReverseRelation, String lang, SPARQLService service) {
+        super(graph, uri, property, genericType, isReverseRelation, lang, service);
         
     }
 
@@ -33,7 +33,7 @@ public class SPARQLProxyListObject<T extends SPARQLResourceModel> extends SPARQL
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(genericType);
         
         Node nodeURI = SPARQLDeserializers.nodeURI(uri);
-        List<T> list = service.search(genericType, (SelectBuilder select) -> {
+        List<T> list = service.search(genericType, lang, (SelectBuilder select) -> {
             if (isReverseRelation) {
                 select.addGraph(graph, makeVar(sparqlObjectMapper.getURIFieldName()), property, nodeURI);
             } else {

@@ -24,12 +24,14 @@ import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
+import org.apache.commons.lang3.LocaleUtils;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.typeDefVar;
 
 /**
@@ -49,7 +51,7 @@ public class SPARQLClassQueryBuilder {
         this.analyzer = analyzer;
     }
 
-    public SelectBuilder getSelectBuilder(Node graph) {
+    public SelectBuilder getSelectBuilder(Node graph, String lang) {
         if (selectBuilder == null) {
             selectBuilder = new SelectBuilder();
 
@@ -70,6 +72,14 @@ public class SPARQLClassQueryBuilder {
             analyzer.forEachObjectProperty((Field field, Property property) -> {
                 selectBuilder.addVar(field.getName());
                 addSelectProperty(selectBuilder, uriFieldName, property, field, rootWhereHandler);
+            });
+
+            analyzer.forEachLabelProperty((Field field, Property property) -> {
+                selectBuilder.addVar(field.getName());
+                addSelectProperty(selectBuilder, uriFieldName, property, field, rootWhereHandler);
+                if (lang != null) {
+                    addSelectLangFilter(selectBuilder, field.getName(), lang);
+                }
             });
 
             // add the rootWhereHandler inside a GRAPH clause
@@ -267,20 +277,21 @@ public class SPARQLClassQueryBuilder {
     }
 
     /**
-     * Add the WHERE clause into handler, depending if the given field is optional or not,
-     * according {@link #analyzer}
+     * Add the WHERE clause into handler, depending if the given field is
+     * optional or not, according {@link #analyzer}
      *
-     * @param select       the root {@link SelectBuilder}, needed in order to create the {@link TriplePath} to add
-     *                     to the handler
+     * @param select the root {@link SelectBuilder}, needed in order to create
+     * the {@link TriplePath} to add to the handler
      * @param uriFieldName name of the uri SPARQL variable
-     * @param property     the {@link Property} to add
-     * @param field        the property corresponding {@link Field}
-     * @param handler      the {@link WhereHandler} in which the where clause is added when the field is required
+     * @param property the {@link Property} to add
+     * @param field the property corresponding {@link Field}
+     * @param handler the {@link WhereHandler} in which the where clause is
+     * added when the field is required
      * @see SPARQLClassAnalyzer#isOptional(Field)
      * @see SelectBuilder#makeTriplePath(Object, Object, Object)
      */
     private void addSelectProperty(SelectBuilder select, String uriFieldName, Property property, Field field,
-                                   WhereHandler handler) {
+            WhereHandler handler) {
 
         Var uriFieldVar = makeVar(uriFieldName);
         Var propertyFieldVar = makeVar(field.getName());
@@ -300,6 +311,11 @@ public class SPARQLClassQueryBuilder {
         }
     }
 
+    private void addSelectLangFilter(SelectBuilder select, String fieldName, String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+        select.addFilter(SPARQLQueryHelper.langFilter(fieldName, locale.getLanguage()));
+    }
+
     private void addAskProperty(AskBuilder ask, String uriFieldName, Property property, Field field) {
         Var uriFieldVar = makeVar(uriFieldName);
         Var propertyFieldVar = makeVar(field.getName());
@@ -317,7 +333,7 @@ public class SPARQLClassQueryBuilder {
 
     private void executeOnInstanceTriples(Object instance, BiConsumer<Triple, Field> tripleHandler, boolean ignoreNullFields) throws Exception {
         URI uri = analyzer.getURI(instance);
-        Node uriNode =  SPARQLDeserializers.nodeURI(uri);
+        Node uriNode = SPARQLDeserializers.nodeURI(uri);
 
         tripleHandler.accept(new Triple(uriNode, RDF.type.asNode(), analyzer.getRDFType().asNode()), analyzer.getURIField());
 

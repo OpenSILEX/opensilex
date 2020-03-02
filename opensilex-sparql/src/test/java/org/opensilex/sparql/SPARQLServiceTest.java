@@ -77,7 +77,7 @@ public abstract class SPARQLServiceTest {
     @Test
     public void testGetByURI() throws Exception {
         URI aURI = new URI("http://test.opensilex.org/a/001");
-        A a = service.getByURI(A.class, aURI);
+        A a = service.getByURI(A.class, aURI, null);
 
         assertEquals("Instance URI must be the same", aURI, a.getUri());
 
@@ -130,7 +130,7 @@ public abstract class SPARQLServiceTest {
 
         service.create(a);
 
-        A selectedA = service.getByURI(A.class, aURI);
+        A selectedA = service.getByURI(A.class, aURI, null);
 
         assertEquals("Instance URI must be the same", aURI, selectedA.getUri());
         assertEquals("bool field values must be the same", true, selectedA.isBool());
@@ -147,7 +147,7 @@ public abstract class SPARQLServiceTest {
 
         service.create(b);
 
-        B selectedB = service.getByURI(B.class, bURI);
+        B selectedB = service.getByURI(B.class, bURI, null);
 
         assertEquals("Instance URI must be the same", bURI, selectedB.getUri());
         assertEquals("B.getStringList size should match inserted triple count", stringList.size(), selectedB.getStringList().size());
@@ -163,11 +163,11 @@ public abstract class SPARQLServiceTest {
 
         service.create(a);
 
-        A selectedA = service.getByURI(A.class, aURI);
+        A selectedA = service.getByURI(A.class, aURI, null);
         assertEquals("Instance URI must be the same", aURI, selectedA.getUri());
 
         service.delete(A.class, aURI);
-        assertNull("Object must be null after deletion", service.getByURI(A.class, aURI));
+        assertNull("Object must be null after deletion", service.getByURI(A.class, aURI, null));
     }
 
     @Test
@@ -181,7 +181,7 @@ public abstract class SPARQLServiceTest {
 
         service.create(a);
 
-        A selectedA = service.getByURI(A.class, aURI);
+        A selectedA = service.getByURI(A.class, aURI, null);
         assertEquals("Instance URI must be the same", aURI, selectedA.getUri());
         assertEquals("A.isBool Method should return the selected boolean", Boolean.TRUE, selectedA.isBool());
         assertEquals("A.getCharVar Method should return the selected char", 'V', (char) selectedA.getCharVar());
@@ -193,7 +193,7 @@ public abstract class SPARQLServiceTest {
 
         service.update(a);
 
-        A updatedA = service.getByURI(A.class, aURI);
+        A updatedA = service.getByURI(A.class, aURI, null);
         assertEquals("Instance URI must be the same", aURI, updatedA.getUri());
         assertEquals("A.isBool Method should return the updated boolean", Boolean.FALSE, updatedA.isBool());
         assertEquals("A.getCharVar Method should return the updated char", Character.valueOf('N'), updatedA.getCharVar());
@@ -215,14 +215,14 @@ public abstract class SPARQLServiceTest {
         service.create(b);
         SPARQLClassObjectMapper<B> objectMapper = SPARQLClassObjectMapper.getForClass(B.class);
 
-        List<B> bList = service.search(B.class);
+        List<B> bList = service.search(B.class, null);
         assertFalse(bList.isEmpty());
         Node oldGraphNode = objectMapper.getDefaultGraph();
         URI newGraphUri =  new URI(oldGraphNode.getURI()+"new_suffix");
         service.renameGraph(new URI(oldGraphNode.getURI()),newGraphUri);
 
         // the graph have changed so no B should be found from the old graph
-        bList = service.search(B.class);
+        bList = service.search(B.class, null);
         assertTrue(bList.isEmpty());
 
     }

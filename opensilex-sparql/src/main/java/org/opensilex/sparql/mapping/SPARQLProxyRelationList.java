@@ -26,8 +26,8 @@ public class SPARQLProxyRelationList extends SPARQLProxy<List> {
     private final Set<String> propertiesToIgnore;
     private final URI uri;
 
-    public SPARQLProxyRelationList(Node graph, URI uri, Set<String> propertiesToIgnore, SPARQLService service) {
-        super(graph, List.class, service);
+    public SPARQLProxyRelationList(Node graph, URI uri, Set<String> propertiesToIgnore, String lang, SPARQLService service) {
+        super(graph, List.class, lang, service);
         this.uri = uri;
         this.propertiesToIgnore = propertiesToIgnore;
     }

@@ -54,6 +54,7 @@ import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.exceptions.SPARQLTransactionException;
 import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
@@ -250,33 +251,33 @@ public class SPARQLService implements SPARQLConnection, Service {
         executeUpdateQuery(insertQuery);
     }
 
-    public <T extends SPARQLResourceModel> T getByURI(Class<T> objectClass, URI uri) throws Exception {
+    public <T extends SPARQLResourceModel> T getByURI(Class<T> objectClass, URI uri, String lang) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-        T instance = sparqlObjectMapper.createInstance(uri, this);
+        T instance = sparqlObjectMapper.createInstance(uri, lang, this);
         return instance;
     }
 
-    public <T extends SPARQLResourceModel> List<T> getListByURIs(Class<T> objectClass, List<URI> uris) throws Exception {
+    public <T extends SPARQLResourceModel> List<T> getListByURIs(Class<T> objectClass, List<URI> uris, String lang) throws Exception {
         List<T> instances;
         if (uris.size() > 0) {
             SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-            instances = sparqlObjectMapper.createInstanceList(uris, this);
+            instances = sparqlObjectMapper.createInstanceList(uris, lang, this);
         } else {
             instances = new ArrayList<>();
         }
         return instances;
     }
 
-    public <T extends SPARQLResourceModel> T loadByURI(Class<T> objectClass, URI uri) throws Exception {
+    public <T extends SPARQLResourceModel> T loadByURI(Class<T> objectClass, URI uri, String lang) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-        SelectBuilder select = sparqlObjectMapper.getSelectBuilder();
+        SelectBuilder select = sparqlObjectMapper.getSelectBuilder(lang);
 
         select.addValueVar(sparqlObjectMapper.getURIFieldExprVar(), SPARQLDeserializers.nodeURI(uri));
 
         List<SPARQLResult> results = executeSelectQuery(select);
 
         if (results.size() == 1) {
-            return sparqlObjectMapper.createInstance(results.get(0), this);
+            return sparqlObjectMapper.createInstance(results.get(0), lang, this);
         } else if (results.size() > 1) {
             throw new SPARQLException("Multiple objects for the same URI: " + uri.toString());
         } else {
@@ -284,12 +285,12 @@ public class SPARQLService implements SPARQLConnection, Service {
         }
     }
 
-    public <T extends SPARQLResourceModel> List<T> loadListByURIs(Class<T> objectClass, List<URI> uris) throws Exception {
+    public <T extends SPARQLResourceModel> List<T> loadListByURIs(Class<T> objectClass, List<URI> uris, String lang) throws Exception {
         List<T> resultObjects = new ArrayList<>();
 
         if (uris.size() > 0) {
             SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-            SelectBuilder select = sparqlObjectMapper.getSelectBuilder();
+            SelectBuilder select = sparqlObjectMapper.getSelectBuilder(lang);
 
             List<Node> uriNodes = SPARQLDeserializers.nodeListURI(uris);
 
@@ -298,15 +299,15 @@ public class SPARQLService implements SPARQLConnection, Service {
             List<SPARQLResult> results = executeSelectQuery(select);
 
             for (SPARQLResult result : results) {
-                resultObjects.add(sparqlObjectMapper.createInstance(result, this));
+                resultObjects.add(sparqlObjectMapper.createInstance(result, lang, this));
             }
         }
         return resultObjects;
     }
 
-    public <T extends SPARQLResourceModel> T getByUniquePropertyValue(Class<T> objectClass, Property property, Object propertyValue) throws Exception {
+    public <T extends SPARQLResourceModel> T getByUniquePropertyValue(Class<T> objectClass, String lang, Property property, Object propertyValue) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-        SelectBuilder select = sparqlObjectMapper.getSelectBuilder();
+        SelectBuilder select = sparqlObjectMapper.getSelectBuilder(lang);
         Field field = sparqlObjectMapper.getFieldFromUniqueProperty(property);
 
         SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForClass(propertyValue.getClass());
@@ -317,7 +318,7 @@ public class SPARQLService implements SPARQLConnection, Service {
         if (results.isEmpty()) {
             return null;
         } else if (results.size() == 1) {
-            return sparqlObjectMapper.createInstance(results.get(0), this);
+            return sparqlObjectMapper.createInstance(results.get(0), lang, this);
         } else {
             throw new SPARQLException("Multiple objects for some unique property");
         }
@@ -333,13 +334,13 @@ public class SPARQLService implements SPARQLConnection, Service {
         return executeAskQuery(ask);
     }
 
-    public <T extends SPARQLResourceModel> List<URI> searchURIs(Class<T> objectClass) throws Exception {
-        return searchURIs(objectClass, null);
+    public <T extends SPARQLResourceModel> List<URI> searchURIs(Class<T> objectClass, String lang) throws Exception {
+        return searchURIs(objectClass, lang, null);
     }
 
-    public <T extends SPARQLResourceModel> List<URI> searchURIs(Class<T> objectClass, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+    public <T extends SPARQLResourceModel> List<URI> searchURIs(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-        SelectBuilder select = sparqlObjectMapper.getSelectBuilder();
+        SelectBuilder select = sparqlObjectMapper.getSelectBuilder(lang);
 
         if (filterHandler != null) {
             filterHandler.accept(select);
@@ -354,25 +355,25 @@ public class SPARQLService implements SPARQLConnection, Service {
         return resultList;
     }
 
-    public <T extends SPARQLResourceModel> List<T> search(Class<T> objectClass) throws Exception {
-        return search(objectClass, null, null, null, null);
+    public <T extends SPARQLResourceModel> List<T> search(Class<T> objectClass, String lang) throws Exception {
+        return search(objectClass, lang, null, null, null, null);
     }
 
-    public <T extends SPARQLResourceModel> List<T> search(Class<T> objectClass, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
-        return search(objectClass, filterHandler, null, null, null);
+    public <T extends SPARQLResourceModel> List<T> search(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+        return search(objectClass, lang, filterHandler, null, null, null);
     }
 
-    public <T extends SPARQLResourceModel> List<T> search(Class<T> objectClass, List<OrderBy> orderByList) throws Exception {
-        return search(objectClass, null, orderByList, null, null);
+    public <T extends SPARQLResourceModel> List<T> search(Class<T> objectClass, String lang, List<OrderBy> orderByList) throws Exception {
+        return search(objectClass, lang, null, orderByList, null, null);
     }
 
-    public <T extends SPARQLResourceModel> List<T> search(Class<T> objectClass, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList) throws Exception {
-        return search(objectClass, filterHandler, orderByList, null, null);
+    public <T extends SPARQLResourceModel> List<T> search(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList) throws Exception {
+        return search(objectClass, lang, filterHandler, orderByList, null, null);
     }
 
-    public <T extends SPARQLResourceModel> List<T> search(Class<T> objectClass, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public <T extends SPARQLResourceModel> List<T> search(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-        SelectBuilder select = sparqlObjectMapper.getSelectBuilder();
+        SelectBuilder select = sparqlObjectMapper.getSelectBuilder(lang);
 
         if (filterHandler != null) {
             filterHandler.accept(select);
@@ -396,7 +397,7 @@ public class SPARQLService implements SPARQLConnection, Service {
 
         List<T> resultList = new ArrayList<>();
         executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
-            resultList.add(sparqlObjectMapper.createInstance(result, this));
+            resultList.add(sparqlObjectMapper.createInstance(result, lang, this));
         }, Exception.class));
 
         return resultList;
@@ -419,18 +420,18 @@ public class SPARQLService implements SPARQLConnection, Service {
         }
     }
 
-    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Class<T> objectClass, ThrowingConsumer<SelectBuilder, Exception> filterHandler, Integer page, Integer pageSize) throws Exception {
-        return searchWithPagination(objectClass, filterHandler, null, page, pageSize);
+    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, Integer page, Integer pageSize) throws Exception {
+        return searchWithPagination(objectClass, lang, filterHandler, null, page, pageSize);
     }
     
-    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Class<T> objectClass, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         int total = count(objectClass, filterHandler);
 
         List<T> list;
         if (pageSize == null || pageSize == 0) {
-            list = search(objectClass, filterHandler, orderByList);
+            list = search(objectClass, lang, filterHandler, orderByList);
         } else if (total > 0 && (page * pageSize) < total) {
-            list = search(objectClass, filterHandler, orderByList, page, pageSize);
+            list = search(objectClass, lang, filterHandler, orderByList, page, pageSize);
         } else {
             list = new ArrayList<>();
         }
@@ -489,7 +490,7 @@ public class SPARQLService implements SPARQLConnection, Service {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
 
         UpdateBuilder update = new UpdateBuilder();
-        T oldInstance = loadByURI(objectClass, sparqlObjectMapper.getURI(instance));
+        T oldInstance = loadByURI(objectClass, sparqlObjectMapper.getURI(instance), null);
         if (oldInstance == null) {
             throw new SPARQLInvalidURIException(instance.getUri());
         }
@@ -505,7 +506,7 @@ public class SPARQLService implements SPARQLConnection, Service {
                 @SuppressWarnings("unchecked")
                 Class<T> objectClass = (Class<T>) instance.getClass();
                 SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-                sparqlObjectMapper.addUpdateBuilder(loadByURI(objectClass, sparqlObjectMapper.getURI(instance)), instance, update);
+                sparqlObjectMapper.addUpdateBuilder(loadByURI(objectClass, sparqlObjectMapper.getURI(instance), null), instance, update);
             }
 
             executeUpdateQuery(update);
@@ -519,7 +520,7 @@ public class SPARQLService implements SPARQLConnection, Service {
         }
 
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-        UpdateBuilder delete = sparqlObjectMapper.getDeleteBuilder(loadByURI(objectClass, uri));
+        UpdateBuilder delete = sparqlObjectMapper.getDeleteBuilder(loadByURI(objectClass, uri, null));
 
         executeDeleteQuery(delete);
     }
@@ -530,7 +531,7 @@ public class SPARQLService implements SPARQLConnection, Service {
 
             UpdateBuilder delete = new UpdateBuilder();
             for (URI uri : uris) {
-                sparqlObjectMapper.addDeleteBuilder(loadByURI(objectClass, uri), delete);
+                sparqlObjectMapper.addDeleteBuilder(loadByURI(objectClass, uri, null), delete);
             }
 
             executeDeleteQuery(delete);
@@ -538,7 +539,7 @@ public class SPARQLService implements SPARQLConnection, Service {
     }
 
     public <T extends SPARQLResourceModel> void deleteByObjectRelation(Class<T> objectClass, String relationField, URI objectURI) throws Exception {
-        List<URI> relatedObjectURIs = this.searchURIs(objectClass, (select) -> {
+        List<URI> relatedObjectURIs = this.searchURIs(objectClass, null, (select) -> {
             SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
             select.addValueVar(sparqlObjectMapper.getFieldExprVar(relationField), SPARQLDeserializers.nodeURI(objectURI));
         });
@@ -634,6 +635,10 @@ public class SPARQLService implements SPARQLConnection, Service {
 
         update.addInsert(g, SPARQLDeserializers.nodeURI(s), p.asNode(), SPARQLDeserializers.nodeURI(n));
         executeUpdateQuery(update);
+    }
+
+    public Map<String, String> getOtherTranslations(URI resourceURI, Property labelProperty, boolean reverseRelation, String lang) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

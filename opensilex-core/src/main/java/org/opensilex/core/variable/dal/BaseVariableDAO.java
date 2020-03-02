@@ -44,7 +44,7 @@ public class BaseVariableDAO<T extends BaseVariableModel> {
     }
 
     public T get(URI instanceURI) throws Exception {
-        return sparql.getByURI(objectClass, instanceURI);
+        return sparql.getByURI(objectClass, instanceURI, null);
     }
 
     public ListWithPagination<T> search(String labelPattern, String commentPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
@@ -53,6 +53,7 @@ public class BaseVariableDAO<T extends BaseVariableModel> {
 
         return sparql.searchWithPagination(
                 objectClass,
+                null,
                 (SelectBuilder select) -> {
                     if (labelFilter != null) {
                         select.addFilter(labelFilter);

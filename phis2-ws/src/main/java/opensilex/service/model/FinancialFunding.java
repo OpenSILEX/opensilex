@@ -9,6 +9,7 @@ import opensilex.service.resource.ProjectResourceService;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
@@ -31,13 +32,13 @@ public class FinancialFunding extends SPARQLResourceModel {
             property = "label",
             required = true
     )
-    protected String label;
+    protected SPARQLLabel label;
 
-    public String getLabel() {
+    public SPARQLLabel getLabel() {
         return label;
     }
 
-    public void setLabel(String label) {
+    public void setLabel(SPARQLLabel label) {
         this.label = label;
     }
 

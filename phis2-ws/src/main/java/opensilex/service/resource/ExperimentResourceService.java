@@ -44,10 +44,12 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.ws.rs.core.SecurityContext;
 import opensilex.service.dao.SpeciesDAO;
 import opensilex.service.result.ResultForm;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.rest.user.dal.UserDAO;
+import org.opensilex.rest.user.dal.UserModel;
 
 /**
  * Experiment resource service.
@@ -240,8 +242,11 @@ public class ExperimentResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response postExperiment(
             @ApiParam(value = DocumentationAnnotation.EXPERIMENT_POST_DATA_DEFINITION) @Valid ArrayList<ExperimentPostDTO> experiments,
-            @Context HttpServletRequest context) {
+            @Context HttpServletRequest context,
+            @Context SecurityContext securityContext) throws Exception  {
 
+        UserModel user = (UserModel) securityContext.getUserPrincipal();
+        
         if (experiments == null || experiments.isEmpty()) {
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "No experiments provided"));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
@@ -250,7 +255,7 @@ public class ExperimentResourceService extends ResourceService {
         try {
             // use DAO(s) in order to validate URI(s) from ExperimentPostDTO
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
-            PostDtoToExperimentModel postDtoToNewModel = new PostDtoToExperimentModel(sparql);
+            PostDtoToExperimentModel postDtoToNewModel = new PostDtoToExperimentModel(sparql, user.getLang());
 
             List<String> createdURIs = new ArrayList<>();
             ArrayList<URI> createdXpUris = new ArrayList<>(experiments.size());
@@ -312,7 +317,10 @@ public class ExperimentResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response putExperiment(
             @ApiParam(value = DocumentationAnnotation.EXPERIMENT_POST_DATA_DEFINITION) @Valid ArrayList<ExperimentDTO> experiments,
-            @Context HttpServletRequest context) {
+            @Context HttpServletRequest context,
+            @Context SecurityContext securityContext) throws Exception  {
+
+        UserModel user = (UserModel) securityContext.getUserPrincipal();
 
         if (experiments == null || experiments.isEmpty()) {
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "No experiments provided"));
@@ -320,12 +328,8 @@ public class ExperimentResourceService extends ResourceService {
         }
 
         try {
-            UserDAO userDAO = new UserDAO(sparql);
-            ProjectDAO projectDAO = new ProjectDAO(sparql);
-            SpeciesDAO speciesDAO = new SpeciesDAO();
-
             // use DAO(s) in order to validate URI(s) from ExperimentPostDTO
-            ExperimentDtoToExperimentModel postDtoToNewModel = new ExperimentDtoToExperimentModel(sparql);
+            ExperimentDtoToExperimentModel postDtoToNewModel = new ExperimentDtoToExperimentModel(sparql, user.getLang());
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
             ArrayList<URI> updatedXpUris = new ArrayList<>(experiments.size());
 

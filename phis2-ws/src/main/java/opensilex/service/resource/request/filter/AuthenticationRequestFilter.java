@@ -117,7 +117,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 
             try {
                 URI userURI = authentication.decodeTokenUserURI(userToken);
-                UserModel user = sparql.getByURI(UserModel.class, userURI);
+                UserModel user = sparql.getByURI(UserModel.class, userURI, null);
 
                 SecurityContext originalContext = requestContext.getSecurityContext();
 

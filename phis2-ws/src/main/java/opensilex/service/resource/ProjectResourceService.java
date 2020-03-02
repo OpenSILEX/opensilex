@@ -34,6 +34,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import org.apache.commons.lang3.StringUtils;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
@@ -54,7 +55,9 @@ import org.apache.jena.rdf.model.Resource;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.authentication.AuthenticationService;
+import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -77,10 +80,9 @@ public class ProjectResourceService extends ResourceService {
 
     @Inject
     private SPARQLService sparql;
-    
+
     @Inject
     private AuthenticationService authentication;
-
 
     /**
      * Service to insert projects.
@@ -104,25 +106,22 @@ public class ProjectResourceService extends ResourceService {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response post(
             @ApiParam(value = DocumentationAnnotation.PROJECT_POST_DATA_DEFINITION) @Valid ArrayList<ProjectPostDTO> projects,
-            @Context HttpServletRequest context) throws Exception {
+            @Context HttpServletRequest context,
+            @Context SecurityContext securityContext) throws Exception {
         AbstractResultForm postResponse = null;
 
         if (projects != null && !projects.isEmpty()) {
-            ProjectDAO projectDAO = new ProjectDAO(sparql);
+            UserModel user = (UserModel) securityContext.getUserPrincipal();
+            ProjectDAO projectDAO = new ProjectDAO(sparql, user.getLang());
 
             List<ProjectModel> projectModels = new ArrayList<>();
             for (ProjectPostDTO project : projects) {
-                projectModels.add(project.getProjectModel(sparql, authentication));
+                projectModels.add(project.getProjectModel(sparql, user.getLang()));
             };
 
             projectDAO.create(projectModels);
@@ -166,25 +165,22 @@ public class ProjectResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response put(
             @ApiParam(value = DocumentationAnnotation.PROJECT_POST_DATA_DEFINITION) @Valid ArrayList<ProjectPutDTO> projects,
-            @Context HttpServletRequest context) throws Exception {
+            @Context HttpServletRequest context,
+            @Context SecurityContext securityContext) throws Exception {
         AbstractResultForm putResponse = null;
 
-        ProjectDAO projectDAO = new ProjectDAO(sparql);
+        UserModel user = (UserModel) securityContext.getUserPrincipal();
+        ProjectDAO projectDAO = new ProjectDAO(sparql, user.getLang());
 
         List<ProjectModel> projectModels = new ArrayList<>();
         SPARQLClassObjectMapper<SPARQLResourceModel> projectMapper = SPARQLClassObjectMapper.getForClass(ProjectModel.class);
         for (ProjectPutDTO project : projects) {
-            ProjectModel projectModel = project.getProjectModel(sparql);
+            ProjectModel projectModel = project.getProjectModel(sparql, user.getLang());
             projectModels.add(projectModel);
 
             if (project.getFinancialReference() != null && !project.getFinancialReference().isEmpty()) {
@@ -245,25 +241,22 @@ public class ProjectResourceService extends ResourceService {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getById(@ApiParam(value = DocumentationAnnotation.PROJECT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_PROJECT_URI, required = true) @PathParam("uri") @URL @Required String uri,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+            @Context SecurityContext securityContext) {
         ArrayList<ProjectDetailDTO> projects = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ProjectDetailDTO> getResponse;
 
         try {
-            ProjectDAO projectDAO = new ProjectDAO(sparql);
+            UserModel user = (UserModel) securityContext.getUserPrincipal();
+            ProjectDAO projectDAO = new ProjectDAO(sparql, user.getLang());
 
             ProjectModel project = projectDAO.get(new URI(uri));
-            ProjectDetailDTO projectDTO = new ProjectDetailDTO(project, sparql);
+            ProjectDetailDTO projectDTO = new ProjectDetailDTO(project, sparql, user.getLang());
             projects.add(projectDTO);
 
             getResponse = new ResultForm<>(pageSize, page, projects, true, 1);
@@ -321,12 +314,7 @@ public class ProjectResourceService extends ResourceService {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
@@ -341,9 +329,12 @@ public class ProjectResourceService extends ResourceService {
             @ApiParam(value = "Search by start date", example = DocumentationAnnotation.EXAMPLE_PROJECT_DATE_START) @QueryParam("startDate") String startDate,
             @ApiParam(value = "Search by end date", example = DocumentationAnnotation.EXAMPLE_PROJECT_DATE_END) @QueryParam("endDate") String endDate,
             @ApiParam(value = "Search by home page", example = DocumentationAnnotation.EXAMPLE_PROJECT_HOME_PAGE) @QueryParam("homePage") String homePage,
-            @ApiParam(value = "Search by objective", example = DocumentationAnnotation.EXAMPLE_PROJECT_OBJECTIVE) @QueryParam("objective") String objective) throws Exception {
+            @ApiParam(value = "Search by objective", example = DocumentationAnnotation.EXAMPLE_PROJECT_OBJECTIVE) @QueryParam("objective") String objective,
+            @Context SecurityContext securityContext) throws Exception {
 
-        ProjectDAO projectDAO = new ProjectDAO(sparql);
+        UserModel user = (UserModel) securityContext.getUserPrincipal();
+        ProjectDAO projectDAO = new ProjectDAO(sparql, user.getLang());
+
         if (StringUtils.isEmpty(financialFundingLang)) {
             financialFundingLang = DEFAULT_LANGUAGE;
         }
@@ -360,7 +351,7 @@ public class ProjectResourceService extends ResourceService {
 
             ArrayList<ProjectDTO> projectsToReturn = new ArrayList<ProjectDTO>();
             for (ProjectModel project : results.getList()) {
-                ProjectDTO projectDTO = new ProjectDTO(project, sparql);
+                ProjectDTO projectDTO = new ProjectDTO(project, sparql, user.getLang());
                 projectsToReturn.add(projectDTO);
             }
 

@@ -42,9 +42,9 @@ public class PostDtoToExperimentModel {
     protected final ProjectDAO projectDAO;
     protected final UserDAO userDAO;
 
-    public PostDtoToExperimentModel(SPARQLService sparqlService) {
+    public PostDtoToExperimentModel(SPARQLService sparqlService, String lang) {
         this.speciesDAO = new SpeciesDAO();
-        this.projectDAO = new ProjectDAO(sparqlService);
+        this.projectDAO = new ProjectDAO(sparqlService, lang);
         this.userDAO = new UserDAO(sparqlService);
     }
 

@@ -61,11 +61,11 @@ public class ProjectDTO extends AbstractVerifiedClass {
         
         if (project.getFinancialFunding() != null) {
             FinancialFunding financialFundingObject = project.getFinancialFunding();
-            financialFunding = new RdfResourceDTO(financialFundingObject.getUri().toString(), financialFundingObject.getLabel());
+            financialFunding = new RdfResourceDTO(financialFundingObject.getUri().toString(), financialFundingObject.getLabel().getDefaultValue());
         }
     }
 
-    public ProjectDTO(ProjectModel project, SPARQLService sparql) throws Exception {
+    public ProjectDTO(ProjectModel project, SPARQLService sparql, String lang) throws Exception {
         uri = project.getUri().toString();
         name = project.getName();
         shortname = project.getShortname();
@@ -89,8 +89,10 @@ public class ProjectDTO extends AbstractVerifiedClass {
         }
         
         if (financialFundingURI != null) {
-            FinancialFunding financialFundingModel = sparql.getByURI(FinancialFunding.class , new URI(financialFundingURI));
-            financialFunding = new RdfResourceDTO(financialFundingURI, financialFundingModel.getLabel());
+            FinancialFunding financialFundingModel = sparql.getByURI(FinancialFunding.class , new URI(financialFundingURI), lang);
+            if (financialFundingModel != null) {
+                financialFunding = new RdfResourceDTO(financialFundingURI, financialFundingModel.getLabel().getDefaultValue());
+            }
         }
     }
 

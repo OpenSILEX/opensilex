@@ -97,7 +97,7 @@ public class DataQueryLogFilter implements ContainerRequestFilter {
                 URI userURI;
                 try {
                     userURI = authentication.decodeTokenUserURI(userToken);
-                    UserModel user = sparql.getByURI(UserModel.class, userURI);
+                    UserModel user = sparql.getByURI(UserModel.class, userURI, null);
                     // 6. save data search query
                     DataQueryLogDAO dataAccessLogDao = new DataQueryLogDAO();
                     dataAccessLogDao.remoteUserAdress = servletRequest.getRemoteAddr();

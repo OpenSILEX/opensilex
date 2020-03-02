@@ -108,7 +108,7 @@ public class LogResourceService extends ResourceService {
          List<UserModel> listOfUsers = new ArrayList<>();
         try {
             //3. Get User informations
-            listOfUsers = sparql.search(UserModel.class);
+            listOfUsers = sparql.search(UserModel.class, null);
         } catch (Exception ex) {
             Logger.getLogger(LogResourceService.class.getName()).log(Level.SEVERE, null, ex);
         }

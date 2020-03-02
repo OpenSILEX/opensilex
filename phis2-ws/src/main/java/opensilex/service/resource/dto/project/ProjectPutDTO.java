@@ -253,7 +253,7 @@ public class ProjectPutDTO extends AbstractVerifiedClass {
         this.objective = objective;
     }
 
-    public ProjectModel getProjectModel(SPARQLService sparql) throws Exception {
+    public ProjectModel getProjectModel(SPARQLService sparql, String lang) throws Exception {
         ProjectModel project = new ProjectModel();
 
         project.setUri(new URI(this.getUri()));
@@ -293,7 +293,7 @@ public class ProjectPutDTO extends AbstractVerifiedClass {
         for (String projectUri : this.getRelatedProjects()) {
             uriList.add(new URI(projectUri));
         }
-        project.setRelatedProjects(sparql.getListByURIs(ProjectModel.class, uriList));
+        project.setRelatedProjects(sparql.getListByURIs(ProjectModel.class, uriList, lang));
 
         ArrayList<SPARQLModelRelation> sparqlRelations = new ArrayList<SPARQLModelRelation>();
         if (this.getFinancialReference() != null && !this.getFinancialReference().isEmpty()) {

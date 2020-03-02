@@ -37,9 +37,9 @@ public class ExperimentDtoToExperimentModel {
     protected final ProjectDAO projectDAO;
     protected final UserDAO userDAO;
 
-    public ExperimentDtoToExperimentModel(SPARQLService sparqlService) {
+    public ExperimentDtoToExperimentModel(SPARQLService sparqlService, String lang) {
         this.speciesDAO = new SpeciesDAO();
-        this.projectDAO = new ProjectDAO(sparqlService);
+        this.projectDAO = new ProjectDAO(sparqlService, lang);
         this.userDAO = new UserDAO(sparqlService);
     }
 

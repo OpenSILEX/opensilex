@@ -47,11 +47,11 @@ public class GroupDAO {
     }
 
     public GroupModel get(URI uri) throws Exception {
-        return sparql.getByURI(GroupModel.class, uri);
+        return sparql.getByURI(GroupModel.class, uri, null);
     }
 
     private List<URI> getGroupUserProfileURIsList(URI groupURI) throws Exception {
-        List<URI> userProfilesURIs = sparql.searchURIs(GroupUserProfileModel.class, (SelectBuilder select) -> {
+        List<URI> userProfilesURIs = sparql.searchURIs(GroupUserProfileModel.class, null, (SelectBuilder select) -> {
             WhereHandler whereHandler = new WhereHandler();
             Node groupUriNode =  SPARQLDeserializers.nodeURI(groupURI);
             whereHandler.addWhere(select.makeTriplePath(groupUriNode, SecurityOntology.hasUserProfile, SPARQLClassObjectMapper.getForClass(GroupModel.class).getURIFieldVar()));
@@ -99,7 +99,8 @@ public class GroupDAO {
         Expr nameFilter = SPARQLQueryHelper.regexFilter(GroupModel.NAME_FIELD, namePattern);
 
         return sparql.searchWithPagination(
-                GroupModel.class,
+                GroupModel.class, 
+                null,
                 (SelectBuilder select) -> {
                     if (nameFilter != null) {
                         select.addFilter(nameFilter);

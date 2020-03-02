@@ -65,7 +65,7 @@ public class ExperimentDAOTest {
     public void init() throws Exception {
         projectModel = new ProjectModel();
         projectModel.setName("TEST PROJECT");
-        projectDAO = new ProjectDAO(sparql);
+        projectDAO = new ProjectDAO(sparql, null);
         xpDao = new ExperimentDAO(sparql);
         projectDAO.create(projectModel);
     }

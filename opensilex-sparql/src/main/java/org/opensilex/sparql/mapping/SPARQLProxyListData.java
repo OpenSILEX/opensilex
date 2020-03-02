@@ -29,8 +29,8 @@ class SPARQLProxyListData<T> extends SPARQLProxyList<T> {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLProxyListData.class);
 
-    public SPARQLProxyListData(Node graph, URI uri, Property property, Class<T> genericType, boolean isReverseRelation, SPARQLService service) throws SPARQLDeserializerNotFoundException {
-        super(graph, uri, property, genericType, isReverseRelation, service);
+    public SPARQLProxyListData(Node graph, URI uri, Property property, Class<T> genericType, boolean isReverseRelation, String lang, SPARQLService service) throws SPARQLDeserializerNotFoundException {
+        super(graph, uri, property, genericType, isReverseRelation, lang, service);
     }
 
     @Override

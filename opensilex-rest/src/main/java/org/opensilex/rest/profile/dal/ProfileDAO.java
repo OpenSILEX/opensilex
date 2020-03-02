@@ -51,7 +51,7 @@ public class ProfileDAO {
     }
 
     public ProfileModel get(URI uri) throws Exception {
-        return sparql.getByURI(ProfileModel.class, uri);
+        return sparql.getByURI(ProfileModel.class, uri, null);
     }
 
     public void delete(URI instanceURI) throws Exception {
@@ -89,6 +89,7 @@ public class ProfileDAO {
 
         return sparql.searchWithPagination(
                 ProfileModel.class,
+                null,
                 (SelectBuilder select) -> {
                     if (nameFilter != null) {
                         select.addFilter(nameFilter);
@@ -103,12 +104,14 @@ public class ProfileDAO {
     public List<ProfileModel> getAll(List<OrderBy> orderByList) throws Exception {
         return sparql.search(
                 ProfileModel.class,
+                null,
                 orderByList
         );
     }
 
     public ProfileModel getProfileByName(String name) throws Exception {
         ProfileModel profile = sparql.getByUniquePropertyValue(ProfileModel.class,
+                null,
                 DCTerms.title,
                 name
         );
@@ -119,6 +122,7 @@ public class ProfileDAO {
     public List<ProfileModel> getByUserURI(URI uri) throws Exception {
         return sparql.search(
                 ProfileModel.class,
+                null,
                 (SelectBuilder select) -> {
                     SPARQLClassObjectMapper<SPARQLResourceModel> profileMapper = SPARQLClassObjectMapper.getForClass(ProfileModel.class);
                     Var profileURIVar = profileMapper.getURIFieldVar();

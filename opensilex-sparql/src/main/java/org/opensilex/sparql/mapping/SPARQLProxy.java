@@ -24,15 +24,17 @@ abstract class SPARQLProxy<T> implements InvocationHandler {
     
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLProxy.class);
     
-    public SPARQLProxy(Node graph, Class<T> type, SPARQLService service) {
+    public SPARQLProxy(Node graph, Class<T> type, String lang, SPARQLService service) {
         this.type = type;
         this.service = service;
         this.graph = graph;
+        this.lang = lang;
     }
     
     protected final Class<T> type;
     protected final SPARQLService service;
     protected final Node graph;
+    protected final String lang;
     protected T instance;
     
     public T getInstance() {

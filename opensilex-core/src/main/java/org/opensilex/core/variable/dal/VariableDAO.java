@@ -45,6 +45,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         
         return sparql.searchWithPagination(
                 VariableModel.class,
+                null,
                 (SelectBuilder select) -> {
                     if (labelFilter != null) {
                         select.addFilter(labelFilter);

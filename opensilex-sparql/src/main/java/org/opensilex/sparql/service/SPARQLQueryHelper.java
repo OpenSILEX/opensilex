@@ -123,6 +123,10 @@ public class SPARQLQueryHelper {
     public static Expr eq(String varName, Node node) {
         return exprFactory.eq(NodeFactory.createVariable(varName), node);
     }
+    
+    public static Expr langFilter(String varName, String lang) {
+        return exprFactory.langMatches(exprFactory.lang(NodeFactory.createVariable(varName)), lang);
+    }
 
     /**
      * Append a VALUES clause to the given select if values are not empty,

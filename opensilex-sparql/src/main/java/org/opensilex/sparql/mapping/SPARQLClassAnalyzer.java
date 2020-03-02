@@ -27,6 +27,7 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.annotations.SPARQLResourceURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.URIGenerator;
 import org.opensilex.utils.ClassUtils;
@@ -55,6 +56,10 @@ public class SPARQLClassAnalyzer {
     private final Map<Field, Property> dataPropertiesLists = new HashMap<>();
 
     private final Map<Field, Property> objectPropertiesLists = new HashMap<>();
+
+    private final Map<Field, Property> labelProperties = new HashMap<>();
+
+    private final Map<Field, Property> labelPropertiesLists = new HashMap<>();
 
     private final Map<String, Field> fieldsByName = new HashMap<>();
 
@@ -193,7 +198,10 @@ public class SPARQLClassAnalyzer {
             if (ClassUtils.isGenericList(parameterizedType)) {
                 Class<?> genericParameter = (Class<?>) parameterizedType.getActualTypeArguments()[0];
                 LOGGER.debug("Field " + field.getName() + " is a list of: " + genericParameter.getName());
-                if (SPARQLDeserializers.existsForClass(genericParameter)) {
+                if (genericParameter == SPARQLLabel.class) {
+                    LOGGER.debug("Field " + field.getName() + " is a label list of: " + objectClass.getName());
+                    labelPropertiesLists.put(field, property);
+                } else if (SPARQLDeserializers.existsForClass(genericParameter)) {
                     LOGGER.debug("Field " + field.getName() + " is a data property list of: " + objectClass.getName());
                     dataPropertiesLists.put(field, property);
                 } else {
@@ -203,6 +211,9 @@ public class SPARQLClassAnalyzer {
             } else {
                 throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " as an unsupported type, only List are allowed as generics");
             }
+        } else if ((Class<?>) fieldType == SPARQLLabel.class) {
+            LOGGER.debug("Field " + field.getName() + " is a label of: " + objectClass.getName());
+            labelProperties.put(field, property);
         } else if (SPARQLDeserializers.existsForClass((Class<?>) fieldType)) {
             LOGGER.debug("Field " + field.getName() + " is a data property of: " + objectClass.getName());
             dataProperties.put(field, property);
@@ -342,6 +353,14 @@ public class SPARQLClassAnalyzer {
         objectPropertiesLists.forEach(lambda);
     }
 
+    public void forEachLabelProperty(BiConsumer<Field, Property> lambda) {
+        labelProperties.forEach(lambda);
+    }
+
+    public void forEachLabelPropertyList(BiConsumer<Field, Property> lambda) {
+        labelPropertiesLists.forEach(lambda);
+    }
+
     public Field getFieldFromGetter(Method method) {
         return fieldsByGetter.get(method);
     }
@@ -382,12 +401,20 @@ public class SPARQLClassAnalyzer {
         return objectProperties.containsKey(f);
     }
 
-    boolean isDataListField(Field f) {
+    public boolean isDataListField(Field f) {
         return dataPropertiesLists.containsKey(f);
     }
 
-    boolean isObjectListField(Field f) {
+    public boolean isObjectListField(Field f) {
         return objectPropertiesLists.containsKey(f);
+    }
+
+    public boolean isLabelField(Field f) {
+        return labelProperties.containsKey(f);
+    }
+
+    public boolean isLabelListField(Field f) {
+        return labelPropertiesLists.containsKey(f);
     }
 
     public Resource getRDFType() {
@@ -436,6 +463,22 @@ public class SPARQLClassAnalyzer {
 
     public Property getDataListPropertyByField(Field field) {
         return dataPropertiesLists.get(field);
+    }
+
+    public Set<Field> getLabelPropertyFields() {
+        return labelProperties.keySet();
+    }
+    
+    public Property getLabelPropertyByField(Field field) {
+        return labelProperties.get(field);
+    }
+
+    public Set<Field> getLabelListPropertyFields() {
+        return labelPropertiesLists.keySet();
+    }
+    
+    public Property getLabelListPropertyByField(Field field) {
+        return labelPropertiesLists.get(field);
     }
 
     public URI getURI(Object instance) {

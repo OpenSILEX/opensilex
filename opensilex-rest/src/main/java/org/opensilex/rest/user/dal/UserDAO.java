@@ -10,10 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.mail.internet.InternetAddress;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
-import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.group.dal.GroupUserProfileModel;
 import org.opensilex.rest.profile.dal.ProfileDAO;
 import org.opensilex.rest.profile.dal.ProfileModel;
@@ -35,6 +33,7 @@ public class UserDAO {
 
     public UserModel getByEmail(InternetAddress email) throws Exception {
         return sparql.getByUniquePropertyValue(UserModel.class,
+                null,
                 FOAF.mbox,
                 email
         );
@@ -75,11 +74,11 @@ public class UserDAO {
     }
 
     public UserModel get(URI uri) throws Exception {
-        return sparql.getByURI(UserModel.class, uri);
+        return sparql.getByURI(UserModel.class, uri, null);
     }
 
     public List<UserModel> getList(List<URI> uri) throws Exception {
-        return sparql.getListByURIs(UserModel.class, uri);
+        return sparql.getListByURIs(UserModel.class, uri, null);
     }
 
     public void delete(URI instanceURI) throws Exception {
@@ -144,6 +143,7 @@ public class UserDAO {
 
         return sparql.searchWithPagination(
                 UserModel.class,
+                null,
                 (SelectBuilder select) -> {
                     if (stringFilter != null) {
                         select.addFilter(stringFilter);
@@ -170,6 +170,7 @@ public class UserDAO {
     public ListWithPagination<UserModel> search(String email, String firstName, String familyName, int page, int pageSize) throws Exception {
         return sparql.searchWithPagination(
                 UserModel.class,
+                null,
                 (SelectBuilder select) -> {
                     if (firstName != null) {
                         select.addFilter(SPARQLQueryHelper.eq(UserModel.FIRST_NAME_FIELD, firstName));

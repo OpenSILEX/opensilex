@@ -23,8 +23,8 @@ abstract public class SPARQLProxyList<T> extends SPARQLProxy<List> {
     protected final Class<T> genericType;
     protected final boolean isReverseRelation;
 
-    public SPARQLProxyList(Node graph, URI uri, Property property, Class<T> genericType, boolean isReverseRelation, SPARQLService service) {
-        super(graph, List.class, service);
+    public SPARQLProxyList(Node graph, URI uri, Property property, Class<T> genericType, boolean isReverseRelation, String lang, SPARQLService service) {
+        super(graph, List.class, lang, service);
         this.property = property;
         this.uri = uri;
         this.genericType = genericType;

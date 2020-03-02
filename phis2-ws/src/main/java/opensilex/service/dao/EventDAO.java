@@ -684,13 +684,12 @@ public class EventDAO extends Rdf4jDAO<Event> {
     protected void deleteAll(List<String> uris) throws Exception, RepositoryException, UpdateExecutionException {
     	
     	AnnotationDAO annotationDAO = new AnnotationDAO(user);
-    	annotationDAO.setConnection(connection); // make sure the two DAO use the same connection
 
     	for(String eventUri : uris) {
     		List<String> annotationUris = getAllAnnotationUrisWithEventAsTarget(eventUri);
     		
     		UpdateBuilder deleteEventQuery = deleteEventTriples(eventUri);
-    		Update deleteEventUpdate = connection.prepareUpdate(QueryLanguage.SPARQL,deleteEventQuery.build().toString());
+    		Update deleteEventUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL,deleteEventQuery.build().toString());
     		deleteEventUpdate.execute();
     		
     		if(! annotationUris.isEmpty())

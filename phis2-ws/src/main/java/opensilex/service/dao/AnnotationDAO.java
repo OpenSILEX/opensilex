@@ -594,9 +594,9 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
     		String removeIncomingsAnnotationQuery = getRemoveAllSuperAnnotationQuery(uri).buildRequest().toString(); 
     		String removeAnnotationQuery = getRemoveAllAnnotationTripleQuery(uri).buildRequest().toString(); 
     		
-    		Update update = connection.prepareUpdate(QueryLanguage.SPARQL,removeIncomingsAnnotationQuery); 
+    		Update update = getConnection().prepareUpdate(QueryLanguage.SPARQL,removeIncomingsAnnotationQuery); 
     		update.execute(); // first delete all annotation which has the annotationUri as target  
-    		update = connection.prepareUpdate(QueryLanguage.SPARQL,removeAnnotationQuery); 
+    		update = getConnection().prepareUpdate(QueryLanguage.SPARQL,removeAnnotationQuery); 
     		update.execute(); // then delete the annotation itself
     	}	
     }

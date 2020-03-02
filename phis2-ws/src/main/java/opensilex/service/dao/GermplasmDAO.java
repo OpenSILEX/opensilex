@@ -329,10 +329,6 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
             results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUri.size() + " new germplasm created"));
         }
         
-        if (getConnection() != null) {
-            getConnection().close();
-        }
-        
         return results;
     }
     

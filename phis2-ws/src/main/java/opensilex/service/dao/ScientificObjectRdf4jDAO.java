@@ -171,7 +171,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         TupleQueryResult result = tupleQuery.evaluate();
 
         getConnection().commit();
-        getConnection().close();
 
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
@@ -366,8 +365,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * @param objectURI
      * @example SELECT DISTINCT ?child ?rdfType WHERE {
      * <http://www.opensilex.org/opensilex/2019/o19000030>
-     *  <http://www.opengis.net/ont/geosparql#contains*> ?child . ?child
-     *  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdfType . }
+     * <http://www.opengis.net/ont/geosparql#contains*> ?child . ?child
+     * <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdfType . }
      * @return the query enabling to select all contained element (geo:contains)
      * in objectURI. the query enabling to select all descendants
      */
@@ -416,22 +415,12 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
 
         /* If it's an experiment, the link name isn't the same so we get the direct descendants first*/
         if (layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
-            //SILEX:test
-            //For pool connection issues
-            rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
-            rep.initialize();
-            setConnection(rep.getConnection());
-            //\SILEX:test
 
             SPARQLQueryBuilder sparqlQuery = prepareSearchExperimentScientificObjects(layerDTO.getObjectUri());
             TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
 
             TupleQueryResult result = tupleQuery.evaluate();
 
-            //SILEX:test
-            //For pool connection issues
-            getConnection().close();
-            //\SILEX:test
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 ScientificObject scientificObject = children.get(bindingSet.getValue(CHILD).stringValue());
@@ -468,12 +457,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             // Particular treatment if descendants of a trial
             if (layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
                 // Get all descendants of the plots of the previously retrieved experimentations
-                //SILEX:test
-                //For pool connection issues
-                rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID);
-                rep.initialize();
-                setConnection(rep.getConnection());
-                //\SILEX:test
                 for (Entry<String, ScientificObject> child : children.entrySet()) {
 
                     SPARQLQueryBuilder sparqlQuery = prepareSearchChildrenWithContains(
@@ -494,26 +477,12 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                         }
                     }
                 }
-                //SILEX:test
-                //For pool connection issues
-                getConnection().close();
-                //\SILEX:test
             } else { // if standard object
-                //SILEX:test
-                //For pool connection issues
-                rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore Sesame
-                rep.initialize();
-                setConnection(rep.getConnection());
-                //\SILEX:test
                 SPARQLQueryBuilder sparqlQuery
                         = prepareSearchChildrenWithContains(layerDTO.getObjectUri(), layerDTO.getObjectType());
                 TupleQuery tupleQuery
                         = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
                 TupleQueryResult result = tupleQuery.evaluate();
-                //SILEX:test
-                //For pool connection issues
-                getConnection().close();
-                //\SILEX:test
 
                 while (result.hasNext()) {
                     BindingSet bindingSet = result.next();
@@ -527,19 +496,9 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
 
         } else if (!layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
             // If only direct descendants needed and not an experimentation
-            //SILEX:test
-            //For pool connection issues
-            rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID);
-            rep.initialize();
-            setConnection(rep.getConnection());
-            //\SILEX:test
             SPARQLQueryBuilder sparqlQuery = prepareSearchFirstChildrenWithContains(layerDTO.getObjectUri());
             TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
             TupleQueryResult result = tupleQuery.evaluate();
-            //SILEX:test
-            //For pool connection issues
-            getConnection().close();
-            //\SILEX:test
 
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -592,7 +551,9 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         List<String> foundedProperties = new ArrayList<>();
         ArrayList<Property> properties = new ArrayList<>();
 
-        try (TupleQueryResult result = tupleQuery.evaluate()) {
+        TupleQueryResult result = null;
+        try {
+            result = tupleQuery.evaluate();
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
 
@@ -608,6 +569,12 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     properties.add(property);
                     foundedProperties.add(bindingSet.getValue(PROPERTY).stringValue());
                 };
+            }
+        } catch (Exception ex) {
+            LOGGER.error("Error while getting scientific object properties", ex);
+        } finally {
+            if (result != null) {
+                result.close();
             }
         }
         return properties;
@@ -663,13 +630,15 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                 } else {
                     scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
                 }
-                if (withProperties) {
-                    //Get scientific object properties
-                    scientificObject.setProperties(findScientificObjectProperties(actualUri, scientificObject.getUriExperiment()));
-                }
 
                 foundedScientificObjects.put(actualUri, scientificObject);
             }
+        }
+
+        if (withProperties) {
+            foundedScientificObjects.forEach((soURI, so) -> {
+                so.setProperties(findScientificObjectProperties(soURI, so.getUriExperiment()));
+            });
         }
 
         return new ArrayList<>(foundedScientificObjects.values());
@@ -690,8 +659,9 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * @example SELECT DISTINCT ?uri ?alias ?experiment ?rdfType WHERE {
      * OPTIONAL { ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?alias . }
      * ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdfType .
-     * ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*
-     *  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . OPTIONAL {
+     * ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>
+     *
+     * <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . OPTIONAL {
      * ?uri <http://www.opensilex.org/vocabulary/oeso#participatesIn>
      * ?experiment . } }
      * @return the generated query
@@ -1226,8 +1196,9 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * @example SELECT DISTINCT (COUNT(DISTINCT ?uri) AS ?count) WHERE {
      * OPTIONAL { ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?alias . }
      * ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdfType .
-     * ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*
-     *  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . OPTIONAL {
+     * ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>
+     *
+     * <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . OPTIONAL {
      * ?uri <http://www.opensilex.org/vocabulary/oeso#participatesIn>
      * ?experiment . } }
      */

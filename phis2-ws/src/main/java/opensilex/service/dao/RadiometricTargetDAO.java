@@ -325,10 +325,6 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
             getConnection().rollback();
         }
         
-        if (getConnection() != null) {
-            getConnection().close();
-        }
-        
         results = new POSTResultsReturn(resultState, insert, true);
         results.statusList = status;
         results.setCreatedResources(createdResourcesUris);
@@ -547,10 +543,6 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
             } catch (RepositoryException ex) {
                 LOGGER.error("Error during rollback Triplestore statements : ", ex);
             }
-        }
-        
-        if (this.getConnection() != null) {
-            this.getConnection().close();
         }
         
         results = new POSTResultsReturn(resultState, annotationUpdate, true);

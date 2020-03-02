@@ -292,10 +292,6 @@ public class TripletDAO extends Rdf4jDAO<Triplet> {
                 getConnection().rollback();
             }
 
-//            //SILEX:test
-//            //For the pool connection problems
-//            getConnection().close();
-//            //\SILEX:test
         } catch (RepositoryException ex) {
                 LOGGER.error(StatusCodeMsg.COMMIT_TRIPLESTORE_ERROR, ex);
         } catch (MalformedQueryException e) {

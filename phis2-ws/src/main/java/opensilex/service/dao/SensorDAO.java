@@ -153,7 +153,6 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         TupleQueryResult result = tupleQuery.evaluate();
 
-        getConnection().close();
         
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
@@ -693,10 +692,6 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         if (resultState && !createdResourcesUri.isEmpty()) {
             results.createdResources = createdResourcesUri;
             results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUri.size() + " new resource(s) created"));
-        }
-        
-        if (getConnection() != null) {
-            getConnection().close();
         }
         
         return results;

@@ -241,8 +241,6 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         TupleQueryResult result = tupleQuery.evaluate();
 
-        getConnection().close();
-        
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
             Value maxId = bindingSet.getValue(MAX_ID);

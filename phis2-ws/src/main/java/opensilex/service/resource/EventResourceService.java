@@ -425,7 +425,6 @@ public class EventResourceService extends ResourceService {
             eventDao.setRemoteUserAdress(context.getRemoteAddr());
         }
         Response response = buildDeleteObjectsByUriResponse(eventDao, deleteDTO, "Event(s) deleted");
-        eventDao.getConnection().close();
         return response;
     }
 

@@ -43,7 +43,9 @@ import opensilex.service.PropertiesFileManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.URINamespaces;
+import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
+import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.User;
 import opensilex.service.ontology.Rdf;
@@ -54,15 +56,20 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import org.apache.jena.shared.JenaException;
 import org.apache.jena.update.UpdateRequest;
 import org.eclipse.rdf4j.RDF4JException;
+import org.opensilex.OpenSilex;
+import org.opensilex.sparql.exceptions.SPARQLTransactionException;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
- * DAO class to query the triplestore 
- * @update [Morgane Vidal] 04 Oct, 2018: Rename existObject to existUri and change the query of the method existUri.
- * @update [Andréas Garcia] 11 Jan, 2019: Add generic date time stamp comparison SparQL filter.
- * @update [Andréas Garcia] 5 March, 2019: 
- *   Move date related functions in TimeDAO.java
- *   Add a generic function to get a string value from a binding set
- *   Add the max value of a page (to get all results of a service)
+ * DAO class to query the triplestore
+ *
+ * @update [Morgane Vidal] 04 Oct, 2018: Rename existObject to existUri and
+ * change the query of the method existUri.
+ * @update [Andréas Garcia] 11 Jan, 2019: Add generic date time stamp comparison
+ * SparQL filter.
+ * @update [Andréas Garcia] 5 March, 2019: Move date related functions in
+ * TimeDAO.java Add a generic function to get a string value from a binding set
+ * Add the max value of a page (to get all results of a service)
  * @param <T>
  * @author Arnaud Charleroy
  */
@@ -81,25 +88,14 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     protected static final String PROPERTY_FILENAME = "sesame_rdf_config";
 
     /**
-    * Page size max value used to get the highest number of results of an 
-    * object when getting a list within a list (e.g to get all the concerned
-    * items of all the events)
-    * //SILEX:todo 
-    * Pagination should be handled in this case too (i.e when getting a list
-    * within a list)
-    * For the moment we use only one page by taking the max value
-    * //\SILEX:todo
-    */ 
+     * Page size max value used to get the highest number of results of an
+     * object when getting a list within a list (e.g to get all the concerned
+     * items of all the events) //SILEX:todo Pagination should be handled in
+     * this case too (i.e when getting a list within a list) For the moment we
+     * use only one page by taking the max value //\SILEX:todo
+     */
     protected int pageSizeMaxValue = Integer.parseInt(PropertiesFileManager
             .getConfigFileProperty("service", "pageSizeMax"));
-
-    //SILEX:test
-    // For the full connection pool issue
-    protected static final String SESAME_SERVER = PropertiesFileManager
-            .getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-    protected static final String REPOSITORY_ID = PropertiesFileManager
-            .getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
-    //\SILEX:test
 
     // used for logger
     protected static final String SPARQL_QUERY = "SPARQL query: ";
@@ -121,62 +117,31 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     protected static final String PROPERTY = "property";
     protected static final String PROPERTY_SELECT_NAME_SPARQL = "?" + PROPERTY;
     protected static final String SUBJECT = "subject";
-    protected static final String SUBJECT_SELECT_NAME_SPARQL =  "?" + SUBJECT;
+    protected static final String SUBJECT_SELECT_NAME_SPARQL = "?" + SUBJECT;
     protected static final String SEE_ALSO = "subject";
-    protected static final String SEE_ALSO_SELECT_NAME_SPARQL =  "?" + SEE_ALSO;
+    protected static final String SEE_ALSO_SELECT_NAME_SPARQL = "?" + SEE_ALSO;
 
     protected static final String DATETIMESTAMP_FORMAT_SPARQL = DateFormat.YMDTHMSZZ.toString();
-    
+
     // Triplestore relations
     protected static final URINamespaces ONTOLOGIES = new URINamespaces();
-
-    protected static Repository rep;
-    protected RepositoryConnection connection;
 
     protected static String resourceType;
 
     protected Integer page;
     protected Integer pageSize;
 
-    public Rdf4jDAO() {
-    	this(PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID"));  
-    }
-
     public Rdf4jDAO(User user) {
         this();
         this.user = user;
     }
 
-    public Rdf4jDAO(String repositoryID) {
-        try {
-            String tripleStoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-            rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore
-            rep.initialize();
-            setConnection(rep.getConnection());
-        } catch (RepositoryException e) {
-            ResponseFormPOST postForm = new ResponseFormPOST(
-                    new Status("Can't connect to triplestore", StatusCodeMsg.ERR, e.getMessage()));
-            throw new WebApplicationException(
-                    Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postForm).build());
-        }
-    }
-
-    public RepositoryConnection getConnection() {
-    	if(connection == null || ! connection.isOpen())
-    		initConnection();
-        return connection;
-    }
-
-    public final void setConnection(RepositoryConnection connection) {
-        this.connection = connection;
-    }
-
-    public static Repository getRepository() {
-        return rep;
+    public Rdf4jDAO() {
     }
 
     /**
      * Brapi API page starts at 0
+     *
      * @return current page number
      */
     public Integer getPage() {
@@ -188,6 +153,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     /**
      * Brapi page to be used for pagination in database
+     *
      * @return current page number + 1
      */
     public Integer getPageForDBQuery() {
@@ -196,48 +162,50 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         }
         return page + 1;
     }
-    
+
     public void setPage(Integer page) {
         if (page < 0) {
             this.page = Integer.valueOf(DefaultBrapiPaginationValues.PAGE);
         }
         this.page = page;
     }
-    
+
     public Integer getPageSize() {
         if (pageSize == null || pageSize < 0) {
             return Integer.valueOf(DefaultBrapiPaginationValues.PAGE_SIZE);
         }
         return pageSize;
     }
-    
+
     public void setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
     }
-    
+
     /**
-     * Executes an update request from an update builder. 
-     * @param updateBuilder 
-     * @throws opensilex.service.dao.exception.DAOPersistenceException 
+     * Executes an update request from an update builder.
+     *
+     * @param updateBuilder
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
     protected void executeUpdateRequest(UpdateBuilder updateBuilder) throws DAOPersistenceException {
         try {
             UpdateRequest query = updateBuilder.buildRequest();
             LOGGER.debug(SPARQL_QUERY + " " + query.toString());
             getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
-        } catch (JenaException|RDF4JException ex) {
+        } catch (JenaException | RDF4JException ex) {
             handleTriplestoreException(ex);
         }
     }
 
     /**
      * Checks if a subject exists by triplet.
+     *
      * @param subject
      * @param predicate
      * @param object
      * @return boolean
      */
-    public boolean exist(String subject, String predicate, String object) 
+    public boolean exist(String subject, String predicate, String object)
             throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         boolean exist = false;
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -255,18 +223,13 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     /**
      * Check if a given URI exist in the triplestore.
+     *
      * @param uri the uri to test
-     * @example
-     * ASK {
-     *  VALUES (?r) { (<http://www.w3.org/2000/01/rdf-schema#Literal>) }
-     *  { ?r ?p ?o }
-     *  UNION
-     *  { ?s ?r ?o }
-     *  UNION
-     *  { ?s ?p ?r }
-     * }
-     * @return true if the URI exist in the triplestore
-     *         false if it does not exist
+     * @example ASK { VALUES (?r) {
+     * (<http://www.w3.org/2000/01/rdf-schema#Literal>) } { ?r ?p ?o } UNION {
+     * ?s ?r ?o } UNION { ?s ?p ?r } }
+     * @return true if the URI exist in the triplestore false if it does not
+     * exist
      */
     public boolean existUri(String uri) throws MalformedQueryException, QueryEvaluationException, RepositoryException {
         if (uri == null) {
@@ -277,13 +240,13 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
             //Remember to add rdf, rdfs and owl ontologies in your triplestore
             //\SILEX:warning
             SPARQLQueryBuilder query = new SPARQLQueryBuilder();
-            query.appendAsk("VALUES (?r) { (<" + uri + ">) }\n" +
-                        "    { ?r ?p ?o }\n" +
-                        "    UNION\n" +
-                        "    { ?s ?r ?o }\n" +
-                        "    UNION\n" +
-                        "    { ?s ?p ?r }\n");
-            
+            query.appendAsk("VALUES (?r) { (<" + uri + ">) }\n"
+                    + "    { ?r ?p ?o }\n"
+                    + "    UNION\n"
+                    + "    { ?s ?r ?o }\n"
+                    + "    UNION\n"
+                    + "    { ?s ?p ?r }\n");
+
             LOGGER.debug(SPARQL_QUERY + query.toString());
             BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
             return booleanQuery.evaluate();
@@ -294,19 +257,13 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     /**
      * Check if a given URI exist in a given Graph in the triplestore.
+     *
      * @param uri the uri to test
      * @param graph
-     * @example
-     * ASK FROM <http://www.mygraph.com> {
-     *  VALUES (?r) { (<http://www.w3.org/2000/01/rdf-schema#Literal>) }
-     *  { ?r ?p ?o }
-     *  UNION
-     *  { ?s ?r ?o }
-     *  UNION
-     *  { ?s ?p ?r }
-     * }
-     * @return true if the uri exist in the graph
-     *         false if it does not exist
+     * @example ASK FROM <http://www.mygraph.com> { VALUES (?r) {
+     * (<http://www.w3.org/2000/01/rdf-schema#Literal>) } { ?r ?p ?o } UNION {
+     * ?s ?r ?o } UNION { ?s ?p ?r } }
+     * @return true if the uri exist in the graph false if it does not exist
      */
     public boolean existUriInGraph(String uri, String graph) {
         if (uri == null) {
@@ -315,19 +272,19 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         if (graph == null) {
             return false;
         }
-        try {            
-            String query = "ASK \n" +
-                            "  FROM <" + graph + "> {\n" +
-                            "\n" +
-                            " VALUES (?r) { (<" + uri + ">) }\n" +
-                            " { ?r ?p ?o }\n" +
-                            " UNION\n" +
-                            " { ?s ?r ?o }\n" +
-                            " UNION\n" +
-                            " { ?s ?p ?r }\n" +
-                            "  \n" +
-                            "}";
-            
+        try {
+            String query = "ASK \n"
+                    + "  FROM <" + graph + "> {\n"
+                    + "\n"
+                    + " VALUES (?r) { (<" + uri + ">) }\n"
+                    + " { ?r ?p ?o }\n"
+                    + " UNION\n"
+                    + " { ?s ?r ?o }\n"
+                    + " UNION\n"
+                    + " { ?s ?p ?r }\n"
+                    + "  \n"
+                    + "}";
+
             LOGGER.debug(SPARQL_QUERY + query);
             BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query);
             return booleanQuery.evaluate();
@@ -338,6 +295,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     /**
      * Recovers the existence of an element by triplet.
+     *
      * @param subject
      * @param predicate
      * @return
@@ -366,33 +324,36 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     /**
      * Adds object properties to a given object.
-     * @param subjectUri the subject URI which will have the object properties URIs.
+     *
+     * @param subjectUri the subject URI which will have the object properties
+     * URIs.
      * @param predicateUri the URI of the predicates
-     * @param objectPropertiesUris the list of the object properties to link to the subject
+     * @param objectPropertiesUris the list of the object properties to link to
+     * the subject
      * @param graphUri
-     * @example
-     * INSERT DATA {
-     *      GRAPH <http://www.phenome-fppn.fr/diaphen/sensors> { 
-     *          <http://www.phenome-fppn.fr/diaphen/2018/s18533>  <http://www.opensilex.org/vocabulary/oeso#measures>  <http://www.phenome-fppn.fr/id/variables/v001> . 
-     * }}
-     * @return true if the insertion has been done
-     *         false if an error occurred (see the error logs to get more details)
+     * @example INSERT DATA { GRAPH <http://www.phenome-fppn.fr/diaphen/sensors>
+     * {
+     * <http://www.phenome-fppn.fr/diaphen/2018/s18533>
+     *  <http://www.opensilex.org/vocabulary/oeso#measures>
+     *  <http://www.phenome-fppn.fr/id/variables/v001> . }}
+     * @return true if the insertion has been done false if an error occurred
+     * (see the error logs to get more details)
      */
     protected boolean addObjectProperties(String subjectUri, String predicateUri, List<String> objectPropertiesUris, String graphUri) {
         //Generates insert query
         UpdateBuilder spql = new UpdateBuilder();
-        Node graph  = NodeFactory.createURI(graphUri);
-        
+        Node graph = NodeFactory.createURI(graphUri);
+
         objectPropertiesUris.forEach((objectProperty) -> {
-            Node subjectUriNode  = NodeFactory.createURI(subjectUri);
-            Node predicateUriNode  = NodeFactory.createURI(predicateUri);
-            Node objectPropertyNode  = NodeFactory.createURI(objectProperty);
-            
+            Node subjectUriNode = NodeFactory.createURI(subjectUri);
+            Node predicateUriNode = NodeFactory.createURI(predicateUri);
+            Node objectPropertyNode = NodeFactory.createURI(objectProperty);
+
             spql.addInsert(graph, subjectUriNode, predicateUriNode, objectPropertyNode);
         });
-        
+
         LOGGER.debug(SPARQL_QUERY + query.toString());
-        
+
         //Insert the properties in the triplestore
         Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
         try {
@@ -403,34 +364,35 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         }
         return true;
     }
-    
+
     /**
      * Deletes the given object properties.
+     *
      * @param subjectUri
      * @param predicateUri
      * @param objectPropertiesUris
-     * @example
-     * DELETE WHERE { 
-     *  <http://www.phenome-fppn.fr/diaphen/2018/s18533> <http://www.opensilex.org/vocabulary/oeso#measures> <http://www.phenome-fppn.fr/id/variables/v001> .  
-     * }
-     * @return true if the object properties have been deleted
-     *         false if the delete has not been done.
+     * @example DELETE WHERE {
+     * <http://www.phenome-fppn.fr/diaphen/2018/s18533>
+     * <http://www.opensilex.org/vocabulary/oeso#measures>
+     * <http://www.phenome-fppn.fr/id/variables/v001> . }
+     * @return true if the object properties have been deleted false if the
+     * delete has not been done.
      */
     protected boolean deleteObjectProperties(String subjectUri, String predicateUri, List<String> objectPropertiesUris) {
         //1. Generates delete query
         UpdateBuilder query = new UpdateBuilder();
-        
+
         Resource subject = ResourceFactory.createResource(subjectUri);
-        Property predicate = ResourceFactory.createProperty(predicateUri);        
-        
+        Property predicate = ResourceFactory.createProperty(predicateUri);
+
         for (String objectProperty : objectPropertiesUris) {
             Node object = NodeFactory.createURI(objectProperty);
             query.addWhere(subject, predicate, object);
         }
-        
+
         UpdateDeleteWhere request = query.buildDeleteWhere();
         LOGGER.debug(request.toString());
-        
+
         //2. Delete data in the triplestore
         Update prepareDelete = getConnection().prepareUpdate(QueryLanguage.SPARQL, request.toString());
         try {
@@ -439,74 +401,75 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
             LOGGER.error("Delete object properties error : " + ex.getMessage());
             return false;
         }
-        
+
         return true;
     }
-    
+
     /**
      * Gets the value of a name in the SELECT statement from a binding set.
-     * @param selectName 
-     * @param bindingSet 
+     *
+     * @param selectName
+     * @param bindingSet
      * @return the string value of the "selectName" variable in the binding set.
      */
-    protected static String getStringValueOfSelectNameFromBindingSet(String selectName, BindingSet bindingSet) { 
+    protected static String getStringValueOfSelectNameFromBindingSet(String selectName, BindingSet bindingSet) {
         Value selectedFieldValue = bindingSet.getValue(selectName);
         if (selectedFieldValue != null) {
             return selectedFieldValue.stringValue();
         }
         return null;
     }
-    
+
     /**
-     * Handle a NumberFormatException when getting the value of the count of results.
+     * Handle a NumberFormatException when getting the value of the count of
+     * results.
+     *
      * @param ex
-     * @throws opensilex.service.dao.exception.DAOPersistenceException 
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
     protected void handleCountValueNumberFormatException(NumberFormatException ex) throws Exception {
         throw new Exception(String.format(COUNT_VALUE_PARSING_EXCEPTION_MESSAGE_FORMAT, COUNT_ELEMENT_QUERY), ex);
     }
-    
+
     /**
-     * Handle a RDF4J exception throwing a DAO persistence exception according to the given exception type.
+     * Handle a RDF4J exception throwing a DAO persistence exception according
+     * to the given exception type.
+     *
      * @param exception
-     * @throws opensilex.service.dao.exception.DAOPersistenceException 
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
     protected void handleTriplestoreException(RuntimeException exception) throws DAOPersistenceException {
         String daoPersistenceExceptionMessage;
-        if(exception instanceof RepositoryException) {
-            daoPersistenceExceptionMessage 
+        if (exception instanceof RepositoryException) {
+            daoPersistenceExceptionMessage
                     = String.format(REPOSITORY_EXCEPTION_GENERIC_MESSAGE_FORMAT, exception.getMessage());
-        }
-        else if(exception instanceof MalformedQueryException) {
-            daoPersistenceExceptionMessage 
+        } else if (exception instanceof MalformedQueryException) {
+            daoPersistenceExceptionMessage
                     = String.format(MALFORMED_QUERY_EXCEPTION_MESSAGE_FORMAT, exception.getMessage());
-        }
-        else if(exception instanceof QueryEvaluationException) {
-            daoPersistenceExceptionMessage 
+        } else if (exception instanceof QueryEvaluationException) {
+            daoPersistenceExceptionMessage
                     = String.format(QUERY_EVALUATION_EXCEPTION_MESSAGE_FORMAT, exception.getMessage());
-        }
-        else if(exception instanceof UpdateExecutionException) {
-            daoPersistenceExceptionMessage 
+        } else if (exception instanceof UpdateExecutionException) {
+            daoPersistenceExceptionMessage
                     = String.format(UPDATE_EXECUTION_EXCEPTION_MESSAGE_FORMAT, exception.getMessage());
-        }
-        else {
+        } else {
             daoPersistenceExceptionMessage = DAOPersistenceException.GENERIC_MESSAGE + " " + exception.getMessage();
         }
-        
+
         LOGGER.error(exception.getMessage(), exception);
         throw new DAOPersistenceException(daoPersistenceExceptionMessage, exception);
     }
-    
+
     /**
      * Get the list of URIs corresponding to the given label (like).
+     *
      * @param rdfType
-     * @example
-     * SELECT DISTINCT  ?uri ?label WHERE {
-     *      ?uri  <http://www.w3.org/2000/01/rdf-schema#label>  ?label  . 
-     *      ?uri  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  ?rdfType  . 
-     *      ?rdfType  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . 
-     *      FILTER ( (REGEX ( str(?label),".*2.*","i")) ) 
-     * }
+     * @example SELECT DISTINCT ?uri ?label WHERE { ?uri
+     *  <http://www.w3.org/2000/01/rdf-schema#label> ?label . ?uri
+     *  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdfType . ?rdfType
+     *  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*
+     *  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . FILTER (
+     * (REGEX ( str(?label),".*2.*","i")) ) }
      * @param label
      * @return the list of URIs and labels
      */
@@ -520,9 +483,9 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         query.appendTriplet("?" + URI, Rdf.RELATION_TYPE.toString(), "?" + RDF_TYPE, null);
         query.appendTriplet("?" + RDF_TYPE, "<" + Rdfs.RELATION_SUBCLASS_OF + ">*", rdfType, null);
         LOGGER.debug(query.toString());
-        
+
         Map<String, List<String>> urisAndLabels = new HashMap<>();
-        
+
         //2. Get the result of the query
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -539,18 +502,17 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
                 }
             }
         }
-        
+
         return urisAndLabels;
     }
-    
+
     /**
      * Get the list of labels for a given uri.
+     *
      * @param uri
-     * @example 
-     * SELECT DISTINCT  ?label 
-     * WHERE {
-     *  <http://www.opensilex.org/opensilex/2019/o19000060>  <http://www.w3.org/2000/01/rdf-schema#label>  ?label  . 
-     * }
+     * @example SELECT DISTINCT ?label WHERE {
+     * <http://www.opensilex.org/opensilex/2019/o19000060>
+     *  <http://www.w3.org/2000/01/rdf-schema#label> ?label . }
      * @return the list of labels.
      */
     public List<String> findLabelsForUri(String uri) {
@@ -560,105 +522,144 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         query.appendDistinct(Boolean.TRUE);
         query.appendTriplet(uri, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
         LOGGER.debug(query.toString());
-        
+
         List<String> labels = new ArrayList<>();
-        
+
         //2. Get the result of the query
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
-                BindingSet bindingSet = result.next();  
+                BindingSet bindingSet = result.next();
                 labels.add(bindingSet.getValue(LABEL).stringValue());
             }
         }
-        
+
         return labels;
     }
-    
+
     /**
-     * Delete a list of objects into the triplestore. 
-     * @param uris : a {@link List} of objects Uris 
+     * Delete a list of objects into the triplestore.
+     *
+     * @param uris : a {@link List} of objects Uris
      * @throws Exception
      * @throws RepositoryException
      * @throws UpdateExecutionException
      */
     protected void deleteAll(List<String> uris) throws Exception, RepositoryException, UpdateExecutionException {
-    	
+
     }
-    
+
     /**
-     * Delete a list of objects into the triplestore. 
-     * @param uris : a {@link Iterable} over objects Uris 
-     * @throws IllegalArgumentException if the {@link #user} is not an admin user or if a given uri is not present 
-     * into the TripleStore. 
-     * @throws DAOPersistenceException : if an {@link Exception} related to the {@link Repository} is encountered. 
+     * Delete a list of objects into the triplestore.
+     *
+     * @param uris : a {@link Iterable} over objects Uris
+     * @throws IllegalArgumentException if the {@link #user} is not an admin
+     * user or if a given uri is not present into the TripleStore.
+     * @throws DAOPersistenceException : if an {@link Exception} related to the
+     * {@link Repository} is encountered.
      * @throws Exception : for any other encountered {@link Exception}
      * @see #deleteAll(List)
      */
-    public void checkAndDeleteAll(List<String> uris) throws IllegalArgumentException, DAOPersistenceException, Exception { 	
-    	
-    	if(user == null || StringUtils.isEmpty(user.getAdmin())) {
-    		throw new IllegalArgumentException("No user/bad user provided");
-    	}
-    	
-    	StringBuilder errorMsgs = new StringBuilder();
-    	boolean allUriExists = true;   	
-		for(String uri : uris) { 
-			if(! existUri(uri)) {
-				errorMsgs.append(uri+" , ");
-				allUriExists = false;
-			}
-    	}
-    	if(!allUriExists) {
-    		throw new IllegalArgumentException(errorMsgs.append(" don't belongs to the TripleStore").toString());
-    	}
-    	
-    	Exception returnedException = null;
-		try {
-			startTransaction();    			
-			deleteAll(uris);
-	    	commitTransaction();		    	
-		} catch (RepositoryException | UpdateExecutionException e) {
-			rollbackTransaction();
-			returnedException =  new DAOPersistenceException(e);
-		} catch(Exception e) {
-			rollbackTransaction();
-			returnedException = e;
-		}
-		finally {
-		 	if(returnedException != null)
-		 		throw returnedException;
-		 }
+    public void checkAndDeleteAll(List<String> uris) throws IllegalArgumentException, DAOPersistenceException, Exception {
+
+        if (user == null || StringUtils.isEmpty(user.getAdmin())) {
+            throw new IllegalArgumentException("No user/bad user provided");
+        }
+
+        StringBuilder errorMsgs = new StringBuilder();
+        boolean allUriExists = true;
+        for (String uri : uris) {
+            if (!existUri(uri)) {
+                errorMsgs.append(uri + " , ");
+                allUriExists = false;
+            }
+        }
+        if (!allUriExists) {
+            throw new IllegalArgumentException(errorMsgs.append(" don't belongs to the TripleStore").toString());
+        }
+
+        Exception returnedException = null;
+        try {
+            getSPARQLService().startTransaction();
+            deleteAll(uris);
+            getSPARQLService().commitTransaction();
+        } catch (RepositoryException | UpdateExecutionException e) {
+            getSPARQLService().rollbackTransaction();
+            returnedException = new DAOPersistenceException(e);
+        } catch (Exception e) {
+            getSPARQLService().rollbackTransaction();
+            returnedException = e;
+        } finally {
+            if (returnedException != null) {
+                throw returnedException;
+            }
+        }
     }
 
-    @Override
-    protected void initConnection() {  
-    	if(connection == null || ! connection.isOpen()) 
-    		connection = rep.getConnection();
+    public SPARQLService getSPARQLService() {
+        return OpenSilex.getInstance().getServiceInstance("sparql", SPARQLService.class);
     }
 
-    @Override
-    protected void closeConnection() {
-        if(connection != null && connection.isOpen())
-            connection.close();
+    public RepositoryConnection getConnection() {
+        return getSPARQLService().getRepositoryConnection();
+    }
+    
+    /**
+     * Validates and creates objects.
+     * @param objects
+     * @return the annotations created.
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
+     * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
+     * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
+     */
+    public List<T> validateAndCreate(List<T> objects) 
+        throws DAOPersistenceException, DAODataErrorAggregateException, ResourceAccessDeniedException, Exception {
+        validate(objects);     
+        List<T> objectsCreated;
+        try {
+        	startTransaction();
+            objectsCreated = create(objects);
+            commitTransaction();
+        } catch (Exception ex) {
+            rollbackTransaction();
+            throw ex;
+        }
+        return objectsCreated;
+    }
+    
+    /**
+     * Validates and updates objects.
+     * @param objects
+     * @return the objects created.
+     * @throws opensilex.service.dao.exception.DAOPersistenceException
+     * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
+     * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
+     */
+    public List<T> validateAndUpdate(List<T> objects) 
+            throws DAOPersistenceException, DAODataErrorAggregateException, ResourceAccessDeniedException, Exception {
+        validate(objects);     
+        List<T> objectsUpdated;
+        try {
+            startTransaction();
+            objectsUpdated = update(objects);
+            commitTransaction();
+        } catch (Exception ex) {
+            rollbackTransaction();
+            throw ex;
+        }
+        return objectsUpdated;
     }
 
-    @Override
-    protected void startTransaction() {
-    	initConnection(); // init the connection if not done
-    	if(! connection.isActive())
-    		connection.begin();
+    private void startTransaction() throws SPARQLTransactionException {
+        getSPARQLService().startTransaction();
     }
 
-    @Override
-    protected void commitTransaction() {
-        if(connection != null && connection.isActive())
-            connection.commit();
+    private void commitTransaction() throws SPARQLTransactionException {
+        getSPARQLService().commitTransaction();
     }
 
-    @Override
-    protected void rollbackTransaction() {
-        if(connection != null && connection.isActive())
-            connection.rollback();
+    private void rollbackTransaction() throws SPARQLTransactionException {
+        getSPARQLService().rollbackTransaction();
     }
+    
 }

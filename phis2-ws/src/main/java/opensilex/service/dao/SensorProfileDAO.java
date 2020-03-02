@@ -225,10 +225,6 @@ public class SensorProfileDAO extends Rdf4jDAO<SensorProfile> {
             results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, "sensor(s) profile(s) updated"));
         }
         
-        if (getConnection() != null) {
-            getConnection().close();
-        }
-        
         return results;
     }
     

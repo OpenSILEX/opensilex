@@ -274,7 +274,6 @@ public class AnnotationResourceService extends ResourceService {
             annotationDAO.setRemoteUserAdress(context.getRemoteAddr());
         }
         Response response = buildDeleteObjectsByUriResponse(annotationDAO, deleteDTO, "Annotation(s) deleted");
-        annotationDAO.getConnection().close();
         return response;
     }
 

@@ -421,11 +421,6 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
             try {
                 //SILEX:todo
                 // storage connection to review: dirty hotfix
-                String tripleStoreServer = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "sesameServer");
-                String repositoryID = PropertiesFileManager.getConfigFileProperty(PROPERTY_FILENAME, "repositoryID");
-                rep = new HTTPRepository(tripleStoreServer, repositoryID); //Stockage triplestore
-                rep.initialize();
-                this.setConnection(rep.getConnection());
                 this.getConnection().begin();
                 Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
                 LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());

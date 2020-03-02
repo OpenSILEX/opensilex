@@ -1040,10 +1040,6 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
             getConnection().rollback();
         }
         
-        if (getConnection() != null) {
-            getConnection().close();
-        }
-        
         results = new POSTResultsReturn(resultState, linksInserted, true);
         results.statusList = status;
         results.setCreatedResources(createdResourcesUris);

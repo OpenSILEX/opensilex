@@ -117,18 +117,8 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
      */
     public int getNumberOfVectors(String year) {
         SPARQLQueryBuilder queryNumberVectors = prepareGetVectorsNumber(year);
-        //SILEX:test
-        //for the pool connection problems. 
-        //WARNING this is a quick fix
-        rep = new HTTPRepository(SESAME_SERVER, REPOSITORY_ID); //Stockage triplestore
-        rep.initialize();
-        setConnection(rep.getConnection());
-        //\SILEX:test
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryNumberVectors.toString());
         TupleQueryResult result = tupleQuery.evaluate();        
-        //SILEX:test
-        //for the pool connection problems.
-        getConnection().close();
         //\SILEX:test
         
         BindingSet bindingSet = result.next();
@@ -429,8 +419,6 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         TupleQueryResult result = tupleQuery.evaluate();
 
-        getConnection().close();
-        
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
             Value maxId = bindingSet.getValue(MAX_ID);
@@ -636,10 +624,6 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
         if (resultState && !createdResourcesUri.isEmpty()) {
             results.createdResources = createdResourcesUri;
             results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesUri.size() + " new resource(s) created."));
-        }
-        
-        if (getConnection() != null) {
-            getConnection().close();
         }
         
         return results;

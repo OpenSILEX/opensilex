@@ -218,7 +218,7 @@ public abstract class ResourceService {
      * resource isn't available for the user. a data error response when the
      * data sent is incorrect.
      */
-    protected Response getPostResponse(DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
+    protected Response getPostResponse(Rdf4jDAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
         return getPostPutResponse(objectDao, objectsDtos, userIpAddress, statusMessageIfEmptyDtosSent, true);
     }
 
@@ -234,7 +234,7 @@ public abstract class ResourceService {
      * resource isn't available for the user. a data error response when the
      * data sent is incorrect.
      */
-    protected Response getPutResponse(DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
+    protected Response getPutResponse(Rdf4jDAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent) {
         return getPostPutResponse(objectDao, objectsDtos, userIpAddress, statusMessageIfEmptyDtosSent, false);
     }
 
@@ -251,7 +251,7 @@ public abstract class ResourceService {
      * resource isn't available for the user. a data error response when the
      * data sent is incorrect.
      */
-    protected Response getPostPutResponse(DAO objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent, boolean isPost) {
+    protected <T> Response getPostPutResponse(Rdf4jDAO<T> objectDao, ArrayList<? extends AbstractVerifiedClass> objectsDtos, String userIpAddress, String statusMessageIfEmptyDtosSent, boolean isPost) {
         if (objectsDtos == null || objectsDtos.isEmpty()) {
             // Empty object list
             return getPostPutResponseWhenEmptyListGiven(statusMessageIfEmptyDtosSent);
@@ -259,12 +259,12 @@ public abstract class ResourceService {
             try {
                 // Process operation
                 objectDao.remoteUserAdress = userIpAddress;
-                List<? extends Object> objectsToImpact = getObjectsFromDTOs(objectsDtos);
-                List<? extends Object> impactedObjects;
+                List<?> objectsToImpact = getObjectsFromDTOs(objectsDtos);
+                List<?> impactedObjects;
                 if (isPost) { // POST
-                    impactedObjects = objectDao.validateAndCreate(objectsToImpact);
+                    impactedObjects = objectDao.validateAndCreate((List<T>) objectsToImpact);
                 } else { // PUT
-                    impactedObjects = objectDao.validateAndUpdate(objectsToImpact);
+                    impactedObjects = objectDao.validateAndUpdate((List<T>) objectsToImpact);
                 }
 
                 // Return according to operation results

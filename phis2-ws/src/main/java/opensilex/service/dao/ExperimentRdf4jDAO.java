@@ -384,9 +384,6 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
             getConnection().rollback();
         }
         
-        if (getConnection() != null) {
-            getConnection().close();
-        }
         
         results = new POSTResultsReturn(resultState, insert, true);
         results.statusList = status;

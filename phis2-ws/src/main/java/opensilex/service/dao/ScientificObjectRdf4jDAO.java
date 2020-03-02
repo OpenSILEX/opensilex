@@ -620,7 +620,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                 if (experiment != null) {
                     scientificObject.setUriExperiment(experiment);
                 } else if (bindingSet.getValue(EXPERIMENT) != null) {
-                    scientificObject.setExperiment(bindingSet.getValue(EXPERIMENT).stringValue());
+                    String expeURI = bindingSet.getValue(EXPERIMENT).stringValue();
+                    scientificObject.setExperiment(SPARQLDeserializers.getExpandedURI(expeURI));
                 }
 
                 scientificObject.setLabel(bindingSet.getValue(ALIAS).stringValue());

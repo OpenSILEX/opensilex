@@ -12,11 +12,11 @@ import opensilex.service.model.*;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.rest.group.dal.GroupModel;
 import org.opensilex.rest.user.dal.UserModel;
 
 import java.net.URI;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
  * @author Renaud COLIN
@@ -35,7 +35,7 @@ public class ExperimentModelToExperiment {
     public Experiment convert(ExperimentModel xp) throws Exception {
 
         Experiment oldXpModel = new Experiment();
-        oldXpModel.setUri(xp.getUri().toString());
+        oldXpModel.setUri(SPARQLDeserializers.getExpandedURI(xp.getUri().toString()));
         oldXpModel.setAlias(xp.getLabel());
         oldXpModel.setObjective(xp.getObjective());
         oldXpModel.setComment(xp.getComment());

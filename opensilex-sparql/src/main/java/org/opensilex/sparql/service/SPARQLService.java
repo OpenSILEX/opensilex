@@ -486,31 +486,34 @@ public class SPARQLService implements SPARQLConnection, Service {
     }
 
     public <T extends SPARQLResourceModel> void update(T instance) throws Exception {
-        @SuppressWarnings("unchecked")
-        Class<T> objectClass = (Class<T>) instance.getClass();
-        SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-
-        UpdateBuilder update = new UpdateBuilder();
-        T oldInstance = loadByURI(objectClass, sparqlObjectMapper.getURI(instance), null);
-        if (oldInstance == null) {
-            throw new SPARQLInvalidURIException(instance.getUri());
-        }
-
-        sparqlObjectMapper.addUpdateBuilder(oldInstance, instance, update);
-        executeUpdateQuery(update);
+        delete(instance.getClass(), instance.getUri());
+        create(instance);
+//        @SuppressWarnings("unchecked")
+//        Class<T> objectClass = (Class<T>) instance.getClass();
+//        SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
+//
+//        UpdateBuilder update = new UpdateBuilder();
+//        T oldInstance = loadByURI(objectClass, sparqlObjectMapper.getURI(instance), null);
+//        if (oldInstance == null) {
+//            throw new SPARQLInvalidURIException(instance.getUri());
+//        }
+//
+//        sparqlObjectMapper.addUpdateBuilder(oldInstance, instance, update);
+//        executeUpdateQuery(update);
     }
 
     public <T extends SPARQLResourceModel> void update(List<T> instances) throws Exception {
         if (instances.size() > 0) {
-            UpdateBuilder update = new UpdateBuilder();
+//            UpdateBuilder update = new UpdateBuilder();
             for (T instance : instances) {
-                @SuppressWarnings("unchecked")
-                Class<T> objectClass = (Class<T>) instance.getClass();
-                SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-                sparqlObjectMapper.addUpdateBuilder(loadByURI(objectClass, sparqlObjectMapper.getURI(instance), null), instance, update);
+                update(instance);
+//                @SuppressWarnings("unchecked")
+//                Class<T> objectClass = (Class<T>) instance.getClass();
+//                SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
+//                sparqlObjectMapper.addUpdateBuilder(loadByURI(objectClass, sparqlObjectMapper.getURI(instance), null), instance, update);
             }
 
-            executeUpdateQuery(update);
+//            executeUpdateQuery(update);
         }
     }
 

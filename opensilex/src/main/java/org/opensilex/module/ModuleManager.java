@@ -429,12 +429,24 @@ public class ModuleManager {
      *
      * @throws Exception Rethrow any exception in module install method
      */
-    public void install() throws Exception {
+    public void install(boolean reset) throws Exception {
         for (OpenSilexModule module : getModules()) {
             try {
-                module.install();
+                LOGGER.info("Install module: " + module.getClass().getCanonicalName());
+                module.install(reset);
             } catch (Exception ex) {
                 LOGGER.error("Fail to install module: " + module.getClass().getCanonicalName(), ex);
+                throw ex;
+            }
+        }
+    }
+
+    public void check() throws Exception {
+        for (OpenSilexModule module : getModules()) {
+            try {
+                module.check();
+            } catch (Exception ex) {
+                LOGGER.error("Fail to check module: " + module.getClass().getCanonicalName(), ex);
                 throw ex;
             }
         }

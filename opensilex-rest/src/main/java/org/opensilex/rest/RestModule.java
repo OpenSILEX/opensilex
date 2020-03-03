@@ -12,7 +12,10 @@ import java.util.*;
 import org.opensilex.OpenSilex;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.OpenSilexModule;
+import org.opensilex.rest.user.dal.UserDAO;
+import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ListWithPagination;
 
 /**
  * <pre>
@@ -53,8 +56,21 @@ public class RestModule extends OpenSilexModule implements APIExtension {
 
     @Override
     public void startup() throws Exception {
-        SPARQLService sparql = OpenSilex.getInstance().getServiceInstance("sparql", SPARQLService.class);
+        SPARQLService sparql = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
         sparql.addPrefix(SecurityOntology.PREFIX, SecurityOntology.NAMESPACE);
+    }
+    
+    @Override
+    public void check() throws Exception {
+        LOGGER.info("Check User existence");
+        OpenSilex opensilex = OpenSilex.getInstance();
+        SPARQLService sparql = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
+        UserDAO userDAO = new UserDAO(sparql);
+        ListWithPagination<UserModel> result = userDAO.search(null, null, null, null);
+        if (result.getTotal() == 0) {
+            LOGGER.error("You should at least have one user defined to have a valid configuration");
+            throw new Exception();
+        }
     }
 
 

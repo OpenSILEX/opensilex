@@ -1,5 +1,5 @@
-OpenSilex pre-requesites softwares
-==================================
+Install OpenSilex fro Development
+=================================
 
 # Introduction
 

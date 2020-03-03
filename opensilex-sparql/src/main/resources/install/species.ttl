@@ -1,0 +1,60 @@
+PREFIX vocabulary: <http://www.opensilex.org/vocabulary/oeso#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+<http://aims.fao.org/aos/agrovoc/c_1066>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_1066>  rdfs:label  "colza"@en    .
+<http://aims.fao.org/aos/agrovoc/c_1066>  rdfs:label  "colza"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_1066>  rdfs:label  "Brassica napus"@la    .
+<http://aims.fao.org/aos/agrovoc/c_11456>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_11456>  rdfs:label  "durum wheat"@en    .
+<http://aims.fao.org/aos/agrovoc/c_11456>  rdfs:label  "blé dur"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_11456>  rdfs:label  "Triticum turgidum"@la    .
+<http://aims.fao.org/aos/agrovoc/c_12332>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_12332>  rdfs:label  "maize"@en    .
+<http://aims.fao.org/aos/agrovoc/c_12332>  rdfs:label  "maïs"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_12332>  rdfs:label  "Zea mays"@la    .
+<http://aims.fao.org/aos/agrovoc/c_13199>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_13199>  rdfs:label  "Pearl millet"@en    .
+<http://aims.fao.org/aos/agrovoc/c_13199>  rdfs:label  "mil"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_13199>  rdfs:label  "Pennisetum glaucum"@la    .
+<http://aims.fao.org/aos/agrovoc/c_14386>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_14386>  rdfs:label  "bread wheat"@en    .
+<http://aims.fao.org/aos/agrovoc/c_14386>  rdfs:label  "blé tendre"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_14386>  rdfs:label  "Triticum aestivum"@la    .
+<http://aims.fao.org/aos/agrovoc/c_15476>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_15476>  rdfs:label  "teosintes"@en    .
+<http://aims.fao.org/aos/agrovoc/c_15476>  rdfs:label  "téosintes"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_15476>  rdfs:label  "Zea mexicana"@la    .
+<http://aims.fao.org/aos/agrovoc/c_29128>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_29128>  rdfs:label  "banana"@en    .
+<http://aims.fao.org/aos/agrovoc/c_29128>  rdfs:label  "banane"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_29128>  rdfs:label  "Musa"@la    .
+<http://aims.fao.org/aos/agrovoc/c_3339>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_3339>  rdfs:label  "upland cotton"@en    .
+<http://aims.fao.org/aos/agrovoc/c_3339>  rdfs:label  "coton mexicain"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_3339>  rdfs:label  "Gossypium hirsutum"@la    .
+<http://aims.fao.org/aos/agrovoc/c_3662>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_3662>  rdfs:label  "barley"@en    .
+<http://aims.fao.org/aos/agrovoc/c_3662>  rdfs:label  "orge"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_3662>  rdfs:label  "Hordeum vulgare"@la    .
+<http://aims.fao.org/aos/agrovoc/c_4555>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_4555>  rdfs:label  "apple tree"@en    .
+<http://aims.fao.org/aos/agrovoc/c_4555>  rdfs:label  "pommier"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_4555>  rdfs:label  "Malus × domestica Borkh."@la    .
+<http://aims.fao.org/aos/agrovoc/c_5438>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_5438>  rdfs:label  "rice"@en    .
+<http://aims.fao.org/aos/agrovoc/c_5438>  rdfs:label  "riz"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_5438>  rdfs:label  "Oriza sativa"@la    .
+<http://aims.fao.org/aos/agrovoc/c_6116>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_6116>  rdfs:label  "poplar"@en    .
+<http://aims.fao.org/aos/agrovoc/c_6116>  rdfs:label  "peuplier"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_6116>  rdfs:label  "Populus"@la    .
+<http://aims.fao.org/aos/agrovoc/c_7247>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_7247>  rdfs:label  "sorghum"@en    .
+<http://aims.fao.org/aos/agrovoc/c_7247>  rdfs:label  "sorgho"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_7247>  rdfs:label  "Sorghum bicolor"@la    .
+<http://aims.fao.org/aos/agrovoc/c_8283>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_8283>  rdfs:label  "grapevine"@en    .
+<http://aims.fao.org/aos/agrovoc/c_8283>  rdfs:label  "vigne"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_8283>  rdfs:label  "Vitis vinifera"@la .

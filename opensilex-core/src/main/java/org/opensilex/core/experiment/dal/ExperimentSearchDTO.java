@@ -24,5 +24,5 @@ public class ExperimentSearchDTO extends ExperimentGetDTO {
     public ExperimentSearchDTO setEnded(Boolean ended) {
         this.ended = ended;
         return this;
-    }
+    }   
 }

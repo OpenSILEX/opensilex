@@ -486,20 +486,21 @@ public class SPARQLService implements SPARQLConnection, Service {
     }
 
     public <T extends SPARQLResourceModel> void update(T instance) throws Exception {
-        delete(instance.getClass(), instance.getUri());
-        create(instance);
-//        @SuppressWarnings("unchecked")
-//        Class<T> objectClass = (Class<T>) instance.getClass();
-//        SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
+        @SuppressWarnings("unchecked")
+        Class<T> objectClass = (Class<T>) instance.getClass();
+        SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
 //
 //        UpdateBuilder update = new UpdateBuilder();
-//        T oldInstance = loadByURI(objectClass, sparqlObjectMapper.getURI(instance), null);
-//        if (oldInstance == null) {
-//            throw new SPARQLInvalidURIException(instance.getUri());
-//        }
+        T oldInstance = loadByURI(objectClass, sparqlObjectMapper.getURI(instance), null);
+        if (oldInstance == null) {
+            throw new SPARQLInvalidURIException(instance.getUri());
+        }
+        
+        delete(oldInstance.getClass(), oldInstance.getUri());
 //
 //        sparqlObjectMapper.addUpdateBuilder(oldInstance, instance, update);
 //        executeUpdateQuery(update);
+        create(instance);
     }
 
     public <T extends SPARQLResourceModel> void update(List<T> instances) throws Exception {

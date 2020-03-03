@@ -27,7 +27,6 @@ import org.opensilex.sparql.service.SPARQLStatement;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.exceptions.SPARQLTransactionException;
 
-
 /**
  *
  * @author vincent
@@ -71,7 +70,7 @@ public class RDF4JConnection implements SPARQLConnection {
     public List<SPARQLStatement> executeDescribeQuery(DescribeBuilder describe) throws SPARQLQueryException {
         GraphQuery describeQuery = rdf4JConnection.prepareGraphQuery(QueryLanguage.SPARQL, describe.buildString());
         GraphQueryResult results = describeQuery.evaluate();
-        
+
         return statementsToSPARQLResultList(results);
     }
 
@@ -105,17 +104,20 @@ public class RDF4JConnection implements SPARQLConnection {
 
     @Override
     public void startTransaction() throws SPARQLTransactionException {
-        rdf4JConnection.begin();
+        // TODO: uncomment to enable transactions
+//        rdf4JConnection.begin();
     }
 
     @Override
     public void commitTransaction() throws SPARQLTransactionException {
-        rdf4JConnection.commit();
+        // TODO: uncomment to enable transactions
+//        rdf4JConnection.commit();
     }
 
     @Override
     public void rollbackTransaction() throws SPARQLTransactionException {
-        rdf4JConnection.rollback();
+        // TODO: uncomment to enable transactions
+//        rdf4JConnection.rollback();
     }
 
     @Override
@@ -127,14 +129,13 @@ public class RDF4JConnection implements SPARQLConnection {
     public void renameGraph(URI oldGraphURI, URI newGraphURI) throws SPARQLException {
 
         try {
-            String moveQuery = "MOVE <" + oldGraphURI + "> TO <" + newGraphURI+ ">";
+            String moveQuery = "MOVE <" + oldGraphURI + "> TO <" + newGraphURI + ">";
             rdf4JConnection.prepareUpdate(QueryLanguage.SPARQL, moveQuery).execute();
 
         } catch (UpdateExecutionException | RepositoryException | MalformedQueryException e) {
             throw new SPARQLException(e);
         }
     }
-
 
     @Override
     public void clear() throws SPARQLQueryException {
@@ -165,5 +166,10 @@ public class RDF4JConnection implements SPARQLConnection {
         }
 
         return resultList;
+    }
+
+    @Deprecated
+    public RepositoryConnection getRepositoryConnectionImpl() {
+        return rdf4JConnection;
     }
 }

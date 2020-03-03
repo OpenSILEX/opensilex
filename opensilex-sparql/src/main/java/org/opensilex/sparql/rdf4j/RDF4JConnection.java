@@ -104,20 +104,17 @@ public class RDF4JConnection implements SPARQLConnection {
 
     @Override
     public void startTransaction() throws SPARQLTransactionException {
-        // TODO: uncomment to enable transactions
-//        rdf4JConnection.begin();
+        rdf4JConnection.begin();
     }
 
     @Override
     public void commitTransaction() throws SPARQLTransactionException {
-        // TODO: uncomment to enable transactions
-//        rdf4JConnection.commit();
+        rdf4JConnection.commit();
     }
 
     @Override
     public void rollbackTransaction() throws SPARQLTransactionException {
-        // TODO: uncomment to enable transactions
-//        rdf4JConnection.rollback();
+        rdf4JConnection.rollback();
     }
 
     @Override

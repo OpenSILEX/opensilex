@@ -46,8 +46,8 @@ import org.slf4j.LoggerFactory;
  * @update [Andréas Garcia] 15 Apr. 2019: handle DAO persistence exceptions thrown by property DAO functions.
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
-@Api("/infrastructures")
-@Path("/infrastructures")
+//@Api("/infrastructures")
+//@Path("/infrastructures")
 public class InfrastructureResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureResourceService.class);
     

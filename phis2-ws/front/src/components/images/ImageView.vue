@@ -181,8 +181,8 @@ export default class ImageView extends Vue {
   }
 
   imagesFilter(data: Array<FileDescriptionDTO>) {
-    // pour chaque concerneditem une nouvelle image ..
-    if (this.searchImagesFields.objectType !== null) {
+    // each images may have more than one concerned item .
+    if (this.searchImagesFields.objectType !== null) { //if an object type is selected , add only images with this type
       data.forEach(element => {
         element.concernedItems.forEach(concernedItem => {
           if (this.searchImagesFields.objectType === concernedItem.typeURI) {
@@ -203,7 +203,7 @@ export default class ImageView extends Vue {
       });
     } else {
       data.forEach(element => {
-        element.concernedItems.forEach(concernedItem => {
+        element.concernedItems.forEach(concernedItem => { //else add same image many times as far as they are concerned items
           const image: Image = {
             objectType: concernedItem.typeURI,
             uri:

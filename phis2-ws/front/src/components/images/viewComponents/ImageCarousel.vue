@@ -1,5 +1,5 @@
 <template>
-  <b-modal id="modal-center" v-model="show" hide-header hide-footer centered no-fade size="lg">
+  <b-modal id="modal-center" v-model="show" scrollable hide-header hide-footer centered no-fade size="lg">
     <b-carousel
       ref="myCarousel"
       id="carousel-1"
@@ -8,8 +8,6 @@
       controls
       indicators
       background="#ababab"
-      img-width="1024"
-      img-height="480"
       style="text-shadow: 1px 1px 2px #333;"
     >
       <!-- Slides with custom text -->
@@ -64,11 +62,32 @@ export default class ImageGrid extends Vue {
 }
 </script>
 
+<style scoped >
+div >>> .carousel-control-prev-icon, div >>> .carousel-control-next-icon {
+    width: 80px;
+    height: 80px;
+}
+
+@media (min-width: 576px){
+
+.modal-dialog-centered {
+    min-height: calc(100% - 3.5rem);
+}}
+@media (min-width: 576px){
+
+.modal-dialog {
+    max-width: 500px;
+    margin: 1.75rem auto;
+}}
+
+@media (min-width: 992px){
+  
+  div >>> .modal-lg {
+    max-width: 550px !important;
+}}
 
 
 
-
-<style scoped lang="scss">
 .carousel-item:after {
   content: "";
   position: absolute;

@@ -234,7 +234,7 @@ public class SPARQLService implements SPARQLConnection, Service {
         LOGGER.debug("SPARQL CLEAR GRAPH: " + graph);
         connection.clearGraph(graph);
     }
-
+    
     @Override
     public void renameGraph(URI oldGraphURI, URI newGraphURI) throws SPARQLException {
         LOGGER.debug("MOVE GRAPH " + oldGraphURI + " TO " + newGraphURI);

@@ -22,6 +22,8 @@ import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.dto.provenance.ContactDTO;
 import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDTO;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.rest.user.dal.UserDAO;
+import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -99,21 +101,34 @@ public class ProjectDetailDTO extends AbstractVerifiedClass {
             relatedProjects.add(new RdfResourceDTO(relatedProject.getUri().toString(), relatedProject.getName()));
         }
 
+        UserDAO userDao = new UserDAO(sparql);
         for (InternetAddress contact : project.getAdministrativeContacts()) {
+            UserModel user = userDao.getByEmail(contact);
             Contact c = new Contact();
             c.setEmail(contact.toString());
+            c.setFirstname(user.getFirstName());
+            c.setLastname(user.getLastName());
+            c.setUri(user.getUri().toString());
             administrativeContacts.add(new ContactDTO(c));
         }
 
         for (InternetAddress contact : project.getCoordinators()) {
+            UserModel user = userDao.getByEmail(contact);
             Contact c = new Contact();
             c.setEmail(contact.toString());
+            c.setFirstname(user.getFirstName());
+            c.setLastname(user.getLastName());
+            c.setUri(user.getUri().toString());
             coordinators.add(new ContactDTO(c));
         }
 
         for (InternetAddress contact : project.getScientificContacts()) {
+            UserModel user = userDao.getByEmail(contact);
             Contact c = new Contact();
             c.setEmail(contact.toString());
+            c.setFirstname(user.getFirstName());
+            c.setLastname(user.getLastName());
+            c.setUri(user.getUri().toString());
             scientificContacts.add(new ContactDTO(c));
         }
     }

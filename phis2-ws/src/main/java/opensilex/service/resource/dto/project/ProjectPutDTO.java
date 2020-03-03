@@ -24,6 +24,8 @@ import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.rest.user.dal.UserDAO;
+import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -271,21 +273,25 @@ public class ProjectPutDTO extends AbstractVerifiedClass {
             project.setHomePage(new URI(this.getHomePage()));
         }
 
+        UserDAO userDAO = new UserDAO(sparql);
         List<InternetAddress> addresses = new ArrayList<>();
-        for (String contact : this.getAdministrativeContacts()) {
-            addresses.add(new InternetAddress(contact));
+        for (String contactURI : this.getAdministrativeContacts()) {
+            UserModel user = userDAO.get(new URI(contactURI));
+            addresses.add(user.getEmail());
         }
         project.setAdministrativeContacts(addresses);
 
         addresses = new ArrayList<>();
-        for (String contact : this.getCoordinators()) {
-            addresses.add(new InternetAddress(contact));
+        for (String contactURI : this.getCoordinators()) {
+            UserModel user = userDAO.get(new URI(contactURI));
+            addresses.add(user.getEmail());
         }
         project.setCoordinators(addresses);
 
         addresses = new ArrayList<>();
-        for (String contact : this.getScientificContacts()) {
-            addresses.add(new InternetAddress(contact));
+        for (String contactURI : this.getScientificContacts()) {
+            UserModel user = userDAO.get(new URI(contactURI));
+            addresses.add(user.getEmail());
         }
         project.setScientificContacts(addresses);
 

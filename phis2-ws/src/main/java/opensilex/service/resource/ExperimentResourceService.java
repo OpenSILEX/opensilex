@@ -8,17 +8,18 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.*;
-import java.net.URI;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DateFormats;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.configuration.GlobalWebserviceValues;
+import opensilex.service.dao.SpeciesDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.Experiment;
 import opensilex.service.resource.dto.experiment.*;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.URL;
+import opensilex.service.result.ResultForm;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
@@ -26,6 +27,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
+import org.opensilex.core.project.dal.ProjectDAO;
+import org.opensilex.rest.group.dal.GroupDAO;
+import org.opensilex.rest.user.dal.UserDAO;
+import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
@@ -40,16 +45,12 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.ws.rs.core.SecurityContext;
-import opensilex.service.dao.SpeciesDAO;
-import opensilex.service.result.ResultForm;
-import org.opensilex.core.project.dal.ProjectDAO;
-import org.opensilex.rest.user.dal.UserDAO;
-import org.opensilex.rest.user.dal.UserModel;
 
 /**
  * Experiment resource service.
@@ -243,9 +244,7 @@ public class ExperimentResourceService extends ResourceService {
     public Response postExperiment(
             @ApiParam(value = DocumentationAnnotation.EXPERIMENT_POST_DATA_DEFINITION) @Valid ArrayList<ExperimentPostDTO> experiments,
             @Context HttpServletRequest context,
-            @Context SecurityContext securityContext) throws Exception  {
-
-        UserModel user = (UserModel) securityContext.getUserPrincipal();
+            @Context SecurityContext securityContext) throws Exception {
         
         if (experiments == null || experiments.isEmpty()) {
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "No experiments provided"));
@@ -255,23 +254,27 @@ public class ExperimentResourceService extends ResourceService {
         try {
             // use DAO(s) in order to validate URI(s) from ExperimentPostDTO
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
-            PostDtoToExperimentModel postDtoToNewModel = new PostDtoToExperimentModel(sparql, user.getLang());
+            SpeciesDAO speciesDAO = new SpeciesDAO();
+            ProjectDAO projectDAO = new ProjectDAO(sparql, null);
+            UserDAO userDAO = new UserDAO(sparql);
+            GroupDAO groupDAO = new GroupDAO(sparql);
 
             List<String> createdURIs = new ArrayList<>();
             ArrayList<URI> createdXpUris = new ArrayList<>(experiments.size());
-            
+
             for (ExperimentPostDTO xpDto : experiments) {
-                ExperimentModel model = postDtoToNewModel.convert(xpDto);
+                Experiment xp = xpDto.createObjectFromDTO();
+                ExperimentModel model = Experiment.toExperimentModel(xp,speciesDAO,projectDAO,userDAO,groupDAO);
                 xpDao.create(model);
                 createdXpUris.add(model.getUri());
                 createdURIs.add(model.getUri().toString());
             }
 
             ArrayList<Status> statusList = new ArrayList<>();
-            
+
             ResultForm<URI> getResponse;
-            
-            statusList.add(new Status(createdXpUris.size()+" experiments created"));
+
+            statusList.add(new Status(createdXpUris.size() + " experiments created"));
 
             if (createdXpUris.isEmpty()) { //Request failure || No result found
                 getResponse = new ResultForm<URI>(0, 0, new ArrayList<>(createdXpUris), true);
@@ -318,9 +321,7 @@ public class ExperimentResourceService extends ResourceService {
     public Response putExperiment(
             @ApiParam(value = DocumentationAnnotation.EXPERIMENT_POST_DATA_DEFINITION) @Valid ArrayList<ExperimentDTO> experiments,
             @Context HttpServletRequest context,
-            @Context SecurityContext securityContext) throws Exception  {
-
-        UserModel user = (UserModel) securityContext.getUserPrincipal();
+            @Context SecurityContext securityContext) throws Exception {
 
         if (experiments == null || experiments.isEmpty()) {
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "No experiments provided"));
@@ -329,18 +330,23 @@ public class ExperimentResourceService extends ResourceService {
 
         try {
             // use DAO(s) in order to validate URI(s) from ExperimentPostDTO
-            ExperimentDtoToExperimentModel postDtoToNewModel = new ExperimentDtoToExperimentModel(sparql, user.getLang());
+            SpeciesDAO speciesDAO = new SpeciesDAO();
+            ProjectDAO projectDAO = new ProjectDAO(sparql, null);
+            UserDAO userDAO = new UserDAO(sparql);
+            GroupDAO groupDAO = new GroupDAO(sparql);
+
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
             ArrayList<URI> updatedXpUris = new ArrayList<>(experiments.size());
 
             for (ExperimentDTO xpDto : experiments) {
-                ExperimentModel xpModel = postDtoToNewModel.convert(xpDto);
+                Experiment xp = xpDto.createObjectFromDTO();
+                ExperimentModel xpModel = Experiment.toExperimentModel(xp, speciesDAO,projectDAO,userDAO,groupDAO);
                 xpDao.update(xpModel);
                 updatedXpUris.add(xpModel.getUri());
             }
 
             ArrayList<Status> statusList = new ArrayList<>();
-            statusList.add(new Status(updatedXpUris+" Experiments updated"));
+            statusList.add(new Status(updatedXpUris + " Experiments updated"));
             ResultForm<URI> getResponse = new ResultForm<>(0, 0, updatedXpUris, true, 0);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();

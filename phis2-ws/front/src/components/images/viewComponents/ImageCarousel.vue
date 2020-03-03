@@ -1,5 +1,5 @@
 <template>
-  <b-modal id="modal-center" v-model="show" hide-header hide-footer centered no-fade size="lg">
+  <b-modal id="modal-center" v-model="show" scrollable hide-header hide-footer centered no-fade size="lg">
     <b-carousel
       ref="myCarousel"
       id="carousel-1"
@@ -8,8 +8,6 @@
       controls
       indicators
       background="#ababab"
-      img-width="1024"
-      img-height="480"
       style="text-shadow: 1px 1px 2px #333;"
     >
       <!-- Slides with custom text -->

@@ -281,7 +281,6 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
                 /*//SILEX:todo
                 Connection te review. Dirty hot fix.
                 */
-                this.getConnection().begin();
                 Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
                 LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                 prepareUpdate.execute();
@@ -291,9 +290,6 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
 
                 if (annotationInsert) {
                     resultState = true;
-                    getConnection().commit();
-                } else {
-                    getConnection().rollback();
                 }
             } catch (RepositoryException ex) {
                     LOGGER.error("Error during commit or rolleback Triplestore statements: ", ex);
@@ -449,7 +445,6 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
                 UpdateRequest queryInsert = prepareInsertQuery(traitDTO);
                  try {
                         // Transaction start: check request
-                        this.getConnection().begin();
                         Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
                         prepareDelete.execute();
@@ -471,18 +466,6 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
         
         if (annotationUpdate) {
             resultState = true;
-            try {
-                this.getConnection().commit();
-            } catch (RepositoryException ex) {
-                LOGGER.error("Error during commit Triplestore statements: ", ex);
-            }
-        } else {
-            // Rollback
-            try {
-                this.getConnection().rollback();
-            } catch (RepositoryException ex) {
-                LOGGER.error("Error during rollback Triplestore statements : ", ex);
-            }
         }
         
         results = new POSTResultsReturn(resultState, annotationUpdate, true);

@@ -297,11 +297,6 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         boolean resultState = false;
         boolean annotationInsert = true;
 
-        //SILEX:test
-        //Triplestore connection has to be checked (this is kind of an hot fix)
-        this.getConnection().begin();
-        //\SILEX:test
-        
         for (Germplasm germplasm : germplasms) {    
             if (germplasm.getUri() == null) {
                 germplasm.setUri(UriGenerator.generateNewInstanceUri(germplasm.getRdfType(),null, germplasm.getLabel()));
@@ -316,9 +311,6 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         
         if (annotationInsert) {
             resultState = true;
-            getConnection().commit();
-        } else {
-            getConnection().rollback();
         }
         
         results = new POSTResultsReturn(resultState, annotationInsert, true);

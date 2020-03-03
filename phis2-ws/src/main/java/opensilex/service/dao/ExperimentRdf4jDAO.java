@@ -358,7 +358,6 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
         boolean resultState = false;
         boolean insert = true;
         
-        getConnection().begin();
         for (Experiment experiment : newExperiments) {
             //Insert experiment
             UpdateRequest query = prepareInsertQuery(experiment);
@@ -379,9 +378,6 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
         
         if (insert) {
             resultState = true;
-            getConnection().commit();
-        } else {
-            getConnection().rollback();
         }
         
         

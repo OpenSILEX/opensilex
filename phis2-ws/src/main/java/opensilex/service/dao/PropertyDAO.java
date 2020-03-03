@@ -1004,8 +1004,6 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         boolean resultState = false;
         boolean linksInserted = true;
         
-        getConnection().begin();        
-        
         UpdateBuilder updateBuilder = new UpdateBuilder();
         addInsertLinksToUpdateBuilder(
                 updateBuilder,
@@ -1035,9 +1033,6 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         
         if (linksInserted) {
             resultState = true;
-            getConnection().commit();
-        } else {
-            getConnection().rollback();
         }
         
         results = new POSTResultsReturn(resultState, linksInserted, true);

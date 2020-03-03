@@ -421,7 +421,6 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
             try {
                 //SILEX:todo
                 // storage connection to review: dirty hotfix
-                this.getConnection().begin();
                 Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
                 LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                 prepareUpdate.execute();
@@ -431,9 +430,6 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
 
                 if (annotationInsert) {
                     resultState = true;
-                    getConnection().commit();
-                } else {
-                    getConnection().rollback();
                 }
             } catch (RepositoryException ex) {
                     LOGGER.error("Error during commit or rolleback Triplestore statements: ", ex);
@@ -652,7 +648,6 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
                 UpdateRequest queryInsert = prepareInsertQuery(variableDTO);
                  try {
                         // transaction start: check request
-                        this.getConnection().begin();
                         Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
                         prepareDelete.execute();
@@ -674,18 +669,6 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
         
         if (annotationUpdate) {
             resultState = true;
-            try {
-                this.getConnection().commit();
-            } catch (RepositoryException ex) {
-                LOGGER.error("Error during commit Triplestore statements: ", ex);
-            }
-        } else {
-            // Rollback
-            try {
-                this.getConnection().rollback();
-            } catch (RepositoryException ex) {
-                LOGGER.error("Error during rollback Triplestore statements : ", ex);
-            }
         }
         
         results = new POSTResultsReturn(resultState, annotationUpdate, true);

@@ -293,7 +293,6 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
         boolean resultState = false;
         boolean insert = true;
         
-        getConnection().begin();
         for (RadiometricTarget radiometricTarget : radiometricTargets) {
             try {
                 //Generate uri
@@ -320,9 +319,6 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
         
         if (insert) {
             resultState = true;
-            getConnection().commit();
-        } else {
-            getConnection().rollback();
         }
         
         results = new POSTResultsReturn(resultState, insert, true);
@@ -488,7 +484,6 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
         boolean annotationUpdate = true;
         boolean resultState = false;
         
-        getConnection().begin();
         for (RadiometricTarget radiometricTarget : radiometricTargets) {
             //1. get the old radiometric target data
             RadiometricTarget oldRadiometricTarget = getRadiometricTarget(radiometricTarget.getUri());
@@ -532,17 +527,6 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
         
         if (annotationUpdate) {
             resultState = true;
-            try {
-                this.getConnection().commit();
-            } catch (RepositoryException ex) {
-                LOGGER.error("Error during commit Triplestore statements: ", ex);
-            }
-        } else {
-            try {
-                this.getConnection().rollback();
-            } catch (RepositoryException ex) {
-                LOGGER.error("Error during rollback Triplestore statements : ", ex);
-            }
         }
         
         results = new POSTResultsReturn(resultState, annotationUpdate, true);

@@ -202,7 +202,6 @@ public class SensorProfileDAO extends Rdf4jDAO<SensorProfile> {
         boolean resultState = false; 
         boolean annotationInsert = true;
         
-        this.getConnection().begin();
         sensorsProfiles.forEach((sensorProfileDTO) -> {
             UpdateRequest query = prepareInsertQuery(sensorProfileDTO.createObjectFromDTO());
             Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
@@ -213,9 +212,6 @@ public class SensorProfileDAO extends Rdf4jDAO<SensorProfile> {
         
         if (annotationInsert) {
             resultState = true;
-            getConnection().commit();
-        } else {
-            getConnection().rollback();
         }
         
         results = new POSTResultsReturn(resultState, annotationInsert, true);

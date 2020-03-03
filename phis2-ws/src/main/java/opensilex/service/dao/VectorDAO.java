@@ -594,7 +594,6 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
         
         //SILEX:test
         //Triplestore connection has to be checked (this is kind of an hot fix)
-        this.getConnection().begin();
         //\SILEX:test
         vectors.stream().map((vectorDTO) -> vectorDTO.createObjectFromDTO()).map((vector) -> {
             try {
@@ -613,9 +612,6 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
         
         if (annotationInsert) {
             resultState = true;
-            getConnection().commit();
-        } else {
-            getConnection().rollback();
         }
         
         results = new POSTResultsReturn(resultState, annotationInsert, true);
@@ -705,7 +701,6 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
                 UpdateRequest insertQuery = prepareInsertQuery(vectorDTO.createObjectFromDTO());
                 
                 try {
-                    this.getConnection().begin();
                     Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
                     LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
                     prepareDelete.execute();
@@ -729,17 +724,6 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
         
         if (annotationUpdate) {
             resultState = true;
-            try {
-                this.getConnection().commit();
-            } catch (RepositoryException ex) {
-                LOGGER.error("Error during commit Triplestore statements: ", ex);
-            }
-        } else {
-            try {
-                this.getConnection().rollback();
-            } catch (RepositoryException ex) {
-                LOGGER.error("Error during rollback Triplestore statements : ", ex);
-            }
         }
         
         results = new POSTResultsReturn(resultState, annotationUpdate, true);

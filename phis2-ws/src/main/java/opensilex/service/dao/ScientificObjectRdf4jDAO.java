@@ -164,13 +164,9 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     public int getLastScientificObjectIdFromYear(String year) {
         Query lastScientificObjectUriFromYearQuery = prepareGetLastScientificObjectUriFromYear(year);
 
-        this.getConnection().begin();
-
         //Get the URI of the last scientific object inserted during the given year.
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, lastScientificObjectUriFromYearQuery.toString());
         TupleQueryResult result = tupleQuery.evaluate();
-
-        getConnection().commit();
 
         if (result.hasNext()) {
             BindingSet bindingSet = result.next();
@@ -885,21 +881,16 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             }
         }
 
-        this.getConnection().begin();
         Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
         LOGGER.debug(getTraceabilityLogs() + SPARQL_QUERY + prepareUpdate.toString());
         prepareUpdate.execute();
 
         if (annotationInsert) {
             resultState = true;
-            this.getConnection().commit();
 
             //3. insert in postgresql
             ScientificObjectMongoDAO scientificObjectDAO = new ScientificObjectMongoDAO();
             scientificObjectDAO.checkAndInsertListAO(scientificObjectsReadyToInsert);
-        } else {
-            // Rollback on the transaction.
-            this.getConnection().rollback();
         }
 
         if (resultState) {
@@ -1130,7 +1121,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         }
         //2.1.2b Insert data
         UpdateRequest insertQuery = prepareInsertOneInContextQuery(scientificObject, context);
-        getConnection().begin();
         try {
             if (deleteQuery != null) {
                 Update prepareDelete = getConnection().prepareUpdate(deleteQuery.toString());
@@ -1156,9 +1146,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                 scientificObjectDAO.checkAndInsertListAO(scientificObjects);
             }
 
-            this.getConnection().commit();
         } catch (MalformedQueryException e) { //an error occurred, rollback
-            this.getConnection().rollback();
             throw new MalformedQueryException(e.getMessage());
         }
 

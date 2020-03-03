@@ -154,7 +154,6 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      */
     @Override
     public List<Actuator> create(List<Actuator> actuators) throws Exception {
-        getConnection().begin();
         try {
             for (Actuator actuator : actuators) {
                 //1. Generate the URI of the actuator
@@ -166,11 +165,8 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
                 prepareUpdate.execute();
             }
             
-            getConnection().commit();
-            
             return actuators;
         } catch (Exception ex) { //An error occurred, rollback
-            getConnection().rollback();
             LOGGER.error("Error creation actuators", ex);
             throw new Exception(ex); //Throw the exception to return the error.
         }
@@ -334,7 +330,6 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      */
     @Override
     public List<Actuator> update(List<Actuator> actuators) throws Exception {
-        getConnection().begin();
         try {
             for (Actuator actuator : actuators) {
                 //1. Get old actuator data
@@ -351,15 +346,11 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
                 prepareUpdate.execute();
             }
             
-            getConnection().commit();
-            
             return actuators;
         } catch (RepositoryException ex) { //An error occurred, rollback
-            getConnection().rollback();
             LOGGER.error("Error update actuators", ex);
             throw new RepositoryException(ex); //Throw the exception to return the error.
         } catch (NotFoundException ex) { //An actuator was not found.
-            getConnection().rollback();
             LOGGER.error("Error update actuators", ex);
             throw new NotFoundException(ex); //Throw the exception to return the error.
         }

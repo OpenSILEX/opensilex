@@ -321,7 +321,6 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
 
                 try {
                     // transaction begining
-                    this.getConnection().begin();
                     Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
                     LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                     prepareUpdate.execute();
@@ -336,18 +335,7 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
                  // JSON bien formé et pas de problème avant l'insertion
                 if (AnnotationInsert && documentsMetadataState) {
                     resultState = true;
-                    try {
-                        this.getConnection().commit();
-                    } catch (RepositoryException ex) {
-                        LOGGER.error("Error during commit Triplestore statements: ", ex);
-                    }
                 } else {
-                    // retour en arrière sur la transaction
-                    try {
-                        this.getConnection().rollback();
-                    } catch (RepositoryException ex) {
-                        LOGGER.error("Error during rollback Triplestore statements : ", ex);
-                    }
                 }
             }
         }
@@ -739,7 +727,6 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
             
             try {
                 // début de la transaction : vérification de la requête
-                this.getConnection().begin();
                 if (deleteQuery != null) {
                     Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
                     LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
@@ -758,19 +745,7 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
             // Data ok, update
             if (annotationUpdate && docsMetadataState) {
                 resultState = true;
-                try {
-                    this.getConnection().commit();
-                } catch (RepositoryException ex) {
-                    LOGGER.error("Error during commit Triplestore statements: ", ex);
-                }
-            } else {
-                // retour en arrière sur la transaction
-                try {
-                    this.getConnection().rollback();
-                } catch (RepositoryException ex) {
-                    LOGGER.error("Error during rollback Triplestore statements : ", ex);
-                }
-            }    
+            } 
         }
         results = new POSTResultsReturn(resultState, annotationUpdate, docsMetadataState);
         results.statusList = updateStatusList;

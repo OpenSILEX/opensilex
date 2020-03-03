@@ -274,8 +274,6 @@ public class TripletDAO extends Rdf4jDAO<Triplet> {
             }
         }
         try {
-            this.getConnection().begin();
-
             //Register triplet in the triplestore, in the graph created at the request reception
             UpdateRequest insertQuery = prepareInsertQuery(tripletsGroup, graphUri);
             LOGGER.debug(SPARQL_QUERY + insertQuery.toString());
@@ -287,9 +285,6 @@ public class TripletDAO extends Rdf4jDAO<Triplet> {
 
             if (tripletInserted) {
                 resultState = true;
-                getConnection().commit();
-            } else {
-                getConnection().rollback();
             }
 
         } catch (RepositoryException ex) {

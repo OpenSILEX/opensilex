@@ -389,7 +389,6 @@ public class FactorDAO extends Rdf4jDAO<Factor> {
             try {
                 //SILEX:todo
                 // Connection to review. Dirty hotfix.
-                this.getConnection().begin();
                 Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
                 LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                 prepareUpdate.execute();
@@ -399,9 +398,6 @@ public class FactorDAO extends Rdf4jDAO<Factor> {
 
                 if (annotationInsert) {
                     resultState = true;
-                    getConnection().commit();
-                } else {
-                    getConnection().rollback();
                 }
             } catch (RepositoryException ex) {
                 LOGGER.error("Error during commit or rolleback Triplestore statements: ", ex);

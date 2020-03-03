@@ -660,11 +660,6 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         boolean resultState = false;
         boolean annotationInsert = true;
         
-        //SILEX:test
-        //Triplestore connection has to be checked (this is kind of an hot fix)
-        this.getConnection().begin();
-        //\SILEX:test
-        
         for (Sensor sensor : sensors) {
             try {
                 sensor.setUri(UriGenerator.generateNewInstanceUri(sensor.getRdfType(), null, null));
@@ -681,9 +676,6 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         
         if (annotationInsert) {
             resultState = true;
-            getConnection().commit();
-        } else {
-            getConnection().rollback();
         }
         
         results = new POSTResultsReturn(resultState, annotationInsert, true);
@@ -801,7 +793,6 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
                 //2. insert new data
                 UpdateRequest insertQuery = prepareInsertQuery(sensor);
                 try {
-                    this.getConnection().begin();
                     Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
                     LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
                     prepareDelete.execute();
@@ -822,17 +813,6 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         
         if (annotationUpdate) {
             resultState = true;
-            try {
-                this.getConnection().commit();
-            } catch (RepositoryException ex) {
-                LOGGER.error("Error during commit Triplestore statements: ", ex);
-            }
-        } else {
-            try {
-                this.getConnection().rollback();
-            } catch (RepositoryException ex) {
-                LOGGER.error("Error during rollback Triplestore statements : ", ex);
-            }
         }
         
         results = new POSTResultsReturn(resultState, annotationUpdate, true);

@@ -275,7 +275,6 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
             try {
                 //SILEX:todo
                 // Connection to review. Dirty hotfix.
-                this.getConnection().begin();
                 Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
                 LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                 prepareUpdate.execute();
@@ -285,9 +284,6 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
 
                 if (annotationInsert) {
                     resultState = true;
-                    getConnection().commit();
-                } else {
-                    getConnection().rollback();
                 }
             } catch (RepositoryException ex) {
                     LOGGER.error("Error during commit or rolleback Triplestore statements: ", ex);
@@ -467,7 +463,6 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
                 UpdateRequest queryInsert = prepareInsertQuery(unitDTO);
                  try {
                         // transaction start: check connection
-                        this.getConnection().begin();
                         Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
                         prepareDelete.execute();
@@ -494,18 +489,6 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
         
         if (annotationUpdate) {
             resultState = true;
-            try {
-                this.getConnection().commit();
-            } catch (RepositoryException ex) {
-                LOGGER.error("Error during commit Triplestore statements: ", ex);
-            }
-        } else {
-            // Rollback
-            try {
-                this.getConnection().rollback();
-            } catch (RepositoryException ex) {
-                LOGGER.error("Error during rollback Triplestore statements : ", ex);
-            }
         }
         
         results = new POSTResultsReturn(resultState, annotationUpdate, true);

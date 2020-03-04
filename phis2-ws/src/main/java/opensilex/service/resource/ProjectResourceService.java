@@ -188,7 +188,7 @@ public class ProjectResourceService extends ResourceService {
                         projectMapper.getDefaultGraph(),
                         projectModel.getUri(),
                         hasFinancialReference,
-                        new URI(project.getFinancialReference())
+                        project.getFinancialReference()
                 );
             }
 

@@ -196,7 +196,8 @@ public class ExperimentDTO extends AbstractVerifiedClass {
         this.groupsUris = groupsUris;
     }
 
-    @ApiModelProperty(example = "maize")
+    @ApiModelProperty(example = "http://www.phenome-fppn.fr/id/species/zeamays")
+    @URL
     public String getCropSpecies() {
         return cropSpecies;
     }

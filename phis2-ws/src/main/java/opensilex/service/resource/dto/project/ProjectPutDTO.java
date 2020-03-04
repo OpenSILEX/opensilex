@@ -306,6 +306,7 @@ public class ProjectPutDTO extends AbstractVerifiedClass {
             SPARQLModelRelation financialRefRelation = new SPARQLModelRelation();
             financialRefRelation.setProperty(ProjectResourceService.hasFinancialReference);
             financialRefRelation.setValue(this.getFinancialReference());
+            financialRefRelation.setType(String.class);
             sparqlRelations.add(financialRefRelation);
         }
 

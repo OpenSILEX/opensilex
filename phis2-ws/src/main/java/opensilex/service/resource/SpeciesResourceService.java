@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -32,6 +33,7 @@ import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Species;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Species resource service.
@@ -40,6 +42,9 @@ import opensilex.service.model.Species;
 @Api("/species")
 @Path("/species")
 public class SpeciesResourceService extends ResourceService {
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Generates a speciesDTO list from a given list of species.
@@ -121,7 +126,7 @@ public class SpeciesResourceService extends ResourceService {
             language = DEFAULT_LANGUAGE;
         }
         
-        SpeciesDAO speciesDAO = new SpeciesDAO();
+        SpeciesDAO speciesDAO = new SpeciesDAO(sparql);
         speciesDAO.setPage(page);
         speciesDAO.setPageSize(pageSize);
         

@@ -18,6 +18,7 @@ import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -63,6 +64,7 @@ import opensilex.service.resource.dto.sensor.SensorDetailDTO;
 import opensilex.service.resource.dto.sensor.SensorPostDTO;
 import opensilex.service.resource.dto.sensor.SensorProfileDTO;
 import opensilex.service.view.model.provenance.Provenance;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Sensor resource service.
@@ -73,6 +75,9 @@ import opensilex.service.view.model.provenance.Provenance;
 @Path("/sensors")
 public class SensorResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(SensorResourceService.class);
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Searches sensors profile corresponding to the given sensor URI.
@@ -178,7 +183,7 @@ public class SensorResourceService extends ResourceService {
             @ApiParam(value = "Search by date of last calibration", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION) @QueryParam("dateOfLastCalibration") @Date(DateFormat.YMD) String dateOfLastCalibration,
             @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @QueryParam("personInCharge") String personInCharge) {
         
-        SensorDAO sensorDAO = new SensorDAO();
+        SensorDAO sensorDAO = new SensorDAO(sparql);
         //1. Get count
         Integer totalCount = sensorDAO.count(uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
         ArrayList<Sensor> sensorsFounded = new ArrayList<>();
@@ -265,7 +270,7 @@ public class SensorResourceService extends ResourceService {
         ResultForm<SensorDetailDTO> getResponse;
         
         try {
-            SensorDAO sensorDAO = new SensorDAO();
+            SensorDAO sensorDAO = new SensorDAO(sparql);
             
             SensorDetailDTO sensor = new SensorDetailDTO(sensorDAO.findById(uri));
             
@@ -350,7 +355,7 @@ public class SensorResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        SensorProfileDAO sensorDAO = new SensorProfileDAO();
+        SensorProfileDAO sensorDAO = new SensorProfileDAO(sparql);
         sensorDAO.uri = uri;
         sensorDAO.setPage(page);
         sensorDAO.setPageSize(pageSize);
@@ -414,7 +419,7 @@ public class SensorResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (sensors != null && !sensors.isEmpty()) {
-            SensorDAO sensorDAO = new SensorDAO();
+            SensorDAO sensorDAO = new SensorDAO(sparql);
             
             if (context.getRemoteAddr() != null) {
                 sensorDAO.remoteUserAdress = context.getRemoteAddr();
@@ -495,7 +500,7 @@ public class SensorResourceService extends ResourceService {
         
         if (sensors != null && !sensors.isEmpty()) {
             try {
-                SensorDAO sensorDAO = new SensorDAO();
+                SensorDAO sensorDAO = new SensorDAO(sparql);
                 if (context.getRemoteAddr() != null) {
                     sensorDAO.remoteUserAdress = context.getRemoteAddr();
                 }
@@ -556,7 +561,7 @@ public class SensorResourceService extends ResourceService {
         
         if (profiles != null && !profiles.isEmpty()) {
             try {
-                SensorProfileDAO sensorProfileDAO = new SensorProfileDAO();
+                SensorProfileDAO sensorProfileDAO = new SensorProfileDAO(sparql);
                 
                 if (context.getRemoteAddr() != null) {
                     sensorProfileDAO.remoteUserAdress = context.getRemoteAddr();
@@ -637,7 +642,7 @@ public class SensorResourceService extends ResourceService {
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
-        SensorDAO sensorDAO = new SensorDAO();
+        SensorDAO sensorDAO = new SensorDAO(sparql);
         if (context.getRemoteAddr() != null) {
             sensorDAO.remoteUserAdress = context.getRemoteAddr();
         }
@@ -734,7 +739,7 @@ public class SensorResourceService extends ResourceService {
         dataDAO.setPage(page);
         dataDAO.setPageSize(pageSize);
 
-        ProvenanceDAO provenanceDAO  = new ProvenanceDAO();
+        ProvenanceDAO provenanceDAO  = new ProvenanceDAO(sparql);
         provenanceDAO.setPage(1);
         provenanceDAO.setPageSize(500);
         

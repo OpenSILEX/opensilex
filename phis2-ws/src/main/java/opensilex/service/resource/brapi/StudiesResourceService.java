@@ -528,7 +528,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         for (BrapiObservationDTO obs:observationsList) {  
             if (!variableURIs.contains(obs.getObservationVariableDbId())){
                 variableURIs.add(obs.getObservationVariableDbId());
-                VariableDAO varDAO = new VariableDAO();
+                VariableDAO varDAO = new VariableDAO(sparql);
                 try {
                     BrapiVariable obsVariable = varDAO.findBrapiVariableById(obs.getObservationVariableDbId());
                     obsVariablesList.add(obsVariable);  
@@ -682,7 +682,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             rdfType =  Oeso.NAMESPACE + observationLevel;
         }
         
-        ScientificObjectRdf4jDAO scientificObjectsDAO = new ScientificObjectRdf4jDAO();
+        ScientificObjectRdf4jDAO scientificObjectsDAO = new ScientificObjectRdf4jDAO(sparql);
         ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, rdfType, studyDbId, null, false);
 
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql);
@@ -749,14 +749,14 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
     private ArrayList<BrapiObservationDTO> getObservationsList(String studyDbId, List<String> variableURIs) {
 
         ArrayList<BrapiObservationDTO> observations = new ArrayList();  
-        ScientificObjectRdf4jDAO objectDAO = new ScientificObjectRdf4jDAO();
+        ScientificObjectRdf4jDAO objectDAO = new ScientificObjectRdf4jDAO(sparql);
 
         ArrayList<ScientificObject> objectsList = objectDAO.find(null, null, null, null, studyDbId, null, false);
 
         ArrayList<Variable> variablesList = new ArrayList();
 
         if (variableURIs.isEmpty()) {  
-            VariableDAO variableDaoSesame = new VariableDAO();
+            VariableDAO variableDaoSesame = new VariableDAO(sparql);
             //if variableURIs is empty, we look for all variables observations
             variablesList = variableDaoSesame.getAll(false, false); 
 
@@ -764,7 +764,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             //in case a variable uri is duplicated, we keep distinct uris
             List<String> uniqueVariableURIs= variableURIs.stream().distinct().collect(Collectors.toList());
             for (String variableURI:uniqueVariableURIs) {
-                VariableDAO variableDAO = new VariableDAO();
+                VariableDAO variableDAO = new VariableDAO(sparql);
                 try {
                     Variable variable = variableDAO.findById(variableURI);
                     variablesList.add(variable);
@@ -827,7 +827,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
      */
     private ArrayList<BrapiObservationUnitDTO> getObservationUnitsResult(ArrayList<ScientificObject> scientificObjects, ExperimentModel experiment) {
         SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
-        VariableDAO variableDaoSesame = new VariableDAO();
+        VariableDAO variableDaoSesame = new VariableDAO(sparql);
         ArrayList<Variable> variablesList = variableDaoSesame.allPaginate(); 
         ArrayList<BrapiObservationUnitDTO> observationUnitsList = new ArrayList();
 

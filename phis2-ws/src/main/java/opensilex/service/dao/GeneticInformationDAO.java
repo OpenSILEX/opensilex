@@ -22,6 +22,7 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +46,8 @@ public class GeneticInformationDAO extends Rdf4jDAO<GeneticInformation> {
     
     public String uri;
     
-    public GeneticInformationDAO(String uri) {
+    public GeneticInformationDAO(SPARQLService sparql, String uri) {
+        super(sparql);
         this.uri = uri;
     }
 

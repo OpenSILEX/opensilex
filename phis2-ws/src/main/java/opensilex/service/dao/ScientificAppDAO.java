@@ -21,6 +21,7 @@ import opensilex.service.model.ScientificAppDescription;
 import opensilex.service.model.User;
 import opensilex.service.shinyProxy.ShinyProxyService;
 import static opensilex.service.shinyProxy.ShinyProxyService.SHINYPROXY_APP_DOCTYPE;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * ScientificAppDAO
@@ -67,8 +68,8 @@ public class ScientificAppDAO extends DAO<ScientificAppDescription> {
      * @param label application label (not used for now)
      * @return
      */
-    public ArrayList<ScientificAppDescription> find(String id, String label) {
-        ArrayList<Document> documentsMetadata = listScientificAppMetadataFromTripleStore(id);
+    public ArrayList<ScientificAppDescription> find(SPARQLService sparql, String id, String label) {
+        ArrayList<Document> documentsMetadata = listScientificAppMetadataFromTripleStore(sparql, id);
         return getShinyProxyAppListFromDocumentMetadata(documentsMetadata);
     }
     
@@ -101,9 +102,9 @@ public class ScientificAppDAO extends DAO<ScientificAppDescription> {
      * @param uri id of the application
      * @return list of document metadata
      */
-    private ArrayList<Document> listScientificAppMetadataFromTripleStore(String uri) {
+    private ArrayList<Document> listScientificAppMetadataFromTripleStore(SPARQLService sparql, String uri) {
         ArrayList<Document> documentsMetadata = new ArrayList<>();
-        DocumentRdf4jDAO documentRdf4jDao = new DocumentRdf4jDAO();
+        DocumentRdf4jDAO documentRdf4jDao = new DocumentRdf4jDAO(sparql);
         User userAdmin = new User(DocumentationAnnotation.EXAMPLE_USER_EMAIL);
         documentRdf4jDao.user = userAdmin;
         documentRdf4jDao.documentType = SHINYPROXY_APP_DOCTYPE;

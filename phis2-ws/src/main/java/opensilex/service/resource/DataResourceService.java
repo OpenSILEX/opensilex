@@ -72,6 +72,7 @@ import opensilex.service.ontology.Oeso;
 import opensilex.service.resource.dto.data.DataSearchDTO;
 import opensilex.service.resource.dto.data.FileDescriptionWebPathPostDTO;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Data resource service.
@@ -83,6 +84,10 @@ public class DataResourceService extends ResourceService {
     
     @Inject
     private FileStorageService fs;
+    
+    @Inject
+    SPARQLService sparql;
+    
     
     /**
      * Service to insert data. 
@@ -316,7 +321,7 @@ public class DataResourceService extends ResourceService {
         @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) {
         
-        FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO();
+        FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO(sparql);
         AbstractResultForm postResponse = null;
         try {
             FileDescription description = descriptionDto.createObjectFromDTO();
@@ -398,7 +403,7 @@ public class DataResourceService extends ResourceService {
         @Context HttpServletRequest context
     ) {
         
-        FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO();
+        FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO(sparql);
         AbstractResultForm postResponse = null;
         POSTResultsReturn result = new POSTResultsReturn();
         
@@ -486,7 +491,7 @@ public class DataResourceService extends ResourceService {
             @Context HttpServletResponse response
     ) {
         
-        FileDescriptionDAO dataFileDao = new FileDescriptionDAO();
+        FileDescriptionDAO dataFileDao = new FileDescriptionDAO(sparql);
         
         FileDescription description = dataFileDao.findFileDescriptionByUri(fileUri);
         
@@ -549,7 +554,7 @@ public class DataResourceService extends ResourceService {
         @Context HttpServletResponse response
     ) {
         
-        FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO();
+        FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO(sparql);
         
         FileDescription description = fileDescriptionDao.findFileDescriptionByUri(fileUri);
         
@@ -618,7 +623,7 @@ public class DataResourceService extends ResourceService {
 
     ) {
         
-        FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO();
+        FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO(sparql);
         
         // 1. Set all varaibles corresponding to the search
         fileDescriptionDao.user = userSession.getUser();
@@ -767,7 +772,7 @@ public class DataResourceService extends ResourceService {
         Map<String, String> provenancesUrisAndLabels = new HashMap<>();
         
         //1. Get list of objects uris corresponding to the label given if needed.
-        ScientificObjectRdf4jDAO scientificObjectDAO = new ScientificObjectRdf4jDAO();
+        ScientificObjectRdf4jDAO scientificObjectDAO = new ScientificObjectRdf4jDAO(sparql);
         if (objectUri != null && !objectUri.isEmpty()) {
             objectsUrisAndLabels.put(objectUri, scientificObjectDAO.findLabelsForUri(objectUri));
         } else if (objectLabel != null && !objectLabel.isEmpty()) { //We need to get the list of the uris of the scientific object with this label (like)
@@ -779,7 +784,7 @@ public class DataResourceService extends ResourceService {
         }
         
         //2. Get list of provenances uris corresponding to the label given if needed.
-        ProvenanceDAO provenanceDAO = new ProvenanceDAO();
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
         if (provenanceUri != null && !provenanceUri.isEmpty()) {
             //If the provenance URI is given, we need the provenance label
             provenancesUris.add(provenanceUri);
@@ -793,7 +798,7 @@ public class DataResourceService extends ResourceService {
         }
         
         //3. Get variable label
-        VariableDAO variableDAO = new VariableDAO();
+        VariableDAO variableDAO = new VariableDAO(sparql);
         if (!variableDAO.existAndIsVariable(variableUri)) {
             // Request failure
             getResponse = new ResultForm<>(0, 0, list, true, 0);

@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.model.ImageMetadata;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Image metadata DAO for RDF4J.
@@ -25,8 +26,10 @@ public class ImageMetadataRdf4jDAO extends Rdf4jDAO<ImageMetadata> {
     
     public String rdfType;
 
-    public ImageMetadataRdf4jDAO() {
+    public ImageMetadataRdf4jDAO(SPARQLService sparql) {
+        super(sparql);
     }
+
 
     @Override
     public List<ImageMetadata> create(List<ImageMetadata> objects) throws DAOPersistenceException, Exception {

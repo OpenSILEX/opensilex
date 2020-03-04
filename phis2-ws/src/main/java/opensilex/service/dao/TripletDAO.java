@@ -40,6 +40,7 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Triplet;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Triplet DAO.
@@ -52,6 +53,10 @@ public class TripletDAO extends Rdf4jDAO<Triplet> {
     //pattern to generate uri for the subject of a triplet
     private final static String REQUEST_GENERATION_URI_STRING = "?";
     private final static String LITERAL = "literal";
+
+    public TripletDAO(SPARQLService sparql) {
+        super(sparql);
+    }
     
     /**
      * Checks each triplet's values.
@@ -65,7 +70,7 @@ public class TripletDAO extends Rdf4jDAO<Triplet> {
         
         //check triplets
         for (TripletDTO tripletDTO : tripletsGroup) {
-            UriDAO uriDao = new UriDAO();
+            UriDAO uriDao = new UriDAO(sparql);
 
             //1. check if triplet.s is exist
             if (!uriDao.existUri(tripletDTO.getS())) { //unknown uri
@@ -193,7 +198,7 @@ public class TripletDAO extends Rdf4jDAO<Triplet> {
             //if there is a type, generate the uri
             if (triplet.getS().equals(REQUEST_GENERATION_URI_STRING) && uri == null) {
                 try {
-                    uri = UriGenerator.generateNewInstanceUri(rdfType, null, null);
+                    uri = UriGenerator.generateNewInstanceUri(sparql, rdfType, null, null);
                 } catch (Exception ex) {
                     java.util.logging.Logger.getLogger(TripletDAO.class.getName()).log(Level.SEVERE, null, ex);
                 }

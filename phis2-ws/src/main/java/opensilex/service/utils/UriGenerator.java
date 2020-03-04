@@ -40,6 +40,7 @@ import opensilex.service.ontology.Oeev;
 import opensilex.service.ontology.Oeso;
 import opensilex.service.ontology.Time;
 import opensilex.service.model.Group;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * URI generator. Used for various objects (vector, sensor, ...).
@@ -95,11 +96,14 @@ public class UriGenerator {
     private static final String PLATFORM_URI_ID_GENUS = PLATFORM_URI_ID + "genus/";
     public static final String PLATFORM_URI_ID_FACTORS = PLATFORM_URI_ID + "factors/" + URI_CODE_FACTOR;
     private static final String EXPERIMENT_URI_SEPARATOR = "-";
+    private final SPARQLService sparql;
 
     /**
      * Prevent URI generator to be instanciated
      */
-    private UriGenerator() {}
+    private UriGenerator(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
     
     /**
      * Generates a new vector URI. a vector URI has the following pattern:
@@ -110,7 +114,7 @@ public class UriGenerator {
      * @param year the insertion year of the vector.
      * @return the new vector URI
      */
-    private static String generateVectorUri(String year) {
+    private String generateVectorUri(String year) {
         // get last vectors ID
         int vectorNumber = getNextVectorID(year);
         String numberOfVectors = Integer.toString(vectorNumber);
@@ -127,15 +131,15 @@ public class UriGenerator {
     /**
      * Internal variable to store the last vector ID by year
      */
-    private static Map<String, Integer> vectorLastIDByYear = new HashMap<>();
+    private Map<String, Integer> vectorLastIDByYear = new HashMap<>();
     
     /**
      * Return the next vector ID by incrementing vectorLastIDByYear variable and initializing it before if needed
      * @return next vector ID
      */
-    private static int getNextVectorID(String year) {
+    private int getNextVectorID(String year) {
         if (!vectorLastIDByYear.containsKey(year)) {
-            VectorDAO vectorDAO = new VectorDAO();
+            VectorDAO vectorDAO = new VectorDAO(sparql);
             vectorLastIDByYear.put(year, vectorDAO.getLastIdFromYear(year));
         }
         
@@ -164,7 +168,7 @@ public class UriGenerator {
      * @param year the insertion year of the sensor.
      * @return the new sensor URI
      */
-    private static String generateSensorUri(String year) {
+    private String generateSensorUri(String year) {
         int sensorNumber = getNextSensorID(year);
         String numberOfSensors = Integer.toString(sensorNumber);
         String newSensorNumber;
@@ -185,15 +189,15 @@ public class UriGenerator {
     /**
      * Internal variable to store the last sensor ID by year
      */
-    private static Map<String, Integer> sensorLastIDByYear = new HashMap<>();
+    private Map<String, Integer> sensorLastIDByYear = new HashMap<>();
     
     /**
      * Return the next sensor ID by incrementing sensorLastIDByYear variable and initializing it before if needed
      * @return next sensor ID
      */
-    private static int getNextSensorID(String year) {
+    private int getNextSensorID(String year) {
         if (!sensorLastIDByYear.containsKey(year)) {
-            SensorDAO sensorDAO = new SensorDAO();
+            SensorDAO sensorDAO = new SensorDAO(sparql);
             sensorLastIDByYear.put(year, sensorDAO.getLastIdFromYear(year));
         }
         
@@ -222,7 +226,7 @@ public class UriGenerator {
      * @param year the insertion year of the actuator.
      * @return the new actuator URI
      */
-    private static String generateActuatorUri(String year) {
+    private String generateActuatorUri(String year) {
         int actuatorNumber = getNextActuatorID(year);
         String numberOfActuators = Integer.toString(actuatorNumber);
         String newActuatorNumber;
@@ -243,15 +247,15 @@ public class UriGenerator {
     /**
      * Internal variable to store the last actuator ID by year
      */
-    private static Map<String, Integer> actuatorLastIDByYear = new HashMap<>();
+    private Map<String, Integer> actuatorLastIDByYear = new HashMap<>();
     
     /**
      * Return the next actuator ID by incrementing actuatorLastIDByYear variable and initializing it before if needed
      * @return next actuator ID
      */
-    private static int getNextActuatorID(String year) {
+    private int getNextActuatorID(String year) {
         if (!actuatorLastIDByYear.containsKey(year)) {
-            ActuatorDAO actuatorDAO = new ActuatorDAO();
+            ActuatorDAO actuatorDAO = new ActuatorDAO(sparql);
             actuatorLastIDByYear.put(year, actuatorDAO.getLastIdFromYear(year));
         }
         
@@ -280,7 +284,7 @@ public class UriGenerator {
      * @param year the insertion year of the agronomical object.
      * @return the new agronomical object URI
      */
-    private static String generateScientificObjectUri(String year) {
+    private String generateScientificObjectUri(String year) {
         String agronomicalObjectId = Integer.toString(getNextScientificObjectID(year));
 
         while (agronomicalObjectId.length() < 6) {
@@ -293,15 +297,15 @@ public class UriGenerator {
     /**
      * Internal variable to store the last scientifc object ID by year
      */
-    private static Map<String, Integer> scientificObjectLastIDByYear = new HashMap<>();
+    private Map<String, Integer> scientificObjectLastIDByYear = new HashMap<>();
     
     /**
      * Return the next scientifc object ID by incrementing scientificObjectLastIDByYear variable and initializing it before if needed
      * @return next scientific object ID
      */
-    private static int getNextScientificObjectID(String year) {
+    private int getNextScientificObjectID(String year) {
         if (!scientificObjectLastIDByYear.containsKey(year)) {
-            ScientificObjectRdf4jDAO scientificObjectDAO = new ScientificObjectRdf4jDAO();
+            ScientificObjectRdf4jDAO scientificObjectDAO = new ScientificObjectRdf4jDAO(sparql);
             scientificObjectLastIDByYear.put(year, scientificObjectDAO.getLastScientificObjectIdFromYear(year));
         }
         
@@ -327,7 +331,7 @@ public class UriGenerator {
      * @example http://www.phenome-fppn.fr/diaphen/id/variables/v001
      * @return the new variable URI
      */
-    private static String generateVariableUri() {
+    private String generateVariableUri() {
         // Generate variable URI based on next id
         String variableId = Integer.toString(getNextVariableID());        
 
@@ -341,15 +345,15 @@ public class UriGenerator {
     /**
      * Internal variable to store the last variable ID
      */
-    private static Integer variableLastID;
+    private Integer variableLastID;
     
     /**
      * Return the next variable ID by incrementing variableLastID variable and initializing it before if needed
      * @return next variable ID
      */
-    private static int getNextVariableID() {
+    private int getNextVariableID() {
         if (variableLastID == null) {
-            VariableDAO variableDAO = new VariableDAO();
+            VariableDAO variableDAO = new VariableDAO(sparql);
             variableLastID = variableDAO.getLastId();
         }
         
@@ -365,7 +369,7 @@ public class UriGenerator {
      * @example http://www.phenome-fppn.fr/diaphen/id/traits/t001
      * @return the new trait URI
      */
-    private static String generateTraitUri() {
+    private String generateTraitUri() {
         // Generate trait URI based on next id
         String traitId = Integer.toString(getNextTraitID());
 
@@ -379,15 +383,15 @@ public class UriGenerator {
     /**
      * Internal variable to store the last trait ID
      */
-    private static Integer traitLastID;
+    private Integer traitLastID;
 
     /**
      * Return the next trait ID by incrementing traitLastID variable and initializing it before if needed
      * @return next trait ID
      */
-    private static int getNextTraitID() {
+    private int getNextTraitID() {
         if (traitLastID == null) {
-            TraitDAO traitDAO = new TraitDAO();
+            TraitDAO traitDAO = new TraitDAO(sparql);
             traitLastID = traitDAO.getLastId();
         }
         
@@ -403,7 +407,7 @@ public class UriGenerator {
      * @example http://www.phenome-fppn.fr/diaphen/id/methods/m001
      * @return the new method URI
      */
-    private static String generateMethodUri() {
+    private String generateMethodUri() {
         // Generate method URI based on next id
         String methodId = Integer.toString(getNextMethodID());
 
@@ -417,15 +421,15 @@ public class UriGenerator {
     /**
      * Internal variable to store the last method ID
      */
-    private static Integer methodLastID;
+    private Integer methodLastID;
 
     /**
      * Return the next method ID by incrementing methodLastID variable and initializing it before if needed
      * @return next method ID
      */
-    private static int getNextMethodID() {
+    private int getNextMethodID() {
         if (methodLastID == null) {
-            MethodDAO methodDAO = new MethodDAO();
+            MethodDAO methodDAO = new MethodDAO(sparql);
             methodLastID = methodDAO.getLastId();
         }
         
@@ -441,7 +445,7 @@ public class UriGenerator {
      * @example http://www.phenome-fppn.fr/diaphen/id/units/m001
      * @return the new unit URI
      */
-    private static String generateUnitUri() {
+    private String generateUnitUri() {
         // Generate unit URI based on next id
         String unitId = Integer.toString(getNextUnitID());
 
@@ -455,15 +459,15 @@ public class UriGenerator {
     /**
      * Internal variable to store the last unit ID
      */
-    private static Integer unitLastID;
+    private Integer unitLastID;
     
     /**
      * Return the next unit ID by incrementing unitLastID variable and initializing it before if needed
      * @return next unit ID
      */
-    private static int getNextUnitID() {
+    private int getNextUnitID() {
         if (unitLastID == null) {
-            UnitDAO unitDAO = new UnitDAO();
+            UnitDAO unitDAO = new UnitDAO(sparql);
             unitLastID = unitDAO.getLastId();
         }
         
@@ -479,10 +483,10 @@ public class UriGenerator {
      * @example http://www.phenome-fppn.fr/diaphen/id/radiometricTargets/rt001
      * @return The new radiometric target URI
      */
-    private static String generateRadiometricTargetUri() {
+    private String generateRadiometricTargetUri() {
         //1. Get the highest radiometric target id (i.e. the last inserted
         //radiometric target)
-        RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO();
+        RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO(sparql);
         int lastID = radiometricTargetDAO.getLastId();
         
         //2. Generate radiometric target URI
@@ -503,7 +507,7 @@ public class UriGenerator {
      * @param variety the variety name
      * @return the new variety uri
      */
-    private static String generateVarietyUri(String variety) {
+    private String generateVarietyUri(String variety) {
         return PLATFORM_URI_ID_VARIETY + variety;
     }
     
@@ -512,19 +516,19 @@ public class UriGenerator {
      * @param accessionNumber
      * @return 
      */
-    private static String generateAccessionUri(String accessionNumber) {
+    private String generateAccessionUri(String accessionNumber) {
         return PLATFORM_URI_ID_ACCESSION + accessionNumber;
     }
     
-    private static String generateLotUri(String seedlot) {
+    private String generateLotUri(String seedlot) {
         return PLATFORM_URI_ID_PLANT_MATERIAL_LOT + seedlot;
     }
     
-    private static String generateSpeciesUri(String species) {
+    private String generateSpeciesUri(String species) {
         return PLATFORM_URI_ID_SPECIES + species;
     }
     
-    private static String generateGenusUri(String genus) {
+    private String generateGenusUri(String genus) {
         return PLATFORM_URI_ID_GENUS + genus;
     }
 
@@ -536,7 +540,7 @@ public class UriGenerator {
      * @param agentSuffixe the agent suffix e.g. arnaud_charleroy
      * @return the new agent URI
      */
-    private static String generateAgentUri(String agentSuffixe) {
+    private String generateAgentUri(String agentSuffixe) {
         // create URI
         return PLATFORM_URI_ID_AGENT + agentSuffixe;
     }
@@ -548,9 +552,9 @@ public class UriGenerator {
      * @example http://www.phenome-fppn.fr/diaphen/id/annotation/e073961b-e766-4493-b98f-74a8b2846893
      * @return the new annotation URI
      */
-    private static String generateAnnotationUri() {
+    private String generateAnnotationUri() {
         //1. check if URI already exists
-        AnnotationDAO annotationDao = new AnnotationDAO();
+        AnnotationDAO annotationDao = new AnnotationDAO(sparql);
         String newAnnotationUri = PLATFORM_URI_ID_ANNOTATION + UUID.randomUUID();
         while (annotationDao.existUri(newAnnotationUri)) {
             newAnnotationUri = PLATFORM_URI_ID_ANNOTATION + UUID.randomUUID();
@@ -566,7 +570,7 @@ public class UriGenerator {
      * @example http://www.phenome-fppn.fr/diaphen/id/event/e073961b-e766-4493-b98f-74a8b2846893
      * @return the new event URI
      */
-    private static String generateEventUri() {
+    private String generateEventUri() {
         // To check if URI already exists
         EventDAO eventDao = new EventDAO(null);
         String newEventUri = PLATFORM_URI_ID_EVENT + UUID.randomUUID();
@@ -584,7 +588,7 @@ public class UriGenerator {
      * @example http://www.phenome-fppn.fr/diaphen/id/instant/e073961b-e766-4493-b98f-74a8b2846893
      * @return the new URI
      */
-    private static String generateInstantUri() {
+    private String generateInstantUri() {
         // To check if the URI already exists
         EventDAO timeDao = new EventDAO(null);
         String newInstantUri = PLATFORM_URI_ID_INSTANT + UUID.randomUUID();
@@ -606,9 +610,9 @@ public class UriGenerator {
      * corresponds to the last generated URI
      * @return the new URI
      */
-    private static String generateImageUri(String year, String lastGeneratedUri) {
+    private String generateImageUri(String year, String lastGeneratedUri) {
         if (lastGeneratedUri == null) {
-            ImageMetadataMongoDAO imageMongoDao = new ImageMetadataMongoDAO();
+            ImageMetadataMongoDAO imageMongoDao = new ImageMetadataMongoDAO(sparql);
             long imagesNumber = imageMongoDao.getImagesCountOfCurrentYear();
             imagesNumber++;
 
@@ -640,7 +644,7 @@ public class UriGenerator {
      * @return the new generated uri
      * @throws Exception 
      */
-    private static String generateProvenanceUri() {
+    private String generateProvenanceUri() {
         //Generates uri
         Instant instant = Instant.now();
         long timeStampMillis = instant.toEpochMilli();
@@ -655,7 +659,7 @@ public class UriGenerator {
      * @return the new generated uri
      * @throws Exception 
      */
-    private static String generateDataUri(String additionalInformation) throws Exception {
+    private String generateDataUri(String additionalInformation) throws Exception {
         // Define data URI with key hash  and random id to prevent collision
         String uri = Contexts.PLATFORM.toString() + "id/data/" + getUniqueHash(additionalInformation);
         
@@ -669,7 +673,7 @@ public class UriGenerator {
      * @return the new generated uri
      * @throws Exception 
      */
-    private static String generateDataFileUri(String collection, String key) throws Exception {
+    private String generateDataFileUri(String collection, String key) throws Exception {
         // Define data URI with key hash  and random id to prevent collision
         String uri = Contexts.PLATFORM.toString() + "id/dataFile/" + collection + "/" + getUniqueHash(key);
         
@@ -684,7 +688,7 @@ public class UriGenerator {
      * @return the new generated uri
      * @throws Exception 
      */
-    private static String generateFactorUri() throws Exception {
+    private String generateFactorUri() throws Exception {
         // Generate factor URI based on next id
         String factorId = Integer.toString(getNextFactorID());        
 
@@ -699,15 +703,15 @@ public class UriGenerator {
     /**
      * Internal variable to store the last factor ID
      */
-    private static Integer factorLastID;
+    private Integer factorLastID;
     
     /**
      * Return the next factor ID by incrementing variableLastID variable and initializing it before if needed
      * @return next factor ID
      */
-    private static int getNextFactorID() {
+    private int getNextFactorID() {
         if (factorLastID == null) {
-            FactorDAO factorDAO = new FactorDAO();
+            FactorDAO factorDAO = new FactorDAO(sparql);
             factorLastID = factorDAO.getLastId();
         }
         
@@ -733,26 +737,6 @@ public class UriGenerator {
     }
     
     /**
-     * Generates scientific objects uris for a year. The number depends on the given numberOfUrisToGenerate.
-     * @param year
-     * @param numberOfUrisToGenerate
-     * @return the list of uri generated
-     */
-    public synchronized static List<String> generateScientificObjectUris(String year, Integer numberOfUrisToGenerate) {
-        if (year == null) {
-            year = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
-        }
-
-        List<String> scientificObjectUris = new ArrayList<>();
-        
-        for (int i = 0; i < numberOfUrisToGenerate; i++) {
-            scientificObjectUris.add(generateScientificObjectUri(year));
-        }
-        
-        return scientificObjectUris;
-    }
-
-    /**
      * Generates the URI of a new instance of instanceType.
      * This method is syncronized to prevent URI duplication in case of multiple thread request for new URIs
      * @param instanceType the RDF type of the instance (a concept URI)
@@ -764,62 +748,65 @@ public class UriGenerator {
      * @return the generated URI
      * @throws java.lang.Exception
      */
-    public synchronized static String generateNewInstanceUri(String instanceType, String year, String additionalInformation) 
+    public synchronized static String generateNewInstanceUri(SPARQLService sparql, String instanceType, String year, String additionalInformation) 
             throws Exception {
+        
+        UriGenerator instance = new UriGenerator(sparql);
+                
         if (year == null) {
             year = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
         }
 
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
 
         if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_VECTOR.toString())) {
-            return generateVectorUri(year);
+            return instance.generateVectorUri(year);
         } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_SENSING_DEVICE.toString())) {
-            return generateSensorUri(year);
+            return instance.generateSensorUri(year);
         } else if (Oeso.CONCEPT_VARIABLE.toString().equals(instanceType)) {
-            return generateVariableUri();
+            return instance.generateVariableUri();
         } else if (Oeso.CONCEPT_TRAIT.toString().equals(instanceType)) {
-            return generateTraitUri();
+            return instance.generateTraitUri();
         } else if (Oeso.CONCEPT_METHOD.toString().equals(instanceType)) {
-            return generateMethodUri();
+            return instance.generateMethodUri();
         } else if (Oeso.CONCEPT_UNIT.toString().equals(instanceType)) {
-            return generateUnitUri();
+            return instance.generateUnitUri();
         } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString())) {
-            return generateScientificObjectUri(year);
+            return instance.generateScientificObjectUri(year);
         } else if (Oeso.CONCEPT_GENUS.toString().equals(instanceType)) {
-            return generateGenusUri(additionalInformation);
+            return instance.generateGenusUri(additionalInformation);
         } else if (Oeso.CONCEPT_SPECIES.toString().equals(instanceType)) {
-            return generateSpeciesUri(additionalInformation);
+            return instance.generateSpeciesUri(additionalInformation);
         } else if (Oeso.CONCEPT_VARIETY.toString().equals(instanceType)) {
-            return generateVarietyUri(additionalInformation);
+            return instance.generateVarietyUri(additionalInformation);
         } else if (Oeso.CONCEPT_ACCESSION.toString().equals(instanceType)) {
-            return generateAccessionUri(additionalInformation);
+            return instance.generateAccessionUri(additionalInformation);
         } else if (Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString().equals(instanceType)
                 || uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_PLANT_MATERIAL_LOT.toString())) {
-            return generateLotUri(additionalInformation);            
+            return instance.generateLotUri(additionalInformation);            
         } else if (uriDao.isSubClassOf(instanceType, Oeso.CONCEPT_IMAGE.toString())) {
-            return generateImageUri(year, additionalInformation);
+            return instance.generateImageUri(year, additionalInformation);
         } else if (instanceType.equals(Foaf.CONCEPT_AGENT.toString()) 
                 || uriDao.isSubClassOf(instanceType, Foaf.CONCEPT_AGENT.toString())) {
-            return generateAgentUri(additionalInformation);
+            return instance.generateAgentUri(additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_ANNOTATION.toString())) {
-            return generateAnnotationUri();
+            return instance.generateAnnotationUri();
         } else if (instanceType.equals(Oeso.CONCEPT_RADIOMETRIC_TARGET.toString())) {
-            return generateRadiometricTargetUri();
+            return instance.generateRadiometricTargetUri();
         } else if (instanceType.equals(Oeso.CONCEPT_PROVENANCE.toString())) {
-            return generateProvenanceUri();
+            return instance.generateProvenanceUri();
         } else if (instanceType.equals(Oeso.CONCEPT_DATA.toString())) {
-            return generateDataUri(additionalInformation);
+            return instance.generateDataUri(additionalInformation);
         } else if (uriDao.isSubClassOf(instanceType, Oeev.Event.getURI())) {
-            return generateEventUri();
+            return instance.generateEventUri();
         } else if (instanceType.equals(Time.Instant.toString())) {
-            return generateInstantUri();
+            return instance.generateInstantUri();
         } else if (instanceType.equals(Oeso.CONCEPT_DATA_FILE.toString())) {
-            return generateDataFileUri(year, additionalInformation);
+            return instance.generateDataFileUri(year, additionalInformation);
         } else if (instanceType.equals(Oeso.CONCEPT_ACTUATOR.toString())) {
-            return generateActuatorUri(year);
+            return instance.generateActuatorUri(year);
         } else if (instanceType.equals(Oeso.CONCEPT_FACTOR.toString())) {
-            return generateFactorUri();
+            return instance.generateFactorUri();
         }
         return null;
     }

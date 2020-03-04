@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -52,6 +53,7 @@ import opensilex.service.resource.dto.scientificObject.ScientificObjectPostDTO;
 import opensilex.service.resource.dto.scientificObject.ScientificObjectPutDTO;
 import opensilex.service.resource.validation.interfaces.Required;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Scientific objects resource service.
@@ -61,6 +63,9 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 @Path("scientificObjects")
 public class ScientificObjectResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectResourceService.class);
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Transform ScientificObjectPostDTO to ScientificObject
@@ -122,7 +127,7 @@ public class ScientificObjectResourceService extends ResourceService {
         //if there is at least one scientific object
         if (!scientificObjectsDTO.isEmpty()) {
             try {
-                ScientificObjectRdf4jDAO scientificObjectDaoSesame = new ScientificObjectRdf4jDAO();
+                ScientificObjectRdf4jDAO scientificObjectDaoSesame = new ScientificObjectRdf4jDAO(sparql);
                 if (context.getRemoteAddr() != null) {
                     scientificObjectDaoSesame.remoteUserAdress = context.getRemoteAddr();
                 }
@@ -217,7 +222,7 @@ public class ScientificObjectResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.SCIENTIFIC_OBJECT_POST_DATA_DEFINITION, required = true) @Valid ScientificObjectPutDTO scientificObjectDTO,
             @Context HttpServletRequest context) throws Exception {
         
-        ScientificObjectRdf4jDAO scientificObjectDAO = new ScientificObjectRdf4jDAO();
+        ScientificObjectRdf4jDAO scientificObjectDAO = new ScientificObjectRdf4jDAO(sparql);
         
         ScientificObject scientificObject = scientificObjectDTO.createObjectFromDTO();
         scientificObject.setUri(uri);
@@ -268,7 +273,7 @@ public class ScientificObjectResourceService extends ResourceService {
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ScientificObjectDTO> getResponse;
         
-        ScientificObjectRdf4jDAO scientificObjectDaoSesame = new ScientificObjectRdf4jDAO();
+        ScientificObjectRdf4jDAO scientificObjectDaoSesame = new ScientificObjectRdf4jDAO(sparql);
         scientificObjectDaoSesame.user = userSession.getUser();
         scientificObjectDaoSesame.setPage(page);
         scientificObjectDaoSesame.setPageSize(pageSize);

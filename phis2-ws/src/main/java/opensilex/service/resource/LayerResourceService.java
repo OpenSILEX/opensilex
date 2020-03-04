@@ -39,6 +39,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Layer resource service.
@@ -47,6 +48,9 @@ import org.opensilex.fs.service.FileStorageService;
 @Api("/layers")
 @Path("layers")
 public class LayerResourceService extends ResourceService {
+    
+    @Inject
+    SPARQLService sparql;
     
     @Inject
     FileStorageService fs;
@@ -85,7 +89,7 @@ public class LayerResourceService extends ResourceService {
         Generate a layer per element and return the URL of all the generared files.
         */
         if (layers !=  null && !layers.isEmpty()) { 
-            LayerDAO layerDao = new LayerDAO();
+            LayerDAO layerDao = new LayerDAO(sparql);
             List<String> urlFilesList = new ArrayList<>();
             if (ResourcesUtils.getStringBooleanValue(layers.get(0).getGenerateFile())) { // Generate file
 

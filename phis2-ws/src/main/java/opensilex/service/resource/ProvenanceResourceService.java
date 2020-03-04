@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -44,6 +45,7 @@ import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.view.model.provenance.Provenance;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Provenance resource service.
@@ -52,6 +54,9 @@ import opensilex.service.view.model.provenance.Provenance;
 @Api("/provenances")
 @Path("/provenances")
 public class ProvenanceResourceService extends ResourceService {
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Generates a Provenance list from a given list of ProvenancePostDTO.
@@ -122,7 +127,7 @@ public class ProvenanceResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (provenances != null && !provenances.isEmpty()) {
-            ProvenanceDAO provenanceDAO = new ProvenanceDAO();
+            ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
             
             provenanceDAO.user = userSession.getUser();
             
@@ -181,7 +186,7 @@ public class ProvenanceResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm putResponse = null;
 
-        ProvenanceDAO provenanceDAO = new ProvenanceDAO();
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
 
         provenanceDAO.user = userSession.getUser();
 
@@ -254,7 +259,7 @@ public class ProvenanceResourceService extends ResourceService {
         @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_COMMENT) @QueryParam("comment") String comment,
         @ApiParam(value = "Search by json filter", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_METADATA) @QueryParam("jsonValueFilter") String jsonValueFilter) {
 
-        ProvenanceDAO provenanceDAO = new ProvenanceDAO();
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
         
         Provenance searchProvenance = new Provenance();
         searchProvenance.setUri(uri);

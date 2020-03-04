@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -34,6 +35,7 @@ import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Acquisition session resource service.
@@ -42,6 +44,9 @@ import opensilex.service.result.ResultForm;
 @Api("/acquisitionSessions")
 @Path("/acquisitionSessions")
 public class AcquisitionSessionResourceService extends ResourceService {
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Searches acquisition session metadata file metadata corresponding to the given type of file wanted.
@@ -136,7 +141,7 @@ public class AcquisitionSessionResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.VECTOR_RDF_TYPE_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_VECTOR_RDF_TYPE) @QueryParam("vectorRdfType") @Required @URL String vectorRdfType,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-        AcquisitionSessionDAO acquisitionSessionDAO = new AcquisitionSessionDAO();
+        AcquisitionSessionDAO acquisitionSessionDAO = new AcquisitionSessionDAO(sparql);
         acquisitionSessionDAO.vectorRdfType = vectorRdfType;
         acquisitionSessionDAO.setPage(page);
         acquisitionSessionDAO.setPageSize(pageSize);

@@ -35,6 +35,8 @@ import org.slf4j.Logger;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.dao.DocumentMongoDAO;
 import opensilex.service.dao.ScientificAppDAO;
+import org.opensilex.OpenSilex;
+import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -71,10 +73,11 @@ public class ShinyProxyService {
     }
 
     public void updateApplicationsListAndImages() {
+        SPARQLService sparql = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
         SHINYPROXY_UPDATE_APP_STATE = true;
         LOGGER.info("Listing shiny apps ... ");
         ScientificAppDAO scientificAppDAO = new ScientificAppDAO();
-        SHINYPROXY_APPS_LIST = scientificAppDAO.find(null, null);
+        SHINYPROXY_APPS_LIST = scientificAppDAO.find(sparql, null, null);
         LOGGER.info("Build images ...");
         createDockerDirAndFiles(SHINYPROXY_APPS_LIST);
         createWebApplicationsBuildImageProcess(SHINYPROXY_APPS_LIST);

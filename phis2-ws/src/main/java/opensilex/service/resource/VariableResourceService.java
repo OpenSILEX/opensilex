@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -47,6 +48,7 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.Variable;
 import static opensilex.service.resource.SensorResourceService.LOGGER;
 import opensilex.service.resource.dto.variable.VariableDetailDTO;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Variable resource service.
@@ -55,6 +57,9 @@ import opensilex.service.resource.dto.variable.VariableDetailDTO;
 @Api("/variables")
 @Path("variables")
 public class VariableResourceService extends ResourceService {
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Variable POST service.
@@ -85,7 +90,7 @@ public class VariableResourceService extends ResourceService {
         
         // At least one variable
         if (variables != null && !variables.isEmpty()) {
-            VariableDAO variableDao = new VariableDAO();
+            VariableDAO variableDao = new VariableDAO(sparql);
             if (context.getRemoteAddr() != null) {
                 variableDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -138,7 +143,7 @@ public class VariableResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm response = null;
         if (variables != null && !variables.isEmpty()) {
-            VariableDAO variableDao = new VariableDAO();
+            VariableDAO variableDao = new VariableDAO(sparql);
             if (context.getRemoteAddr() != null) {
                 variableDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -258,7 +263,7 @@ public class VariableResourceService extends ResourceService {
         String unit,
         boolean withDetail
     ) {
-        VariableDAO variableDao = new VariableDAO();
+        VariableDAO variableDao = new VariableDAO(sparql);
         
         if (uri != null) {
             variableDao.uri = uri;

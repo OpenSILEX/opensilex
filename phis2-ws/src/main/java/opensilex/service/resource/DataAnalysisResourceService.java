@@ -19,6 +19,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.DefaultValue;
@@ -42,6 +43,7 @@ import opensilex.service.resource.dto.ScientificAppDTO;
 import opensilex.service.shinyProxy.ShinyProxyService;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * DataAnalysis resource service.
@@ -52,6 +54,9 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 @Path("/dataAnalysis")
 public class DataAnalysisResourceService extends ResourceService {
 
+    @Inject
+    SPARQLService sparql;
+    
     /**
      * Call R function via OpenCPU Server
      *
@@ -175,7 +180,7 @@ public class DataAnalysisResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
         ScientificAppDAO scientificAppDAO = new ScientificAppDAO();
         scientificAppDAO.session = userSession;
-        ArrayList<ScientificAppDescription> shinyProxyAppList = scientificAppDAO.find(null, null);
+        ArrayList<ScientificAppDescription> shinyProxyAppList = scientificAppDAO.find(sparql, null, null);
         ArrayList<ScientificAppDTO> shinyProxyAppDTOList = new ArrayList<>();
         for (ScientificAppDescription scientificApplicationDescription : shinyProxyAppList) {
             shinyProxyAppDTOList.add(new ScientificAppDTO(scientificApplicationDescription));

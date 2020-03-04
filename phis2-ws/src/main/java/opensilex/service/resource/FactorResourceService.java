@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -41,6 +42,7 @@ import opensilex.service.model.Factor;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Factor resource service.
@@ -49,6 +51,9 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 @Api("/factors")
 @Path("/factors")
 public class FactorResourceService extends ResourceService {
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Generates a factorDTO list from a given list of factor.
@@ -132,7 +137,7 @@ public class FactorResourceService extends ResourceService {
             language = DEFAULT_LANGUAGE;
         }
         
-        FactorDAO factorDAO = new FactorDAO();
+        FactorDAO factorDAO = new FactorDAO(sparql);
         factorDAO.setPage(page);
         factorDAO.setPageSize(pageSize);
         
@@ -187,7 +192,7 @@ public class FactorResourceService extends ResourceService {
                               @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (factor != null && !factor.isEmpty()) {
-            FactorDAO factorDao = new FactorDAO();
+            FactorDAO factorDao = new FactorDAO(sparql);
             if (context.getRemoteAddr() != null) {
                 factorDao.remoteUserAdress = context.getRemoteAddr();
             }

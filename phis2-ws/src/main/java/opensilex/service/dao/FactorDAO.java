@@ -7,14 +7,12 @@
 //******************************************************************************
 package opensilex.service.dao;
 
-import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static opensilex.service.dao.MethodDAO.LOGGER;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
@@ -24,12 +22,10 @@ import opensilex.service.model.Factor;
 import opensilex.service.model.OntologyReference;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Oeso;
-import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Skos;
 import opensilex.service.resource.dto.factor.FactorDTO;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
-import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.ExprFactory;
@@ -37,7 +33,6 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.SortCondition;
 import org.apache.jena.rdf.model.Literal;
@@ -60,6 +55,7 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -70,6 +66,10 @@ public class FactorDAO extends Rdf4jDAO<Factor> {
 
     final static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(FactorDAO.class);
     private static final String MAX_ID = "maxID";
+
+    public FactorDAO(SPARQLService sparql) {
+        super(sparql);
+    }
 
     /**
      * Search all the factors corresponding to the search params given.
@@ -379,7 +379,7 @@ public class FactorDAO extends Rdf4jDAO<Factor> {
         while (iteratorFactorDTO.hasNext() && annotationInsert) {
             FactorDTO factorDTO = iteratorFactorDTO.next();
             try {
-                factorDTO.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_FACTOR.toString(), null, factorDTO.getLabel()));
+                factorDTO.setUri(UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_FACTOR.toString(), null, factorDTO.getLabel()));
             } catch (Exception ex) { //In the unit case, no exception should be raised
                 annotationInsert = false;
             }

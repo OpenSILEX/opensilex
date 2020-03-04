@@ -57,6 +57,7 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,10 +77,12 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
     private static final String VAR_URI = "varUri";
     private static final String MAX_ID = "maxID";
     
-    public TraitDAO() {
+    public TraitDAO(SPARQLService sparql) {
+        super(sparql);
     }
-
-    public TraitDAO(String uri) {
+        
+    public TraitDAO(SPARQLService sparql, String uri) {
+        super(sparql);
         this.uri = uri;
     }
     
@@ -269,7 +272,7 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
         while (iteratorTraitDTO.hasNext() && annotationInsert) {
             TraitDTO traitDTO = iteratorTraitDTO.next();
             try {
-                traitDTO.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_TRAIT.toString(), null, null));
+                traitDTO.setUri(UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_TRAIT.toString(), null, null));
             } catch (Exception ex) {
                 annotationInsert = false;
             }

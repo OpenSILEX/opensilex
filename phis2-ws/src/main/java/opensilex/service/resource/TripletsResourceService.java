@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.ws.rs.POST;
@@ -31,6 +32,7 @@ import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * RDF Triplet resource service.
@@ -45,6 +47,10 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 @Api("/triplets")
 @Path("/triplets")
 public class TripletsResourceService extends ResourceService {
+    
+    @Inject
+    SPARQLService sparql;
+    
     /**
      * Inserts triplets.
      * @param triplets triplets list to save. 
@@ -98,7 +104,7 @@ public class TripletsResourceService extends ResourceService {
         
         //If there are at least one list of triplets
         if (triplets != null && !triplets.isEmpty()) {
-            TripletDAO tripletDao = new TripletDAO();
+            TripletDAO tripletDao = new TripletDAO(sparql);
             if (context.getRemoteAddr() != null) {
                 tripletDao.remoteUserAdress = context.getRemoteAddr();
             }

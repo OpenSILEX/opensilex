@@ -17,6 +17,7 @@ import io.swagger.annotations.ApiResponses;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -54,6 +55,7 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.model.Event;
 import opensilex.service.resource.dto.event.EventPutDTO;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Service to handle events
@@ -69,6 +71,9 @@ import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 @Path("/events")
 public class EventResourceService extends ResourceService {
 
+    @Inject
+    SPARQLService sparql;
+    
     final static Logger LOGGER = LoggerFactory.getLogger(EventResourceService.class);
 
     /**
@@ -150,7 +155,8 @@ public class EventResourceService extends ResourceService {
             @QueryParam("endDate")
             @Date({DateFormat.YMDTHMSZZ, DateFormat.YMD}) String endDate
     ) {
-        EventDAO eventDAO = new EventDAO(userSession.getUser());
+        EventDAO eventDAO = new EventDAO(sparql);
+        eventDAO.user = userSession.getUser();
 
         // Search events with parameters
         ArrayList<Event> events;
@@ -240,7 +246,9 @@ public class EventResourceService extends ResourceService {
                     example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
             @PathParam("uri") @URL @Required String uri) {
 
-        return getGETByUriResponseFromDAOResults(new EventDAO(userSession.getUser()), uri);
+        EventDAO eventDAO = new EventDAO(sparql);
+        eventDAO.user = userSession.getUser();
+        return getGETByUriResponseFromDAOResults(eventDAO, uri);
     }
 
     /**
@@ -336,7 +344,8 @@ public class EventResourceService extends ResourceService {
             @Context HttpServletRequest context) {
 
         // Set DAO
-        EventDAO objectDao = new EventDAO(userSession.getUser());
+        EventDAO objectDao = new EventDAO(sparql);
+        objectDao.user = userSession.getUser();
         if (context.getRemoteAddr() != null) {
             objectDao.remoteUserAdress = context.getRemoteAddr();
         }
@@ -375,7 +384,8 @@ public class EventResourceService extends ResourceService {
             @Context HttpServletRequest context) {
 
         // Set DAO
-        EventDAO objectDao = new EventDAO(userSession.getUser());
+        EventDAO objectDao = new EventDAO(sparql);
+        objectDao.user = userSession.getUser();
         if (context.getRemoteAddr() != null) {
             objectDao.remoteUserAdress = context.getRemoteAddr();
         }
@@ -420,7 +430,8 @@ public class EventResourceService extends ResourceService {
             )
             @Valid @NotNull DeleteDTO deleteDTO, @Context HttpServletRequest context) {
 
-        EventDAO eventDao = new EventDAO(userSession.getUser());
+        EventDAO eventDao = new EventDAO(sparql);
+        eventDao.user = userSession.getUser();
         if (context.getRemoteAddr() != null) {
             eventDao.setRemoteUserAdress(context.getRemoteAddr());
         }

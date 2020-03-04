@@ -26,6 +26,7 @@ import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Oeso;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Infrastructure;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Infrastructure DAO.
@@ -57,6 +58,10 @@ public class InfrastructureDAO extends Rdf4jDAO<Infrastructure> {
     
     protected static final String RDF_TYPE_LABEL = "rdfTypeLabel";
     protected static final String IS_PART_OF = "isPartOf";
+
+    public InfrastructureDAO(SPARQLService sparql) {
+        super(sparql);
+    }
     
     /**
      * Generates a paginated search query.

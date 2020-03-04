@@ -42,6 +42,7 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Data;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Data DAO.
@@ -49,6 +50,11 @@ import opensilex.service.model.Data;
  */
 public class DataDAO extends MongoDAO<Data> {
 
+    private SPARQLService sparql;
+
+    public void DataDAO(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
     private final static Logger LOGGER = LoggerFactory.getLogger(DataDAO.class);
 
     // MongoDB fields labels, used to query (CRUD) the mongo data
@@ -79,8 +85,8 @@ public class DataDAO extends MongoDAO<Data> {
 
         boolean dataOk = true;
 
-        VariableDAO variableDAO = new VariableDAO();
-        ProvenanceDAO provenanceDAO = new ProvenanceDAO();
+        VariableDAO variableDAO = new VariableDAO(sparql);
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
 
         for (Data data : dataList) {
             // 1. Check if the variableUri exist and is a variable
@@ -113,10 +119,10 @@ public class DataDAO extends MongoDAO<Data> {
 
         String key = data.getVariableUri() + data.getObjectUri() + data.getProvenanceUri() + data.getDate();
         try {
-            String uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
+            String uri = UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_DATA.toString(), null, key);
 
             while (uriExists(data.getVariableUri(), uri)) {
-                uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA.toString(), null, key);
+                uri = UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_DATA.toString(), null, key);
             }
             
             data.setUri(uri);

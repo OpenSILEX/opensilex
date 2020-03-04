@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.Arrays;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -44,6 +45,7 @@ import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Dataset;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Datasets resource service.
@@ -53,6 +55,10 @@ import opensilex.service.model.Dataset;
 @Api("/datasets")
 @Path("/datasets") 
 public class DatasetResourceService extends ResourceService {
+    
+    @Inject
+    SPARQLService sparql;
+    
     /**
      * @param datasets dataset to save. If in the provance there is only the uri
      *                 it meens that the provenance is supposed to already exist
@@ -101,7 +107,7 @@ public class DatasetResourceService extends ResourceService {
         
         //If there are at least one provenance (and dataset) in the sended data
         if (datasets != null && !datasets.isEmpty()) {
-            DatasetDAO datasetDAO = new DatasetDAO();
+            DatasetDAO datasetDAO = new DatasetDAO(sparql);
             datasetDAO.user = userSession.getUser();
             
             //check data and insert in the mongo database
@@ -207,7 +213,7 @@ public class DatasetResourceService extends ResourceService {
         @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor")  @URL String sensor,
         @ApiParam(value = "Search by incertitude", example = DocumentationAnnotation.EXAMPLE_DATA_INCERTITUDE) @QueryParam("incertitude") String incertitude) {
         
-        DatasetDAO datasetDAO = new DatasetDAO();
+        DatasetDAO datasetDAO = new DatasetDAO(sparql);
         
         if (experiment != null) {
             datasetDAO.experiment = experiment;

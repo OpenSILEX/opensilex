@@ -7,7 +7,6 @@
 //******************************************************************************
 package opensilex.service.dao;
 
-import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -45,12 +44,19 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.ConcernedItem;
 import opensilex.service.model.FileDescription;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Data file DAO.
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class DataFileDAO extends MongoDAO<FileDescription> {
+
+    private final SPARQLService sparql;
+    
+    public DataFileDAO(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
     
     private final static Logger LOGGER = LoggerFactory.getLogger(DataFileDAO.class);
      
@@ -264,8 +270,8 @@ public class DataFileDAO extends MongoDAO<FileDescription> {
 
         boolean dataOk = true;
 
-        ProvenanceDAO provenanceDAO = new ProvenanceDAO();
-        ScientificObjectRdf4jDAO scientificObjectDao = new ScientificObjectRdf4jDAO();
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
+        ScientificObjectRdf4jDAO scientificObjectDao = new ScientificObjectRdf4jDAO(sparql);
         
         if (!provenanceDAO.existProvenanceUri(fileDescription.getProvenanceUri())) {
             // 1. Check if the provenance uri exist and is a provenance
@@ -327,9 +333,9 @@ public class DataFileDAO extends MongoDAO<FileDescription> {
             final String fileServerDirectory = "./dataFiles/" + fileCollectionName + "/";
             
             String key = fileDescription.getFilename() + fileDescription.getDate();
-            String uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
+            String uri = UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
             while (uriExists(fileDescription.getRdfType(), uri)) {
-                uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
+                uri = UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
             }
             
             fileDescription.setUri(uri);

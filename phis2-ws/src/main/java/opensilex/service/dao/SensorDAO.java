@@ -60,6 +60,7 @@ import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.vocabulary.XSD;
 import org.eclipse.rdf4j.model.Value;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Sensor DAO.
@@ -87,6 +88,10 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
     private final String PERSON_IN_CHARGE = "personInCharge";
 
     private static final String MAX_ID = "maxID";
+
+    public SensorDAO(SPARQLService sparql) {
+        super(sparql);
+    }
     
     /**
      * Prepares a query to get the higher id of the sensors.
@@ -558,7 +563,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         boolean dataOk = true;
         //1. checl if user is an admin
         //2. check data
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         for (Sensor sensor : sensors) {
             try {
                 //2.1 check type (subclass of SensingDevice)
@@ -662,7 +667,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         
         for (Sensor sensor : sensors) {
             try {
-                sensor.setUri(UriGenerator.generateNewInstanceUri(sensor.getRdfType(), null, null));
+                sensor.setUri(UriGenerator.generateNewInstanceUri(sparql, sensor.getRdfType(), null, null));
             } catch (Exception ex) { //In the sensors case, no exception should be raised
                 annotationInsert = false;
             }
@@ -917,7 +922,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         
         //1. Check if the sensorUri is a sensor in the triplestore
         if (existAndIsSensor(sensorUri)) {
-            VariableDAO variableDao = new VariableDAO();
+            VariableDAO variableDao = new VariableDAO(sparql);
             
             for (String variableUri : variables) {
                 //2. Check for each variable uri given if it exist and if it is really a variable
@@ -932,7 +937,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
             if (dataOk) {
                 //Get all the actual variables for the sensor
                 HashMap<String, String> actualMeasuredVariables = getVariables(sensorUri);
-                DatasetDAO datasetDAO = new DatasetDAO();
+                DatasetDAO datasetDAO = new DatasetDAO(sparql);
                 
                 for(Map.Entry<String, String> varibale : actualMeasuredVariables.entrySet()) {
                     // Check if link to the variable can be removed.

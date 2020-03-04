@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
@@ -48,6 +49,7 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Vector;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Vector resource service.
@@ -56,6 +58,9 @@ import opensilex.service.model.Vector;
 @Api("/vectors")
 @Path("/vectors")
 public class VectorResourceService extends ResourceService {
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Search vectors corresponding to search parameters given.
@@ -156,7 +161,7 @@ public class VectorResourceService extends ResourceService {
             @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_VECTOR_DATE_OF_PURCHASE) @QueryParam("dateOfPurchase") @Date(DateFormat.YMD) String dateOfPurchase,
             @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_VECTOR_PERSON_IN_CHARGE) @QueryParam("personInCharge") String personInCharge) {
         
-        VectorDAO vectorDAO = new VectorDAO();
+        VectorDAO vectorDAO = new VectorDAO(sparql);
         if (uri != null) {
             vectorDAO.uri = uri;
         }
@@ -243,7 +248,7 @@ public class VectorResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
 
-        VectorDAO vectorDAO = new VectorDAO();
+        VectorDAO vectorDAO = new VectorDAO(sparql);
         vectorDAO.uri = uri;
         vectorDAO.setPage(page);
         vectorDAO.setPageSize(pageSize);
@@ -291,7 +296,7 @@ public class VectorResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (vectors != null && !vectors.isEmpty()) {
-            VectorDAO vectorDAO = new VectorDAO();
+            VectorDAO vectorDAO = new VectorDAO(sparql);
             
             if (context.getRemoteAddr() != null) {
                 vectorDAO.remoteUserAdress = context.getRemoteAddr();
@@ -355,7 +360,7 @@ public class VectorResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (vectors != null && !vectors.isEmpty()) {
-            VectorDAO vectorDAO = new VectorDAO();
+            VectorDAO vectorDAO = new VectorDAO(sparql);
             if (context.getRemoteAddr() != null) {
                 vectorDAO.remoteUserAdress = context.getRemoteAddr();
             }

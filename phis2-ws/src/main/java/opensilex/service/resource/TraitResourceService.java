@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -45,6 +46,7 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Trait;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Trait resource service.
@@ -53,6 +55,9 @@ import opensilex.service.model.Trait;
 @Api("/traits")
 @Path("traits")
 public class TraitResourceService extends ResourceService {
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Trait POST service.
@@ -81,7 +86,7 @@ public class TraitResourceService extends ResourceService {
                               @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (traits != null && !traits.isEmpty()) {
-            TraitDAO traitDao = new TraitDAO();
+            TraitDAO traitDao = new TraitDAO(sparql);
             if (context.getRemoteAddr() != null) {
                 traitDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -133,7 +138,7 @@ public class TraitResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm response = null;
         if (traits != null && !traits.isEmpty()) {
-            TraitDAO traitDao = new TraitDAO();
+            TraitDAO traitDao = new TraitDAO(sparql);
             if (context.getRemoteAddr() != null) {
                 traitDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -220,7 +225,7 @@ public class TraitResourceService extends ResourceService {
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_TRAIT_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_TRAIT_LABEL) @QueryParam("label") String label
     ) {
-        TraitDAO traitDao = new TraitDAO();
+        TraitDAO traitDao = new TraitDAO(sparql);
         
         if (uri != null) {
             traitDao.uri = uri;
@@ -270,7 +275,7 @@ public class TraitResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        TraitDAO traitDao = new TraitDAO();
+        TraitDAO traitDao = new TraitDAO(sparql);
         traitDao.uri = trait;
         traitDao.setPageSize(limit);
         traitDao.setPage(page);

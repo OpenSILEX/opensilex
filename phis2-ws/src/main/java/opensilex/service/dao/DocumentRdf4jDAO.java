@@ -51,6 +51,7 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Document;
 import opensilex.service.model.Experiment;
+import org.opensilex.sparql.service.SPARQLService;
 
 //SILEX:warning
 //After the update of the June 12, 2018 document's metadata are inserted inside 
@@ -111,11 +112,10 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
     public String status;
     public static final String STATUS = "status";
 
-    public DocumentRdf4jDAO() {
-        super(); // Repository
-        resourceType = "documents";
+    public DocumentRdf4jDAO(SPARQLService sparql) {
+        super(sparql);
     }
-    
+
     /**
      * Check if document's metadata are valid 
      * (check rules, documents types, documents status)
@@ -711,7 +711,7 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         for (DocumentMetadataDTO documentMetadata : documentsMetadata) {
             //1. Delete actual metadata
             //1.1 Get informations which will be updated (to remove triplets)
-            DocumentRdf4jDAO docRdf4jDao = new DocumentRdf4jDAO();
+            DocumentRdf4jDAO docRdf4jDao = new DocumentRdf4jDAO(sparql);
             docRdf4jDao.user = user;
             docRdf4jDao.uri = documentMetadata.getUri();
             ArrayList<Document> documentsCorresponding = docRdf4jDao.allPaginate();

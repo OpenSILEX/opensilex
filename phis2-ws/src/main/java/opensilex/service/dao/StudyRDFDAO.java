@@ -20,6 +20,7 @@ import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Study RDF DAO - used to filter studies on the germplasms
@@ -28,6 +29,10 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 public class StudyRDFDAO extends Rdf4jDAO {
     public ArrayList<String> germplasmDbIds;
     private final String EXP_URI = "experimentURI";
+
+    public StudyRDFDAO(SPARQLService sparql) {
+        super(sparql);
+    }
     
     /**
      * Builds the SparQL query to get studies filtered on germplasms

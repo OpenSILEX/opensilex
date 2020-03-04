@@ -68,6 +68,7 @@ import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.vocabulary.XSD;
 import org.eclipse.rdf4j.model.Value;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Allows CRUD methods of scientific objects in the triplestore.
@@ -94,8 +95,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
 
     private static final String MAX_ID = "maxID";
 
-    public ScientificObjectRdf4jDAO() {
-        super();
+    public ScientificObjectRdf4jDAO(SPARQLService sparql) {
+        super(sparql);
     }
 
     /**
@@ -220,7 +221,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         boolean dataOk = true;
         for (ScientificObject scientificObject : scientificObjects) {
             //Check if the types are present in the ontology
-            UriDAO uriDao = new UriDAO();
+            UriDAO uriDao = new UriDAO(sparql);
 
             if (!scientificObjectTypesCache.contains(scientificObject.getRdfType())) {
                 if (!uriDao.isSubClassOf(scientificObject.getRdfType(), Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString())) {
@@ -785,10 +786,16 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * There are risks of collision due to insertion time for the generated
      * URIs. \SILEX:warning
      */
-    private ArrayList<ScientificObject> generateUrisByYear(HashMap<Integer, ArrayList<ScientificObject>> scientificObjecstSortedByYear) {
+    private ArrayList<ScientificObject> generateUrisByYear(HashMap<Integer, ArrayList<ScientificObject>> scientificObjecstSortedByYear) throws Exception {
         ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
         for (Entry<Integer, ArrayList<ScientificObject>> entry : scientificObjecstSortedByYear.entrySet()) {
-            List<String> scientificObjectUris = UriGenerator.generateScientificObjectUris(Integer.toString(entry.getKey()), entry.getValue().size());
+            List<String> scientificObjectUris = new ArrayList<>();
+
+            for (ScientificObject i : entry.getValue()) {
+                scientificObjectUris.add(
+                        UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), Integer.toString(entry.getKey()), null)
+                );
+            }
 
             int numSo = 0;
             for (ScientificObject scientificObject : entry.getValue()) {
@@ -844,7 +851,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
 
                         String propertyURI;
                         try {
-                            propertyURI = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIETY.toString(), null, property.getValue());
+                            propertyURI = UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_VARIETY.toString(), null, property.getValue());
                             Node propertyNode = NodeFactory.createURI(propertyURI);
                             Node propertyType = NodeFactory.createURI(property.getRdfType());
                             org.apache.jena.rdf.model.Property propertyRelation = ResourceFactory.createProperty(property.getRelation());
@@ -1116,7 +1123,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         //2.1.2a Generate variety URI if needed
         for (Property property : scientificObject.getProperties()) {
             if (property.getRdfType() != null && property.getRdfType().equals(Oeso.CONCEPT_VARIETY.toString())) {
-                property.setValue(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIETY.toString(), null, property.getValue()));
+                property.setValue(UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_VARIETY.toString(), null, property.getValue()));
             }
         }
         //2.1.2b Insert data

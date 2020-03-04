@@ -136,7 +136,7 @@ public class ExperimentResourceService extends ResourceService {
 
 
             // convert model list to dto list
-            ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment();
+            ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment(sparql);
             ArrayList<Experiment> xps = new ArrayList<>(resultList.getList().size());
             for (ExperimentModel xpModel : resultList.getList()) {
                 xps.add(modelToExperiment.convert(xpModel));
@@ -200,7 +200,7 @@ public class ExperimentResourceService extends ResourceService {
 
             if (xpModel != null) {
 
-                ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment();
+                ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment(sparql);
 
                 ArrayList<Experiment> xps = new ArrayList<>();
                 xps.add(modelToExperiment.convert(xpModel));
@@ -254,7 +254,7 @@ public class ExperimentResourceService extends ResourceService {
         try {
             // use DAO(s) in order to validate URI(s) from ExperimentPostDTO
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
-            SpeciesDAO speciesDAO = new SpeciesDAO();
+            SpeciesDAO speciesDAO = new SpeciesDAO(sparql);
             ProjectDAO projectDAO = new ProjectDAO(sparql, null);
             UserDAO userDAO = new UserDAO(sparql);
             GroupDAO groupDAO = new GroupDAO(sparql);
@@ -330,7 +330,7 @@ public class ExperimentResourceService extends ResourceService {
 
         try {
             // use DAO(s) in order to validate URI(s) from ExperimentPostDTO
-            SpeciesDAO speciesDAO = new SpeciesDAO();
+            SpeciesDAO speciesDAO = new SpeciesDAO(sparql);
             ProjectDAO projectDAO = new ProjectDAO(sparql, null);
             UserDAO userDAO = new UserDAO(sparql);
             GroupDAO groupDAO = new GroupDAO(sparql);

@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -46,6 +47,7 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +59,9 @@ import org.slf4j.LoggerFactory;
 //@Path("germplasm")
 public class GermplasmResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(GermplasmResourceService.class);
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Inserts germplasm in the storage.
@@ -91,7 +96,7 @@ public class GermplasmResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (germplasms != null && !germplasms.isEmpty()) {
-            GermplasmDAO germplasmDAO = new GermplasmDAO();
+            GermplasmDAO germplasmDAO = new GermplasmDAO(sparql);
             
             germplasmDAO.user = userSession.getUser();
             
@@ -157,7 +162,7 @@ public class GermplasmResourceService extends ResourceService {
             @ApiParam(value = "choose the language of the species", example = "en") @QueryParam("language") String language
       ){
         
-        GermplasmDAO germplasmDAO = new GermplasmDAO();
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql);
         //1. Get count
         Integer totalCount = germplasmDAO.count(uri, label, germplasmType, language, fromGenus, fromSpecies, fromVariety, fromAccession);
         

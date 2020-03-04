@@ -17,6 +17,7 @@ import org.opensilex.rest.user.dal.UserModel;
 
 import java.net.URI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * @author Renaud COLIN
@@ -27,9 +28,9 @@ public class ExperimentModelToExperiment {
     protected final SensorDAO sensorDAO;
     protected final VariableDAO variableDAO;
 
-    public ExperimentModelToExperiment() {
-        sensorDAO = new SensorDAO();
-        variableDAO = new VariableDAO();
+    public ExperimentModelToExperiment(SPARQLService sparql) {
+        sensorDAO = new SensorDAO(sparql);
+        variableDAO = new VariableDAO(sparql);
     }
 
     public Experiment convert(ExperimentModel xp) throws Exception {

@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -34,6 +35,7 @@ import opensilex.service.resource.dto.germplasm.BrapiGermplasmDTO;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.result.ResultForm;
 import opensilex.service.view.brapi.Status;
+import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +47,9 @@ import org.slf4j.LoggerFactory;
 //@Path("/brapi/v1/germplasm")
 public class BrapiGermplasmResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(BrapiGermplasmResourceService.class);
+    
+    @Inject
+    SPARQLService sparql;
     
     @GET
     @ApiOperation(value = "Get all germplasm corresponding to the search params given",
@@ -77,7 +82,7 @@ public class BrapiGermplasmResourceService extends ResourceService {
             uri = germplasmPUI;
         }
         
-        GermplasmDAO germplasmDAO = new GermplasmDAO();
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql);
         //1. Get count
         Integer totalCount = germplasmDAO.count(uri, germplasmName, Oeso.CONCEPT_ACCESSION.toString(), language, null, null, null, null);
         

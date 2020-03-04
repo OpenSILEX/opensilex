@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -46,6 +47,7 @@ import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.EnvironmentMeasure;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Environmental measure resource service.
@@ -55,6 +57,9 @@ import opensilex.service.model.EnvironmentMeasure;
 @Path("/environments")
 @Deprecated
 public class EnvironmentResourceService extends ResourceService {
+    
+    @Inject
+    SPARQLService sparql;
     
     private final Status deprecatedStatus = new Status(StatusCodeMsg.WARNING, StatusCodeMsg.WARNING, StatusCodeMsg.API_DEPRECATED_INFO_MESSAGE);
     
@@ -116,7 +121,7 @@ public class EnvironmentResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (environmentMeasures != null && !environmentMeasures.isEmpty()) {
-            EnvironmentMeasureDAO environmentDAO = new EnvironmentMeasureDAO();
+            EnvironmentMeasureDAO environmentDAO = new EnvironmentMeasureDAO(sparql);
             
             environmentDAO.user = userSession.getUser();
             
@@ -211,7 +216,7 @@ public class EnvironmentResourceService extends ResourceService {
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
     ) {
         // 1. Initialize environmentDAO with parameters
-        EnvironmentMeasureDAO environmentMeasureDAO = new EnvironmentMeasureDAO();
+        EnvironmentMeasureDAO environmentMeasureDAO = new EnvironmentMeasureDAO(sparql);
         
         environmentMeasureDAO.variableUri = variable;
 

@@ -57,6 +57,7 @@ import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.XSD;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.Update;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Vector DAO.
@@ -91,6 +92,10 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
     private final String PERSON_IN_CHARGE = "personInCharge";
         
     private static final String MAX_ID = "maxID";
+
+    public VectorDAO(SPARQLService sparql) {
+        super(sparql);
+    }
     
     /**
      * Generates the query to get the number of vectors in the triplestore for 
@@ -509,7 +514,7 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
         for (VectorDTO vectorDTO : vectorsDTO) {
             try {
                 //2.1 check type (subclass of Vector)
-                UriDAO uriDao = new UriDAO();
+                UriDAO uriDao = new UriDAO(sparql);
                 if (!uriDao.isSubClassOf(vectorDTO.getRdfType(), Oeso.CONCEPT_VECTOR.toString())) {
                     dataOk = false;
                     checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Bad vector type given"));
@@ -597,7 +602,7 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
         //\SILEX:test
         vectors.stream().map((vectorDTO) -> vectorDTO.createObjectFromDTO()).map((vector) -> {
             try {
-                vector.setUri(UriGenerator.generateNewInstanceUri(vector.getRdfType(), null, null));
+                vector.setUri(UriGenerator.generateNewInstanceUri(sparql, vector.getRdfType(), null, null));
             } catch (Exception ex) { //In the vectors case, no exception should be raised
                 java.util.logging.Logger.getLogger(VectorDAO.class.getName()).log(Level.SEVERE, null, ex);
             }

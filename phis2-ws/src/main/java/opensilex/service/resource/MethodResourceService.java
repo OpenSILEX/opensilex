@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -45,6 +46,7 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Method;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Method resource service.
@@ -53,6 +55,9 @@ import opensilex.service.model.Method;
 @Api("/methods")
 @Path("methods")
 public class MethodResourceService extends ResourceService {
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Method POST service.
@@ -81,7 +86,7 @@ public class MethodResourceService extends ResourceService {
                               @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (methods != null && !methods.isEmpty()) {
-            MethodDAO methodDao = new MethodDAO();
+            MethodDAO methodDao = new MethodDAO(sparql);
             if (context.getRemoteAddr() != null) {
                 methodDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -133,7 +138,7 @@ public class MethodResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm response = null;
         if (methods != null && !methods.isEmpty()) {
-            MethodDAO methodDao = new MethodDAO();
+            MethodDAO methodDao = new MethodDAO(sparql);
             if (context.getRemoteAddr() != null) {
                 methodDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -220,7 +225,7 @@ public class MethodResourceService extends ResourceService {
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_METHOD_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_METHOD_LABEL) @QueryParam("label") String label
     ) {
-        MethodDAO methodDao = new MethodDAO();
+        MethodDAO methodDao = new MethodDAO(sparql);
         
         if (uri != null) {
             methodDao.uri = uri;
@@ -270,7 +275,7 @@ public class MethodResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        MethodDAO methodDao = new MethodDAO();
+        MethodDAO methodDao = new MethodDAO(sparql);
         methodDao.uri = method;
         methodDao.setPageSize(limit);
         methodDao.setPage(page);

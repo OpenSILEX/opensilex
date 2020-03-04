@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -35,6 +36,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Ask;
 import opensilex.service.model.Uri;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * URI resource service.
@@ -43,6 +45,9 @@ import opensilex.service.model.Uri;
 @Api("/uri")
 @Path("uri")
 public class UriResourceService extends ResourceService {
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Searches if a URI exists.
@@ -74,7 +79,7 @@ public class UriResourceService extends ResourceService {
                 @URL 
                 @Required String uri) {
 
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         if (uri != null) {
             uriDao.uri = uri;
         }
@@ -136,7 +141,7 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
             @ApiParam(value = "Search by uri", required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri) {
 
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         if (uri != null) {
             uriDao.uri = uri;
         }
@@ -177,7 +182,7 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
             ) {
 
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         if (label != null) {
             uriDao.label = label;
         }
@@ -224,7 +229,7 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         if (uri != null) {
             uriDao.uri = uri;
         }
@@ -295,7 +300,7 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         if (uri != null) {
             uriDao.uri = uri;
         }
@@ -359,7 +364,7 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         if (uri != null) {
             uriDao.uri = uri;
         }
@@ -423,7 +428,7 @@ public class UriResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         if (uri != null) {
             uriDao.uri = uri;
         }
@@ -459,7 +464,7 @@ public class UriResourceService extends ResourceService {
     public Response getTypeIfUriExist(
             @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri) {
 
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         if (uri != null) {
             uriDao.uri = uri;
         }

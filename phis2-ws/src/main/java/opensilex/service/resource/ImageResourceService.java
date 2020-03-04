@@ -74,6 +74,7 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.ImageMetadata;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Image resource service.
@@ -85,6 +86,9 @@ import org.opensilex.fs.service.FileStorageService;
 @Path("/images")
 public class ImageResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(ImageResourceService.class);
+    
+    @Inject
+    SPARQLService sparql;
     
     @Context
     UriInfo uri;
@@ -144,7 +148,7 @@ public class ImageResourceService extends ResourceService {
             @ApiParam(value = "JSON Image metadata", required = true) @Valid List<ImageMetadataDTO> imagesMetadata) {
         AbstractResultForm postResponse;
         if (imagesMetadata != null && !imagesMetadata.isEmpty()) {
-            ImageMetadataMongoDAO imageMongoDao = new ImageMetadataMongoDAO();
+            ImageMetadataMongoDAO imageMongoDao = new ImageMetadataMongoDAO(sparql);
             imageMongoDao.user = userSession.getUser();
             
             final POSTResultsReturn checkImageMetadata = imageMongoDao.check(imagesMetadata); 
@@ -160,6 +164,7 @@ public class ImageResourceService extends ResourceService {
                         
                         // generates the imageUri
                         final String imageUri = UriGenerator.generateNewInstanceUri(
+                                sparql,
                                 Oeso.CONCEPT_IMAGE.toString(), 
                                 Year.now().toString(), 
                                 lastGeneratedUri);
@@ -312,7 +317,7 @@ public class ImageResourceService extends ResourceService {
                 .getFileInformations()
                 .setServerFilePath(webAccessImagesDirectory + URLEncoder.encode(serverFileName, StandardCharsets.UTF_8.toString()));
         
-            ImageMetadataMongoDAO imageMetadataMongoDao = new ImageMetadataMongoDAO();
+            ImageMetadataMongoDAO imageMetadataMongoDao = new ImageMetadataMongoDAO(sparql);
             imageMetadataMongoDao.user = userSession.getUser();
 
             final POSTResultsReturn insertMetadata = imageMetadataMongoDao.insert(Arrays.asList(WAITING_METADATA_INFORMATION.get(imageUri)));
@@ -434,7 +439,7 @@ public class ImageResourceService extends ResourceService {
         @ApiParam(value = "Search by interval - end date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("endDate") @opensilex.service.resource.validation.interfaces.Date(DateFormat.YMDHMSZ) String endDate,
         @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") @URL String sensor) {
         
-        ImageMetadataMongoDAO imageMetadataMongoDao = new ImageMetadataMongoDAO();
+        ImageMetadataMongoDAO imageMetadataMongoDao = new ImageMetadataMongoDAO(sparql);
         
         if (uri != null) {
             imageMetadataMongoDao.uri = uri;

@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -38,6 +39,7 @@ import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Infrastructure;
+import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +52,9 @@ import org.slf4j.LoggerFactory;
 //@Path("/infrastructures")
 public class InfrastructureResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureResourceService.class);
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Searches infrastructures by URI, rdfType. 
@@ -109,7 +114,7 @@ public class InfrastructureResourceService extends ResourceService {
         @ApiParam(value = "Language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language
     ) {
         // 1. Initialize infrastructureDAO with parameters
-        InfrastructureDAO infrastructureDAO = new InfrastructureDAO();
+        InfrastructureDAO infrastructureDAO = new InfrastructureDAO(sparql);
         
         if (uri != null) {
             infrastructureDAO.uri = uri;
@@ -229,7 +234,7 @@ public class InfrastructureResourceService extends ResourceService {
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {            
         // 1. Initialize propertyDAO with parameters
-        PropertyDAO propertyDAO = new PropertyDAO();
+        PropertyDAO propertyDAO = new PropertyDAO(sparql);
         
         propertyDAO.setSubClassOf(Oeso.CONCEPT_INFRASTRUCTURE);
         

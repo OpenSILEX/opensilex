@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -49,6 +50,7 @@ import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.RadiometricTarget;
+import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -60,6 +62,9 @@ import org.slf4j.LoggerFactory;
 @Path("/radiometricTargets")
 public class RadiometricTargetResourceService extends ResourceService {
     final static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(RadiometricTargetResourceService.class);
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Generates a RadiometricTarget list from a given list of RadiometricTargetPostDTO
@@ -139,7 +144,7 @@ public class RadiometricTargetResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (radiometricTargets != null && !radiometricTargets.isEmpty()) {
-            RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO();
+            RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO(sparql);
             
              if (context.getRemoteAddr() != null) {
                 radiometricTargetDAO.remoteUserAdress = context.getRemoteAddr();
@@ -198,7 +203,7 @@ public class RadiometricTargetResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm putResponse = null;
 
-        RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO();
+        RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO(sparql);
         if (context.getRemoteAddr() != null) {
             radiometricTargetDAO.remoteUserAdress = context.getRemoteAddr();
         }
@@ -278,7 +283,7 @@ public class RadiometricTargetResourceService extends ResourceService {
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_LABEL) @QueryParam("label") String label
     ) {
         // 1. Initialize radiometricTargetDAO with parameters
-        RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO();
+        RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO(sparql);
         
         radiometricTargetDAO.uri = uri;
         radiometricTargetDAO.label = label;
@@ -386,7 +391,7 @@ public class RadiometricTargetResourceService extends ResourceService {
         
         try {
             // 1. Initialize propertyDAO with parameters
-            PropertyDAO propertyDAO = new PropertyDAO();
+            PropertyDAO propertyDAO = new PropertyDAO(sparql);
             
             propertyDAO.user = userSession.getUser();
             

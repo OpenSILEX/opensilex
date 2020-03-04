@@ -43,6 +43,7 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Property;
 import opensilex.service.model.RadiometricTarget;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Radiometric target DAO.
@@ -57,6 +58,10 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
     //The following params are used to search in the triplestore
     public String rdfType;
     public String label;
+
+    public RadiometricTargetDAO(SPARQLService sparql) {
+        super(sparql);
+    }
     
     /**
      * Generates the query to get the uri and the label of the radiometric targets
@@ -188,7 +193,7 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
         boolean validData = true;
         
         //1. check if the user is an administrator
-        PropertyDAO propertyDAO = new PropertyDAO();
+        PropertyDAO propertyDAO = new PropertyDAO(sparql);
         for (RadiometricTarget radiometricTarget : radiometricTargets) {
             //1. check the radiometric target if given (for example in case of an update)
             if (radiometricTarget.getUri() != null) {
@@ -296,7 +301,7 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
         for (RadiometricTarget radiometricTarget : radiometricTargets) {
             try {
                 //Generate uri
-                radiometricTarget.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_RADIOMETRIC_TARGET.toString(), null, null));
+                radiometricTarget.setUri(UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_RADIOMETRIC_TARGET.toString(), null, null));
             } catch (Exception ex) { //In the radiometric target case, no exception should be raised
                 insert = false;
             }
@@ -409,7 +414,7 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
      * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
     public RadiometricTarget getRadiometricTarget(String radiometricTargetUri) throws DAOPersistenceException {
-        PropertyDAO propertyDAO = new PropertyDAO();
+        PropertyDAO propertyDAO = new PropertyDAO(sparql);
         RadiometricTarget radiometricTarget = new RadiometricTarget();
         propertyDAO.getAllPropertiesWithLabels(radiometricTarget, null);
         return radiometricTarget;

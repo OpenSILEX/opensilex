@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -45,6 +46,7 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Unit;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Unit resource service.
@@ -53,6 +55,9 @@ import opensilex.service.model.Unit;
 @Api("/units")
 @Path("units")
 public class UnitResourceService extends ResourceService {
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Unit POST service.
@@ -81,7 +86,7 @@ public class UnitResourceService extends ResourceService {
                               @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         if (units != null && !units.isEmpty()) {
-            UnitDAO unitDao = new UnitDAO();
+            UnitDAO unitDao = new UnitDAO(sparql);
             if (context.getRemoteAddr() != null) {
                 unitDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -133,7 +138,7 @@ public class UnitResourceService extends ResourceService {
         @Context HttpServletRequest context) {
         AbstractResultForm response = null;
         if (units != null && !units.isEmpty()) {
-            UnitDAO unitDao = new UnitDAO();
+            UnitDAO unitDao = new UnitDAO(sparql);
             if (context.getRemoteAddr() != null) {
                 unitDao.remoteUserAdress = context.getRemoteAddr();
             }
@@ -221,7 +226,7 @@ public class UnitResourceService extends ResourceService {
         @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @QueryParam("uri") @URL String uri,
         @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_UNIT_LABEL) @QueryParam("label") String label
     ) {
-        UnitDAO unitDao = new UnitDAO();
+        UnitDAO unitDao = new UnitDAO(sparql);
         
         if (uri != null) {
             unitDao.uri = uri;
@@ -270,7 +275,7 @@ public class UnitResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
         
-        UnitDAO unitDao = new UnitDAO();
+        UnitDAO unitDao = new UnitDAO(sparql);
         unitDao.uri = unit;
         unitDao.setPageSize(limit);
         unitDao.setPage(page);

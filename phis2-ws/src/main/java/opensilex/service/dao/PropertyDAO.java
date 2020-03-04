@@ -49,6 +49,7 @@ import opensilex.service.model.Cardinality;
 import opensilex.service.model.RdfResourceDefinition;
 import opensilex.service.model.Property;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.opensilex.sparql.service.SPARQLService;
 
 //SILEX:todo
 //use this DAO in the scientific objects DAO.
@@ -108,6 +109,10 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
     protected final String RELATION_PREF_LABEL = "relationPrefLabel";    
     protected final String PROPERTY_PREF_LABEL = "propertyPrefLabel";    
     protected final String PROPERTY_TYPE_PREF_LABEL = "propertyTypePrefLabel";   
+
+    public PropertyDAO(SPARQLService sparql) {
+        super(sparql);
+    }
     
     /**
      * Prepares the SPARQL query to get the list of properties and their relations
@@ -249,7 +254,7 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
     public boolean isRelationDomainCompatibleWithRdfType(String relationUri, String rdfType) 
             throws DAOPersistenceException {
         ArrayList<String> propertyDomains = getPropertyDomain(relationUri);
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         boolean domainOk = false;
         if (propertyDomains != null && propertyDomains.size() > 0) { //the property has a specific domain
             for (String propertyDomain : propertyDomains) {
@@ -276,7 +281,7 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
     public boolean isRelationRangeCompatibleWithRdfType(String relationUri, String rdfType) 
             throws DAOPersistenceException {
         ArrayList<String> propertyRangeList = getPropertyRange(relationUri);
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         boolean isRdfTypeCompatible = false;
         
         // if the property has a specific range

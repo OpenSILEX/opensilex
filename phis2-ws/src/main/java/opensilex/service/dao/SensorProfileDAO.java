@@ -41,6 +41,7 @@ import opensilex.service.model.Property;
 import opensilex.service.model.SensorProfile;
 import opensilex.service.model.Uri;
 import opensilex.service.resource.dto.sensor.SensorProfileDTO;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Sensor profile DAO.
@@ -56,6 +57,10 @@ public class SensorProfileDAO extends Rdf4jDAO<SensorProfile> {
     //The following attributes are used to search sensors in the triplestore
     private final String RELATION = "relation";
     private final String PROPERTY = "property";
+
+    public SensorProfileDAO(SPARQLService sparql) {
+        super(sparql);
+    }
     
     protected SPARQLQueryBuilder prepareSearchQuery() {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
@@ -84,8 +89,8 @@ public class SensorProfileDAO extends Rdf4jDAO<SensorProfile> {
         boolean validData = true;
         
         //1. check if the user is an administrator
-        UriDAO uriDao = new UriDAO();
-        PropertyDAO propertyDAO = new PropertyDAO();
+        UriDAO uriDao = new UriDAO(sparql);
+        PropertyDAO propertyDAO = new PropertyDAO(sparql);
         for (SensorProfileDTO sensorProfile : sensorProfiles) {
             //2. check if the given uri exist and is a sensor and keep the rdfType
             uriDao.uri = sensorProfile.getUri();

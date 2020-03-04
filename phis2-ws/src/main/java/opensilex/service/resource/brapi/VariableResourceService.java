@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -50,6 +51,7 @@ import opensilex.service.model.ScientificObject;
 import opensilex.service.model.Variable;
 import opensilex.service.resource.ResourceService;
 import opensilex.service.resource.dto.data.BrapiObservationDTO;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Variable resource service.
@@ -61,6 +63,9 @@ import opensilex.service.resource.dto.data.BrapiObservationDTO;
 public class VariableResourceService extends ResourceService implements BrapiCall {
     final static Logger LOGGER = LoggerFactory.getLogger(BrapiVariable.class);
 
+    @Inject
+    SPARQLService sparql;
+    
     /**
      * Overriding BrapiCall method.
      * @return variable call information
@@ -183,7 +188,7 @@ public class VariableResourceService extends ResourceService implements BrapiCal
         //@ApiParam(value = "traitClass") @QueryParam("traitClass") String traitClass
         //\SILEX:todo    
         ) throws SQLException {        
-        VariableDAO varDAO = new VariableDAO();
+        VariableDAO varDAO = new VariableDAO(sparql);
         varDAO.setPageSize(limit);
         varDAO.setPage(page);               
                 
@@ -229,7 +234,7 @@ public class VariableResourceService extends ResourceService implements BrapiCal
     public Response getVariableDetails ( 
         @ApiParam(value = DocumentationAnnotation.VARIABLE_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @PathParam("observationVariableDbId") @Required @URL String variableUri
     ) throws SQLException {        
-        VariableDAO varDAO = new VariableDAO();
+        VariableDAO varDAO = new VariableDAO(sparql);
         ArrayList<BrapiVariable> results = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
         try {
@@ -351,7 +356,7 @@ public class VariableResourceService extends ResourceService implements BrapiCal
         for (BrapiObservationDTO obs:observationsList) {  
             if (!variableURIs.contains(obs.getObservationVariableDbId())){
                 variableURIs.add(obs.getObservationVariableDbId());
-                VariableDAO varDAO = new VariableDAO();
+                VariableDAO varDAO = new VariableDAO(sparql);
                 try {
                     BrapiVariable obsVariable = varDAO.findBrapiVariableById(obs.getObservationVariableDbId());
                     obsVariablesList.add(obsVariable);  
@@ -380,13 +385,13 @@ public class VariableResourceService extends ResourceService implements BrapiCal
     private ArrayList<BrapiObservationDTO> getObservationsList(String studyDbId, List<String> variableURIs) {
 
         ArrayList<BrapiObservationDTO> observations = new ArrayList();  
-        ScientificObjectRdf4jDAO objectDAO = new ScientificObjectRdf4jDAO();
+        ScientificObjectRdf4jDAO objectDAO = new ScientificObjectRdf4jDAO(sparql);
         ArrayList<ScientificObject> objectsList = objectDAO.find(null, null, null, null, studyDbId, null, false);
 
         ArrayList<Variable> variablesList = new ArrayList();
 
         if (variableURIs.isEmpty()) {  
-            VariableDAO variableDaoSesame = new VariableDAO();
+            VariableDAO variableDaoSesame = new VariableDAO(sparql);
             //if variableURIs is empty, we look for all variables observations
             variablesList = variableDaoSesame.getAll(false, false); 
 
@@ -394,7 +399,7 @@ public class VariableResourceService extends ResourceService implements BrapiCal
             //in case a variable uri is duplicated, we keep distinct uris
             List<String> uniqueVariableURIs= variableURIs.stream().distinct().collect(Collectors.toList());
             for (String variableURI:uniqueVariableURIs) {
-                VariableDAO variableDAO = new VariableDAO();
+                VariableDAO variableDAO = new VariableDAO(sparql);
                 try {
                     Variable variable = variableDAO.findById(variableURI);
                     variablesList.add(variable);

@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -37,6 +38,7 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.Namespace;
 import opensilex.service.model.Property;
 import static opensilex.service.resource.DocumentResourceService.LOGGER;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Vocabulary resource service.
@@ -45,6 +47,9 @@ import static opensilex.service.resource.DocumentResourceService.LOGGER;
 @Api("/vocabularies")
 @Path("/vocabularies")
 public class VocabularyResourceService extends ResourceService {
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Gets the list of RDFs properties that can be used.
@@ -135,7 +140,7 @@ public class VocabularyResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        VocabularyDAO vocabularyDAO = new VocabularyDAO();
+        VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
 
         vocabularyDAO.user = userSession.getUser();
         vocabularyDAO.setPage(page);
@@ -231,7 +236,7 @@ public class VocabularyResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        VocabularyDAO vocabularyDAO = new VocabularyDAO();
+        VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
 
         if (rdfType != null) {
             vocabularyDAO.domainRdfType = rdfType;
@@ -340,7 +345,7 @@ public class VocabularyResourceService extends ResourceService {
             @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("rdfType") @URL @Required String rdfType,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-        VocabularyDAO vocabularyDAO = new VocabularyDAO();
+        VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
 
         if (rdfType != null) {
             vocabularyDAO.domainRdfType = rdfType;
@@ -413,7 +418,7 @@ public class VocabularyResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        VocabularyDAO vocabularyDAO = new VocabularyDAO();
+        VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
 
         vocabularyDAO.user = userSession.getUser();
         vocabularyDAO.setPage(page);

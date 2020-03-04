@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -45,6 +46,7 @@ import opensilex.service.resource.dto.annotation.AnnotationPostDTO;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.model.Annotation;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
+import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +65,9 @@ import org.slf4j.LoggerFactory;
 @Path("/annotations")
 public class AnnotationResourceService extends ResourceService {
 
+    @Inject
+    SPARQLService sparql;
+    
     final static Logger LOGGER = LoggerFactory.getLogger(SensorResourceService.class);
 
     public final static String EMPTY_ANNOTATION_LIST = "the annotation list to add is empty";
@@ -99,7 +104,8 @@ public class AnnotationResourceService extends ResourceService {
             @Context HttpServletRequest context) {
 
         // Set DAO
-        AnnotationDAO objectDao = new AnnotationDAO(userSession.getUser());
+        AnnotationDAO objectDao = new AnnotationDAO(sparql);
+        objectDao.user = userSession.getUser();
         if (context.getRemoteAddr() != null) {
             objectDao.remoteUserAdress = context.getRemoteAddr();
         }
@@ -155,7 +161,8 @@ public class AnnotationResourceService extends ResourceService {
             @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATED_BY) @QueryParam("motivatedBy") @URL String motivatedBy,
             @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc) {
 
-        AnnotationDAO annotationDao = new AnnotationDAO(userSession.getUser());
+        AnnotationDAO annotationDao = new AnnotationDAO(sparql);
+        annotationDao.user = userSession.getUser();
         ArrayList<Annotation> annotations;
         try {
             annotations = annotationDao.find(uri, creator, target, bodyValue, motivatedBy, dateSortAsc, page, pageSize);
@@ -230,7 +237,9 @@ public class AnnotationResourceService extends ResourceService {
                     example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI)
             @URL @PathParam("uri") String uri) {
 
-        return getGETByUriResponseFromDAOResults(new AnnotationDAO(userSession.getUser()), uri);
+        AnnotationDAO annotationDao = new AnnotationDAO(sparql);
+        annotationDao.user = userSession.getUser();
+        return getGETByUriResponseFromDAOResults(annotationDao, uri);
     }
 
     /**
@@ -269,7 +278,8 @@ public class AnnotationResourceService extends ResourceService {
             )
             @Valid @NotNull DeleteDTO deleteDTO, @Context HttpServletRequest context) {
 
-        AnnotationDAO annotationDAO = new AnnotationDAO(userSession.getUser());
+        AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
+        annotationDAO.user = userSession.getUser();
         if (context.getRemoteAddr() != null) {
             annotationDAO.setRemoteUserAdress(context.getRemoteAddr());
         }

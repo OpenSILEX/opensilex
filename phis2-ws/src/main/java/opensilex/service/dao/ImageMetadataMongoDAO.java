@@ -38,6 +38,7 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.ConcernedItem;
 import opensilex.service.model.ImageMetadata;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Image metadata DAO.
@@ -47,6 +48,12 @@ import opensilex.service.model.ImageMetadata;
  */
 public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
 
+    private final SPARQLService sparql;
+
+    public ImageMetadataMongoDAO(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+    
     final static Logger LOGGER = LoggerFactory.getLogger(ImageMetadataMongoDAO.class);
     public String uri;
     public String rdfType;
@@ -223,7 +230,7 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
         
         for (ImageMetadataDTO imageMetadata : imagesMetadata) {
             //1. Check if the image type exist
-            ImageMetadataRdf4jDAO imageMetadataRdf4jDao = new opensilex.service.dao.ImageMetadataRdf4jDAO();
+            ImageMetadataRdf4jDAO imageMetadataRdf4jDao = new opensilex.service.dao.ImageMetadataRdf4jDAO(sparql);
             if (!imageMetadataRdf4jDao.existUri(imageMetadata.getRdfType())) {
                 dataOk = false;
                 checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Wrong image type given : " + imageMetadata.getRdfType()));
@@ -238,7 +245,7 @@ public class ImageMetadataMongoDAO extends MongoDAO<ImageMetadata> {
             }
 
             //3. Check if the sensor exist
-            SensorDAO sensorDAO = new SensorDAO();
+            SensorDAO sensorDAO = new SensorDAO(sparql);
             if (!sensorDAO.existAndIsSensor(imageMetadata.getConfiguration().getSensor())) {
                 dataOk = false;
                 checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "Unknown sensor given : " + imageMetadata.getConfiguration().getSensor()));

@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
@@ -41,6 +42,7 @@ import opensilex.service.resource.dto.trait.BrapiTraitDTO;
 import opensilex.service.view.brapi.form.BrapiSingleResponseForm;
 import opensilex.service.model.Call;
 import opensilex.service.model.Trait;
+import org.opensilex.sparql.service.SPARQLService;
 
 
 /**
@@ -54,6 +56,9 @@ import opensilex.service.model.Trait;
 @Singleton
 public class TraitsResourceService implements BrapiCall {
     final static Logger LOGGER = LoggerFactory.getLogger(TraitsResourceService.class);
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Overriding BrapiCall method
@@ -154,7 +159,7 @@ public class TraitsResourceService implements BrapiCall {
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0)int page 
         ) throws SQLException {        
-        TraitDAO traitDAO = new TraitDAO();
+        TraitDAO traitDAO = new TraitDAO(sparql);
         traitDAO.setPageSize(limit);
         traitDAO.setPage(page);           
         return getTraitsData(traitDAO);
@@ -208,7 +213,7 @@ public class TraitsResourceService implements BrapiCall {
     public Response getTraitDetails ( 
         @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("traitDbId") @Required @URL String traitUri
     ) throws SQLException {        
-        TraitDAO traitDAO = new TraitDAO(traitUri);           
+        TraitDAO traitDAO = new TraitDAO(sparql, traitUri);           
         return getOneTraitData(traitDAO);
     }    
     

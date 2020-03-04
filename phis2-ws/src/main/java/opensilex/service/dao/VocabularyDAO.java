@@ -26,6 +26,7 @@ import opensilex.service.ontology.Oeso;
 import opensilex.service.resource.dto.PropertyVocabularyDTO;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Namespace;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Vocabulary DAO.
@@ -43,6 +44,10 @@ public class VocabularyDAO extends Rdf4jDAO<PropertyVocabularyDTO> {
     final static String LABEL_LABEL_EN = "label";
     final static String LABEL_COMMENT_EN = "comment";
     final static String PROPERTY = "property";
+
+    public VocabularyDAO(SPARQLService sparql) {
+        super(sparql);
+    }
 
     /**
      * Gets the list of RDFs properties usually used.
@@ -107,10 +112,10 @@ public class VocabularyDAO extends Rdf4jDAO<PropertyVocabularyDTO> {
      *         false if not
      */
     protected boolean isPropertyDomainContainsRdfType(String property) throws DAOPersistenceException {
-        PropertyDAO propertyDAO = new PropertyDAO();
+        PropertyDAO propertyDAO = new PropertyDAO(sparql);
         ArrayList<String> propertyDomains = propertyDAO.getPropertyDomain(property);
 
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         for (String propertyDomain : propertyDomains) {
             if (propertyDomain.equals(domainRdfType)
                     || uriDao.isSubClassOf(domainRdfType, propertyDomain)) {
@@ -130,7 +135,7 @@ public class VocabularyDAO extends Rdf4jDAO<PropertyVocabularyDTO> {
         PropertyVocabularyDTO property = new PropertyVocabularyDTO();
         property.setRelation(propertyUri);
 
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         uriDao.uri = propertyUri;
         property.setLabels(uriDao.getLabels().asMap());
         property.setComments(uriDao.getComments().asMap());

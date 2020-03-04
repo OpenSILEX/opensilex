@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -50,6 +51,7 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Actuator service.
@@ -58,6 +60,9 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 @Api("/actuators")
 @Path("/actuators")
 public class ActuatorResourceService extends ResourceService {
+    
+    @Inject
+    SPARQLService sparql;
     
     /**
      * Generates a Actuator list from a given list of ActuatorPostDTO.
@@ -151,7 +156,7 @@ public class ActuatorResourceService extends ResourceService {
         AbstractResultForm postResponse = null;
         
         if (actuators != null && !actuators.isEmpty()) {
-            ActuatorDAO actuatorDAO = new ActuatorDAO();
+            ActuatorDAO actuatorDAO = new ActuatorDAO(sparql);
             actuatorDAO.user = userSession.getUser();
             
             POSTResultsReturn result = actuatorDAO.checkAndInsert(actuatorPostDTOsToActuators(actuators));
@@ -233,7 +238,7 @@ public class ActuatorResourceService extends ResourceService {
             @Context HttpServletRequest context) {
         AbstractResultForm putResponse = null;
 
-        ActuatorDAO actuatorDAO = new ActuatorDAO();
+        ActuatorDAO actuatorDAO = new ActuatorDAO(sparql);
 
         actuatorDAO.user = userSession.getUser();
 
@@ -310,7 +315,7 @@ public class ActuatorResourceService extends ResourceService {
         ResultForm<ActuatorDetailDTO> getResponse;
         
         try {
-            ActuatorDAO actuatorDAO = new ActuatorDAO();
+            ActuatorDAO actuatorDAO = new ActuatorDAO(sparql);
             
             ActuatorDetailDTO actuator = new ActuatorDetailDTO(actuatorDAO.findById(uri));
             
@@ -413,7 +418,7 @@ public class ActuatorResourceService extends ResourceService {
             @ApiParam(value = "Search by date of last calibration", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION) @QueryParam("dateOfLastCalibration") @Date(DateFormat.YMD) String dateOfLastCalibration,
             @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @QueryParam("personInCharge") String personInCharge) {
         
-        ActuatorDAO actuatorDAO = new ActuatorDAO();
+        ActuatorDAO actuatorDAO = new ActuatorDAO(sparql);
         //1. Get count
         Integer totalCount = actuatorDAO.count(uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
         
@@ -492,7 +497,7 @@ public class ActuatorResourceService extends ResourceService {
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         
-        ActuatorDAO actuatorDAO = new ActuatorDAO();
+        ActuatorDAO actuatorDAO = new ActuatorDAO(sparql);
         if (context.getRemoteAddr() != null) {
             actuatorDAO.remoteUserAdress = context.getRemoteAddr();
         }

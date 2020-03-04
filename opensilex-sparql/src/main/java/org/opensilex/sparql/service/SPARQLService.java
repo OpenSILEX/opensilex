@@ -58,7 +58,6 @@ import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.exceptions.SPARQLTransactionException;
 import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
-import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;

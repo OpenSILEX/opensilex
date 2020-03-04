@@ -530,4 +530,159 @@ public class ConfigProxyHandler implements InvocationHandler {
             throw new InvalidConfigException(ex);
         }
     }
+    
+     @SuppressWarnings("unchecked")
+    private <T extends Service> T getServiceFactory(Class<T> serviceClass, JsonNode value, Method method) throws InvalidConfigException {
+
+        try {
+            ServiceConfig defaultConfig = Service.getDefaultConfig(serviceClass);
+            String serviceName = method.getName();
+            ServiceConfig overrideConfig = getInterface(ServiceConfig.class, "", value);
+
+            T instance;
+            Class<T> implementation = (Class<T>) defaultConfig.implementation();
+            try {
+                Class<T> newImplementation = (Class<T>) overrideConfig.implementation();
+                if (newImplementation != null && !newImplementation.equals(Service.class)) {
+                    implementation = newImplementation;
+                }
+            } catch (Exception ex) {
+                LOGGER.error("Error while getting service implementation class for: " + serviceName);
+                throw ex;
+            }
+
+            if (implementation.equals(Service.class)) {
+                implementation = serviceClass;
+            }
+
+            if (!serviceClass.isAssignableFrom(implementation)) {
+                String errorMessage = "Invalid implementation defined for service: " + serviceName;
+                LOGGER.error(errorMessage);
+                throw new Exception(errorMessage);
+            }
+
+            boolean hasEmptyConstructor = Service.hasEmptyConstructor(implementation);
+            boolean isConfigurable = Service.isConfigurable(implementation);
+            boolean isConnectable = Service.isConnectable(implementation);
+
+            if (isConnectable) {
+                Class<? extends ServiceConnection> connectionClass = defaultConfig.connection();
+                try {
+                    Class<? extends ServiceConnection> newConnectionClass = overrideConfig.connection();
+                    if (newConnectionClass != null && !newConnectionClass.equals(ServiceConnection.class)) {
+                        connectionClass = newConnectionClass;
+                    }
+                } catch (Exception ex) {
+                    LOGGER.error("Error while getting service connection class for: " + serviceName);
+                    throw ex;
+                }
+
+                if (connectionClass != null && !connectionClass.equals(ServiceConnection.class)) {
+                    ServiceConnection connection = null;
+
+                    Class<?> connectionConfigClass = defaultConfig.connectionConfig();
+                    Class<?> newConnectionConfigClass = overrideConfig.connectionConfig();
+                    if (newConnectionConfigClass != null && !newConnectionConfigClass.equals(Class.class)) {
+                        connectionConfigClass = newConnectionConfigClass;
+                    }
+
+                    String connectionConfigID = defaultConfig.connectionConfigID();
+                    String newConnectionConfigID = overrideConfig.connectionConfigID();
+                    if (!newConnectionConfigID.trim().equals("")) {
+                        connectionConfigID = newConnectionConfigID;
+                    }
+
+                    if (!connectionConfigClass.equals(Class.class) && !connectionConfigID.trim().equals("")) {
+                        Constructor<? extends ServiceConnection> constructorWithConfig = ClassUtils.getConstructorWithParameterImplementing(connectionClass, connectionConfigClass);
+                        if (constructorWithConfig == null) {
+                            try {
+                                connection = connectionClass.getConstructor().newInstance();
+                            } catch (Exception ex) {
+                                LOGGER.error("Error while getting service connection instance with no parameters for: " + serviceName + " - " + connectionClass.getName());
+                                throw ex;
+                            }
+                        } else {
+                            try {
+                                Object connectionConfig = getInterface(connectionConfigClass, '/' + connectionConfigID, value);
+                                connection = connectionClass.getConstructor(connectionConfigClass).newInstance(connectionConfig);
+                            } catch (Exception ex) {
+                                LOGGER.error("Error while loading connection with configuration instance: " + serviceName + " - " + connectionClass.getName());
+                                throw ex;
+                            }
+                        }
+                    } else {
+                        try {
+                            connection = connectionClass.getConstructor().newInstance();
+                        } catch (Exception ex) {
+                            LOGGER.error("Error while getting service connection instance with no parameters for: " + serviceName + " - " + connectionClass.getName());
+                            throw ex;
+                        }
+                    }
+
+                    try {
+                        Constructor<T> constructorWithConnection = ClassUtils.getConstructorWithParameterImplementing(implementation, ServiceConnection.class);
+                        if (constructorWithConnection != null) {
+                            instance = constructorWithConnection.newInstance(connection);
+                        } else {
+                            String errorMessage = "No valid constructor found for service with connection: " + serviceName + " - " + connectionClass.getName();
+                            LOGGER.error(errorMessage);
+                            throw new Exception(errorMessage);
+                        }
+                    } catch (Exception ex) {
+                        LOGGER.error("Error while creating service with connection: " + serviceName + " - " + connectionClass.getName());
+                        throw ex;
+                    }
+
+                } else {
+                    String errorMessage = "Error invalid service connection for: " + serviceName;
+                    LOGGER.error(errorMessage);
+                    throw new Exception(errorMessage);
+                }
+            } else if (isConfigurable) {
+                Class<?> configClass = defaultConfig.configClass();
+                Class<?> newConfigClass = overrideConfig.configClass();
+                if (!newConfigClass.equals(Class.class)) {
+                    configClass = newConfigClass;
+                }
+
+                String configID = defaultConfig.configID();
+                String newConfigID = overrideConfig.configID();
+                if (!newConfigID.trim().equals("")) {
+                    configID = newConfigID;
+                }
+
+                if (configClass.equals(Class.class) || configID.trim().equals("")) {
+                    String errorMessage = "Missing service configuration (class or id) for service: " + serviceName;
+                    LOGGER.error(errorMessage);
+                    throw new Exception(errorMessage);
+                }
+
+                try {
+                    Object config = getInterface(configClass, '/' + configID, value);
+                    instance = implementation.getConstructor(configClass).newInstance(config);
+                } catch (Exception ex) {
+                    LOGGER.error("Error while creating service with configration: " + serviceName + " - " + configClass.getName());
+                    throw ex;
+                }
+            } else if (hasEmptyConstructor) {
+                try {
+                    instance = implementation.getConstructor().newInstance();
+                } catch (Exception ex) {
+                    LOGGER.error("Error while creating service with no parameters: " + serviceName);
+                    throw ex;
+                }
+
+            } else {
+                String errorMessage = "No usable constructor found for service: " + serviceName;
+                LOGGER.error(errorMessage);
+                throw new Exception(errorMessage);
+
+            }
+
+            return instance;
+
+        } catch (Exception ex) {
+            throw new InvalidConfigException(ex);
+        }
+    }
 }

@@ -13,6 +13,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import javax.mail.internet.InternetAddress;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.SecurityContext;
+
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.Contact;
@@ -32,8 +35,7 @@ import org.opensilex.sparql.service.SPARQLService;
 /**
  * The DTO for the PUT projects service.
  *
- * @see ProjectResourceService#put(java.util.ArrayList,
- * javax.servlet.http.HttpServletRequest)
+ * @see ProjectResourceService#put(ArrayList, HttpServletRequest, SecurityContext)
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProjectPutDTO extends AbstractVerifiedClass {
@@ -274,24 +276,27 @@ public class ProjectPutDTO extends AbstractVerifiedClass {
         }
 
         UserDAO userDAO = new UserDAO(sparql);
-        List<InternetAddress> addresses = new ArrayList<>();
-        for (String contactURI : this.getAdministrativeContacts()) {
-            UserModel user = userDAO.get(new URI(contactURI));
-            addresses.add(user.getEmail());
+        List<UserModel> addresses = new ArrayList<>();
+        for (String contact : this.getAdministrativeContacts()) {
+            if (contact != null && !contact.isEmpty()) {
+                addresses.add(userDAO.get(new URI(contact)));
+            }
         }
         project.setAdministrativeContacts(addresses);
 
         addresses = new ArrayList<>();
-        for (String contactURI : this.getCoordinators()) {
-            UserModel user = userDAO.get(new URI(contactURI));
-            addresses.add(user.getEmail());
+        for (String contact : this.getCoordinators()) {
+            if (contact != null && !contact.isEmpty()) {
+                addresses.add(userDAO.get(new URI(contact)));
+            }
         }
         project.setCoordinators(addresses);
 
         addresses = new ArrayList<>();
-        for (String contactURI : this.getScientificContacts()) {
-            UserModel user = userDAO.get(new URI(contactURI));
-            addresses.add(user.getEmail());
+        for (String contact : this.getScientificContacts()) {
+            if (contact != null && !contact.isEmpty()) {
+                addresses.add(userDAO.get(new URI(contact)));
+            }
         }
         project.setScientificContacts(addresses);
 

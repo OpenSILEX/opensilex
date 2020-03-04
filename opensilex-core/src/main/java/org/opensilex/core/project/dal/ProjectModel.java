@@ -12,6 +12,7 @@ import javax.mail.internet.InternetAddress;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -78,19 +79,19 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
             ontology = Oeso.class,
             property = "hasAdministrativeContact"
     )
-    private List<InternetAddress> administrativeContacts;
+    private List<UserModel> administrativeContacts;
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasCoordinator"
     )
-    private List<InternetAddress> coordinators;
+    private List<UserModel> coordinators;
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasScientificContact"
     )
-    private List<InternetAddress> scientificContacts;
+    private List<UserModel> scientificContacts;
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -170,27 +171,27 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
         this.homePage = homePage;
     }
 
-    public List<InternetAddress> getAdministrativeContacts() {
+    public List<UserModel> getAdministrativeContacts() {
         return administrativeContacts;
     }
 
-    public void setAdministrativeContacts(List<InternetAddress> administrativeContacts) {
+    public void setAdministrativeContacts(List<UserModel> administrativeContacts) {
         this.administrativeContacts = administrativeContacts;
     }
 
-    public List<InternetAddress> getCoordinators() {
+    public List<UserModel> getCoordinators() {
         return coordinators;
     }
 
-    public void setCoordinators(List<InternetAddress> coordinators) {
+    public void setCoordinators(List<UserModel> coordinators) {
         this.coordinators = coordinators;
     }
 
-    public List<InternetAddress> getScientificContacts() {
+    public List<UserModel> getScientificContacts() {
         return scientificContacts;
     }
 
-    public void setScientificContacts(List<InternetAddress> scientificContacts) {
+    public void setScientificContacts(List<UserModel> scientificContacts) {
         this.scientificContacts = scientificContacts;
     }
 

@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -53,8 +54,10 @@ import opensilex.service.model.StudyDetails;
 import opensilex.service.model.Variable;
 import opensilex.service.ontology.Oeso;
 import opensilex.service.resource.ResourceService;
+import opensilex.service.resource.dto.experiment.ExperimentModelToExperiment;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
+import opensilex.service.result.ResultForm;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.BrapiMultiResponseForm;
@@ -526,29 +529,34 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
     ) throws SQLException {               
 
         try  {
+            
+            ExperimentSearchDTO searchDTO = new ExperimentSearchDTO(); 
+            ExperimentDAO xpDao = new ExperimentDAO(sparql);
+            ExperimentModel xpModel = xpDao.get(new URI(studyDbId));
+            
             ArrayList<Status> statusList = new ArrayList<>();  
-
-            ArrayList<BrapiObservationDTO> observationsList = getObservationsList(studyDbId, new ArrayList());
-            ArrayList<String> variableURIs = new ArrayList();
-            ArrayList<BrapiVariable> obsVariablesList = new ArrayList();
-            for (BrapiObservationDTO obs:observationsList) {  
-                if (!variableURIs.contains(obs.getObservationVariableDbId())){
-                    variableURIs.add(obs.getObservationVariableDbId());
+            
+            if (xpModel != null) {
+                List<URI> variables = xpModel.getVariables();
+                ArrayList<BrapiVariable> brapiVariables= new ArrayList();
+            
+                for (URI var:variables) {
                     VariableDAO varDAO = new VariableDAO();
-                    try {
-                        BrapiVariable obsVariable = varDAO.findBrapiVariableById(obs.getObservationVariableDbId());
-                        obsVariablesList.add(obsVariable);  
-                    } catch (Exception ex) {
-                        // Ignore unknown variable id
-                    }
-                }            
-            }
-            if (observationsList.isEmpty()) {
-                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, obsVariablesList, true);
-                return noResultFound(getResponse, statusList);
+                    BrapiVariable brapiVar = varDAO.findBrapiVariableById(var.toString());
+                    brapiVariables.add(brapiVar);
+                }
+                if (brapiVariables.isEmpty()) {
+                    BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, brapiVariables, true);
+                    return noResultFound(getResponse, statusList);
+                } else {
+                    BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, brapiVariables, false);
+                    return Response.status(Response.Status.OK).entity(getResponse).build();
+                }
+            
             } else {
-                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, obsVariablesList, false);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
+                ArrayList<BrapiVariable> var = new ArrayList<>();
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0,0,var,true);
+                return noResultFound(getResponse, statusList);            
             }
             
         } catch (Exception e) {

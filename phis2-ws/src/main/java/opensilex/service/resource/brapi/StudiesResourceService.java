@@ -871,10 +871,14 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         study.setName(xp.getLabel());
         study.setStudyName(xp.getLabel());
         ArrayList<String> seasons = new ArrayList();
-        seasons.add(xp.getCampaign().toString());
+        if (xp.getCampaign() != null) {
+            seasons.add(xp.getCampaign().toString());
+        }        
         study.setSeasons(seasons);
         study.setStartDate(xp.getStartDate().toString());
-        study.setEndDate(xp.getEndDate().toString());
+        if (xp.getEndDate() != null) {
+            study.setEndDate(xp.getEndDate().toString());
+        }
         LocalDate startDate = xp.getStartDate();
         LocalDate endDate = xp.getEndDate();        
         if (startDate.compareTo(LocalDate.now()) <= 0  && (endDate == null | endDate.compareTo(LocalDate.now()) >= 0 )) {

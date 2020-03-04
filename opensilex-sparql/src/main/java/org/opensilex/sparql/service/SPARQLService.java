@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+
 import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
@@ -199,22 +200,33 @@ public class SPARQLService implements SPARQLConnection, Service {
         connection.executeDeleteQuery(delete);
     }
 
+    private int transactionLevel = 0;
+
     @Override
     public void startTransaction() throws SPARQLTransactionException {
-        LOGGER.debug("SPARQL TRANSACTION START");
-        connection.startTransaction();
+        if (transactionLevel == 0) {
+            LOGGER.debug("SPARQL TRANSACTION START");
+            connection.startTransaction();
+        }
+        transactionLevel++;
     }
 
     @Override
     public void commitTransaction() throws SPARQLTransactionException {
-        LOGGER.debug("SPARQL TRANSACTION COMMIT");
-        connection.commitTransaction();
+        transactionLevel--;
+        if (transactionLevel == 0) {
+            LOGGER.debug("SPARQL TRANSACTION COMMIT");
+            connection.commitTransaction();
+        }
     }
 
     @Override
     public void rollbackTransaction() throws SPARQLTransactionException {
-        LOGGER.debug("SPARQL TRANSACTION ROLLBACK");
-        connection.rollbackTransaction();
+        if (transactionLevel != 0) {
+            LOGGER.debug("SPARQL TRANSACTION ROLLBACK");
+            connection.rollbackTransaction();
+            transactionLevel = 0;
+        }
     }
 
     @Override
@@ -222,7 +234,7 @@ public class SPARQLService implements SPARQLConnection, Service {
         LOGGER.debug("SPARQL CLEAR GRAPH: " + graph);
         connection.clearGraph(graph);
     }
-
+    
     @Override
     public void renameGraph(URI oldGraphURI, URI newGraphURI) throws SPARQLException {
         LOGGER.debug("MOVE GRAPH " + oldGraphURI + " TO " + newGraphURI);
@@ -424,7 +436,7 @@ public class SPARQLService implements SPARQLConnection, Service {
     public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, Integer page, Integer pageSize) throws Exception {
         return searchWithPagination(objectClass, lang, filterHandler, null, page, pageSize);
     }
-    
+
     public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         int total = count(objectClass, filterHandler);
 
@@ -441,13 +453,15 @@ public class SPARQLService implements SPARQLConnection, Service {
     }
 
     public <T extends SPARQLResourceModel> void create(T instance) throws Exception {
-        @SuppressWarnings("unchecked")
-        SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass((Class<T>) instance.getClass());
+        create(instance, true);
+    }
 
-        generateUniqueUriIfNullOrValidateCurrent(sparqlObjectMapper, instance);
+    private <T extends SPARQLResourceModel> void create(T instance, boolean checkUriExist) throws Exception {
+
+        SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(instance.getClass());
+        generateUniqueUriIfNullOrValidateCurrent(sparqlObjectMapper, instance, checkUriExist);
 
         UpdateBuilder create = sparqlObjectMapper.getCreateBuilder(instance);
-
         executeUpdateQuery(create);
     }
 
@@ -455,9 +469,8 @@ public class SPARQLService implements SPARQLConnection, Service {
         if (instances.size() > 0) {
             UpdateBuilder create = new UpdateBuilder();
             for (T instance : instances) {
-                @SuppressWarnings("unchecked")
-                SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass((Class<T>) instance.getClass());
-                generateUniqueUriIfNullOrValidateCurrent(sparqlObjectMapper, instance);
+                SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(instance.getClass());
+                generateUniqueUriIfNullOrValidateCurrent(sparqlObjectMapper, instance, true);
                 sparqlObjectMapper.addCreateBuilder(instance, create);
             }
 
@@ -465,7 +478,8 @@ public class SPARQLService implements SPARQLConnection, Service {
         }
     }
 
-    private <T extends SPARQLResourceModel> void generateUniqueUriIfNullOrValidateCurrent(SPARQLClassObjectMapper<T> sparqlObjectMapper, T instance) throws Exception {
+
+    private <T extends SPARQLResourceModel> void generateUniqueUriIfNullOrValidateCurrent(SPARQLClassObjectMapper<T> sparqlObjectMapper, T instance, boolean checkUriExist) throws Exception {
         URIGenerator<T> uriGenerator = sparqlObjectMapper.getUriGenerator(instance);
         URI uri = sparqlObjectMapper.getURI(instance);
         if (uri == null) {
@@ -478,10 +492,8 @@ public class SPARQLService implements SPARQLConnection, Service {
             }
 
             sparqlObjectMapper.setUri(instance, uri);
-        } else {
-            if (uriExists(uri)) {
-                throw new SPARQLAlreadyExistingUriException(uri);
-            }
+        } else if (checkUriExist && uriExists(uri)) {
+            throw new SPARQLAlreadyExistingUriException(uri);
         }
     }
 
@@ -490,27 +502,37 @@ public class SPARQLService implements SPARQLConnection, Service {
         Class<T> objectClass = (Class<T>) instance.getClass();
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
 
-        UpdateBuilder update = new UpdateBuilder();
-        T oldInstance = loadByURI(objectClass, sparqlObjectMapper.getURI(instance), null);
-        if (oldInstance == null) {
-            throw new SPARQLInvalidURIException(instance.getUri());
-        }
+        try {
+            this.startTransaction();
 
-        sparqlObjectMapper.addUpdateBuilder(oldInstance, instance, update);
-        executeUpdateQuery(update);
+            T oldInstance = loadByURI(objectClass, sparqlObjectMapper.getURI(instance), null);
+            if (oldInstance == null) {
+                throw new SPARQLInvalidURIException(instance.getUri());
+            }
+
+            delete(oldInstance.getClass(), oldInstance.getUri());
+            create(instance, false);
+
+            this.commitTransaction();
+        } catch (Exception ex) {
+
+            this.rollbackTransaction();
+            throw ex;
+        }
     }
 
     public <T extends SPARQLResourceModel> void update(List<T> instances) throws Exception {
         if (instances.size() > 0) {
-            UpdateBuilder update = new UpdateBuilder();
+//            UpdateBuilder update = new UpdateBuilder();
             for (T instance : instances) {
-                @SuppressWarnings("unchecked")
-                Class<T> objectClass = (Class<T>) instance.getClass();
-                SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-                sparqlObjectMapper.addUpdateBuilder(loadByURI(objectClass, sparqlObjectMapper.getURI(instance), null), instance, update);
+                update(instance);
+//                @SuppressWarnings("unchecked")
+//                Class<T> objectClass = (Class<T>) instance.getClass();
+//                SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
+//                sparqlObjectMapper.addUpdateBuilder(loadByURI(objectClass, sparqlObjectMapper.getURI(instance), null), instance, update);
             }
 
-            executeUpdateQuery(update);
+//            executeUpdateQuery(update);
         }
     }
 
@@ -566,10 +588,10 @@ public class SPARQLService implements SPARQLConnection, Service {
     }
 
     /**
-     *
      * @param rdfType the {@link RDF#type} to check
-     * @param uri the {@link URI} to check
-     * @return true if uri exists in the TripleStore and if it's an instance of rdfType
+     * @param uri     the {@link URI} to check
+     * @return true if uri exists in the TripleStore and if it's an instance of
+     * rdfType
      */
     public boolean uriExists(URI rdfType, URI uri) throws SPARQLException {
 
@@ -615,7 +637,6 @@ public class SPARQLService implements SPARQLConnection, Service {
         SelectBuilder select = new SelectBuilder();
         select.addVar("x");
         select.addGraph(g, SPARQLDeserializers.nodeURI(s), p.asNode(), "?x");
-
 
         List<URI> oldValues = new ArrayList<>();
 

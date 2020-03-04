@@ -495,9 +495,14 @@ public class OpenSilex {
      *
      * @throws Exception
      */
-    public void install() throws Exception {
-        moduleManager.install();
+    public void install(boolean reset) throws Exception {
+        moduleManager.install(reset);
     }
+    
+    public void check() throws Exception {
+        moduleManager.check();
+    }
+    
 
     /**
      * Return module instance corresponding to the given class Throw an

@@ -28,9 +28,9 @@
             <destName>opensilex.jar</destName>
         </file>
         <file>
-            <source>${project.basedir}/src/main/assembly/logback-prod.xml</source>
+            <source>${project.basedir}/src/main/assembly/logback.xml</source>
             <outputDirectory>.</outputDirectory>
-            <destName>logback-prod.xml</destName>
+            <destName>logback.xml</destName>
         </file>        
     </files>
 </assembly>

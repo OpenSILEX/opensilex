@@ -1,0 +1,723 @@
+<?xml version="1.0"?>
+<rdf:RDF
+     xml:base="http://www.opensilex.org/vocabulary/oeev"
+     xmlns:oeev="http://www.opensilex.org/vocabulary/oeev#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:time="http://www.w3.org/2006/time#"
+     xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeev">
+        <dc:creator>Anne Tireau, Llorenç Cabrera-Bosquet, Pascal Neveu (INRA Montpellier)</dc:creator>
+        <owl:versionInfo>Version 3.0 (2019-01-16) created by INRA</owl:versionInfo>
+        <rdfs:label xml:lang="en">OpenSILEX - Ontology of Experimental Events (OEEv)</rdfs:label>
+        <rdfs:comment>INRA MISTEA
+Copyright © - INRA - 2014 - 2019
+The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by-sa/4.0/legalcode)</rdfs:comment>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://purl.org/dc/elements/1.1/creator -->
+
+    <owl:AnnotationProperty rdf:about="http://purl.org/dc/elements/1.1/creator"/>
+    
+
+
+    <!-- http://purl.org/dc/elements/1.1/source -->
+
+    <owl:AnnotationProperty rdf:about="http://purl.org/dc/elements/1.1/source"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#associatedTo -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#associatedTo">
+        <rdfs:label xml:lang="en">associated to</rdfs:label>
+        <rdfs:label xml:lang="fr">associé avec</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#associatedToASensor -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#associatedToASensor">
+        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#associatedTo"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#AssociatedToASensor"/>
+        <rdfs:label xml:lang="en">associated to a sensor</rdfs:label>
+        <rdfs:label xml:lang="fr">associé avec un capteur</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#concerns -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#concerns">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#Event"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#from -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#from">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#MoveFrom"/>
+        <owl:propertyDisjointWith rdf:resource="http://www.opensilex.org/vocabulary/oeev#to"/>
+        <rdfs:label xml:lang="fr">Depuis</rdfs:label>
+        <rdfs:label xml:lang="en">From</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#hasDocument -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#hasDocument">
+        <rdfs:label xml:lang="en">has document</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#hasPest -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#hasPest">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#PestAttack"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeev#Pest"/>
+        <rdfs:label xml:lang="en">has pest</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#to -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#to">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#MoveTo"/>
+        <rdfs:label xml:lang="en">to</rdfs:label>
+        <rdfs:label xml:lang="fr">vers</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.w3.org/2006/time#hasTime -->
+
+    <owl:ObjectProperty rdf:about="http://www.w3.org/2006/time#hasTime">
+        <rdfs:label xml:lang="en">has time</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#fromDevice -->
+
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#fromDevice">
+        <rdfs:label xml:lang="fr">Config, descr du terminal si existe, cf scannex</rdfs:label>
+        <rdfs:label xml:lang="fr">Depuis le terminal</rdfs:label>
+        <rdfs:label xml:lang="en">From device</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#fromIP -->
+
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#fromIP"/>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#isConfidential -->
+
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#isConfidential">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:label xml:lang="en">confidentiality</rdfs:label>
+        <rdfs:label xml:lang="fr">confidentialité</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#AddingProduct -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#AddingProduct">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:label xml:lang="en">Adding product</rdfs:label>
+        <rdfs:label xml:lang="fr">Ajout de produit</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#AssociatedToASensor -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#AssociatedToASensor">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#FacilityManagement"/>
+        <rdfs:label xml:lang="fr">Associé à un capteur</rdfs:label>
+        <rdfs:label xml:lang="en">associated to a sensor</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#AutomaticCalibration -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#AutomaticCalibration">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Calibration"/>
+        <rdfs:label xml:lang="en">Automatic calibration</rdfs:label>
+        <rdfs:label xml:lang="fr">Calibration automatique</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Breakdown -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Breakdown">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Trouble"/>
+        <rdfs:label xml:lang="en">Breakdown</rdfs:label>
+        <rdfs:label xml:lang="fr">Panne</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Calibration -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Calibration">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#FacilityManagement"/>
+        <rdfs:label xml:lang="en">Calibration</rdfs:label>
+        <rdfs:label xml:lang="fr">Calibration</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Checking -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Checking">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Servicing"/>
+        <rdfs:comment>Révision</rdfs:comment>
+        <rdfs:label xml:lang="en">Checking</rdfs:label>
+        <rdfs:label xml:lang="fr">Révision</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Cleaning -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Cleaning">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Servicing"/>
+        <rdfs:label xml:lang="en">Cleaning</rdfs:label>
+        <rdfs:label xml:lang="fr">Nettoyage</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Clipping -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Clipping">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:label xml:lang="en">Clipping</rdfs:label>
+        <rdfs:label xml:lang="fr">Ecrêtage</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#CorrectiveMaintenance -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#CorrectiveMaintenance">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Operability"/>
+        <rdfs:label xml:lang="en">Corrective maintenance</rdfs:label>
+        <rdfs:label xml:lang="fr">Maintenance correctrice</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#CurativeTreatment -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#CurativeTreatment">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Treatment"/>
+        <rdfs:label xml:lang="en">Curative treatment</rdfs:label>
+        <rdfs:label xml:lang="fr">Traitement curatif</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Detasseling -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Detasseling">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:label xml:lang="en">Detasseling</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Displacement -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Displacement">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Event"/>
+        <rdfs:comment xml:lang="en">Event describing the displacement in time and space of the different objects participating in experiments. For instance, plants are often transferred, during a single experiment, between installations or compartments with different environmental conditions. Similarly, sensors can be replaced or moved to different positions in the field or greenhouse.</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Evénement de déplacement général objet scientifique, équipement, etc.</rdfs:comment>
+        <rdfs:label xml:lang="en">Displacement</rdfs:label>
+        <rdfs:label xml:lang="fr">Déplacement</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Dysfunction -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Dysfunction">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Trouble"/>
+        <rdfs:label xml:lang="en">Dysfunction</rdfs:label>
+        <rdfs:label xml:lang="fr">Dysfunctionnement</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Event -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Event">
+        <rdfs:comment xml:lang="fr">Evenement lie a un objet</rdfs:comment>
+        <rdfs:comment xml:lang="en">Event linked to an object involved in an experiment</rdfs:comment>
+        <rdfs:label xml:lang="en">Event</rdfs:label>
+        <rdfs:label xml:lang="fr">Evénement</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#EvolutiveMaintenance -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#EvolutiveMaintenance">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Operability"/>
+        <rdfs:label xml:lang="en">Evolutive maintenance</rdfs:label>
+        <rdfs:label xml:lang="fr">Maintenance évolutive</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#FacilityManagement -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#FacilityManagement">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Event"/>
+        <rdfs:comment xml:lang="en">Refers to the set of actions related to the management and maintenance infrastructure and supporting equipment.</rdfs:comment>
+        <rdfs:label xml:lang="en">Facility management</rdfs:label>
+        <rdfs:label xml:lang="fr">Gestion d&apos;équipement</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Fertilization -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Fertilization">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#AddingProduct"/>
+        <rdfs:label xml:lang="en">Fertilization</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Harvesting -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Harvesting">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:label xml:lang="en">Harvesting</rdfs:label>
+        <rdfs:label xml:lang="fr">Récolte</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Incident -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Incident">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Trouble"/>
+        <rdfs:comment>Agit sur un objet scientifique</rdfs:comment>
+        <rdfs:comment xml:lang="en">Concerns a scientific object</rdfs:comment>
+        <rdfs:label xml:lang="en">Incident</rdfs:label>
+        <rdfs:label xml:lang="fr">Incident</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Installation -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Installation">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#FacilityManagement"/>
+        <rdfs:label xml:lang="en">Installation of devices</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Irrigation -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Irrigation">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:label xml:lang="en">Irrigation</rdfs:label>
+        <rdfs:label xml:lang="fr">Irrigation</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Loading -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Loading">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:label xml:lang="fr">Chargement</rdfs:label>
+        <rdfs:label xml:lang="en">Loading</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Lodging -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Lodging">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Incident"/>
+        <rdfs:isDefinedBy>skos:closeMatch http://www.cropontology.org/rdf/CO_323:0000021</rdfs:isDefinedBy>
+        <rdfs:label xml:lang="en">Lodging</rdfs:label>
+        <rdfs:label xml:lang="fr">Verse</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#ManualCalibration -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#ManualCalibration">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Calibration"/>
+        <rdfs:label xml:lang="fr">Calibration manuel</rdfs:label>
+        <rdfs:label xml:lang="en">Manual calibration</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#MoveFrom -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#MoveFrom">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Displacement"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeev#from"/>
+                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <owl:disjointWith rdf:resource="http://www.opensilex.org/vocabulary/oeev#MoveTo"/>
+        <rdfs:label xml:lang="fr">Déplacement depuis</rdfs:label>
+        <rdfs:label xml:lang="en">Move from</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#MoveTo -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#MoveTo">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Displacement"/>
+        <rdfs:label xml:lang="fr">Déplacement vers</rdfs:label>
+        <rdfs:label xml:lang="en">Move to</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Operability -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Operability">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#FacilityManagement"/>
+        <rdfs:label xml:lang="en">Operability</rdfs:label>
+        <rdfs:label xml:lang="fr">Opérabilité</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Pest -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Pest">
+        <rdfs:isDefinedBy>skos:closeMatch http://www.cropontology.org/rdf/CO_715:0000216</rdfs:isDefinedBy>
+        <rdfs:label xml:lang="en">Pest type</rdfs:label>
+        <rdfs:label xml:lang="fr">Type de ravageur</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#PestAttack -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#PestAttack">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Incident"/>
+        <rdfs:label xml:lang="fr">Attaque de ravageurs</rdfs:label>
+        <rdfs:label xml:lang="en">Pest attack</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#PhenologyScoring -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#PhenologyScoring">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:label xml:lang="en">Observed phenology</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#PotFall -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#PotFall">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Incident"/>
+        <rdfs:label xml:lang="fr">Chute du pot</rdfs:label>
+        <rdfs:label xml:lang="en">Pot fall</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Potting -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Potting">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:label xml:lang="fr">Empotage</rdfs:label>
+        <rdfs:label xml:lang="en">Potting</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#PreventativeTreatment -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#PreventativeTreatment">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Treatment"/>
+        <rdfs:label xml:lang="en">Preventive treatment</rdfs:label>
+        <rdfs:label xml:lang="fr">Traitement preventif</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Reparation -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Reparation">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#CorrectiveMaintenance"/>
+        <rdfs:label xml:lang="en">Repair</rdfs:label>
+        <rdfs:label xml:lang="fr">Réparation</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Restart -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Restart">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#FacilityManagement"/>
+        <rdfs:label xml:lang="fr">Redémarrage</rdfs:label>
+        <rdfs:label xml:lang="en">Restart</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Sampling -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Sampling">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:label xml:lang="fr">Echantillonnage</rdfs:label>
+        <rdfs:label xml:lang="en">Sampling</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Event"/>
+        <rdfs:label xml:lang="fr">Gestion d&apos;objet scientifique</rdfs:label>
+        <rdfs:label xml:lang="en">Scientific object management</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Servicing -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Servicing">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Operability"/>
+        <rdfs:comment>Entretien révision...</rdfs:comment>
+        <rdfs:label xml:lang="fr">Entretien</rdfs:label>
+        <rdfs:label xml:lang="en">Servicing</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Sowing -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Sowing">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:label xml:lang="fr">Ensemencement</rdfs:label>
+        <rdfs:label xml:lang="en">Sowing</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Staking -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Staking">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:comment xml:lang="en">Installation of plant tutors</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Tuteurage d&apos;une plante</rdfs:comment>
+        <rdfs:label xml:lang="en">Staking</rdfs:label>
+        <rdfs:label xml:lang="fr">Tuteurage</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Start -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Start">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#FacilityManagement"/>
+        <rdfs:label xml:lang="fr">Démarrage</rdfs:label>
+        <rdfs:label xml:lang="en">Start</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Stop -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Stop">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#FacilityManagement"/>
+        <rdfs:label xml:lang="fr">Arrêt</rdfs:label>
+        <rdfs:label xml:lang="en">Stop</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#StuckPlant -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#StuckPlant">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Incident"/>
+        <rdfs:label xml:lang="fr">Plante bloquée</rdfs:label>
+        <rdfs:label xml:lang="en">Stuck plant</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Thinning -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Thinning">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:label xml:lang="fr">Eclaircissement</rdfs:label>
+        <rdfs:label xml:lang="en">Thinning</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Treatment -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Treatment">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:label xml:lang="fr">Traitement</rdfs:label>
+        <rdfs:label xml:lang="en">Treatment</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Trouble -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Trouble">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Event"/>
+        <rdfs:label xml:lang="fr">Problème</rdfs:label>
+        <rdfs:label xml:lang="en">Trouble</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#anthesis -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeev#anthesis">
+        <rdfs:label xml:lang="en">Anthesis</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#emergence -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeev#emergence">
+        <rdfs:label xml:lang="en">Emergence</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#leafStage -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeev#leafStage">
+        <rdfs:label xml:lang="en">leaf stage</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#silking -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeev#silking">
+        <rdfs:label xml:lang="en">silking</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // General axioms
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <rdf:Description>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeev#Displacement"/>
+            <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeev#FacilityManagement"/>
+            <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+            <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeev#Trouble"/>
+        </owl:members>
+    </rdf:Description>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.2.8.20170104-2310) https://github.com/owlcs/owlapi -->
+

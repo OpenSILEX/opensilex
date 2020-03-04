@@ -34,7 +34,7 @@ public class SPARQLCommands extends HelpPrinterCommand implements OpenSilexComma
             @CommandLine.Parameters(description = "New graph URI", defaultValue = "") URI newGraphURI,
             @CommandLine.Mixin HelpOption help
     ) throws Exception {
-        SPARQLService sparql = OpenSilex.getInstance().getServiceInstance("sparql", SPARQLService.class);
+        SPARQLService sparql = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
         sparql.renameGraph(oldGraphURI, newGraphURI);
     }
 }

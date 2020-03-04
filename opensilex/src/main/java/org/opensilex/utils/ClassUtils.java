@@ -163,9 +163,14 @@ public class ClassUtils {
         return getPomFile(getJarFile(clazz), groupId, artifactId);
     }
 
+    
+    public static File getFileFromClassArtifact(Class<?> clazz, String filePath) throws IOException {
+        return getFileFromJar(getJarFile(clazz), filePath);
+    }
+    
     public static File getFileFromJar(File jarFile, String filePath) throws IOException {
         ZipFile zipFile = new ZipFile(jarFile);
-        ZipEntry entry = zipFile.getEntry(filePath);;
+        ZipEntry entry = zipFile.getEntry(filePath);
 
         InputStream pomStream = zipFile.getInputStream(entry);
         File temp = File.createTempFile("opensilex-temp.", ".temp");

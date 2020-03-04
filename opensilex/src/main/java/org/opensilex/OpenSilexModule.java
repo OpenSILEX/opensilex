@@ -331,10 +331,21 @@ public abstract class OpenSilexModule {
      * Default method for module installation, to be implemented by module
      * implementations for installation logic
      *
+     * @param reset should reset intallation
      * @throws Exception Can throw anything
      */
-    public void install() throws Exception {
+    public void install(boolean reset) throws Exception {
         LOGGER.debug("Nothing to install for module class: " + getClass().getCanonicalName());
+    }
+    
+/**
+     * Default method for module configuration check, to be implemented by module
+     * implementations for validation logic
+     *
+     * @throws Exception Can throw anything
+     */
+    public void check() throws Exception {
+        LOGGER.debug("Nothing to check for module class: " + getClass().getCanonicalName());
     }
 
     /**

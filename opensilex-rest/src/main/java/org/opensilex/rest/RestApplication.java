@@ -171,17 +171,17 @@ public class RestApplication extends ResourceConfig {
                 // Make opensilex instance injectable
                 bind(app).to(OpenSilex.class);
 
-                // Make every service injectable
-                app.getServiceManager().forEachInterface((Class<? extends Service> serviceClass, Map<String, Service> implementations) -> {
-                    implementations.forEach((String name, Service implementation) -> {
-                        bind(implementation).named(name).to((Class<? super Service>) serviceClass);
-                    });
-                });
-
                 // Make every module injectable
                 for (OpenSilexModule module : app.getModules()) {
                     bind(module).to((Class<? super OpenSilexModule>) module.getClass());
                 }
+                
+//                // Make every service injectable
+//                app.getServiceManager().forEachInterface((Class<? extends Service> serviceClass, Map<String, Service> implementations) -> {
+//                    implementations.forEach((String name, Service implementation) -> {
+//                        bind(implementation).named(name).to((Class<? super Service>) serviceClass);
+//                    });
+//                });
             }
         });
 

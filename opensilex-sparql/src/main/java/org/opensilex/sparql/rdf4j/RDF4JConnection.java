@@ -17,6 +17,7 @@ import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.*;
+import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
@@ -33,31 +34,28 @@ import org.opensilex.sparql.exceptions.SPARQLTransactionException;
  */
 public class RDF4JConnection implements SPARQLConnection {
 
-    private RepositoryConnection rdf4JConnection;
+    private Repository repository;
     private RDF4JConfig config;
 
     public RDF4JConnection(RDF4JConfig config) {
         this.config = config;
     }
 
-    public RDF4JConnection(RepositoryConnection connection) {
-        this.rdf4JConnection = connection;
+    public RDF4JConnection(Repository repository) {
+        this.repository = repository;
     }
 
     @Override
     public void startup() {
-        if (rdf4JConnection == null) {
-            HTTPRepository repository = new HTTPRepository(config.serverURI(), config.repository());
-            rdf4JConnection = repository.getConnection();
+        if (repository == null) {
+            repository = new HTTPRepository(config.serverURI(), config.repository());
         }
 
     }
 
     @Override
     public void shutdown() {
-        if (rdf4JConnection != null) {
-            rdf4JConnection.close();
-        }
+        repository = null;
     }
 
     @Override

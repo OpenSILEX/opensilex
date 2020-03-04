@@ -26,6 +26,7 @@ import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Model;
@@ -48,6 +49,7 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceConfigDefault;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -631,6 +633,30 @@ public class SPARQLService implements SPARQLConnection, Service {
 
             executeDeleteQuery(delete);
         }
+    }
+
+    /**
+     * Insert the a new quad (graph,subject,property,object) and remove any old quad (graph,subject,property,?x)
+     * in the SPARQL graph
+     *
+     * @param graph the Graph in which the triple is present
+     * @param subject the triple subject URI
+     * @param property the triple property
+     * @param object the triple object value
+     */
+    public void updateObjectRelation(Node graph, URI subject, Property property, Object object) throws Exception {
+
+        UpdateBuilder updateBuilder = new UpdateBuilder();
+
+        Node subjectNode = SPARQLDeserializers.nodeURI(subject);
+        Node objectNode = SPARQLDeserializers.getForClass(object.getClass()).getNode(object);
+        Node objectVariable = makeVar("o");
+
+        updateBuilder.addDelete(graph,subjectNode,property,objectVariable);
+        updateBuilder.addInsert(graph,subjectNode,property,objectNode);
+        updateBuilder.addWhere(subjectNode,property,objectVariable);
+
+        executeUpdateQuery(updateBuilder);
     }
 
     public void updateObjectRelation(Node g, URI s, Property p, URI n) throws SPARQLException {

@@ -84,7 +84,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
         calldatatypes.add("json");
         ArrayList<String> callMethods = new ArrayList<>();
         callMethods.add("GET");
-        callMethods.add("POST");
+        //callMethods.add("POST");
         ArrayList<String> callVersions = new ArrayList<>();
         callVersions.add("1.2");
         Call call1 = new Call("studies-search", calldatatypes, callMethods, callVersions);
@@ -98,7 +98,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
      * @return result of the studies-search request BRAPI V1.2
      * @throws opensilex.service.dao.exception.DAOPersistenceException
      */
-    @POST
+    //@POST
     @ApiOperation(value = "search studies",
                   notes = "search studies")
     @ApiResponses(value = {
@@ -199,7 +199,8 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
                     return Response.status(Response.Status.OK).entity(getResponse).build();
                 }  
             } catch (Exception e) {
-                return new ErrorResponse(e).getResponse();
+                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();        
             }
 
         } else {
@@ -359,8 +360,10 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
                 BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(resultList.getPageSize(), resultList.getPage(), studies, true, resultList.getTotal());
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }  
+            
         } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();        
         }
         
     }   

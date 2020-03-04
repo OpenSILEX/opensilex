@@ -56,8 +56,10 @@ import opensilex.service.resource.ResourceService;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
+import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.BrapiMultiResponseForm;
 import opensilex.service.view.brapi.form.BrapiSingleResponseForm;
+import opensilex.service.view.brapi.form.ResponseFormPOST;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -206,7 +208,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             ArrayList<OrderBy> orderByList = new ArrayList();
             
             if (!StringUtils.isEmpty(studyDbId)) {
-                searchDTO.setUri(URI.create(studyDbId));
+                searchDTO.setUri(URI.create(studyDbId));                
             }            
 
             if (!StringUtils.isEmpty(seasonDbId)) {
@@ -256,7 +258,8 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }  
         } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
         }  
 
     }
@@ -344,7 +347,8 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }  
         } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
         }    
        
     }
@@ -521,30 +525,37 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
     ) throws SQLException {               
 
-        ArrayList<Status> statusList = new ArrayList<>();  
+        try  {
+            ArrayList<Status> statusList = new ArrayList<>();  
 
-        ArrayList<BrapiObservationDTO> observationsList = getObservationsList(studyDbId, new ArrayList());
-        ArrayList<String> variableURIs = new ArrayList();
-        ArrayList<BrapiVariable> obsVariablesList = new ArrayList();
-        for (BrapiObservationDTO obs:observationsList) {  
-            if (!variableURIs.contains(obs.getObservationVariableDbId())){
-                variableURIs.add(obs.getObservationVariableDbId());
-                VariableDAO varDAO = new VariableDAO();
-                try {
-                    BrapiVariable obsVariable = varDAO.findBrapiVariableById(obs.getObservationVariableDbId());
-                    obsVariablesList.add(obsVariable);  
-                } catch (Exception ex) {
-                    // Ignore unknown variable id
-                }
-            }            
+            ArrayList<BrapiObservationDTO> observationsList = getObservationsList(studyDbId, new ArrayList());
+            ArrayList<String> variableURIs = new ArrayList();
+            ArrayList<BrapiVariable> obsVariablesList = new ArrayList();
+            for (BrapiObservationDTO obs:observationsList) {  
+                if (!variableURIs.contains(obs.getObservationVariableDbId())){
+                    variableURIs.add(obs.getObservationVariableDbId());
+                    VariableDAO varDAO = new VariableDAO();
+                    try {
+                        BrapiVariable obsVariable = varDAO.findBrapiVariableById(obs.getObservationVariableDbId());
+                        obsVariablesList.add(obsVariable);  
+                    } catch (Exception ex) {
+                        // Ignore unknown variable id
+                    }
+                }            
+            }
+            if (observationsList.isEmpty()) {
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, obsVariablesList, true);
+                return noResultFound(getResponse, statusList);
+            } else {
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, obsVariablesList, false);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
+            
+        } catch (Exception e) {
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();        
         }
-        if (observationsList.isEmpty()) {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, obsVariablesList, true);
-            return noResultFound(getResponse, statusList);
-        } else {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, obsVariablesList, false);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
-        }      
+      
     }
     
     /**
@@ -676,33 +687,39 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
     ) throws SQLException, Exception {           
 
-        ArrayList<Status> statusList = new ArrayList<>();                  
+        try {
+            ArrayList<Status> statusList = new ArrayList<>();                  
 
-        String rdfType = null;
-        if (observationLevel != null) {
-            rdfType =  Oeso.NAMESPACE + observationLevel;
-        }
-        
-        ScientificObjectRdf4jDAO scientificObjectsDAO = new ScientificObjectRdf4jDAO();
-        ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, rdfType, studyDbId, null, false);
+            String rdfType = null;
+            if (observationLevel != null) {
+                rdfType =  Oeso.NAMESPACE + observationLevel;
+            }
 
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql);
-        ExperimentModel xp = experimentDAO.get(new URI(studyDbId));
-        if (xp != null) {
-            ArrayList<BrapiObservationUnitDTO> observationUnits= getObservationUnitsResult(scientificObjects,xp);
+            ScientificObjectRdf4jDAO scientificObjectsDAO = new ScientificObjectRdf4jDAO();
+            ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, rdfType, studyDbId, null, false);
 
-            if (observationUnits.isEmpty()) {
-                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observationUnits, true);
-                return noResultFound(getResponse, statusList);
+            ExperimentDAO experimentDAO = new ExperimentDAO(sparql);
+            ExperimentModel xp = experimentDAO.get(new URI(studyDbId));
+            if (xp != null) {
+                ArrayList<BrapiObservationUnitDTO> observationUnits= getObservationUnitsResult(scientificObjects,xp);
+
+                if (observationUnits.isEmpty()) {
+                    BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observationUnits, true);
+                    return noResultFound(getResponse, statusList);
+                } else {
+                    BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, observationUnits, false);
+                    return Response.status(Response.Status.OK).entity(getResponse).build();
+                }  
+
             } else {
-                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, observationUnits, false);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, new ArrayList<>(), true);
+                return noResultFound(getResponse, statusList);
             }  
-            
-        } else {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, new ArrayList<>(), true);
-            return noResultFound(getResponse, statusList);
-        }        
+        } catch (Exception e) {
+                AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();        
+        }
+              
 
     }
 
@@ -727,16 +744,23 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
      * @return observations list 
      */
     private Response getStudyObservations(String studyDbId, List<String> variableURIs, int limit, int page) {
-        ArrayList<Status> statusList = new ArrayList<>();         
-        ArrayList<BrapiObservationDTO> observations = getObservationsList(studyDbId,variableURIs);
+        ArrayList<Status> statusList = new ArrayList<>();  
+        try {
+            ArrayList<BrapiObservationDTO> observations = getObservationsList(studyDbId,variableURIs);
 
-        if (observations.isEmpty()) {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observations, true);
-            return noResultFound(getResponse, statusList);
-        } else {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, observations, false);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
-        }    
+            if (observations.isEmpty()) {
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observations, true);
+                return noResultFound(getResponse, statusList);
+            } else {
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, observations, false);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }   
+            
+        } catch (Exception e) {
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
+        }
+         
     }
 
     /**

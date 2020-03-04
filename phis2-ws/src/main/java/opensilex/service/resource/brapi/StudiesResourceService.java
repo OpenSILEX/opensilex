@@ -63,6 +63,7 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
 import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
@@ -867,7 +868,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
     public StudyDTO convert(ExperimentModel xp) {
 
         StudyDTO study = new StudyDTO();
-        study.setStudyDbId(xp.getUri().toString());
+        study.setStudyDbId(SPARQLDeserializers.getExpandedURI(xp.getUri().toString()));
         study.setName(xp.getLabel());
         study.setStudyName(xp.getLabel());
         ArrayList<String> seasons = new ArrayList();

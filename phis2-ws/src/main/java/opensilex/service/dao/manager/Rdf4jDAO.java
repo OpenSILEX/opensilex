@@ -597,7 +597,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     }
 
     public SPARQLService getSPARQLService() {
-        return OpenSilex.getInstance().getServiceInstance("sparql", SPARQLService.class);
+        return OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
     }
 
     public RepositoryConnection getConnection() {

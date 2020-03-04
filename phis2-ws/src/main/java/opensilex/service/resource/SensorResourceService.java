@@ -735,9 +735,10 @@ public class SensorResourceService extends ResourceService {
         dataDAO.setPageSize(pageSize);
 
         ProvenanceDAO provenanceDAO  = new ProvenanceDAO();
-        provenanceDAO.setPage(1);
+        provenanceDAO.setPage(0);
         provenanceDAO.setPageSize(500);
         
+        //1. Get associated sensors
         ArrayList<String> provenanceUrisAssociatedToSensor = new ArrayList<>();
         if (provenanceUri != null){
             provenanceUrisAssociatedToSensor.add(provenanceUri);
@@ -753,19 +754,18 @@ public class SensorResourceService extends ResourceService {
         List<String> objectsUris = new ArrayList<>();
         List<Data> dataFounded = new ArrayList<>();
         Integer totalCount = 0;
-        
         if(!provenanceUrisAssociatedToSensor.isEmpty()){
             if(object != null){
                 objectsUris.add(object);
             }
-            //1. Get sensor data count
+            //2. Get sensor data count
             totalCount = dataDAO.count(variablesUri, startDate, endDate, objectsUris, provenanceUrisAssociatedToSensor);
-            //2. Get sensor data
+            //3. Get sensor data
             if(totalCount > 0){
                 dataFounded = dataDAO.find(page, pageSize, variablesUri,  startDate, endDate, objectsUris, provenanceUrisAssociatedToSensor);
             }
         } 
-        //3. Return result
+        //4. Return result
         ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<DataDTO> sensorsToReturn = new ArrayList<>();
         ResultForm<DataDTO> getResponse;

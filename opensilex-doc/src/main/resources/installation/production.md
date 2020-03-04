@@ -35,7 +35,7 @@ Please follow MongoDB official install documentation for your operating system.
 
 You must start a MongoDB Replica Set to allow transaction usage with MongoDB.
 
-So you need to strat MongoDB daemon with option `--replSet opensilex`.
+So you need to start MongoDB daemon with option `--replSet opensilex`.
 
 `opensilex` meaning the name of your replica set and it can be changed.
 
@@ -139,6 +139,7 @@ unzip opensilex-dev-X.Y.Z.zip
 
 You should get the following directory structure:
 
+```
 /home/opensilex/
 +-- bin/
     +-- <X.Y.Z>/
@@ -155,6 +156,7 @@ You should get the following directory structure:
 +-- config/
 +-- data/
 +-- logs/
+```
 
 ## Configuration
 

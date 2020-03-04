@@ -538,11 +538,12 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             
             if (xpModel != null) {
                 List<URI> variables = xpModel.getVariables();
+                //SPARQLDeserializers.getExpandedURI(xp.getUri().toString())
                 ArrayList<BrapiVariable> brapiVariables= new ArrayList();
             
                 for (URI var:variables) {
                     VariableDAO varDAO = new VariableDAO();
-                    BrapiVariable brapiVar = varDAO.findBrapiVariableById(var.toString());
+                    BrapiVariable brapiVar = varDAO.findBrapiVariableById(SPARQLDeserializers.getExpandedURI(var.toString()));
                     brapiVariables.add(brapiVar);
                 }
                 if (brapiVariables.isEmpty()) {

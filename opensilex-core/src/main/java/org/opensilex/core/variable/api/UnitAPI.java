@@ -50,7 +50,11 @@ import org.opensilex.utils.ListWithPagination;
 public class UnitAPI {
 
     @Inject
-    private SPARQLService sparql;
+    public UnitAPI(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
 
     @POST
     @ApiOperation("Create a unit")
@@ -66,17 +70,19 @@ public class UnitAPI {
     public Response createUnit(
             @ApiParam("Unit description") @Valid UnitCreationDTO dto
     ) throws Exception {
-        UnitDAO dao = new UnitDAO(sparql);
-        try {
-            UnitModel model = dto.newModel();
-            dao.create(model);
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
-        } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-            return new ErrorResponse(
-                    Response.Status.CONFLICT,
-                    "Unit already exists",
-                    duplicateUriException.getMessage()
-            ).getResponse();
+        try (sparql) {
+            UnitDAO dao = new UnitDAO(sparql);
+            try {
+                UnitModel model = dto.newModel();
+                dao.create(model);
+                return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
+                return new ErrorResponse(
+                        Response.Status.CONFLICT,
+                        "Unit already exists",
+                        duplicateUriException.getMessage()
+                ).getResponse();
+            }
         }
     }
 
@@ -96,18 +102,20 @@ public class UnitAPI {
             @ApiParam(value = "Unit URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam("Unit description") @Valid UnitUpdateDTO dto
     ) throws Exception {
-        UnitDAO dao = new UnitDAO(sparql);
+        try (sparql) {
+            UnitDAO dao = new UnitDAO(sparql);
 
-        UnitModel model = dao.get(uri);
-        if (model != null) {
-            dao.update(dto.defineModel(model));
-            return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Unit not found",
-                    "Unknown unit URI: " + uri
-            ).getResponse();
+            UnitModel model = dao.get(uri);
+            if (model != null) {
+                dao.update(dto.defineModel(model));
+                return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
+            } else {
+                return new ErrorResponse(
+                        Response.Status.NOT_FOUND,
+                        "Unit not found",
+                        "Unknown unit URI: " + uri
+                ).getResponse();
+            }
         }
     }
 
@@ -126,9 +134,11 @@ public class UnitAPI {
     public Response deleteUnit(
             @ApiParam(value = "Unit URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        UnitDAO dao = new UnitDAO(sparql);
-        dao.delete(uri);
-        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        try (sparql) {
+            UnitDAO dao = new UnitDAO(sparql);
+            dao.delete(uri);
+            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        }
     }
 
     @GET
@@ -146,19 +156,21 @@ public class UnitAPI {
     public Response getUnit(
             @ApiParam(value = "Unit URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        UnitDAO dao = new UnitDAO(sparql);
-        UnitModel model = dao.get(uri);
+        try (sparql) {
+            UnitDAO dao = new UnitDAO(sparql);
+            UnitModel model = dao.get(uri);
 
-        if (model != null) {
-            return new SingleObjectResponse<>(
-                    UnitGetDTO.fromModel(model)
-            ).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Unit not found",
-                    "Unknown method URI: " + uri.toString()
-            ).getResponse();
+            if (model != null) {
+                return new SingleObjectResponse<>(
+                        UnitGetDTO.fromModel(model)
+                ).getResponse();
+            } else {
+                return new ErrorResponse(
+                        Response.Status.NOT_FOUND,
+                        "Unit not found",
+                        "Unknown method URI: " + uri.toString()
+                ).getResponse();
+            }
         }
     }
 
@@ -181,18 +193,20 @@ public class UnitAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize
     ) throws Exception {
-        UnitDAO dao = new UnitDAO(sparql);
-        ListWithPagination<UnitModel> resultList = dao.search(
-                namePattern,
-                commentPattern,
-                orderByList,
-                page,
-                pageSize
-        );
-        ListWithPagination<UnitGetDTO> resultDTOList = resultList.convert(
-                UnitGetDTO.class,
-                UnitGetDTO::fromModel
-        );
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        try (sparql) {
+            UnitDAO dao = new UnitDAO(sparql);
+            ListWithPagination<UnitModel> resultList = dao.search(
+                    namePattern,
+                    commentPattern,
+                    orderByList,
+                    page,
+                    pageSize
+            );
+            ListWithPagination<UnitGetDTO> resultDTOList = resultList.convert(
+                    UnitGetDTO.class,
+                    UnitGetDTO::fromModel
+            );
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        }
     }
 }

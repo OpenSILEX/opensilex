@@ -50,7 +50,11 @@ import org.opensilex.utils.ListWithPagination;
 public class QualityAPI {
 
     @Inject
-    private SPARQLService sparql;
+    public QualityAPI(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
 
     @POST
     @ApiOperation("Create a quality")
@@ -66,17 +70,19 @@ public class QualityAPI {
     public Response createQuality(
             @ApiParam("Quality description") @Valid QualityCreationDTO dto
     ) throws Exception {
-        QualityDAO dao = new QualityDAO(sparql);
-        try {
-            QualityModel model = dto.newModel();
-            dao.create(model);
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
-        } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-            return new ErrorResponse(
-                    Response.Status.CONFLICT,
-                    "Quality already exists",
-                    duplicateUriException.getMessage()
-            ).getResponse();
+        try (sparql) {
+            QualityDAO dao = new QualityDAO(sparql);
+            try {
+                QualityModel model = dto.newModel();
+                dao.create(model);
+                return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
+                return new ErrorResponse(
+                        Response.Status.CONFLICT,
+                        "Quality already exists",
+                        duplicateUriException.getMessage()
+                ).getResponse();
+            }
         }
     }
 
@@ -96,18 +102,20 @@ public class QualityAPI {
             @ApiParam(value = "Quality URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam("Quality description") @Valid QualityUpdateDTO dto
     ) throws Exception {
-        QualityDAO dao = new QualityDAO(sparql);
+        try (sparql) {
+            QualityDAO dao = new QualityDAO(sparql);
 
-        QualityModel model = dao.get(uri);
-        if (model != null) {
-            dao.update(dto.defineModel(model));
-            return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Quality not found",
-                    "Unknown quality URI: " + uri
-            ).getResponse();
+            QualityModel model = dao.get(uri);
+            if (model != null) {
+                dao.update(dto.defineModel(model));
+                return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
+            } else {
+                return new ErrorResponse(
+                        Response.Status.NOT_FOUND,
+                        "Quality not found",
+                        "Unknown quality URI: " + uri
+                ).getResponse();
+            }
         }
     }
 
@@ -126,9 +134,11 @@ public class QualityAPI {
     public Response deleteQuality(
             @ApiParam(value = "Quality URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        QualityDAO dao = new QualityDAO(sparql);
-        dao.delete(uri);
-        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        try (sparql) {
+            QualityDAO dao = new QualityDAO(sparql);
+            dao.delete(uri);
+            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        }
     }
 
     @GET
@@ -146,19 +156,21 @@ public class QualityAPI {
     public Response getQuality(
             @ApiParam(value = "Quality URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        QualityDAO dao = new QualityDAO(sparql);
-        QualityModel model = dao.get(uri);
+        try (sparql) {
+            QualityDAO dao = new QualityDAO(sparql);
+            QualityModel model = dao.get(uri);
 
-        if (model != null) {
-            return new SingleObjectResponse<>(
-                    QualityGetDTO.fromModel(model)
-            ).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Quality not found",
-                    "Unknown method URI: " + uri.toString()
-            ).getResponse();
+            if (model != null) {
+                return new SingleObjectResponse<>(
+                        QualityGetDTO.fromModel(model)
+                ).getResponse();
+            } else {
+                return new ErrorResponse(
+                        Response.Status.NOT_FOUND,
+                        "Quality not found",
+                        "Unknown method URI: " + uri.toString()
+                ).getResponse();
+            }
         }
     }
 
@@ -181,18 +193,20 @@ public class QualityAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize
     ) throws Exception {
-        QualityDAO dao = new QualityDAO(sparql);
-        ListWithPagination<QualityModel> resultList = dao.search(
-                namePattern,
-                commentPattern,
-                orderByList,
-                page,
-                pageSize
-        );
-        ListWithPagination<QualityGetDTO> resultDTOList = resultList.convert(
-                QualityGetDTO.class,
-                QualityGetDTO::fromModel
-        );
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        try (sparql) {
+            QualityDAO dao = new QualityDAO(sparql);
+            ListWithPagination<QualityModel> resultList = dao.search(
+                    namePattern,
+                    commentPattern,
+                    orderByList,
+                    page,
+                    pageSize
+            );
+            ListWithPagination<QualityGetDTO> resultDTOList = resultList.convert(
+                    QualityGetDTO.class,
+                    QualityGetDTO::fromModel
+            );
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        }
     }
 }

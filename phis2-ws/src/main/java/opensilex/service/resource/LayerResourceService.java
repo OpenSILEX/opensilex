@@ -43,28 +43,34 @@ import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Layer resource service.
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/layers")
 @Path("layers")
 public class LayerResourceService extends ResourceService {
-    
+
     @Inject
-    SPARQLService sparql;
-    
+    public LayerResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     @Inject
     FileStorageService fs;
-    
+
     /**
      * Layer POST service.
+     *
      * @param layers
      * @param context
-     * @return 
-     * @throws java.io.IOException 
+     * @return
+     * @throws java.io.IOException
      */
     @POST
     @ApiOperation(value = "Post a layer",
-                  notes = "Create a geojson layer file")
+            notes = "Create a geojson layer file")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Layer geojson file created", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -73,72 +79,72 @@ public class LayerResourceService extends ResourceService {
     })
     @ApiImplicitParams({
         @ApiImplicitParam(name = "Authorization", required = true,
-                          dataType = "string", paramType = "header",
-                          value = DocumentationAnnotation.ACCES_TOKEN,
-                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+                dataType = "string", paramType = "header",
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postLayer(
-        @ApiParam(value = DocumentationAnnotation.LAYER_POST_DATA_DEFINITION) @Valid ArrayList<LayerDTO> layers,
-        @Context HttpServletRequest context) throws IOException {
+            @ApiParam(value = DocumentationAnnotation.LAYER_POST_DATA_DEFINITION) @Valid ArrayList<LayerDTO> layers,
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
-        
-        /*
+        try (sparql) {
+            /*
         SILEX:todo
         Generate a layer per element and return the URL of all the generared files.
-        */
-        if (layers !=  null && !layers.isEmpty()) { 
-            LayerDAO layerDao = new LayerDAO(sparql);
-            List<String> urlFilesList = new ArrayList<>();
-            if (ResourcesUtils.getStringBooleanValue(layers.get(0).getGenerateFile())) { // Generate file
+             */
+            if (layers != null && !layers.isEmpty()) {
+                LayerDAO layerDao = new LayerDAO(sparql);
+                List<String> urlFilesList = new ArrayList<>();
+                if (ResourcesUtils.getStringBooleanValue(layers.get(0).getGenerateFile())) { // Generate file
 
-                /*
+                    /*
                 SILEX:todo
                 For the moment, done for a single layer (the first of the list sent)
                 Then it should be done for the rest.
-                */
-                POSTResultsReturn resultCreateFile = layerDao.createLayerFile(layers.get(0), fs);
+                     */
+                    POSTResultsReturn resultCreateFile = layerDao.createLayerFile(layers.get(0), fs);
 
-                
-                /*
+                    /*
                 SILEX:warning
                 Not sure of this. To check
-                */
-                if (resultCreateFile.getHttpStatus().equals(Response.Status.CREATED)) {
-                /*
+                     */
+                    if (resultCreateFile.getHttpStatus().equals(Response.Status.CREATED)) {
+                        /*
                 /SILEX:warning    
-                */
-                    // Base return. The file URL has to be added.
-                    postResponse = new ResponseFormPOST(resultCreateFile.statusList);
-                    urlFilesList.add(layerDao.fileWebPath);
-                    postResponse.getMetadata().setDatafiles(urlFilesList);
-                    return Response.status(resultCreateFile.getHttpStatus()).entity(postResponse).build();
-                } else {
-                    return Response.status(resultCreateFile.getHttpStatus()).entity(postResponse).build();
+                         */
+                        // Base return. The file URL has to be added.
+                        postResponse = new ResponseFormPOST(resultCreateFile.statusList);
+                        urlFilesList.add(layerDao.fileWebPath);
+                        postResponse.getMetadata().setDatafiles(urlFilesList);
+                        return Response.status(resultCreateFile.getHttpStatus()).entity(postResponse).build();
+                    } else {
+                        return Response.status(resultCreateFile.getHttpStatus()).entity(postResponse).build();
+                    }
+                } else { // The file mustn't be generated
+                    String fileWebPath = layerDao.getObjectURILayerFilePath(layers.get(0).getObjectUri(), fs);
+                    File f = new File(fileWebPath);
+
+                    if (f.exists()) { // Return the URL is existing
+                        urlFilesList.add(layerDao.getObjectURILayerFileWebPath(layers.get(0).getObjectUri()));
+                        List<Status> statusList = new ArrayList<>();
+                        statusList.add(new Status("File exist", StatusCodeMsg.INFO, fileWebPath));
+                        POSTResultsReturn layerFile = new POSTResultsReturn(true, true, true);
+                        layerFile.statusList = statusList;
+                        postResponse = new ResponseFormPOST(layerFile.statusList);
+                        postResponse.getMetadata().setDatafiles(urlFilesList);
+
+                        return Response.status(layerFile.getHttpStatus()).entity(postResponse).build();
+                    } else { // Otherwise, an error has to be generated to tell the file doesn't exist
+                        return Response.status(Response.Status.NOT_FOUND).build();
+                    }
                 }
-            } else { // The file mustn't be generated
-                String fileWebPath = layerDao.getObjectURILayerFilePath(layers.get(0).getObjectUri(), fs);
-                File f = new File(fileWebPath);
-                
-                if (f.exists()) { // Return the URL is existing
-                    urlFilesList.add(layerDao.getObjectURILayerFileWebPath(layers.get(0).getObjectUri()));
-                    List<Status> statusList = new ArrayList<>();
-                    statusList.add(new Status("File exist", StatusCodeMsg.INFO, fileWebPath));
-                    POSTResultsReturn layerFile = new POSTResultsReturn(true, true, true);
-                    layerFile.statusList = statusList;
-                    postResponse = new ResponseFormPOST(layerFile.statusList);
-                    postResponse.getMetadata().setDatafiles(urlFilesList);
-                    
-                    return Response.status(layerFile.getHttpStatus()).entity(postResponse).build();
-                } else { // Otherwise, an error has to be generated to tell the file doesn't exist
-                    return Response.status(Response.Status.NOT_FOUND).build();
-                }
-            }
                 //\SILEX:todo
-        } else {
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST()).build();
-        }    
-        //\SILEX:todo
+            } else {
+                return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST()).build();
+            }
+            //\SILEX:todo
+        }
     }
 }

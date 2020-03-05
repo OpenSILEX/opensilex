@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
 import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -53,17 +52,23 @@ import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Vector resource service.
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/vectors")
 @Path("/vectors")
 public class VectorResourceService extends ResourceService {
-    
+
     @Inject
-    SPARQLService sparql;
-    
+    public VectorResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
      * Search vectors corresponding to search parameters given.
+     *
      * @param vectorDao
      * @return the vectors corresponding to the search
      */
@@ -71,29 +76,30 @@ public class VectorResourceService extends ResourceService {
         ArrayList<Vector> vectors;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Vector> getResponse;
-        
+
         //1. Get number of vectors corresponding to the search params
         Integer totalCount = vectorDao.count();
         //2. Get vectors to return
         vectors = vectorDao.allPaginate();
-        
+
         //3. Return the result
         if (vectors == null) { //Request error
-            getResponse = new  ResultForm<>(0, 0, vectors, true, 0);
+            getResponse = new ResultForm<>(0, 0, vectors, true, 0);
             return noResultFound(getResponse, statusList);
         } else if (vectors.isEmpty()) { //No result
-            getResponse = new  ResultForm<>(0, 0, vectors, true, 0);
+            getResponse = new ResultForm<>(0, 0, vectors, true, 0);
             return noResultFound(getResponse, statusList);
         } else { //Results founded. Return the results
-            getResponse = new  ResultForm<>(vectorDao.getPageSize(), vectorDao.getPage(), vectors, true, totalCount);
+            getResponse = new ResultForm<>(vectorDao.getPageSize(), vectorDao.getPage(), vectors, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
-    }  
-    
+    }
+
     /**
-     * Searches vectors by URI, rdfType, label, brand, in service date, 
-     * date of purchase. 
+     * Searches vectors by URI, rdfType, label, brand, in service date, date of
+     * purchase.
+     *
      * @param pageSize
      * @param page
      * @param uri
@@ -129,13 +135,13 @@ public class VectorResourceService extends ResourceService {
      *                "dateOfPurchase": null,
      *                "personInCharge": "user@mail.fr"
      *            },
-     *          
-     *      }
+     *
+     * }
      * }
      */
     @GET
     @ApiOperation(value = "Get all vectors corresponding to the search params given",
-                  notes = "Retrieve all vectors authorized for the user corresponding to the searched params given")
+            notes = "Retrieve all vectors authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve all vectors", response = Vector.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -159,43 +165,45 @@ public class VectorResourceService extends ResourceService {
             @ApiParam(value = "Search by serial number", example = DocumentationAnnotation.EXAMPLE_VECTOR_SERIAL_NUMBER) @QueryParam("serialNumber") String serialNumber,
             @ApiParam(value = "Search by service date", example = DocumentationAnnotation.EXAMPLE_VECTOR_IN_SERVICE_DATE) @QueryParam("inServiceDate") @Date(DateFormat.YMD) String inServiceDate,
             @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_VECTOR_DATE_OF_PURCHASE) @QueryParam("dateOfPurchase") @Date(DateFormat.YMD) String dateOfPurchase,
-            @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_VECTOR_PERSON_IN_CHARGE) @QueryParam("personInCharge") String personInCharge) {
-        
-        VectorDAO vectorDAO = new VectorDAO(sparql);
-        if (uri != null) {
-            vectorDAO.uri = uri;
+            @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_VECTOR_PERSON_IN_CHARGE) @QueryParam("personInCharge") String personInCharge) throws Exception {
+        try (sparql) {
+            VectorDAO vectorDAO = new VectorDAO(sparql);
+            if (uri != null) {
+                vectorDAO.uri = uri;
+            }
+            if (rdfType != null) {
+                vectorDAO.rdfType = rdfType;
+            }
+            if (label != null) {
+                vectorDAO.label = label;
+            }
+            if (brand != null) {
+                vectorDAO.brand = brand;
+            }
+            if (serialNumber != null) {
+                vectorDAO.serialNumber = serialNumber;
+            }
+            if (inServiceDate != null) {
+                vectorDAO.inServiceDate = inServiceDate;
+            }
+            if (dateOfPurchase != null) {
+                vectorDAO.dateOfPurchase = dateOfPurchase;
+            }
+            if (personInCharge != null) {
+                vectorDAO.personInCharge = personInCharge;
+            }
+
+            vectorDAO.user = userSession.getUser();
+            vectorDAO.setPage(page);
+            vectorDAO.setPageSize(pageSize);
+
+            return getVectorsData(vectorDAO);
         }
-        if (rdfType != null) {
-            vectorDAO.rdfType = rdfType;
-        }
-        if (label != null) {
-            vectorDAO.label = label;
-        }
-        if (brand != null) {
-            vectorDAO.brand = brand;
-        }
-        if (serialNumber != null) {
-            vectorDAO.serialNumber = serialNumber;
-        }
-        if (inServiceDate != null) {
-            vectorDAO.inServiceDate = inServiceDate;
-        }
-        if (dateOfPurchase != null) {
-            vectorDAO.dateOfPurchase = dateOfPurchase;
-        }
-        if (personInCharge != null) {
-            vectorDAO.personInCharge = personInCharge;
-        }
-        
-        vectorDAO.user = userSession.getUser();
-        vectorDAO.setPage(page);
-        vectorDAO.setPageSize(pageSize);
-        
-        return getVectorsData(vectorDAO);
     }
-    
+
     /**
      * Gets the information about a vector.
+     *
      * @param uri
      * @param pageSize
      * @param page
@@ -224,7 +232,7 @@ public class VectorResourceService extends ResourceService {
     @GET
     @Path("{uri}")
     @ApiOperation(value = "Get a vector",
-                  notes = "Retrieve a vector. Need URL encoded vector URI")
+            notes = "Retrieve a vector. Need URL encoded vector URI")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve a vector", response = Vector.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -239,26 +247,28 @@ public class VectorResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getVectorDetails(
-        @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_VECTOR_URI) @PathParam("uri") @URL @Required String uri,
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
+            @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_VECTOR_URI) @PathParam("uri") @URL @Required String uri,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
+        try (sparql) {
+            if (uri == null) {
+                final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty vector uri");
+                return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
+            }
 
-        if (uri == null) {
-            final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty vector uri");
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
+            VectorDAO vectorDAO = new VectorDAO(sparql);
+            vectorDAO.uri = uri;
+            vectorDAO.setPage(page);
+            vectorDAO.setPageSize(pageSize);
+            vectorDAO.user = userSession.getUser();
+
+            return getVectorsData(vectorDAO);
         }
-
-        VectorDAO vectorDAO = new VectorDAO(sparql);
-        vectorDAO.uri = uri;
-        vectorDAO.setPage(page);
-        vectorDAO.setPageSize(pageSize);
-        vectorDAO.user = userSession.getUser();
-
-        return getVectorsData(vectorDAO);
     }
-    
+
     /**
      * Inserts vectors in the database(s).
+     *
      * @param vectors list of the vectors to insert.
      * @example of vector data :
      * {
@@ -271,11 +281,12 @@ public class VectorResourceService extends ResourceService {
      *      "personInCharge": "morgane.vidal@inra.fr"
      * }
      * @param context
-     * @return the post result with the errors or the URI of the inserted vectors
+     * @return the post result with the errors or the URI of the inserted
+     * vectors
      */
     @POST
     @ApiOperation(value = "Post a vector",
-                  notes = "Register a new vector in the database")
+            notes = "Register a new vector in the database")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Vector saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -291,36 +302,37 @@ public class VectorResourceService extends ResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response post(
-        @ApiParam(value = DocumentationAnnotation.VECTOR_POST_DEFINITION) @Valid ArrayList<VectorDTO> vectors,
-        @Context HttpServletRequest context) {
+            @ApiParam(value = DocumentationAnnotation.VECTOR_POST_DEFINITION) @Valid ArrayList<VectorDTO> vectors,
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
-        
-        if (vectors != null && !vectors.isEmpty()) {
-            VectorDAO vectorDAO = new VectorDAO(sparql);
-            
-            if (context.getRemoteAddr() != null) {
-                vectorDAO.remoteUserAdress = context.getRemoteAddr();
+        try (sparql) {
+            if (vectors != null && !vectors.isEmpty()) {
+                VectorDAO vectorDAO = new VectorDAO(sparql);
+
+                if (context.getRemoteAddr() != null) {
+                    vectorDAO.remoteUserAdress = context.getRemoteAddr();
+                }
+
+                vectorDAO.user = userSession.getUser();
+
+                POSTResultsReturn result = vectorDAO.checkAndInsert(vectors);
+
+                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                    postResponse = new ResponseFormPOST(result.statusList);
+                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                        || result.getHttpStatus().equals(Response.Status.OK)
+                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                    postResponse = new ResponseFormPOST(result.statusList);
+                }
+                return Response.status(result.getHttpStatus()).entity(postResponse).build();
+            } else {
+                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty vectors(s) to add"));
+                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
             }
-            
-            vectorDAO.user = userSession.getUser();
-            
-            POSTResultsReturn result = vectorDAO.checkAndInsert(vectors);
-            
-            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                postResponse = new ResponseFormPOST(result.statusList);
-                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                    || result.getHttpStatus().equals(Response.Status.OK)
-                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                postResponse = new ResponseFormPOST(result.statusList);
-            }
-            return Response.status(result.getHttpStatus()).entity(postResponse).build();
-        } else {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty vectors(s) to add"));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
-    
+
     /**
      * Updates the given vectors.
      * @example
@@ -338,7 +350,8 @@ public class VectorResourceService extends ResourceService {
      * ]
      * @param vectors
      * @param context
-     * @return the POST result with the found errors or the URIs of the updated vectors
+     * @return the POST result with the found errors or the URIs of the updated
+     * vectors
      */
     @PUT
     @ApiOperation(value = "Update vector")
@@ -355,32 +368,33 @@ public class VectorResourceService extends ResourceService {
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     public Response put(
-        @ApiParam(value = DocumentationAnnotation.VECTOR_POST_DEFINITION) @Valid ArrayList<VectorDTO> vectors,
-        @Context HttpServletRequest context) {
+            @ApiParam(value = DocumentationAnnotation.VECTOR_POST_DEFINITION) @Valid ArrayList<VectorDTO> vectors,
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
-        
-        if (vectors != null && !vectors.isEmpty()) {
-            VectorDAO vectorDAO = new VectorDAO(sparql);
-            if (context.getRemoteAddr() != null) {
-                vectorDAO.remoteUserAdress = context.getRemoteAddr();
+        try (sparql) {
+            if (vectors != null && !vectors.isEmpty()) {
+                VectorDAO vectorDAO = new VectorDAO(sparql);
+                if (context.getRemoteAddr() != null) {
+                    vectorDAO.remoteUserAdress = context.getRemoteAddr();
+                }
+
+                vectorDAO.user = userSession.getUser();
+
+                POSTResultsReturn result = vectorDAO.checkAndUpdate(vectors);
+
+                if (result.getHttpStatus().equals(Response.Status.OK)) {
+                    //Code 200, traits modifiés
+                    postResponse = new ResponseFormPOST(result.statusList);
+                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                        || result.getHttpStatus().equals(Response.Status.OK)
+                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                    postResponse = new ResponseFormPOST(result.statusList);
+                }
+                return Response.status(result.getHttpStatus()).entity(postResponse).build();
+            } else {
+                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty vector(s) to update"));
+                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
             }
-            
-            vectorDAO.user = userSession.getUser();
-            
-            POSTResultsReturn result = vectorDAO.checkAndUpdate(vectors);
-            
-            if (result.getHttpStatus().equals(Response.Status.OK)) {
-                //Code 200, traits modifiés
-                postResponse = new ResponseFormPOST(result.statusList);
-            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                    || result.getHttpStatus().equals(Response.Status.OK)
-                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                postResponse = new ResponseFormPOST(result.statusList);
-            }
-            return Response.status(result.getHttpStatus()).entity(postResponse).build();
-        } else {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty vector(s) to update"));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
 }

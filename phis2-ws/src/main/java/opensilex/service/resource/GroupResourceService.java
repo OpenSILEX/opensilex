@@ -73,12 +73,13 @@ import org.slf4j.LoggerFactory;
 public class GroupResourceService extends ResourceService {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(GroupResourceService.class);
-    
-    /**
-     * Inject SPARQL service
-     */
+
     @Inject
-    private SPARQLService sparql;
+    public GroupResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
 
     /**
      * @param limit
@@ -110,13 +111,15 @@ public class GroupResourceService extends ResourceService {
             @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_GROUP_URI) @QueryParam("uri") @URL String uri,
             @ApiParam(value = "Search by name", example = DocumentationAnnotation.EXAMPLE_GROUP_NAME) @QueryParam("name") String name,
             @ApiParam(value = "Search by level", example = DocumentationAnnotation.EXAMPLE_GROUP_LEVEL) @QueryParam("level") @GroupLevel String level) throws Exception {
-        GroupDAO groupDao = new GroupDAO(sparql);
+        try (sparql) {
+            GroupDAO groupDao = new GroupDAO(sparql);
 
-        if (uri != null && !uri.isEmpty()) {
-            GroupModel group = groupDao.get(new URI(uri));
-            return getGroupsData(group);
-        } else {
-            return getGroupsData(groupDao.search(name, null, page, limit));
+            if (uri != null && !uri.isEmpty()) {
+                GroupModel group = groupDao.get(new URI(uri));
+                return getGroupsData(group);
+            } else {
+                return getGroupsData(groupDao.search(name, null, page, limit));
+            }
         }
 
     }
@@ -153,16 +156,17 @@ public class GroupResourceService extends ResourceService {
             @URL String groupUri,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
+        try (sparql) {
+            if (groupUri == null) {
+                final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty Group uri");
+                return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
+            }
 
-        if (groupUri == null) {
-            final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty Group uri");
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
+            GroupDAO groupDao = new GroupDAO(sparql);
+            GroupModel group = groupDao.get(new URI(groupUri));
+
+            return getGroupsData(group);
         }
-
-        GroupDAO groupDao = new GroupDAO(sparql);
-        GroupModel group = groupDao.get(new URI(groupUri));
-
-        return getGroupsData(group);
     }
 
     /**
@@ -174,7 +178,7 @@ public class GroupResourceService extends ResourceService {
      */
     @POST
     @ApiOperation(value = "Post a group",
-                  notes = "Register a new group in the database")
+            notes = "Register a new group in the database")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Group saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -183,40 +187,41 @@ public class GroupResourceService extends ResourceService {
     })
     @ApiImplicitParams({
         @ApiImplicitParam(name = "Authorization", required = true,
-                          dataType = "string", paramType = "header",
-                          value = DocumentationAnnotation.ACCES_TOKEN,
-                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+                dataType = "string", paramType = "header",
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postGroup(
-    @ApiParam(value = DocumentationAnnotation.GROUP_POST_DATA_DEFINITION, required = true) @Valid ArrayList<GroupPostDTO> groups,
-    @Context HttpServletRequest context) throws SPARQLTransactionException {
+            @ApiParam(value = DocumentationAnnotation.GROUP_POST_DATA_DEFINITION, required = true) @Valid ArrayList<GroupPostDTO> groups,
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
-        
-        List<String> createdURIs = new ArrayList<>();
-        // At least one user in the data sent
-        if (groups != null && !groups.isEmpty()) {
-            GroupDAO groupDao = new GroupDAO(sparql);
+        try (sparql) {
+            List<String> createdURIs = new ArrayList<>();
+            // At least one user in the data sent
+            if (groups != null && !groups.isEmpty()) {
+                GroupDAO groupDao = new GroupDAO(sparql);
 
-            try {
-                for (GroupPostDTO group : groups) {
-                    GroupModel model = groupDao.create(dtoToModel(group));
-                    createdURIs.add(model.getUri().toString());
+                try {
+                    for (GroupPostDTO group : groups) {
+                        GroupModel model = groupDao.create(dtoToModel(group));
+                        createdURIs.add(model.getUri().toString());
+                    }
+                } catch (Exception ex) {
+                    LOGGER.error("Error while creating groups", ex);
                 }
-            } catch (Exception ex) {
-                LOGGER.error("Error while creating groups", ex);
-            }
 
-            postResponse = new ResponseFormPOST();
-            postResponse.getMetadata().setDatafiles(createdURIs);
-            return Response.status(Response.Status.CREATED).entity(postResponse).build();
-        } else {
-            postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty group(s) to add"));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+                postResponse = new ResponseFormPOST();
+                postResponse.getMetadata().setDatafiles(createdURIs);
+                return Response.status(Response.Status.CREATED).entity(postResponse).build();
+            } else {
+                postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty group(s) to add"));
+                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+            }
         }
     }
-    
+
 //    /**
 //     * Groups update service.
 //     * @param groups
@@ -318,7 +323,7 @@ public class GroupResourceService extends ResourceService {
             users.add(UserResourceService.getOldUserFromModel(userProfile.getUser()));
         });
         group.setUserList(users);
-        
+
         return group;
     }
 
@@ -327,12 +332,12 @@ public class GroupResourceService extends ResourceService {
         model.setName(group.getName());
         model.setDescription(group.getDescription());
         List<GroupUserProfileModel> userProfiles = new ArrayList<>();
-        
+
         UserDAO userDAO = new UserDAO(sparql);
         ProfileDAO profileDAO = new ProfileDAO(sparql);
         URI profileURI = new URI("http://www.opensilex.org/profiles#default");
         ProfileModel profile = profileDAO.get(profileURI);
-        
+
         if (profile == null) {
             profile = new ProfileModel();
             profile.setUri(profileURI);
@@ -340,7 +345,7 @@ public class GroupResourceService extends ResourceService {
             SecurityAccessDAO securityDAO = new SecurityAccessDAO(sparql);
             profile.setCredentials(securityDAO.getCredentialsIdList());
         }
-        
+
         for (String email : group.getUsersEmails()) {
             UserModel user = userDAO.getByEmail(new InternetAddress(email));
             GroupUserProfileModel userProfile = new GroupUserProfileModel();
@@ -349,7 +354,7 @@ public class GroupResourceService extends ResourceService {
             userProfiles.add(userProfile);
         };
         model.setUserProfiles(userProfiles);
-        
+
         return model;
     }
 }

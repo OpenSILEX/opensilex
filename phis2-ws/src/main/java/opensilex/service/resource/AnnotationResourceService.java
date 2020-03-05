@@ -66,8 +66,12 @@ import org.slf4j.LoggerFactory;
 public class AnnotationResourceService extends ResourceService {
 
     @Inject
-    SPARQLService sparql;
-    
+    public AnnotationResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     final static Logger LOGGER = LoggerFactory.getLogger(SensorResourceService.class);
 
     public final static String EMPTY_ANNOTATION_LIST = "the annotation list to add is empty";
@@ -101,16 +105,17 @@ public class AnnotationResourceService extends ResourceService {
     public Response post(
             @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION)
             @Valid ArrayList<AnnotationPostDTO> annotationsDtos,
-            @Context HttpServletRequest context) {
+            @Context HttpServletRequest context) throws Exception {
+        try (sparql) {
+            // Set DAO
+            AnnotationDAO objectDao = new AnnotationDAO(sparql);
+            objectDao.user = userSession.getUser();
+            if (context.getRemoteAddr() != null) {
+                objectDao.remoteUserAdress = context.getRemoteAddr();
+            }
 
-        // Set DAO
-        AnnotationDAO objectDao = new AnnotationDAO(sparql);
-        objectDao.user = userSession.getUser();
-        if (context.getRemoteAddr() != null) {
-            objectDao.remoteUserAdress = context.getRemoteAddr();
+            return getPostResponse(objectDao, annotationsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_ANNOTATION_LIST);
         }
-
-        return getPostResponse(objectDao, annotationsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_ANNOTATION_LIST);
     }
 
     /**
@@ -159,38 +164,39 @@ public class AnnotationResourceService extends ResourceService {
             @ApiParam(value = "Search by target", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("target") @URL String target,
             @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_BODY_VALUE) @QueryParam("description") String bodyValue,
             @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATED_BY) @QueryParam("motivatedBy") @URL String motivatedBy,
-            @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc) {
-
-        AnnotationDAO annotationDao = new AnnotationDAO(sparql);
-        annotationDao.user = userSession.getUser();
-        ArrayList<Annotation> annotations;
-        try {
-            annotations = annotationDao.find(uri, creator, target, bodyValue, motivatedBy, dateSortAsc, page, pageSize);
-
-            // handle search exceptions
-        } catch (DAOPersistenceException ex) {
-            LOGGER.error(ex.getMessage(), ex);
-            return getResponseWhenPersistenceError(ex);
-        }
-
-        // Returns result
-        if (annotations == null) {
-            return getGETResponseWhenNoResult();
-        } else if (annotations.isEmpty()) {
-            return getGETResponseWhenNoResult();
-        } else {
-            // count
+            @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc) throws Exception {
+        try (sparql) {
+            AnnotationDAO annotationDao = new AnnotationDAO(sparql);
+            annotationDao.user = userSession.getUser();
+            ArrayList<Annotation> annotations;
             try {
-                int totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy, dateSortAsc);
-                return getGETResponseWhenSuccess(annotations, pageSize, page, totalCount);
+                annotations = annotationDao.find(uri, creator, target, bodyValue, motivatedBy, dateSortAsc, page, pageSize);
 
-                // handle count exceptions
+                // handle search exceptions
             } catch (DAOPersistenceException ex) {
                 LOGGER.error(ex.getMessage(), ex);
                 return getResponseWhenPersistenceError(ex);
-            } catch (Exception ex) {
-                LOGGER.error(ex.getMessage(), ex);
-                return getResponseWhenInternalError(ex);
+            }
+
+            // Returns result
+            if (annotations == null) {
+                return getGETResponseWhenNoResult();
+            } else if (annotations.isEmpty()) {
+                return getGETResponseWhenNoResult();
+            } else {
+                // count
+                try {
+                    int totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy, dateSortAsc);
+                    return getGETResponseWhenSuccess(annotations, pageSize, page, totalCount);
+
+                    // handle count exceptions
+                } catch (DAOPersistenceException ex) {
+                    LOGGER.error(ex.getMessage(), ex);
+                    return getResponseWhenPersistenceError(ex);
+                } catch (Exception ex) {
+                    LOGGER.error(ex.getMessage(), ex);
+                    return getResponseWhenInternalError(ex);
+                }
             }
         }
     }
@@ -235,11 +241,12 @@ public class AnnotationResourceService extends ResourceService {
                     value = DocumentationAnnotation.ANNOTATION_URI_DEFINITION,
                     required = true,
                     example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI)
-            @URL @PathParam("uri") String uri) {
-
-        AnnotationDAO annotationDao = new AnnotationDAO(sparql);
-        annotationDao.user = userSession.getUser();
-        return getGETByUriResponseFromDAOResults(annotationDao, uri);
+            @URL @PathParam("uri") String uri) throws Exception {
+        try (sparql) {
+            AnnotationDAO annotationDao = new AnnotationDAO(sparql);
+            annotationDao.user = userSession.getUser();
+            return getGETByUriResponseFromDAOResults(annotationDao, uri);
+        }
     }
 
     /**
@@ -276,15 +283,17 @@ public class AnnotationResourceService extends ResourceService {
                     required = true,
                     example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI
             )
-            @Valid @NotNull DeleteDTO deleteDTO, @Context HttpServletRequest context) {
-
-        AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
-        annotationDAO.user = userSession.getUser();
-        if (context.getRemoteAddr() != null) {
-            annotationDAO.setRemoteUserAdress(context.getRemoteAddr());
+            @Valid @NotNull DeleteDTO deleteDTO, @Context HttpServletRequest context)
+            throws Exception {
+        try (sparql) {
+            AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
+            annotationDAO.user = userSession.getUser();
+            if (context.getRemoteAddr() != null) {
+                annotationDAO.setRemoteUserAdress(context.getRemoteAddr());
+            }
+            Response response = buildDeleteObjectsByUriResponse(annotationDAO, deleteDTO, "Annotation(s) deleted");
+            return response;
         }
-        Response response = buildDeleteObjectsByUriResponse(annotationDAO, deleteDTO, "Annotation(s) deleted");
-        return response;
     }
 
     @Override

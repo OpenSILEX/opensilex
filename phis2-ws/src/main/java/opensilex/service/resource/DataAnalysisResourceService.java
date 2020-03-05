@@ -55,8 +55,12 @@ import org.opensilex.sparql.service.SPARQLService;
 public class DataAnalysisResourceService extends ResourceService {
 
     @Inject
-    SPARQLService sparql;
-    
+    public DataAnalysisResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
      * Call R function via OpenCPU Server
      *
@@ -177,21 +181,23 @@ public class DataAnalysisResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response shinyProxyServerAppList(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-        ScientificAppDAO scientificAppDAO = new ScientificAppDAO();
-        scientificAppDAO.session = userSession;
-        ArrayList<ScientificAppDescription> shinyProxyAppList = scientificAppDAO.find(sparql, null, null);
-        ArrayList<ScientificAppDTO> shinyProxyAppDTOList = new ArrayList<>();
-        for (ScientificAppDescription scientificApplicationDescription : shinyProxyAppList) {
-            shinyProxyAppDTOList.add(new ScientificAppDTO(scientificApplicationDescription));
-        }
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
+        try (sparql) {
+            ScientificAppDAO scientificAppDAO = new ScientificAppDAO();
+            scientificAppDAO.session = userSession;
+            ArrayList<ScientificAppDescription> shinyProxyAppList = scientificAppDAO.find(sparql, null, null);
+            ArrayList<ScientificAppDTO> shinyProxyAppDTOList = new ArrayList<>();
+            for (ScientificAppDescription scientificApplicationDescription : shinyProxyAppList) {
+                shinyProxyAppDTOList.add(new ScientificAppDTO(scientificApplicationDescription));
+            }
 
-        if (shinyProxyAppDTOList.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseFormGET()).build();
+            if (shinyProxyAppDTOList.isEmpty()) {
+                return Response.status(Response.Status.NOT_FOUND).entity(new ResponseFormGET()).build();
+            }
+            return Response
+                    .status(Response.Status.OK)
+                    .entity(new ResultForm<>(limit, page, shinyProxyAppDTOList, false))
+                    .build();
         }
-        return Response
-                .status(Response.Status.OK)
-                .entity(new ResultForm<>(limit, page, shinyProxyAppDTOList, false))
-                .build();
     }
 }

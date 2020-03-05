@@ -56,7 +56,11 @@ public class DataQueryLogFilter implements ContainerRequestFilter {
     AuthenticationService authentication;
 
     @Inject
-    SPARQLService sparql;
+    public DataQueryLogFilter(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
 
     final static String MAP_FIELD_QUERY_PARAMETERS = "queryParameters";
     final static String MAP_FIELD_RESSOURCE_PATH = "ressourcePath";
@@ -95,7 +99,7 @@ public class DataQueryLogFilter implements ContainerRequestFilter {
                 String userToken = authorization.replace(GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ", "");
 
                 URI userURI;
-                try {
+                try (sparql) {
                     userURI = authentication.decodeTokenUserURI(userToken);
                     UserModel user = sparql.getByURI(UserModel.class, userURI, null);
                     // 6. save data search query

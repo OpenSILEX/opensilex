@@ -19,7 +19,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
-import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -53,7 +52,6 @@ import opensilex.service.result.ResultForm;
 import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.rest.user.dal.UserModel;
-import org.opensilex.sparql.exceptions.SPARQLTransactionException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
@@ -70,12 +68,13 @@ import org.slf4j.LoggerFactory;
 public class UserResourceService extends ResourceService {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(UserResourceService.class);
-    
-    /**
-     * Inject SPARQL service
-     */
+
     @Inject
-    private SPARQLService sparql;
+    public UserResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
 
     /**
      * Inject Authentication service
@@ -129,13 +128,15 @@ public class UserResourceService extends ResourceService {
             @ApiParam(value = "Search by admin", example = DocumentationAnnotation.EXAMPLE_USER_ADMIN) @QueryParam("admin") String admin,
             @ApiParam(value = "Search by available", example = DocumentationAnnotation.EXAMPLE_USER_AVAILABLE) @QueryParam("available") String available,
             @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_USER_URI) @QueryParam("uri") @URL String uri) throws Exception {
-        UserDAO userDao = new UserDAO(sparql);
+        try (sparql) {
+            UserDAO userDao = new UserDAO(sparql);
 
-        if (uri != null && !uri.isEmpty()) {
-            UserModel user = userDao.get(new URI(uri));
-            return getUsersData(user);
-        } else {
-            return getUsersData(userDao.search(email, firstName, familyName, page, limit));
+            if (uri != null && !uri.isEmpty()) {
+                UserModel user = userDao.get(new URI(uri));
+                return getUsersData(user);
+            } else {
+                return getUsersData(userDao.search(email, firstName, familyName, page, limit));
+            }
         }
     }
 
@@ -168,15 +169,17 @@ public class UserResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.USER_EMAIL_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @PathParam("userEmail") @Email @Required String userEmail,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
-        if (userEmail == null) {
-            final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty User email");
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
+        try (sparql) {
+            if (userEmail == null) {
+                final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty User email");
+                return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
+            }
+
+            UserDAO userDao = new UserDAO(sparql);
+            UserModel user = userDao.getByEmail(new InternetAddress(userEmail));
+
+            return getUsersData(user);
         }
-
-        UserDAO userDao = new UserDAO(sparql);
-        UserModel user = userDao.getByEmail(new InternetAddress(userEmail));
-
-        return getUsersData(user);
     }
 
     /**
@@ -205,44 +208,45 @@ public class UserResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response postUser(
             @ApiParam(value = DocumentationAnnotation.USER_POST_DATA_DEFINITION) @Valid ArrayList<UserDTO> users,
-            @Context HttpServletRequest context) throws AddressException, SPARQLTransactionException {
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
+        try (sparql) {
+            // At least one user in the data sent
+            if (users != null && !users.isEmpty()) {
+                UserDAO userDao = new UserDAO(sparql);
 
-        // At least one user in the data sent
-        if (users != null && !users.isEmpty()) {
-            UserDAO userDao = new UserDAO(sparql);
-
-            List<String> createdURIs = new ArrayList<>();
-            try {
-                sparql.startTransaction();
-                for (UserDTO user : users) {
-                    UserModel model = userDao.create(
-                            null,
-                            new InternetAddress(user.getEmail()),
-                            user.getFirstName(),
-                            user.getFamilyName(),
-                            user.getAdmin().equals("true"),
-                            authentication.getPasswordHash(user.getPassword()),
-                            null
-                    );
-                    createdURIs.add(model.getUri().toString());
+                List<String> createdURIs = new ArrayList<>();
+                try {
+                    sparql.startTransaction();
+                    for (UserDTO user : users) {
+                        UserModel model = userDao.create(
+                                null,
+                                new InternetAddress(user.getEmail()),
+                                user.getFirstName(),
+                                user.getFamilyName(),
+                                user.getAdmin().equals("true"),
+                                authentication.getPasswordHash(user.getPassword()),
+                                null
+                        );
+                        createdURIs.add(model.getUri().toString());
+                    }
+                    sparql.commitTransaction();
+                } catch (Exception ex) {
+                    LOGGER.error("Error while creating users", ex);
+                    sparql.rollbackTransaction();
                 }
-                sparql.commitTransaction();
-            } catch (Exception ex) {
-                LOGGER.error("Error while creating users", ex);
-                sparql.rollbackTransaction();
-            }
 
-            postResponse = new ResponseFormPOST();
-            postResponse.getMetadata().setDatafiles(createdURIs);
-            return Response.status(Response.Status.CREATED).entity(postResponse).build();
-        } else {
-            postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty user(s) to add"));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+                postResponse = new ResponseFormPOST();
+                postResponse.getMetadata().setDatafiles(createdURIs);
+                return Response.status(Response.Status.CREATED).entity(postResponse).build();
+            } else {
+                postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty user(s) to add"));
+                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+            }
         }
     }
 
-     /**
+    /**
      * User PUT service.
      *
      * @param users
@@ -267,37 +271,38 @@ public class UserResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response putUser(
             @ApiParam(value = DocumentationAnnotation.USER_POST_DATA_DEFINITION) @Valid ArrayList<UserDTO> users,
-            @Context HttpServletRequest context) throws SPARQLTransactionException {
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
+        try (sparql) {
+            // At least one user in the data sent
+            if (users != null && !users.isEmpty()) {
+                UserDAO userDao = new UserDAO(sparql);
 
-        // At least one user in the data sent
-        if (users != null && !users.isEmpty()) {
-            UserDAO userDao = new UserDAO(sparql);
-
-            try {
-                sparql.startTransaction();
-                for (UserDTO user : users) {
-                    UserModel model = userDao.getByEmail(new InternetAddress(user.getEmail()));
-                    userDao.update(
-                            model.getUri(),
-                            new InternetAddress(user.getEmail()),
-                            user.getFirstName(),
-                            user.getFamilyName(),
-                            user.getAdmin().equals("true"),
-                            user.getPassword(),
-                            null
-                    );
+                try {
+                    sparql.startTransaction();
+                    for (UserDTO user : users) {
+                        UserModel model = userDao.getByEmail(new InternetAddress(user.getEmail()));
+                        userDao.update(
+                                model.getUri(),
+                                new InternetAddress(user.getEmail()),
+                                user.getFirstName(),
+                                user.getFamilyName(),
+                                user.getAdmin().equals("true"),
+                                user.getPassword(),
+                                null
+                        );
+                    }
+                    sparql.commitTransaction();
+                } catch (Exception ex) {
+                    sparql.rollbackTransaction();
                 }
-                sparql.commitTransaction();
-            } catch (Exception ex) {
-                sparql.rollbackTransaction();
-            }
 
-            postResponse = new ResponseFormPOST();
-            return Response.status(Response.Status.OK).entity(postResponse).build();
-        } else {
-            postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty user(s) to update"));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+                postResponse = new ResponseFormPOST();
+                return Response.status(Response.Status.OK).entity(postResponse).build();
+            } else {
+                postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty user(s) to update"));
+                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+            }
         }
     }
 
@@ -316,7 +321,7 @@ public class UserResourceService extends ResourceService {
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
-    
+
     private Response getUsersData(ListWithPagination<UserModel> usersModels) {
         ArrayList<User> users = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();

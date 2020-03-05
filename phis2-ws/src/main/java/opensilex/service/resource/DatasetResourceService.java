@@ -49,16 +49,21 @@ import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Datasets resource service.
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Deprecated
 @Api("/datasets")
-@Path("/datasets") 
+@Path("/datasets")
 public class DatasetResourceService extends ResourceService {
-    
+
     @Inject
-    SPARQLService sparql;
-    
+    public DatasetResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
      * @param datasets dataset to save. If in the provance there is only the uri
      *                 it meens that the provenance is supposed to already exist
@@ -81,8 +86,8 @@ public class DatasetResourceService extends ResourceService {
      *	}]
      * }]
      * @param context
-     * @return the query result with the list of provenance uri if the datasets 
-     *         has been saved in the database
+     * @return the query result with the list of provenance uri if the datasets
+     * has been saved in the database
      */
     @Deprecated
     @POST
@@ -95,36 +100,39 @@ public class DatasetResourceService extends ResourceService {
     })
     @ApiImplicitParams({
         @ApiImplicitParam(name = "Authorization", required = true,
-                          dataType = "string", paramType = "header",
-                          value = DocumentationAnnotation.ACCES_TOKEN,
-                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+                dataType = "string", paramType = "header",
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postDatasetData(@ApiParam(value = DocumentationAnnotation.RAW_DATA_POST_DATA_DEFINITION, required = true) @Valid ArrayList<DatasetDTO> datasets,
-            @Context HttpServletRequest context) {
-        AbstractResultForm postResponse;
-        
-        //If there are at least one provenance (and dataset) in the sended data
-        if (datasets != null && !datasets.isEmpty()) {
-            DatasetDAO datasetDAO = new DatasetDAO(sparql);
-            datasetDAO.user = userSession.getUser();
-            
-            //check data and insert in the mongo database
-            POSTResultsReturn result = datasetDAO.checkAndInsert(datasets);
-            
-            postResponse = new ResponseFormPOST(result.statusList);
-            postResponse.getMetadata().setDatafiles(result.createdResources);
-            
-            return Response.status(result.getHttpStatus()).entity(postResponse).build();
-        } else {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty datasets to add"));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+            @Context HttpServletRequest context) throws Exception {
+        try (sparql) {
+            AbstractResultForm postResponse;
+
+            //If there are at least one provenance (and dataset) in the sended data
+            if (datasets != null && !datasets.isEmpty()) {
+                DatasetDAO datasetDAO = new DatasetDAO(sparql);
+                datasetDAO.user = userSession.getUser();
+
+                //check data and insert in the mongo database
+                POSTResultsReturn result = datasetDAO.checkAndInsert(datasets);
+
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.createdResources);
+
+                return Response.status(result.getHttpStatus()).entity(postResponse).build();
+            } else {
+                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty datasets to add"));
+                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+            }
         }
     }
-    
+
     /**
      * Collect data from a user query (search data)
+     *
      * @param datasetDAO
      * @return the user answer with the results
      */
@@ -132,9 +140,9 @@ public class DatasetResourceService extends ResourceService {
         ArrayList<Dataset> datasets;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Dataset> getResponse;
-        
+
         datasets = datasetDAO.allPaginate();
-        
+
         if (datasets == null) {
             getResponse = new ResultForm<>(0, 0, datasets, true);
             return noResultFound(getResponse, statusList);
@@ -151,15 +159,15 @@ public class DatasetResourceService extends ResourceService {
             return noResultFound(getResponse, statusList);
         }
     }
-    
+
     /**
      * @param pageSize
      * @param page
-     * @param experiment the experiment's uri from whom the user wants data 
-     *                   (e.g http://www.phenome-fppn.fr/diaphen/DIA2017-1)
-     * @param variable the variable uri of the searched data
-     *                 (e.g http://www.phenome-fppn.fr/diaphen/id/variables/v001)
-     * @param agronomicalObjects the agronomical object's uri whom the user 
+     * @param experiment the experiment's uri from whom the user wants data (e.g
+     * http://www.phenome-fppn.fr/diaphen/DIA2017-1)
+     * @param variable the variable uri of the searched data (e.g
+     * http://www.phenome-fppn.fr/diaphen/id/variables/v001)
+     * @param agronomicalObjects the agronomical object's uri whom the user
      *                           wants data
      *                           (e.g http://www.phenome-fppn.fr/diaphen/2017/o17010091)
      * @param startDate the start date of the searched data 
@@ -171,7 +179,7 @@ public class DatasetResourceService extends ResourceService {
      * @param incertitude the incertitude of the data
      *                  (e.g. 0.4)
      * @see opensilex.service.json.DatasetsSerializer
-     * @return data corresponding to the search params. Every data if no search 
+     * @return data corresponding to the search params. Every data if no search
      *         params.
      *         returned JSON : 
      *      {
@@ -197,50 +205,51 @@ public class DatasetResourceService extends ResourceService {
     })
     @ApiImplicitParams({
         @ApiImplicitParam(name = "Authorization", required = true,
-                          dataType = "string", paramType = "header",
-                          value = DocumentationAnnotation.ACCES_TOKEN,
-                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+                dataType = "string", paramType = "header",
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-        @ApiParam(value = "Search by experiment", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("experiment") @URL String experiment,
-        @ApiParam(value = "Search by variable", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("variable") @URL String variable,
-        @ApiParam(value = "Search by agronomical(s) object(s), separated by coma", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI + "," + DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("agronomicalObjects") String agronomicalObjects,
-        @ApiParam(value = "Search by interval - Start date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("startDate") @Date(DateFormat.YMD) String startDate,
-        @ApiParam(value = "Search by interval - End date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("endDate") @Date(DateFormat.YMD) String endDate,
-        @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor")  @URL String sensor,
-        @ApiParam(value = "Search by incertitude", example = DocumentationAnnotation.EXAMPLE_DATA_INCERTITUDE) @QueryParam("incertitude") String incertitude) {
-        
-        DatasetDAO datasetDAO = new DatasetDAO(sparql);
-        
-        if (experiment != null) {
-            datasetDAO.experiment = experiment;
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+            @ApiParam(value = "Search by experiment", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("experiment") @URL String experiment,
+            @ApiParam(value = "Search by variable", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("variable") @URL String variable,
+            @ApiParam(value = "Search by agronomical(s) object(s), separated by coma", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI + "," + DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("agronomicalObjects") String agronomicalObjects,
+            @ApiParam(value = "Search by interval - Start date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("startDate") @Date(DateFormat.YMD) String startDate,
+            @ApiParam(value = "Search by interval - End date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("endDate") @Date(DateFormat.YMD) String endDate,
+            @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") @URL String sensor,
+            @ApiParam(value = "Search by incertitude", example = DocumentationAnnotation.EXAMPLE_DATA_INCERTITUDE) @QueryParam("incertitude") String incertitude) throws Exception {
+        try (sparql) {
+            DatasetDAO datasetDAO = new DatasetDAO(sparql);
+
+            if (experiment != null) {
+                datasetDAO.experiment = experiment;
+            }
+            if (variable != null) {
+                datasetDAO.variable = variable;
+            }
+            if (startDate != null && endDate != null) {
+                datasetDAO.startDate = startDate;
+                datasetDAO.endDate = endDate;
+            }
+            if (agronomicalObjects != null) {
+                //the agronomical object's uri must be separated by ","
+                String[] agronomicalObjectsURIs = agronomicalObjects.split(",");
+                datasetDAO.scientificObjects.addAll(Arrays.asList(agronomicalObjectsURIs));
+            }
+            if (sensor != null) {
+                datasetDAO.sensor = sensor;
+            }
+            if (incertitude != null) {
+                datasetDAO.incertitude = incertitude;
+            }
+
+            datasetDAO.user = userSession.getUser();
+            datasetDAO.setPage(page);
+            datasetDAO.setPageSize(pageSize);
+
+            return getDatasetsData(datasetDAO);
         }
-        if (variable != null) {
-            datasetDAO.variable = variable;
-        }
-        if (startDate != null && endDate != null) {
-            datasetDAO.startDate = startDate;
-            datasetDAO.endDate = endDate;
-        }
-        if (agronomicalObjects != null) {
-            //the agronomical object's uri must be separated by ","
-            String[] agronomicalObjectsURIs = agronomicalObjects.split(",");
-            datasetDAO.scientificObjects.addAll(Arrays.asList(agronomicalObjectsURIs));
-        }
-        if (sensor != null) {
-            datasetDAO.sensor = sensor;
-        }
-        if (incertitude != null) {
-            datasetDAO.incertitude = incertitude;
-        }
-        
-        datasetDAO.user = userSession.getUser();
-        datasetDAO.setPage(page);
-        datasetDAO.setPageSize(pageSize);
-        
-        return getDatasetsData(datasetDAO);
     }
 }

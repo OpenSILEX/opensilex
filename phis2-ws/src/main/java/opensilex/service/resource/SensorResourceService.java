@@ -16,7 +16,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -68,19 +67,27 @@ import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Sensor resource service.
- * @update [Andreas Garcia] 15 Apr. 2019: handle DAO persistence exceptions thrown by property DAO functions.
+ *
+ * @update [Andreas Garcia] 15 Apr. 2019: handle DAO persistence exceptions
+ * thrown by property DAO functions.
  * @author Morgane Vidal
  */
 @Api("/sensors")
 @Path("/sensors")
 public class SensorResourceService extends ResourceService {
+
     final static Logger LOGGER = LoggerFactory.getLogger(SensorResourceService.class);
-    
+
     @Inject
-    SPARQLService sparql;
-    
+    public SensorResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
      * Searches sensors profile corresponding to the given sensor URI.
+     *
      * @param sensorDao
      * @return the sensor profile of the given sensor URI
      */
@@ -88,9 +95,9 @@ public class SensorResourceService extends ResourceService {
         ArrayList<SensorProfileDTO> sensorsProfiles;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<SensorProfileDTO> getResponse;
-        
+
         sensorsProfiles = sensorDao.allPaginate();
-        
+
         if (sensorsProfiles == null) {
             getResponse = new ResultForm<>(0, 0, sensorsProfiles, true);
             return noResultFound(getResponse, statusList);
@@ -105,12 +112,13 @@ public class SensorResourceService extends ResourceService {
                 getResponse.setStatus(statusList);
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }
-        } 
+        }
     }
-    
+
     /**
-     * Searches sensors by URI, rdfType, label, brand, in service date, 
-     * date of purchase and date of last calibration. 
+     * Searches sensors by URI, rdfType, label, brand, in service date, date of
+     * purchase and date of last calibration.
+     *
      * @param pageSize
      * @param page
      * @param uri
@@ -155,7 +163,7 @@ public class SensorResourceService extends ResourceService {
      */
     @GET
     @ApiOperation(value = "Get all sensors corresponding to the search params given",
-                  notes = "Retrieve all sensors authorized for the user corresponding to the searched params given")
+            notes = "Retrieve all sensors authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve all sensors", response = SensorDetailDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -181,41 +189,43 @@ public class SensorResourceService extends ResourceService {
             @ApiParam(value = "Search by service date", example = DocumentationAnnotation.EXAMPLE_SENSOR_IN_SERVICE_DATE) @QueryParam("inServiceDate") @Date(DateFormat.YMD) String inServiceDate,
             @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_PURCHASE) @QueryParam("dateOfPurchase") @Date(DateFormat.YMD) String dateOfPurchase,
             @ApiParam(value = "Search by date of last calibration", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION) @QueryParam("dateOfLastCalibration") @Date(DateFormat.YMD) String dateOfLastCalibration,
-            @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @QueryParam("personInCharge") String personInCharge) {
-        
-        SensorDAO sensorDAO = new SensorDAO(sparql);
-        //1. Get count
-        Integer totalCount = sensorDAO.count(uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
-        ArrayList<Sensor> sensorsFounded = new ArrayList<>();
-         //2. Get sensors
-        if(totalCount > 0){
-            sensorsFounded = sensorDAO.find(page, pageSize, uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
-        }
-       
-        //3. Return result
-        ArrayList<Status> statusList = new ArrayList<>();
-        ArrayList<SensorDTO> sensorsToReturn = new ArrayList<>();
-        ResultForm<SensorDTO> getResponse;
-        if (sensorsFounded == null) { //Request failure
-            getResponse = new ResultForm<>(0, 0, sensorsToReturn, true);
-            return noResultFound(getResponse, statusList);
-        } else if (sensorsFounded.isEmpty()) { //No result found
-            getResponse = new ResultForm<>(0, 0, sensorsToReturn, true);
-            return noResultFound(getResponse, statusList);
-        } else { //Results
-            //Convert all objects to DTOs
-            sensorsFounded.forEach((sensor) -> {
-                sensorsToReturn.add(new SensorDTO(sensor));
-            });
-            
-            getResponse = new ResultForm<>(pageSize, page, sensorsToReturn, true, totalCount);
-            getResponse.setStatus(statusList);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
+            @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @QueryParam("personInCharge") String personInCharge) throws Exception {
+        try (sparql) {
+            SensorDAO sensorDAO = new SensorDAO(sparql);
+            //1. Get count
+            Integer totalCount = sensorDAO.count(uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+            ArrayList<Sensor> sensorsFounded = new ArrayList<>();
+            //2. Get sensors
+            if (totalCount > 0) {
+                sensorsFounded = sensorDAO.find(page, pageSize, uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
+            }
+
+            //3. Return result
+            ArrayList<Status> statusList = new ArrayList<>();
+            ArrayList<SensorDTO> sensorsToReturn = new ArrayList<>();
+            ResultForm<SensorDTO> getResponse;
+            if (sensorsFounded == null) { //Request failure
+                getResponse = new ResultForm<>(0, 0, sensorsToReturn, true);
+                return noResultFound(getResponse, statusList);
+            } else if (sensorsFounded.isEmpty()) { //No result found
+                getResponse = new ResultForm<>(0, 0, sensorsToReturn, true);
+                return noResultFound(getResponse, statusList);
+            } else { //Results
+                //Convert all objects to DTOs
+                sensorsFounded.forEach((sensor) -> {
+                    sensorsToReturn.add(new SensorDTO(sensor));
+                });
+
+                getResponse = new ResultForm<>(pageSize, page, sensorsToReturn, true, totalCount);
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
         }
     }
 
     /**
      * Gets the information about a sensor.
+     *
      * @param uri
      * @param pageSize
      * @param page
@@ -247,7 +257,7 @@ public class SensorResourceService extends ResourceService {
     @GET
     @Path("{uri}")
     @ApiOperation(value = "Get a sensor",
-                  notes = "Retrieve a sensor. Need URL encoded sensor URI")
+            notes = "Retrieve a sensor. Need URL encoded sensor URI")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve a sensor", response = SensorDetailDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -262,18 +272,18 @@ public class SensorResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSensorDetails(
-        @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI, required = true) @PathParam("uri") @URL @Required String uri,
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
+            @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI, required = true) @PathParam("uri") @URL @Required String uri,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
         ArrayList<SensorDetailDTO> sensors = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<SensorDetailDTO> getResponse;
-        
-        try {
+
+        try (sparql) {
             SensorDAO sensorDAO = new SensorDAO(sparql);
-            
+
             SensorDetailDTO sensor = new SensorDetailDTO(sensorDAO.findById(uri));
-            
+
             sensors.add(sensor);
 
             getResponse = new ResultForm<>(pageSize, page, sensors, true, 1);
@@ -288,9 +298,10 @@ public class SensorResourceService extends ResourceService {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
         }
     }
-    
+
     /**
      * Searches sensor's profile by its URI
+     *
      * @param pageSize
      * @param page
      * @param uri
@@ -331,7 +342,7 @@ public class SensorResourceService extends ResourceService {
     @GET
     @Path("profiles/{uri}")
     @ApiOperation(value = "Get a sensor profile",
-                  notes = "Retrieve a sensor profile. Need URL encoded sensor URI")
+            notes = "Retrieve a sensor profile. Need URL encoded sensor URI")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve a sensor profile", response = Sensor.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -346,41 +357,44 @@ public class SensorResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSensorProfile(
-        @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @PathParam("uri") @URL @Required String uri,
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-        
-        if (uri == null) {
-            final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty sensor uri");
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
+            @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @PathParam("uri") @URL @Required String uri,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
+        try (sparql) {
+            if (uri == null) {
+                final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty sensor uri");
+                return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
+            }
+
+            SensorProfileDAO sensorDAO = new SensorProfileDAO(sparql);
+            sensorDAO.uri = uri;
+            sensorDAO.setPage(page);
+            sensorDAO.setPageSize(pageSize);
+            sensorDAO.user = userSession.getUser();
+
+            return getSensorProfileData(sensorDAO);
         }
-        
-        SensorProfileDAO sensorDAO = new SensorProfileDAO(sparql);
-        sensorDAO.uri = uri;
-        sensorDAO.setPage(page);
-        sensorDAO.setPageSize(pageSize);
-        sensorDAO.user = userSession.getUser();
-        
-        return getSensorProfileData(sensorDAO);
     }
-    
+
     /**
      * Generates a Sensor list from a given list of SensorPostDTO
+     *
      * @param sensorDTOs
      * @return the list of sensors
      */
     private List<Sensor> sensorPostDTOsToSensors(List<SensorPostDTO> sensorDTOs) {
         ArrayList<Sensor> sensors = new ArrayList<>();
-        
+
         for (SensorPostDTO sensorPostDTO : sensorDTOs) {
             sensors.add(sensorPostDTO.createObjectFromDTO());
         }
-        
+
         return sensors;
     }
-    
+
     /**
      * Inserts sensors in the storage.
+     *
      * @param sensors list of sensors to insert.
      * @example
      * {
@@ -394,11 +408,12 @@ public class SensorResourceService extends ResourceService {
      *      "personInCharge": "morgane.vidal@inra.fr"
      * }
      * @param context
-     * @return the post result with the errors or the uri of the inserted sensors
+     * @return the post result with the errors or the uri of the inserted
+     * sensors
      */
     @POST
     @ApiOperation(value = "Post a sensor",
-                  notes = "Register a new sensor in the database")
+            notes = "Register a new sensor in the database")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Sensor saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -414,51 +429,54 @@ public class SensorResourceService extends ResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response post(
-        @ApiParam (value = DocumentationAnnotation.SENSOR_POST_DEFINITION) @Valid ArrayList<SensorPostDTO> sensors,
-        @Context HttpServletRequest context) {
-        AbstractResultForm postResponse = null;
-        
-        if (sensors != null && !sensors.isEmpty()) {
-            SensorDAO sensorDAO = new SensorDAO(sparql);
-            
-            if (context.getRemoteAddr() != null) {
-                sensorDAO.remoteUserAdress = context.getRemoteAddr();
+            @ApiParam(value = DocumentationAnnotation.SENSOR_POST_DEFINITION) @Valid ArrayList<SensorPostDTO> sensors,
+            @Context HttpServletRequest context) throws Exception {
+        try (sparql) {
+            AbstractResultForm postResponse = null;
+
+            if (sensors != null && !sensors.isEmpty()) {
+                SensorDAO sensorDAO = new SensorDAO(sparql);
+
+                if (context.getRemoteAddr() != null) {
+                    sensorDAO.remoteUserAdress = context.getRemoteAddr();
+                }
+
+                sensorDAO.user = userSession.getUser();
+
+                POSTResultsReturn result = sensorDAO.checkAndInsert(sensorPostDTOsToSensors(sensors));
+
+                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                    postResponse = new ResponseFormPOST(result.statusList);
+                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                        || result.getHttpStatus().equals(Response.Status.OK)
+                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                    postResponse = new ResponseFormPOST(result.statusList);
+                }
+                return Response.status(result.getHttpStatus()).entity(postResponse).build();
+            } else {
+                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty sensor(s) to add"));
+                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
             }
-            
-            sensorDAO.user = userSession.getUser();
-            
-            POSTResultsReturn result = sensorDAO.checkAndInsert(sensorPostDTOsToSensors(sensors));
-            
-            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                postResponse = new ResponseFormPOST(result.statusList);
-                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                    || result.getHttpStatus().equals(Response.Status.OK)
-                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                postResponse = new ResponseFormPOST(result.statusList);
-            }
-            return Response.status(result.getHttpStatus()).entity(postResponse).build();
-        } else {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty sensor(s) to add"));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
-    
+
     /**
      * Generates a Sensor list from a given list of SensorPostDTO
+     *
      * @param sensorDTOs
      * @return the list of sensors
      */
     private List<Sensor> sensorDTOsToSensors(List<SensorDTO> sensorDTOs) {
         ArrayList<Sensor> sensors = new ArrayList<>();
-        
+
         for (SensorDTO sensorPostDTO : sensorDTOs) {
             sensors.add(sensorPostDTO.createObjectFromDTO());
         }
-        
+
         return sensors;
     }
-    
+
     /**
      * Updates the given sensors.
      * @example
@@ -477,7 +495,8 @@ public class SensorResourceService extends ResourceService {
      * ]
      * @param sensors
      * @param context
-     * @return the post result with the founded errors or the URIs of the updated sensors
+     * @return the post result with the founded errors or the URIs of the
+     * updated sensors
      */
     @PUT
     @ApiOperation(value = "Update sensors")
@@ -494,21 +513,21 @@ public class SensorResourceService extends ResourceService {
                 example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
     public Response put(
-        @ApiParam(value = DocumentationAnnotation.SENSOR_POST_DEFINITION) @Valid ArrayList<SensorDTO> sensors,
-        @Context HttpServletRequest context) {
+            @ApiParam(value = DocumentationAnnotation.SENSOR_POST_DEFINITION) @Valid ArrayList<SensorDTO> sensors,
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
-        
-        if (sensors != null && !sensors.isEmpty()) {
-            try {
+
+        try (sparql) {
+            if (sensors != null && !sensors.isEmpty()) {
                 SensorDAO sensorDAO = new SensorDAO(sparql);
                 if (context.getRemoteAddr() != null) {
                     sensorDAO.remoteUserAdress = context.getRemoteAddr();
                 }
-                
+
                 sensorDAO.user = userSession.getUser();
-                
+
                 POSTResultsReturn result = sensorDAO.checkAndUpdate(sensorDTOsToSensors(sensors));
-                
+
                 if (result.getHttpStatus().equals(Response.Status.OK)
                         || result.getHttpStatus().equals(Response.Status.CREATED)) {
                     //Code 200, traits modifiés
@@ -520,26 +539,28 @@ public class SensorResourceService extends ResourceService {
                     postResponse = new ResponseFormPOST(result.statusList);
                 }
                 return Response.status(result.getHttpStatus()).entity(postResponse).build();
-            } catch (Exception ex) {
-                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.ERR, StatusCodeMsg.ERR, "An internal server error occurred."));
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
+            } else {
+                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty sensors(s) to update"));
+                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
             }
-        } else {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty sensors(s) to update"));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        } catch (Exception ex) {
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.ERR, StatusCodeMsg.ERR, "An internal server error occurred."));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
         }
+
     }
-    
+
     /**
      * Sensor POST service.
+     *
      * @param profiles
      * @param context
-     * @return 
+     * @return
      */
     @POST
     @Path("profiles")
     @ApiOperation(value = "Post sensor(s) profile(s)",
-                  notes = "Register sensor(s) profile(s) in the database")
+            notes = "Register sensor(s) profile(s) in the database")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "sensor(s) profile(s) saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -555,22 +576,22 @@ public class SensorResourceService extends ResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postProfiles(
-        @ApiParam(value = DocumentationAnnotation.SENSOR_PROFILE_POST_DEFINITION) @Valid ArrayList<SensorProfileDTO> profiles,
-        @Context HttpServletRequest context) {
+            @ApiParam(value = DocumentationAnnotation.SENSOR_PROFILE_POST_DEFINITION) @Valid ArrayList<SensorProfileDTO> profiles,
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
-        
-        if (profiles != null && !profiles.isEmpty()) {
-            try {
+
+        try (sparql) {
+            if (profiles != null && !profiles.isEmpty()) {
                 SensorProfileDAO sensorProfileDAO = new SensorProfileDAO(sparql);
-                
+
                 if (context.getRemoteAddr() != null) {
                     sensorProfileDAO.remoteUserAdress = context.getRemoteAddr();
                 }
-                
+
                 sensorProfileDAO.user = userSession.getUser();
-                
+
                 POSTResultsReturn result = sensorProfileDAO.checkAndInsert(profiles);
-                
+
                 if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                     postResponse = new ResponseFormPOST(result.statusList);
                     postResponse.getMetadata().setDatafiles(result.getCreatedResources());
@@ -580,19 +601,22 @@ public class SensorResourceService extends ResourceService {
                     postResponse = new ResponseFormPOST(result.statusList);
                 }
                 return Response.status(result.getHttpStatus()).entity(postResponse).build();
-            } catch (DAOPersistenceException ex) {
-                LOGGER.error(ex.getMessage(), ex);
-                return getResponseWhenPersistenceError(ex);
+            } else {
+                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty sensor(s) profile(s) to add"));
+                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
             }
-        } else {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty sensor(s) profile(s) to add"));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        } catch (DAOPersistenceException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            return getResponseWhenPersistenceError(ex);
         }
+
     }
-    
+
     /**
      * Sensor PUT service.
-     * @param variables the list of variables measured by the sensor. This list can be empty but not null.
+     *
+     * @param variables the list of variables measured by the sensor. This list
+     * can be empty but not null.
      * @param uri
      * @param context
      * @return the result
@@ -635,36 +659,38 @@ public class SensorResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response putMeasuredVariables(
             @ApiParam(value = DocumentationAnnotation.LINK_VARIABLES_DEFINITION) @URL ArrayList<String> variables,
-            @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI, required = true) 
-                @PathParam("uri") 
-                @Required 
-                @URL String uri,
-            @Context HttpServletRequest context) {
+            @ApiParam(value = DocumentationAnnotation.SENSOR_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_SENSOR_URI, required = true)
+            @PathParam("uri")
+            @Required
+            @URL String uri,
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
-        
-        SensorDAO sensorDAO = new SensorDAO(sparql);
-        if (context.getRemoteAddr() != null) {
-            sensorDAO.remoteUserAdress = context.getRemoteAddr();
+        try (sparql) {
+            SensorDAO sensorDAO = new SensorDAO(sparql);
+            if (context.getRemoteAddr() != null) {
+                sensorDAO.remoteUserAdress = context.getRemoteAddr();
+            }
+
+            sensorDAO.user = userSession.getUser();
+
+            POSTResultsReturn result = sensorDAO.checkAndUpdateMeasuredVariables(uri, variables);
+
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+            }
+
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
         }
-        
-        sensorDAO.user = userSession.getUser();
-        
-        POSTResultsReturn result = sensorDAO.checkAndUpdateMeasuredVariables(uri, variables);
-        
-        if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-            postResponse = new ResponseFormPOST(result.statusList);
-            postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-        } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                || result.getHttpStatus().equals(Response.Status.OK)
-                || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-            postResponse = new ResponseFormPOST(result.statusList);
-        }
-        
-        return Response.status(result.getHttpStatus()).entity(postResponse).build();
     }
-    
+
     /**
      * Sensor Data GET service.
+     *
      * @param pageSize
      * @param page
      * @param provenanceUri
@@ -726,67 +752,71 @@ public class SensorResourceService extends ResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSensorData(
-            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-            @ApiParam(value = "Search by variable", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @QueryParam("variable") @Required String variablesUri,
-            @ApiParam(value = "Search by provenance", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_URI) @QueryParam("provenance") String provenanceUri,
+            @PathParam("uri") @Required @URL String uri,
+            @ApiParam(value = "Search by variable", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI, required = true) @QueryParam("variable") @Required @URL String variablesUri,
+            @ApiParam(value = "Search by provenance", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_URI) @QueryParam("provenance") @URL String provenanceUri,
             @ApiParam(value = "Search by minimal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("startDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String startDate,
             @ApiParam(value = "Search by maximal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("endDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String endDate,
-            @ApiParam(value = "Search by object uri", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("object")  @URL String object,
-            @PathParam("uri") @Required @URL String uri
-        ) {
-        DataDAO dataDAO = new DataDAO();
-        dataDAO.setPage(page);
-        dataDAO.setPageSize(pageSize);
+            @ApiParam(value = "Search by object uri", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("object") @URL String object,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
+    ) throws Exception {
+        try (sparql) {
+            DataDAO dataDAO = new DataDAO();
+            dataDAO.setPage(page);
+            dataDAO.setPageSize(pageSize);
 
-        ProvenanceDAO provenanceDAO  = new ProvenanceDAO(sparql);
-        provenanceDAO.setPage(1);
-        provenanceDAO.setPageSize(500);
-        
-        ArrayList<String> provenanceUrisAssociatedToSensor = new ArrayList<>();
-        if (provenanceUri != null){
-            provenanceUrisAssociatedToSensor.add(provenanceUri);
-        }else{
-            Provenance searchProvenance = new Provenance();
-            String jsonFilter = BasicDBObjectBuilder.start("metadata.prov:Agent.prov:id", uri).get().toString();
-            ArrayList<Provenance> provenances = provenanceDAO.getProvenances(searchProvenance, jsonFilter);
+            ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
+            provenanceDAO.setPage(0);
+            provenanceDAO.setPageSize(500);
 
-            for (Provenance provenance : provenances) {
-                provenanceUrisAssociatedToSensor.add(provenance.getUri());
+            //1. Get associated sensors
+            ArrayList<String> provenanceUrisAssociatedToSensor = new ArrayList<>();
+            if (provenanceUri != null) {
+                provenanceUrisAssociatedToSensor.add(provenanceUri);
+            } else {
+                Provenance searchProvenance = new Provenance();
+                String jsonFilter = BasicDBObjectBuilder.start("metadata.prov:Agent.prov:id", uri).get().toString();
+                ArrayList<Provenance> provenances = provenanceDAO.getProvenances(searchProvenance, jsonFilter);
+
+                for (Provenance provenance : provenances) {
+                    provenanceUrisAssociatedToSensor.add(provenance.getUri());
+                }
             }
-        }
-        List<String> objectsUris = new ArrayList<>();
-        if(object != null){
-           objectsUris.add(object);
-        }
-        
-        //1. Get sensor data count
-        Integer totalCount = dataDAO.count(variablesUri, startDate, endDate, objectsUris, provenanceUrisAssociatedToSensor);
-        List<Data> dataFounded = new ArrayList<>();
-        //2. Get sensor data
-        if(totalCount > 0){
-            dataFounded = dataDAO.find(page, pageSize, variablesUri,  startDate, endDate, objectsUris, provenanceUrisAssociatedToSensor);
-        }
-        
-        //3. Return result
-        ArrayList<Status> statusList = new ArrayList<>();
-        ArrayList<DataDTO> sensorsToReturn = new ArrayList<>();
-        ResultForm<DataDTO> getResponse;
-        if (dataFounded == null) { //Request failure
-            getResponse = new ResultForm<>(0, 0, sensorsToReturn, true);
-            return noResultFound(getResponse, statusList);
-        } else if (dataFounded.isEmpty()) { //No result found
-            getResponse = new ResultForm<>(0, 0, sensorsToReturn, true);
-            return noResultFound(getResponse, statusList);
-        } else { //Results
-            //Convert all objects to DTOs
-            dataFounded.forEach((data) -> {
-                sensorsToReturn.add(new DataDTO(data));
-            });
-            
-            getResponse = new ResultForm<>(pageSize, page, sensorsToReturn, true, totalCount);
-            getResponse.setStatus(statusList);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
+            List<String> objectsUris = new ArrayList<>();
+            List<Data> dataFounded = new ArrayList<>();
+            Integer totalCount = 0;
+            if (!provenanceUrisAssociatedToSensor.isEmpty()) {
+                if (object != null) {
+                    objectsUris.add(object);
+                }
+                //2. Get sensor data count
+                totalCount = dataDAO.count(variablesUri, startDate, endDate, objectsUris, provenanceUrisAssociatedToSensor);
+                //3. Get sensor data
+                if (totalCount > 0) {
+                    dataFounded = dataDAO.find(page, pageSize, variablesUri, startDate, endDate, objectsUris, provenanceUrisAssociatedToSensor);
+                }
+            }
+            //4. Return result
+            ArrayList<Status> statusList = new ArrayList<>();
+            ArrayList<DataDTO> sensorsToReturn = new ArrayList<>();
+            ResultForm<DataDTO> getResponse;
+            if (dataFounded == null) { //Request failure
+                getResponse = new ResultForm<>(0, 0, sensorsToReturn, true);
+                return noResultFound(getResponse, statusList);
+            } else if (dataFounded.isEmpty()) { //No result found
+                getResponse = new ResultForm<>(0, 0, sensorsToReturn, true);
+                return noResultFound(getResponse, statusList);
+            } else { //Results
+                //Convert all objects to DTOs
+                dataFounded.forEach((data) -> {
+                    sensorsToReturn.add(new DataDTO(data));
+                });
+
+                getResponse = new ResultForm<>(pageSize, page, sensorsToReturn, true, totalCount);
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
         }
     }
 }

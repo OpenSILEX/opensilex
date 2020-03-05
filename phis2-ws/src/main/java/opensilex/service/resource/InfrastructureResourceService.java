@@ -51,13 +51,19 @@ import org.slf4j.LoggerFactory;
 //@Api("/infrastructures")
 //@Path("/infrastructures")
 public class InfrastructureResourceService extends ResourceService {
+
     final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureResourceService.class);
-    
+
     @Inject
-    SPARQLService sparql;
-    
+    public InfrastructureResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
-     * Searches infrastructures by URI, rdfType. 
+     * Searches infrastructures by URI, rdfType.
+     *
      * @param pageSize
      * @param page
      * @param uri
@@ -91,7 +97,7 @@ public class InfrastructureResourceService extends ResourceService {
      */
     @GET
     @ApiOperation(value = "Get all infrastructures corresponding to the search params given",
-                  notes = "Retrieve all infrastructures authorized for the user corresponding to the searched params given")
+            notes = "Retrieve all infrastructures authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve all infrastructures", response = Infrastructure.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -106,68 +112,71 @@ public class InfrastructureResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getInfrastructuresBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-        @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) @QueryParam("uri") @URL String uri,
-        @ApiParam(value = "Search by type uri", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_RDF_TYPE) @QueryParam("rdfType") @URL String rdfType,
-        @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_LABEL) @QueryParam("label") String label,
-        @ApiParam(value = "Language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language
-    ) {
-        // 1. Initialize infrastructureDAO with parameters
-        InfrastructureDAO infrastructureDAO = new InfrastructureDAO(sparql);
-        
-        if (uri != null) {
-            infrastructureDAO.uri = uri;
-        }
-        if (rdfType != null) {
-            infrastructureDAO.rdfType = rdfType;
-        }
-        if (label != null) {
-            infrastructureDAO.label = label;
-        }
-        if (language == null) {
-            language = DEFAULT_LANGUAGE;
-        }
-        infrastructureDAO.language = language;
-        
-        infrastructureDAO.user = userSession.getUser();
-        infrastructureDAO.setPage(page);
-        infrastructureDAO.setPageSize(pageSize);
-        
-        // 2. Get infrastructures count
-        Integer totalCount = infrastructureDAO.count();
-        
-        // 3. Get infrastructure page list
-        ArrayList<Infrastructure> infrastructures = infrastructureDAO.allPaginate();
-        
-        // 4. Initialize return variables
-        ArrayList<Status> statusList = new ArrayList<>();
-        ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
-        ResultForm<RdfResourceDefinitionDTO> getResponse;
-        
-        if (infrastructures == null) {
-            // Request failure
-            getResponse = new ResultForm<>(0, 0, list, true, 0);
-            return noResultFound(getResponse, statusList);
-        } else if (infrastructures.isEmpty()) {
-            // No results
-            getResponse = new ResultForm<>(0, 0, list, true, 0);
-            return noResultFound(getResponse, statusList);
-        } else {
-            // Convert all Infrastructure object to DTO's
-            infrastructures.forEach((infrastructure) -> {
-                list.add(new InfrastructureDTO(infrastructure));
-            });
-            
-            // Return list of DTO
-            getResponse = new ResultForm<>(infrastructureDAO.getPageSize(), infrastructureDAO.getPage(), list, true, totalCount);
-            getResponse.setStatus(statusList);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+            @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) @QueryParam("uri") @URL String uri,
+            @ApiParam(value = "Search by type uri", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_RDF_TYPE) @QueryParam("rdfType") @URL String rdfType,
+            @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_LABEL) @QueryParam("label") String label,
+            @ApiParam(value = "Language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language
+    ) throws Exception {
+        try (sparql) {
+            // 1. Initialize infrastructureDAO with parameters
+            InfrastructureDAO infrastructureDAO = new InfrastructureDAO(sparql);
+
+            if (uri != null) {
+                infrastructureDAO.uri = uri;
+            }
+            if (rdfType != null) {
+                infrastructureDAO.rdfType = rdfType;
+            }
+            if (label != null) {
+                infrastructureDAO.label = label;
+            }
+            if (language == null) {
+                language = DEFAULT_LANGUAGE;
+            }
+            infrastructureDAO.language = language;
+
+            infrastructureDAO.user = userSession.getUser();
+            infrastructureDAO.setPage(page);
+            infrastructureDAO.setPageSize(pageSize);
+
+            // 2. Get infrastructures count
+            Integer totalCount = infrastructureDAO.count();
+
+            // 3. Get infrastructure page list
+            ArrayList<Infrastructure> infrastructures = infrastructureDAO.allPaginate();
+
+            // 4. Initialize return variables
+            ArrayList<Status> statusList = new ArrayList<>();
+            ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
+            ResultForm<RdfResourceDefinitionDTO> getResponse;
+
+            if (infrastructures == null) {
+                // Request failure
+                getResponse = new ResultForm<>(0, 0, list, true, 0);
+                return noResultFound(getResponse, statusList);
+            } else if (infrastructures.isEmpty()) {
+                // No results
+                getResponse = new ResultForm<>(0, 0, list, true, 0);
+                return noResultFound(getResponse, statusList);
+            } else {
+                // Convert all Infrastructure object to DTO's
+                infrastructures.forEach((infrastructure) -> {
+                    list.add(new InfrastructureDTO(infrastructure));
+                });
+
+                // Return list of DTO
+                getResponse = new ResultForm<>(infrastructureDAO.getPageSize(), infrastructureDAO.getPage(), list, true, totalCount);
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
         }
     }
-    
+
     /**
      * Searches infrastructure details for a given URI
+     *
      * @param language
      * @param pageSize
      * @param page
@@ -214,7 +223,7 @@ public class InfrastructureResourceService extends ResourceService {
     @GET
     @Path("{uri}")
     @ApiOperation(value = "Get all infrastructure's details corresponding to the search uri",
-                  notes = "Retrieve all infrastructure's details authorized for the user corresponding to the searched uri")
+            notes = "Retrieve all infrastructure's details authorized for the user corresponding to the searched uri")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve infrastructure's details", response = RdfResourceDefinitionDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -229,48 +238,50 @@ public class InfrastructureResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getInfrastructureDetails(
-        @ApiParam(value = DocumentationAnnotation.INFRASTRUCTURE_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) @PathParam("uri") @URL @Required String uri,
-        @ApiParam(value = "Language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language,
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {            
-        // 1. Initialize propertyDAO with parameters
-        PropertyDAO propertyDAO = new PropertyDAO(sparql);
-        
-        propertyDAO.setSubClassOf(Oeso.CONCEPT_INFRASTRUCTURE);
-        
-        if (language == null) {
-            language = DEFAULT_LANGUAGE;
-        }
-                
-        propertyDAO.user = userSession.getUser();
-        propertyDAO.setPage(page);
-        propertyDAO.setPageSize(pageSize);
-        
-        // 2. Initialize result variable
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<RdfResourceDefinitionDTO> getResponse;
-        ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
-        
-        // Get all properties in the given language and fill them in infrastructure object
-        Infrastructure infrastructure = new Infrastructure();
-        infrastructure.setUri(uri);
-        try {
-            if (propertyDAO.getAllPropertiesWithLabels(infrastructure, language)) {
-                // Convert the infrastructure to an InfrastructureDTO
-                list.add(new InfrastructureDTO(infrastructure));
-                
-                // Return it
-                getResponse = new ResultForm<>(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            } else {
-                // No result found
-                getResponse = new ResultForm<>(0, 0, list, true, 0);
-                return noResultFound(getResponse, statusList);
+            @ApiParam(value = DocumentationAnnotation.INFRASTRUCTURE_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) @PathParam("uri") @URL @Required String uri,
+            @ApiParam(value = "Language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
+        try (sparql) {
+            // 1. Initialize propertyDAO with parameters
+            PropertyDAO propertyDAO = new PropertyDAO(sparql);
+
+            propertyDAO.setSubClassOf(Oeso.CONCEPT_INFRASTRUCTURE);
+
+            if (language == null) {
+                language = DEFAULT_LANGUAGE;
             }
-        } catch (DAOPersistenceException ex) {
-            LOGGER.error(ex.getMessage(), ex);
-            return getResponseWhenPersistenceError(ex);
+
+            propertyDAO.user = userSession.getUser();
+            propertyDAO.setPage(page);
+            propertyDAO.setPageSize(pageSize);
+
+            // 2. Initialize result variable
+            ArrayList<Status> statusList = new ArrayList<>();
+            ResultForm<RdfResourceDefinitionDTO> getResponse;
+            ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
+
+            // Get all properties in the given language and fill them in infrastructure object
+            Infrastructure infrastructure = new Infrastructure();
+            infrastructure.setUri(uri);
+            try {
+                if (propertyDAO.getAllPropertiesWithLabels(infrastructure, language)) {
+                    // Convert the infrastructure to an InfrastructureDTO
+                    list.add(new InfrastructureDTO(infrastructure));
+
+                    // Return it
+                    getResponse = new ResultForm<>(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
+                    getResponse.setStatus(statusList);
+                    return Response.status(Response.Status.OK).entity(getResponse).build();
+                } else {
+                    // No result found
+                    getResponse = new ResultForm<>(0, 0, list, true, 0);
+                    return noResultFound(getResponse, statusList);
+                }
+            } catch (DAOPersistenceException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                return getResponseWhenPersistenceError(ex);
+            }
         }
     }
 }

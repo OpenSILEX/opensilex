@@ -13,6 +13,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import javax.mail.internet.InternetAddress;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.SecurityContext;
+
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.Contact;
@@ -26,14 +29,14 @@ import opensilex.service.resource.validation.interfaces.URL;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.user.dal.UserDAO;
+import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * The DTO for the POST of projects.
  *
- * @see ProjectResourceService#post(java.util.ArrayList,
- * javax.servlet.http.HttpServletRequest)
+ * @see ProjectResourceService#post(ArrayList, HttpServletRequest, SecurityContext) 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProjectPostDTO extends AbstractVerifiedClass {
@@ -259,10 +262,10 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
         }
 
         UserDAO userDAO = new UserDAO(sparql);
-        List<InternetAddress> addresses = new ArrayList<>();
+        List<UserModel> addresses = new ArrayList<>();
         for (String contact : this.getAdministrativeContacts()) {
             if (contact != null && !contact.isEmpty()) {
-                addresses.add(userDAO.get(new URI(contact)).getEmail());
+                addresses.add(userDAO.get(new URI(contact)));
             }
         }
         project.setAdministrativeContacts(addresses);
@@ -270,7 +273,7 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
         addresses = new ArrayList<>();
         for (String contact : this.getCoordinators()) {
             if (contact != null && !contact.isEmpty()) {
-                addresses.add(userDAO.get(new URI(contact)).getEmail());
+                addresses.add(userDAO.get(new URI(contact)));
             }
         }
         project.setCoordinators(addresses);
@@ -278,7 +281,7 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
         addresses = new ArrayList<>();
         for (String contact : this.getScientificContacts()) {
             if (contact != null && !contact.isEmpty()) {
-                addresses.add(userDAO.get(new URI(contact)).getEmail());
+                addresses.add(userDAO.get(new URI(contact)));
             }
         }
         project.setScientificContacts(addresses);

@@ -61,7 +61,11 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
     AuthenticationService authentication;
 
     @Inject
-    SPARQLService sparql;
+    public AuthenticationRequestFilter(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
 
     /**
      * Filters the session token.
@@ -115,7 +119,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
             //Get session id
             String userToken = authorization.replace("Bearer ", "");
 
-            try {
+            try (sparql) {
                 URI userURI = authentication.decodeTokenUserURI(userToken);
                 UserModel user = sparql.getByURI(UserModel.class, userURI, null);
 

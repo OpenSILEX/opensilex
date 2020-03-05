@@ -14,7 +14,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -44,9 +43,9 @@ import opensilex.service.model.Call;
 import opensilex.service.model.Trait;
 import org.opensilex.sparql.service.SPARQLService;
 
-
 /**
  * Traits resource service.
+ *
  * @See https://brapi.docs.apiary.io/#reference/traits
  * @update [Alice Boizet] 24 Sept. 2018: add Get Trait Details.
  * @author Alice Boizet <alice.boizet@inra.fr>
@@ -55,19 +54,25 @@ import org.opensilex.sparql.service.SPARQLService;
 @Path("/brapi/v1/traits")
 @Singleton
 public class TraitsResourceService implements BrapiCall {
+
     final static Logger LOGGER = LoggerFactory.getLogger(TraitsResourceService.class);
-    
+
     @Inject
-    SPARQLService sparql;
-    
+    public TraitsResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
      * Overriding BrapiCall method
+     *
      * @return traits call information
      */
     @Override
     public ArrayList<Call> callInfo() {
         ArrayList<Call> calls = new ArrayList();
-        
+
         //SILEX:info 
         //Call GET Trait list
         ArrayList<String> calldatatypes = new ArrayList<>();
@@ -78,7 +83,7 @@ public class TraitsResourceService implements BrapiCall {
         callVersions.add("1.3");
         Call call1 = new Call("traits", calldatatypes, callMethods, callVersions);
         //\SILEX:info 
-        
+
         //SILEX:info 
         //Call GET Trait details
         ArrayList<String> calldatatypes2 = new ArrayList<>();
@@ -89,17 +94,18 @@ public class TraitsResourceService implements BrapiCall {
         callVersions2.add("1.3");
         Call call2 = new Call("traits/{traitDbId}", calldatatypes2, callMethods2, callVersions2);
         //\SILEX:info 
-        
+
         calls.add(call1);
         calls.add(call2);
-        
+
         return calls;
     }
-    
+
     /**
      * Retrieves the list of traits.
+     *
      * @param limit
-     * @param page 
+     * @param page
      * @return list of the traits corresponding to the search params given
      * @throws java.sql.SQLException
      * @example
@@ -142,31 +148,34 @@ public class TraitsResourceService implements BrapiCall {
      */
     @GET
     @ApiOperation(value = DocumentationAnnotation.TRAIT_CALL_MESSAGE,
-                       notes = DocumentationAnnotation.TRAIT_CALL_MESSAGE)
+            notes = DocumentationAnnotation.TRAIT_CALL_MESSAGE)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = DocumentationAnnotation.TRAIT_CALL_MESSAGE, response = BrapiTraitDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})    
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
     @ApiImplicitParams({
         @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                         dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
-    @Produces(MediaType.APPLICATION_JSON)    
-    public Response getTraitsList ( 
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0)int page 
-        ) throws SQLException {        
-        TraitDAO traitDAO = new TraitDAO(sparql);
-        traitDAO.setPageSize(limit);
-        traitDAO.setPage(page);           
-        return getTraitsData(traitDAO);
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTraitsList(
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
+    ) throws Exception {
+        try (sparql) {
+            TraitDAO traitDAO = new TraitDAO(sparql);
+            traitDAO.setPageSize(limit);
+            traitDAO.setPage(page);
+            return getTraitsData(traitDAO);
+        }
     }
-    
+
     /**
      * Retrieve the detail of one trait from the URI given..
+     *
      * @param traitUri
      * @return the trait information
      * @throws java.sql.SQLException
@@ -202,23 +211,26 @@ public class TraitsResourceService implements BrapiCall {
         @ApiResponse(code = 200, message = DocumentationAnnotation.TRAIT_DETAILS_CALL_MESSAGE, response = BrapiTraitDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})    
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
     @ApiImplicitParams({
-       @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                         dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
+        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
+                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
+                value = DocumentationAnnotation.ACCES_TOKEN,
+                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
     })
-    @Produces(MediaType.APPLICATION_JSON)    
-    public Response getTraitDetails ( 
-        @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example=DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("traitDbId") @Required @URL String traitUri
-    ) throws SQLException {        
-        TraitDAO traitDAO = new TraitDAO(sparql, traitUri);           
-        return getOneTraitData(traitDAO);
-    }    
-    
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTraitDetails(
+            @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("traitDbId") @Required @URL String traitUri
+    ) throws Exception {
+        try (sparql) {
+            TraitDAO traitDAO = new TraitDAO(sparql, traitUri);
+            return getOneTraitData(traitDAO);
+        }
+    }
+
     /**
      * Returns a generic response when no result are found.
+     *
      * @param getResponse
      * @param insertStatusList
      * @return the response "no result found" for the service
@@ -228,11 +240,12 @@ public class TraitsResourceService implements BrapiCall {
         getResponse.getMetadata().setStatus(insertStatusList);
         return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
     }
-        
+
     /**
      * Return a list of variable data.
+     *
      * @param traitDAO
-     * @return the response with the traits data list 
+     * @return the response with the traits data list
      */
     private Response getTraitsData(TraitDAO traitDAO) {
         ArrayList<Status> statusList = new ArrayList<>();
@@ -247,9 +260,10 @@ public class TraitsResourceService implements BrapiCall {
             return noResultFound(getResponse, statusList);
         }
     }
-    
+
     /**
      * Returns a trait data.
+     *
      * @param traitDAO
      * @return the response with one trait data
      */
@@ -257,7 +271,7 @@ public class TraitsResourceService implements BrapiCall {
         ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<BrapiTraitDTO> brapiTraits = getBrapiTraitsData(traitDAO);
         BrapiSingleResponseForm getResponse;
-        if (!brapiTraits.isEmpty()){
+        if (!brapiTraits.isEmpty()) {
             BrapiTraitDTO trait = brapiTraits.get(0);
             getResponse = new BrapiSingleResponseForm(trait);
             getResponse.getMetadata().setStatus(statusList);
@@ -266,19 +280,21 @@ public class TraitsResourceService implements BrapiCall {
             BrapiMultiResponseForm getNoResponse = new BrapiMultiResponseForm(0, 0, brapiTraits, true);
             return noResultFound(getNoResponse, statusList);
         }
-    } 
-    
+    }
+
     /**
-     * Gets list of BrAPI traits from the TraitDAO corresponding to the search query
+     * Gets list of BrAPI traits from the TraitDAO corresponding to the search
+     * query
+     *
      * @param BrapiTraitDAO
      * @return the traits available in the system
      */
     private ArrayList<BrapiTraitDTO> getBrapiTraitsData(TraitDAO traitDAO) {
-        ArrayList<Trait> traits = traitDAO.allPaginate();  
-        ArrayList<BrapiTraitDTO> brapiTraits = new ArrayList();          
-                
+        ArrayList<Trait> traits = traitDAO.allPaginate();
+        ArrayList<BrapiTraitDTO> brapiTraits = new ArrayList();
+
         if (!traits.isEmpty()) {
-            for (Trait trait:traits) {
+            for (Trait trait : traits) {
                 BrapiTraitDTO brapiTrait = new BrapiTraitDTO(trait);
                 brapiTrait.setObservationVariables(traitDAO.getVariableFromTrait(trait));
                 brapiTraits.add(brapiTrait);

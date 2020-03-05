@@ -72,8 +72,12 @@ import org.opensilex.sparql.service.SPARQLService;
 public class EventResourceService extends ResourceService {
 
     @Inject
-    SPARQLService sparql;
-    
+    public EventResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     final static Logger LOGGER = LoggerFactory.getLogger(EventResourceService.class);
 
     /**
@@ -129,77 +133,79 @@ public class EventResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE)
             @QueryParam(GlobalWebserviceValues.PAGE)
             @DefaultValue(DefaultBrapiPaginationValues.PAGE)
-            @Min(0) int page, 
-        @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_EVENT_URI) 
-            @QueryParam("uri") 
-            @URL String uri, 
-        @ApiParam(value = "Search by type", example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE) 
-            @QueryParam("type") 
-            @URL String type, 
-        @ApiParam(
-                value = "Search by concerned item uri", 
-                example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_URI) 
-            @QueryParam("concernedItemUri") @URL String concernedItemUri, 
-        @ApiParam(
-                value = "Search by concerned item label", 
-                example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_LABEL) 
-            @QueryParam("concernedItemLabel") String concernedItemLabel, 
-        @ApiParam(
-                value = "Search by date - start of the range", 
-                example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_START_DATE) 
-            @QueryParam("startDate") 
-            @Date({DateFormat.YMDTHMSZZ, DateFormat.YMD}) String startDate, 
-        @ApiParam(
-                value = "Search by date - end of the range", 
-                example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_END_DATE) 
+            @Min(0) int page,
+            @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
+            @QueryParam("uri")
+            @URL String uri,
+            @ApiParam(value = "Search by type", example = DocumentationAnnotation.EXAMPLE_EVENT_TYPE)
+            @QueryParam("type")
+            @URL String type,
+            @ApiParam(
+                    value = "Search by concerned item uri",
+                    example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_URI)
+            @QueryParam("concernedItemUri") @URL String concernedItemUri,
+            @ApiParam(
+                    value = "Search by concerned item label",
+                    example = DocumentationAnnotation.EXAMPLE_EVENT_CONCERNED_ITEM_LABEL)
+            @QueryParam("concernedItemLabel") String concernedItemLabel,
+            @ApiParam(
+                    value = "Search by date - start of the range",
+                    example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_START_DATE)
+            @QueryParam("startDate")
+            @Date({DateFormat.YMDTHMSZZ, DateFormat.YMD}) String startDate,
+            @ApiParam(
+                    value = "Search by date - end of the range",
+                    example = DocumentationAnnotation.EXAMPLE_EVENT_SEARCH_END_DATE)
             @QueryParam("endDate")
             @Date({DateFormat.YMDTHMSZZ, DateFormat.YMD}) String endDate
-    ) {
-        EventDAO eventDAO = new EventDAO(sparql);
-        eventDAO.user = userSession.getUser();
+    ) throws Exception {
+        try (sparql) {
+            EventDAO eventDAO = new EventDAO(sparql);
+            eventDAO.user = userSession.getUser();
 
-        // Search events with parameters
-        ArrayList<Event> events;
-        try {
-            java.util.Date start = DateFormat.parseDateOrDateTime(startDate, false);
-            java.util.Date end = DateFormat.parseDateOrDateTime(endDate, true);
-
-            events = eventDAO.find(
-                    uri,
-                    type,
-                    concernedItemLabel,
-                    concernedItemUri,
-                    start,
-                    end,
-                    page,
-                    pageSize);
-            // handle exceptions
-        } catch (DAOPersistenceException ex) {
-            LOGGER.error(ex.getMessage(), ex);
-            return getResponseWhenPersistenceError(ex);
-        } catch (ParseException ex) {
-            return getResponseWhenInternalError(ex);
-        }
-
-        if (events == null) {
-            return getGETResponseWhenNoResult();
-        } else if (events.isEmpty()) {
-            return getGETResponseWhenNoResult();
-        } else {
-            // count results
+            // Search events with parameters
+            ArrayList<Event> events;
             try {
                 java.util.Date start = DateFormat.parseDateOrDateTime(startDate, false);
                 java.util.Date end = DateFormat.parseDateOrDateTime(endDate, true);
-                int totalCount = eventDAO.count(uri, type, concernedItemLabel, concernedItemUri, start, end);
-                return getGETResponseWhenSuccess(events, pageSize, page, totalCount);
 
-                // handle count exceptions
+                events = eventDAO.find(
+                        uri,
+                        type,
+                        concernedItemLabel,
+                        concernedItemUri,
+                        start,
+                        end,
+                        page,
+                        pageSize);
+                // handle exceptions
             } catch (DAOPersistenceException ex) {
                 LOGGER.error(ex.getMessage(), ex);
                 return getResponseWhenPersistenceError(ex);
-            } catch (Exception ex) {
-                LOGGER.error(ex.getMessage(), ex);
+            } catch (ParseException ex) {
                 return getResponseWhenInternalError(ex);
+            }
+
+            if (events == null) {
+                return getGETResponseWhenNoResult();
+            } else if (events.isEmpty()) {
+                return getGETResponseWhenNoResult();
+            } else {
+                // count results
+                try {
+                    java.util.Date start = DateFormat.parseDateOrDateTime(startDate, false);
+                    java.util.Date end = DateFormat.parseDateOrDateTime(endDate, true);
+                    int totalCount = eventDAO.count(uri, type, concernedItemLabel, concernedItemUri, start, end);
+                    return getGETResponseWhenSuccess(events, pageSize, page, totalCount);
+
+                    // handle count exceptions
+                } catch (DAOPersistenceException ex) {
+                    LOGGER.error(ex.getMessage(), ex);
+                    return getResponseWhenPersistenceError(ex);
+                } catch (Exception ex) {
+                    LOGGER.error(ex.getMessage(), ex);
+                    return getResponseWhenInternalError(ex);
+                }
             }
         }
     }
@@ -244,11 +250,12 @@ public class EventResourceService extends ResourceService {
                     value = DocumentationAnnotation.EVENT_URI_DEFINITION,
                     required = true,
                     example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
-            @PathParam("uri") @URL @Required String uri) {
-
-        EventDAO eventDAO = new EventDAO(sparql);
-        eventDAO.user = userSession.getUser();
-        return getGETByUriResponseFromDAOResults(eventDAO, uri);
+            @PathParam("uri") @URL @Required String uri) throws Exception {
+        try (sparql) {
+            EventDAO eventDAO = new EventDAO(sparql);
+            eventDAO.user = userSession.getUser();
+            return getGETByUriResponseFromDAOResults(eventDAO, uri);
+        }
     }
 
     /**
@@ -298,11 +305,12 @@ public class EventResourceService extends ResourceService {
                     value = DocumentationAnnotation.EVENT_URI_DEFINITION,
                     required = true,
                     example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
-            @PathParam("uri") @URL @Required String uri) {
-
-        AnnotationResourceService annotationResourceService = new AnnotationResourceService();
-        annotationResourceService.userSession = userSession;
-        return annotationResourceService.getAnnotationsBySearch(pageSize, page, null, null, uri, null, null, true);
+            @PathParam("uri") @URL @Required String uri) throws Exception {
+        try (sparql) {
+            AnnotationResourceService annotationResourceService = new AnnotationResourceService(sparql);
+            annotationResourceService.userSession = userSession;
+            return annotationResourceService.getAnnotationsBySearch(pageSize, page, null, null, uri, null, null, true);
+        }
     }
 
     /**
@@ -381,17 +389,18 @@ public class EventResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response put(
             @ApiParam(value = DocumentationAnnotation.EVENT_PUT_DEFINITION) @Valid ArrayList<EventPutDTO> eventsDtos,
-            @Context HttpServletRequest context) {
+            @Context HttpServletRequest context) throws Exception {
+        try (sparql) {
+            // Set DAO
+            EventDAO objectDao = new EventDAO(sparql);
+            objectDao.user = userSession.getUser();
+            if (context.getRemoteAddr() != null) {
+                objectDao.remoteUserAdress = context.getRemoteAddr();
+            }
 
-        // Set DAO
-        EventDAO objectDao = new EventDAO(sparql);
-        objectDao.user = userSession.getUser();
-        if (context.getRemoteAddr() != null) {
-            objectDao.remoteUserAdress = context.getRemoteAddr();
+            // Get POST response
+            return getPutResponse(objectDao, eventsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_EVENT_LIST);
         }
-
-        // Get POST response
-        return getPutResponse(objectDao, eventsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_EVENT_LIST);
     }
 
     /**
@@ -428,15 +437,16 @@ public class EventResourceService extends ResourceService {
                     required = true,
                     example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI
             )
-            @Valid @NotNull DeleteDTO deleteDTO, @Context HttpServletRequest context) {
-
-        EventDAO eventDao = new EventDAO(sparql);
-        eventDao.user = userSession.getUser();
-        if (context.getRemoteAddr() != null) {
-            eventDao.setRemoteUserAdress(context.getRemoteAddr());
+            @Valid @NotNull DeleteDTO deleteDTO, @Context HttpServletRequest context) throws Exception {
+        try (sparql) {
+            EventDAO eventDao = new EventDAO(sparql);
+            eventDao.user = userSession.getUser();
+            if (context.getRemoteAddr() != null) {
+                eventDao.setRemoteUserAdress(context.getRemoteAddr());
+            }
+            Response response = buildDeleteObjectsByUriResponse(eventDao, deleteDTO, "Event(s) deleted");
+            return response;
         }
-        Response response = buildDeleteObjectsByUriResponse(eventDao, deleteDTO, "Event(s) deleted");
-        return response;
     }
 
     @Override

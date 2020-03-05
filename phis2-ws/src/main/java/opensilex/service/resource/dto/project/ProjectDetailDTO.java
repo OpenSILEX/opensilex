@@ -102,30 +102,27 @@ public class ProjectDetailDTO extends AbstractVerifiedClass {
         }
 
         UserDAO userDao = new UserDAO(sparql);
-        for (InternetAddress contact : project.getAdministrativeContacts()) {
-            UserModel user = userDao.getByEmail(contact);
+        for (UserModel user : project.getAdministrativeContacts()) {
             Contact c = new Contact();
-            c.setEmail(contact.toString());
+            c.setEmail(user.getEmail().toString());
             c.setFirstname(user.getFirstName());
             c.setLastname(user.getLastName());
             c.setUri(user.getUri().toString());
             administrativeContacts.add(new ContactDTO(c));
         }
 
-        for (InternetAddress contact : project.getCoordinators()) {
-            UserModel user = userDao.getByEmail(contact);
+        for (UserModel user : project.getCoordinators()) {
             Contact c = new Contact();
-            c.setEmail(contact.toString());
+            c.setEmail(user.getEmail().toString());
             c.setFirstname(user.getFirstName());
             c.setLastname(user.getLastName());
             c.setUri(user.getUri().toString());
             coordinators.add(new ContactDTO(c));
         }
 
-        for (InternetAddress contact : project.getScientificContacts()) {
-            UserModel user = userDao.getByEmail(contact);
+        for (UserModel user : project.getScientificContacts()) {
             Contact c = new Contact();
-            c.setEmail(contact.toString());
+            c.setEmail(user.getEmail().toString());
             c.setFirstname(user.getFirstName());
             c.setLastname(user.getLastName());
             c.setUri(user.getUri().toString());

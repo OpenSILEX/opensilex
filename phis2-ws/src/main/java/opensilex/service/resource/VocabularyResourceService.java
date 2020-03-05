@@ -42,17 +42,23 @@ import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Vocabulary resource service.
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/vocabularies")
 @Path("/vocabularies")
 public class VocabularyResourceService extends ResourceService {
-    
+
     @Inject
-    SPARQLService sparql;
-    
+    public VocabularyResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
      * Gets the list of RDFs properties that can be used.
+     *
      * @param vocabularyDAO
      * @return the list of the RDFs properties, with their labels
      */
@@ -82,9 +88,10 @@ public class VocabularyResourceService extends ResourceService {
 
     /**
      * Gets the list of RDFs properties that can be used.
+     *
      * @param pageSize
      * @param page
-     * @return list of the RDFs properties, with their labels 
+     * @return list of the RDFs properties, with their labels
      * @example
      * { 
      *  "metadata":
@@ -121,12 +128,9 @@ public class VocabularyResourceService extends ResourceService {
     @ApiOperation(value = "Get all rdfs properties that can be added to an instance",
             notes = "Retrieve all rdfs properties authorized")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all rdfs properties", response = Property.class, responseContainer = "List")
-        ,
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION)
-        ,
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED)
-        ,
+        @ApiResponse(code = 200, message = "Retrieve all rdfs properties", response = Property.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
@@ -138,19 +142,21 @@ public class VocabularyResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getRdfs(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
+        try (sparql) {
+            VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
 
-        VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
+            vocabularyDAO.user = userSession.getUser();
+            vocabularyDAO.setPage(page);
+            vocabularyDAO.setPageSize(pageSize);
 
-        vocabularyDAO.user = userSession.getUser();
-        vocabularyDAO.setPage(page);
-        vocabularyDAO.setPageSize(pageSize);
-
-        return getRdfsData(vocabularyDAO);
+            return getRdfsData(vocabularyDAO);
+        }
     }
 
     /**
      * Gets the list of contact properties that can be added to a given concept.
+     *
      * @param vocabularyDAO
      * @return the list of the contact properties, with their labels
      */
@@ -185,7 +191,9 @@ public class VocabularyResourceService extends ResourceService {
     }
 
     /**
-     * Gets the list of contact properties that can be associated to a given rdfType
+     * Gets the list of contact properties that can be associated to a given
+     * rdfType
+     *
      * @param rdfType
      * @param pageSize
      * @param page
@@ -216,12 +224,9 @@ public class VocabularyResourceService extends ResourceService {
     @ApiOperation(value = "Get all contact properties that can be added to a given rdfType",
             notes = "Retrieve all contact properties authorized")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all contact properties", response = Property.class, responseContainer = "List")
-        ,
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION)
-        ,
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED)
-        ,
+        @ApiResponse(code = 200, message = "Retrieve all contact properties", response = Property.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
@@ -234,23 +239,25 @@ public class VocabularyResourceService extends ResourceService {
     public Response getContacts(
             @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("rdfType") @URL @Required String rdfType,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
+        try (sparql) {
+            VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
 
-        VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
+            if (rdfType != null) {
+                vocabularyDAO.domainRdfType = rdfType;
+            }
 
-        if (rdfType != null) {
-            vocabularyDAO.domainRdfType = rdfType;
+            vocabularyDAO.user = userSession.getUser();
+            vocabularyDAO.setPage(page);
+            vocabularyDAO.setPageSize(pageSize);
+
+            return getContactProperties(vocabularyDAO);
         }
-
-        vocabularyDAO.user = userSession.getUser();
-        vocabularyDAO.setPage(page);
-        vocabularyDAO.setPageSize(pageSize);
-
-        return getContactProperties(vocabularyDAO);
     }
 
     /**
      * Gets the list of device properties that can be added to a given concept.
+     *
      * @param vocabularyDAO
      * @return the list of the device properties, with their labels
      */
@@ -285,7 +292,9 @@ public class VocabularyResourceService extends ResourceService {
     }
 
     /**
-     * Gets the list of device properties that can be associated to a given rdfType.
+     * Gets the list of device properties that can be associated to a given
+     * rdfType.
+     *
      * @param rdfType
      * @param pageSize
      * @param page
@@ -326,12 +335,9 @@ public class VocabularyResourceService extends ResourceService {
     @ApiOperation(value = "Get all device properties that can be added to a given rdfType",
             notes = "Retrieve all device properties authorized")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all device properties", response = Property.class, responseContainer = "List")
-        ,
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION)
-        ,
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED)
-        ,
+        @ApiResponse(code = 200, message = "Retrieve all device properties", response = Property.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
@@ -344,22 +350,25 @@ public class VocabularyResourceService extends ResourceService {
     public Response getDeviceProperties(
             @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("rdfType") @URL @Required String rdfType,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-        VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
+        try (sparql) {
+            VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
 
-        if (rdfType != null) {
-            vocabularyDAO.domainRdfType = rdfType;
+            if (rdfType != null) {
+                vocabularyDAO.domainRdfType = rdfType;
+            }
+
+            vocabularyDAO.user = userSession.getUser();
+            vocabularyDAO.setPage(page);
+            vocabularyDAO.setPageSize(pageSize);
+
+            return getDeviceProperties(vocabularyDAO);
         }
-
-        vocabularyDAO.user = userSession.getUser();
-        vocabularyDAO.setPage(page);
-        vocabularyDAO.setPageSize(pageSize);
-
-        return getDeviceProperties(vocabularyDAO);
     }
 
     /**
      * Gets the list of triplestore namespaces.
+     *
      * @param pageSize
      * @param page
      * @return the list of the namespaces, with their prefix
@@ -399,12 +408,9 @@ public class VocabularyResourceService extends ResourceService {
     @ApiOperation(value = "Get all triplestore namespaces",
             notes = "Retrieve all triplestore namespaces")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all contact properties", response = Property.class, responseContainer = "List")
-        ,
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION)
-        ,
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED)
-        ,
+        @ApiResponse(code = 200, message = "Retrieve all contact properties", response = Property.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiImplicitParams({
@@ -416,19 +422,21 @@ public class VocabularyResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getNamespaces(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
+        try (sparql) {
+            VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
 
-        VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
+            vocabularyDAO.user = userSession.getUser();
+            vocabularyDAO.setPage(page);
+            vocabularyDAO.setPageSize(pageSize);
 
-        vocabularyDAO.user = userSession.getUser();
-        vocabularyDAO.setPage(page);
-        vocabularyDAO.setPageSize(pageSize);
-
-        return getNamespaces(vocabularyDAO);
+            return getNamespaces(vocabularyDAO);
+        }
     }
 
     /**
      * Gets the list of namespaces.
+     *
      * @param vocabularyDAO
      * @return the list of namespaces
      */
@@ -440,13 +448,13 @@ public class VocabularyResourceService extends ResourceService {
         namespaces = vocabularyDAO.allNamespacesProperties();
 
         if (namespaces == null) {
-            getResponse = new ResultForm<> (0, 0, namespaces, true);
+            getResponse = new ResultForm<>(0, 0, namespaces, true);
             return noResultFound(getResponse, statusList);
         } else if (namespaces.isEmpty()) {
-            getResponse = new ResultForm<> (0, 0, namespaces, true);
+            getResponse = new ResultForm<>(0, 0, namespaces, true);
             return noResultFound(getResponse, statusList);
         } else {
-            getResponse = new ResultForm<> (vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), namespaces, false);
+            getResponse = new ResultForm<>(vocabularyDAO.getPageSize(), vocabularyDAO.getPage(), namespaces, false);
             if (getResponse.getResult().dataSize() == 0) {
                 return noResultFound(getResponse, statusList);
             } else {

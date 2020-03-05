@@ -55,47 +55,58 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Radiometric target resource service.
- * @update [Andreas Garcia] 15 Apr. 2019: handle DAO persistence exceptions thrown by property DAO functions.
+ *
+ * @update [Andreas Garcia] 15 Apr. 2019: handle DAO persistence exceptions
+ * thrown by property DAO functions.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/radiometricTargets")
 @Path("/radiometricTargets")
 public class RadiometricTargetResourceService extends ResourceService {
+
     final static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(RadiometricTargetResourceService.class);
-    
+
     @Inject
-    SPARQLService sparql;
-    
+    public RadiometricTargetResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
-     * Generates a RadiometricTarget list from a given list of RadiometricTargetPostDTO
+     * Generates a RadiometricTarget list from a given list of
+     * RadiometricTargetPostDTO
+     *
      * @param radiometricTargetsPostDTO
      * @return the list of radiometric targets
      */
     private List<RadiometricTarget> radiometricTargetPostDTOsToRadiometricTargets(List<RadiometricTargetPostDTO> radiometricTargetsPostDTO) {
         ArrayList<RadiometricTarget> radiometricTargets = new ArrayList<>();
-        
+
         radiometricTargetsPostDTO.forEach((radiometricTargetPostDTO) -> {
             radiometricTargets.add(radiometricTargetPostDTO.createObjectFromDTO());
         });
-        
+
         return radiometricTargets;
     }
-    
+
     /**
-     * Generates a RadiometricTarget list from a given list of RadiometricTargetDTO.
+     * Generates a RadiometricTarget list from a given list of
+     * RadiometricTargetDTO.
+     *
      * @param radiometricTargetsDTO
      * @return the list of radiometric targets
      */
     private List<RadiometricTarget> radiometricTargetDTOsToRadiometricTargets(List<RadiometricTargetDTO> radiometricTargetsDTO) {
         ArrayList<RadiometricTarget> radiometricTargets = new ArrayList<>();
-        
+
         radiometricTargetsDTO.forEach((radiometricTargetPostDTO) -> {
             radiometricTargets.add(radiometricTargetPostDTO.createRadiometricTargetFromDTO());
         });
-        
+
         return radiometricTargets;
     }
-    
+
     /**
      * Service to insert a given list of radiometric targets in the database.
      * @example
@@ -118,12 +129,12 @@ public class RadiometricTargetResourceService extends ResourceService {
      * ]
      * @param radiometricTargets
      * @param context
-     * @return The founded errors
-     *         The list of the URIs of the created radiometric targets
+     * @return The founded errors The list of the URIs of the created
+     * radiometric targets
      */
     @POST
     @ApiOperation(value = "Post radiometric(s) target(s) ",
-                  notes = "Register radiometric(s) target(s) in the database")
+            notes = "Register radiometric(s) target(s) in the database")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "radiometric(s) target(s) saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -139,49 +150,51 @@ public class RadiometricTargetResourceService extends ResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postRadiometricTargets(
-        @ApiParam(value = DocumentationAnnotation.RADIOMETRIC_TARGET_POST_DEFINITION) @Valid ArrayList<RadiometricTargetPostDTO> radiometricTargets,
-        @Context HttpServletRequest context) {
+            @ApiParam(value = DocumentationAnnotation.RADIOMETRIC_TARGET_POST_DEFINITION) @Valid ArrayList<RadiometricTargetPostDTO> radiometricTargets,
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
-        
-        if (radiometricTargets != null && !radiometricTargets.isEmpty()) {
-            RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO(sparql);
-            
-             if (context.getRemoteAddr() != null) {
-                radiometricTargetDAO.remoteUserAdress = context.getRemoteAddr();
-            }
-            
-            radiometricTargetDAO.user = userSession.getUser();
-            
-            POSTResultsReturn result;
-            try {
-                result = radiometricTargetDAO.checkAndInsert(radiometricTargetPostDTOsToRadiometricTargets(radiometricTargets));
-            
-                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
+        try (sparql) {
+            if (radiometricTargets != null && !radiometricTargets.isEmpty()) {
+                RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO(sparql);
+
+                if (context.getRemoteAddr() != null) {
+                    radiometricTargetDAO.remoteUserAdress = context.getRemoteAddr();
                 }
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
-            } catch (DAOPersistenceException ex) {
-                LOGGER.error(ex.getMessage(), ex);
-                // Request error
-                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Error in the persistence system"));
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
+
+                radiometricTargetDAO.user = userSession.getUser();
+
+                POSTResultsReturn result;
+                try {
+                    result = radiometricTargetDAO.checkAndInsert(radiometricTargetPostDTOsToRadiometricTargets(radiometricTargets));
+
+                    if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                        postResponse = new ResponseFormPOST(result.statusList);
+                        postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+                    } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                            || result.getHttpStatus().equals(Response.Status.OK)
+                            || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                        postResponse = new ResponseFormPOST(result.statusList);
+                    }
+                    return Response.status(result.getHttpStatus()).entity(postResponse).build();
+                } catch (DAOPersistenceException ex) {
+                    LOGGER.error(ex.getMessage(), ex);
+                    // Request error
+                    postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Error in the persistence system"));
+                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
+                }
+            } else {
+                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty radiometric(s) target(s) to add"));
+                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
             }
-        } else {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty radiometric(s) target(s) to add"));
-            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
-    
+
     /**
      * Radiometric target PUT service.
+     *
      * @param radiometricTargets
      * @param context
-     * @return 
+     * @return
      */
     @PUT
     @ApiOperation(value = "Update radiometric targets")
@@ -199,39 +212,41 @@ public class RadiometricTargetResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response put(
-        @ApiParam(value = DocumentationAnnotation.RADIOMETRIC_TARGET_POST_DEFINITION) @Valid ArrayList<RadiometricTargetDTO> radiometricTargets,
-        @Context HttpServletRequest context) {
+            @ApiParam(value = DocumentationAnnotation.RADIOMETRIC_TARGET_POST_DEFINITION) @Valid ArrayList<RadiometricTargetDTO> radiometricTargets,
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm putResponse = null;
-
-        RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO(sparql);
-        if (context.getRemoteAddr() != null) {
-            radiometricTargetDAO.remoteUserAdress = context.getRemoteAddr();
-        }
-
-        radiometricTargetDAO.user = userSession.getUser();
-
-        POSTResultsReturn result;
-        try {
-            result = radiometricTargetDAO.checkAndUpdate(radiometricTargetDTOsToRadiometricTargets(radiometricTargets));
-            if (result.getHttpStatus().equals(Response.Status.OK)
-                    || result.getHttpStatus().equals(Response.Status.CREATED)) {
-                putResponse = new ResponseFormPOST(result.statusList);
-                putResponse.getMetadata().setDatafiles(result.createdResources);
-            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                    || result.getHttpStatus().equals(Response.Status.OK)
-                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                putResponse = new ResponseFormPOST(result.statusList);
+        try (sparql) {
+            RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO(sparql);
+            if (context.getRemoteAddr() != null) {
+                radiometricTargetDAO.remoteUserAdress = context.getRemoteAddr();
             }
-        } catch (DAOPersistenceException ex) {
-            LOGGER.error(ex.getMessage(), ex);
-            return getResponseWhenPersistenceError(ex);
-        }
 
-        return Response.status(result.getHttpStatus()).entity(putResponse).build();
+            radiometricTargetDAO.user = userSession.getUser();
+
+            POSTResultsReturn result;
+            try {
+                result = radiometricTargetDAO.checkAndUpdate(radiometricTargetDTOsToRadiometricTargets(radiometricTargets));
+                if (result.getHttpStatus().equals(Response.Status.OK)
+                        || result.getHttpStatus().equals(Response.Status.CREATED)) {
+                    putResponse = new ResponseFormPOST(result.statusList);
+                    putResponse.getMetadata().setDatafiles(result.createdResources);
+                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                        || result.getHttpStatus().equals(Response.Status.OK)
+                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                    putResponse = new ResponseFormPOST(result.statusList);
+                }
+            } catch (DAOPersistenceException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                return getResponseWhenPersistenceError(ex);
+            }
+
+            return Response.status(result.getHttpStatus()).entity(putResponse).build();
+        }
     }
-    
+
     /**
      * Searches radiometric target by URI and label.
+     *
      * @param pageSize
      * @param page
      * @param uri
@@ -262,7 +277,7 @@ public class RadiometricTargetResourceService extends ResourceService {
      */
     @GET
     @ApiOperation(value = "Get all radiometric targets corresponding to the search params given",
-                  notes = "Retrieve all radiometric targets authorized for the user corresponding to the searched params given")
+            notes = "Retrieve all radiometric targets authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve all radiometric targets", response = RdfResourceDefinitionDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -277,54 +292,57 @@ public class RadiometricTargetResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getRadiometricTargetsBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-        @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) @QueryParam("uri") @URL String uri,
-        @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_LABEL) @QueryParam("label") String label
-    ) {
-        // 1. Initialize radiometricTargetDAO with parameters
-        RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO(sparql);
-        
-        radiometricTargetDAO.uri = uri;
-        radiometricTargetDAO.label = label;
-        radiometricTargetDAO.user = userSession.getUser();
-        radiometricTargetDAO.setPage(page);
-        radiometricTargetDAO.setPageSize(pageSize);
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+            @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) @QueryParam("uri") @URL String uri,
+            @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_LABEL) @QueryParam("label") String label
+    ) throws Exception {
+        try (sparql) {
+            // 1. Initialize radiometricTargetDAO with parameters
+            RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO(sparql);
 
-        // 2. Get radiometric target count
-        Integer totalCount = radiometricTargetDAO.count();
-        
-        // 3. Get radiometric target page list
-        ArrayList<RadiometricTarget> radiometricTargets = radiometricTargetDAO.allPaginate();
-        
-        // 4. Initialize return variables
-        ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
-        ArrayList<Status> statusList = new ArrayList<>();
-        ResultForm<RdfResourceDefinitionDTO> getResponse;
-        
-        if (radiometricTargets == null) {
-            // Request failure
-            getResponse = new ResultForm<>(0, 0, list, true, 0);
-            return noResultFound(getResponse, statusList);
-        } else if (radiometricTargets.isEmpty()) {
-            // No results
-            getResponse = new ResultForm<>(0, 0, list, true, 0);
-            return noResultFound(getResponse, statusList);
-        } else {
-            // Convert all RadiometricTarget object to DTO's
-            radiometricTargets.forEach((radiometricTarget) -> {
-                list.add(new RadiometricTargetDTO(radiometricTarget));
-            });
-            
-            // Return list of DTO
-            getResponse = new ResultForm<>(radiometricTargetDAO.getPageSize(), radiometricTargetDAO.getPage(), list, true, totalCount);
-            getResponse.setStatus(statusList);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
+            radiometricTargetDAO.uri = uri;
+            radiometricTargetDAO.label = label;
+            radiometricTargetDAO.user = userSession.getUser();
+            radiometricTargetDAO.setPage(page);
+            radiometricTargetDAO.setPageSize(pageSize);
+
+            // 2. Get radiometric target count
+            Integer totalCount = radiometricTargetDAO.count();
+
+            // 3. Get radiometric target page list
+            ArrayList<RadiometricTarget> radiometricTargets = radiometricTargetDAO.allPaginate();
+
+            // 4. Initialize return variables
+            ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
+            ArrayList<Status> statusList = new ArrayList<>();
+            ResultForm<RdfResourceDefinitionDTO> getResponse;
+
+            if (radiometricTargets == null) {
+                // Request failure
+                getResponse = new ResultForm<>(0, 0, list, true, 0);
+                return noResultFound(getResponse, statusList);
+            } else if (radiometricTargets.isEmpty()) {
+                // No results
+                getResponse = new ResultForm<>(0, 0, list, true, 0);
+                return noResultFound(getResponse, statusList);
+            } else {
+                // Convert all RadiometricTarget object to DTO's
+                radiometricTargets.forEach((radiometricTarget) -> {
+                    list.add(new RadiometricTargetDTO(radiometricTarget));
+                });
+
+                // Return list of DTO
+                getResponse = new ResultForm<>(radiometricTargetDAO.getPageSize(), radiometricTargetDAO.getPage(), list, true, totalCount);
+                getResponse.setStatus(statusList);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }
         }
     }
-    
+
     /**
      * Searches radiometric target details for a given URI.
+     *
      * @param uri
      * @return list of the radiometric target's detail corresponding to the search uri
      * @example
@@ -368,7 +386,7 @@ public class RadiometricTargetResourceService extends ResourceService {
     @GET
     @Path("{uri}")
     @ApiOperation(value = "Get all radiometric target's details corresponding to the search uri",
-                  notes = "Retrieve all radiometric target's details authorized for the user corresponding to the searched uri")
+            notes = "Retrieve all radiometric target's details authorized for the user corresponding to the searched uri")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve radiometric target's details", response = RdfResourceDefinitionDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -383,30 +401,30 @@ public class RadiometricTargetResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getRadiometricTargetsDetails(
-        @ApiParam(
-                value = DocumentationAnnotation.INFRASTRUCTURE_URI_DEFINITION, 
-                required = true, 
-                example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI) 
-            @PathParam("uri") @URL @Required String uri) { 
-        
-        try {
+            @ApiParam(
+                    value = DocumentationAnnotation.INFRASTRUCTURE_URI_DEFINITION,
+                    required = true,
+                    example = DocumentationAnnotation.EXAMPLE_INFRASTRUCTURE_URI)
+            @PathParam("uri") @URL @Required String uri) throws Exception {
+
+        try (sparql) {
             // 1. Initialize propertyDAO with parameters
             PropertyDAO propertyDAO = new PropertyDAO(sparql);
-            
+
             propertyDAO.user = userSession.getUser();
-            
+
             // 2. Initialize result variable
             ArrayList<Status> statusList = new ArrayList<>();
             ResultForm<RdfResourceDefinitionDTO> getResponse;
             ArrayList<RdfResourceDefinitionDTO> list = new ArrayList<>();
-            
+
             // Get all properties in the given language and fill them in RadiometricTarget object
             RadiometricTarget radiometricTarget = new RadiometricTarget();
             radiometricTarget.setUri(uri);
             if (propertyDAO.getAllPropertiesWithLabels(radiometricTarget, null)) {
                 // Convert the radiometricTarget to a RadiometricTargetDTO
                 list.add(new RadiometricTargetDTO(radiometricTarget));
-                
+
                 // Return it
                 getResponse = new ResultForm<>(propertyDAO.getPageSize(), propertyDAO.getPage(), list, true, list.size());
                 getResponse.setStatus(statusList);

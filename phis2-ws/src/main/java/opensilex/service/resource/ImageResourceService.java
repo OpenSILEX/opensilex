@@ -78,34 +78,42 @@ import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Image resource service.
- * @update [Andréas Garcia] Jan. 2019: modify "concern(s)" occurences into "concernedItem(s)"
+ *
+ * @update [Andréas Garcia] Jan. 2019: modify "concern(s)" occurences into
+ * "concernedItem(s)"
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Deprecated
 @Api("/images")
 @Path("/images")
 public class ImageResourceService extends ResourceService {
+
     final static Logger LOGGER = LoggerFactory.getLogger(ImageResourceService.class);
-    
+
     @Inject
-    SPARQLService sparql;
-    
+    public ImageResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     @Context
     UriInfo uri;
-    
+
     // For the waiting annotations
     public final static ExecutorService THREAD_POOL = Executors.newCachedThreadPool();
-    
+
     // contains the informations abour the waiting annotations
     public final static Map<String, Boolean> WAITING_METADATA_FILE_CHECK = new HashMap<>();
-    
+
     // contains the informations abour the waiting annotations
     public final static Map<String, ImageMetadata> WAITING_METADATA_INFORMATION = new HashMap<>();
-    
+
     /**
      * Checks images metadata.
+     *
      * @param headers
-     * @param imagesMetadata 
+     * @param imagesMetadata
      * @example
      * metadata wanted for each image: 
      *  { 
@@ -130,7 +138,7 @@ public class ImageResourceService extends ResourceService {
      */
     @Deprecated
     @POST
-    @ApiOperation(value = "Save a file", notes = DocumentationAnnotation.ADMIN_ONLY_NOTES) 
+    @ApiOperation(value = "Save a file", notes = DocumentationAnnotation.ADMIN_ONLY_NOTES)
     @ApiResponses(value = {
         @ApiResponse(code = 202, message = "Metadata verified and correct", response = ImageMetadataDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -145,62 +153,65 @@ public class ImageResourceService extends ResourceService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postImagesMetadata(@Context HttpHeaders headers,
-            @ApiParam(value = "JSON Image metadata", required = true) @Valid List<ImageMetadataDTO> imagesMetadata) {
-        AbstractResultForm postResponse;
-        if (imagesMetadata != null && !imagesMetadata.isEmpty()) {
-            ImageMetadataMongoDAO imageMongoDao = new ImageMetadataMongoDAO(sparql);
-            imageMongoDao.user = userSession.getUser();
-            
-            final POSTResultsReturn checkImageMetadata = imageMongoDao.check(imagesMetadata); 
-            
-            if (checkImageMetadata.statusList == null) { // bad metadata
-                postResponse = new ResponseFormPOST();
-            } else if (checkImageMetadata.getDataState()) {// metadata ok
-                ArrayList<String> imagesUploadLinks = new ArrayList<>();
-                String lastGeneratedUri = null;
-                for (ImageMetadataDTO imageMetadata : imagesMetadata) {
-                    try {
-                        final UriBuilder uploadPath = uri.getBaseUriBuilder();
-                        
-                        // generates the imageUri
-                        final String imageUri = UriGenerator.generateNewInstanceUri(
-                                sparql,
-                                Oeso.CONCEPT_IMAGE.toString(), 
-                                Year.now().toString(), 
-                                lastGeneratedUri);
-                        lastGeneratedUri = imageUri;
-                        
-                        final String uploadLink = uploadPath.path("images").path("upload").queryParam("uri", imageUri).toString();
-                        imagesUploadLinks.add(uploadLink);
-                        
-                        WAITING_METADATA_FILE_CHECK.put(imageUri, false); // file waiting
-                        ImageMetadata imageMetadataToSave = imageMetadata.createObjectFromDTO();
-                        imageMetadataToSave.setUri(imageUri);
-                        WAITING_METADATA_INFORMATION.put(imageUri, imageMetadataToSave);
-                        // Launch the thread for the expected file
-                        THREAD_POOL.submit(new ImageWaitingCheck(imageUri));
-                    } catch (Exception ex) { // In the images case, no exception should be raised
-                        java.util.logging.Logger.getLogger(ImageResourceService.class.getName()).log(Level.SEVERE, null, ex);
+            @ApiParam(value = "JSON Image metadata", required = true) @Valid List<ImageMetadataDTO> imagesMetadata) throws Exception {
+        try (sparql) {
+            AbstractResultForm postResponse;
+            if (imagesMetadata != null && !imagesMetadata.isEmpty()) {
+                ImageMetadataMongoDAO imageMongoDao = new ImageMetadataMongoDAO(sparql);
+                imageMongoDao.user = userSession.getUser();
+
+                final POSTResultsReturn checkImageMetadata = imageMongoDao.check(imagesMetadata);
+
+                if (checkImageMetadata.statusList == null) { // bad metadata
+                    postResponse = new ResponseFormPOST();
+                } else if (checkImageMetadata.getDataState()) {// metadata ok
+                    ArrayList<String> imagesUploadLinks = new ArrayList<>();
+                    String lastGeneratedUri = null;
+                    for (ImageMetadataDTO imageMetadata : imagesMetadata) {
+                        try {
+                            final UriBuilder uploadPath = uri.getBaseUriBuilder();
+
+                            // generates the imageUri
+                            final String imageUri = UriGenerator.generateNewInstanceUri(
+                                    sparql,
+                                    Oeso.CONCEPT_IMAGE.toString(),
+                                    Year.now().toString(),
+                                    lastGeneratedUri);
+                            lastGeneratedUri = imageUri;
+
+                            final String uploadLink = uploadPath.path("images").path("upload").queryParam("uri", imageUri).toString();
+                            imagesUploadLinks.add(uploadLink);
+
+                            WAITING_METADATA_FILE_CHECK.put(imageUri, false); // file waiting
+                            ImageMetadata imageMetadataToSave = imageMetadata.createObjectFromDTO();
+                            imageMetadataToSave.setUri(imageUri);
+                            WAITING_METADATA_INFORMATION.put(imageUri, imageMetadataToSave);
+                            // Launch the thread for the expected file
+                            THREAD_POOL.submit(new ImageWaitingCheck(imageUri));
+                        } catch (Exception ex) { // In the images case, no exception should be raised
+                            java.util.logging.Logger.getLogger(ImageResourceService.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
+                    final Status waitingTimeStatus = new Status(
+                            StatusCodeMsg.TIMEOUT,
+                            StatusCodeMsg.INFO,
+                            " Timeout :" + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime") + " seconds");
+                    checkImageMetadata.statusList.add(waitingTimeStatus);
+                    postResponse = new ResponseFormPOST(checkImageMetadata.statusList);
+                    postResponse.getMetadata().setDatafiles(imagesUploadLinks);
+                } else {
+                    postResponse = new ResponseFormPOST(checkImageMetadata.statusList);
                 }
-                final Status waitingTimeStatus = new Status(
-                        StatusCodeMsg.TIMEOUT, 
-                        StatusCodeMsg.INFO, 
-                        " Timeout :" + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime") + " seconds");
-                checkImageMetadata.statusList.add(waitingTimeStatus);
-                postResponse = new ResponseFormPOST(checkImageMetadata.statusList);
-                postResponse.getMetadata().setDatafiles(imagesUploadLinks);
+                return Response.status(checkImageMetadata.getHttpStatus()).entity(postResponse).build();
             } else {
-                postResponse = new ResponseFormPOST(checkImageMetadata.statusList);
+                return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST()).build();
             }
-            return Response.status(checkImageMetadata.getHttpStatus()).entity(postResponse).build();
-        } else {
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST()).build();
         }
     }
-    
+
     /**
      * Calculates the hash of a file.
+     *
      * @param file the file we want the hash
      * @return the hash file
      */
@@ -213,20 +224,21 @@ public class ImageResourceService extends ResourceService {
         }
         return hash;
     }
-    
+
     /**
      * Calculates the server image directory for an image.
-     * @return the server image directory of the image. 
-     *         The images are saved by year of insertion.
+     *
+     * @return the server image directory of the image. The images are saved by
+     * year of insertion.
      * @example http://www.phenome-fppn.fr/platform/2017/i170000000000)
-     * 
+     *
      */
     private String getServerImagesDirectory() {
         return "/images/"
-                + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructure") + "/" 
+                + PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "infrastructure") + "/"
                 + Year.now().toString();
     }
-    
+
     /**
      * @return the web access image directory
      * @example http://localhost/images/platform/2017/i170000000000)
@@ -234,34 +246,34 @@ public class ImageResourceService extends ResourceService {
     private String getWebAccessImagesDirectory() {
         return PropertiesFileManager.getPublicURI() + "rest/data/file/";
     }
-    
+
     /**
      * @param imageUri
-     * @return the image name, extracted from the image URI. 
-     *         It corresponds to the image id from the URI 
+     * @return the image name, extracted from the image URI. It corresponds to
+     * the image id from the URI
      * @example i170000000000
      */
     private String getImageName(String imageUri) {
         return imageUri.substring(imageUri.lastIndexOf("/") + 1, imageUri.length());
     }
-    
+
     @Inject
     private FileStorageService fs;
-        
+
     /**
      * @param in File
      * @param imageUri Metadata uri
      * @param headers
      * @param request
      * @return
-     * @throws URISyntaxException 
-     * @throws java.text.ParseException 
+     * @throws URISyntaxException
+     * @throws java.text.ParseException
      */
     @Deprecated
     @POST
     @Path("upload")
-    @ApiOperation(value = "Post data file", notes = DocumentationAnnotation.USER_ONLY_NOTES 
-                            + " Not working from this documentation. Implement a client or use Postman application.")
+    @ApiOperation(value = "Post data file", notes = DocumentationAnnotation.USER_ONLY_NOTES
+            + " Not working from this documentation. Implement a client or use Postman application.")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Image file and image metadata saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -276,26 +288,26 @@ public class ImageResourceService extends ResourceService {
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postImageFile(
-        @ApiParam(value = "File to upload") File in,
-        @ApiParam(value = "Uri given from \"images\" path for upload") @QueryParam("uri") @URL @Required String imageUri,
-        @Context HttpHeaders headers,
-        @Context HttpServletRequest request) throws URISyntaxException, ParseException {
+            @ApiParam(value = "File to upload") File in,
+            @ApiParam(value = "Uri given from \"images\" path for upload") @QueryParam("uri") @URL @Required String imageUri,
+            @Context HttpHeaders headers,
+            @Context HttpServletRequest request) throws URISyntaxException, ParseException {
         ResponseFormPOST postResponse;
         List<Status> statusList = new ArrayList<>();
-        
+
         // The file metadata exists
         if (!WAITING_METADATA_FILE_CHECK.containsKey(imageUri)) {
             statusList.add(new Status("No waiting image", StatusCodeMsg.ERR, "No waiting file for the following uri : " + imageUri));
             postResponse = new ResponseFormPOST(statusList);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
-        
+
         if (headers != null && headers.getLength() <= 0) {
             statusList.add(new Status(StatusCodeMsg.FILE_ERROR, StatusCodeMsg.ERR, "File Size : " + headers.getLength() + " octets"));
             postResponse = new ResponseFormPOST(statusList);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
-        
+
         // check the checksum
         String hash = getHash(in);
         if (hash != null && !WAITING_METADATA_INFORMATION.get(imageUri).getFileInformations().getChecksum().equals(hash)) {
@@ -303,20 +315,20 @@ public class ImageResourceService extends ResourceService {
             postResponse = new ResponseFormPOST(statusList);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
-        
+
         final String serverFileName = getImageName(imageUri) + "." + WAITING_METADATA_INFORMATION.get(imageUri).getFileInformations().getExtension();
         final String serverImagesDirectory = getServerImagesDirectory();
         final String webAccessImagesDirectory = getWebAccessImagesDirectory();
-    
-        try {
+
+        try (sparql) {
             WAITING_METADATA_FILE_CHECK.put(imageUri, Boolean.TRUE);
             fs.createDirectories(Paths.get(serverImagesDirectory));
             fs.writeFile(Paths.get(serverImagesDirectory, serverFileName), in);
-            
+
             WAITING_METADATA_INFORMATION.get(imageUri)
-                .getFileInformations()
-                .setServerFilePath(webAccessImagesDirectory + URLEncoder.encode(serverFileName, StandardCharsets.UTF_8.toString()));
-        
+                    .getFileInformations()
+                    .setServerFilePath(webAccessImagesDirectory + URLEncoder.encode(serverFileName, StandardCharsets.UTF_8.toString()));
+
             ImageMetadataMongoDAO imageMetadataMongoDao = new ImageMetadataMongoDAO(sparql);
             imageMetadataMongoDao.user = userSession.getUser();
 
@@ -338,16 +350,17 @@ public class ImageResourceService extends ResourceService {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormPOST()).build();
         } catch (Exception ex) {
             statusList.add(new Status(
-                    "Image upload error", 
-                    StatusCodeMsg.ERR, 
+                    "Image upload error",
+                    StatusCodeMsg.ERR,
                     "An error occurred during file upload. Try to submit it again " + imageUri));
             postResponse = new ResponseFormPOST(statusList);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
-    
+
     /**
      * Searches images metadata corresponding to a user search.
+     *
      * @param imageMetadataMongoDao
      * @return the images corresponding to the search
      */
@@ -355,9 +368,9 @@ public class ImageResourceService extends ResourceService {
         ArrayList<ImageMetadata> imagesMetadata;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ImageMetadata> getResponse;
-        
+
         imagesMetadata = imageMetadataMongoDao.allPaginate();
-        
+
         if (imagesMetadata == null) {
             getResponse = new ResultForm<>(0, 0, imagesMetadata, true);
             return noResultFound(getResponse, statusList);
@@ -374,9 +387,9 @@ public class ImageResourceService extends ResourceService {
             return noResultFound(getResponse, statusList);
         }
     }
-    
+
     /**
-     * 
+     *
      * @param pageSize
      * @param page
      * @param uri image URI (e.g http://www.phenome-fppn.fr/phis_field/2017/i170000000000)
@@ -430,45 +443,46 @@ public class ImageResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getImagesBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-        @ApiParam(value = "Search by image uri", example = DocumentationAnnotation.EXAMPLE_IMAGE_URI) @QueryParam("uri") @URL String uri,
-        @ApiParam(value = "Search by image type", example = DocumentationAnnotation.EXAMPLE_IMAGE_TYPE) @QueryParam("rdfType") @URL String rdfType,
-        @ApiParam(value = "Search by concerned item uri - each concerned item uri must be separated by \";\"", example = DocumentationAnnotation.EXAMPLE_IMAGE_CONCERNED_ITEMS) @QueryParam("concernedItems") String concernedItems,
-        @ApiParam(value = "Search by interval - start date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("startDate") @opensilex.service.resource.validation.interfaces.Date(DateFormat.YMDHMSZ) String startDate,
-        @ApiParam(value = "Search by interval - end date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("endDate") @opensilex.service.resource.validation.interfaces.Date(DateFormat.YMDHMSZ) String endDate,
-        @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") @URL String sensor) {
-        
-        ImageMetadataMongoDAO imageMetadataMongoDao = new ImageMetadataMongoDAO(sparql);
-        
-        if (uri != null) {
-            imageMetadataMongoDao.uri = uri;
-        }
-        if (rdfType != null) {
-            imageMetadataMongoDao.rdfType = rdfType;
-        }
-        if (concernedItems != null) {
-            imageMetadataMongoDao.concernedItems = new ArrayList<>(Arrays.asList(concernedItems.split(";")));
-        }
-        if (startDate != null) {
-            //SILEX:todo
-            //check date format
-            imageMetadataMongoDao.startDate = startDate;
-            //\SILEX:todo
-            if (endDate != null) {
-                imageMetadataMongoDao.endDate = endDate;
-            } else {
-                imageMetadataMongoDao.endDate = new SimpleDateFormat(DateFormat.YMD.toString()).format(new Date());
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+            @ApiParam(value = "Search by image uri", example = DocumentationAnnotation.EXAMPLE_IMAGE_URI) @QueryParam("uri") @URL String uri,
+            @ApiParam(value = "Search by image type", example = DocumentationAnnotation.EXAMPLE_IMAGE_TYPE) @QueryParam("rdfType") @URL String rdfType,
+            @ApiParam(value = "Search by concerned item uri - each concerned item uri must be separated by \";\"", example = DocumentationAnnotation.EXAMPLE_IMAGE_CONCERNED_ITEMS) @QueryParam("concernedItems") String concernedItems,
+            @ApiParam(value = "Search by interval - start date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("startDate") @opensilex.service.resource.validation.interfaces.Date(DateFormat.YMDHMSZ) String startDate,
+            @ApiParam(value = "Search by interval - end date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("endDate") @opensilex.service.resource.validation.interfaces.Date(DateFormat.YMDHMSZ) String endDate,
+            @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") @URL String sensor) throws Exception {
+        try (sparql) {
+            ImageMetadataMongoDAO imageMetadataMongoDao = new ImageMetadataMongoDAO(sparql);
+
+            if (uri != null) {
+                imageMetadataMongoDao.uri = uri;
             }
+            if (rdfType != null) {
+                imageMetadataMongoDao.rdfType = rdfType;
+            }
+            if (concernedItems != null) {
+                imageMetadataMongoDao.concernedItems = new ArrayList<>(Arrays.asList(concernedItems.split(";")));
+            }
+            if (startDate != null) {
+                //SILEX:todo
+                //check date format
+                imageMetadataMongoDao.startDate = startDate;
+                //\SILEX:todo
+                if (endDate != null) {
+                    imageMetadataMongoDao.endDate = endDate;
+                } else {
+                    imageMetadataMongoDao.endDate = new SimpleDateFormat(DateFormat.YMD.toString()).format(new Date());
+                }
+            }
+            if (sensor != null) {
+                imageMetadataMongoDao.sensor = sensor;
+            }
+
+            imageMetadataMongoDao.user = userSession.getUser();
+            imageMetadataMongoDao.setPage(page);
+            imageMetadataMongoDao.setPageSize(pageSize);
+
+            return getImagesData(imageMetadataMongoDao);
         }
-        if (sensor != null) {
-            imageMetadataMongoDao.sensor = sensor;
-        }
-        
-        imageMetadataMongoDao.user = userSession.getUser();
-        imageMetadataMongoDao.setPage(page);
-        imageMetadataMongoDao.setPageSize(pageSize);
-        
-        return getImagesData(imageMetadataMongoDao);
     }
 }

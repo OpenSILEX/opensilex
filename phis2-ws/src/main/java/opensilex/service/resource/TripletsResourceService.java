@@ -47,10 +47,14 @@ import org.opensilex.sparql.service.SPARQLService;
 @Api("/triplets")
 @Path("/triplets")
 public class TripletsResourceService extends ResourceService {
-    
+
     @Inject
-    SPARQLService sparql;
-    
+    public TripletsResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
      * Inserts triplets.
      * @param triplets triplets list to save. 
@@ -75,11 +79,11 @@ public class TripletsResourceService extends ResourceService {
      *    }
      * ]
      * @param context
-     * @return 
+     * @return
      */
     @POST
     @ApiOperation(value = "Post triplets",
-                  notes = "Register new triplets in the triplestore")
+            notes = "Register new triplets in the triplestore")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Triplets saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
@@ -94,39 +98,40 @@ public class TripletsResourceService extends ResourceService {
     })
     public Response postTriplets(
             @ApiParam(value = DocumentationAnnotation.TRIPLET_POST_DATA_DEFINITION, required = true) @Required @Valid ArrayList<ArrayList<TripletDTO>> triplets,
-            @Context HttpServletRequest context) {
-        
-        //SILEX:warning
-        // blank nodes are not implemented yet
-        //\SILEX:warning
+            @Context HttpServletRequest context) throws Exception {
+        try (sparql) {
+            //SILEX:warning
+            // blank nodes are not implemented yet
+            //\SILEX:warning
 
-        AbstractResultForm postResponse = null;
-        
-        //If there are at least one list of triplets
-        if (triplets != null && !triplets.isEmpty()) {
-            TripletDAO tripletDao = new TripletDAO(sparql);
-            if (context.getRemoteAddr() != null) {
-                tripletDao.remoteUserAdress = context.getRemoteAddr();
+            AbstractResultForm postResponse = null;
+
+            //If there are at least one list of triplets
+            if (triplets != null && !triplets.isEmpty()) {
+                TripletDAO tripletDao = new TripletDAO(sparql);
+                if (context.getRemoteAddr() != null) {
+                    tripletDao.remoteUserAdress = context.getRemoteAddr();
+                }
+                tripletDao.user = userSession.getUser();
+
+                String graphUri = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "baseURI")
+                        + Long.toString(new Timestamp(System.currentTimeMillis()).getTime());
+
+                POSTResultsReturn insertResult = tripletDao.checkAndInsert(triplets, graphUri);
+
+                //triplets inserted
+                if (insertResult.getHttpStatus().equals(Response.Status.CREATED)) {
+                    postResponse = new ResponseFormPOST(insertResult.statusList);
+                    postResponse.getMetadata().setDatafiles(insertResult.getCreatedResources());
+                } else if (insertResult.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                        || insertResult.getHttpStatus().equals(Response.Status.OK)
+                        || insertResult.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                    postResponse = new ResponseFormPOST(insertResult.statusList);
+                }
+                return Response.status(insertResult.getHttpStatus()).entity(postResponse).build();
+            } else {
+                return Response.status(Response.Status.FORBIDDEN).entity(new ResponseFormPOST()).build();
             }
-            tripletDao.user = userSession.getUser();
-
-            String graphUri = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "baseURI") 
-                    + Long.toString(new Timestamp(System.currentTimeMillis()).getTime());
-
-            POSTResultsReturn insertResult = tripletDao.checkAndInsert(triplets, graphUri);
-
-            //triplets inserted
-            if (insertResult.getHttpStatus().equals(Response.Status.CREATED)){
-                postResponse = new ResponseFormPOST(insertResult.statusList);
-                postResponse.getMetadata().setDatafiles(insertResult.getCreatedResources());
-            } else if (insertResult.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                    || insertResult.getHttpStatus().equals(Response.Status.OK)
-                    || insertResult.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                postResponse = new ResponseFormPOST(insertResult.statusList);
-            }
-            return Response.status(insertResult.getHttpStatus()).entity(postResponse).build();
-        } else {
-            return Response.status(Response.Status.FORBIDDEN).entity(new ResponseFormPOST()).build();
         }
     }
 }

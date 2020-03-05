@@ -49,8 +49,8 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author charlero
  */
-@Api("Factors")
-@Path("/core/factor")
+//@Api("Factors")
+//@Path("/core/factor")
 public class FactorAPI {
 
     @Inject

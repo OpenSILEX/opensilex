@@ -74,19 +74,17 @@ public class VariableAPI {
     public Response createVariable(
             @ApiParam("Variable description") @Valid VariableCreationDTO variableDTO
     ) throws Exception {
-        try (sparql) {
-            VariableDAO dao = new VariableDAO(sparql);
-            try {
-                VariableModel variable = variableDTO.newModel();
-                dao.create(variable);
-                return new ObjectUriResponse(Response.Status.CREATED, variable.getUri()).getResponse();
-            } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-                return new ErrorResponse(
-                        Response.Status.CONFLICT,
-                        "Variable already exists",
-                        duplicateUriException.getMessage()
-                ).getResponse();
-            }
+        VariableDAO dao = new VariableDAO(sparql);
+        try {
+            VariableModel variable = variableDTO.newModel();
+            dao.create(variable);
+            return new ObjectUriResponse(Response.Status.CREATED, variable.getUri()).getResponse();
+        } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
+            return new ErrorResponse(
+                    Response.Status.CONFLICT,
+                    "Variable already exists",
+                    duplicateUriException.getMessage()
+            ).getResponse();
         }
     }
 
@@ -106,20 +104,18 @@ public class VariableAPI {
             @ApiParam(value = "Variable URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam("Variable description") @Valid VariableUpdateDTO variableDTO
     ) throws Exception {
-        try (sparql) {
-            VariableDAO dao = new VariableDAO(sparql);
+        VariableDAO dao = new VariableDAO(sparql);
 
-            VariableModel variable = dao.get(uri);
-            if (variable != null) {
-                dao.update(variableDTO.defineModel(variable));
-                return new ObjectUriResponse(Response.Status.OK, variable.getUri()).getResponse();
-            } else {
-                return new ErrorResponse(
-                        Response.Status.NOT_FOUND,
-                        "Variable not found",
-                        "Unknown variable URI: " + uri
-                ).getResponse();
-            }
+        VariableModel variable = dao.get(uri);
+        if (variable != null) {
+            dao.update(variableDTO.defineModel(variable));
+            return new ObjectUriResponse(Response.Status.OK, variable.getUri()).getResponse();
+        } else {
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Variable not found",
+                    "Unknown variable URI: " + uri
+            ).getResponse();
         }
     }
 
@@ -138,11 +134,9 @@ public class VariableAPI {
     public Response deleteVariable(
             @ApiParam(value = "Variable URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        try (sparql) {
-            VariableDAO dao = new VariableDAO(sparql);
-            dao.delete(uri);
-            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
-        }
+        VariableDAO dao = new VariableDAO(sparql);
+        dao.delete(uri);
+        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
     @GET
@@ -160,21 +154,19 @@ public class VariableAPI {
     public Response getVariable(
             @ApiParam(value = "Variable URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        try (sparql) {
-            VariableDAO dao = new VariableDAO(sparql);
-            VariableModel variable = dao.get(uri);
+        VariableDAO dao = new VariableDAO(sparql);
+        VariableModel variable = dao.get(uri);
 
-            if (variable != null) {
-                return new SingleObjectResponse<>(
-                        VariableGetDTO.fromModel(variable)
-                ).getResponse();
-            } else {
-                return new ErrorResponse(
-                        Response.Status.NOT_FOUND,
-                        "Variable not found",
-                        "Unknown variable site URI: " + uri.toString()
-                ).getResponse();
-            }
+        if (variable != null) {
+            return new SingleObjectResponse<>(
+                    VariableGetDTO.fromModel(variable)
+            ).getResponse();
+        } else {
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Variable not found",
+                    "Unknown variable site URI: " + uri.toString()
+            ).getResponse();
         }
     }
 
@@ -201,24 +193,22 @@ public class VariableAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize
     ) throws Exception {
-        try (sparql) {
-            VariableDAO dao = new VariableDAO(sparql);
-            ListWithPagination<VariableModel> resultList = dao.search(
-                    namePattern,
-                    commentPattern,
-                    entity,
-                    quality,
-                    method,
-                    unit,
-                    orderByList,
-                    page,
-                    pageSize
-            );
-            ListWithPagination<VariableGetDTO> resultDTOList = resultList.convert(
-                    VariableGetDTO.class,
-                    VariableGetDTO::fromModel
-            );
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
-        }
+        VariableDAO dao = new VariableDAO(sparql);
+        ListWithPagination<VariableModel> resultList = dao.search(
+                namePattern,
+                commentPattern,
+                entity,
+                quality,
+                method,
+                unit,
+                orderByList,
+                page,
+                pageSize
+        );
+        ListWithPagination<VariableGetDTO> resultDTOList = resultList.convert(
+                VariableGetDTO.class,
+                VariableGetDTO::fromModel
+        );
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 }

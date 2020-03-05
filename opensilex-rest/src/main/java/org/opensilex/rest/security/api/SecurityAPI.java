@@ -104,32 +104,30 @@ public class SecurityAPI {
     public Response authenticate(
             @ApiParam("User authentication informations") @Valid AuthenticationDTO authenticationDTO
     ) throws Exception {
-        try (sparql) {
-            // Create user DAO
-            UserDAO userDAO = new UserDAO(sparql);
+        // Create user DAO
+        UserDAO userDAO = new UserDAO(sparql);
 
-            // Get user by email or by uri
-            UserModel user;
+        // Get user by email or by uri
+        UserModel user;
+        try {
+            InternetAddress email = new InternetAddress(authenticationDTO.getIdentifier());
+            user = userDAO.getByEmail(email);
+        } catch (AddressException ex2) {
             try {
-                InternetAddress email = new InternetAddress(authenticationDTO.getIdentifier());
-                user = userDAO.getByEmail(email);
-            } catch (AddressException ex2) {
-                try {
-                    URI uri = new URI(authenticationDTO.getIdentifier());
-                    user = userDAO.get(uri);
-                } catch (URISyntaxException ex1) {
-                    throw new Exception("Submitted user identifier is neither a valid email or URI");
-                }
+                URI uri = new URI(authenticationDTO.getIdentifier());
+                user = userDAO.get(uri);
+            } catch (URISyntaxException ex1) {
+                throw new Exception("Submitted user identifier is neither a valid email or URI");
             }
+        }
 
-            // Authenticate found user with provided password
-            if (authentication.authenticate(user, authenticationDTO.getPassword(), userDAO.getAccessList(user.getUri()))) {
-                // Return user token
-                return new SingleObjectResponse<TokenGetDTO>(new TokenGetDTO(user.getToken())).getResponse();
-            } else {
-                // Otherwise return a 403 - FORBIDDEN error response
-                return new ErrorResponse(Status.FORBIDDEN, "Invalid credentials", "User does not exists or password is invalid").getResponse();
-            }
+        // Authenticate found user with provided password
+        if (authentication.authenticate(user, authenticationDTO.getPassword(), userDAO.getAccessList(user.getUri()))) {
+            // Return user token
+            return new SingleObjectResponse<TokenGetDTO>(new TokenGetDTO(user.getToken())).getResponse();
+        } else {
+            // Otherwise return a 403 - FORBIDDEN error response
+            return new ErrorResponse(Status.FORBIDDEN, "Invalid credentials", "User does not exists or password is invalid").getResponse();
         }
     }
 
@@ -212,29 +210,27 @@ public class SecurityAPI {
         @ApiResponse(code = 200, message = "List of existing credentials by group in the application", response = CredentialsGroupDTO.class, responseContainer = "List")
     })
     public Response getCredentialsGroups() throws Exception {
-        try (sparql) {
-            if (credentialsGroupList == null) {
-                SecurityAccessDAO securityDAO = new SecurityAccessDAO(sparql);
-                credentialsGroupList = new ArrayList<>();
-                Map<String, String> groupLabels = securityDAO.getCredentialsGroupLabels();
-                securityDAO.getCredentialsGroups().forEach((String groupId, Map<String, String> credentialMap) -> {
-                    CredentialsGroupDTO credentialsGroup = new CredentialsGroupDTO();
-                    credentialsGroup.setGroupId(groupId);
-                    List<CredentialDTO> credentials = new ArrayList<>();
-                    credentialMap.forEach((id, label) -> {
-                        CredentialDTO credential = new CredentialDTO();
-                        credential.setId(id);
-                        credential.setLabel(label);
-                        credentials.add(credential);
-                    });
-                    credentialsGroup.setGroupKeyLabel(groupLabels.get(groupId));
-                    credentialsGroup.setCredentials(credentials);
-                    credentialsGroupList.add(credentialsGroup);
+        if (credentialsGroupList == null) {
+            SecurityAccessDAO securityDAO = new SecurityAccessDAO(sparql);
+            credentialsGroupList = new ArrayList<>();
+            Map<String, String> groupLabels = securityDAO.getCredentialsGroupLabels();
+            securityDAO.getCredentialsGroups().forEach((String groupId, Map<String, String> credentialMap) -> {
+                CredentialsGroupDTO credentialsGroup = new CredentialsGroupDTO();
+                credentialsGroup.setGroupId(groupId);
+                List<CredentialDTO> credentials = new ArrayList<>();
+                credentialMap.forEach((id, label) -> {
+                    CredentialDTO credential = new CredentialDTO();
+                    credential.setId(id);
+                    credential.setLabel(label);
+                    credentials.add(credential);
                 });
-            }
-
-            return new PaginatedListResponse<CredentialsGroupDTO>(credentialsGroupList).getResponse();
+                credentialsGroup.setGroupKeyLabel(groupLabels.get(groupId));
+                credentialsGroup.setCredentials(credentials);
+                credentialsGroupList.add(credentialsGroup);
+            });
         }
+
+        return new PaginatedListResponse<CredentialsGroupDTO>(credentialsGroupList).getResponse();
     }
 
     private static List<CredentialsGroupDTO> credentialsGroupList;

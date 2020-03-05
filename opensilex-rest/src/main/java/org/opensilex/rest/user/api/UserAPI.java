@@ -126,41 +126,39 @@ public class UserAPI {
             @ApiParam("User creation informations") @Valid UserCreationDTO userDTO,
             @Context SecurityContext securityContext
     ) throws Exception {
-        try (sparql) {
-            // Get current user
-            UserModel currentUser = authentication.getCurrentUser(securityContext);
+        // Get current user
+        UserModel currentUser = authentication.getCurrentUser(securityContext);
 
-            // Check if user is admin to create a new admin user
-            if (userDTO.isAdmin() && (currentUser == null || !currentUser.isAdmin())) {
-                throw new ForbiddenException("You must be an admin to create other admin users");
-            }
+        // Check if user is admin to create a new admin user
+        if (userDTO.isAdmin() && (currentUser == null || !currentUser.isAdmin())) {
+            throw new ForbiddenException("You must be an admin to create other admin users");
+        }
 
-            // Create user DAO
-            UserDAO userDAO = new UserDAO(sparql);
+        // Create user DAO
+        UserDAO userDAO = new UserDAO(sparql);
 
-            // check if user email already exists
-            InternetAddress userEmail = new InternetAddress(userDTO.getEmail());
-            if (!userDAO.userEmailexists(userEmail)) {
-                // create new user
-                UserModel user = userDAO.create(
-                        userDTO.getUri(),
-                        userEmail,
-                        userDTO.getFirstName(),
-                        userDTO.getLastName(),
-                        userDTO.isAdmin(),
-                        authentication.getPasswordHash(userDTO.getPassword()),
-                        userDTO.getLang()
-                );
-                // return user URI
-                return new ObjectUriResponse(Response.Status.CREATED, user.getUri()).getResponse();
-            } else {
-                // Return error response 409 - CONFLICT if user already exists
-                return new ErrorResponse(
-                        Status.CONFLICT,
-                        "User already exists",
-                        "Duplicated email: " + userEmail.toString()
-                ).getResponse();
-            }
+        // check if user email already exists
+        InternetAddress userEmail = new InternetAddress(userDTO.getEmail());
+        if (!userDAO.userEmailexists(userEmail)) {
+            // create new user
+            UserModel user = userDAO.create(
+                    userDTO.getUri(),
+                    userEmail,
+                    userDTO.getFirstName(),
+                    userDTO.getLastName(),
+                    userDTO.isAdmin(),
+                    authentication.getPasswordHash(userDTO.getPassword()),
+                    userDTO.getLang()
+            );
+            // return user URI
+            return new ObjectUriResponse(Response.Status.CREATED, user.getUri()).getResponse();
+        } else {
+            // Return error response 409 - CONFLICT if user already exists
+            return new ErrorResponse(
+                    Status.CONFLICT,
+                    "User already exists",
+                    "Duplicated email: " + userEmail.toString()
+            ).getResponse();
         }
     }
 
@@ -192,25 +190,23 @@ public class UserAPI {
     public Response getUser(
             @ApiParam(value = "User URI", example = "dev-users:Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        try (sparql) {
-            // Get user from DAO by URI
-            UserDAO dao = new UserDAO(sparql);
-            UserModel model = dao.get(uri);
+        // Get user from DAO by URI
+        UserDAO dao = new UserDAO(sparql);
+        UserModel model = dao.get(uri);
 
-            // Check if user is found
-            if (model != null) {
-                // Return user converted in UserGetDTO
-                return new SingleObjectResponse<>(
-                        UserGetDTO.fromModel(model)
-                ).getResponse();
-            } else {
-                // Otherwise return a 404 - NOT_FOUND error response
-                return new ErrorResponse(
-                        Response.Status.NOT_FOUND,
-                        "User not found",
-                        "Unknown user URI: " + uri.toString()
-                ).getResponse();
-            }
+        // Check if user is found
+        if (model != null) {
+            // Return user converted in UserGetDTO
+            return new SingleObjectResponse<>(
+                    UserGetDTO.fromModel(model)
+            ).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "User not found",
+                    "Unknown user URI: " + uri.toString()
+            ).getResponse();
         }
     }
 
@@ -242,28 +238,26 @@ public class UserAPI {
     public Response getUsersByURI(
             @ApiParam(value = "Users URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
-        try (sparql) {
-            // Get user list from DAO by URIs
-            UserDAO dao = new UserDAO(sparql);
-            List<UserModel> models = dao.getList(uris);
+        // Get user list from DAO by URIs
+        UserDAO dao = new UserDAO(sparql);
+        List<UserModel> models = dao.getList(uris);
 
-            // Check if users are found
-            if (!models.isEmpty()) {
-                // Return user list converted in UserGetDTO
-                List<UserGetDTO> resultDTOList = new ArrayList<>();
-                models.forEach(result -> {
-                    resultDTOList.add(UserGetDTO.fromModel(result));
-                });
+        // Check if users are found
+        if (!models.isEmpty()) {
+            // Return user list converted in UserGetDTO
+            List<UserGetDTO> resultDTOList = new ArrayList<>();
+            models.forEach(result -> {
+                resultDTOList.add(UserGetDTO.fromModel(result));
+            });
 
-                return new PaginatedListResponse<>(resultDTOList).getResponse();
-            } else {
-                // Otherwise return a 404 - NOT_FOUND error response
-                return new ErrorResponse(
-                        Response.Status.NOT_FOUND,
-                        "Users not found",
-                        "Unknown user URIs"
-                ).getResponse();
-            }
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Users not found",
+                    "Unknown user URIs"
+            ).getResponse();
         }
     }
 
@@ -301,25 +295,23 @@ public class UserAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        try (sparql) {
-            // Search users with User DAO
-            UserDAO dao = new UserDAO(sparql);
-            ListWithPagination<UserModel> resultList = dao.search(
-                    pattern,
-                    orderByList,
-                    page,
-                    pageSize
-            );
+        // Search users with User DAO
+        UserDAO dao = new UserDAO(sparql);
+        ListWithPagination<UserModel> resultList = dao.search(
+                pattern,
+                orderByList,
+                page,
+                pageSize
+        );
 
-            // Convert paginated list to DTO
-            ListWithPagination<UserGetDTO> resultDTOList = resultList.convert(
-                    UserGetDTO.class,
-                    UserGetDTO::fromModel
-            );
+        // Convert paginated list to DTO
+        ListWithPagination<UserGetDTO> resultDTOList = resultList.convert(
+                UserGetDTO.class,
+                UserGetDTO::fromModel
+        );
 
-            // Return paginated list of user DTO
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
-        }
+        // Return paginated list of user DTO
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
     @PUT
@@ -341,32 +333,30 @@ public class UserAPI {
     public Response updateUser(
             @ApiParam("User description") @Valid UserUpdateDTO dto
     ) throws Exception {
-        try (sparql) {
-            UserDAO dao = new UserDAO(sparql);
+        UserDAO dao = new UserDAO(sparql);
 
-            // Get user model from DTO uri
-            UserModel model = dao.get(dto.getUri());
+        // Get user model from DTO uri
+        UserModel model = dao.get(dto.getUri());
 
-            if (model != null) {
-                // If model exists, update it
-                UserModel user = dao.update(
-                        dto.getUri(),
-                        new InternetAddress(dto.getEmail()),
-                        dto.getFirstName(),
-                        dto.getLastName(),
-                        dto.isAdmin(),
-                        authentication.getPasswordHash(dto.getPassword()),
-                        dto.getLang()
-                );
+        if (model != null) {
+            // If model exists, update it
+            UserModel user = dao.update(
+                    dto.getUri(),
+                    new InternetAddress(dto.getEmail()),
+                    dto.getFirstName(),
+                    dto.getLastName(),
+                    dto.isAdmin(),
+                    authentication.getPasswordHash(dto.getPassword()),
+                    dto.getLang()
+            );
 
-                return new ObjectUriResponse(Response.Status.OK, user.getUri()).getResponse();
-            } else {
-                return new ErrorResponse(
-                        Response.Status.NOT_FOUND,
-                        "User not found",
-                        "Unknown user URI: " + uri
-                ).getResponse();
-            }
+            return new ObjectUriResponse(Response.Status.OK, user.getUri()).getResponse();
+        } else {
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "User not found",
+                    "Unknown user URI: " + uri
+            ).getResponse();
         }
     }
 
@@ -385,11 +375,9 @@ public class UserAPI {
     public Response deleteUser(
             @ApiParam(value = "User URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
-        try (sparql) {
-            UserDAO dao = new UserDAO(sparql);
-            dao.delete(uri);
-            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
-        }
+        UserDAO dao = new UserDAO(sparql);
+        dao.delete(uri);
+        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
 }

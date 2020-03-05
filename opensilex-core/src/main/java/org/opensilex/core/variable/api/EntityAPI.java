@@ -70,7 +70,7 @@ public class EntityAPI {
     public Response createEntity(
             @ApiParam("Entity description") @Valid EntityCreationDTO dto
     ) throws Exception {
-        try (sparql) {
+        try {
             EntityDAO dao = new EntityDAO(sparql);
             EntityModel model = dto.newModel();
             dao.create(model);
@@ -100,7 +100,6 @@ public class EntityAPI {
             @ApiParam(value = "Entity URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam("Entity description") @Valid EntityUpdateDTO dto
     ) throws Exception {
-        try (sparql) {
             EntityDAO dao = new EntityDAO(sparql);
 
             EntityModel model = dao.get(uri);
@@ -114,7 +113,6 @@ public class EntityAPI {
                         "Unknown entity URI: " + uri
                 ).getResponse();
             }
-        }
     }
 
     @DELETE
@@ -132,11 +130,9 @@ public class EntityAPI {
     public Response deleteEntity(
             @ApiParam(value = "Entity URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        try (sparql) {
             EntityDAO dao = new EntityDAO(sparql);
             dao.delete(uri);
             return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
-        }
     }
 
     @GET
@@ -154,7 +150,6 @@ public class EntityAPI {
     public Response getEntity(
             @ApiParam(value = "Entity URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        try (sparql) {
             EntityDAO dao = new EntityDAO(sparql);
             EntityModel model = dao.get(uri);
 
@@ -169,7 +164,6 @@ public class EntityAPI {
                         "Unknown entity URI: " + uri.toString()
                 ).getResponse();
             }
-        }
     }
 
     @GET
@@ -191,7 +185,6 @@ public class EntityAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize
     ) throws Exception {
-        try (sparql) {
             EntityDAO dao = new EntityDAO(sparql);
             ListWithPagination<EntityModel> resultList = dao.search(
                     namePattern,
@@ -205,6 +198,5 @@ public class EntityAPI {
                     EntityGetDTO::fromModel
             );
             return new PaginatedListResponse<>(resultDTOList).getResponse();
-        }
     }
 }

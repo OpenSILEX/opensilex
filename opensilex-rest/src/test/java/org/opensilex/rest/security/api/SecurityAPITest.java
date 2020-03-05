@@ -2,6 +2,7 @@ package org.opensilex.rest.security.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.integration.test.AbstractIntegrationTest;
@@ -33,7 +34,7 @@ public class SecurityAPITest extends AbstractIntegrationTest {
     protected String credentialsPath = path + "/credentials";
 
     @Test
-    public void testRenew() {
+    public void testRenew() throws Exception {
         String oldToken = getToken().getToken();
         Response putResult = getJsonPutResponse(target(renewTokenPath), "");
         assertEquals(Response.Status.OK.getStatusCode(), putResult.getStatus());
@@ -59,7 +60,7 @@ public class SecurityAPITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testLogout() {
+    public void testLogout() throws Exception {
         TokenGetDTO oldToken = getToken();
         Response deleteResult = getDeleteJsonResponse(target(logoutPath));
         assertEquals(Response.Status.OK.getStatusCode(), deleteResult.getStatus());
@@ -76,6 +77,7 @@ public class SecurityAPITest extends AbstractIntegrationTest {
         Response getResult = getJsonGetPublicResponse(target(credentialsPath));
 
         JsonNode node = getResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         PaginatedListResponse<CredentialsGroupDTO> getResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<CredentialsGroupDTO>>() {
         });
 

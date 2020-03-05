@@ -90,7 +90,7 @@ public class ExperimentAPI {
     public Response createExperiment(
             @ApiParam("Experiment description") @Valid ExperimentCreationDTO xpDto
     ) {
-        try (sparql) {
+        try {
             ExperimentDAO dao = new ExperimentDAO(sparql);
             ExperimentModel createdXp = dao.create(xpDto.newModel());
             return new ObjectUriResponse(Response.Status.CREATED, createdXp.getUri()).getResponse();
@@ -127,7 +127,7 @@ public class ExperimentAPI {
     public Response updateExperiment(
             @ApiParam("Experiment description") @Valid ExperimentCreationDTO xpDto
     ) {
-        try (sparql) {
+        try {
             ExperimentDAO dao = new ExperimentDAO(sparql);
 
             ExperimentModel model = xpDto.newModel();
@@ -166,7 +166,7 @@ public class ExperimentAPI {
     public Response getExperiment(
             @ApiParam(value = "Experiment URI", example = "http://opensilex.dev/set/experiments/ZA17", required = true) @PathParam("uri") @NotNull URI xpUri
     ) {
-        try (sparql) {
+        try {
             ExperimentDAO dao = new ExperimentDAO(sparql);
             ExperimentModel model = dao.get(xpUri);
 
@@ -231,7 +231,7 @@ public class ExperimentAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) {
 
-        try (sparql) {
+        try {
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
 
             // set searchDTO specifics attributes
@@ -301,7 +301,7 @@ public class ExperimentAPI {
     public Response deleteExperiment(
             @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) {
-        try (sparql) {
+        try {
             ExperimentDAO dao = new ExperimentDAO(sparql);
             dao.delete(xpUri);
             return new ObjectUriResponse(xpUri).getResponse();

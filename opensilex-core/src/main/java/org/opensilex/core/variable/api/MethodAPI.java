@@ -70,19 +70,17 @@ public class MethodAPI {
     public Response createMethod(
             @ApiParam("Method description") @Valid MethodCreationDTO dto
     ) throws Exception {
-        try (sparql) {
-            MethodDAO dao = new MethodDAO(sparql);
-            try {
-                MethodModel model = dto.newModel();
-                dao.create(model);
-                return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
-            } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-                return new ErrorResponse(
-                        Response.Status.CONFLICT,
-                        "Method already exists",
-                        duplicateUriException.getMessage()
-                ).getResponse();
-            }
+        MethodDAO dao = new MethodDAO(sparql);
+        try {
+            MethodModel model = dto.newModel();
+            dao.create(model);
+            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+        } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
+            return new ErrorResponse(
+                    Response.Status.CONFLICT,
+                    "Method already exists",
+                    duplicateUriException.getMessage()
+            ).getResponse();
         }
     }
 
@@ -102,20 +100,18 @@ public class MethodAPI {
             @ApiParam(value = "Method URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam("Method description") @Valid MethodUpdateDTO dto
     ) throws Exception {
-        try (sparql) {
-            MethodDAO dao = new MethodDAO(sparql);
+        MethodDAO dao = new MethodDAO(sparql);
 
-            MethodModel model = dao.get(uri);
-            if (model != null) {
-                dao.update(dto.defineModel(model));
-                return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
-            } else {
-                return new ErrorResponse(
-                        Response.Status.NOT_FOUND,
-                        "Method not found",
-                        "Unknown method URI: " + uri
-                ).getResponse();
-            }
+        MethodModel model = dao.get(uri);
+        if (model != null) {
+            dao.update(dto.defineModel(model));
+            return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
+        } else {
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Method not found",
+                    "Unknown method URI: " + uri
+            ).getResponse();
         }
     }
 
@@ -134,11 +130,9 @@ public class MethodAPI {
     public Response deleteMethod(
             @ApiParam(value = "Method URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        try (sparql) {
-            MethodDAO dao = new MethodDAO(sparql);
-            dao.delete(uri);
-            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
-        }
+        MethodDAO dao = new MethodDAO(sparql);
+        dao.delete(uri);
+        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
     @GET
@@ -156,21 +150,19 @@ public class MethodAPI {
     public Response getMethod(
             @ApiParam(value = "Method URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        try (sparql) {
-            MethodDAO dao = new MethodDAO(sparql);
-            MethodModel model = dao.get(uri);
+        MethodDAO dao = new MethodDAO(sparql);
+        MethodModel model = dao.get(uri);
 
-            if (model != null) {
-                return new SingleObjectResponse<>(
-                        MethodGetDTO.fromModel(model)
-                ).getResponse();
-            } else {
-                return new ErrorResponse(
-                        Response.Status.NOT_FOUND,
-                        "Method not found",
-                        "Unknown method URI: " + uri.toString()
-                ).getResponse();
-            }
+        if (model != null) {
+            return new SingleObjectResponse<>(
+                    MethodGetDTO.fromModel(model)
+            ).getResponse();
+        } else {
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Method not found",
+                    "Unknown method URI: " + uri.toString()
+            ).getResponse();
         }
     }
 
@@ -193,20 +185,18 @@ public class MethodAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize
     ) throws Exception {
-        try (sparql) {
-            MethodDAO dao = new MethodDAO(sparql);
-            ListWithPagination<MethodModel> resultList = dao.search(
-                    namePattern,
-                    commentPattern,
-                    orderByList,
-                    page,
-                    pageSize
-            );
-            ListWithPagination<MethodGetDTO> resultDTOList = resultList.convert(
-                    MethodGetDTO.class,
-                    MethodGetDTO::fromModel
-            );
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
-        }
+        MethodDAO dao = new MethodDAO(sparql);
+        ListWithPagination<MethodModel> resultList = dao.search(
+                namePattern,
+                commentPattern,
+                orderByList,
+                page,
+                pageSize
+        );
+        ListWithPagination<MethodGetDTO> resultDTOList = resultList.convert(
+                MethodGetDTO.class,
+                MethodGetDTO::fromModel
+        );
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 }

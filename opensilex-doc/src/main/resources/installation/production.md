@@ -5,9 +5,9 @@ Install OpenSILEX in production
 
 ## Operating System
 
-OpenSILEX should work on any system where the required softwares are available but we recommand using Linux for production installation.
+OpenSILEX should work on any system where the required softwares are available but we recommend using Linux for production installation.
 
-Commands in this document should work on any Debian-like distribution (with sudo configured) but should be easly adapted for any Linux distributions
+Commands in this document should work on any Debian-like distribution (with sudo configured) but should be easily adapted for any Linux distributions
 
 ## Java 
 
@@ -25,7 +25,7 @@ You can check java installation and version with the following command:
 java --version
 ```
 
-## Setup MongoDB
+## Set up MongoDB
 
 Please follow MongoDB official install documentation for your operating system.
 
@@ -49,7 +49,7 @@ Linux example command:
 sudo docker run -d mongo:4.2.3-bionic --replSet opensilex
 ```
 
-## Setup a triplestore
+## Set up a triplestore
 
 You can use [RDF4J](https://rdf4j.org/) or [GraphDB](http://graphdb.ontotext.com/) for storing semantic data.
 
@@ -59,7 +59,7 @@ Please refer to their websites for more information.
 
 ### RDF4J
 
-For RDF4J you need to setup and configure a Servlet Container server like [Tomcat](http://tomcat.apache.org/) first.
+For RDF4J you first need to set up and configure a Servlet Container server like [Tomcat](http://tomcat.apache.org/).
 
 And then follow their [documentation](https://rdf4j.org/documentation/server-workbench-console/) .
 
@@ -73,7 +73,7 @@ sudo docker run -d eclipse/rdf4j-workbench:amd64-3.1.1
 
 ### GraphDB
 
-Ontotext - GraphDB exist in free version and can be used as an alternative for RDF4J.
+Ontotext - GraphDB exists in a free version and can be used as an alternative for RDF4J.
 
 Please follow their [documentation](http://graphdb.ontotext.com/documentation/free/installation.html) to install it.
 
@@ -87,19 +87,19 @@ sudo docker run -d ontotext/graphdb:9.1.1-se
 
 # Installation
 
-All directories and user names in this installation procedure can be changed but you need to change the configuration accordlingly to make it work.
+All directories and user names in this installation procedure can be changed but you need to change the configuration accordingly to make it work.
 
-## Setup a user
+## Set up a user
 
 Create a user with it's home directory:
 
 ```sudo useradd -s /bin/bash -d /home/opensilex/ -m opensilex```
 
-Setup a password to your new user:
+Set up a password to your new user:
 
 ```sudo passwd opensilex```
 
-Give this user sudo permissions:
+Give sudo permissions to this user :
 
 ```sudo usermod -a -G sudo opensilex```
 
@@ -109,23 +109,23 @@ Connect with this user and the defined password:
 
 ## Create directories
 
-Directory for OpenSilex binaries:
+Directory for OpenSILEX binaries:
 ```mkdir -p /home/opensilex/bin```
 
-Directory for OpenSilex configuration file:
+Directory for OpenSILEX configuration file:
 ```mkdir -p /home/opensilex/config```
 
-Directory for OpenSilex data file storage:
+Directory for OpenSILEX data file storage:
 ```mkdir -p /home/opensilex/data```
 
-Directory for OpenSilex file logs:
+Directory for OpenSILEX file logs:
 ```mkdir -p /home/opensilex/logs```
 
-## Download & extract OpenSilex production release
+## Download & extract OpenSILEX production release
 
-Please download OpenSILEX latest release archive on [Github](https://github.com/OpenSILEX/opensilex-dev/releases)
+Please download the OpenSILEX latest release archive on [Github](https://github.com/OpenSILEX/opensilex-dev/releases)
 
-In this paragraph `<X.Y.Z>` means the OpenSILEX release version.
+In this paragraph, `<X.Y.Z>` means the OpenSILEX release version.
 
 Extract the downloaded zip file into ```/home/opensilex/bin```
 
@@ -163,7 +163,7 @@ You should get the following directory structure:
 
 ### Create main configuration file
 
-Create a YML file in `/home/opensilex/config` named `opensilex.yml` by example.
+Create a YML file in `/home/opensilex/config` named `opensilex.yml` for example.
 It could be any name you want if you want to work with multiple configurations.
 
 Here is a minimal example of configuration content, where all values must be adapted to your setup:
@@ -319,7 +319,7 @@ echo "Allow group to read and write file in phis-webapp directory"
 sudo chmod -R g+srw /home/opensilex/phis-webapp
 ```
 
-### Setup Web app configuration
+### Set up Web app configuration
 
 You may have to change configuration file `/home/opensilex/phis-webapp/config/config.php`
 
@@ -333,7 +333,7 @@ define('WS_PHIS_PATH_DOC', 'http://localhost:8666/api-docs');
 define('WS_PHIS_APP_PATH', 'http://localhost:8666/app/');
 ```
 
-### Setup Apache configuration
+### Set up Apache configuration
 
 For a simple setup, just create a symbolic link to sources folder
 
@@ -346,13 +346,13 @@ For a more complexe setup please follow [Apache HTTP Server documentation](http:
 
 You can also setup HTTPS for Apache by example using [Let's Encrypt](https://letsencrypt.org/fr/)
 
-## Check OpenSilex Interface
+## Check OpenSILEX Interface
 
-Normally you should now be able to access to OpenSilex interfaces with the following URL (adjusted to your setup):
+Normally you should now be able to access to OpenSILEX interfaces with the following URL (adjusted to your setup):
 
 - Website: http://localhost/phis-webapp
 - Web services API: http://localhost:8666/api-docs
 
 You should be able to connect with the admin user you create previously.
 
-If not please check that your OpenSilex server is running and your PHP configuration.
+If not, please check that your OpenSILEX server is running and your PHP configuration.

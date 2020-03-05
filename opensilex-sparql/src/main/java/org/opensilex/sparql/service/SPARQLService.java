@@ -5,20 +5,8 @@
 //******************************************************************************
 package org.opensilex.sparql.service;
 
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-
-import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
-
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
-
+import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.DescribeBuilder;
@@ -26,9 +14,9 @@ import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
-import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -49,14 +37,8 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceConfigDefault;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
-import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
-import org.opensilex.sparql.exceptions.SPARQLQueryException;
-import org.opensilex.sparql.exceptions.SPARQLTransactionException;
-import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
+import org.opensilex.sparql.exceptions.*;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
@@ -68,6 +50,16 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Iterator;
+import java.util.function.Consumer;
 
 /**
  * Implementation of SPARQLService
@@ -103,7 +95,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     public void close() throws Exception {
         shutdown();
     }
-    
+
     private static HashMap<String, String> getDefaultPrefixes() {
         return new HashMap<String, String>() {
             {
@@ -238,7 +230,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         LOGGER.debug("SPARQL CLEAR GRAPH: " + graph);
         connection.clearGraph(graph);
     }
-    
+
     @Override
     public void renameGraph(URI oldGraphURI, URI newGraphURI) throws SPARQLException {
         LOGGER.debug("MOVE GRAPH " + oldGraphURI + " TO " + newGraphURI);
@@ -637,55 +629,78 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         }
     }
 
+
     /**
-     * Insert the a new quad (graph,subject,property,object) and remove any old quad (graph,subject,property,?x)
+     * Insert a list of quad (graph,subject,property,object), (graph,subject,property,object_1) ... (graph,subject,property,object_k)
+     *
+     * and remove any old quad (graph,subject,property,?object)
      * in the SPARQL graph
      *
-     * @param graph the Graph in which the triple is present
-     * @param subject the triple subject URI
+     * @param graph    the graph in which the triple(s) are present
+     * @param subject  the triple subject URI
      * @param property the triple property
-     * @param object the triple object value
+     * @param objects  the list of object values
      */
-    public void updateObjectRelation(Node graph, URI subject, Property property, Object object) throws Exception {
+    public void updateObjectRelations(Node graph, URI subject, Property property, List<?> objects) throws Exception {
 
         UpdateBuilder updateBuilder = new UpdateBuilder();
 
         Node subjectNode = SPARQLDeserializers.nodeURI(subject);
-        Node objectNode = SPARQLDeserializers.getForClass(object.getClass()).getNode(object);
         Node objectVariable = makeVar("o");
+        Node propertyNode = property.asNode();
 
-        updateBuilder.addDelete(graph,subjectNode,property,objectVariable);
-        updateBuilder.addInsert(graph,subjectNode,property,objectNode);
-        updateBuilder.addWhere(subjectNode,property,objectVariable);
+        // build a triple for each new object to insert
+        Iterator<Triple> insertTriplesIt = objects.stream().map(object -> {
+            try {
+                return new Triple(subjectNode, propertyNode, SPARQLDeserializers.getForClass(object.getClass()).getNode(object));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).iterator();
+
+        updateBuilder.addDelete(graph, subjectNode, property, objectVariable);
+        updateBuilder.addInsert(graph, insertTriplesIt);
+        updateBuilder.addOptional(subjectNode, property, objectVariable);
 
         executeUpdateQuery(updateBuilder);
     }
 
-    public void updateObjectRelation(Node g, URI s, Property p, URI n) throws SPARQLException {
-        SelectBuilder select = new SelectBuilder();
-        select.addVar("x");
-        select.addGraph(g, SPARQLDeserializers.nodeURI(s), p.asNode(), "?x");
 
-        List<URI> oldValues = new ArrayList<>();
+    /**
+     * Insert a list of quad (graph,subject,property,object), (graph,subject_1,property,object) ... (graph,subject_k,property,object)
+     *
+     * and remove any old quad (graph,?subject,property,object)
+     * in the SPARQL graph
+     *
+     * @param graph    the graph in which the triple(s) are present
+     * @param subjects the list of subject URIS
+     * @param property the triple property
+     * @param object  the triple(s) object
+     */
+    public void updateSubjectRelations(Node graph, List<URI> subjects, Property property, Object object) throws Exception {
 
-        executeSelectQuery(select, (result) -> {
+        UpdateBuilder updateBuilder = new UpdateBuilder();
+
+        Node objectNode = SPARQLDeserializers.getForClass(object.getClass()).getNode(object);
+        Node subjectVariable = makeVar("s");
+        Node propertyNode = property.asNode();
+
+        // build a triple for each new subject to insert
+        Iterator<Triple> insertTriplesIt = subjects.stream().map(subject -> {
             try {
-                oldValues.add(new URI(result.getStringValue("x")));
-            } catch (URISyntaxException ex) {
-                LOGGER.error("Invalid URI provided: " + result.getStringValue("x"));
+                return new Triple(SPARQLDeserializers.nodeURI(subject), propertyNode, objectNode);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-        });
+        }).iterator();
 
-        UpdateBuilder update = new UpdateBuilder();
+        updateBuilder.addDelete(graph, subjectVariable, property, objectNode);
+        updateBuilder.addInsert(graph, insertTriplesIt);
+        updateBuilder.addOptional(subjectVariable, property, objectNode);
 
-        for (URI uri : oldValues) {
-            update.addDelete(g, SPARQLDeserializers.nodeURI(s), p.asNode(), SPARQLDeserializers.nodeURI(uri));
-            update.addWhere(SPARQLDeserializers.nodeURI(s), p.asNode(), SPARQLDeserializers.nodeURI(uri));
-        }
-
-        update.addInsert(g, SPARQLDeserializers.nodeURI(s), p.asNode(), SPARQLDeserializers.nodeURI(n));
-        executeUpdateQuery(update);
+        executeUpdateQuery(updateBuilder);
     }
+
 
     public Map<String, String> getOtherTranslations(URI resourceURI, Property labelProperty, boolean reverseRelation, String lang) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

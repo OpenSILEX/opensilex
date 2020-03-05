@@ -61,6 +61,19 @@ public class ExperimentDAO {
         return instance;
     }
 
+    public void updateWithVariables(URI xpUri, List<URI> variablesUris) throws Exception {
+        if(! sparql.uriExists(ExperimentModel.class,xpUri)){
+            throw new IllegalArgumentException("Unknown experiment "+xpUri);
+        }
+        sparql.updateObjectRelations(SPARQLDeserializers.nodeURI(xpUri),xpUri,Oeso.measures,variablesUris);
+    }
+
+    public void updateWithSensors(URI xpUri, List<URI> sensorsUris) throws Exception{
+        if(! sparql.uriExists(ExperimentModel.class,xpUri)){
+            throw new IllegalArgumentException("Unknown experiment "+xpUri);
+        }
+        sparql.updateSubjectRelations(SPARQLDeserializers.nodeURI(xpUri),sensorsUris,Oeso.participatesIn,xpUri);
+    }
 
     /**
      * check if all URI from uris have the typeResource as {@link RDF#type} into the SPARQL graph

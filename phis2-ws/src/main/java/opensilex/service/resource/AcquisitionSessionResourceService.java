@@ -8,8 +8,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -34,6 +32,7 @@ import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -137,25 +136,18 @@ public class AcquisitionSessionResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response get4PMetadataFile(
             @ApiParam(value = DocumentationAnnotation.VECTOR_RDF_TYPE_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_VECTOR_RDF_TYPE) @QueryParam("vectorRdfType") @Required @URL String vectorRdfType,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
-        try (sparql) {
-            AcquisitionSessionDAO acquisitionSessionDAO = new AcquisitionSessionDAO(sparql);
-            acquisitionSessionDAO.vectorRdfType = vectorRdfType;
-            acquisitionSessionDAO.setPage(page);
-            acquisitionSessionDAO.setPageSize(pageSize);
-            acquisitionSessionDAO.user = userSession.getUser();
+        AcquisitionSessionDAO acquisitionSessionDAO = new AcquisitionSessionDAO(sparql);
+        acquisitionSessionDAO.vectorRdfType = vectorRdfType;
+        acquisitionSessionDAO.setPage(page);
+        acquisitionSessionDAO.setPageSize(pageSize);
+        acquisitionSessionDAO.user = userSession.getUser();
 
-            return getAcquisitionSessionMetadataFile(acquisitionSessionDAO);
-        }
+        return getAcquisitionSessionMetadataFile(acquisitionSessionDAO);
     }
 }

@@ -8,8 +8,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -46,6 +44,7 @@ import opensilex.service.resource.dto.annotation.AnnotationPostDTO;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.model.Annotation;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,26 +95,19 @@ public class AnnotationResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     public Response post(
             @ApiParam(value = DocumentationAnnotation.ANNOTATION_POST_DATA_DEFINITION)
             @Valid ArrayList<AnnotationPostDTO> annotationsDtos,
             @Context HttpServletRequest context) throws Exception {
-        try (sparql) {
-            // Set DAO
-            AnnotationDAO objectDao = new AnnotationDAO(sparql);
-            objectDao.user = userSession.getUser();
-            if (context.getRemoteAddr() != null) {
-                objectDao.remoteUserAdress = context.getRemoteAddr();
-            }
-
-            return getPostResponse(objectDao, annotationsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_ANNOTATION_LIST);
+        // Set DAO
+        AnnotationDAO objectDao = new AnnotationDAO(sparql);
+        objectDao.user = userSession.getUser();
+        if (context.getRemoteAddr() != null) {
+            objectDao.remoteUserAdress = context.getRemoteAddr();
         }
+
+        return getPostResponse(objectDao, annotationsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_ANNOTATION_LIST);
     }
 
     /**
@@ -149,12 +141,7 @@ public class AnnotationResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAnnotationsBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
@@ -165,38 +152,36 @@ public class AnnotationResourceService extends ResourceService {
             @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_BODY_VALUE) @QueryParam("description") String bodyValue,
             @ApiParam(value = "Search by motivation", example = DocumentationAnnotation.EXAMPLE_ANNOTATION_MOTIVATED_BY) @QueryParam("motivatedBy") @URL String motivatedBy,
             @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc) throws Exception {
-        try (sparql) {
-            AnnotationDAO annotationDao = new AnnotationDAO(sparql);
-            annotationDao.user = userSession.getUser();
-            ArrayList<Annotation> annotations;
-            try {
-                annotations = annotationDao.find(uri, creator, target, bodyValue, motivatedBy, dateSortAsc, page, pageSize);
+        AnnotationDAO annotationDao = new AnnotationDAO(sparql);
+        annotationDao.user = userSession.getUser();
+        ArrayList<Annotation> annotations;
+        try {
+            annotations = annotationDao.find(uri, creator, target, bodyValue, motivatedBy, dateSortAsc, page, pageSize);
 
-                // handle search exceptions
+            // handle search exceptions
+        } catch (DAOPersistenceException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            return getResponseWhenPersistenceError(ex);
+        }
+
+        // Returns result
+        if (annotations == null) {
+            return getGETResponseWhenNoResult();
+        } else if (annotations.isEmpty()) {
+            return getGETResponseWhenNoResult();
+        } else {
+            // count
+            try {
+                int totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy, dateSortAsc);
+                return getGETResponseWhenSuccess(annotations, pageSize, page, totalCount);
+
+                // handle count exceptions
             } catch (DAOPersistenceException ex) {
                 LOGGER.error(ex.getMessage(), ex);
                 return getResponseWhenPersistenceError(ex);
-            }
-
-            // Returns result
-            if (annotations == null) {
-                return getGETResponseWhenNoResult();
-            } else if (annotations.isEmpty()) {
-                return getGETResponseWhenNoResult();
-            } else {
-                // count
-                try {
-                    int totalCount = annotationDao.count(uri, creator, target, bodyValue, motivatedBy, dateSortAsc);
-                    return getGETResponseWhenSuccess(annotations, pageSize, page, totalCount);
-
-                    // handle count exceptions
-                } catch (DAOPersistenceException ex) {
-                    LOGGER.error(ex.getMessage(), ex);
-                    return getResponseWhenPersistenceError(ex);
-                } catch (Exception ex) {
-                    LOGGER.error(ex.getMessage(), ex);
-                    return getResponseWhenInternalError(ex);
-                }
+            } catch (Exception ex) {
+                LOGGER.error(ex.getMessage(), ex);
+                return getResponseWhenInternalError(ex);
             }
         }
     }
@@ -229,12 +214,7 @@ public class AnnotationResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAnnotationByUri(
             @ApiParam(
@@ -242,11 +222,9 @@ public class AnnotationResourceService extends ResourceService {
                     required = true,
                     example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI)
             @URL @PathParam("uri") String uri) throws Exception {
-        try (sparql) {
-            AnnotationDAO annotationDao = new AnnotationDAO(sparql);
-            annotationDao.user = userSession.getUser();
-            return getGETByUriResponseFromDAOResults(annotationDao, uri);
-        }
+        AnnotationDAO annotationDao = new AnnotationDAO(sparql);
+        annotationDao.user = userSession.getUser();
+        return getGETByUriResponseFromDAOResults(annotationDao, uri);
     }
 
     /**
@@ -266,15 +244,7 @@ public class AnnotationResourceService extends ResourceService {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.INTERNAL_SERVER_ERROR),})
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = GlobalWebserviceValues.AUTHORIZATION,
-                required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING,
-                paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteAnnotationByUri(
@@ -285,15 +255,13 @@ public class AnnotationResourceService extends ResourceService {
             )
             @Valid @NotNull DeleteDTO deleteDTO, @Context HttpServletRequest context)
             throws Exception {
-        try (sparql) {
-            AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
-            annotationDAO.user = userSession.getUser();
-            if (context.getRemoteAddr() != null) {
-                annotationDAO.setRemoteUserAdress(context.getRemoteAddr());
-            }
-            Response response = buildDeleteObjectsByUriResponse(annotationDAO, deleteDTO, "Annotation(s) deleted");
-            return response;
+        AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
+        annotationDAO.user = userSession.getUser();
+        if (context.getRemoteAddr() != null) {
+            annotationDAO.setRemoteUserAdress(context.getRemoteAddr());
         }
+        Response response = buildDeleteObjectsByUriResponse(annotationDAO, deleteDTO, "Annotation(s) deleted");
+        return response;
     }
 
     @Override

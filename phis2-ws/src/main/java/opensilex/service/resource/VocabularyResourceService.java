@@ -9,8 +9,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -38,6 +36,7 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.Namespace;
 import opensilex.service.model.Property;
 import static opensilex.service.resource.DocumentResourceService.LOGGER;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -133,25 +132,18 @@ public class VocabularyResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getRdfs(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
-        try (sparql) {
-            VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
+        VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
 
-            vocabularyDAO.user = userSession.getUser();
-            vocabularyDAO.setPage(page);
-            vocabularyDAO.setPageSize(pageSize);
+        vocabularyDAO.user = userSession.getUser();
+        vocabularyDAO.setPage(page);
+        vocabularyDAO.setPageSize(pageSize);
 
-            return getRdfsData(vocabularyDAO);
-        }
+        return getRdfsData(vocabularyDAO);
     }
 
     /**
@@ -229,30 +221,23 @@ public class VocabularyResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getContacts(
             @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("rdfType") @URL @Required String rdfType,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
-        try (sparql) {
-            VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
+        VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
 
-            if (rdfType != null) {
-                vocabularyDAO.domainRdfType = rdfType;
-            }
-
-            vocabularyDAO.user = userSession.getUser();
-            vocabularyDAO.setPage(page);
-            vocabularyDAO.setPageSize(pageSize);
-
-            return getContactProperties(vocabularyDAO);
+        if (rdfType != null) {
+            vocabularyDAO.domainRdfType = rdfType;
         }
+
+        vocabularyDAO.user = userSession.getUser();
+        vocabularyDAO.setPage(page);
+        vocabularyDAO.setPageSize(pageSize);
+
+        return getContactProperties(vocabularyDAO);
     }
 
     /**
@@ -340,30 +325,23 @@ public class VocabularyResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDeviceProperties(
             @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SENSOR_RDF_TYPE) @QueryParam("rdfType") @URL @Required String rdfType,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
-        try (sparql) {
-            VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
+        VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
 
-            if (rdfType != null) {
-                vocabularyDAO.domainRdfType = rdfType;
-            }
-
-            vocabularyDAO.user = userSession.getUser();
-            vocabularyDAO.setPage(page);
-            vocabularyDAO.setPageSize(pageSize);
-
-            return getDeviceProperties(vocabularyDAO);
+        if (rdfType != null) {
+            vocabularyDAO.domainRdfType = rdfType;
         }
+
+        vocabularyDAO.user = userSession.getUser();
+        vocabularyDAO.setPage(page);
+        vocabularyDAO.setPageSize(pageSize);
+
+        return getDeviceProperties(vocabularyDAO);
     }
 
     /**
@@ -413,25 +391,18 @@ public class VocabularyResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getNamespaces(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
-        try (sparql) {
-            VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
+        VocabularyDAO vocabularyDAO = new VocabularyDAO(sparql);
 
-            vocabularyDAO.user = userSession.getUser();
-            vocabularyDAO.setPage(page);
-            vocabularyDAO.setPageSize(pageSize);
+        vocabularyDAO.user = userSession.getUser();
+        vocabularyDAO.setPage(page);
+        vocabularyDAO.setPageSize(pageSize);
 
-            return getNamespaces(vocabularyDAO);
-        }
+        return getNamespaces(vocabularyDAO);
     }
 
     /**

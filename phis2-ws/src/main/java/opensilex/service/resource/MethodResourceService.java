@@ -8,8 +8,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -32,7 +30,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
-import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.MethodDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
@@ -46,6 +43,7 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Method;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -80,42 +78,35 @@ public class MethodResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postMethod(@ApiParam(value = DocumentationAnnotation.METHOD_POST_DATA_DEFINITION) @Valid ArrayList<MethodDTO> methods,
             @Context HttpServletRequest context) throws Exception {
-        try (sparql) {
-            AbstractResultForm postResponse = null;
-            if (methods != null && !methods.isEmpty()) {
-                MethodDAO methodDao = new MethodDAO(sparql);
-                if (context.getRemoteAddr() != null) {
-                    methodDao.remoteUserAdress = context.getRemoteAddr();
-                }
-
-                methodDao.user = userSession.getUser();
-
-                POSTResultsReturn result = methodDao.checkAndInsert(methods);
-
-                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                    //Code 201, methodes insérées
-                    postResponse = new ResponseFormPOST(result.statusList);
-                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                }
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
-            } else {
-                postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty method(s) to add"));
-                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        AbstractResultForm postResponse = null;
+        if (methods != null && !methods.isEmpty()) {
+            MethodDAO methodDao = new MethodDAO(sparql);
+            if (context.getRemoteAddr() != null) {
+                methodDao.remoteUserAdress = context.getRemoteAddr();
             }
+
+            methodDao.user = userSession.getUser();
+
+            POSTResultsReturn result = methodDao.checkAndInsert(methods);
+
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                //Code 201, methodes insérées
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+            }
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } else {
+            postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty method(s) to add"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
 
@@ -134,43 +125,36 @@ public class MethodResourceService extends ResourceService {
         @ApiResponse(code = 404, message = "Method not found"),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putMethod(
             @ApiParam(value = DocumentationAnnotation.METHOD_POST_DATA_DEFINITION) @Valid ArrayList<MethodDTO> methods,
             @Context HttpServletRequest context) throws Exception {
-        try (sparql) {
-            AbstractResultForm response = null;
-            if (methods != null && !methods.isEmpty()) {
-                MethodDAO methodDao = new MethodDAO(sparql);
-                if (context.getRemoteAddr() != null) {
-                    methodDao.remoteUserAdress = context.getRemoteAddr();
-                }
-
-                methodDao.user = userSession.getUser();
-
-                POSTResultsReturn result = methodDao.checkAndUpdate(methods);
-
-                if (result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.CREATED)) {
-                    response = new ResponseFormPOST(result.statusList);
-                    response.getMetadata().setDatafiles(result.createdResources);
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    response = new ResponseFormPOST(result.statusList);
-                }
-                return Response.status(result.getHttpStatus()).entity(response).build();
-            } else {
-                response = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty method(s) to update"));
-                return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+        AbstractResultForm response = null;
+        if (methods != null && !methods.isEmpty()) {
+            MethodDAO methodDao = new MethodDAO(sparql);
+            if (context.getRemoteAddr() != null) {
+                methodDao.remoteUserAdress = context.getRemoteAddr();
             }
+
+            methodDao.user = userSession.getUser();
+
+            POSTResultsReturn result = methodDao.checkAndUpdate(methods);
+
+            if (result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.CREATED)) {
+                response = new ResponseFormPOST(result.statusList);
+                response.getMetadata().setDatafiles(result.createdResources);
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                response = new ResponseFormPOST(result.statusList);
+            }
+            return Response.status(result.getHttpStatus()).entity(response).build();
+        } else {
+            response = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty method(s) to update"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
         }
     }
 
@@ -223,12 +207,7 @@ public class MethodResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMethodsBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
@@ -236,22 +215,20 @@ public class MethodResourceService extends ResourceService {
             @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_METHOD_URI) @QueryParam("uri") @URL String uri,
             @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_METHOD_LABEL) @QueryParam("label") String label
     ) throws Exception {
-        try (sparql) {
-            MethodDAO methodDao = new MethodDAO(sparql);
+        MethodDAO methodDao = new MethodDAO(sparql);
 
-            if (uri != null) {
-                methodDao.uri = uri;
-            }
-            if (label != null) {
-                methodDao.label = label;
-            }
-
-            methodDao.user = userSession.getUser();
-            methodDao.setPage(page);
-            methodDao.setPageSize(limit);
-
-            return getMethodsData(methodDao);
+        if (uri != null) {
+            methodDao.uri = uri;
         }
+        if (label != null) {
+            methodDao.label = label;
+        }
+
+        methodDao.user = userSession.getUser();
+        methodDao.setPage(page);
+        methodDao.setPageSize(limit);
+
+        return getMethodsData(methodDao);
     }
 
     /**
@@ -272,30 +249,23 @@ public class MethodResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMethodDetails(
             @ApiParam(value = DocumentationAnnotation.METHOD_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_METHOD_URI, required = true) @PathParam("method") @URL @Required String method,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
-        try (sparql) {
-            if (method == null) {
-                final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty method URI");
-                return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
-            }
-
-            MethodDAO methodDao = new MethodDAO(sparql);
-            methodDao.uri = method;
-            methodDao.setPageSize(limit);
-            methodDao.setPage(page);
-            methodDao.user = userSession.getUser();
-
-            return getMethodsData(methodDao);
+        if (method == null) {
+            final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty method URI");
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
+
+        MethodDAO methodDao = new MethodDAO(sparql);
+        methodDao.uri = method;
+        methodDao.setPageSize(limit);
+        methodDao.setPage(page);
+        methodDao.user = userSession.getUser();
+
+        return getMethodsData(methodDao);
     }
 }

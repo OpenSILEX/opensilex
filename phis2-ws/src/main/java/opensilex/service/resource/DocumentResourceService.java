@@ -11,8 +11,6 @@ package opensilex.service.resource;
 import com.twmacinta.util.MD5;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -56,7 +54,6 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
-import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.DocumentMongoDAO;
 import opensilex.service.dao.DocumentRdf4jDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
@@ -76,6 +73,7 @@ import opensilex.service.model.Document;
 import opensilex.service.resource.validation.interfaces.SortingValue;
 import opensilex.service.result.ResultForm;
 import opensilex.service.shinyProxy.ShinyProxyService;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -130,67 +128,60 @@ public class DocumentResourceService extends ResourceService {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postDocuments(@Context HttpHeaders headers,
             @ApiParam(value = "JSON Document metadata", required = true) @Valid List<DocumentMetadataDTO> documentsAnnotations)
             throws Exception {
-        try (sparql) {
-            AbstractResultForm postResponse;
-            if (documentsAnnotations != null && !documentsAnnotations.isEmpty()) {
-                //Insertion du document
-                DocumentRdf4jDAO documentDao = new DocumentRdf4jDAO(sparql);
-                documentDao.user = userSession.getUser();
-                //Vérification des documentsAnnotations
-                final POSTResultsReturn checkAnnots = documentDao.check(documentsAnnotations);
+        AbstractResultForm postResponse;
+        if (documentsAnnotations != null && !documentsAnnotations.isEmpty()) {
+            //Insertion du document
+            DocumentRdf4jDAO documentDao = new DocumentRdf4jDAO(sparql);
+            documentDao.user = userSession.getUser();
+            //Vérification des documentsAnnotations
+            final POSTResultsReturn checkAnnots = documentDao.check(documentsAnnotations);
 
-                if (checkAnnots.statusList == null) { // Incorrect annotations
-                    postResponse = new ResponseFormPOST();
-                } else if (checkAnnots.getDataState()) { // Correct annotations
-                    List<String> uriList = new ArrayList<>();
-                    Iterator<DocumentMetadataDTO> itdocsMetadata = documentsAnnotations.iterator();
-                    while (itdocsMetadata.hasNext()) {
-                        DocumentMetadataDTO docsM = itdocsMetadata.next();
-                        //Construction des URI
-                        final UriBuilder uploadPath = uri.getBaseUriBuilder();
-                        String name = new StringBuilder("document")
-                                .append(ResourcesUtils.getUniqueID())
-                                .toString(); // docsM + idUni
-                        final String docsUri = Contexts.DOCUMENTS.toString() + "/" + name;
-                        final String uploadLink = uploadPath
-                                .path("documents")
-                                .path("upload")
-                                .queryParam("uri", docsUri)
-                                .toString();
-                        //Ajout URI en attente
-                        uriList.add(uploadLink);
-                        WAITING_ANNOT_FILE_CHECK.put(docsUri, false); // Waiting file
-                        WAITING_ANNOT_INFORMATION.put(docsUri, docsM);
-                        // Run thread for waiting file
-                        THREAD_POOL.submit(new DocumentWaitingCheck(docsUri));
-                    }
-                    final Status waitingTimeStatus = new Status(
-                            "Timeout",
-                            StatusCodeMsg.INFO,
-                            " Timeout :"
-                            + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime")
-                            + " seconds");
-                    checkAnnots.statusList.add(waitingTimeStatus);
-                    postResponse = new ResponseFormPOST(checkAnnots.statusList);
-                    postResponse.getMetadata().setDatafiles(uriList);
-                } else {
-                    postResponse = new ResponseFormPOST(checkAnnots.statusList);
+            if (checkAnnots.statusList == null) { // Incorrect annotations
+                postResponse = new ResponseFormPOST();
+            } else if (checkAnnots.getDataState()) { // Correct annotations
+                List<String> uriList = new ArrayList<>();
+                Iterator<DocumentMetadataDTO> itdocsMetadata = documentsAnnotations.iterator();
+                while (itdocsMetadata.hasNext()) {
+                    DocumentMetadataDTO docsM = itdocsMetadata.next();
+                    //Construction des URI
+                    final UriBuilder uploadPath = uri.getBaseUriBuilder();
+                    String name = new StringBuilder("document")
+                            .append(ResourcesUtils.getUniqueID())
+                            .toString(); // docsM + idUni
+                    final String docsUri = Contexts.DOCUMENTS.toString() + "/" + name;
+                    final String uploadLink = uploadPath
+                            .path("documents")
+                            .path("upload")
+                            .queryParam("uri", docsUri)
+                            .toString();
+                    //Ajout URI en attente
+                    uriList.add(uploadLink);
+                    WAITING_ANNOT_FILE_CHECK.put(docsUri, false); // Waiting file
+                    WAITING_ANNOT_INFORMATION.put(docsUri, docsM);
+                    // Run thread for waiting file
+                    THREAD_POOL.submit(new DocumentWaitingCheck(docsUri));
                 }
-                return Response.status(checkAnnots.getHttpStatus()).entity(postResponse).build();
+                final Status waitingTimeStatus = new Status(
+                        "Timeout",
+                        StatusCodeMsg.INFO,
+                        " Timeout :"
+                        + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime")
+                        + " seconds");
+                checkAnnots.statusList.add(waitingTimeStatus);
+                postResponse = new ResponseFormPOST(checkAnnots.statusList);
+                postResponse.getMetadata().setDatafiles(uriList);
             } else {
-                return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST()).build();
+                postResponse = new ResponseFormPOST(checkAnnots.statusList);
             }
+            return Response.status(checkAnnots.getHttpStatus()).entity(postResponse).build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST()).build();
         }
     }
 
@@ -214,12 +205,7 @@ public class DocumentResourceService extends ResourceService {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postDocumentFile(
@@ -227,67 +213,65 @@ public class DocumentResourceService extends ResourceService {
             @ApiParam(value = "URI given from \"/documents\" path for upload") @QueryParam("uri") @URL String docUri,
             @Context HttpHeaders headers,
             @Context HttpServletRequest request) throws Exception {
-        try (sparql) {
-            ResponseFormPOST postResponse;
-            List<Status> statusList = new ArrayList();
+        ResponseFormPOST postResponse;
+        List<Status> statusList = new ArrayList();
 
-            // Existing annotation
-            if (!WAITING_ANNOT_FILE_CHECK.containsKey(docUri)) {
-                statusList.add(new Status("No waiting file", "Error", "No waiting file for the following uri : " + docUri));
-                postResponse = new ResponseFormPOST(statusList);
-                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
-            }
-
-            if (headers != null && headers.getLength() <= 0) {
-                statusList.add(new Status("File error", "Error", "File Size : " + headers.getLength() + " octets"));
-                postResponse = new ResponseFormPOST(statusList);
-                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
-            }
-
-            // Check md5 checksum 
-            String hash = getHash(file);
-            if (hash != null && !WAITING_ANNOT_INFORMATION.get(docUri).getChecksum().equals(hash)) {
-                statusList.add(new Status("MD5 error", "Error", "Checksum MD5 doesn't match. Corrupted File."));
-                postResponse = new ResponseFormPOST(statusList);
-                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
-            }
-
-            String media = WAITING_ANNOT_INFORMATION.get(docUri).getDocumentType();
-            media = media.substring(media.lastIndexOf("#") + 1, media.length());
-
-            DocumentRdf4jDAO documentsDao = new DocumentRdf4jDAO(sparql);
-            if (request.getRemoteAddr() != null) {
-                documentsDao.remoteUserAdress = request.getRemoteAddr();
-            }
-            documentsDao.user = userSession.getUser();
-            final POSTResultsReturn insertAnnotationJSON
-                    = documentsDao.insert(Arrays.asList(WAITING_ANNOT_INFORMATION.get(docUri)), file);
-
-            postResponse = new ResponseFormPOST(insertAnnotationJSON.statusList);
-
-            if (insertAnnotationJSON.getDataState()) { // JSON file state
-                WAITING_ANNOT_FILE_CHECK.remove(docUri);
-                WAITING_ANNOT_INFORMATION.remove(docUri);
-                if (insertAnnotationJSON.getHttpStatus() == Response.Status.CREATED) {
-                    postResponse.getMetadata().setDatafiles((ArrayList) insertAnnotationJSON.createdResources);
-                    final URI newUri = new URI(uri.getPath());
-                    // Need to use event instead of "if" condition
-                    if (media.equals("ShinyAppPackage")) {
-                        ShinyProxyService shinyProxyProcess = new ShinyProxyService();
-                        new Thread(() -> shinyProxyProcess.reload()).start();
-                    }
-
-                    return Response
-                            .status(insertAnnotationJSON.getHttpStatus())
-                            .location(newUri)
-                            .entity(postResponse)
-                            .build();
-                } else {
-                    return Response.status(insertAnnotationJSON.getHttpStatus()).entity(postResponse).build();
-                }
-            }
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormPOST()).build();
+        // Existing annotation
+        if (!WAITING_ANNOT_FILE_CHECK.containsKey(docUri)) {
+            statusList.add(new Status("No waiting file", "Error", "No waiting file for the following uri : " + docUri));
+            postResponse = new ResponseFormPOST(statusList);
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
+
+        if (headers != null && headers.getLength() <= 0) {
+            statusList.add(new Status("File error", "Error", "File Size : " + headers.getLength() + " octets"));
+            postResponse = new ResponseFormPOST(statusList);
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        }
+
+        // Check md5 checksum 
+        String hash = getHash(file);
+        if (hash != null && !WAITING_ANNOT_INFORMATION.get(docUri).getChecksum().equals(hash)) {
+            statusList.add(new Status("MD5 error", "Error", "Checksum MD5 doesn't match. Corrupted File."));
+            postResponse = new ResponseFormPOST(statusList);
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        }
+
+        String media = WAITING_ANNOT_INFORMATION.get(docUri).getDocumentType();
+        media = media.substring(media.lastIndexOf("#") + 1, media.length());
+
+        DocumentRdf4jDAO documentsDao = new DocumentRdf4jDAO(sparql);
+        if (request.getRemoteAddr() != null) {
+            documentsDao.remoteUserAdress = request.getRemoteAddr();
+        }
+        documentsDao.user = userSession.getUser();
+        final POSTResultsReturn insertAnnotationJSON
+                = documentsDao.insert(Arrays.asList(WAITING_ANNOT_INFORMATION.get(docUri)), file);
+
+        postResponse = new ResponseFormPOST(insertAnnotationJSON.statusList);
+
+        if (insertAnnotationJSON.getDataState()) { // JSON file state
+            WAITING_ANNOT_FILE_CHECK.remove(docUri);
+            WAITING_ANNOT_INFORMATION.remove(docUri);
+            if (insertAnnotationJSON.getHttpStatus() == Response.Status.CREATED) {
+                postResponse.getMetadata().setDatafiles((ArrayList) insertAnnotationJSON.createdResources);
+                final URI newUri = new URI(uri.getPath());
+                // Need to use event instead of "if" condition
+                if (media.equals("ShinyAppPackage")) {
+                    ShinyProxyService shinyProxyProcess = new ShinyProxyService();
+                    new Thread(() -> shinyProxyProcess.reload()).start();
+                }
+
+                return Response
+                        .status(insertAnnotationJSON.getHttpStatus())
+                        .location(newUri)
+                        .entity(postResponse)
+                        .build();
+            } else {
+                return Response.status(insertAnnotationJSON.getHttpStatus()).entity(postResponse).build();
+            }
+        }
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormPOST()).build();
     }
 
     private String getHash(File in) {
@@ -309,33 +293,26 @@ public class DocumentResourceService extends ResourceService {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDocumentsType(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
-        try (sparql) {
-            DocumentRdf4jDAO documentsDao = new DocumentRdf4jDAO(sparql);
-            Status errorStatus = null;
-            try {
-                ArrayList<String> documentCategories = documentsDao.getDocumentsTypes();
-                if (documentCategories.isEmpty()) {
-                    return Response.status(Response.Status.NOT_FOUND).entity(new ResponseFormGET()).build();
-                }
-                return Response
-                        .status(Response.Status.OK)
-                        .entity(new ResultForm<>(limit, page, documentCategories, false))
-                        .build();
-            } catch (RepositoryException | MalformedQueryException | QueryEvaluationException ex) {
-                errorStatus = new Status("Error", StatusCodeMsg.ERR, ex.getMessage());
+        DocumentRdf4jDAO documentsDao = new DocumentRdf4jDAO(sparql);
+        Status errorStatus = null;
+        try {
+            ArrayList<String> documentCategories = documentsDao.getDocumentsTypes();
+            if (documentCategories.isEmpty()) {
+                return Response.status(Response.Status.NOT_FOUND).entity(new ResponseFormGET()).build();
             }
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormGET(errorStatus)).build();
+            return Response
+                    .status(Response.Status.OK)
+                    .entity(new ResultForm<>(limit, page, documentCategories, false))
+                    .build();
+        } catch (RepositoryException | MalformedQueryException | QueryEvaluationException ex) {
+            errorStatus = new Status("Error", StatusCodeMsg.ERR, ex.getMessage());
         }
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormGET(errorStatus)).build();
     }
 
     /**
@@ -365,12 +342,7 @@ public class DocumentResourceService extends ResourceService {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDocumentsMetadataBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
@@ -385,51 +357,49 @@ public class DocumentResourceService extends ResourceService {
             @ApiParam(value = "Search by concerned item", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("concernedItem") @URL String concernedItem,
             @ApiParam(value = "Search by status", example = DocumentationAnnotation.EXAMPLE_DOCUMENT_STATUS) @QueryParam("status") String status,
             @ApiParam(value = "Sort results by date", allowableValues = DocumentationAnnotation.EXAMPLE_SORTING_ALLOWABLE_VALUES) @QueryParam("sortByDate") @SortingValue String sortByDate) throws Exception {
-        try (sparql) {
-            //SILEX:conception
-            //Pour l'instant la recherche de documents liés à un élément se fait sur un seul élément. 
-            //Par la suite il faudra la faire sur une liste d'éléments
-            //\SILEX:conception
-            DocumentRdf4jDAO documentDao = new DocumentRdf4jDAO(sparql);
+        //SILEX:conception
+        //Pour l'instant la recherche de documents liés à un élément se fait sur un seul élément. 
+        //Par la suite il faudra la faire sur une liste d'éléments
+        //\SILEX:conception
+        DocumentRdf4jDAO documentDao = new DocumentRdf4jDAO(sparql);
 
-            if (uri != null) {
-                documentDao.uri = uri;
-            }
-            if (documentType != null) {
-                documentDao.documentType = documentType;
-            }
-            if (creator != null) {
-                documentDao.creator = creator;
-            }
-            if (language != null) {
-                documentDao.language = language;
-            }
-            if (title != null) {
-                documentDao.title = title;
-            }
-            if (creationDate != null) {
-                documentDao.creationDate = creationDate;
-            }
-            if (extension != null) {
-                documentDao.format = extension;
-            }
-            if (concernedItem != null) {
-                documentDao.concernedItemsUris.add(concernedItem);
-            }
-            if (status != null) {
-                documentDao.status = status;
-            }
-            // Sort the result list by date, descending by default
-            if (sortByDate != null) {
-                documentDao.sortByDate = sortByDate;
-            }
-
-            documentDao.user = userSession.getUser();
-            documentDao.setPage(page);
-            documentDao.setPageSize(limit);
-
-            return getDocumentsMetadata(documentDao);
+        if (uri != null) {
+            documentDao.uri = uri;
         }
+        if (documentType != null) {
+            documentDao.documentType = documentType;
+        }
+        if (creator != null) {
+            documentDao.creator = creator;
+        }
+        if (language != null) {
+            documentDao.language = language;
+        }
+        if (title != null) {
+            documentDao.title = title;
+        }
+        if (creationDate != null) {
+            documentDao.creationDate = creationDate;
+        }
+        if (extension != null) {
+            documentDao.format = extension;
+        }
+        if (concernedItem != null) {
+            documentDao.concernedItemsUris.add(concernedItem);
+        }
+        if (status != null) {
+            documentDao.status = status;
+        }
+        // Sort the result list by date, descending by default
+        if (sortByDate != null) {
+            documentDao.sortByDate = sortByDate;
+        }
+
+        documentDao.user = userSession.getUser();
+        documentDao.setPage(page);
+        documentDao.setPageSize(limit);
+
+        return getDocumentsMetadata(documentDao);
     }
 
     /**
@@ -450,12 +420,7 @@ public class DocumentResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getDocumentByUri(
             @ApiParam(
@@ -481,44 +446,37 @@ public class DocumentResourceService extends ResourceService {
         @ApiResponse(code = 404, message = "Document not found"),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putDocumentMetadata(
             @ApiParam(value = "Json document metadata") ArrayList<DocumentMetadataDTO> documentsMetadata,
             @Context HttpServletRequest context) throws Exception {
-        try (sparql) {
-            AbstractResultForm postResponse = null;
+        AbstractResultForm postResponse = null;
 
-            if (documentsMetadata != null && !documentsMetadata.isEmpty()) {
-                DocumentRdf4jDAO documentRdf4jDao = new DocumentRdf4jDAO(sparql);
-                if (documentRdf4jDao.remoteUserAdress != null) {
-                    documentRdf4jDao.remoteUserAdress = context.getRemoteAddr();
-                }
-                documentRdf4jDao.user = userSession.getUser();
-
-                // Check data and update database
-                POSTResultsReturn result = documentRdf4jDao.checkAndUpdateList(documentsMetadata);
-
-                if (result.getHttpStatus().equals(Response.Status.OK)) { // 200: users updated
-                    postResponse = new ResponseFormPOST(result.statusList);
-                    return Response.status(result.getHttpStatus()).entity(postResponse).build();
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                }
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
-            } else {
-                postResponse = new ResponseFormPOST(
-                        new Status("Request error", StatusCodeMsg.ERR, "Empty document(s) to update"));
-                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        if (documentsMetadata != null && !documentsMetadata.isEmpty()) {
+            DocumentRdf4jDAO documentRdf4jDao = new DocumentRdf4jDAO(sparql);
+            if (documentRdf4jDao.remoteUserAdress != null) {
+                documentRdf4jDao.remoteUserAdress = context.getRemoteAddr();
             }
+            documentRdf4jDao.user = userSession.getUser();
+
+            // Check data and update database
+            POSTResultsReturn result = documentRdf4jDao.checkAndUpdateList(documentsMetadata);
+
+            if (result.getHttpStatus().equals(Response.Status.OK)) { // 200: users updated
+                postResponse = new ResponseFormPOST(result.statusList);
+                return Response.status(result.getHttpStatus()).entity(postResponse).build();
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+            }
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } else {
+            postResponse = new ResponseFormPOST(
+                    new Status("Request error", StatusCodeMsg.ERR, "Empty document(s) to update"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
 

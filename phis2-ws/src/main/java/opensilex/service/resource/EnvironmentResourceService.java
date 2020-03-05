@@ -8,8 +8,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -47,6 +45,7 @@ import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.EnvironmentMeasure;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -113,45 +112,38 @@ public class EnvironmentResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Deprecated
     public Response postEnvironmentMeasures(
             @ApiParam(value = DocumentationAnnotation.ENVIRONMENT_POST_DEFINITION) @Valid ArrayList<EnvironmentMeasurePostDTO> environmentMeasures,
             @Context HttpServletRequest context) throws Exception {
-        try (sparql) {
-            AbstractResultForm postResponse = null;
+        AbstractResultForm postResponse = null;
 
-            if (environmentMeasures != null && !environmentMeasures.isEmpty()) {
-                EnvironmentMeasureDAO environmentDAO = new EnvironmentMeasureDAO(sparql);
+        if (environmentMeasures != null && !environmentMeasures.isEmpty()) {
+            EnvironmentMeasureDAO environmentDAO = new EnvironmentMeasureDAO(sparql);
 
-                environmentDAO.user = userSession.getUser();
+            environmentDAO.user = userSession.getUser();
 
-                POSTResultsReturn result = environmentDAO.checkAndInsert(environmentMeasurePostDTOsToEnvironmentMeasure(environmentMeasures));
-                result.statusList.add(deprecatedStatus);
+            POSTResultsReturn result = environmentDAO.checkAndInsert(environmentMeasurePostDTOsToEnvironmentMeasure(environmentMeasures));
+            result.statusList.add(deprecatedStatus);
 
-                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                }
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
-            } else {
-                List statusList = new ArrayList<>();
-                statusList.add(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty environment measure(s) to add"));
-                statusList.add(deprecatedStatus);
-                postResponse = new ResponseFormPOST(statusList);
-                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
             }
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } else {
+            List statusList = new ArrayList<>();
+            statusList.add(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty environment measure(s) to add"));
+            statusList.add(deprecatedStatus);
+            postResponse = new ResponseFormPOST(statusList);
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
 
@@ -208,12 +200,7 @@ public class EnvironmentResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     @Deprecated
     public Response getEnvironmentMeasures(
@@ -225,51 +212,49 @@ public class EnvironmentResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
     ) throws Exception {
-        try (sparql) {
-            // 1. Initialize environmentDAO with parameters
-            EnvironmentMeasureDAO environmentMeasureDAO = new EnvironmentMeasureDAO(sparql);
+        // 1. Initialize environmentDAO with parameters
+        EnvironmentMeasureDAO environmentMeasureDAO = new EnvironmentMeasureDAO(sparql);
 
-            environmentMeasureDAO.variableUri = variable;
+        environmentMeasureDAO.variableUri = variable;
 
-            environmentMeasureDAO.startDate = startDate;
-            environmentMeasureDAO.endDate = endDate;
-            environmentMeasureDAO.sensorUri = sensor;
-            environmentMeasureDAO.dateSortAsc = dateSortAsc;
+        environmentMeasureDAO.startDate = startDate;
+        environmentMeasureDAO.endDate = endDate;
+        environmentMeasureDAO.sensorUri = sensor;
+        environmentMeasureDAO.dateSortAsc = dateSortAsc;
 
-            environmentMeasureDAO.user = userSession.getUser();
-            environmentMeasureDAO.setPage(page);
-            environmentMeasureDAO.setPageSize(pageSize);
+        environmentMeasureDAO.user = userSession.getUser();
+        environmentMeasureDAO.setPage(page);
+        environmentMeasureDAO.setPageSize(pageSize);
 
-            // 2. Get environment measures count
-            int totalCount = environmentMeasureDAO.count();
+        // 2. Get environment measures count
+        int totalCount = environmentMeasureDAO.count();
 
-            // 3. Get environment measures page list
-            ArrayList<EnvironmentMeasure> measures = environmentMeasureDAO.allPaginate();
+        // 3. Get environment measures page list
+        ArrayList<EnvironmentMeasure> measures = environmentMeasureDAO.allPaginate();
 
-            // 4. Initialize return variables
-            ArrayList<EnvironmentMeasureDTO> list = new ArrayList<>();
-            ArrayList<Status> statusList = new ArrayList<>();
-            ResultForm<EnvironmentMeasureDTO> getResponse;
-            statusList.add(deprecatedStatus);
-            if (measures == null) {
-                // Request failure
-                getResponse = new ResultForm<>(0, 0, list, true, 0);
-                return noResultFound(getResponse, statusList);
-            } else if (measures.isEmpty()) {
-                // No results
-                getResponse = new ResultForm<>(0, 0, list, true, 0);
-                return noResultFound(getResponse, statusList);
-            } else {
-                // Convert all measures object to DTO's
-                measures.forEach((measure) -> {
-                    list.add(new EnvironmentMeasureDTO(measure));
-                });
+        // 4. Initialize return variables
+        ArrayList<EnvironmentMeasureDTO> list = new ArrayList<>();
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResultForm<EnvironmentMeasureDTO> getResponse;
+        statusList.add(deprecatedStatus);
+        if (measures == null) {
+            // Request failure
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else if (measures.isEmpty()) {
+            // No results
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else {
+            // Convert all measures object to DTO's
+            measures.forEach((measure) -> {
+                list.add(new EnvironmentMeasureDTO(measure));
+            });
 
-                // Return list of DTO
-                getResponse = new ResultForm<>(environmentMeasureDAO.getPageSize(), environmentMeasureDAO.getPage(), list, true, totalCount);
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
+            // Return list of DTO
+            getResponse = new ResultForm<>(environmentMeasureDAO.getPageSize(), environmentMeasureDAO.getPage(), list, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
 }

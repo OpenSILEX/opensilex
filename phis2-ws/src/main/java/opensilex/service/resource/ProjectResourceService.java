@@ -8,8 +8,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -117,33 +115,31 @@ public class ProjectResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PROJECT_POST_DATA_DEFINITION) @Valid ArrayList<ProjectPostDTO> projects,
             @Context HttpServletRequest context,
             @Context SecurityContext securityContext) throws Exception {
-        try (sparql) {
-            AbstractResultForm postResponse = null;
+        AbstractResultForm postResponse = null;
 
-            if (projects != null && !projects.isEmpty()) {
-                UserModel user = (UserModel) securityContext.getUserPrincipal();
-                ProjectDAO projectDAO = new ProjectDAO(sparql, user.getLang());
+        if (projects != null && !projects.isEmpty()) {
+            UserModel user = (UserModel) securityContext.getUserPrincipal();
+            ProjectDAO projectDAO = new ProjectDAO(sparql, user.getLang());
 
-                List<ProjectModel> projectModels = new ArrayList<>();
-                for (ProjectPostDTO project : projects) {
-                    projectModels.add(project.getProjectModel(sparql, user.getLang()));
-                };
+            List<ProjectModel> projectModels = new ArrayList<>();
+            for (ProjectPostDTO project : projects) {
+                projectModels.add(project.getProjectModel(sparql, user.getLang()));
+            };
 
-                projectDAO.create(projectModels);
+            projectDAO.create(projectModels);
 
-                List<String> uriList = new ArrayList<>();
-                for (ProjectModel projectModel : projectModels) {
-                    uriList.add(projectModel.getUri().toString());
-                }
-
-                postResponse = new ResponseFormPOST(new ArrayList<Status>());
-                postResponse.getMetadata().setDatafiles(uriList);
-                return Response.status(Response.Status.CREATED).entity(postResponse).build();
-
-            } else {
-                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty project(s) to add"));
-                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+            List<String> uriList = new ArrayList<>();
+            for (ProjectModel projectModel : projectModels) {
+                uriList.add(projectModel.getUri().toString());
             }
+
+            postResponse = new ResponseFormPOST(new ArrayList<Status>());
+            postResponse.getMetadata().setDatafiles(uriList);
+            return Response.status(Response.Status.CREATED).entity(postResponse).build();
+
+        } else {
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty project(s) to add"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
 
@@ -178,49 +174,47 @@ public class ProjectResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PROJECT_POST_DATA_DEFINITION) @Valid ArrayList<ProjectPutDTO> projects,
             @Context HttpServletRequest context,
             @Context SecurityContext securityContext) throws Exception {
-        try (sparql) {
-            AbstractResultForm putResponse = null;
+        AbstractResultForm putResponse = null;
 
-            UserModel user = (UserModel) securityContext.getUserPrincipal();
-            ProjectDAO projectDAO = new ProjectDAO(sparql, user.getLang());
+        UserModel user = (UserModel) securityContext.getUserPrincipal();
+        ProjectDAO projectDAO = new ProjectDAO(sparql, user.getLang());
 
-            List<ProjectModel> projectModels = new ArrayList<>();
-            SPARQLClassObjectMapper<SPARQLResourceModel> projectMapper = SPARQLClassObjectMapper.getForClass(ProjectModel.class);
-            for (ProjectPutDTO project : projects) {
-                ProjectModel projectModel = project.getProjectModel(sparql, user.getLang());
-                projectModels.add(projectModel);
+        List<ProjectModel> projectModels = new ArrayList<>();
+        SPARQLClassObjectMapper<SPARQLResourceModel> projectMapper = SPARQLClassObjectMapper.getForClass(ProjectModel.class);
+        for (ProjectPutDTO project : projects) {
+            ProjectModel projectModel = project.getProjectModel(sparql, user.getLang());
+            projectModels.add(projectModel);
 
-                if (project.getFinancialReference() != null && !project.getFinancialReference().isEmpty()) {
-                    sparql.updateObjectRelation(
-                            projectMapper.getDefaultGraph(),
-                            projectModel.getUri(),
-                            hasFinancialReference,
-                            project.getFinancialReference()
-                    );
-                }
-
-                if (project.getFinancialFunding() != null && !project.getFinancialFunding().isEmpty()) {
-                    sparql.updateObjectRelation(
-                            projectMapper.getDefaultGraph(),
-                            projectModel.getUri(),
-                            hasFinancialFunding,
-                            new URI(project.getFinancialFunding())
-                    );
-                }
-
-            };
-
-            projectDAO.update(projectModels);
-
-            List<String> uriList = new ArrayList<>();
-            for (ProjectModel projectModel : projectModels) {
-                uriList.add(projectModel.getUri().toString());
+            if (project.getFinancialReference() != null && !project.getFinancialReference().isEmpty()) {
+                sparql.updateObjectRelation(
+                        projectMapper.getDefaultGraph(),
+                        projectModel.getUri(),
+                        hasFinancialReference,
+                        project.getFinancialReference()
+                );
             }
 
-            putResponse = new ResponseFormPOST(new ArrayList<Status>());
-            putResponse.getMetadata().setDatafiles(uriList);
-            return Response.status(Response.Status.OK).entity(putResponse).build();
+            if (project.getFinancialFunding() != null && !project.getFinancialFunding().isEmpty()) {
+                sparql.updateObjectRelation(
+                        projectMapper.getDefaultGraph(),
+                        projectModel.getUri(),
+                        hasFinancialFunding,
+                        new URI(project.getFinancialFunding())
+                );
+            }
+
+        };
+
+        projectDAO.update(projectModels);
+
+        List<String> uriList = new ArrayList<>();
+        for (ProjectModel projectModel : projectModels) {
+            uriList.add(projectModel.getUri().toString());
         }
+
+        putResponse = new ResponseFormPOST(new ArrayList<Status>());
+        putResponse.getMetadata().setDatafiles(uriList);
+        return Response.status(Response.Status.OK).entity(putResponse).build();
     }
 
     /**
@@ -259,7 +253,7 @@ public class ProjectResourceService extends ResourceService {
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ProjectDetailDTO> getResponse;
 
-        try (sparql) {
+        try {
             UserModel user = (UserModel) securityContext.getUserPrincipal();
             ProjectDAO projectDAO = new ProjectDAO(sparql, user.getLang());
 
@@ -339,34 +333,32 @@ public class ProjectResourceService extends ResourceService {
             @ApiParam(value = "Search by home page", example = DocumentationAnnotation.EXAMPLE_PROJECT_HOME_PAGE) @QueryParam("homePage") String homePage,
             @ApiParam(value = "Search by objective", example = DocumentationAnnotation.EXAMPLE_PROJECT_OBJECTIVE) @QueryParam("objective") String objective,
             @Context SecurityContext securityContext) throws Exception {
-        try (sparql) {
-            UserModel user = (UserModel) securityContext.getUserPrincipal();
-            ProjectDAO projectDAO = new ProjectDAO(sparql, user.getLang());
+        UserModel user = (UserModel) securityContext.getUserPrincipal();
+        ProjectDAO projectDAO = new ProjectDAO(sparql, user.getLang());
 
-            if (StringUtils.isEmpty(financialFundingLang)) {
-                financialFundingLang = DEFAULT_LANGUAGE;
+        if (StringUtils.isEmpty(financialFundingLang)) {
+            financialFundingLang = DEFAULT_LANGUAGE;
+        }
+
+        //1. Get projects
+        ListWithPagination<ProjectModel> results = projectDAO.search(uri, name, shortname, description, startDate, endDate, homePage, objective, new ArrayList<OrderBy>(), page, pageSize);
+
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResultForm<ProjectDTO> getResponse;
+        if (results.getTotal() == 0) {
+            getResponse = new ResultForm<>(0, 0, new ArrayList<ProjectDTO>(), true);
+            return noResultFound(getResponse, statusList);
+        } else {
+
+            ArrayList<ProjectDTO> projectsToReturn = new ArrayList<ProjectDTO>();
+            for (ProjectModel project : results.getList()) {
+                ProjectDTO projectDTO = new ProjectDTO(project, sparql, user.getLang());
+                projectsToReturn.add(projectDTO);
             }
 
-            //1. Get projects
-            ListWithPagination<ProjectModel> results = projectDAO.search(uri, name, shortname, description, startDate, endDate, homePage, objective, new ArrayList<OrderBy>(), page, pageSize);
-
-            ArrayList<Status> statusList = new ArrayList<>();
-            ResultForm<ProjectDTO> getResponse;
-            if (results.getTotal() == 0) {
-                getResponse = new ResultForm<>(0, 0, new ArrayList<ProjectDTO>(), true);
-                return noResultFound(getResponse, statusList);
-            } else {
-
-                ArrayList<ProjectDTO> projectsToReturn = new ArrayList<ProjectDTO>();
-                for (ProjectModel project : results.getList()) {
-                    ProjectDTO projectDTO = new ProjectDTO(project, sparql, user.getLang());
-                    projectsToReturn.add(projectDTO);
-                }
-
-                getResponse = new ResultForm<ProjectDTO>(results.getPageSize(), results.getPage(), projectsToReturn, true, results.getTotal());
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
+            getResponse = new ResultForm<ProjectDTO>(results.getPageSize(), results.getPage(), projectsToReturn, true, results.getTotal());
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
 }

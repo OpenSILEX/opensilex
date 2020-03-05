@@ -8,8 +8,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -24,7 +22,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import opensilex.service.PropertiesFileManager;
-import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.TripletDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resource.dto.TripletDTO;
@@ -32,6 +29,7 @@ import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -90,48 +88,41 @@ public class TripletsResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     public Response postTriplets(
             @ApiParam(value = DocumentationAnnotation.TRIPLET_POST_DATA_DEFINITION, required = true) @Required @Valid ArrayList<ArrayList<TripletDTO>> triplets,
             @Context HttpServletRequest context) throws Exception {
-        try (sparql) {
-            //SILEX:warning
-            // blank nodes are not implemented yet
-            //\SILEX:warning
+        //SILEX:warning
+        // blank nodes are not implemented yet
+        //\SILEX:warning
 
-            AbstractResultForm postResponse = null;
+        AbstractResultForm postResponse = null;
 
-            //If there are at least one list of triplets
-            if (triplets != null && !triplets.isEmpty()) {
-                TripletDAO tripletDao = new TripletDAO(sparql);
-                if (context.getRemoteAddr() != null) {
-                    tripletDao.remoteUserAdress = context.getRemoteAddr();
-                }
-                tripletDao.user = userSession.getUser();
-
-                String graphUri = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "baseURI")
-                        + Long.toString(new Timestamp(System.currentTimeMillis()).getTime());
-
-                POSTResultsReturn insertResult = tripletDao.checkAndInsert(triplets, graphUri);
-
-                //triplets inserted
-                if (insertResult.getHttpStatus().equals(Response.Status.CREATED)) {
-                    postResponse = new ResponseFormPOST(insertResult.statusList);
-                    postResponse.getMetadata().setDatafiles(insertResult.getCreatedResources());
-                } else if (insertResult.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || insertResult.getHttpStatus().equals(Response.Status.OK)
-                        || insertResult.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    postResponse = new ResponseFormPOST(insertResult.statusList);
-                }
-                return Response.status(insertResult.getHttpStatus()).entity(postResponse).build();
-            } else {
-                return Response.status(Response.Status.FORBIDDEN).entity(new ResponseFormPOST()).build();
+        //If there are at least one list of triplets
+        if (triplets != null && !triplets.isEmpty()) {
+            TripletDAO tripletDao = new TripletDAO(sparql);
+            if (context.getRemoteAddr() != null) {
+                tripletDao.remoteUserAdress = context.getRemoteAddr();
             }
+            tripletDao.user = userSession.getUser();
+
+            String graphUri = PropertiesFileManager.getConfigFileProperty("sesame_rdf_config", "baseURI")
+                    + Long.toString(new Timestamp(System.currentTimeMillis()).getTime());
+
+            POSTResultsReturn insertResult = tripletDao.checkAndInsert(triplets, graphUri);
+
+            //triplets inserted
+            if (insertResult.getHttpStatus().equals(Response.Status.CREATED)) {
+                postResponse = new ResponseFormPOST(insertResult.statusList);
+                postResponse.getMetadata().setDatafiles(insertResult.getCreatedResources());
+            } else if (insertResult.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || insertResult.getHttpStatus().equals(Response.Status.OK)
+                    || insertResult.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(insertResult.statusList);
+            }
+            return Response.status(insertResult.getHttpStatus()).entity(postResponse).build();
+        } else {
+            return Response.status(Response.Status.FORBIDDEN).entity(new ResponseFormPOST()).build();
         }
     }
 }

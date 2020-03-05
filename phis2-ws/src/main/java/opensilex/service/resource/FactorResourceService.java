@@ -8,8 +8,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -42,6 +40,7 @@ import opensilex.service.model.Factor;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -122,12 +121,7 @@ public class FactorResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFactorsByCriteria(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
@@ -135,40 +129,38 @@ public class FactorResourceService extends ResourceService {
             @ApiParam(value = "Search by factor uri", example = DocumentationAnnotation.EXAMPLE_FACTOR_URI) @QueryParam("uri") @URL String uri,
             @ApiParam(value = "Search by factor label", example = DocumentationAnnotation.EXAMPLE_FACTOR_LABEL) @QueryParam("label") String label,
             @ApiParam(value = "Select language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language) throws Exception {
-        try (sparql) {
-            //1. Initialize factor filter
-            Factor filter = new Factor();
-            filter.setUri(uri);
-            filter.setLabel(label);
+        //1. Initialize factor filter
+        Factor filter = new Factor();
+        filter.setUri(uri);
+        filter.setLabel(label);
 
-            if (language == null) {
-                language = DEFAULT_LANGUAGE;
-            }
+        if (language == null) {
+            language = DEFAULT_LANGUAGE;
+        }
 
-            FactorDAO factorDAO = new FactorDAO(sparql);
-            factorDAO.setPage(page);
-            factorDAO.setPageSize(pageSize);
+        FactorDAO factorDAO = new FactorDAO(sparql);
+        factorDAO.setPage(page);
+        factorDAO.setPageSize(pageSize);
 
-            //2. Get number of factor result
-            int totalCount = factorDAO.countWithFilter(filter.getUri(), filter.getLabel(), language);
-            //3. Get factors result
-            ArrayList<Factor> searchResult = factorDAO.findAll(filter.getUri(), filter.getLabel(), language);
+        //2. Get number of factor result
+        int totalCount = factorDAO.countWithFilter(filter.getUri(), filter.getLabel(), language);
+        //3. Get factors result
+        ArrayList<Factor> searchResult = factorDAO.findAll(filter.getUri(), filter.getLabel(), language);
 
-            //4. Send result
-            ResultForm<FactorDTO> getResponse;
-            ArrayList<Status> statusList = new ArrayList<>();
-            ArrayList<FactorDTO> factorToReturn = new ArrayList<>();
-            if (searchResult == null || searchResult.isEmpty()) {
-                //No result found
-                getResponse = new ResultForm<>(0, 0, factorToReturn, true, 0);
-                return noResultFound(getResponse, statusList);
-            } else {
-                factorToReturn = factorToFactorDTO(searchResult);
-                //Return the result list
-                getResponse = new ResultForm<>(pageSize, page, factorToReturn, true, totalCount);
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
+        //4. Send result
+        ResultForm<FactorDTO> getResponse;
+        ArrayList<Status> statusList = new ArrayList<>();
+        ArrayList<FactorDTO> factorToReturn = new ArrayList<>();
+        if (searchResult == null || searchResult.isEmpty()) {
+            //No result found
+            getResponse = new ResultForm<>(0, 0, factorToReturn, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else {
+            factorToReturn = factorToFactorDTO(searchResult);
+            //Return the result list
+            getResponse = new ResultForm<>(pageSize, page, factorToReturn, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
 
@@ -188,43 +180,35 @@ public class FactorResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postUnit(@ApiParam(value = DocumentationAnnotation.FACTOR_POST_DATA_DEFINITION, required = true) @Valid ArrayList<FactorDTO> factor,
             @Context HttpServletRequest context) throws Exception {
-        try (sparql) {
-            AbstractResultForm postResponse = null;
-            if (factor != null && !factor.isEmpty()) {
-                FactorDAO factorDao = new FactorDAO(sparql);
-                if (context.getRemoteAddr() != null) {
-                    factorDao.remoteUserAdress = context.getRemoteAddr();
-                }
-
-                factorDao.user = userSession.getUser();
-
-                POSTResultsReturn result = factorDao.checkAndInsert(factor);
-
-                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                    //Code 201: factor inserted
-                    postResponse = new ResponseFormPOST(result.statusList);
-                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                }
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
-            } else {
-                postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty factor(s) to add"));
-                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        AbstractResultForm postResponse = null;
+        if (factor != null && !factor.isEmpty()) {
+            FactorDAO factorDao = new FactorDAO(sparql);
+            if (context.getRemoteAddr() != null) {
+                factorDao.remoteUserAdress = context.getRemoteAddr();
             }
+
+            factorDao.user = userSession.getUser();
+
+            POSTResultsReturn result = factorDao.checkAndInsert(factor);
+
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                //Code 201: factor inserted
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+            }
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } else {
+            postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty factor(s) to add"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
-
 }

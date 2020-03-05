@@ -8,8 +8,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -45,6 +43,7 @@ import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.view.model.provenance.Provenance;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -122,39 +121,32 @@ public class ProvenanceResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response post(
             @ApiParam(value = DocumentationAnnotation.PROVENACE_POST_DEFINITION) @Valid ArrayList<ProvenancePostDTO> provenances,
             @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
-        try (sparql) {
-            if (provenances != null && !provenances.isEmpty()) {
-                ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
+        if (provenances != null && !provenances.isEmpty()) {
+            ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
 
-                provenanceDAO.user = userSession.getUser();
+            provenanceDAO.user = userSession.getUser();
 
-                POSTResultsReturn result = provenanceDAO.checkAndInsert(provenancePostDTOsToprovenances(provenances));
+            POSTResultsReturn result = provenanceDAO.checkAndInsert(provenancePostDTOsToprovenances(provenances));
 
-                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                }
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
-            } else {
-                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty provenances(s) to add"));
-                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
             }
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } else {
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty provenances(s) to add"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
 
@@ -185,35 +177,28 @@ public class ProvenanceResourceService extends ResourceService {
         @ApiResponse(code = 404, message = "Update provenance(s) not found"),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response put(
             @ApiParam(value = DocumentationAnnotation.PROVENACE_POST_DEFINITION) @Valid ArrayList<ProvenanceDTO> provenances,
             @Context HttpServletRequest context) throws Exception {
         AbstractResultForm putResponse = null;
-        try (sparql) {
-            ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
 
-            provenanceDAO.user = userSession.getUser();
+        provenanceDAO.user = userSession.getUser();
 
-            POSTResultsReturn result = provenanceDAO.checkAndUpdate(provenanceDTOsToprovenances(provenances));
+        POSTResultsReturn result = provenanceDAO.checkAndUpdate(provenanceDTOsToprovenances(provenances));
 
-            if (result.getHttpStatus().equals(Response.Status.OK)
-                    || result.getHttpStatus().equals(Response.Status.CREATED)) {
-                putResponse = new ResponseFormPOST(result.statusList);
-                putResponse.getMetadata().setDatafiles(result.createdResources);
-            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                    || result.getHttpStatus().equals(Response.Status.OK)
-                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                putResponse = new ResponseFormPOST(result.statusList);
-            }
-            return Response.status(result.getHttpStatus()).entity(putResponse).build();
+        if (result.getHttpStatus().equals(Response.Status.OK)
+                || result.getHttpStatus().equals(Response.Status.CREATED)) {
+            putResponse = new ResponseFormPOST(result.statusList);
+            putResponse.getMetadata().setDatafiles(result.createdResources);
+        } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                || result.getHttpStatus().equals(Response.Status.OK)
+                || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+            putResponse = new ResponseFormPOST(result.statusList);
         }
+        return Response.status(result.getHttpStatus()).entity(putResponse).build();
     }
 
     /**
@@ -257,12 +242,7 @@ public class ProvenanceResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getProvenances(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
@@ -271,48 +251,46 @@ public class ProvenanceResourceService extends ResourceService {
             @ApiParam(value = "Search by provenance label", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_LABEL) @QueryParam("label") String label,
             @ApiParam(value = "Search by comment", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_COMMENT) @QueryParam("comment") String comment,
             @ApiParam(value = "Search by json filter", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_METADATA) @QueryParam("jsonValueFilter") String jsonValueFilter) throws Exception {
-        try (sparql) {
-            ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
 
-            Provenance searchProvenance = new Provenance();
-            searchProvenance.setUri(uri);
-            searchProvenance.setLabel(label);
-            searchProvenance.setComment(comment);
+        Provenance searchProvenance = new Provenance();
+        searchProvenance.setUri(uri);
+        searchProvenance.setLabel(label);
+        searchProvenance.setComment(comment);
 
-            provenanceDAO.user = userSession.getUser();
-            provenanceDAO.setPage(page);
-            provenanceDAO.setPageSize(pageSize);
+        provenanceDAO.user = userSession.getUser();
+        provenanceDAO.setPage(page);
+        provenanceDAO.setPageSize(pageSize);
 
-            // 2. Get provenances count
-            int totalCount = provenanceDAO.count(searchProvenance, jsonValueFilter);
+        // 2. Get provenances count
+        int totalCount = provenanceDAO.count(searchProvenance, jsonValueFilter);
 
-            // 3. Get environment measures page list
-            ArrayList<Provenance> measures = provenanceDAO.getProvenances(searchProvenance, jsonValueFilter);
+        // 3. Get environment measures page list
+        ArrayList<Provenance> measures = provenanceDAO.getProvenances(searchProvenance, jsonValueFilter);
 
-            // 4. Initialize returned provenances
-            ArrayList<ProvenanceDTO> list = new ArrayList<>();
-            ArrayList<Status> statusList = new ArrayList<>();
-            ResultForm<ProvenanceDTO> getResponse;
+        // 4. Initialize returned provenances
+        ArrayList<ProvenanceDTO> list = new ArrayList<>();
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResultForm<ProvenanceDTO> getResponse;
 
-            if (measures == null) {
-                // Request failure
-                getResponse = new ResultForm<>(0, 0, list, true, 0);
-                return noResultFound(getResponse, statusList);
-            } else if (measures.isEmpty()) {
-                // No results
-                getResponse = new ResultForm<>(0, 0, list, true, 0);
-                return noResultFound(getResponse, statusList);
-            } else {
-                // Convert all provenances object to DTO's
-                measures.forEach((provenance) -> {
-                    list.add(new ProvenanceDTO(provenance));
-                });
+        if (measures == null) {
+            // Request failure
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else if (measures.isEmpty()) {
+            // No results
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else {
+            // Convert all provenances object to DTO's
+            measures.forEach((provenance) -> {
+                list.add(new ProvenanceDTO(provenance));
+            });
 
-                // Return list of DTO
-                getResponse = new ResultForm<>(provenanceDAO.getPageSize(), provenanceDAO.getPage(), list, true, totalCount);
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
+            // Return list of DTO
+            getResponse = new ResultForm<>(provenanceDAO.getPageSize(), provenanceDAO.getPage(), list, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
 }

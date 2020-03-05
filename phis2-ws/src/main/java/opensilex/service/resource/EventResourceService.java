@@ -8,8 +8,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -55,6 +53,7 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.model.Event;
 import opensilex.service.resource.dto.event.EventPutDTO;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -117,13 +116,7 @@ public class EventResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = GlobalWebserviceValues.AUTHORIZATION,
-                required = true, dataType = GlobalWebserviceValues.DATA_TYPE_STRING,
-                paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")})
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEvents(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE)
@@ -159,53 +152,51 @@ public class EventResourceService extends ResourceService {
             @QueryParam("endDate")
             @Date({DateFormat.YMDTHMSZZ, DateFormat.YMD}) String endDate
     ) throws Exception {
-        try (sparql) {
-            EventDAO eventDAO = new EventDAO(sparql);
-            eventDAO.user = userSession.getUser();
+        EventDAO eventDAO = new EventDAO(sparql);
+        eventDAO.user = userSession.getUser();
 
-            // Search events with parameters
-            ArrayList<Event> events;
+        // Search events with parameters
+        ArrayList<Event> events;
+        try {
+            java.util.Date start = DateFormat.parseDateOrDateTime(startDate, false);
+            java.util.Date end = DateFormat.parseDateOrDateTime(endDate, true);
+
+            events = eventDAO.find(
+                    uri,
+                    type,
+                    concernedItemLabel,
+                    concernedItemUri,
+                    start,
+                    end,
+                    page,
+                    pageSize);
+            // handle exceptions
+        } catch (DAOPersistenceException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            return getResponseWhenPersistenceError(ex);
+        } catch (ParseException ex) {
+            return getResponseWhenInternalError(ex);
+        }
+
+        if (events == null) {
+            return getGETResponseWhenNoResult();
+        } else if (events.isEmpty()) {
+            return getGETResponseWhenNoResult();
+        } else {
+            // count results
             try {
                 java.util.Date start = DateFormat.parseDateOrDateTime(startDate, false);
                 java.util.Date end = DateFormat.parseDateOrDateTime(endDate, true);
+                int totalCount = eventDAO.count(uri, type, concernedItemLabel, concernedItemUri, start, end);
+                return getGETResponseWhenSuccess(events, pageSize, page, totalCount);
 
-                events = eventDAO.find(
-                        uri,
-                        type,
-                        concernedItemLabel,
-                        concernedItemUri,
-                        start,
-                        end,
-                        page,
-                        pageSize);
-                // handle exceptions
+                // handle count exceptions
             } catch (DAOPersistenceException ex) {
                 LOGGER.error(ex.getMessage(), ex);
                 return getResponseWhenPersistenceError(ex);
-            } catch (ParseException ex) {
+            } catch (Exception ex) {
+                LOGGER.error(ex.getMessage(), ex);
                 return getResponseWhenInternalError(ex);
-            }
-
-            if (events == null) {
-                return getGETResponseWhenNoResult();
-            } else if (events.isEmpty()) {
-                return getGETResponseWhenNoResult();
-            } else {
-                // count results
-                try {
-                    java.util.Date start = DateFormat.parseDateOrDateTime(startDate, false);
-                    java.util.Date end = DateFormat.parseDateOrDateTime(endDate, true);
-                    int totalCount = eventDAO.count(uri, type, concernedItemLabel, concernedItemUri, start, end);
-                    return getGETResponseWhenSuccess(events, pageSize, page, totalCount);
-
-                    // handle count exceptions
-                } catch (DAOPersistenceException ex) {
-                    LOGGER.error(ex.getMessage(), ex);
-                    return getResponseWhenPersistenceError(ex);
-                } catch (Exception ex) {
-                    LOGGER.error(ex.getMessage(), ex);
-                    return getResponseWhenInternalError(ex);
-                }
             }
         }
     }
@@ -236,14 +227,7 @@ public class EventResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION,
-                required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING,
-                paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEventByUri(
             @ApiParam(
@@ -251,11 +235,9 @@ public class EventResourceService extends ResourceService {
                     required = true,
                     example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
             @PathParam("uri") @URL @Required String uri) throws Exception {
-        try (sparql) {
-            EventDAO eventDAO = new EventDAO(sparql);
-            eventDAO.user = userSession.getUser();
-            return getGETByUriResponseFromDAOResults(eventDAO, uri);
-        }
+        EventDAO eventDAO = new EventDAO(sparql);
+        eventDAO.user = userSession.getUser();
+        return getGETByUriResponseFromDAOResults(eventDAO, uri);
     }
 
     /**
@@ -287,12 +269,7 @@ public class EventResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEventAnnotations(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE)
@@ -306,11 +283,9 @@ public class EventResourceService extends ResourceService {
                     required = true,
                     example = DocumentationAnnotation.EXAMPLE_EVENT_URI)
             @PathParam("uri") @URL @Required String uri) throws Exception {
-        try (sparql) {
-            AnnotationResourceService annotationResourceService = new AnnotationResourceService(sparql);
-            annotationResourceService.userSession = userSession;
-            return annotationResourceService.getAnnotationsBySearch(pageSize, page, null, null, uri, null, null, true);
-        }
+        AnnotationResourceService annotationResourceService = new AnnotationResourceService(sparql);
+        annotationResourceService.userSession = userSession;
+        return annotationResourceService.getAnnotationsBySearch(pageSize, page, null, null, uri, null, null, true);
     }
 
     /**
@@ -337,14 +312,7 @@ public class EventResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION,
-                required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING,
-                paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response post(
@@ -377,30 +345,20 @@ public class EventResourceService extends ResourceService {
         @ApiResponse(code = 404, message = "Event(s) not found"),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = GlobalWebserviceValues.AUTHORIZATION,
-                required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING,
-                paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response put(
             @ApiParam(value = DocumentationAnnotation.EVENT_PUT_DEFINITION) @Valid ArrayList<EventPutDTO> eventsDtos,
             @Context HttpServletRequest context) throws Exception {
-        try (sparql) {
-            // Set DAO
-            EventDAO objectDao = new EventDAO(sparql);
-            objectDao.user = userSession.getUser();
-            if (context.getRemoteAddr() != null) {
-                objectDao.remoteUserAdress = context.getRemoteAddr();
-            }
-
-            // Get POST response
-            return getPutResponse(objectDao, eventsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_EVENT_LIST);
+        // Set DAO
+        EventDAO objectDao = new EventDAO(sparql);
+        objectDao.user = userSession.getUser();
+        if (context.getRemoteAddr() != null) {
+            objectDao.remoteUserAdress = context.getRemoteAddr();
         }
+
+        // Get POST response
+        return getPutResponse(objectDao, eventsDtos, context.getRemoteAddr(), StatusCodeMsg.EMPTY_EVENT_LIST);
     }
 
     /**
@@ -420,15 +378,7 @@ public class EventResourceService extends ResourceService {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.INTERNAL_SERVER_ERROR),})
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = GlobalWebserviceValues.AUTHORIZATION,
-                required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING,
-                paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteEventUri(
@@ -438,15 +388,13 @@ public class EventResourceService extends ResourceService {
                     example = DocumentationAnnotation.EXAMPLE_ANNOTATION_URI
             )
             @Valid @NotNull DeleteDTO deleteDTO, @Context HttpServletRequest context) throws Exception {
-        try (sparql) {
-            EventDAO eventDao = new EventDAO(sparql);
-            eventDao.user = userSession.getUser();
-            if (context.getRemoteAddr() != null) {
-                eventDao.setRemoteUserAdress(context.getRemoteAddr());
-            }
-            Response response = buildDeleteObjectsByUriResponse(eventDao, deleteDTO, "Event(s) deleted");
-            return response;
+        EventDAO eventDao = new EventDAO(sparql);
+        eventDao.user = userSession.getUser();
+        if (context.getRemoteAddr() != null) {
+            eventDao.setRemoteUserAdress(context.getRemoteAddr());
         }
+        Response response = buildDeleteObjectsByUriResponse(eventDao, deleteDTO, "Event(s) deleted");
+        return response;
     }
 
     @Override

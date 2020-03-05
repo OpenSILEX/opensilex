@@ -7,11 +7,8 @@
 //******************************************************************************
 package opensilex.service.resource;
 
-import com.jcraft.jsch.SftpException;
 import com.twmacinta.util.MD5;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -57,7 +54,6 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
-import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.ImageMetadataMongoDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
@@ -74,6 +70,7 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.ImageMetadata;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -144,68 +141,61 @@ public class ImageResourceService extends ResourceService {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postImagesMetadata(@Context HttpHeaders headers,
             @ApiParam(value = "JSON Image metadata", required = true) @Valid List<ImageMetadataDTO> imagesMetadata) throws Exception {
-        try (sparql) {
-            AbstractResultForm postResponse;
-            if (imagesMetadata != null && !imagesMetadata.isEmpty()) {
-                ImageMetadataMongoDAO imageMongoDao = new ImageMetadataMongoDAO(sparql);
-                imageMongoDao.user = userSession.getUser();
+        AbstractResultForm postResponse;
+        if (imagesMetadata != null && !imagesMetadata.isEmpty()) {
+            ImageMetadataMongoDAO imageMongoDao = new ImageMetadataMongoDAO(sparql);
+            imageMongoDao.user = userSession.getUser();
 
-                final POSTResultsReturn checkImageMetadata = imageMongoDao.check(imagesMetadata);
+            final POSTResultsReturn checkImageMetadata = imageMongoDao.check(imagesMetadata);
 
-                if (checkImageMetadata.statusList == null) { // bad metadata
-                    postResponse = new ResponseFormPOST();
-                } else if (checkImageMetadata.getDataState()) {// metadata ok
-                    ArrayList<String> imagesUploadLinks = new ArrayList<>();
-                    String lastGeneratedUri = null;
-                    for (ImageMetadataDTO imageMetadata : imagesMetadata) {
-                        try {
-                            final UriBuilder uploadPath = uri.getBaseUriBuilder();
+            if (checkImageMetadata.statusList == null) { // bad metadata
+                postResponse = new ResponseFormPOST();
+            } else if (checkImageMetadata.getDataState()) {// metadata ok
+                ArrayList<String> imagesUploadLinks = new ArrayList<>();
+                String lastGeneratedUri = null;
+                for (ImageMetadataDTO imageMetadata : imagesMetadata) {
+                    try {
+                        final UriBuilder uploadPath = uri.getBaseUriBuilder();
 
-                            // generates the imageUri
-                            final String imageUri = UriGenerator.generateNewInstanceUri(
-                                    sparql,
-                                    Oeso.CONCEPT_IMAGE.toString(),
-                                    Year.now().toString(),
-                                    lastGeneratedUri);
-                            lastGeneratedUri = imageUri;
+                        // generates the imageUri
+                        final String imageUri = UriGenerator.generateNewInstanceUri(
+                                sparql,
+                                Oeso.CONCEPT_IMAGE.toString(),
+                                Year.now().toString(),
+                                lastGeneratedUri);
+                        lastGeneratedUri = imageUri;
 
-                            final String uploadLink = uploadPath.path("images").path("upload").queryParam("uri", imageUri).toString();
-                            imagesUploadLinks.add(uploadLink);
+                        final String uploadLink = uploadPath.path("images").path("upload").queryParam("uri", imageUri).toString();
+                        imagesUploadLinks.add(uploadLink);
 
-                            WAITING_METADATA_FILE_CHECK.put(imageUri, false); // file waiting
-                            ImageMetadata imageMetadataToSave = imageMetadata.createObjectFromDTO();
-                            imageMetadataToSave.setUri(imageUri);
-                            WAITING_METADATA_INFORMATION.put(imageUri, imageMetadataToSave);
-                            // Launch the thread for the expected file
-                            THREAD_POOL.submit(new ImageWaitingCheck(imageUri));
-                        } catch (Exception ex) { // In the images case, no exception should be raised
-                            java.util.logging.Logger.getLogger(ImageResourceService.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                        WAITING_METADATA_FILE_CHECK.put(imageUri, false); // file waiting
+                        ImageMetadata imageMetadataToSave = imageMetadata.createObjectFromDTO();
+                        imageMetadataToSave.setUri(imageUri);
+                        WAITING_METADATA_INFORMATION.put(imageUri, imageMetadataToSave);
+                        // Launch the thread for the expected file
+                        THREAD_POOL.submit(new ImageWaitingCheck(imageUri));
+                    } catch (Exception ex) { // In the images case, no exception should be raised
+                        java.util.logging.Logger.getLogger(ImageResourceService.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    final Status waitingTimeStatus = new Status(
-                            StatusCodeMsg.TIMEOUT,
-                            StatusCodeMsg.INFO,
-                            " Timeout :" + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime") + " seconds");
-                    checkImageMetadata.statusList.add(waitingTimeStatus);
-                    postResponse = new ResponseFormPOST(checkImageMetadata.statusList);
-                    postResponse.getMetadata().setDatafiles(imagesUploadLinks);
-                } else {
-                    postResponse = new ResponseFormPOST(checkImageMetadata.statusList);
                 }
-                return Response.status(checkImageMetadata.getHttpStatus()).entity(postResponse).build();
+                final Status waitingTimeStatus = new Status(
+                        StatusCodeMsg.TIMEOUT,
+                        StatusCodeMsg.INFO,
+                        " Timeout :" + PropertiesFileManager.getConfigFileProperty("service", "waitingFileTime") + " seconds");
+                checkImageMetadata.statusList.add(waitingTimeStatus);
+                postResponse = new ResponseFormPOST(checkImageMetadata.statusList);
+                postResponse.getMetadata().setDatafiles(imagesUploadLinks);
             } else {
-                return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST()).build();
+                postResponse = new ResponseFormPOST(checkImageMetadata.statusList);
             }
+            return Response.status(checkImageMetadata.getHttpStatus()).entity(postResponse).build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST()).build();
         }
     }
 
@@ -279,12 +269,7 @@ public class ImageResourceService extends ResourceService {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+      @ApiProtected
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postImageFile(
@@ -320,7 +305,7 @@ public class ImageResourceService extends ResourceService {
         final String serverImagesDirectory = getServerImagesDirectory();
         final String webAccessImagesDirectory = getWebAccessImagesDirectory();
 
-        try (sparql) {
+        try {
             WAITING_METADATA_FILE_CHECK.put(imageUri, Boolean.TRUE);
             fs.createDirectories(Paths.get(serverImagesDirectory));
             fs.writeFile(Paths.get(serverImagesDirectory, serverFileName), in);
@@ -435,12 +420,7 @@ public class ImageResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getImagesBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
@@ -451,38 +431,36 @@ public class ImageResourceService extends ResourceService {
             @ApiParam(value = "Search by interval - start date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("startDate") @opensilex.service.resource.validation.interfaces.Date(DateFormat.YMDHMSZ) String startDate,
             @ApiParam(value = "Search by interval - end date", example = DocumentationAnnotation.EXAMPLE_IMAGE_DATE) @QueryParam("endDate") @opensilex.service.resource.validation.interfaces.Date(DateFormat.YMDHMSZ) String endDate,
             @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") @URL String sensor) throws Exception {
-        try (sparql) {
-            ImageMetadataMongoDAO imageMetadataMongoDao = new ImageMetadataMongoDAO(sparql);
+        ImageMetadataMongoDAO imageMetadataMongoDao = new ImageMetadataMongoDAO(sparql);
 
-            if (uri != null) {
-                imageMetadataMongoDao.uri = uri;
-            }
-            if (rdfType != null) {
-                imageMetadataMongoDao.rdfType = rdfType;
-            }
-            if (concernedItems != null) {
-                imageMetadataMongoDao.concernedItems = new ArrayList<>(Arrays.asList(concernedItems.split(";")));
-            }
-            if (startDate != null) {
-                //SILEX:todo
-                //check date format
-                imageMetadataMongoDao.startDate = startDate;
-                //\SILEX:todo
-                if (endDate != null) {
-                    imageMetadataMongoDao.endDate = endDate;
-                } else {
-                    imageMetadataMongoDao.endDate = new SimpleDateFormat(DateFormat.YMD.toString()).format(new Date());
-                }
-            }
-            if (sensor != null) {
-                imageMetadataMongoDao.sensor = sensor;
-            }
-
-            imageMetadataMongoDao.user = userSession.getUser();
-            imageMetadataMongoDao.setPage(page);
-            imageMetadataMongoDao.setPageSize(pageSize);
-
-            return getImagesData(imageMetadataMongoDao);
+        if (uri != null) {
+            imageMetadataMongoDao.uri = uri;
         }
+        if (rdfType != null) {
+            imageMetadataMongoDao.rdfType = rdfType;
+        }
+        if (concernedItems != null) {
+            imageMetadataMongoDao.concernedItems = new ArrayList<>(Arrays.asList(concernedItems.split(";")));
+        }
+        if (startDate != null) {
+            //SILEX:todo
+            //check date format
+            imageMetadataMongoDao.startDate = startDate;
+            //\SILEX:todo
+            if (endDate != null) {
+                imageMetadataMongoDao.endDate = endDate;
+            } else {
+                imageMetadataMongoDao.endDate = new SimpleDateFormat(DateFormat.YMD.toString()).format(new Date());
+            }
+        }
+        if (sensor != null) {
+            imageMetadataMongoDao.sensor = sensor;
+        }
+
+        imageMetadataMongoDao.user = userSession.getUser();
+        imageMetadataMongoDao.setPage(page);
+        imageMetadataMongoDao.setPageSize(pageSize);
+
+        return getImagesData(imageMetadataMongoDao);
     }
 }

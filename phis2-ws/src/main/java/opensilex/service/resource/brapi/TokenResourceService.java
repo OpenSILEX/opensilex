@@ -67,7 +67,6 @@ import org.opensilex.sparql.service.SPARQLService;
  */
 @Api(value = "/brapi/v1/token")
 @Path("brapi/v1/token")
-@Singleton
 public class TokenResourceService implements BrapiCall {
 
     final static Logger LOGGER = LoggerFactory.getLogger(TokenResourceService.class);
@@ -131,7 +130,6 @@ public class TokenResourceService implements BrapiCall {
         @ApiResponse(code = 400, message = "Bad informations send by user"),
         @ApiResponse(code = 200, message = "Access token already exist and send again to user")})
     public Response getToken(@ApiParam(value = "JSON object needed to login") @Valid TokenDTO jsonToken, @Context UriInfo ui) throws Exception {
-        try (sparql) {
             ArrayList<Status> statusList = new ArrayList<>();
 
             // Check grant type
@@ -207,7 +205,6 @@ public class TokenResourceService implements BrapiCall {
                 return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST(statusList)).build();
             }
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST(statusList)).build();
-        }
     }
 
     /**

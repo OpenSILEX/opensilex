@@ -8,8 +8,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -72,6 +70,7 @@ import opensilex.service.ontology.Oeso;
 import opensilex.service.resource.dto.data.DataSearchDTO;
 import opensilex.service.resource.dto.data.FileDescriptionWebPathPostDTO;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -118,12 +117,7 @@ public class DataResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postData(
@@ -233,12 +227,7 @@ public class DataResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getData(
             @ApiParam(value = "Search by variable uri", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI, required = true) @QueryParam("variable") @URL @Required String variable,
@@ -314,12 +303,7 @@ public class DataResourceService extends ResourceService {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postDataFile(
@@ -327,32 +311,30 @@ public class DataResourceService extends ResourceService {
             @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
-        try (sparql) {
-            FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO(sparql);
-            AbstractResultForm postResponse = null;
-            try {
-                FileDescription description = descriptionDto.createObjectFromDTO();
-                description.setFilename(fileContentDisposition.getFileName());
-                POSTResultsReturn result = fileDescriptionDao.checkAndInsert(
-                        description,
-                        file,
-                        fs
-                );
+        FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO(sparql);
+        AbstractResultForm postResponse = null;
+        try {
+            FileDescription description = descriptionDto.createObjectFromDTO();
+            description.setFilename(fileContentDisposition.getFileName());
+            POSTResultsReturn result = fileDescriptionDao.checkAndInsert(
+                    description,
+                    file,
+                    fs
+            );
 
-                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                }
-
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
-            } catch (ParseException e) {
-                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
-                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
             }
+
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } catch (ParseException e) {
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
 
@@ -390,63 +372,56 @@ public class DataResourceService extends ResourceService {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postDataFilePaths(
             @ApiParam(value = "Metadata of the file", required = true) @NotNull @Valid List<FileDescriptionWebPathPostDTO> descriptionsDto,
             @Context HttpServletRequest context
     ) throws Exception {
-        try (sparql) {
-            FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO(sparql);
-            AbstractResultForm postResponse = null;
-            POSTResultsReturn result = new POSTResultsReturn();
+        FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO(sparql);
+        AbstractResultForm postResponse = null;
+        POSTResultsReturn result = new POSTResultsReturn();
 
-            try {
-                String fileStorageDirectory = PropertiesFileManager.getConfigFileProperty("service", "uploadFileServerDirectory");
-                List<FileDescription> descriptions = new ArrayList<>();
-                Optional<String> checkFsError = Optional.empty();
+        try {
+            String fileStorageDirectory = PropertiesFileManager.getConfigFileProperty("service", "uploadFileServerDirectory");
+            List<FileDescription> descriptions = new ArrayList<>();
+            Optional<String> checkFsError = Optional.empty();
 
-                for (FileDescriptionWebPathPostDTO description : descriptionsDto) {
-                    FileDescription fileDescription = description.createObjectFromDTO();
-                    // get the the absolute file path according to the fileStorageDirectory
-                    File realFile = new File(FilenameUtils.separatorsToSystem(fileStorageDirectory + '/' + fileDescription.getPath()));
-                    checkFsError = checkFilePath(realFile);
-                    if (checkFsError.isPresent()) { // check if a error msg was returned
-                        break;
-                    }
-                    fileDescription.setPath(realFile.getAbsolutePath());
-                    fileDescription.setFilename(realFile.getName());
-                    descriptions.add(fileDescription);
+            for (FileDescriptionWebPathPostDTO description : descriptionsDto) {
+                FileDescription fileDescription = description.createObjectFromDTO();
+                // get the the absolute file path according to the fileStorageDirectory
+                File realFile = new File(FilenameUtils.separatorsToSystem(fileStorageDirectory + '/' + fileDescription.getPath()));
+                checkFsError = checkFilePath(realFile);
+                if (checkFsError.isPresent()) { // check if a error msg was returned
+                    break;
                 }
-
-                if (!checkFsError.isPresent()) { // check if a error msg was returned
-                    result = fileDescriptionDao.checkAndInsertWithWebPath(descriptions); // insert description with DAO
-                } else {
-                    result.setErrorMsg(checkFsError.get());
-                    result.setDataState(false);
-                    result.setHttpStatus(Response.Status.BAD_REQUEST);
-                }
-
-                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                }
-
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
-            } catch (ParseException e) {
-                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
-                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+                fileDescription.setPath(realFile.getAbsolutePath());
+                fileDescription.setFilename(realFile.getName());
+                descriptions.add(fileDescription);
             }
+
+            if (!checkFsError.isPresent()) { // check if a error msg was returned
+                result = fileDescriptionDao.checkAndInsertWithWebPath(descriptions); // insert description with DAO
+            } else {
+                result.setErrorMsg(checkFsError.get());
+                result.setDataState(false);
+                result.setHttpStatus(Response.Status.BAD_REQUEST);
+            }
+
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+            }
+
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } catch (ParseException e) {
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
 
@@ -494,24 +469,22 @@ public class DataResourceService extends ResourceService {
             @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @PathParam("fileUri") @URL @Required String fileUri,
             @Context HttpServletResponse response
     ) throws Exception {
-        try (sparql) {
-            FileDescriptionDAO dataFileDao = new FileDescriptionDAO(sparql);
+        FileDescriptionDAO dataFileDao = new FileDescriptionDAO(sparql);
 
-            FileDescription description = dataFileDao.findFileDescriptionByUri(fileUri);
+        FileDescription description = dataFileDao.findFileDescriptionByUri(fileUri);
 
-            if (description == null) {
-                return Response.status(404).build();
-            }
+        if (description == null) {
+            return Response.status(404).build();
+        }
 
-            try {
-                FileInputStream stream = new FileInputStream(new File(description.getPath()));
+        try {
+            FileInputStream stream = new FileInputStream(new File(description.getPath()));
 
-                return Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM)
-                        .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"") //optional
-                        .build();
-            } catch (FileNotFoundException ex) {
-                return Response.status(404).build();
-            }
+            return Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"") //optional
+                    .build();
+        } catch (FileNotFoundException ex) {
+            return Response.status(404).build();
         }
     }
 
@@ -546,29 +519,22 @@ public class DataResourceService extends ResourceService {
         @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataFileDescription(
             @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI)
             @PathParam("fileUri") @URL @Required String fileUri,
             @Context HttpServletResponse response
     ) throws Exception {
-        try (sparql) {
-            FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO(sparql);
+        FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO(sparql);
 
-            FileDescription description = fileDescriptionDao.findFileDescriptionByUri(fileUri);
+        FileDescription description = fileDescriptionDao.findFileDescriptionByUri(fileUri);
 
-            if (description == null) {
-                return Response.status(404).build();
-            }
-
-            return Response.status(Response.Status.OK).entity(new FileDescriptionDTO(description)).build();
+        if (description == null) {
+            return Response.status(404).build();
         }
+
+        return Response.status(Response.Status.OK).entity(new FileDescriptionDTO(description)).build();
     }
 
     /**
@@ -608,12 +574,7 @@ public class DataResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataFileDescriptionsBySearch(
             @ApiParam(value = "Search by rdf type uri", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI, required = true) @QueryParam("rdfType") @URL @Required String rdfType,
@@ -626,60 +587,58 @@ public class DataResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
     ) throws Exception {
-        try (sparql) {
-            FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO(sparql);
+        FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO(sparql);
 
-            // 1. Set all varaibles corresponding to the search
-            fileDescriptionDao.user = userSession.getUser();
-            fileDescriptionDao.setPage(page);
-            fileDescriptionDao.setPageSize(pageSize);
+        // 1. Set all varaibles corresponding to the search
+        fileDescriptionDao.user = userSession.getUser();
+        fileDescriptionDao.setPage(page);
+        fileDescriptionDao.setPageSize(pageSize);
 
-            // 2. Get data count
-            long totalCount = fileDescriptionDao.count(
-                    rdfType,
-                    startDate,
-                    endDate,
-                    provenance,
-                    jsonValueFilter,
-                    concernedItems,
-                    dateSortAsc
-            );
+        // 2. Get data count
+        long totalCount = fileDescriptionDao.count(
+                rdfType,
+                startDate,
+                endDate,
+                provenance,
+                jsonValueFilter,
+                concernedItems,
+                dateSortAsc
+        );
 
-            // 3. Get data page list
-            ArrayList<FileDescription> dataList = fileDescriptionDao.search(
-                    rdfType,
-                    startDate,
-                    endDate,
-                    provenance,
-                    jsonValueFilter,
-                    concernedItems,
-                    dateSortAsc
-            );
+        // 3. Get data page list
+        ArrayList<FileDescription> dataList = fileDescriptionDao.search(
+                rdfType,
+                startDate,
+                endDate,
+                provenance,
+                jsonValueFilter,
+                concernedItems,
+                dateSortAsc
+        );
 
-            // 4. Initialize return variables
-            ArrayList<FileDescriptionDTO> list = new ArrayList<>();
-            ArrayList<Status> statusList = new ArrayList<>();
-            ResultForm<FileDescriptionDTO> getResponse;
+        // 4. Initialize return variables
+        ArrayList<FileDescriptionDTO> list = new ArrayList<>();
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResultForm<FileDescriptionDTO> getResponse;
 
-            if (dataList == null) {
-                // Request failure
-                getResponse = new ResultForm<>(0, 0, list, true, 0);
-                return noResultFound(getResponse, statusList);
-            } else if (dataList.isEmpty()) {
-                // No results
-                getResponse = new ResultForm<>(0, 0, list, true, 0);
-                return noResultFound(getResponse, statusList);
-            } else {
-                // Convert all measures object to DTO's
-                dataList.forEach((data) -> {
-                    list.add(new FileDescriptionDTO(data));
-                });
+        if (dataList == null) {
+            // Request failure
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else if (dataList.isEmpty()) {
+            // No results
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else {
+            // Convert all measures object to DTO's
+            dataList.forEach((data) -> {
+                list.add(new FileDescriptionDTO(data));
+            });
 
-                // Return list of DTO
-                getResponse = new ResultForm<>(fileDescriptionDao.getPageSize(), fileDescriptionDao.getPage(), list, true, (int) totalCount);
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
+            // Return list of DTO
+            getResponse = new ResultForm<>(fileDescriptionDao.getPageSize(), fileDescriptionDao.getPage(), list, true, (int) totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
 
@@ -746,12 +705,7 @@ public class DataResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataSearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
@@ -765,100 +719,98 @@ public class DataResourceService extends ResourceService {
             @ApiParam(value = "Search by provenance label", example = DocumentationAnnotation.EXAMPLE_PROVENANCE_LABEL) @QueryParam("provenanceLabel") String provenanceLabel,
             @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc
     ) throws Exception {
-        try (sparql) {
-            ArrayList<DataSearchDTO> list = new ArrayList<>();
-            ArrayList<Status> statusList = new ArrayList<>();
-            ResultForm<DataSearchDTO> getResponse;
+        ArrayList<DataSearchDTO> list = new ArrayList<>();
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResultForm<DataSearchDTO> getResponse;
 
-            DataDAO dataDAO = new DataDAO();
+        DataDAO dataDAO = new DataDAO();
 
-            List<String> objectsUris = new ArrayList<>();
-            List<String> provenancesUris = new ArrayList<>();
+        List<String> objectsUris = new ArrayList<>();
+        List<String> provenancesUris = new ArrayList<>();
 
-            Map<String, List<String>> objectsUrisAndLabels = new HashMap<>();
-            Map<String, String> provenancesUrisAndLabels = new HashMap<>();
+        Map<String, List<String>> objectsUrisAndLabels = new HashMap<>();
+        Map<String, String> provenancesUrisAndLabels = new HashMap<>();
 
-            //1. Get list of objects uris corresponding to the label given if needed.
-            ScientificObjectRdf4jDAO scientificObjectDAO = new ScientificObjectRdf4jDAO(sparql);
-            if (objectUri != null && !objectUri.isEmpty()) {
-                objectsUrisAndLabels.put(objectUri, scientificObjectDAO.findLabelsForUri(objectUri));
-            } else if (objectLabel != null && !objectLabel.isEmpty()) { //We need to get the list of the uris of the scientific object with this label (like)
-                objectsUrisAndLabels = scientificObjectDAO.findUriAndLabelsByLabelAndRdfType(objectLabel, Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString());
-            }
+        //1. Get list of objects uris corresponding to the label given if needed.
+        ScientificObjectRdf4jDAO scientificObjectDAO = new ScientificObjectRdf4jDAO(sparql);
+        if (objectUri != null && !objectUri.isEmpty()) {
+            objectsUrisAndLabels.put(objectUri, scientificObjectDAO.findLabelsForUri(objectUri));
+        } else if (objectLabel != null && !objectLabel.isEmpty()) { //We need to get the list of the uris of the scientific object with this label (like)
+            objectsUrisAndLabels = scientificObjectDAO.findUriAndLabelsByLabelAndRdfType(objectLabel, Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString());
+        }
 
-            for (String uri : objectsUrisAndLabels.keySet()) {
-                objectsUris.add(uri);
-            }
+        for (String uri : objectsUrisAndLabels.keySet()) {
+            objectsUris.add(uri);
+        }
 
-            //2. Get list of provenances uris corresponding to the label given if needed.
-            ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
-            if (provenanceUri != null && !provenanceUri.isEmpty()) {
-                //If the provenance URI is given, we need the provenance label
-                provenancesUris.add(provenanceUri);
-            } else if (provenanceLabel != null && !provenanceLabel.isEmpty()) {
-                //If the provenance URI is empty and a label is given, we search the provenance(s) with the given label (like)
-                provenancesUrisAndLabels = provenanceDAO.findUriAndLabelsByLabel(provenanceLabel);
-            }
+        //2. Get list of provenances uris corresponding to the label given if needed.
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
+        if (provenanceUri != null && !provenanceUri.isEmpty()) {
+            //If the provenance URI is given, we need the provenance label
+            provenancesUris.add(provenanceUri);
+        } else if (provenanceLabel != null && !provenanceLabel.isEmpty()) {
+            //If the provenance URI is empty and a label is given, we search the provenance(s) with the given label (like)
+            provenancesUrisAndLabels = provenanceDAO.findUriAndLabelsByLabel(provenanceLabel);
+        }
 
-            for (String uri : provenancesUrisAndLabels.keySet()) {
-                provenancesUris.add(uri);
-            }
+        for (String uri : provenancesUrisAndLabels.keySet()) {
+            provenancesUris.add(uri);
+        }
 
-            //3. Get variable label
-            VariableDAO variableDAO = new VariableDAO(sparql);
-            if (!variableDAO.existAndIsVariable(variableUri)) {
-                // Request failure
-                getResponse = new ResultForm<>(0, 0, list, true, 0);
-                statusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown variable URI : " + variableUri));
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
-            }
-            String variableLabel = variableDAO.findLabelsForUri(variableUri).get(0);
+        //3. Get variable label
+        VariableDAO variableDAO = new VariableDAO(sparql);
+        if (!variableDAO.existAndIsVariable(variableUri)) {
+            // Request failure
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            statusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown variable URI : " + variableUri));
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.NOT_FOUND).entity(getResponse).build();
+        }
+        String variableLabel = variableDAO.findLabelsForUri(variableUri).get(0);
 
-            //4. Get count
-            Integer totalCount = dataDAO.count(variableUri, startDate, endDate, objectsUris, provenancesUris);
+        //4. Get count
+        Integer totalCount = dataDAO.count(variableUri, startDate, endDate, objectsUris, provenancesUris);
 
-            //5. Get data
-            List<Data> dataList = dataDAO.find(page, pageSize, variableUri, startDate, endDate, objectsUris, provenancesUris);
+        //5. Get data
+        List<Data> dataList = dataDAO.find(page, pageSize, variableUri, startDate, endDate, objectsUris, provenancesUris);
 
-            //6. Return result
-            if (dataList == null) {
-                // Request failure
-                getResponse = new ResultForm<>(0, 0, list, true, 0);
-                return noResultFound(getResponse, statusList);
-            } else if (dataList.isEmpty()) {
-                // No results
-                getResponse = new ResultForm<>(0, 0, list, true, 0);
-                return noResultFound(getResponse, statusList);
-            } else {
-                // Convert all data object to DTO's
-                for (Data data : dataList) {
-                    if (data.getObjectUri() != null && !objectsUrisAndLabels.containsKey(data.getObjectUri())) {
-                        //We need to get the labels of the object
-                        objectsUrisAndLabels.put(data.getObjectUri(), scientificObjectDAO.findLabelsForUri(data.getObjectUri()));
-                    }
-
-                    if (!provenancesUrisAndLabels.containsKey(data.getProvenanceUri())) {
-                        //We need to get the label of the provenance
-                        provenancesUrisAndLabels.put(data.getProvenanceUri(), provenanceDAO.findLabelByUri(data.getProvenanceUri()));
-                    }
-
-                    //Get provenance label
-                    String dataProvenanceLabel = provenancesUrisAndLabels.get(data.getProvenanceUri());
-                    //Get object labels
-                    List<String> dataObjectLabels = new ArrayList<>();
-                    if (objectsUrisAndLabels.get(data.getObjectUri()) != null) {
-                        dataObjectLabels = objectsUrisAndLabels.get(data.getObjectUri());
-                    }
-
-                    list.add(new DataSearchDTO(data, dataProvenanceLabel, dataObjectLabels, variableLabel));
+        //6. Return result
+        if (dataList == null) {
+            // Request failure
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else if (dataList.isEmpty()) {
+            // No results
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else {
+            // Convert all data object to DTO's
+            for (Data data : dataList) {
+                if (data.getObjectUri() != null && !objectsUrisAndLabels.containsKey(data.getObjectUri())) {
+                    //We need to get the labels of the object
+                    objectsUrisAndLabels.put(data.getObjectUri(), scientificObjectDAO.findLabelsForUri(data.getObjectUri()));
                 }
 
-                // Return list of DTO
-                getResponse = new ResultForm<>(pageSize, page, list, true, totalCount);
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
+                if (!provenancesUrisAndLabels.containsKey(data.getProvenanceUri())) {
+                    //We need to get the label of the provenance
+                    provenancesUrisAndLabels.put(data.getProvenanceUri(), provenanceDAO.findLabelByUri(data.getProvenanceUri()));
+                }
+
+                //Get provenance label
+                String dataProvenanceLabel = provenancesUrisAndLabels.get(data.getProvenanceUri());
+                //Get object labels
+                List<String> dataObjectLabels = new ArrayList<>();
+                if (objectsUrisAndLabels.get(data.getObjectUri()) != null) {
+                    dataObjectLabels = objectsUrisAndLabels.get(data.getObjectUri());
+                }
+
+                list.add(new DataSearchDTO(data, dataProvenanceLabel, dataObjectLabels, variableLabel));
             }
+
+            // Return list of DTO
+            getResponse = new ResultForm<>(pageSize, page, list, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
 }

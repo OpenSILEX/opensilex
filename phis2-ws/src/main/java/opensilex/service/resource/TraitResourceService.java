@@ -8,8 +8,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -46,6 +44,7 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Trait;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -80,43 +79,36 @@ public class TraitResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postTrait(@ApiParam(value = DocumentationAnnotation.TRAIT_POST_DATA_DEFINITION) @Valid ArrayList<TraitDTO> traits,
             @Context HttpServletRequest context) throws Exception {
-        try (sparql) {
 
-            AbstractResultForm postResponse = null;
-            if (traits != null && !traits.isEmpty()) {
-                TraitDAO traitDao = new TraitDAO(sparql);
-                if (context.getRemoteAddr() != null) {
-                    traitDao.remoteUserAdress = context.getRemoteAddr();
-                }
-
-                traitDao.user = userSession.getUser();
-
-                POSTResultsReturn result = traitDao.checkAndInsert(traits);
-
-                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                    //Code 201, traits insérés
-                    postResponse = new ResponseFormPOST(result.statusList);
-                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                }
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
-            } else {
-                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty traits(s) to add"));
-                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        AbstractResultForm postResponse = null;
+        if (traits != null && !traits.isEmpty()) {
+            TraitDAO traitDao = new TraitDAO(sparql);
+            if (context.getRemoteAddr() != null) {
+                traitDao.remoteUserAdress = context.getRemoteAddr();
             }
+
+            traitDao.user = userSession.getUser();
+
+            POSTResultsReturn result = traitDao.checkAndInsert(traits);
+
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                //Code 201, traits insérés
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+            }
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } else {
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty traits(s) to add"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
 
@@ -135,43 +127,36 @@ public class TraitResourceService extends ResourceService {
         @ApiResponse(code = 404, message = "Trait not found"),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putTrait(
             @ApiParam(value = DocumentationAnnotation.TRAIT_POST_DATA_DEFINITION) @Valid ArrayList<TraitDTO> traits,
             @Context HttpServletRequest context) throws Exception {
-        try (sparql) {
-            AbstractResultForm response = null;
-            if (traits != null && !traits.isEmpty()) {
-                TraitDAO traitDao = new TraitDAO(sparql);
-                if (context.getRemoteAddr() != null) {
-                    traitDao.remoteUserAdress = context.getRemoteAddr();
-                }
-
-                traitDao.user = userSession.getUser();
-
-                POSTResultsReturn result = traitDao.checkAndUpdate(traits);
-
-                if (result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.CREATED)) {
-                    response = new ResponseFormPOST(result.statusList);
-                    response.getMetadata().setDatafiles(result.createdResources);
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    response = new ResponseFormPOST(result.statusList);
-                }
-                return Response.status(result.getHttpStatus()).entity(response).build();
-            } else {
-                response = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty traits(s) to update"));
-                return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+        AbstractResultForm response = null;
+        if (traits != null && !traits.isEmpty()) {
+            TraitDAO traitDao = new TraitDAO(sparql);
+            if (context.getRemoteAddr() != null) {
+                traitDao.remoteUserAdress = context.getRemoteAddr();
             }
+
+            traitDao.user = userSession.getUser();
+
+            POSTResultsReturn result = traitDao.checkAndUpdate(traits);
+
+            if (result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.CREATED)) {
+                response = new ResponseFormPOST(result.statusList);
+                response.getMetadata().setDatafiles(result.createdResources);
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                response = new ResponseFormPOST(result.statusList);
+            }
+            return Response.status(result.getHttpStatus()).entity(response).build();
+        } else {
+            response = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty traits(s) to update"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
         }
     }
 
@@ -224,12 +209,7 @@ public class TraitResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTraitsBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
@@ -237,22 +217,20 @@ public class TraitResourceService extends ResourceService {
             @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_TRAIT_URI) @QueryParam("uri") @URL String uri,
             @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_TRAIT_LABEL) @QueryParam("label") String label
     ) throws Exception {
-        try (sparql) {
-            TraitDAO traitDao = new TraitDAO(sparql);
+        TraitDAO traitDao = new TraitDAO(sparql);
 
-            if (uri != null) {
-                traitDao.uri = uri;
-            }
-            if (label != null) {
-                traitDao.label = label;
-            }
-
-            traitDao.user = userSession.getUser();
-            traitDao.setPage(page);
-            traitDao.setPageSize(limit);
-
-            return getTraitsData(traitDao);
+        if (uri != null) {
+            traitDao.uri = uri;
         }
+        if (label != null) {
+            traitDao.label = label;
+        }
+
+        traitDao.user = userSession.getUser();
+        traitDao.setPage(page);
+        traitDao.setPageSize(limit);
+
+        return getTraitsData(traitDao);
     }
 
     /**
@@ -273,30 +251,23 @@ public class TraitResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTraitDetails(
             @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_TRAIT_URI, required = true) @PathParam("trait") @Required @URL String trait,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
-        try (sparql) {
-            if (trait == null) {
-                final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty trait URI");
-                return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
-            }
-
-            TraitDAO traitDao = new TraitDAO(sparql);
-            traitDao.uri = trait;
-            traitDao.setPageSize(limit);
-            traitDao.setPage(page);
-            traitDao.user = userSession.getUser();
-
-            return getTraitsData(traitDao);
+        if (trait == null) {
+            final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty trait URI");
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
+
+        TraitDAO traitDao = new TraitDAO(sparql);
+        traitDao.uri = trait;
+        traitDao.setPageSize(limit);
+        traitDao.setPage(page);
+        traitDao.user = userSession.getUser();
+
+        return getTraitsData(traitDao);
     }
 }

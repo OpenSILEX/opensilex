@@ -8,8 +8,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -33,6 +31,7 @@ import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Species;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -111,12 +110,7 @@ public class SpeciesResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response get(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
@@ -124,41 +118,39 @@ public class SpeciesResourceService extends ResourceService {
             @ApiParam(value = "Search by species uri", example = DocumentationAnnotation.EXAMPLE_SPECIES_URI) @QueryParam("uri") @URL String uri,
             @ApiParam(value = "Search by species label", example = DocumentationAnnotation.EXAMPLE_SPECIES_LABEL) @QueryParam("label") String label,
             @ApiParam(value = "Select language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language) throws Exception {
-        try (sparql) {
-            //1. Initialize species filter
-            Species filter = new Species();
-            filter.setUri(uri);
-            filter.setLabel(label);
+        //1. Initialize species filter
+        Species filter = new Species();
+        filter.setUri(uri);
+        filter.setLabel(label);
 
-            if (language == null) {
-                language = DEFAULT_LANGUAGE;
-            }
+        if (language == null) {
+            language = DEFAULT_LANGUAGE;
+        }
 
-            SpeciesDAO speciesDAO = new SpeciesDAO(sparql);
-            speciesDAO.setPage(page);
-            speciesDAO.setPageSize(pageSize);
+        SpeciesDAO speciesDAO = new SpeciesDAO(sparql);
+        speciesDAO.setPage(page);
+        speciesDAO.setPageSize(pageSize);
 
-            //2. Get number of species result
-            int totalCount = speciesDAO.countWithFilter(filter, language);
+        //2. Get number of species result
+        int totalCount = speciesDAO.countWithFilter(filter, language);
 
-            //3. Get species result
-            ArrayList<Species> searchResult = speciesDAO.searchWithFilter(filter, language);
+        //3. Get species result
+        ArrayList<Species> searchResult = speciesDAO.searchWithFilter(filter, language);
 
-            //4. Send result
-            ResultForm<SpeciesDTO> getResponse;
-            ArrayList<Status> statusList = new ArrayList<>();
-            ArrayList<SpeciesDTO> speciesToReturn = speciesToSpeciesDTO(searchResult);
+        //4. Send result
+        ResultForm<SpeciesDTO> getResponse;
+        ArrayList<Status> statusList = new ArrayList<>();
+        ArrayList<SpeciesDTO> speciesToReturn = speciesToSpeciesDTO(searchResult);
 
-            if (searchResult == null || speciesToReturn.isEmpty()) {
-                //No result found
-                getResponse = new ResultForm<>(0, 0, speciesToReturn, true, 0);
-                return noResultFound(getResponse, statusList);
-            } else {
-                //Return the result list
-                getResponse = new ResultForm<>(pageSize, page, speciesToReturn, true, totalCount);
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
+        if (searchResult == null || speciesToReturn.isEmpty()) {
+            //No result found
+            getResponse = new ResultForm<>(0, 0, speciesToReturn, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else {
+            //Return the result list
+            getResponse = new ResultForm<>(pageSize, page, speciesToReturn, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
 }

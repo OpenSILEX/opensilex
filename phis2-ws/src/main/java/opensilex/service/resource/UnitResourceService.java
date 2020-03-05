@@ -8,8 +8,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -32,7 +30,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
-import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.UnitDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
@@ -46,6 +43,7 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Unit;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -80,42 +78,35 @@ public class UnitResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postUnit(@ApiParam(value = DocumentationAnnotation.UNIT_POST_DATA_DEFINITION, required = true) @Valid ArrayList<UnitDTO> units,
             @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
-        try (sparql) {
-            if (units != null && !units.isEmpty()) {
-                UnitDAO unitDao = new UnitDAO(sparql);
-                if (context.getRemoteAddr() != null) {
-                    unitDao.remoteUserAdress = context.getRemoteAddr();
-                }
-
-                unitDao.user = userSession.getUser();
-
-                POSTResultsReturn result = unitDao.checkAndInsert(units);
-
-                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                    //Code 201: units inserted
-                    postResponse = new ResponseFormPOST(result.statusList);
-                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                }
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
-            } else {
-                postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty unit(s) to add"));
-                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        if (units != null && !units.isEmpty()) {
+            UnitDAO unitDao = new UnitDAO(sparql);
+            if (context.getRemoteAddr() != null) {
+                unitDao.remoteUserAdress = context.getRemoteAddr();
             }
+
+            unitDao.user = userSession.getUser();
+
+            POSTResultsReturn result = unitDao.checkAndInsert(units);
+
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                //Code 201: units inserted
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+            }
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } else {
+            postResponse = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty unit(s) to add"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
 
@@ -134,43 +125,36 @@ public class UnitResourceService extends ResourceService {
         @ApiResponse(code = 404, message = "Unit not found"),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putUnit(
             @ApiParam(value = DocumentationAnnotation.UNIT_POST_DATA_DEFINITION) @Valid ArrayList<UnitDTO> units,
             @Context HttpServletRequest context) throws Exception {
-        try (sparql) {
-            AbstractResultForm response = null;
-            if (units != null && !units.isEmpty()) {
-                UnitDAO unitDao = new UnitDAO(sparql);
-                if (context.getRemoteAddr() != null) {
-                    unitDao.remoteUserAdress = context.getRemoteAddr();
-                }
-
-                unitDao.user = userSession.getUser();
-
-                POSTResultsReturn result = unitDao.checkAndUpdate(units);
-
-                if (result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.CREATED)) {
-                    response = new ResponseFormPOST(result.statusList);
-                    response.getMetadata().setDatafiles(result.createdResources);
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    response = new ResponseFormPOST(result.statusList);
-                }
-                return Response.status(result.getHttpStatus()).entity(response).build();
-            } else {
-                response = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty unit(s) to update"));
-                return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+        AbstractResultForm response = null;
+        if (units != null && !units.isEmpty()) {
+            UnitDAO unitDao = new UnitDAO(sparql);
+            if (context.getRemoteAddr() != null) {
+                unitDao.remoteUserAdress = context.getRemoteAddr();
             }
+
+            unitDao.user = userSession.getUser();
+
+            POSTResultsReturn result = unitDao.checkAndUpdate(units);
+
+            if (result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.CREATED)) {
+                response = new ResponseFormPOST(result.statusList);
+                response.getMetadata().setDatafiles(result.createdResources);
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                response = new ResponseFormPOST(result.statusList);
+            }
+            return Response.status(result.getHttpStatus()).entity(response).build();
+        } else {
+            response = new ResponseFormPOST(new Status("Request error", StatusCodeMsg.ERR, "Empty unit(s) to update"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
         }
     }
 
@@ -224,12 +208,7 @@ public class UnitResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUnitsBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
@@ -237,22 +216,20 @@ public class UnitResourceService extends ResourceService {
             @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_UNIT_URI) @QueryParam("uri") @URL String uri,
             @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_UNIT_LABEL) @QueryParam("label") String label
     ) throws Exception {
-        try (sparql) {
-            UnitDAO unitDao = new UnitDAO(sparql);
+        UnitDAO unitDao = new UnitDAO(sparql);
 
-            if (uri != null) {
-                unitDao.uri = uri;
-            }
-            if (label != null) {
-                unitDao.label = label;
-            }
-
-            unitDao.user = userSession.getUser();
-            unitDao.setPage(page);
-            unitDao.setPageSize(limit);
-
-            return getUnitsData(unitDao);
+        if (uri != null) {
+            unitDao.uri = uri;
         }
+        if (label != null) {
+            unitDao.label = label;
+        }
+
+        unitDao.user = userSession.getUser();
+        unitDao.setPage(page);
+        unitDao.setPageSize(limit);
+
+        return getUnitsData(unitDao);
     }
 
     /**
@@ -273,30 +250,23 @@ public class UnitResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUnitDetails(
             @ApiParam(value = DocumentationAnnotation.UNIT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_UNIT_URI, required = true) @PathParam("unit") @Required @URL String unit,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
-        try (sparql) {
-            if (unit == null) {
-                final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty unit URI");
-                return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
-            }
-
-            UnitDAO unitDao = new UnitDAO(sparql);
-            unitDao.uri = unit;
-            unitDao.setPageSize(limit);
-            unitDao.setPage(page);
-            unitDao.user = userSession.getUser();
-
-            return getUnitsData(unitDao);
+        if (unit == null) {
+            final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty unit URI");
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
+
+        UnitDAO unitDao = new UnitDAO(sparql);
+        unitDao.uri = unit;
+        unitDao.setPageSize(limit);
+        unitDao.setPage(page);
+        unitDao.user = userSession.getUser();
+
+        return getUnitsData(unitDao);
     }
 }

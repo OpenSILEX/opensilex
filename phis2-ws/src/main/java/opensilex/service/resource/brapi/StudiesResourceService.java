@@ -9,8 +9,6 @@ package opensilex.service.resource.brapi;
 
 import opensilex.service.resource.dto.experiment.StudyDTO;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -34,7 +32,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
-import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.DataDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
 import opensilex.service.dao.VariableDAO;
@@ -62,6 +59,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
@@ -181,12 +179,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-    @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)   
 
     public Response getStudies (
@@ -204,7 +197,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
         ) throws SQLException {               
 
-        try (sparql) {
+        try {
             ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();  
             ArrayList<OrderBy> orderByList = new ArrayList();
             
@@ -313,18 +306,13 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-    @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)   
 
     public Response getStudyDetails (
         @ApiParam(value = "Search by studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") @URL @Required String studyDbId
         ) throws Exception {   
-        try (sparql) {
+        try {
             
             ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();  
             ArrayList<OrderBy> orderByList = new ArrayList();
@@ -403,16 +391,8 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-
-    @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
-
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)   
-
     public Response getObservations (
         @ApiParam(value = "studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") @URL @Required String studyDbId,
         @ApiParam(value = "observationVariableDbIds") @QueryParam(value = "observationVariableDbIds") @URL List<String> observationVariableDbIds,  
@@ -510,23 +490,15 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-
-    @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
-
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)   
-
     public Response getObservationVariables (
         @ApiParam(value = "studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") @URL @Required String studyDbId,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
     ) throws Exception {               
 
-        try (sparql) {
+        try {
             
             ExperimentSearchDTO searchDTO = new ExperimentSearchDTO(); 
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
@@ -677,16 +649,8 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-
-    @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
-
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)   
-
     public Response getObservationUnits (
         @ApiParam(value = "studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") @URL @Required String studyDbId,
         @ApiParam(value = "observationLevel", example = "Plot" ) @QueryParam("observationLevel") String  observationLevel,
@@ -694,7 +658,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
     ) throws Exception {           
 
-        try (sparql) {
+        try {
             ArrayList<Status> statusList = new ArrayList<>();    
             
             String rdfType = null;

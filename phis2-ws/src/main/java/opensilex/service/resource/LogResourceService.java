@@ -8,8 +8,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -33,13 +31,13 @@ import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.DataQueryLogDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.model.DataQueryLog;
-import opensilex.service.model.User;
 import opensilex.service.resource.dto.data.DataLogAccessUserDTO;
 import opensilex.service.resource.dto.data.DataQueryLogSearchDTO;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.result.ResultForm;
 import opensilex.service.view.brapi.Status;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -80,12 +78,7 @@ public class LogResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataQueryLogSearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
@@ -95,57 +88,55 @@ public class LogResourceService extends ResourceService {
             @ApiParam(value = "Search by maximal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("endDate") @Date({DateFormat.YMDTHMSZ, DateFormat.YMD}) String endDate,
             @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc
     ) throws Exception {
-        try (sparql) {
-            ArrayList<DataQueryLogSearchDTO> list = new ArrayList<>();
-            ArrayList<Status> statusList = new ArrayList<>();
-            ResultForm<DataQueryLogSearchDTO> getResponse;
+        ArrayList<DataQueryLogSearchDTO> list = new ArrayList<>();
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResultForm<DataQueryLogSearchDTO> getResponse;
 
-            DataQueryLogDAO dataDAO = new DataQueryLogDAO();
+        DataQueryLogDAO dataDAO = new DataQueryLogDAO();
 
-            //1. Get count
-            Integer totalCount = dataDAO.count(userUri, startDate, endDate, null);
+        //1. Get count
+        Integer totalCount = dataDAO.count(userUri, startDate, endDate, null);
 
-            List<DataQueryLog> dataQueryLogList = new ArrayList<>();
-            //2. Get data
-            if (totalCount > 0) {
-                dataQueryLogList = dataDAO.find(page, pageSize, userUri, startDate, endDate, null);
-            }
-            List<UserModel> listOfUsers = new ArrayList<>();
-            try {
-                //3. Get User informations
-                listOfUsers = sparql.search(UserModel.class, null);
-            } catch (Exception ex) {
-                Logger.getLogger(LogResourceService.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-            //4. Return result
-            if (dataQueryLogList == null) {
-                // Request failure
-                getResponse = new ResultForm<>(0, 0, list, true, 0);
-                return noResultFound(getResponse, statusList);
-            } else if (dataQueryLogList.isEmpty()) {
-                // No results
-                getResponse = new ResultForm<>(0, 0, list, true, 0);
-            } else {
-                // Convert all data object to DTO's
-                for (DataQueryLog queryLog : dataQueryLogList) {
-                    DataLogAccessUserDTO foundUser = this.lookupUser(listOfUsers, queryLog.getUserUri());
-                    list.add(
-                            new DataQueryLogSearchDTO(
-                                    foundUser,
-                                    queryLog.getQuery(),
-                                    queryLog.getDate(),
-                                    queryLog.getRemoteAdress()
-                            )
-                    );
-                }
-                // Return list of DTO
-                getResponse = new ResultForm<>(pageSize, page, list, true, totalCount);
-
-            }
-            getResponse.setStatus(statusList);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
+        List<DataQueryLog> dataQueryLogList = new ArrayList<>();
+        //2. Get data
+        if (totalCount > 0) {
+            dataQueryLogList = dataDAO.find(page, pageSize, userUri, startDate, endDate, null);
         }
+        List<UserModel> listOfUsers = new ArrayList<>();
+        try {
+            //3. Get User informations
+            listOfUsers = sparql.search(UserModel.class, null);
+        } catch (Exception ex) {
+            Logger.getLogger(LogResourceService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        //4. Return result
+        if (dataQueryLogList == null) {
+            // Request failure
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else if (dataQueryLogList.isEmpty()) {
+            // No results
+            getResponse = new ResultForm<>(0, 0, list, true, 0);
+        } else {
+            // Convert all data object to DTO's
+            for (DataQueryLog queryLog : dataQueryLogList) {
+                DataLogAccessUserDTO foundUser = this.lookupUser(listOfUsers, queryLog.getUserUri());
+                list.add(
+                        new DataQueryLogSearchDTO(
+                                foundUser,
+                                queryLog.getQuery(),
+                                queryLog.getDate(),
+                                queryLog.getRemoteAdress()
+                        )
+                );
+            }
+            // Return list of DTO
+            getResponse = new ResultForm<>(pageSize, page, list, true, totalCount);
+
+        }
+        getResponse.setStatus(statusList);
+        return Response.status(Response.Status.OK).entity(getResponse).build();
     }
 
     private DataLogAccessUserDTO lookupUser(List<UserModel> personList, String userUri) {

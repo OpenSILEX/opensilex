@@ -10,14 +10,11 @@ package opensilex.service.resource.brapi;
 import opensilex.service.resource.dto.experiment.StudySearchDTO;
 import opensilex.service.resource.dto.experiment.StudyDTO;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
@@ -27,7 +24,6 @@ import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -35,8 +31,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
-import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.SpeciesDAO;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.model.Call;
 import opensilex.service.documentation.DocumentationAnnotation;
@@ -51,7 +45,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
-import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
@@ -112,12 +106,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
 
@@ -127,7 +116,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
         AbstractResultForm postResponse = null;
 
         if (studySearch != null) {
-            try (sparql) {
+            try {
                 int page = 0;
                 int pageSize = 1000;
                 ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();
@@ -280,12 +269,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
 
     public Response getStudiesSearch(
@@ -303,7 +287,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
     ) {
-        try (sparql) {
+        try {
             ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();
             ArrayList<OrderBy> orderByList = new ArrayList();
 

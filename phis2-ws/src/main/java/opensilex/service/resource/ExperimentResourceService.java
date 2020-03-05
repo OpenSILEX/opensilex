@@ -11,7 +11,6 @@ import io.swagger.annotations.*;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DateFormats;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
-import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.SpeciesDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
@@ -50,6 +49,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.opensilex.rest.authentication.ApiProtected;
 
 /**
  * Experiment resource service.
@@ -68,6 +68,7 @@ public class ExperimentResourceService extends ResourceService {
         this.sparql = sparql;
     }
 
+    
     private final SPARQLService sparql;
 
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentResourceService.class);
@@ -94,12 +95,7 @@ public class ExperimentResourceService extends ResourceService {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExperimentsBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
@@ -114,7 +110,7 @@ public class ExperimentResourceService extends ResourceService {
             @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
             @ApiParam(value = "Search by keywords", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_KEYWORDS) @QueryParam("keywords") String keywords) {
 
-        try (sparql) {
+        try {
 
             // create a new search DTO from  the old xp search attributes
             ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();
@@ -181,19 +177,14 @@ public class ExperimentResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExperimentDetail(
             @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI, required = true) @PathParam("experiment") URI experimentURI,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
-        try (sparql) {
+        try {
             ExperimentDAO dao = new ExperimentDAO(sparql);
             ExperimentModel xpModel = dao.get(experimentURI);
 
@@ -235,12 +226,7 @@ public class ExperimentResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postExperiment(
@@ -253,7 +239,7 @@ public class ExperimentResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
 
-        try (sparql) {
+        try {
             // use DAO(s) in order to validate URI(s) from ExperimentPostDTO
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
             SpeciesDAO speciesDAO = new SpeciesDAO(sparql);
@@ -312,12 +298,7 @@ public class ExperimentResourceService extends ResourceService {
         @ApiResponse(code = 404, message = "Experiment not found"),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putExperiment(
@@ -330,7 +311,7 @@ public class ExperimentResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
 
-        try (sparql) {
+        try {
             // use DAO(s) in order to validate URI(s) from ExperimentPostDTO
             SpeciesDAO speciesDAO = new SpeciesDAO(sparql);
             ProjectDAO projectDAO = new ProjectDAO(sparql, null);
@@ -386,12 +367,7 @@ public class ExperimentResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putVariables(
@@ -402,7 +378,7 @@ public class ExperimentResourceService extends ResourceService {
                     required = true)
             @PathParam("uri") URI uri,
             @Context HttpServletRequest context) {
-        try (sparql) {
+        try {
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
             ExperimentModel xpModel = xpDao.get(uri);
 
@@ -452,12 +428,7 @@ public class ExperimentResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putSensors(
@@ -465,7 +436,7 @@ public class ExperimentResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI, required = true)
             @PathParam("uri") URI uri,
             @Context HttpServletRequest context) {
-        try (sparql) {
+        try {
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
             ExperimentModel xpModel = xpDao.get(uri);
 

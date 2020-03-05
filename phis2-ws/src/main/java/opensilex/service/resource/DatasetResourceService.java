@@ -8,8 +8,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -32,7 +30,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
-import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.DatasetDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
@@ -45,6 +42,7 @@ import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Dataset;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -98,35 +96,28 @@ public class DatasetResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postDatasetData(@ApiParam(value = DocumentationAnnotation.RAW_DATA_POST_DATA_DEFINITION, required = true) @Valid ArrayList<DatasetDTO> datasets,
             @Context HttpServletRequest context) throws Exception {
-        try (sparql) {
-            AbstractResultForm postResponse;
+        AbstractResultForm postResponse;
 
-            //If there are at least one provenance (and dataset) in the sended data
-            if (datasets != null && !datasets.isEmpty()) {
-                DatasetDAO datasetDAO = new DatasetDAO(sparql);
-                datasetDAO.user = userSession.getUser();
+        //If there are at least one provenance (and dataset) in the sended data
+        if (datasets != null && !datasets.isEmpty()) {
+            DatasetDAO datasetDAO = new DatasetDAO(sparql);
+            datasetDAO.user = userSession.getUser();
 
-                //check data and insert in the mongo database
-                POSTResultsReturn result = datasetDAO.checkAndInsert(datasets);
+            //check data and insert in the mongo database
+            POSTResultsReturn result = datasetDAO.checkAndInsert(datasets);
 
-                postResponse = new ResponseFormPOST(result.statusList);
-                postResponse.getMetadata().setDatafiles(result.createdResources);
+            postResponse = new ResponseFormPOST(result.statusList);
+            postResponse.getMetadata().setDatafiles(result.createdResources);
 
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
-            } else {
-                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty datasets to add"));
-                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
-            }
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } else {
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty datasets to add"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
 
@@ -203,12 +194,7 @@ public class DatasetResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
@@ -220,36 +206,34 @@ public class DatasetResourceService extends ResourceService {
             @ApiParam(value = "Search by interval - End date", example = DocumentationAnnotation.EXAMPLE_DATETIME) @QueryParam("endDate") @Date(DateFormat.YMD) String endDate,
             @ApiParam(value = "Search by sensor", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") @URL String sensor,
             @ApiParam(value = "Search by incertitude", example = DocumentationAnnotation.EXAMPLE_DATA_INCERTITUDE) @QueryParam("incertitude") String incertitude) throws Exception {
-        try (sparql) {
-            DatasetDAO datasetDAO = new DatasetDAO(sparql);
+        DatasetDAO datasetDAO = new DatasetDAO(sparql);
 
-            if (experiment != null) {
-                datasetDAO.experiment = experiment;
-            }
-            if (variable != null) {
-                datasetDAO.variable = variable;
-            }
-            if (startDate != null && endDate != null) {
-                datasetDAO.startDate = startDate;
-                datasetDAO.endDate = endDate;
-            }
-            if (agronomicalObjects != null) {
-                //the agronomical object's uri must be separated by ","
-                String[] agronomicalObjectsURIs = agronomicalObjects.split(",");
-                datasetDAO.scientificObjects.addAll(Arrays.asList(agronomicalObjectsURIs));
-            }
-            if (sensor != null) {
-                datasetDAO.sensor = sensor;
-            }
-            if (incertitude != null) {
-                datasetDAO.incertitude = incertitude;
-            }
-
-            datasetDAO.user = userSession.getUser();
-            datasetDAO.setPage(page);
-            datasetDAO.setPageSize(pageSize);
-
-            return getDatasetsData(datasetDAO);
+        if (experiment != null) {
+            datasetDAO.experiment = experiment;
         }
+        if (variable != null) {
+            datasetDAO.variable = variable;
+        }
+        if (startDate != null && endDate != null) {
+            datasetDAO.startDate = startDate;
+            datasetDAO.endDate = endDate;
+        }
+        if (agronomicalObjects != null) {
+            //the agronomical object's uri must be separated by ","
+            String[] agronomicalObjectsURIs = agronomicalObjects.split(",");
+            datasetDAO.scientificObjects.addAll(Arrays.asList(agronomicalObjectsURIs));
+        }
+        if (sensor != null) {
+            datasetDAO.sensor = sensor;
+        }
+        if (incertitude != null) {
+            datasetDAO.incertitude = incertitude;
+        }
+
+        datasetDAO.user = userSession.getUser();
+        datasetDAO.setPage(page);
+        datasetDAO.setPageSize(pageSize);
+
+        return getDatasetsData(datasetDAO);
     }
 }

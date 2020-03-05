@@ -7,8 +7,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -45,6 +43,7 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Variable;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -79,44 +78,37 @@ public class VariableResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postVariable(@ApiParam(value = DocumentationAnnotation.VARIABLE_POST_DATA_DEFINITION) @Valid ArrayList<VariableDTO> variables,
             @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
-        try (sparql) {
-            // At least one variable
-            if (variables != null && !variables.isEmpty()) {
-                VariableDAO variableDao = new VariableDAO(sparql);
-                if (context.getRemoteAddr() != null) {
-                    variableDao.remoteUserAdress = context.getRemoteAddr();
-                }
-
-                variableDao.user = userSession.getUser();
-
-                // Check and insert variables
-                POSTResultsReturn result = variableDao.checkAndInsert(variables);
-
-                if (result.getHttpStatus().equals(Response.Status.CREATED)) {
-                    //Code 201: variables inserted
-                    postResponse = new ResponseFormPOST(result.statusList);
-                    postResponse.getMetadata().setDatafiles(result.getCreatedResources());
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    postResponse = new ResponseFormPOST(result.statusList);
-                }
-                return Response.status(result.getHttpStatus()).entity(postResponse).build();
-            } else {
-                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty variable(s) to add"));
-                return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
+        // At least one variable
+        if (variables != null && !variables.isEmpty()) {
+            VariableDAO variableDao = new VariableDAO(sparql);
+            if (context.getRemoteAddr() != null) {
+                variableDao.remoteUserAdress = context.getRemoteAddr();
             }
+
+            variableDao.user = userSession.getUser();
+
+            // Check and insert variables
+            POSTResultsReturn result = variableDao.checkAndInsert(variables);
+
+            if (result.getHttpStatus().equals(Response.Status.CREATED)) {
+                //Code 201: variables inserted
+                postResponse = new ResponseFormPOST(result.statusList);
+                postResponse.getMetadata().setDatafiles(result.getCreatedResources());
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                postResponse = new ResponseFormPOST(result.statusList);
+            }
+            return Response.status(result.getHttpStatus()).entity(postResponse).build();
+        } else {
+            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty variable(s) to add"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
 
@@ -135,42 +127,35 @@ public class VariableResourceService extends ResourceService {
         @ApiResponse(code = 404, message = "Variable not found"),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putVariable(
             @ApiParam(value = DocumentationAnnotation.VARIABLE_POST_DATA_DEFINITION) @Valid ArrayList<VariableDTO> variables,
             @Context HttpServletRequest context) throws Exception {
-        try (sparql) {
-            AbstractResultForm response = null;
-            if (variables != null && !variables.isEmpty()) {
-                VariableDAO variableDao = new VariableDAO(sparql);
-                if (context.getRemoteAddr() != null) {
-                    variableDao.remoteUserAdress = context.getRemoteAddr();
-                }
-
-                variableDao.user = userSession.getUser();
-
-                POSTResultsReturn result = variableDao.checkAndUpdate(variables);
-
-                if (result.getHttpStatus().equals(Response.Status.OK)
-                        || result.getHttpStatus().equals(Response.Status.CREATED)) {
-                    response = new ResponseFormPOST(result.statusList);
-                    response.getMetadata().setDatafiles(result.createdResources);
-                } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
-                        || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
-                    response = new ResponseFormPOST(result.statusList);
-                }
-                return Response.status(result.getHttpStatus()).entity(response).build();
-            } else {
-                response = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty variable(s) to update"));
-                return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+        AbstractResultForm response = null;
+        if (variables != null && !variables.isEmpty()) {
+            VariableDAO variableDao = new VariableDAO(sparql);
+            if (context.getRemoteAddr() != null) {
+                variableDao.remoteUserAdress = context.getRemoteAddr();
             }
+
+            variableDao.user = userSession.getUser();
+
+            POSTResultsReturn result = variableDao.checkAndUpdate(variables);
+
+            if (result.getHttpStatus().equals(Response.Status.OK)
+                    || result.getHttpStatus().equals(Response.Status.CREATED)) {
+                response = new ResponseFormPOST(result.statusList);
+                response.getMetadata().setDatafiles(result.createdResources);
+            } else if (result.getHttpStatus().equals(Response.Status.BAD_REQUEST)
+                    || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
+                response = new ResponseFormPOST(result.statusList);
+            }
+            return Response.status(result.getHttpStatus()).entity(response).build();
+        } else {
+            response = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty variable(s) to update"));
+            return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
         }
     }
 
@@ -196,12 +181,7 @@ public class VariableResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getVariablesBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
@@ -226,12 +206,7 @@ public class VariableResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getVariablesDetailsBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
@@ -273,58 +248,56 @@ public class VariableResourceService extends ResourceService {
             String unit,
             boolean withDetail
     ) throws Exception {
-        try (sparql) {
-            VariableDAO variableDao = new VariableDAO(sparql);
+        VariableDAO variableDao = new VariableDAO(sparql);
 
-            if (uri != null) {
-                variableDao.uri = uri;
-            }
-            if (label != null) {
-                variableDao.label = label;
-            }
-            if (trait != null) {
-                variableDao.trait = trait;
-            }
-            if (traitSKosReference != null) {
-                variableDao.traitSKosReference = traitSKosReference;
-            }
-            if (method != null) {
-                variableDao.method = method;
-            }
-            if (unit != null) {
-                variableDao.unit = unit;
-            }
+        if (uri != null) {
+            variableDao.uri = uri;
+        }
+        if (label != null) {
+            variableDao.label = label;
+        }
+        if (trait != null) {
+            variableDao.trait = trait;
+        }
+        if (traitSKosReference != null) {
+            variableDao.traitSKosReference = traitSKosReference;
+        }
+        if (method != null) {
+            variableDao.method = method;
+        }
+        if (unit != null) {
+            variableDao.unit = unit;
+        }
 
-            variableDao.user = userSession.getUser();
-            variableDao.setPage(page);
-            variableDao.setPageSize(pageSize);
+        variableDao.user = userSession.getUser();
+        variableDao.setPage(page);
+        variableDao.setPageSize(pageSize);
 
-            ArrayList<Variable> variables;
-            ArrayList<Status> statusList = new ArrayList<>();
-            ResultForm<Variable> getResponse;
+        ArrayList<Variable> variables;
+        ArrayList<Status> statusList = new ArrayList<>();
+        ResultForm<Variable> getResponse;
 
-            // 1. Get number of variables corresponding to the search params
-            Integer totalCount = variableDao.count();
+        // 1. Get number of variables corresponding to the search params
+        Integer totalCount = variableDao.count();
 
-            //2. Get the variables to return
-            if (withDetail) {
-                variables = variableDao.allPaginateDetails();
-            } else {
-                variables = variableDao.allPaginate();
-            }
+        //2. Get the variables to return
+        if (withDetail) {
+            variables = variableDao.allPaginateDetails();
+        } else {
+            variables = variableDao.allPaginate();
+        }
 
-            //3. Return the result
-            if (variables == null) { //Request error
-                getResponse = new ResultForm<>(0, 0, variables, true, 0);
-                return noResultFound(getResponse, statusList);
-            } else if (variables.isEmpty()) { //No result
-                getResponse = new ResultForm<>(0, 0, variables, true, 0);
-                return noResultFound(getResponse, statusList);
-            } else { //Results founded. Return the results
-                getResponse = new ResultForm<>(variableDao.getPageSize(), variableDao.getPage(), variables, true, totalCount);
-                getResponse.setStatus(statusList);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }
+        //3. Return the result
+        if (variables == null) { //Request error
+            getResponse = new ResultForm<>(0, 0, variables, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else if (variables.isEmpty()) { //No result
+            getResponse = new ResultForm<>(0, 0, variables, true, 0);
+            return noResultFound(getResponse, statusList);
+        } else { //Results founded. Return the results
+            getResponse = new ResultForm<>(variableDao.getPageSize(), variableDao.getPage(), variables, true, totalCount);
+            getResponse.setStatus(statusList);
+            return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
 
@@ -346,12 +319,7 @@ public class VariableResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getVariableDetail(
             @ApiParam(value = DocumentationAnnotation.VARIABLE_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI) @PathParam("variable") @URL @Required String uri,

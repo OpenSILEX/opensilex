@@ -8,8 +8,6 @@
 package opensilex.service.resource.brapi;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -29,7 +27,6 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
-import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.TraitDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
@@ -41,6 +38,7 @@ import opensilex.service.resource.dto.trait.BrapiTraitDTO;
 import opensilex.service.view.brapi.form.BrapiSingleResponseForm;
 import opensilex.service.model.Call;
 import opensilex.service.model.Trait;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -52,7 +50,6 @@ import org.opensilex.sparql.service.SPARQLService;
  */
 @Api("/brapi/v1/traits")
 @Path("/brapi/v1/traits")
-@Singleton
 public class TraitsResourceService implements BrapiCall {
 
     final static Logger LOGGER = LoggerFactory.getLogger(TraitsResourceService.class);
@@ -154,23 +151,16 @@ public class TraitsResourceService implements BrapiCall {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTraitsList(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
     ) throws Exception {
-        try (sparql) {
-            TraitDAO traitDAO = new TraitDAO(sparql);
-            traitDAO.setPageSize(limit);
-            traitDAO.setPage(page);
-            return getTraitsData(traitDAO);
-        }
+        TraitDAO traitDAO = new TraitDAO(sparql);
+        traitDAO.setPageSize(limit);
+        traitDAO.setPage(page);
+        return getTraitsData(traitDAO);
     }
 
     /**
@@ -212,20 +202,13 @@ public class TraitsResourceService implements BrapiCall {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTraitDetails(
             @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_TRAIT_URI) @PathParam("traitDbId") @Required @URL String traitUri
     ) throws Exception {
-        try (sparql) {
-            TraitDAO traitDAO = new TraitDAO(sparql, traitUri);
-            return getOneTraitData(traitDAO);
-        }
+        TraitDAO traitDAO = new TraitDAO(sparql, traitUri);
+        return getOneTraitData(traitDAO);
     }
 
     /**

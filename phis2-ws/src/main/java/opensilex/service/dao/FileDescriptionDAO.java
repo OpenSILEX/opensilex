@@ -29,6 +29,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import javax.ws.rs.core.Response;
+import opensilex.service.PropertiesFileManager;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import org.bson.BSONObject;
@@ -456,7 +457,8 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
         boolean hasError = false;
             
         try {
-            final String fileServerDirectory =  "./dataFiles/" + fileCollectionName + "/";
+            String fileStorageDirectory = PropertiesFileManager.getConfigFileProperty("service", "uploadFileServerDirectory");
+            final String fileServerDirectory =  fileStorageDirectory + '/' + fileCollectionName + "/";
             
             String key = fileDescription.getFilename() + fileDescription.getDate();
             String uri = UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);

@@ -54,7 +54,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
         return xpDto;
     }
 
-//    @Test
+    @Test
     public void testCreate() throws Exception {
 
         final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
@@ -66,7 +66,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
     }
 
-//    @Test
+    @Test
     public void testCreateAll() throws Exception {
 
         List<ExperimentCreationDTO> creationDTOS = Arrays.asList(getCreationDTO(), getCreationDTO());
@@ -82,7 +82,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
 
     }
 
-//    @Test
+    @Test
     public void testUpdate() throws Exception {
 
         // create the xp
@@ -112,7 +112,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
         assertEquals(xpDto.getEndDate(), dtoFromApi.getEndDate());
     }
 
-//    @Test
+    @Test
     public void testDelete() throws Exception {
 
         // create object and check if URI exists
@@ -127,7 +127,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
         assertEquals(Status.NO_CONTENT.getStatusCode(), getResult.getStatus());
     }
 
-//    @Test
+    @Test
     public void testGetByUri() throws Exception {
 
         final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
@@ -145,7 +145,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
         assertNotNull(xpGetDto);
     }
 
-//    @Test
+    @Test
     public void testGetByUriFail() throws Exception {
 
         final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
@@ -159,7 +159,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
         assertEquals(Status.NO_CONTENT.getStatusCode(), getResult.getStatus());
     }
 
-//    @Test
+    @Test
     public void testSearch() throws Exception {
 
         ExperimentCreationDTO creationDTO = getCreationDTO();

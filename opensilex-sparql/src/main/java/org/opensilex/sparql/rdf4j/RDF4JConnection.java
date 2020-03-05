@@ -8,6 +8,7 @@ package org.opensilex.sparql.rdf4j;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
@@ -38,15 +39,17 @@ public class RDF4JConnection implements SPARQLConnection {
     
     private final RepositoryConnection rdf4JConnection;
 
+    private static AtomicInteger connectionCount = new AtomicInteger(0);
+    
     public RDF4JConnection(RepositoryConnection rdf4JConnection) {
         this.rdf4JConnection = rdf4JConnection;
-        LOGGER.debug("Acquire RDF4J sparql connection: " + this.rdf4JConnection.hashCode());
+        LOGGER.debug("Acquire RDF4J sparql connection: " + this.rdf4JConnection.hashCode() + " (" + RDF4JConnection.connectionCount.incrementAndGet() + ")");
 
     }
 
     @Override
     public void shutdown() throws Exception {
-        LOGGER.debug("Release RDF4J sparql connection: " + this.rdf4JConnection.hashCode());
+        LOGGER.debug("Release RDF4J sparql connection: " + this.rdf4JConnection.hashCode() + " (" + RDF4JConnection.connectionCount.decrementAndGet() + ")");
         this.rdf4JConnection.close();
     }
 

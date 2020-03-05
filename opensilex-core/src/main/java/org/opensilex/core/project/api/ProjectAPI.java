@@ -57,7 +57,11 @@ public class ProjectAPI {
     public static final String CREDENTIAL_PROJECT_READ_LABEL_KEY = "credential.project.read";
 
     @Inject
-    private SPARQLService sparql;
+    public ProjectAPI(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
 
     @POST
     @ApiOperation("Create a project")
@@ -74,18 +78,20 @@ public class ProjectAPI {
             @ApiParam("Project description") @Valid ProjectCreationDTO dto,
             @Context SecurityContext securityContext
     ) throws Exception {
-        UserModel user = (UserModel) securityContext.getUserPrincipal();
-        ProjectDAO dao = new ProjectDAO(sparql, user.getLang());
-        try {
-            ProjectModel model = dto.newModel();
-            dao.create(model);
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
-        } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-            return new ErrorResponse(
-                    Response.Status.CONFLICT,
-                    "Project already exists",
-                    duplicateUriException.getMessage()
-            ).getResponse();
+        try (sparql) {
+            UserModel user = (UserModel) securityContext.getUserPrincipal();
+            ProjectDAO dao = new ProjectDAO(sparql, user.getLang());
+            try {
+                ProjectModel model = dto.newModel();
+                dao.create(model);
+                return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
+                return new ErrorResponse(
+                        Response.Status.CONFLICT,
+                        "Project already exists",
+                        duplicateUriException.getMessage()
+                ).getResponse();
+            }
         }
     }
 
@@ -106,19 +112,21 @@ public class ProjectAPI {
             @ApiParam("Project description") @Valid ProjectUpdateDTO dto,
             @Context SecurityContext securityContext
     ) throws Exception {
-        UserModel user = (UserModel) securityContext.getUserPrincipal();
-        ProjectDAO dao = new ProjectDAO(sparql, user.getLang());
+        try (sparql) {
+            UserModel user = (UserModel) securityContext.getUserPrincipal();
+            ProjectDAO dao = new ProjectDAO(sparql, user.getLang());
 
-        ProjectModel model = dao.get(uri);
-        if (model != null) {
-            dao.update(dto.updateModel(model));
-            return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Project not found",
-                    "Unknown project URI: " + uri
-            ).getResponse();
+            ProjectModel model = dao.get(uri);
+            if (model != null) {
+                dao.update(dto.updateModel(model));
+                return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
+            } else {
+                return new ErrorResponse(
+                        Response.Status.NOT_FOUND,
+                        "Project not found",
+                        "Unknown project URI: " + uri
+                ).getResponse();
+            }
         }
     }
 
@@ -138,10 +146,12 @@ public class ProjectAPI {
             @ApiParam(value = "Project URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @Context SecurityContext securityContext
     ) throws Exception {
-        UserModel user = (UserModel) securityContext.getUserPrincipal();
-        ProjectDAO dao = new ProjectDAO(sparql, user.getLang());
-        dao.delete(uri);
-        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        try (sparql) {
+            UserModel user = (UserModel) securityContext.getUserPrincipal();
+            ProjectDAO dao = new ProjectDAO(sparql, user.getLang());
+            dao.delete(uri);
+            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        }
     }
 
     @GET
@@ -160,20 +170,22 @@ public class ProjectAPI {
             @ApiParam(value = "Project URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @Context SecurityContext securityContext
     ) throws Exception {
-        UserModel user = (UserModel) securityContext.getUserPrincipal();
-        ProjectDAO dao = new ProjectDAO(sparql, user.getLang());
-        ProjectModel model = dao.get(uri);
+        try (sparql) {
+            UserModel user = (UserModel) securityContext.getUserPrincipal();
+            ProjectDAO dao = new ProjectDAO(sparql, user.getLang());
+            ProjectModel model = dao.get(uri);
 
-        if (model != null) {
-            return new SingleObjectResponse<>(
-                    ProjectGetDTO.fromModel(model)
-            ).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Project not found",
-                    "Unknown project URI: " + uri.toString()
-            ).getResponse();
+            if (model != null) {
+                return new SingleObjectResponse<>(
+                        ProjectGetDTO.fromModel(model)
+                ).getResponse();
+            } else {
+                return new ErrorResponse(
+                        Response.Status.NOT_FOUND,
+                        "Project not found",
+                        "Unknown project URI: " + uri.toString()
+                ).getResponse();
+            }
         }
     }
 
@@ -195,17 +207,19 @@ public class ProjectAPI {
             @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize,
             @Context SecurityContext securityContext
     ) throws Exception {
-        UserModel user = (UserModel) securityContext.getUserPrincipal();
-        ProjectDAO dao = new ProjectDAO(sparql, user.getLang());
-        ListWithPagination<ProjectModel> resultList = dao.search(
-                orderByList,
-                page,
-                pageSize
-        );
-        ListWithPagination<ProjectGetDTO> resultDTOList = resultList.convert(
-                ProjectGetDTO.class,
-                ProjectGetDTO::fromModel
-        );
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        try (sparql) {
+            UserModel user = (UserModel) securityContext.getUserPrincipal();
+            ProjectDAO dao = new ProjectDAO(sparql, user.getLang());
+            ListWithPagination<ProjectModel> resultList = dao.search(
+                    orderByList,
+                    page,
+                    pageSize
+            );
+            ListWithPagination<ProjectGetDTO> resultDTOList = resultList.convert(
+                    ProjectGetDTO.class,
+                    ProjectGetDTO::fromModel
+            );
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        }
     }
 }

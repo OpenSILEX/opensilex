@@ -50,7 +50,11 @@ import org.opensilex.utils.ListWithPagination;
 public class EntityAPI {
 
     @Inject
-    private SPARQLService sparql;
+    public EntityAPI(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
 
     @POST
     @ApiOperation("Create an entity")
@@ -66,8 +70,8 @@ public class EntityAPI {
     public Response createEntity(
             @ApiParam("Entity description") @Valid EntityCreationDTO dto
     ) throws Exception {
-        EntityDAO dao = new EntityDAO(sparql);
-        try {
+        try (sparql) {
+            EntityDAO dao = new EntityDAO(sparql);
             EntityModel model = dto.newModel();
             dao.create(model);
             return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
@@ -96,18 +100,20 @@ public class EntityAPI {
             @ApiParam(value = "Entity URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam("Entity description") @Valid EntityUpdateDTO dto
     ) throws Exception {
-        EntityDAO dao = new EntityDAO(sparql);
+        try (sparql) {
+            EntityDAO dao = new EntityDAO(sparql);
 
-        EntityModel model = dao.get(uri);
-        if (model != null) {
-            dao.update(dto.defineModel(model));
-            return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Entity not found",
-                    "Unknown entity URI: " + uri
-            ).getResponse();
+            EntityModel model = dao.get(uri);
+            if (model != null) {
+                dao.update(dto.defineModel(model));
+                return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
+            } else {
+                return new ErrorResponse(
+                        Response.Status.NOT_FOUND,
+                        "Entity not found",
+                        "Unknown entity URI: " + uri
+                ).getResponse();
+            }
         }
     }
 
@@ -126,9 +132,11 @@ public class EntityAPI {
     public Response deleteEntity(
             @ApiParam(value = "Entity URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        EntityDAO dao = new EntityDAO(sparql);
-        dao.delete(uri);
-        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        try (sparql) {
+            EntityDAO dao = new EntityDAO(sparql);
+            dao.delete(uri);
+            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        }
     }
 
     @GET
@@ -146,19 +154,21 @@ public class EntityAPI {
     public Response getEntity(
             @ApiParam(value = "Entity URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        EntityDAO dao = new EntityDAO(sparql);
-        EntityModel model = dao.get(uri);
+        try (sparql) {
+            EntityDAO dao = new EntityDAO(sparql);
+            EntityModel model = dao.get(uri);
 
-        if (model != null) {
-            return new SingleObjectResponse<>(
-                    EntityGetDTO.fromModel(model)
-            ).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Entity not found",
-                    "Unknown entity URI: " + uri.toString()
-            ).getResponse();
+            if (model != null) {
+                return new SingleObjectResponse<>(
+                        EntityGetDTO.fromModel(model)
+                ).getResponse();
+            } else {
+                return new ErrorResponse(
+                        Response.Status.NOT_FOUND,
+                        "Entity not found",
+                        "Unknown entity URI: " + uri.toString()
+                ).getResponse();
+            }
         }
     }
 
@@ -181,18 +191,20 @@ public class EntityAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize
     ) throws Exception {
-        EntityDAO dao = new EntityDAO(sparql);
-        ListWithPagination<EntityModel> resultList = dao.search(
-                namePattern,
-                commentPattern,
-                orderByList,
-                page,
-                pageSize
-        );
-        ListWithPagination<EntityGetDTO> resultDTOList = resultList.convert(
-                EntityGetDTO.class,
-                EntityGetDTO::fromModel
-        );
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        try (sparql) {
+            EntityDAO dao = new EntityDAO(sparql);
+            ListWithPagination<EntityModel> resultList = dao.search(
+                    namePattern,
+                    commentPattern,
+                    orderByList,
+                    page,
+                    pageSize
+            );
+            ListWithPagination<EntityGetDTO> resultDTOList = resultList.convert(
+                    EntityGetDTO.class,
+                    EntityGetDTO::fromModel
+            );
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        }
     }
 }

@@ -46,18 +46,23 @@ import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
 /**
- * 
+ *
  * @author charlero
  */
 @Api("Factors")
 @Path("/core/factor")
 public class FactorAPI {
-    
+
     @Inject
-    private SPARQLService sparql;
-    
+    public FactorAPI(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
      * Create a factor model from a FactorCreationDTO object
+     *
      * @param dto FactorCreationDTO object
      * @return Factor URI
      * @throws Exception if creation failed
@@ -70,22 +75,25 @@ public class FactorAPI {
     public Response createFactor(
             @ApiParam("Factor description") @Valid FactorCreationDTO dto
     ) throws Exception {
-        FactorDAO dao = new FactorDAO(sparql);
-        try {
-            FactorModel model = dto.newModel();
-            dao.create(model);
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
-        } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-            return new ErrorResponse(
-                    Response.Status.CONFLICT,
-                    "Factor already exists",
-                    duplicateUriException.getMessage()
-            ).getResponse();
+        try (sparql) {
+            FactorDAO dao = new FactorDAO(sparql);
+            try {
+                FactorModel model = dto.newModel();
+                dao.create(model);
+                return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
+                return new ErrorResponse(
+                        Response.Status.CONFLICT,
+                        "Factor already exists",
+                        duplicateUriException.getMessage()
+                ).getResponse();
+            }
         }
     }
-    
+
     /**
      * Retreive factor by uri
+     *
      * @param uri factor uri
      * @return Return factor detail
      * @throws Exception in case of server error
@@ -99,22 +107,24 @@ public class FactorAPI {
     public Response getFactor(
             @ApiParam(value = "Factor URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        FactorDAO dao = new FactorDAO(sparql);
-        FactorModel model = dao.get(uri);
-        
-        if (model != null) {
-            return new SingleObjectResponse<>(
-                    FactorGetDTO.fromModel(model)
-            ).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Factor not found",
-                    "Unknown factor URI: " + uri.toString()
-            ).getResponse();
+        try (sparql) {
+            FactorDAO dao = new FactorDAO(sparql);
+            FactorModel model = dao.get(uri);
+
+            if (model != null) {
+                return new SingleObjectResponse<>(
+                        FactorGetDTO.fromModel(model)
+                ).getResponse();
+            } else {
+                return new ErrorResponse(
+                        Response.Status.NOT_FOUND,
+                        "Factor not found",
+                        "Unknown factor URI: " + uri.toString()
+                ).getResponse();
+            }
         }
     }
-    
+
     /**
      * Search factors
      *
@@ -143,27 +153,30 @@ public class FactorAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        // Search factors with Factor DAO
-        FactorDAO dao = new FactorDAO(sparql);
-        ListWithPagination<FactorModel> resultList = dao.search(
-                alias,
-                orderByList,
-                page,
-                pageSize
-        );
+        try (sparql) {
+            // Search factors with Factor DAO
+            FactorDAO dao = new FactorDAO(sparql);
+            ListWithPagination<FactorModel> resultList = dao.search(
+                    alias,
+                    orderByList,
+                    page,
+                    pageSize
+            );
 
-        // Convert paginated list to DTO
-        ListWithPagination<FactorGetDTO> resultDTOList = resultList.convert(
-                FactorGetDTO.class,
-                FactorGetDTO::fromModel
-        );
+            // Convert paginated list to DTO
+            ListWithPagination<FactorGetDTO> resultDTOList = resultList.convert(
+                    FactorGetDTO.class,
+                    FactorGetDTO::fromModel
+            );
 
-        // Return paginated list of factor DTO
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+            // Return paginated list of factor DTO
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        }
     }
-    
+
     /**
      * Remove a factor
+     *
      * @param uri factor uri
      * @return URI of deleted factor
      * @throws Exception if suppression failed
@@ -177,8 +190,10 @@ public class FactorAPI {
     public Response deleteFactor(
             @ApiParam(value = "Factor URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
-        FactorDAO dao = new FactorDAO(sparql);
-        dao.delete(uri);
-        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        try (sparql) {
+            FactorDAO dao = new FactorDAO(sparql);
+            dao.delete(uri);
+            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        }
     }
 }

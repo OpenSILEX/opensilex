@@ -46,7 +46,7 @@ import static junit.framework.TestCase.assertEquals;
  *
  * Abstract class used for DAO testing
  */
-@Category(IntegrationTestCategory.class)
+//@Category(IntegrationTestCategory.class)
 public abstract class AbstractIntegrationTest extends JerseyTest {
 
     protected static IntegrationTestContext context;
@@ -75,7 +75,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      * @see #getGraphsToCleanNames()
      */
     @After
-    public void clearGraph() throws SPARQLQueryException {
+    public void clearGraph() throws Exception {
         context.clearGraphs(getGraphsToCleanNames());
     }
 

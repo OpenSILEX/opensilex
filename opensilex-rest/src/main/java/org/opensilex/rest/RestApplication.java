@@ -25,6 +25,7 @@ import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.rest.extensions.APIExtension;
 import org.opensilex.service.Service;
+import org.opensilex.service.ServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -176,12 +177,17 @@ public class RestApplication extends ResourceConfig {
                     bind(module).to((Class<? super OpenSilexModule>) module.getClass());
                 }
                 
-//                // Make every service injectable
-//                app.getServiceManager().forEachInterface((Class<? extends Service> serviceClass, Map<String, Service> implementations) -> {
-//                    implementations.forEach((String name, Service implementation) -> {
-//                        bind(implementation).named(name).to((Class<? super Service>) serviceClass);
-//                    });
-//                });
+                // Make every service injectable
+                app.getServiceManager().forEachInterface((Class<? extends Service> serviceClass, Map<String, Service> implementations) -> {
+                    implementations.forEach((String name, Service implementation) -> {
+                        if (implementation instanceof ServiceFactory) {
+                            ServiceFactory<? extends Service> factory = (ServiceFactory<? extends Service>) implementation;
+                            bindFactory(factory).named(name).to((Class<? super Service>) factory.getServiceClass());
+                        }else {
+                            bind(implementation).named(name).to((Class<? super Service>) serviceClass);
+                        }
+                    });
+                });
             }
         });
 

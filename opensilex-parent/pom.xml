@@ -49,7 +49,7 @@
         <yarn.version>v1.19.2</yarn.version>
         
         <!-- Java supported version -->
-        <java.compiler.version>1.8</java.compiler.version>
+        <java.compiler.version>9</java.compiler.version>
         
         <!-- Minimal maven version -->
         <maven.minimal.version>3.5</maven.minimal.version>
@@ -237,7 +237,7 @@
             <version>${rdf4j.version}</version>
         </dependency>          
         
-      <dependency>
+        <dependency>
             <groupId>org.eclipse.rdf4j</groupId>
             <artifactId>rdf4j-sail-inferencer</artifactId>
             <version>${rdf4j.version}</version>
@@ -358,16 +358,6 @@
             <version>${jersey.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.hibernate.validator</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>${hibernate.validator.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>${httpclient.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
             <version>${httpcore.version}</version>
@@ -395,7 +385,11 @@
             <artifactId>jackson-dataformat-yaml</artifactId>
             <version>${jackson.version}</version>
         </dependency>
-        
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator-annotation-processor</artifactId>
+            <version>${hibernate.validator.version}</version>
+        </dependency>
         <!--Servlet API v4 provided by Tomcat--> 
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -735,9 +729,10 @@
                 <configuration>
                     <source>${java.compiler.version}</source>
                     <target>${java.compiler.version}</target>
-                    <compilerArgs>
+                    <!--<compilerArgument>-proc:none</compilerArgument>-->
+                    <!--                    <compilerArgs>
                         <arg>-Xlint:all</arg>
-                    </compilerArgs>
+                    </compilerArgs>-->
                     <!-- Add hibernate validation -->
                     <annotationProcessorPaths>
                         <path>
@@ -748,7 +743,6 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-            
             <!--check minimal maven version--> 
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>

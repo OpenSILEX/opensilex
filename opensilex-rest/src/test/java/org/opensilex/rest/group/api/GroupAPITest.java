@@ -20,6 +20,7 @@ import org.opensilex.rest.profile.dal.ProfileDAO;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.service.SPARQLService;
 
 public class GroupAPITest extends AbstractIntegrationTest {
 
@@ -43,15 +44,17 @@ public class GroupAPITest extends AbstractIntegrationTest {
     private final static String PROFILE2_URI = "http://example.org/profiles/profile2";
 
     protected void createTestEnv() throws Exception {
-        UserDAO userDao = new UserDAO(this.getSparqlService());
-        AuthenticationService authentication = this.getAuthenticationService();
-        
-        userDao.create(new URI(USER1_URI), new InternetAddress("user1@opensilex.org"), "user1", "anonymous", true, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
-        userDao.create(new URI(USER2_URI), new InternetAddress("user2@opensilex.org"), "user2", "anonymous", false, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
+        try (SPARQLService sparql = this.getSparqlService()) {
+            UserDAO userDao = new UserDAO(sparql);
+            AuthenticationService authentication = this.getAuthenticationService();
 
-        ProfileDAO profileDao = new ProfileDAO(this.getSparqlService());
-        profileDao.create(new URI(PROFILE1_URI), "profile1", new ArrayList<>());
-        profileDao.create(new URI(PROFILE2_URI), "profile2", new ArrayList<>());
+            userDao.create(new URI(USER1_URI), new InternetAddress("user1@opensilex.org"), "user1", "anonymous", true, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
+            userDao.create(new URI(USER2_URI), new InternetAddress("user2@opensilex.org"), "user2", "anonymous", false, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
+
+            ProfileDAO profileDao = new ProfileDAO(sparql);
+            profileDao.create(new URI(PROFILE1_URI), "profile1", new ArrayList<>());
+            profileDao.create(new URI(PROFILE2_URI), "profile2", new ArrayList<>());
+        }
     }
 
     protected GroupCreationDTO getGroupCreationDTO() throws URISyntaxException {

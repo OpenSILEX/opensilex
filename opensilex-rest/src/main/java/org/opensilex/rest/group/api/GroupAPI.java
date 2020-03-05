@@ -67,11 +67,15 @@ public class GroupAPI {
     public static final String CREDENTIAL_GROUP_READ_ID = "group-read";
     public static final String CREDENTIAL_GROUP_READ_LABEL_KEY = "credential.group.read";
 
+    private final SPARQLService sparql;
+
     /**
      * Inject SPARQL service
      */
     @Inject
-    private SPARQLService sparql;
+    public GroupAPI(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
 
     /**
      * Create a group and return it's URI
@@ -99,11 +103,14 @@ public class GroupAPI {
     public Response createGroup(
             @ApiParam("Group creation informations") @Valid GroupCreationDTO dto
     ) throws Exception {
-        GroupDAO dao = new GroupDAO(sparql);
+        try (sparql) {
+            GroupDAO dao = new GroupDAO(sparql);
 
-        GroupModel group = dao.create(getModel(dto));
+            GroupModel group = dao.create(getModel(dto));
 
-        return new ObjectUriResponse(Response.Status.CREATED, group.getUri()).getResponse();
+            Response response = new ObjectUriResponse(Response.Status.CREATED, group.getUri()).getResponse();
+            return response;
+        }
     }
 
     @PUT
@@ -126,22 +133,27 @@ public class GroupAPI {
             @ApiParam("Group description")
             @Valid GroupUpdateDTO dto
     ) throws Exception {
-        GroupDAO dao = new GroupDAO(sparql);
+        try (sparql) {
+            GroupDAO dao = new GroupDAO(sparql);
 
-        GroupModel model = dao.get(dto.getUri());
+            GroupModel model = dao.get(dto.getUri());
 
-        if (model != null) {
-            GroupModel group = getModel(dto);
-            group.setUri(dto.getUri());
-            group = dao.update(group);
+            Response response;
+            if (model != null) {
+                GroupModel group = getModel(dto);
+                group.setUri(dto.getUri());
+                group = dao.update(group);
 
-            return new ObjectUriResponse(Response.Status.OK, group.getUri()).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Group not found",
-                    "Unknown group URI: " + dto.getUri()
-            ).getResponse();
+                response = new ObjectUriResponse(Response.Status.OK, group.getUri()).getResponse();
+            } else {
+                response = new ErrorResponse(
+                        Response.Status.NOT_FOUND,
+                        "Group not found",
+                        "Unknown group URI: " + dto.getUri()
+                ).getResponse();
+            }
+
+            return response;
         }
     }
 
@@ -163,9 +175,13 @@ public class GroupAPI {
             @NotNull
             @ValidURI URI uri
     ) throws Exception {
-        GroupDAO dao = new GroupDAO(sparql);
-        dao.delete(uri);
-        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        try (sparql) {
+            GroupDAO dao = new GroupDAO(sparql);
+            dao.delete(uri);
+            Response response = new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+
+            return response;
+        }
     }
 
     private GroupModel getModel(GroupCreationDTO dto) throws Exception {
@@ -218,22 +234,24 @@ public class GroupAPI {
             @PathParam("uri")
             @NotNull URI uri
     ) throws Exception {
-        GroupDAO dao = new GroupDAO(sparql);
-        GroupModel model = dao.get(uri);
+        try (sparql) {
+            GroupDAO dao = new GroupDAO(sparql);
+            GroupModel model = dao.get(uri);
 
-        // Check if group is found
-        if (model != null) {
-            // Return group converted in GroupGetDTO
-            return new SingleObjectResponse<>(
-                    GroupGetDTO.fromModel(model)
-            ).getResponse();
-        } else {
-            // Otherwise return a 404 - NOT_FOUND error response
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Group not found",
-                    "Unknown group URI: " + uri.toString()
-            ).getResponse();
+            // Check if group is found
+            if (model != null) {
+                // Return group converted in GroupGetDTO
+                return new SingleObjectResponse<>(
+                        GroupGetDTO.fromModel(model)
+                ).getResponse();
+            } else {
+                // Otherwise return a 404 - NOT_FOUND error response
+                return new ErrorResponse(
+                        Response.Status.NOT_FOUND,
+                        "Group not found",
+                        "Unknown group URI: " + uri.toString()
+                ).getResponse();
+            }
         }
     }
 
@@ -253,7 +271,7 @@ public class GroupAPI {
     @Path("search")
     @ApiOperation("Search groups")
     @ApiProtected
-        @ApiCredential(
+    @ApiCredential(
             groupId = CREDENTIAL_GROUP_GROUP_ID,
             groupLabelKey = CREDENTIAL_GROUP_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_GROUP_READ_ID,
@@ -280,22 +298,25 @@ public class GroupAPI {
             @DefaultValue("20")
             @Min(0) int pageSize
     ) throws Exception {
-        GroupDAO dao = new GroupDAO(sparql);
-        ListWithPagination<GroupModel> resultList = dao.search(
-                pattern,
-                orderByList,
-                page,
-                pageSize
-        );
+        try (sparql) {
+            GroupDAO dao = new GroupDAO(sparql);
+            ListWithPagination<GroupModel> resultList = dao.search(
+                    pattern,
+                    orderByList,
+                    page,
+                    pageSize
+            );
 
-        // Convert paginated list to DTO
-        ListWithPagination<GroupGetDTO> resultDTOList = resultList.convert(
-                GroupGetDTO.class,
-                GroupGetDTO::fromModel
-        );
+            // Convert paginated list to DTO
+            ListWithPagination<GroupGetDTO> resultDTOList = resultList.convert(
+                    GroupGetDTO.class,
+                    GroupGetDTO::fromModel
+            );
 
-        // Return paginated list of user DTO
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+            // Return paginated list of user DTO
+            Response response = new PaginatedListResponse<>(resultDTOList).getResponse();
+            return response;
+        }
     }
 
 }

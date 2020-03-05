@@ -17,16 +17,16 @@ import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.*;
-import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLConnection;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLStatement;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.exceptions.SPARQLTransactionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -34,28 +34,20 @@ import org.opensilex.sparql.exceptions.SPARQLTransactionException;
  */
 public class RDF4JConnection implements SPARQLConnection {
 
-    private Repository repository;
-    private RDF4JConfig config;
+    private final static Logger LOGGER = LoggerFactory.getLogger(RDF4JConnection.class);
+    
+    private final RepositoryConnection rdf4JConnection;
 
-    public RDF4JConnection(RDF4JConfig config) {
-        this.config = config;
-    }
-
-    public RDF4JConnection(Repository repository) {
-        this.repository = repository;
-    }
-
-    @Override
-    public void startup() {
-        if (repository == null) {
-            repository = new HTTPRepository(config.serverURI(), config.repository());
-        }
+    public RDF4JConnection(RepositoryConnection rdf4JConnection) {
+        this.rdf4JConnection = rdf4JConnection;
+        LOGGER.debug("Acquire RDF4J sparql connection: " + this.rdf4JConnection.hashCode());
 
     }
 
     @Override
-    public void shutdown() {
-        repository = null;
+    public void shutdown() throws Exception {
+        LOGGER.debug("Release RDF4J sparql connection: " + this.rdf4JConnection.hashCode());
+        this.rdf4JConnection.close();
     }
 
     @Override

@@ -44,6 +44,8 @@ import org.opensilex.sparql.rdf4j.RDF4JInMemoryService;
  */
 public class ExperimentDAOTest {
 
+    private static RDF4JInMemoryService factory;
+
     protected ExperimentDAO xpDao;
     protected static final String xpGraph = "set/experiments";
 
@@ -57,8 +59,8 @@ public class ExperimentDAOTest {
     public static void setup() throws Exception {
         OpenSilex.registerModule(RestModule.class);
         OpenSilex.registerModule(CoreModule.class);
-        sparql = new RDF4JInMemoryService();
-        sparql.startup();
+        factory = new RDF4JInMemoryService();
+        sparql = factory.provide();
     }
 
     @Before
@@ -78,7 +80,7 @@ public class ExperimentDAOTest {
     @AfterClass
     public static void shutdown() throws Exception {
         sparql.clear();
-        sparql.shutdown();
+        factory.dispose(sparql);
     }
 
     protected ExperimentModel getModel(int i) {

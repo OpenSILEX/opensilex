@@ -25,7 +25,7 @@ public class SPARQLClassAnalyzerTest {
         Repository repository = new SailRepository(new MemoryStore());
         repository.init();
 
-        SPARQLService localService = new SPARQLService(new RDF4JConnection(repository));
+        SPARQLService localService = new SPARQLService(new RDF4JConnection(repository.getConnection()));
         SPARQLServiceTest.initialize(localService);
     }
 

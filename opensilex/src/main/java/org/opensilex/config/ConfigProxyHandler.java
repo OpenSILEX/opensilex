@@ -24,6 +24,7 @@ import org.opensilex.OpenSilex;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceConfig;
 import org.opensilex.service.ServiceConnection;
+import org.opensilex.service.ServiceFactory;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.LoggerFactory;
 
@@ -101,7 +102,9 @@ public class ConfigProxyHandler implements InvocationHandler {
             Class<?> returnTypeClass = (Class<?>) type;
             if (ClassUtils.isPrimitive(returnTypeClass)) {
                 result = getPrimitive(returnTypeClass.getCanonicalName(), node.at(key), method);
-            } else if (Service.class.isAssignableFrom(returnTypeClass)) {
+            } else if (ServiceFactory.class.isAssignableFrom(returnTypeClass)) {
+                result = getService((Class<? extends Service>) returnTypeClass, node.at(key), method);
+            }else if (Service.class.isAssignableFrom(returnTypeClass)) {
                 result = getService((Class<? extends Service>) returnTypeClass, node.at(key), method);
             } else if (ClassUtils.isInterface(returnTypeClass)) {
                 result = getInterface(returnTypeClass, key, node);
@@ -530,4 +533,5 @@ public class ConfigProxyHandler implements InvocationHandler {
             throw new InvalidConfigException(ex);
         }
     }
+    
 }

@@ -14,7 +14,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.experimental.categories.Category;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.security.api.AuthenticationDTO;
@@ -22,7 +21,6 @@ import org.opensilex.rest.security.api.TokenGetDTO;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
 
@@ -39,6 +37,9 @@ import java.util.List;
 import java.util.Map;
 
 import static junit.framework.TestCase.assertEquals;
+import org.junit.experimental.categories.Category;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Renaud COLIN
@@ -49,6 +50,8 @@ import static junit.framework.TestCase.assertEquals;
 @Category(IntegrationTestCategory.class)
 public abstract class AbstractIntegrationTest extends JerseyTest {
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(AbstractIntegrationTest.class);
+       
     protected static IntegrationTestContext context;
 
     @Override
@@ -75,7 +78,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      * @see #getGraphsToCleanNames()
      */
     @After
-    public void clearGraph() throws SPARQLQueryException {
+    public void clearGraph() throws Exception {
         context.clearGraphs(getGraphsToCleanNames());
     }
 
@@ -98,14 +101,12 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return new ArrayList<>();
     }
 
-    protected static ObjectMapper mapper = new ObjectMapper();
-
     /**
      * Call the security service and return a new Token
      *
      * @return a new Token
      */
-    protected TokenGetDTO getToken() {
+    protected TokenGetDTO getToken() throws Exception{
 
         AuthenticationDTO authDto = new AuthenticationDTO();
         authDto.setIdentifier("admin@opensilex.org");
@@ -118,6 +119,9 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         JsonNode node = callResult.readEntity(JsonNode.class);
 
         // need to convert according a TypeReference, because the expected SingleObjectResponse is a generic object
+        ObjectMapper mapper = new ObjectMapper();
+        Object json = mapper.readValue(node.toString(), Object.class);
+        LOGGER.debug(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json));
         SingleObjectResponse<TokenGetDTO> res = mapper.convertValue(node, new TypeReference<SingleObjectResponse<TokenGetDTO>>() {
         });
 
@@ -126,6 +130,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return res.getResult();
     }
 
+    
     /**
      *
      * Get {@link Response} from an {@link ApiProtected} POST service call.
@@ -134,7 +139,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      * @param entity the data to POST on the given target
      * @return target invocation response.
      */
-    protected Response getJsonPostResponse(WebTarget target, Object entity) {
+    protected Response getJsonPostResponse(WebTarget target, Object entity) throws Exception {
         return appendToken(target).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
 
@@ -158,7 +163,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      * @param entity the data to PUT on the given target
      * @return target invocation response.
      */
-    protected Response getJsonPutResponse(WebTarget target, Object entity) {
+    protected Response getJsonPutResponse(WebTarget target, Object entity) throws Exception {
         return appendToken(target).put(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
 
@@ -184,7 +189,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      *
      * @see WebTarget#resolveTemplate(String, Object)
      */
-    protected Response getJsonGetByUriResponse(WebTarget target, String uri) {
+    protected Response getJsonGetByUriResponse(WebTarget target, String uri) throws Exception {
         return appendToken(target.resolveTemplate("uri", uri)).get();
     }
 
@@ -225,7 +230,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      *
      * @see WebTarget#resolveTemplate(String, Object)
      */
-    protected Response getDeleteByUriResponse(WebTarget target, String uri) {
+    protected Response getDeleteByUriResponse(WebTarget target, String uri) throws Exception {
         return appendToken(target.resolveTemplate("uri", uri)).delete();
     }
 
@@ -252,7 +257,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      * @return target invocation response.
 
      */
-    protected Response getDeleteJsonResponse(WebTarget target) {
+    protected Response getDeleteJsonResponse(WebTarget target) throws Exception {
         return appendToken(target).delete();
     }
 
@@ -318,7 +323,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      * @see ApiProtected#HEADER_NAME
      * @see ApiProtected#TOKEN_PARAMETER_PREFIX
      */
-    protected Invocation.Builder appendToken(WebTarget target) {
+    protected Invocation.Builder appendToken(WebTarget target) throws Exception {
         TokenGetDTO token = getToken();
         return target.request(MediaType.APPLICATION_JSON_TYPE)
                 .header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + token.getToken());
@@ -335,6 +340,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      */
     protected URI extractUriFromResponse(final Response response) throws URISyntaxException {
         JsonNode node = response.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class);
         return new URI(postResponse.getResult());
     }
@@ -349,6 +355,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      */
     protected List<URI> extractUriListFromPaginatedListResponse(final Response response) {
         JsonNode node = response.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         PaginatedListResponse<URI> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<URI>>() {
         });
         return listResponse.getResult();

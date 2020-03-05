@@ -5,10 +5,9 @@
  */
 package org.opensilex.sparql;
 
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.OpenSilex;
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.module.ModuleConfig;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
 
 /**
  *
@@ -31,7 +30,7 @@ public interface SPARQLConfig extends ModuleConfig {
     @ConfigDescription(
             value = "SPARQL data source"
     )
-    public SPARQLService sparql();
+    public SPARQLServiceFactory sparql();
 
     @ConfigDescription(
             value = "Diasable URI prefixes",

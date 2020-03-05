@@ -11,6 +11,7 @@ import org.opensilex.cli.OpenSilexCommand;
 import org.opensilex.cli.help.HelpOption;
 import org.opensilex.cli.help.HelpPrinterCommand;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -34,7 +35,9 @@ public class SPARQLCommands extends HelpPrinterCommand implements OpenSilexComma
             @CommandLine.Parameters(description = "New graph URI", defaultValue = "") URI newGraphURI,
             @CommandLine.Mixin HelpOption help
     ) throws Exception {
-        SPARQLService sparql = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
+        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
         sparql.renameGraph(oldGraphURI, newGraphURI);
+        factory.dispose(sparql);
     }
 }

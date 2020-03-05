@@ -2,6 +2,7 @@ package org.opensilex.rest.group.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opensilex.integration.test.AbstractIntegrationTest;
 import org.junit.Test;
 import javax.ws.rs.core.Response;
@@ -20,6 +21,7 @@ import org.opensilex.rest.profile.dal.ProfileDAO;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.service.SPARQLService;
 
 public class GroupAPITest extends AbstractIntegrationTest {
 
@@ -43,15 +45,17 @@ public class GroupAPITest extends AbstractIntegrationTest {
     private final static String PROFILE2_URI = "http://example.org/profiles/profile2";
 
     protected void createTestEnv() throws Exception {
-        UserDAO userDao = new UserDAO(this.getSparqlService());
-        AuthenticationService authentication = this.getAuthenticationService();
-        
-        userDao.create(new URI(USER1_URI), new InternetAddress("user1@opensilex.org"), "user1", "anonymous", true, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
-        userDao.create(new URI(USER2_URI), new InternetAddress("user2@opensilex.org"), "user2", "anonymous", false, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
+        try (SPARQLService sparql = this.getSparqlService()) {
+            UserDAO userDao = new UserDAO(sparql);
+            AuthenticationService authentication = this.getAuthenticationService();
 
-        ProfileDAO profileDao = new ProfileDAO(this.getSparqlService());
-        profileDao.create(new URI(PROFILE1_URI), "profile1", new ArrayList<>());
-        profileDao.create(new URI(PROFILE2_URI), "profile2", new ArrayList<>());
+            userDao.create(new URI(USER1_URI), new InternetAddress("user1@opensilex.org"), "user1", "anonymous", true, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
+            userDao.create(new URI(USER2_URI), new InternetAddress("user2@opensilex.org"), "user2", "anonymous", false, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
+
+            ProfileDAO profileDao = new ProfileDAO(sparql);
+            profileDao.create(new URI(PROFILE1_URI), "profile1", new ArrayList<>());
+            profileDao.create(new URI(PROFILE2_URI), "profile2", new ArrayList<>());
+        }
     }
 
     protected GroupCreationDTO getGroupCreationDTO() throws URISyntaxException {
@@ -121,6 +125,7 @@ public class GroupAPITest extends AbstractIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         SingleObjectResponse<GroupGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<GroupGetDTO>>() {
         });
         GroupGetDTO dtoFromApi = getResponse.getResult();
@@ -182,6 +187,7 @@ public class GroupAPITest extends AbstractIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), getSearchResult.getStatus());
 
         JsonNode node = getSearchResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         PaginatedListResponse<GroupGetDTO> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GroupGetDTO>>() {
         });
         List<GroupGetDTO> users = listResponse.getResult();

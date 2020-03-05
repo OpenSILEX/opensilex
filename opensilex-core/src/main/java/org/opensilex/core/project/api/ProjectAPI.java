@@ -57,7 +57,11 @@ public class ProjectAPI {
     public static final String CREDENTIAL_PROJECT_READ_LABEL_KEY = "credential.project.read";
 
     @Inject
-    private SPARQLService sparql;
+    public ProjectAPI(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
 
     @POST
     @ApiOperation("Create a project")

@@ -8,6 +8,7 @@ package org.opensilex.sparql.rdf4j;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
@@ -19,13 +20,14 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.*;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLConnection;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLStatement;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.exceptions.SPARQLTransactionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -33,31 +35,22 @@ import org.opensilex.sparql.exceptions.SPARQLTransactionException;
  */
 public class RDF4JConnection implements SPARQLConnection {
 
-    private RepositoryConnection rdf4JConnection;
-    private RDF4JConfig config;
+    private final static Logger LOGGER = LoggerFactory.getLogger(RDF4JConnection.class);
+    
+    private final RepositoryConnection rdf4JConnection;
 
-    public RDF4JConnection(RDF4JConfig config) {
-        this.config = config;
-    }
-
-    public RDF4JConnection(RepositoryConnection connection) {
-        this.rdf4JConnection = connection;
-    }
-
-    @Override
-    public void startup() {
-        if (rdf4JConnection == null) {
-            HTTPRepository repository = new HTTPRepository(config.serverURI(), config.repository());
-            rdf4JConnection = repository.getConnection();
-        }
+    private static AtomicInteger connectionCount = new AtomicInteger(0);
+    
+    public RDF4JConnection(RepositoryConnection rdf4JConnection) {
+        this.rdf4JConnection = rdf4JConnection;
+        LOGGER.debug("Acquire RDF4J sparql connection: " + this.rdf4JConnection.hashCode() + " (" + RDF4JConnection.connectionCount.incrementAndGet() + ")");
 
     }
 
     @Override
-    public void shutdown() {
-        if (rdf4JConnection != null) {
-            rdf4JConnection.close();
-        }
+    public void shutdown() throws Exception {
+        LOGGER.debug("Release RDF4J sparql connection: " + this.rdf4JConnection.hashCode() + " (" + RDF4JConnection.connectionCount.decrementAndGet() + ")");
+        this.rdf4JConnection.close();
     }
 
     @Override

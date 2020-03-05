@@ -2,8 +2,9 @@ package org.opensilex.rest.profile.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import static io.swagger.util.Yaml.mapper;
 import org.opensilex.integration.test.AbstractIntegrationTest;
-import org.junit.Test;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,6 +14,7 @@ import javax.ws.rs.client.WebTarget;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import org.junit.Assert;
+import org.junit.Test;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 
@@ -48,7 +50,7 @@ public class ProfileAPITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testCreate() throws URISyntaxException {
+    public void testCreate() throws Exception {
 
         Response postResult = getJsonPostResponse(target(createPath), getProfilCreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
@@ -60,7 +62,7 @@ public class ProfileAPITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testUpdate() throws URISyntaxException {
+    public void testUpdate() throws Exception {
 
         // create the user
         Response postResult = getJsonPostResponse(target(createPath), getProfilCreationDTO());
@@ -85,6 +87,7 @@ public class ProfileAPITest extends AbstractIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         SingleObjectResponse<ProfileGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ProfileGetDTO>>() {
         });
         ProfileGetDTO dtoFromApi = getResponse.getResult();
@@ -94,7 +97,7 @@ public class ProfileAPITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testDelete() throws URISyntaxException {
+    public void testDelete() throws Exception {
 
         // create object and check if URI exists
         Response postResponse = getJsonPostResponse(target(createPath), getProfilCreationDTO());
@@ -110,7 +113,7 @@ public class ProfileAPITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testSearch() throws URISyntaxException {
+    public void testSearch() throws Exception {
 
         Response postResult = getJsonPostResponse(target(createPath), getProfilCreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
@@ -124,7 +127,7 @@ public class ProfileAPITest extends AbstractIntegrationTest {
                 add("cred4");
             }
         });
-        
+
         postResult = getJsonPostResponse(target(createPath), profile2);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
@@ -139,6 +142,7 @@ public class ProfileAPITest extends AbstractIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), getSearchResult.getStatus());
 
         JsonNode node = getSearchResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         PaginatedListResponse<ProfileGetDTO> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ProfileGetDTO>>() {
         });
         List<ProfileGetDTO> users = listResponse.getResult();
@@ -157,9 +161,9 @@ public class ProfileAPITest extends AbstractIntegrationTest {
         users = listResponse.getResult();
         assertEquals(1, users.size());
     }
-    
+
     @Test
-    public void testGetAll() throws URISyntaxException {
+    public void testGetAll() throws Exception {
 
         Response postResult = getJsonPostResponse(target(createPath), getProfilCreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
@@ -173,7 +177,7 @@ public class ProfileAPITest extends AbstractIntegrationTest {
                 add("cred4");
             }
         });
-        
+
         postResult = getJsonPostResponse(target(createPath), profile2);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
@@ -181,6 +185,7 @@ public class ProfileAPITest extends AbstractIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), getAllResult.getStatus());
 
         JsonNode node = getAllResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         PaginatedListResponse<ProfileGetDTO> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ProfileGetDTO>>() {
         });
         List<ProfileGetDTO> users = listResponse.getResult();
@@ -194,7 +199,7 @@ public class ProfileAPITest extends AbstractIntegrationTest {
         assertEquals(expectedProfileDTO.getName(), actualProfileDTO.getName());
         expectedProfileDTO.getCredentials().sort(String::compareTo);
         String[] expectedCredentials = expectedProfileDTO.getCredentials().toArray(new String[expectedProfileDTO.getCredentials().size()]);
-        
+
         actualProfileDTO.getCredentials().sort(String::compareTo);
         String[] actualCredentials = actualProfileDTO.getCredentials().toArray(new String[actualProfileDTO.getCredentials().size()]);
         Assert.assertArrayEquals(expectedCredentials, actualCredentials);

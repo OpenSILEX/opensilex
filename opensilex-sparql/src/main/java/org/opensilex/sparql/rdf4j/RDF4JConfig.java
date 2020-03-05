@@ -6,12 +6,13 @@
 package org.opensilex.sparql.rdf4j;
 
 import org.opensilex.config.ConfigDescription;
+import org.opensilex.service.ServiceConfig;
 
 
 /**
  * RDF4J configuration interface
  */
-public interface RDF4JConfig {
+public interface RDF4JConfig extends ServiceConfig {
 
     /**
      * RDF4J Server URI

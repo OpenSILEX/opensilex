@@ -46,18 +46,23 @@ import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
 /**
- * 
+ *
  * @author charlero
  */
 @Api("Factors")
 @Path("/core/factor")
 public class FactorAPI {
-    
+
     @Inject
-    private SPARQLService sparql;
-    
+    public FactorAPI(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
      * Create a factor model from a FactorCreationDTO object
+     *
      * @param dto FactorCreationDTO object
      * @return Factor URI
      * @throws Exception if creation failed
@@ -83,9 +88,10 @@ public class FactorAPI {
             ).getResponse();
         }
     }
-    
+
     /**
      * Retreive factor by uri
+     *
      * @param uri factor uri
      * @return Return factor detail
      * @throws Exception in case of server error
@@ -101,7 +107,7 @@ public class FactorAPI {
     ) throws Exception {
         FactorDAO dao = new FactorDAO(sparql);
         FactorModel model = dao.get(uri);
-        
+
         if (model != null) {
             return new SingleObjectResponse<>(
                     FactorGetDTO.fromModel(model)
@@ -114,7 +120,7 @@ public class FactorAPI {
             ).getResponse();
         }
     }
-    
+
     /**
      * Search factors
      *
@@ -161,9 +167,10 @@ public class FactorAPI {
         // Return paginated list of factor DTO
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
-    
+
     /**
      * Remove a factor
+     *
      * @param uri factor uri
      * @return URI of deleted factor
      * @throws Exception if suppression failed

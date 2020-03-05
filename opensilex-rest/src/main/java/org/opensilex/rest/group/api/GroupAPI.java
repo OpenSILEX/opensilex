@@ -67,11 +67,15 @@ public class GroupAPI {
     public static final String CREDENTIAL_GROUP_READ_ID = "group-read";
     public static final String CREDENTIAL_GROUP_READ_LABEL_KEY = "credential.group.read";
 
+    private final SPARQLService sparql;
+
     /**
      * Inject SPARQL service
      */
     @Inject
-    private SPARQLService sparql;
+    public GroupAPI(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
 
     /**
      * Create a group and return it's URI
@@ -103,7 +107,8 @@ public class GroupAPI {
 
         GroupModel group = dao.create(getModel(dto));
 
-        return new ObjectUriResponse(Response.Status.CREATED, group.getUri()).getResponse();
+        Response response = new ObjectUriResponse(Response.Status.CREATED, group.getUri()).getResponse();
+        return response;
     }
 
     @PUT
@@ -130,19 +135,22 @@ public class GroupAPI {
 
         GroupModel model = dao.get(dto.getUri());
 
+        Response response;
         if (model != null) {
             GroupModel group = getModel(dto);
             group.setUri(dto.getUri());
             group = dao.update(group);
 
-            return new ObjectUriResponse(Response.Status.OK, group.getUri()).getResponse();
+            response = new ObjectUriResponse(Response.Status.OK, group.getUri()).getResponse();
         } else {
-            return new ErrorResponse(
+            response = new ErrorResponse(
                     Response.Status.NOT_FOUND,
                     "Group not found",
                     "Unknown group URI: " + dto.getUri()
             ).getResponse();
         }
+
+        return response;
     }
 
     @DELETE
@@ -165,7 +173,9 @@ public class GroupAPI {
     ) throws Exception {
         GroupDAO dao = new GroupDAO(sparql);
         dao.delete(uri);
-        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        Response response = new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+
+        return response;
     }
 
     private GroupModel getModel(GroupCreationDTO dto) throws Exception {
@@ -253,7 +263,7 @@ public class GroupAPI {
     @Path("search")
     @ApiOperation("Search groups")
     @ApiProtected
-        @ApiCredential(
+    @ApiCredential(
             groupId = CREDENTIAL_GROUP_GROUP_ID,
             groupLabelKey = CREDENTIAL_GROUP_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_GROUP_READ_ID,
@@ -295,7 +305,8 @@ public class GroupAPI {
         );
 
         // Return paginated list of user DTO
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        Response response = new PaginatedListResponse<>(resultDTOList).getResponse();
+        return response;
     }
 
 }

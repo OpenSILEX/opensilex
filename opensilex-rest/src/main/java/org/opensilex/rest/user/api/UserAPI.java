@@ -80,11 +80,15 @@ public class UserAPI {
     public static final String CREDENTIAL_USER_READ_ID = "user-read";
     public static final String CREDENTIAL_USER_READ_LABEL_KEY = "credential.user.read";
 
+    private final SPARQLService sparql;
+
     /**
      * Inject SPARQL service
      */
     @Inject
-    private SPARQLService sparql;
+    public UserAPI(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
 
     /**
      * Inject Authentication service

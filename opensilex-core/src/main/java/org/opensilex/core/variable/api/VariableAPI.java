@@ -54,7 +54,11 @@ public class VariableAPI {
     public static final String CREDENTIAL_VARIABLE_READ_LABEL_KEY = "credential.variable.read";
 
     @Inject
-    private SPARQLService sparql;
+    public VariableAPI(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
 
     @POST
     @ApiOperation("Create a variable")

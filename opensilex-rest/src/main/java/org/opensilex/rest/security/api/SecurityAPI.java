@@ -65,16 +65,23 @@ public class SecurityAPI {
     private final static Logger LOGGER = LoggerFactory.getLogger(SecurityAPI.class);
 
     /**
-     * Inject SPARQL service
+     * SPARQL service
      */
-    @Inject
-    private SPARQLService sparql;
+    private final SPARQLService sparql;
 
     /**
      * Inject Authentication service
      */
     @Inject
     private AuthenticationService authentication;
+
+    /**
+     * Inject SPARQL service
+     */
+    @Inject
+    public SecurityAPI(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
 
     /**
      * Authenticate a user with it's identifier (email or URI) and password
@@ -202,7 +209,7 @@ public class SecurityAPI {
     @ApiResponses({
         @ApiResponse(code = 200, message = "List of existing credentials by group in the application", response = CredentialsGroupDTO.class, responseContainer = "List")
     })
-    public Response getCredentialsGroups() {
+    public Response getCredentialsGroups() throws Exception {
         if (credentialsGroupList == null) {
             SecurityAccessDAO securityDAO = new SecurityAccessDAO(sparql);
             credentialsGroupList = new ArrayList<>();

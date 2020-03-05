@@ -4,8 +4,6 @@
 // Copyright © INRAE 2020
 // Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
-
-
 package org.opensilex.integration.test;
 
 import org.glassfish.jersey.internal.inject.AbstractBinder;
@@ -24,11 +22,13 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
 
 /**
  * @author Renaud COLIN
  *
- * An utility class used in order to init an {@link OpenSilex} instance for unit and integration testing.
+ * An utility class used in order to init an {@link OpenSilex} instance for unit
+ * and integration testing.
  */
 public class IntegrationTestContext {
 
@@ -61,10 +61,14 @@ public class IntegrationTestContext {
 
         // add the admin user
         SPARQLService sparqlService = getSparqlService();
-        AuthenticationService authentication = opensilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
-        UserDAO userDAO = new UserDAO(sparqlService);
-        InternetAddress email = new InternetAddress("admin@opensilex.org");
-        userDAO.create(null, email, "Admin", "OpenSilex", true, authentication.getPasswordHash("admin"), "en-US");
+        try {
+            AuthenticationService authentication = opensilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
+            UserDAO userDAO = new UserDAO(sparqlService);
+            InternetAddress email = new InternetAddress("admin@opensilex.org");
+            userDAO.create(null, email, "Admin", "OpenSilex", true, authentication.getPasswordHash("admin"), "en-US");
+        } finally {
+            sparqlService.shutdown();
+        }
     }
 
     public ResourceConfig getResourceConfig() {
@@ -76,8 +80,9 @@ public class IntegrationTestContext {
      * @return the {@link SPARQLService} used for tests
      */
     public SPARQLService getSparqlService() {
-        return OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
+        return OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
     }
+
     /**
      *
      * @return the {@link AuthenticationService} used for tests
@@ -86,18 +91,25 @@ public class IntegrationTestContext {
         return OpenSilex.getInstance().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
     }
 
-
     /**
      * Clear the list of SPARQL graph to clear after each test execution
      *
-     * @throws SPARQLQueryException if an errors occurs during SPARQL query execution
+     * @throws SPARQLQueryException if an errors occurs during SPARQL query
+     * execution
      */
-    public void clearGraphs(List<String> graphsToClear) throws SPARQLQueryException {
-        SPARQLModule.clearPlatformGraphs(getSparqlService(), graphsToClear);
+    public void clearGraphs(List<String> graphsToClear) throws Exception {
+        SPARQLService sparqlService = getSparqlService();
+        try {
+            SPARQLModule.clearPlatformGraphs(sparqlService, graphsToClear);
+        } finally {
+            sparqlService.close();
+        }
+
     }
 
     /**
-     * @throws Exception if any Exception was encountered during context shutdown.
+     * @throws Exception if any Exception was encountered during context
+     * shutdown.
      */
     public void shutdown() throws Exception {
         OpenSilex.getInstance().shutdown();

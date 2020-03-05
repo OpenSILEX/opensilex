@@ -50,7 +50,11 @@ import org.opensilex.utils.ListWithPagination;
 public class QualityAPI {
 
     @Inject
-    private SPARQLService sparql;
+    public QualityAPI(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
 
     @POST
     @ApiOperation("Create a quality")

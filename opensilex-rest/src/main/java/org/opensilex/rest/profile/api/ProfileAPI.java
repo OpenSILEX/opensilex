@@ -81,11 +81,15 @@ public class ProfileAPI {
     public static final String CREDENTIAL_PROFILE_READ_ID = "profile-read";
     public static final String CREDENTIAL_PROFILE_READ_LABEL_KEY = "credential.profile.read";
 
+    private final SPARQLService sparql;
+
     /**
      * Inject SPARQL service
      */
     @Inject
-    private SPARQLService sparql;
+    public ProfileAPI(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
 
     @POST
     @Path("create")
@@ -175,7 +179,7 @@ public class ProfileAPI {
 
     /**
      * Get a profile by it's URI
-     * 
+     *
      * @param uri uri of the profile
      * @return corresponding profile
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
@@ -197,7 +201,7 @@ public class ProfileAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
         @ApiResponse(code = 404, message = "User not found", response = ErrorDTO.class)
     })
-    public Response getUser(
+    public Response getProfile(
             @ApiParam(value = "User URI", example = "dev-users:Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         // Get user from DAO by URI
@@ -219,7 +223,7 @@ public class ProfileAPI {
             ).getResponse();
         }
     }
-    
+
     @DELETE
     @Path("delete/{uri}")
     @ApiOperation("Delete a profile")

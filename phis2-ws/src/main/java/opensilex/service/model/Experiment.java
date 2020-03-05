@@ -212,9 +212,10 @@ public class Experiment {
     }
 
 
-    public static ExperimentModel toExperimentModel(Experiment xp, SpeciesDAO speciesDAO, ProjectDAO projectDAO, UserDAO userDAO, GroupDAO groupDAO) throws Exception {
+    public static ExperimentModel toExperimentModel(Experiment xp, ExperimentModel preloadedExperiment,
+                                                    SpeciesDAO speciesDAO, ProjectDAO projectDAO, UserDAO userDAO, GroupDAO groupDAO) throws Exception {
 
-        ExperimentModel xpModel = new ExperimentModel();
+        ExperimentModel xpModel = preloadedExperiment == null ? new ExperimentModel() : preloadedExperiment;
 
         if (!StringUtils.isEmpty(xp.getUri())) {
             xpModel.setUri(new URI(xp.getUri()));

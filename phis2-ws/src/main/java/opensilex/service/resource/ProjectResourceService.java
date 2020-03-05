@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -186,20 +187,20 @@ public class ProjectResourceService extends ResourceService {
             projectModels.add(projectModel);
 
             if (project.getFinancialReference() != null && !project.getFinancialReference().isEmpty()) {
-                sparql.updateObjectRelation(
+                sparql.updateObjectRelations(
                         projectMapper.getDefaultGraph(),
                         projectModel.getUri(),
                         hasFinancialReference,
-                        project.getFinancialReference()
+                       Collections.singletonList(project.getFinancialReference())
                 );
             }
 
             if (project.getFinancialFunding() != null && !project.getFinancialFunding().isEmpty()) {
-                sparql.updateObjectRelation(
+                sparql.updateObjectRelations(
                         projectMapper.getDefaultGraph(),
                         projectModel.getUri(),
                         hasFinancialFunding,
-                        new URI(project.getFinancialFunding())
+                        Collections.singletonList( new URI(project.getFinancialFunding()))
                 );
             }
 

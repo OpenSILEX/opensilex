@@ -18,12 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
-import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.common.io.IOUtil;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -50,8 +46,8 @@ import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.sparql.service.SPARQLStatement;
-import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,25 +82,32 @@ public class SPARQLModule extends OpenSilexModule {
             basePrefix = "";
         }
 
-        SPARQLService sparql = sparqlConfig.sparql();
-
         if (sparqlConfig.usePrefixes()) {
             SPARQLClassObjectMapper.forEach((Resource resource, SPARQLClassObjectMapper<?> mapper) -> {
                 String resourceNamespace = mapper.getResourceGraphNamespace();
                 String resourcePrefix = mapper.getResourceGraphPrefix();
                 if (resourceNamespace != null && resourcePrefix != null && !resourcePrefix.isEmpty()) {
-                    sparql.addPrefix(basePrefix + mapper.getResourceGraphPrefix(), resourceNamespace + "#");
+                    SPARQLService.addPrefix(basePrefix + mapper.getResourceGraphPrefix(), resourceNamespace + "#");
                 }
             });
         } else {
-            sparql.clearPrefixes();
+            SPARQLService.clearPrefixes();
         }
-        URIDeserializer.setPrefixes(sparql.getPrefixMapping());
+        URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping());
 
         SPARQLConfig cfg = OpenSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
-        sparql.addPrefix(cfg.baseURIAlias(), cfg.baseURI());
+        SPARQLService.addPrefix(cfg.baseURIAlias(), cfg.baseURI());
 
     }
+
+    @Override
+    public void shutdown() {
+        SPARQLService.clearPrefixes();
+        URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping());
+        SPARQLClassObjectMapper.reset();
+    }
+    
+    
 
     /**
      * Return configured platform base URI
@@ -142,16 +145,15 @@ public class SPARQLModule extends OpenSilexModule {
     public void install(boolean reset) throws Exception {
         LOGGER.info("Initialize RDF4J");
         initRDF4J(reset);
-//        LOGGER.info("Insert species");
-//        insertSpecies(reset);
     }
     
     @Override
     public void check() throws Exception {
         LOGGER.info("Check RDF4J connnection & ontologies initialization");
-        OpenSilex opensilex = OpenSilex.getInstance();
-        SPARQLService sparql = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
+        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
         List<SPARQLStatement> results = sparql.describe(new URI("http://www.opensilex.org/vocabulary/oeso"));
+        factory.dispose(sparql);
         
         if (results.size() == 0) {
             LOGGER.error("There is missing data into your triple store, did you execute 'opensilex system setup' command ?");
@@ -170,7 +172,8 @@ public class SPARQLModule extends OpenSilexModule {
 
         // Restart repository to reload sparql service
         opensilex.restart();
-        SPARQLService sparql = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
+        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
 
         // Import default ontologies
         LOGGER.info("Install oa ontology: http://www.w3.org/ns/oa");
@@ -195,6 +198,8 @@ public class SPARQLModule extends OpenSilexModule {
         ontologyStream = new FileInputStream(ClassUtils.getFileFromClassArtifact(SPARQLModule.class, "install/species.ttl"));
         sparql.loadOntologyStream(graph, ontologyStream, Lang.TTL);
         ontologyStream.close();
+        
+        factory.dispose(sparql);
     }
     
     private static void createRDF4JRepository(RDF4JConfig config, boolean reset) throws IOException {
@@ -256,184 +261,4 @@ public class SPARQLModule extends OpenSilexModule {
         repositoryManager.addRepositoryConfig(repConfig);
         repositoryManager.shutDown();
     }
-    
-    // TODO to remove
-    private static void insertSpecies(boolean reset) throws Exception {
-         SPARQLService sparql = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
-        SPARQLConfig sparqlConfig = OpenSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
-        UpdateBuilder builder = new UpdateBuilder();
-        Node graph = NodeFactory.createURI(sparqlConfig.baseURI() + "species");
-        
-        if (reset) {
-            sparql.clearGraph(new URI(graph.getURI()));
-        }
-        
-        Resource speciesResource = Ontology.resource("http://www.opensilex.org/vocabulary/oeso#Species");
-        Map<String, Map<String, String>> speciesInstances = new HashMap<>();
-
-        speciesInstances.put("zeamays", new HashMap<String , String>() {
-            {
-                put("en", "Maize");
-                put("fr", "Maïs");
-                put("la", "Zea mays");
-            }
-        });
-
-        speciesInstances.put("betavulgaris", new HashMap<String , String>() {
-            {
-                put("en", "Beet");
-                put("fr", "Betterave");
-                put("la", "Beta vulgaris");
-            }
-        });
-
-        speciesInstances.put("canabissativa", new HashMap<String , String>() {
-            {
-                put("en", "Hemp");
-                put("fr", "Chanvre");
-                put("la", "Canabis sativa");
-            }
-        });
-
-        speciesInstances.put("glycinemax", new HashMap<String , String>() {
-            {
-                put("en", "Soybean");
-                put("fr", "Soja");
-                put("la", "Glycine max");
-            }
-        });
-
-        speciesInstances.put("gossypiumhirsutum", new HashMap<String , String>() {
-            {
-                put("en", "Upland cotton");
-                put("fr", "Coton mexicain");
-                put("la", "Gossypium hirsutum");
-            }
-        });
-
-        speciesInstances.put("helianthusannuus", new HashMap<String , String>() {
-            {
-                put("en", "Sunflower");
-                put("fr", "Tournesol");
-                put("la", "Helianthus annuus");
-            }
-        });
-
-        speciesInstances.put("linumusitatissum", new HashMap<String , String>() {
-            {
-                put("en", "Flax");
-                put("fr", "Lin");
-                put("la", "Linum usitatissimum");
-            }
-        });
-
-        speciesInstances.put("lupinusalbus", new HashMap<String , String>() {
-            {
-                put("en", "Lupine");
-                put("fr", "Lupin blanc");
-                put("la", "Lupinus albus");
-            }
-        });
-
-        speciesInstances.put("ordeumvulgare", new HashMap<String , String>() {
-            {
-                put("en", "Barley");
-                put("fr", "Orge");
-                put("la", "Ordeum vulgare");
-            }
-        });
-
-        speciesInstances.put("orizasativa", new HashMap<String , String>() {
-            {
-                put("en", "Rice");
-                put("fr", "Riz");
-                put("la", "Oriza sativa");
-            }
-        });
-
-        speciesInstances.put("pennisetumglaucum", new HashMap<String , String>() {
-            {
-                put("en", "Pearl millet");
-                put("fr", "Mil");
-                put("la", "Pennisetum glaucum");
-            }
-        });
-
-        speciesInstances.put("pisumsativum", new HashMap<String , String>() {
-            {
-                put("en", "Peas");
-                put("fr", "Pois protéagineux");
-                put("la", "Pisum sativum");
-            }
-        });
-
-        speciesInstances.put("populus", new HashMap<String , String>() {
-            {
-                put("en", "Polar");
-                put("fr", "Peuplier");
-                put("la", "Populus");
-            }
-        });
-
-        speciesInstances.put("sorghumbicolor", new HashMap<String , String>() {
-            {
-                put("en", "Sorghum");
-                put("fr", "Sorgho");
-                put("la", "Sorghum bicolor");
-            }
-        });
-
-        speciesInstances.put("viciafaba", new HashMap<String , String>() {
-            {
-                put("en", "Fababean");
-                put("fr", "Féverole");
-                put("la", "Vicia faba");
-            }
-        });
-
-        speciesInstances.put("teosinte", new HashMap<String , String>() {
-            {
-                put("en", "Teosintes");
-                put("fr", "Téosintes");
-                put("la", "Teosinte");
-            }
-        });
-
-        speciesInstances.put("tritucumaestivum", new HashMap<String , String>() {
-            {
-                put("en", "Bread wheat");
-                put("fr", "Blé tendre");
-                put("la", "Triticum aestivum");
-            }
-        });
-
-        speciesInstances.put("tritucumturgidum", new HashMap<String , String>() {
-            {
-                put("en", "Durum wheat");
-                put("fr", "Blé dur");
-                put("la", "Triticum turgidum");
-            }
-        });
-
-        speciesInstances.put("banana", new HashMap<String , String>() {
-            {
-                put("en", "Banana");
-                put("fr", "Bananier");
-                put("la", "Musa");
-            }
-        });
-
-        speciesInstances.forEach((key, translations) -> {
-            Node speciesURI = NodeFactory.createURI(sparqlConfig.baseURI() + "id/species/" + key);
-            builder.addInsert(graph, speciesURI, org.apache.jena.vocabulary.RDF.type, speciesResource);
-            translations.forEach((lang, label) -> {
-                builder.addInsert(graph, speciesURI, RDFS.label, label + "@" + lang);
-            });
-        });
-        
-        sparql.executeUpdateQuery(builder);
-    }
-    
-    
-
 }

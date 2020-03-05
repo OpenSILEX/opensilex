@@ -75,7 +75,7 @@ import org.slf4j.LoggerFactory;
         connectionConfig = RDF4JConfig.class,
         connectionConfigID = "rdf4j"
 )
-public class SPARQLService implements SPARQLConnection, Service {
+public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLService.class);
 
@@ -95,10 +95,13 @@ public class SPARQLService implements SPARQLConnection, Service {
     @Override
     public void shutdown() throws Exception {
         connection.shutdown();
-        prefixes = getDefaultPrefixes();
-        SPARQLClassObjectMapper.reset();
     }
 
+    @Override
+    public void close() throws Exception {
+        shutdown();
+    }
+    
     private static HashMap<String, String> getDefaultPrefixes() {
         return new HashMap<String, String>() {
             {
@@ -111,30 +114,30 @@ public class SPARQLService implements SPARQLConnection, Service {
         };
     }
 
-    private HashMap<String, String> prefixes = getDefaultPrefixes();
+    private static HashMap<String, String> prefixes = getDefaultPrefixes();
 
-    public void addPrefix(String prefix, String namespace) {
+    public static void addPrefix(String prefix, String namespace) {
         prefixes.put(prefix, namespace);
     }
 
-    public Map<String, String> getPrefixes() {
+    public static Map<String, String> getPrefixes() {
         return prefixes;
     }
 
-    public PrefixMapping getPrefixMapping() {
+    public static PrefixMapping getPrefixMapping() {
         return PrefixMapping.Factory.create().setNsPrefixes(prefixes);
     }
 
-    private void addPrefixes(UpdateBuilder builder) {
+    private static void addPrefixes(UpdateBuilder builder) {
         getPrefixes().forEach(builder::addPrefix);
     }
 
-    private void addPrefixes(AbstractQueryBuilder<?> builder) {
+    private static void addPrefixes(AbstractQueryBuilder<?> builder) {
         getPrefixes().forEach(builder::addPrefix);
     }
 
-    public void clearPrefixes() {
-        prefixes.clear();
+    public static void clearPrefixes() {
+        prefixes = getDefaultPrefixes();
     }
 
     @Override

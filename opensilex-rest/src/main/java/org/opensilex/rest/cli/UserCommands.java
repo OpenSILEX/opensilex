@@ -6,6 +6,8 @@
 //******************************************************************************
 package org.opensilex.rest.cli;
 
+import java.net.URI;
+import java.util.List;
 import javax.mail.internet.InternetAddress;
 import org.opensilex.OpenSilex;
 import org.opensilex.cli.MainCommand;
@@ -19,6 +21,8 @@ import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
+import org.opensilex.sparql.service.SPARQLStatement;
 import picocli.CommandLine;
 
 /**
@@ -60,7 +64,9 @@ public class UserCommands extends HelpPrinterCommand implements OpenSilexCommand
         
         OpenSilex opensilex = OpenSilex.getInstance();
         
-        SPARQLService sparql = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLService.class);
+        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
+
         AuthenticationService authentication = opensilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
 
         UserDAO userDAO = new UserDAO(sparql);
@@ -69,6 +75,7 @@ public class UserCommands extends HelpPrinterCommand implements OpenSilexCommand
         UserModel user = userDAO.create(null, new InternetAddress(email), firstName, lastName, isAdmin, passwordHash, lang);
         
         LOGGER.info("User created: " + user.getUri());
+        factory.dispose(sparql);
     }
     
     public static void main(String[] args) {

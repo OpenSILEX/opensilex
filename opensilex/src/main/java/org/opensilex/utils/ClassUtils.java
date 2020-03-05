@@ -169,24 +169,28 @@ public class ClassUtils {
     }
     
     public static File getFileFromJar(File jarFile, String filePath) throws IOException {
-        ZipFile zipFile = new ZipFile(jarFile);
-        ZipEntry entry = zipFile.getEntry(filePath);
+        if (jarFile.isFile()) {
+            ZipFile zipFile = new ZipFile(jarFile);
+            ZipEntry entry = zipFile.getEntry(filePath);
 
-        InputStream pomStream = zipFile.getInputStream(entry);
-        File temp = File.createTempFile("opensilex-temp.", ".temp");
-        temp.deleteOnExit();
-        FileOutputStream out = new FileOutputStream(temp);
-        byte[] buffer = new byte[1024];
-        int bytesRead;
-        //read from is to buffer
-        while ((bytesRead = pomStream.read(buffer)) != -1) {
-            out.write(buffer, 0, bytesRead);
+            InputStream pomStream = zipFile.getInputStream(entry);
+            File temp = File.createTempFile("opensilex-temp.", ".temp");
+            temp.deleteOnExit();
+            FileOutputStream out = new FileOutputStream(temp);
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            //read from is to buffer
+            while ((bytesRead = pomStream.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+            pomStream.close();
+            out.flush();
+            out.close();
+            zipFile.close();
+            return temp;
+        } else {
+            return Paths.get(jarFile.getAbsolutePath()).resolve(filePath).toFile();
         }
-        pomStream.close();
-        out.flush();
-        out.close();
-        zipFile.close();
-        return temp;
     }
 
     public static File getPomFile(File jarFile, String groupId, String artifactId) throws IOException {

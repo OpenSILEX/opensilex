@@ -9,6 +9,7 @@ package org.opensilex.core.experiment.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opensilex.integration.test.AbstractIntegrationTest;
 import org.junit.Test;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -54,7 +55,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
     }
 
 //    @Test
-    public void testCreate() throws URISyntaxException {
+    public void testCreate() throws Exception {
 
         final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
         assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
@@ -66,7 +67,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
     }
 
 //    @Test
-    public void testCreateAll() throws URISyntaxException {
+    public void testCreateAll() throws Exception {
 
         List<ExperimentCreationDTO> creationDTOS = Arrays.asList(getCreationDTO(), getCreationDTO());
 
@@ -82,7 +83,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
     }
 
 //    @Test
-    public void testUpdate() throws URISyntaxException {
+    public void testUpdate() throws Exception {
 
         // create the xp
         ExperimentCreationDTO xpDto = getCreationDTO();
@@ -101,6 +102,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         SingleObjectResponse<ExperimentGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ExperimentGetDTO>>() {
         });
         ExperimentGetDTO dtoFromApi = getResponse.getResult();
@@ -111,7 +113,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
     }
 
 //    @Test
-    public void testDelete() throws URISyntaxException {
+    public void testDelete() throws Exception {
 
         // create object and check if URI exists
         Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO());
@@ -126,7 +128,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
     }
 
 //    @Test
-    public void testGetByUri() throws URISyntaxException {
+    public void testGetByUri() throws Exception {
 
         final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
         URI uri = extractUriFromResponse(postResult);
@@ -136,6 +138,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         SingleObjectResponse<ExperimentGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ExperimentGetDTO>>() {
         });
         ExperimentGetDTO xpGetDto = getResponse.getResult();
@@ -143,10 +146,11 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
     }
 
 //    @Test
-    public void testGetByUriFail() {
+    public void testGetByUriFail() throws Exception {
 
         final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
         JsonNode node = postResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class);
         String uri = postResponse.getResult();
 
@@ -156,7 +160,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
     }
 
 //    @Test
-    public void testSearch() throws URISyntaxException {
+    public void testSearch() throws Exception {
 
         ExperimentCreationDTO creationDTO = getCreationDTO();
         final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
@@ -177,6 +181,7 @@ public class ExperimentAPITest extends AbstractIntegrationTest {
 
         JsonNode node = getResult.readEntity(JsonNode.class);
         // mapper.convertValue(node, PaginatedListResponse.class);
+        ObjectMapper mapper = new ObjectMapper();
         PaginatedListResponse<ExperimentGetDTO> xpListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ExperimentGetDTO>>() {});
         List<ExperimentGetDTO> xps = xpListResponse.getResult();
 

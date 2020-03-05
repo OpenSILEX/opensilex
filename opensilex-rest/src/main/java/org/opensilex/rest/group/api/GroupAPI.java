@@ -103,14 +103,12 @@ public class GroupAPI {
     public Response createGroup(
             @ApiParam("Group creation informations") @Valid GroupCreationDTO dto
     ) throws Exception {
-        try (sparql) {
-            GroupDAO dao = new GroupDAO(sparql);
+        GroupDAO dao = new GroupDAO(sparql);
 
-            GroupModel group = dao.create(getModel(dto));
+        GroupModel group = dao.create(getModel(dto));
 
-            Response response = new ObjectUriResponse(Response.Status.CREATED, group.getUri()).getResponse();
-            return response;
-        }
+        Response response = new ObjectUriResponse(Response.Status.CREATED, group.getUri()).getResponse();
+        return response;
     }
 
     @PUT
@@ -133,28 +131,26 @@ public class GroupAPI {
             @ApiParam("Group description")
             @Valid GroupUpdateDTO dto
     ) throws Exception {
-        try (sparql) {
-            GroupDAO dao = new GroupDAO(sparql);
+        GroupDAO dao = new GroupDAO(sparql);
 
-            GroupModel model = dao.get(dto.getUri());
+        GroupModel model = dao.get(dto.getUri());
 
-            Response response;
-            if (model != null) {
-                GroupModel group = getModel(dto);
-                group.setUri(dto.getUri());
-                group = dao.update(group);
+        Response response;
+        if (model != null) {
+            GroupModel group = getModel(dto);
+            group.setUri(dto.getUri());
+            group = dao.update(group);
 
-                response = new ObjectUriResponse(Response.Status.OK, group.getUri()).getResponse();
-            } else {
-                response = new ErrorResponse(
-                        Response.Status.NOT_FOUND,
-                        "Group not found",
-                        "Unknown group URI: " + dto.getUri()
-                ).getResponse();
-            }
-
-            return response;
+            response = new ObjectUriResponse(Response.Status.OK, group.getUri()).getResponse();
+        } else {
+            response = new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Group not found",
+                    "Unknown group URI: " + dto.getUri()
+            ).getResponse();
         }
+
+        return response;
     }
 
     @DELETE
@@ -175,13 +171,11 @@ public class GroupAPI {
             @NotNull
             @ValidURI URI uri
     ) throws Exception {
-        try (sparql) {
-            GroupDAO dao = new GroupDAO(sparql);
-            dao.delete(uri);
-            Response response = new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        GroupDAO dao = new GroupDAO(sparql);
+        dao.delete(uri);
+        Response response = new ObjectUriResponse(Response.Status.OK, uri).getResponse();
 
-            return response;
-        }
+        return response;
     }
 
     private GroupModel getModel(GroupCreationDTO dto) throws Exception {
@@ -234,24 +228,22 @@ public class GroupAPI {
             @PathParam("uri")
             @NotNull URI uri
     ) throws Exception {
-        try (sparql) {
-            GroupDAO dao = new GroupDAO(sparql);
-            GroupModel model = dao.get(uri);
+        GroupDAO dao = new GroupDAO(sparql);
+        GroupModel model = dao.get(uri);
 
-            // Check if group is found
-            if (model != null) {
-                // Return group converted in GroupGetDTO
-                return new SingleObjectResponse<>(
-                        GroupGetDTO.fromModel(model)
-                ).getResponse();
-            } else {
-                // Otherwise return a 404 - NOT_FOUND error response
-                return new ErrorResponse(
-                        Response.Status.NOT_FOUND,
-                        "Group not found",
-                        "Unknown group URI: " + uri.toString()
-                ).getResponse();
-            }
+        // Check if group is found
+        if (model != null) {
+            // Return group converted in GroupGetDTO
+            return new SingleObjectResponse<>(
+                    GroupGetDTO.fromModel(model)
+            ).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Group not found",
+                    "Unknown group URI: " + uri.toString()
+            ).getResponse();
         }
     }
 
@@ -298,25 +290,23 @@ public class GroupAPI {
             @DefaultValue("20")
             @Min(0) int pageSize
     ) throws Exception {
-        try (sparql) {
-            GroupDAO dao = new GroupDAO(sparql);
-            ListWithPagination<GroupModel> resultList = dao.search(
-                    pattern,
-                    orderByList,
-                    page,
-                    pageSize
-            );
+        GroupDAO dao = new GroupDAO(sparql);
+        ListWithPagination<GroupModel> resultList = dao.search(
+                pattern,
+                orderByList,
+                page,
+                pageSize
+        );
 
-            // Convert paginated list to DTO
-            ListWithPagination<GroupGetDTO> resultDTOList = resultList.convert(
-                    GroupGetDTO.class,
-                    GroupGetDTO::fromModel
-            );
+        // Convert paginated list to DTO
+        ListWithPagination<GroupGetDTO> resultDTOList = resultList.convert(
+                GroupGetDTO.class,
+                GroupGetDTO::fromModel
+        );
 
-            // Return paginated list of user DTO
-            Response response = new PaginatedListResponse<>(resultDTOList).getResponse();
-            return response;
-        }
+        // Return paginated list of user DTO
+        Response response = new PaginatedListResponse<>(resultDTOList).getResponse();
+        return response;
     }
 
 }

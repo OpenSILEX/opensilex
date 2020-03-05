@@ -2,6 +2,7 @@ package org.opensilex.rest.group.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opensilex.integration.test.AbstractIntegrationTest;
 import org.junit.Test;
 import javax.ws.rs.core.Response;
@@ -124,6 +125,7 @@ public class GroupAPITest extends AbstractIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         SingleObjectResponse<GroupGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<GroupGetDTO>>() {
         });
         GroupGetDTO dtoFromApi = getResponse.getResult();
@@ -185,6 +187,7 @@ public class GroupAPITest extends AbstractIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), getSearchResult.getStatus());
 
         JsonNode node = getSearchResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         PaginatedListResponse<GroupGetDTO> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GroupGetDTO>>() {
         });
         List<GroupGetDTO> users = listResponse.getResult();

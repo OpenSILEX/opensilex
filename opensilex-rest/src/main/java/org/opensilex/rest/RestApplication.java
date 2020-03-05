@@ -18,6 +18,7 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
+import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.EncodingFilter;
@@ -182,7 +183,8 @@ public class RestApplication extends ResourceConfig {
                     implementations.forEach((String name, Service implementation) -> {
                         if (implementation instanceof ServiceFactory) {
                             ServiceFactory<? extends Service> factory = (ServiceFactory<? extends Service>) implementation;
-                            bindFactory(factory).named(name).to((Class<? super Service>) factory.getServiceClass());
+                            bindFactory(factory).to((Class<? super Service>) factory.getServiceClass())
+                                .proxy(true).proxyForSameScope(false).in(RequestScoped.class);
                         }else {
                             bind(implementation).named(name).to((Class<? super Service>) serviceClass);
                         }

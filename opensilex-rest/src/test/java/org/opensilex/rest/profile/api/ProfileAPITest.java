@@ -2,6 +2,8 @@ package org.opensilex.rest.profile.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import static io.swagger.util.Yaml.mapper;
 import org.opensilex.integration.test.AbstractIntegrationTest;
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -12,6 +14,7 @@ import javax.ws.rs.client.WebTarget;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import org.junit.Assert;
+import org.junit.Test;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 
@@ -46,7 +49,7 @@ public class ProfileAPITest extends AbstractIntegrationTest {
         return dto;
     }
 
-//    @Test
+    @Test
     public void testCreate() throws Exception {
 
         Response postResult = getJsonPostResponse(target(createPath), getProfilCreationDTO());
@@ -58,8 +61,8 @@ public class ProfileAPITest extends AbstractIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
     }
 
-//    @Test
-    public void testUpdate() throws URISyntaxException {
+    @Test
+    public void testUpdate() throws Exception {
 
         // create the user
         Response postResult = getJsonPostResponse(target(createPath), getProfilCreationDTO());
@@ -84,6 +87,7 @@ public class ProfileAPITest extends AbstractIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         SingleObjectResponse<ProfileGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ProfileGetDTO>>() {
         });
         ProfileGetDTO dtoFromApi = getResponse.getResult();
@@ -92,8 +96,8 @@ public class ProfileAPITest extends AbstractIntegrationTest {
         compareProfilesDTO(dto, dtoFromApi);
     }
 
-//    @Test
-    public void testDelete() throws URISyntaxException {
+    @Test
+    public void testDelete() throws Exception {
 
         // create object and check if URI exists
         Response postResponse = getJsonPostResponse(target(createPath), getProfilCreationDTO());
@@ -108,8 +112,8 @@ public class ProfileAPITest extends AbstractIntegrationTest {
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
-//    @Test
-    public void testSearch() throws URISyntaxException {
+    @Test
+    public void testSearch() throws Exception {
 
         Response postResult = getJsonPostResponse(target(createPath), getProfilCreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
@@ -138,6 +142,7 @@ public class ProfileAPITest extends AbstractIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), getSearchResult.getStatus());
 
         JsonNode node = getSearchResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         PaginatedListResponse<ProfileGetDTO> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ProfileGetDTO>>() {
         });
         List<ProfileGetDTO> users = listResponse.getResult();
@@ -157,8 +162,8 @@ public class ProfileAPITest extends AbstractIntegrationTest {
         assertEquals(1, users.size());
     }
 
-//    @Test
-    public void testGetAll() throws URISyntaxException {
+    @Test
+    public void testGetAll() throws Exception {
 
         Response postResult = getJsonPostResponse(target(createPath), getProfilCreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
@@ -180,6 +185,7 @@ public class ProfileAPITest extends AbstractIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), getAllResult.getStatus());
 
         JsonNode node = getAllResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         PaginatedListResponse<ProfileGetDTO> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ProfileGetDTO>>() {
         });
         List<ProfileGetDTO> users = listResponse.getResult();

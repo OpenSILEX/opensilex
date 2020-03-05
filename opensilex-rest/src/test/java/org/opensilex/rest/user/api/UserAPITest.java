@@ -2,6 +2,7 @@ package org.opensilex.rest.user.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opensilex.integration.test.AbstractIntegrationTest;
 import org.junit.Test;
 import javax.ws.rs.core.Response;
@@ -57,7 +58,7 @@ public class UserAPITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testCreate() throws URISyntaxException {
+    public void testCreate() throws Exception {
 
         Response postResult = getJsonPostResponse(target(createPath), getUser1CreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
@@ -77,7 +78,7 @@ public class UserAPITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testUpdate() throws URISyntaxException {
+    public void testUpdate() throws Exception {
 
         // create the user
         Response postResult = getJsonPostResponse(target(createPath), getUser1CreationDTO());
@@ -100,6 +101,7 @@ public class UserAPITest extends AbstractIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         SingleObjectResponse<UserGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<UserGetDTO>>() {
         });
         UserGetDTO dtoFromApi = getResponse.getResult();
@@ -109,7 +111,7 @@ public class UserAPITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testDelete() throws URISyntaxException {
+    public void testDelete() throws Exception {
 
         // create object and check if URI exists
         Response postResponse = getJsonPostResponse(target(createPath), getUser1CreationDTO());
@@ -125,7 +127,7 @@ public class UserAPITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testGetByUriFail() throws URISyntaxException {
+    public void testGetByUriFail() throws Exception {
 
         final Response postResponse = getJsonPostResponse(target(createPath), getUser1CreationDTO());
         String uri = extractUriFromResponse(postResponse).toString();
@@ -136,7 +138,7 @@ public class UserAPITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testSearch() throws URISyntaxException {
+    public void testSearch() throws Exception {
 
         Response postResult = getJsonPostResponse(target(createPath), getUser1CreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
@@ -155,6 +157,7 @@ public class UserAPITest extends AbstractIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), getSearchResult.getStatus());
 
         JsonNode node = getSearchResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         PaginatedListResponse<UserGetDTO> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<UserGetDTO>>() {
         });
         List<UserGetDTO> users = listResponse.getResult();
@@ -175,7 +178,7 @@ public class UserAPITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testGetByURIs() throws URISyntaxException {
+    public void testGetByURIs() throws Exception  {
 
         Response postResult = getJsonPostResponse(target(createPath), getUser1CreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
@@ -196,6 +199,7 @@ public class UserAPITest extends AbstractIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         JsonNode node = getResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
         PaginatedListResponse<UserGetDTO> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<UserGetDTO>>() {
         });
         List<UserGetDTO> users = listResponse.getResult();

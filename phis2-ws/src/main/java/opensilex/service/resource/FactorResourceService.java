@@ -48,8 +48,8 @@ import org.opensilex.sparql.service.SPARQLService;
  *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-@Api("/factors")
-@Path("/factors")
+//@Api("/factors")
+//@Path("/factors")
 public class FactorResourceService extends ResourceService {
 
     @Inject

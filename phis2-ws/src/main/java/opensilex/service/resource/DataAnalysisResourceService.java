@@ -48,8 +48,8 @@ import org.opensilex.sparql.service.SPARQLService;
  *
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-@Api("/dataAnalysis")
-@Path("/dataAnalysis")
+//@Api("/dataAnalysis")
+//@Path("/dataAnalysis")
 public class DataAnalysisResourceService extends ResourceService {
 
     @Inject

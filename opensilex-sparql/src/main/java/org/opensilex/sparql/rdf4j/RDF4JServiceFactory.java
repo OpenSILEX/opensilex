@@ -23,12 +23,12 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
     private final Repository repository;
 
     public RDF4JServiceFactory(RDF4JConfig config) {
-        LOGGER.info("Build RDF4JServiceFactory from config");
+        LOGGER.debug("Build RDF4JServiceFactory from config");
         this.repository = new HTTPRepository(config.serverURI(), config.repository());
     }
     
     public RDF4JServiceFactory(Repository repository) {
-        LOGGER.info("Build RDF4JServiceFactory from repository");
+        LOGGER.debug("Build RDF4JServiceFactory from repository");
         this.repository = repository;
     }
 

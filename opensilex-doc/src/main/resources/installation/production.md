@@ -11,7 +11,7 @@ Commands in this document should work on any Debian-like distribution (with sudo
 
 ## Java 
 
-You need at least [Java JDK 9+](https://jdk.java.net/) installed on the server operating system.
+You need at least [Java JDK 8+](https://jdk.java.net/) installed on the server operating system.
 
 You can install it on linux with the following command:
 

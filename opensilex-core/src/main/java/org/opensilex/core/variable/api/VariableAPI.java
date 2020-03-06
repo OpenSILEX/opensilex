@@ -37,7 +37,7 @@ import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
-@Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
+//@Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
 @Path("/core/variable")
 public class VariableAPI {
 

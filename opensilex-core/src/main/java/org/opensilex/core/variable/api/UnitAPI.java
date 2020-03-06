@@ -45,8 +45,8 @@ import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
-@Api(CREDENTIAL_VARIABLE_GROUP_ID)
-@Path("/core/variable/unit")
+//@Api(CREDENTIAL_VARIABLE_GROUP_ID)
+//@Path("/core/variable/unit")
 public class UnitAPI {
 
     @Inject

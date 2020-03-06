@@ -49,132 +49,132 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
-import Vue from "vue";
-import { FactorsService } from "../../lib/api/factors.service";
-import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
-import { FactorGetDTO } from "../../lib//model/factorGetDTO";
-import VueRouter from "vue-router";
+// import { Component } from "vue-property-decorator";
+// import Vue from "vue";
+// import { FactorsService } from "../../lib/api/factors.service";
+// import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
+// import { FactorGetDTO } from "../../lib//model/factorGetDTO";
+// import VueRouter from "vue-router";
 
-@Component
-export default class FactorList extends Vue {
-  $opensilex: any;
-  $store: any;
-  $router: VueRouter;
+// @Component
+// export default class FactorList extends Vue {
+//   $opensilex: any;
+//   $store: any;
+//   $router: VueRouter;
 
-  get user() {
-    return this.$store.state.user;
-  }
+//   get user() {
+//     return this.$store.state.user;
+//   }
 
-  currentPage: number = 1;
-  pageSize = 20;
-  totalRow = 0;
-  sortBy = "alias";
-  sortDesc = false;
+//   currentPage: number = 1;
+//   pageSize = 20;
+//   totalRow = 0;
+//   sortBy = "alias";
+//   sortDesc = false;
 
-  private alias: any = "";
-  set aliasPattern(value: string) {
-    console.log(value)
-    this.alias = value;
-    let tableRef: any = this.$refs.tableRef;
-    tableRef.refresh();
-  }
+//   private alias: any = "";
+//   set aliasPattern(value: string) {
+//     console.log(value)
+//     this.alias = value;
+//     let tableRef: any = this.$refs.tableRef;
+//     tableRef.refresh();
+//   }
 
-  get aliasPattern() {
-    return this.alias;
-  }
+//   get aliasPattern() {
+//     return this.alias;
+//   }
 
-  created() {
-    let query: any = this.$route.query;
-    if (query.aliasPattern) {
-      this.aliasPattern  = decodeURI(query.aliasPattern);
-    }
-    if (query.pageSize) {
-      this.pageSize = parseInt(query.pageSize);
-    }
-    if (query.currentPage) {
-      this.currentPage = parseInt(query.currentPage);
-    }
-    if (query.sortBy) {
-      this.sortBy = decodeURI(query.sortBy);
-    }
-    if (query.sortDesc) {
-      this.sortDesc = query.sortDesc == "true";
-    }
-  }
+//   created() {
+//     let query: any = this.$route.query;
+//     if (query.aliasPattern) {
+//       this.aliasPattern  = decodeURI(query.aliasPattern);
+//     }
+//     if (query.pageSize) {
+//       this.pageSize = parseInt(query.pageSize);
+//     }
+//     if (query.currentPage) {
+//       this.currentPage = parseInt(query.currentPage);
+//     }
+//     if (query.sortBy) {
+//       this.sortBy = decodeURI(query.sortBy);
+//     }
+//     if (query.sortDesc) {
+//       this.sortDesc = query.sortDesc == "true";
+//     }
+//   }
 
-  fields = [
-    {
-      key: "alias",
-      sortable: true
-    }, 
-    {
-      key: "uri",
-      sortable: true
-    },
-    {
-      key: "comment",
-      sortable: true
-    },
-    {
-      key: "actions"
-    }
-  ];
+//   fields = [
+//     {
+//       key: "alias",
+//       sortable: true
+//     }, 
+//     {
+//       key: "uri",
+//       sortable: true
+//     },
+//     {
+//       key: "comment",
+//       sortable: true
+//     },
+//     {
+//       key: "actions"
+//     }
+//   ];
 
-  refresh() {
-    let tableRef: any = this.$refs.tableRef;
-    tableRef.refresh();
-  }
+//   refresh() {
+//     let tableRef: any = this.$refs.tableRef;
+//     tableRef.refresh();
+//   }
 
-  loadData() {
-    let service: FactorsService = this.$opensilex.getService(
-      "opensilex.FactorsService"
-    );
+//   loadData() {
+//     let service: FactorsService = this.$opensilex.getService(
+//       "opensilex.FactorsService"
+//     );
 
-    let orderBy = [];
-    if (this.sortBy) {
-      let orderByText = this.sortBy + "=";
-      if (this.sortDesc) {
-        orderBy.push(orderByText + "desc");
-      } else {
-        orderBy.push(orderByText + "asc");
-      }
-    }
+//     let orderBy = [];
+//     if (this.sortBy) {
+//       let orderByText = this.sortBy + "=";
+//       if (this.sortDesc) {
+//         orderBy.push(orderByText + "desc");
+//       } else {
+//         orderBy.push(orderByText + "asc");
+//       }
+//     }
 
-    return service
-      .searchFactors(
-        this.user.getAuthorizationHeader(),
-        this.aliasPattern,
-        orderBy,
-        this.currentPage - 1,
-        this.pageSize
-      )
-      .then((http: HttpResponse<OpenSilexResponse<Array<FactorGetDTO>>>) => {
-        console.log( http.response);
-        this.totalRow = http.response.metadata.pagination.totalCount;
-        this.pageSize = http.response.metadata.pagination.pageSize;
-        setTimeout(() => {
-          this.currentPage = http.response.metadata.pagination.currentPage + 1;
-        }, 0);
+//     return service
+//       .searchFactors(
+//         this.user.getAuthorizationHeader(),
+//         this.aliasPattern,
+//         orderBy,
+//         this.currentPage - 1,
+//         this.pageSize
+//       )
+//       .then((http: HttpResponse<OpenSilexResponse<Array<FactorGetDTO>>>) => {
+//         console.log( http.response);
+//         this.totalRow = http.response.metadata.pagination.totalCount;
+//         this.pageSize = http.response.metadata.pagination.pageSize;
+//         setTimeout(() => {
+//           this.currentPage = http.response.metadata.pagination.currentPage + 1;
+//         }, 0);
 
-        this.$router
-          .push({
-            path: this.$route.fullPath,
-            query: {
-              aliasPattern: encodeURI(this.aliasPattern),
-              sortBy: encodeURI(this.sortBy),
-              sortDesc: "" + this.sortDesc,
-              currentPage: "" + this.currentPage,
-              pageSize: "" + this.pageSize
-            }
-          })
-          .catch(function() {});
+//         this.$router
+//           .push({
+//             path: this.$route.fullPath,
+//             query: {
+//               aliasPattern: encodeURI(this.aliasPattern),
+//               sortBy: encodeURI(this.sortBy),
+//               sortDesc: "" + this.sortDesc,
+//               currentPage: "" + this.currentPage,
+//               pageSize: "" + this.pageSize
+//             }
+//           })
+//           .catch(function() {});
 
-        return http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-}
+//         return http.response.result;
+//       })
+//       .catch(this.$opensilex.errorHandler);
+//   }
+// }
 </script>
 
 <style scoped lang="scss">

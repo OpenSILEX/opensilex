@@ -28,7 +28,6 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
@@ -244,7 +243,7 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
         Query query = prepareGetLastId();
 
         //get last variable uri ID inserted
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -295,7 +294,7 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
      */
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         SPARQLQueryBuilder prepareCount = prepareCount();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(prepareCount);
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -421,7 +420,7 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
             try {
                 //SILEX:todo
                 // storage connection to review: dirty hotfix
-                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
+                Update prepareUpdate = prepareRDF4JUpdateQuery(spqlInsert);
                 LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                 prepareUpdate.execute();
                 //\SILEX:todo
@@ -504,7 +503,7 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
             query.clearOffset();
         }
                 
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Variable> variables = new ArrayList<>();
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -648,10 +647,10 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
                 UpdateRequest queryInsert = prepareInsertQuery(variableDTO);
                  try {
                         // transaction start: check request
-                        Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
+                        Update prepareDelete = prepareRDF4JUpdateQuery(deleteQuery);
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
                         prepareDelete.execute();
-                        Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
+                        Update prepareUpdate = prepareRDF4JUpdateQuery(queryInsert);
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareUpdate.execute();
 
@@ -723,7 +722,7 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
      */
     private boolean isVariable(String uri) {
         SPARQLQueryBuilder query = prepareIsVariableQuery(uri);
-        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        BooleanQuery booleanQuery = prepareRDF4JBooleanQuery(query);
         
         return booleanQuery.evaluate();
     }
@@ -906,7 +905,7 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
         ArrayList<OntologyReference> ontologyReferences = new ArrayList<>();
         
         SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(uri);
-        TupleQuery tupleQueryOntologiesReferences = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
+        TupleQuery tupleQueryOntologiesReferences = prepareRDF4JTupleQuery(queryOntologiesReferences);
         try (TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate()) {
             while (resultOntologiesReferences.hasNext()) {
                 BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
@@ -930,7 +929,7 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
     @Override
     public Variable findById(String id) throws DAOPersistenceException, Exception {
         SPARQLQueryBuilder query = prepareSearchByUri(id);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         
         Variable variable = new Variable();
         try(TupleQueryResult result = tupleQuery.evaluate()) {

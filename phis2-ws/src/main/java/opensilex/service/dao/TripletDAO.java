@@ -25,7 +25,6 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.update.UpdateRequest;
 import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
@@ -238,7 +237,7 @@ public class TripletDAO extends Rdf4jDAO<Triplet> {
         for (Map.Entry<String,ArrayList<TripletDTO>> triplets : tripletsByGraph.entrySet()) {
             UpdateRequest insertInGivenGraph = prepareInsertQuery(triplets.getValue(), triplets.getKey());
             LOGGER.debug(SPARQL_QUERY + insertInGivenGraph.toString());
-            Update prepareInsertInGivenGraph = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertInGivenGraph.toString());
+            Update prepareInsertInGivenGraph = prepareRDF4JUpdateQuery(insertInGivenGraph);
             prepareInsertInGivenGraph.execute();
         }
 
@@ -282,7 +281,7 @@ public class TripletDAO extends Rdf4jDAO<Triplet> {
             //Register triplet in the triplestore, in the graph created at the request reception
             UpdateRequest insertQuery = prepareInsertQuery(tripletsGroup, graphUri);
             LOGGER.debug(SPARQL_QUERY + insertQuery.toString());
-            Update prepareInsert = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
+            Update prepareInsert = prepareRDF4JUpdateQuery(insertQuery);
             prepareInsert.execute();
 
             //Register triplets in the triplestore, in the given graphs

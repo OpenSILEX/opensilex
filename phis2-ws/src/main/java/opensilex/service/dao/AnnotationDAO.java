@@ -31,7 +31,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
@@ -202,9 +201,8 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
                 searchBodyValue, 
                 searchMotivatedBy,
                 dateSortAsc);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
         Integer count = 0;
-        
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(prepareCount);
         try (TupleQueryResult result = tupleQuery.evaluate()){
             if (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -400,15 +398,16 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
                 dateSortAsc);
         ArrayList<Annotation> annotations = null;
         try {
-            TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-
+            TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
+            
             // Retreive all information for each annotation
             try (TupleQueryResult result = tupleQuery.evaluate()) {
                 annotations = getAnnotationsWithoutBodyValuesFromResult(result, uri, creator, motivatedBy);
                 if(annotations.size() > 0) {
-                    query = prepareSearchQueryForBodyValues(annotations);
-                    tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-                    setAnnotationsBodyValuesFromResult(tupleQuery.evaluate(), annotations);
+                    TupleQuery tupleQueryProp = prepareRDF4JTupleQuery(prepareSearchQueryForBodyValues(annotations));
+                    try (TupleQueryResult resultProp = tupleQueryProp.evaluate()) {
+                        setAnnotationsBodyValuesFromResult(resultProp, annotations);
+                    }
                 }
             }
             LOGGER.debug(JsonConverter.ConvertToJson(annotations));
@@ -590,9 +589,9 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
     		String removeIncomingsAnnotationQuery = getRemoveAllSuperAnnotationQuery(uri).buildRequest().toString(); 
     		String removeAnnotationQuery = getRemoveAllAnnotationTripleQuery(uri).buildRequest().toString(); 
     		
-    		Update update = getConnection().prepareUpdate(QueryLanguage.SPARQL,removeIncomingsAnnotationQuery); 
+    		Update update = prepareRDF4JUpdateQuery(removeIncomingsAnnotationQuery);
     		update.execute(); // first delete all annotation which has the annotationUri as target  
-    		update = getConnection().prepareUpdate(QueryLanguage.SPARQL,removeAnnotationQuery); 
+    		update = prepareRDF4JUpdateQuery(removeAnnotationQuery); 
     		update.execute(); // then delete the annotation itself
     	}	
     }

@@ -48,7 +48,6 @@ import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
@@ -308,7 +307,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
             }
 
             UpdateRequest query = prepareInsertQuery(germplasm);
-            Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+            Update prepareUpdate = prepareRDF4JUpdateQuery(query);
             prepareUpdate.execute();
 
             createdResourcesUri.add(germplasm.getUri());
@@ -439,7 +438,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
     public int getLastId() {
         Query query = prepareGetLastId();
         //get last accession uri ID inserted
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -618,7 +617,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
      */
     public Integer count(String uri, String label, String germplasmType, String language, String fromGenus, String fromSpecies, String fromVariety, String fromAccession) {
         SPARQLQueryBuilder prepareCount = prepareCount(uri, label, germplasmType, language, fromGenus, fromSpecies, fromVariety, fromAccession);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(prepareCount);
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -641,7 +640,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
      */
     public ArrayList<Germplasm> find(int page, int pageSize, String uri, String label, String germplasmType, String language, String fromGenus, String fromSpecies, String fromVariety, String fromAccession) {
         SPARQLQueryBuilder query = prepareSearchQuery(page, pageSize, uri, label, germplasmType, language, fromGenus, fromSpecies, fromVariety, fromAccession);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Germplasm> germplasmList = new ArrayList<>();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -701,7 +700,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
 
         LOGGER.debug(SPARQL_QUERY + query.toString());
 
-        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        BooleanQuery booleanQuery = prepareRDF4JBooleanQuery(query);
         boolean result = booleanQuery.evaluate();
 
         return result;
@@ -718,7 +717,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
 
         LOGGER.debug(SPARQL_QUERY + query.toString());
 
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -734,7 +733,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
     @Override
     public Germplasm findById(String id) {
         SPARQLQueryBuilder query = prepareSearchByUri(id);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
 
         Germplasm germplasm = new Germplasm();
         germplasm.setUri(id);
@@ -779,7 +778,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
      */
     public ArrayList<Property> findGerplasmProperties(String uri) {
         SPARQLQueryBuilder queryProperties = prepareSearchGermplasmProperties(uri);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryProperties.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(queryProperties);
         List<String> foundedProperties = new ArrayList<>();
         ArrayList<Property> properties = new ArrayList<>();
 
@@ -829,7 +828,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
     public GermplasmDTO getGermplasmDTO(Germplasm germplasm, String language) {
         GermplasmDTO germplasmDTO = new GermplasmDTO();
         SPARQLQueryBuilder query = prepareSearchAllInformationGermplasm(germplasm, language);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -985,7 +984,7 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
      */
     public ArrayList<Germplasm> findWithAllInformation(int page, int pageSize, String uri, String label, String germplasmType, String language) {
         SPARQLQueryBuilder query = prepareSearchQueryWithAllInformation();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Germplasm> germplasmList = new ArrayList<>();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {

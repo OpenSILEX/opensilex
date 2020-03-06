@@ -20,7 +20,6 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
@@ -209,7 +208,7 @@ public class SensorProfileDAO extends Rdf4jDAO<SensorProfile> {
         
         sensorsProfiles.forEach((sensorProfileDTO) -> {
             UpdateRequest query = prepareInsertQuery(sensorProfileDTO.createObjectFromDTO());
-            Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+            Update prepareUpdate = prepareRDF4JUpdateQuery(query);
             prepareUpdate.execute();
             
             createdResourcesUris.add(sensorProfileDTO.getUri());
@@ -269,7 +268,7 @@ public class SensorProfileDAO extends Rdf4jDAO<SensorProfile> {
      */
     public ArrayList<SensorProfileDTO> allPaginate() {        
         SPARQLQueryBuilder query = prepareSearchQuery();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<SensorProfileDTO> sensorsProfiles = new ArrayList<>();
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {

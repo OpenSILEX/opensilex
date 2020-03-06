@@ -20,7 +20,6 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
@@ -206,9 +205,7 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
                 objectUri, 
                 searchUri, 
                 searchLabel);
-        TupleQuery concernedItemsTupleQuery = getConnection().prepareTupleQuery(
-                QueryLanguage.SPARQL, 
-                concernedItemsQuery.toString());
+        TupleQuery concernedItemsTupleQuery = prepareRDF4JTupleQuery(concernedItemsQuery);
 
         try (TupleQueryResult concernedItemsTupleQueryResult = concernedItemsTupleQuery.evaluate()) {
             ConcernedItem concernedItem;

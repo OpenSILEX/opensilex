@@ -29,7 +29,6 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
@@ -155,8 +154,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
         Query query = prepareGetLastIdFromYear(year);
 
         //get last sensor uri inserted
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -403,7 +401,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
      */
     public Integer count(String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         SPARQLQueryBuilder prepareCount = prepareCount(uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(prepareCount);
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -444,7 +442,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
      */
     public Integer countCameras() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         SPARQLQueryBuilder prepareCount = prepareCountCameras();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(prepareCount);
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -531,7 +529,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
     
     private boolean isSensor(String uri) {
         SPARQLQueryBuilder query = prepareIsSensorQuery(uri);
-        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        BooleanQuery booleanQuery = prepareRDF4JBooleanQuery(query);
         
         return booleanQuery.evaluate();
     }
@@ -673,7 +671,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
             }
             
             UpdateRequest query = prepareInsertQuery(sensor);
-            Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+            Update prepareUpdate = prepareRDF4JUpdateQuery(query);
             prepareUpdate.execute();
             
             createdResourcesUri.add(sensor.getUri());
@@ -798,10 +796,10 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
                 //2. insert new data
                 UpdateRequest insertQuery = prepareInsertQuery(sensor);
                 try {
-                    Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
+                    Update prepareDelete = prepareRDF4JUpdateQuery(deleteQuery);
                     LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
                     prepareDelete.execute();
-                    Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
+                    Update prepareUpdate = prepareRDF4JUpdateQuery(insertQuery);
                     LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                     prepareUpdate.execute();
                     updatedResourcesUri.add(sensor.getUri());
@@ -881,7 +879,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
      */
     public ArrayList<Sensor> getCameras() {
         SPARQLQueryBuilder query = prepareSearchCamerasQuery();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Sensor> cameras = new ArrayList<>();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -1055,7 +1053,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
     private HashMap<String, String> getVariables(String sensorUri) {
         SPARQLQueryBuilder query = prepareSearchVariablesQuery(sensorUri);
         
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         HashMap<String, String> variables = new HashMap<>();
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
@@ -1093,7 +1091,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
     @Override
     public Sensor findById(String id) throws Exception {
         SPARQLQueryBuilder findQuery = prepareSearchQuery(null, null, id, null, null, null, null, null, null, null, null, null);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, findQuery.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(findQuery);
         
         Sensor sensor = new Sensor();
         try(TupleQueryResult result = tupleQuery.evaluate()) {
@@ -1128,7 +1126,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
      */
     public ArrayList<Sensor> find(Integer page, Integer pageSize, String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
         SPARQLQueryBuilder query = prepareSearchQuery(page, pageSize, uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Sensor> sensors = new ArrayList<>();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {

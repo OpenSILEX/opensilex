@@ -11,7 +11,6 @@ package opensilex.service.dao;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
@@ -20,7 +19,6 @@ import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
@@ -186,7 +184,7 @@ public class UriDAO extends Rdf4jDAO<Uri> {
      */
     public ArrayList<Ask> askUriExistance() {
         SPARQLQueryBuilder query = prepareAskQuery();
-        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        BooleanQuery booleanQuery = prepareRDF4JBooleanQuery(query);
         ArrayList<Ask> uriExistancesResults = new ArrayList<>();
         boolean result = booleanQuery.evaluate();
         Ask ask = new Ask();
@@ -330,7 +328,7 @@ public class UriDAO extends Rdf4jDAO<Uri> {
      */
     public ArrayList<Uri> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Uri> uris = new ArrayList<>();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -360,7 +358,7 @@ public class UriDAO extends Rdf4jDAO<Uri> {
      */
     public ArrayList<Uri> labelsPaginate() {
         SPARQLQueryBuilder query = prepareLabelSearchQuery();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Uri> uris = new ArrayList();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -385,8 +383,8 @@ public class UriDAO extends Rdf4jDAO<Uri> {
     public ArrayList<Uri> instancesPaginate() {
 
         SPARQLQueryBuilder query = prepareInstanceSearchQuery();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
+        
         ArrayList<Uri> instances = new ArrayList<>();
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -412,7 +410,7 @@ public class UriDAO extends Rdf4jDAO<Uri> {
     public ArrayList<Uri> ancestorsAllPaginate() {
 
         SPARQLQueryBuilder query = prepareAncestorsQuery();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Uri> concepts = new ArrayList();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -435,7 +433,7 @@ public class UriDAO extends Rdf4jDAO<Uri> {
     public ArrayList<Uri> siblingsAllPaginate() {
 
         SPARQLQueryBuilder query = prepareSiblingsQuery();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Uri> concepts = new ArrayList();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -457,7 +455,7 @@ public class UriDAO extends Rdf4jDAO<Uri> {
     public ArrayList<Uri> descendantsAllPaginate() {
 
         SPARQLQueryBuilder query = prepareDescendantsQuery();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Uri> concepts = new ArrayList<>();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -479,7 +477,7 @@ public class UriDAO extends Rdf4jDAO<Uri> {
     public ArrayList<Uri> getAskTypeAnswer() {
 
         SPARQLQueryBuilder query = prepareAskQuery();
-        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        BooleanQuery booleanQuery = prepareRDF4JBooleanQuery(query);
         ArrayList<Uri> uris = new ArrayList<>();
         boolean result = booleanQuery.evaluate();
         Ask ask = new Ask();
@@ -488,7 +486,7 @@ public class UriDAO extends Rdf4jDAO<Uri> {
         if (ask.getExist()) {
             Uri uriType = new Uri();
             query = prepareGetUriType();
-            TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+            TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
             try (TupleQueryResult resultat = tupleQuery.evaluate()) {
                 BindingSet bindingSet = resultat.next();
                 uriType.setRdfType(bindingSet.getValue(TRIPLESTORE_FIELDS_TYPE).toString());
@@ -562,7 +560,7 @@ public class UriDAO extends Rdf4jDAO<Uri> {
     public boolean isSubClassOf(String rdfSubType, String rdfType) {
         SPARQLQueryBuilder query = prepareIsSubclassOf(rdfSubType, rdfType);
 
-        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        BooleanQuery booleanQuery = prepareRDF4JBooleanQuery(query);
         return booleanQuery.evaluate();
     }
 
@@ -581,7 +579,7 @@ public class UriDAO extends Rdf4jDAO<Uri> {
             return false;
         }
         SPARQLQueryBuilder query = prepareIsInstanceOf(instanceUri, rdfType);
-        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        BooleanQuery booleanQuery = prepareRDF4JBooleanQuery(query);
         return booleanQuery.evaluate();
     }
 
@@ -641,7 +639,7 @@ public class UriDAO extends Rdf4jDAO<Uri> {
         SPARQLQueryBuilder query = prepareGetLabels();
         Multimap<String, String> labels = ArrayListMultimap.create();
 
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
@@ -672,7 +670,7 @@ public class UriDAO extends Rdf4jDAO<Uri> {
         SPARQLQueryBuilder query = prepareGetComments();
         Multimap<String, String> comments = ArrayListMultimap.create();
 
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {

@@ -50,7 +50,6 @@ import org.apache.jena.vocabulary.XSD;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
@@ -92,7 +91,7 @@ public class FactorDAO extends Rdf4jDAO<Factor> {
         if (query == null) {
             return factors;
         }
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.buildString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         LOGGER.debug(getTraceabilityLogs() + SPARQL_QUERY + query.buildString());
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -112,7 +111,7 @@ public class FactorDAO extends Rdf4jDAO<Factor> {
         ArrayList<OntologyReference> ontologyReferences = new ArrayList<>();
 
         SelectBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(uri);
-        TupleQuery tupleQueryOntologiesReferences = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
+        TupleQuery tupleQueryOntologiesReferences = prepareRDF4JTupleQuery(queryOntologiesReferences);
         
         try (TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate()) {
             while (resultOntologiesReferences.hasNext()) {
@@ -297,7 +296,7 @@ public class FactorDAO extends Rdf4jDAO<Factor> {
             LOGGER.error(ex.getMessage(), ex);
         }
         if (query != null) {
-            TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.buildString());
+            TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
 
             try (TupleQueryResult result = tupleQuery.evaluate()) {
                 if (result.hasNext()) {
@@ -391,7 +390,7 @@ public class FactorDAO extends Rdf4jDAO<Factor> {
             try {
                 //SILEX:todo
                 // Connection to review. Dirty hotfix.
-                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
+                Update prepareUpdate = prepareRDF4JUpdateQuery(spqlInsert);
                 LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                 prepareUpdate.execute();
                 //\SILEX:todo
@@ -436,7 +435,7 @@ public class FactorDAO extends Rdf4jDAO<Factor> {
         Query query = prepareGetLastId();
 
         //get last variable uri ID inserted
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {

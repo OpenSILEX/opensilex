@@ -20,7 +20,6 @@ import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -121,7 +120,7 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
      */
     public int getNumberOfVectors(String year) {
         SPARQLQueryBuilder queryNumberVectors = prepareGetVectorsNumber(year);
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryNumberVectors.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(queryNumberVectors);
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             BindingSet bindingSet = result.next();
@@ -299,7 +298,7 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
      */
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         SPARQLQueryBuilder prepareCount = prepareCount();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(prepareCount);
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -347,7 +346,7 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
      */
     public Integer countUAVs() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         SPARQLQueryBuilder prepareCount = prepareCountUAVs();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(prepareCount);
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -420,7 +419,7 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
         Query query = prepareGetLastIdFromYear(year);
 
         //get last vector uri inserted
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -485,7 +484,7 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
      */
     public ArrayList<Vector> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Vector> vectors = new ArrayList<>();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -608,7 +607,7 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
             return vector;            
         }).forEachOrdered((vector) -> {
             UpdateRequest query = prepareInsertQuery(vector);
-            Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+            Update prepareUpdate = prepareRDF4JUpdateQuery(query);
             prepareUpdate.execute();
             
             createdResourcesUri.add(vector.getUri());
@@ -705,10 +704,10 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
                 UpdateRequest insertQuery = prepareInsertQuery(vectorDTO.createObjectFromDTO());
                 
                 try {
-                    Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
+                    Update prepareDelete = prepareRDF4JUpdateQuery(deleteQuery);
                     LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
                     prepareDelete.execute();
-                    Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
+                    Update prepareUpdate = prepareRDF4JUpdateQuery(insertQuery);
                     LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                     prepareUpdate.execute();
                     updatedResourcesUri.add(vectorDTO.getUri());
@@ -805,7 +804,7 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
      */
     public ArrayList<Vector> getUAVs() {
         SPARQLQueryBuilder query = prepareSearchUAVsQuery();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Vector> uavs = new ArrayList<>();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {

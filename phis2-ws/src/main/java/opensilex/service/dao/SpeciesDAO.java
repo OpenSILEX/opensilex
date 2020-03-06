@@ -12,7 +12,6 @@ import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
@@ -70,7 +69,7 @@ public class SpeciesDAO extends Rdf4jDAO<Species> {
      */
     public int countWithFilter(Species filter, String language) {
         SPARQLQueryBuilder prepareCount = prepareCountWithFilter(filter, language);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(prepareCount);
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -161,8 +160,7 @@ public class SpeciesDAO extends Rdf4jDAO<Species> {
      */
     public ArrayList<Species> searchWithFilter(Species filter, String language) {
         SPARQLQueryBuilder query = prepareSearchWithFilterQuery(filter, language);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Species> species;
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {

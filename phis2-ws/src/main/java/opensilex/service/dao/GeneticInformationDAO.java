@@ -19,7 +19,6 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -90,7 +89,7 @@ public class GeneticInformationDAO extends Rdf4jDAO<GeneticInformation> {
         String geneticResourceType = getGeneticResourceType(uri);        
         SPARQLQueryBuilder query = prepareSearchQuery(uri, geneticResourceType);
         
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         GeneticInformation geneticInfo = new GeneticInformation();
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -216,7 +215,7 @@ public class GeneticInformationDAO extends Rdf4jDAO<GeneticInformation> {
     private String getGeneticResourceType(String uri) {
         SPARQLQueryBuilder query = prepareTypeQuery(uri);
         String type = new String();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());        
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
             try (TupleQueryResult result = tupleQuery.evaluate()) {
                 while (result.hasNext()) {
                     BindingSet bindingSet = result.next();

@@ -27,7 +27,6 @@ import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
@@ -319,7 +318,8 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
 
                 try {
                     // transaction begining
-                    Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+                    Update prepareUpdate = prepareRDF4JUpdateQuery(query);
+                    
                     LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                     prepareUpdate.execute();
 
@@ -363,7 +363,7 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         sparqlQ.appendFilter("?documentType != <" + Oeso.CONCEPT_DOCUMENT.toString() +">");
 
         LOGGER.debug(sparqlQ.toString());
-        TupleQuery tupleQueryTo = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQ.toString());
+        TupleQuery tupleQueryTo = prepareRDF4JTupleQuery(sparqlQ);
         
         try (TupleQueryResult resultTo = tupleQueryTo.evaluate()) {
             while (resultTo.hasNext()) {
@@ -580,7 +580,7 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
      */
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         SPARQLQueryBuilder prepareCount = prepareCount();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(prepareCount);
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -597,7 +597,7 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
      */
     public ArrayList<Document> allPaginate() {
         SPARQLQueryBuilder sparqlQuery = prepareSearchQuery();
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(sparqlQuery);
         ArrayList<Document> documents = new ArrayList<>();
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -669,7 +669,7 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
 
                     //Check if document is linked to other elements
                     SPARQLQueryBuilder sparqlQueryConcernedItem = prepareSearchConcernedItemsQuery(document.getUri());
-                    TupleQuery tupleQueryConcernedItem = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryConcernedItem.toString());
+                    TupleQuery tupleQueryConcernedItem = prepareRDF4JTupleQuery(sparqlQueryConcernedItem);
                     try (TupleQueryResult resultConcernedItem = tupleQueryConcernedItem.evaluate()) {
                         while (resultConcernedItem.hasNext()) {
                             BindingSet bindingSetConcernedItem = resultConcernedItem.next();
@@ -727,11 +727,11 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
             try {
                 // début de la transaction : vérification de la requête
                 if (deleteQuery != null) {
-                    Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
+                    Update prepareDelete = prepareRDF4JUpdateQuery(deleteQuery);
                     LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
                     prepareDelete.execute();
                 }
-                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+                Update prepareUpdate = prepareRDF4JUpdateQuery(query);
                 LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                 prepareUpdate.execute();
                 updatedResourcesURIList.add(documentMetadata.getUri());

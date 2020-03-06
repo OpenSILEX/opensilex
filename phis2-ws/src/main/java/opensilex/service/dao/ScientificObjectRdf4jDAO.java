@@ -32,7 +32,6 @@ import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
@@ -165,7 +164,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         Query lastScientificObjectUriFromYearQuery = prepareGetLastScientificObjectUriFromYear(year);
 
         //Get the URI of the last scientific object inserted during the given year.
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, lastScientificObjectUriFromYearQuery.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(lastScientificObjectUriFromYearQuery);
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -264,7 +263,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     //Check unique alias in the experiment
                     if (scientificObject.getExperiment() != null) {
                         SPARQLQueryBuilder query = askExistAliasInContext(property.getValue(), scientificObject.getExperiment());
-                        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+                        BooleanQuery booleanQuery = prepareRDF4JBooleanQuery(query);
                         boolean result = booleanQuery.evaluate();
 
                         if (result) {
@@ -414,7 +413,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         if (layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
 
             SPARQLQueryBuilder sparqlQuery = prepareSearchExperimentScientificObjects(layerDTO.getObjectUri());
-            TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
+            TupleQuery tupleQuery = prepareRDF4JTupleQuery(sparqlQuery);
 
             try (TupleQueryResult result = tupleQuery.evaluate()) {
                 while (result.hasNext()) {
@@ -459,8 +458,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                     SPARQLQueryBuilder sparqlQuery = prepareSearchChildrenWithContains(
                             child.getKey(),
                             child.getValue().getRdfType());
-                    TupleQuery tupleQuery = this.getConnection()
-                            .prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
+                    TupleQuery tupleQuery = prepareRDF4JTupleQuery(sparqlQuery);
                     
                     try (TupleQueryResult result = tupleQuery.evaluate()) {
                         while (result.hasNext()) {
@@ -478,8 +476,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             } else { // if standard object
                 SPARQLQueryBuilder sparqlQuery
                         = prepareSearchChildrenWithContains(layerDTO.getObjectUri(), layerDTO.getObjectType());
-                TupleQuery tupleQuery
-                        = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
+                TupleQuery tupleQuery = prepareRDF4JTupleQuery(sparqlQuery);
                 
                 try (TupleQueryResult result = tupleQuery.evaluate()) {
                     while (result.hasNext()) {
@@ -496,7 +493,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         } else if (!layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
             // If only direct descendants needed and not an experimentation
             SPARQLQueryBuilder sparqlQuery = prepareSearchFirstChildrenWithContains(layerDTO.getObjectUri());
-            TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
+            TupleQuery tupleQuery = prepareRDF4JTupleQuery(sparqlQuery);
             
             try (TupleQueryResult result = tupleQuery.evaluate()) {
                 while (result.hasNext()) {
@@ -547,7 +544,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      */
     public ArrayList<Property> findScientificObjectProperties(String uri, String experiment) {
         SPARQLQueryBuilder queryProperties = prepareSearchScientificObjectProperties(uri, experiment);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryProperties.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(queryProperties);
         List<String> foundedProperties = new ArrayList<>();
         ArrayList<Property> properties = new ArrayList<>();
 
@@ -589,7 +586,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
     public ArrayList<ScientificObject> find(Integer page, Integer pageSize, String uri, String rdfType, String experiment, String alias, Boolean withProperties) {
         SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(false, page, pageSize, uri, rdfType, experiment, alias);
 
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(sparqlQuery);
         Map<String, ScientificObject> foundedScientificObjects = new HashMap<>();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -722,7 +719,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      */
     public boolean existScientificObject(String uri) {
         SPARQLQueryBuilder query = askExistScientificObject(uri);
-        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        BooleanQuery booleanQuery = prepareRDF4JBooleanQuery(query);
         boolean result = booleanQuery.evaluate();
         return result;
     }
@@ -886,7 +883,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             }
         }
 
-        Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
+        Update prepareUpdate = prepareRDF4JUpdateQuery(spql.buildRequest());
         LOGGER.debug(getTraceabilityLogs() + SPARQL_QUERY + prepareUpdate.toString());
         prepareUpdate.execute();
 
@@ -1128,11 +1125,11 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         UpdateRequest insertQuery = prepareInsertOneInContextQuery(scientificObject, context);
         try {
             if (deleteQuery != null) {
-                Update prepareDelete = getConnection().prepareUpdate(deleteQuery.toString());
+                Update prepareDelete = prepareRDF4JUpdateQuery(deleteQuery);
                 prepareDelete.execute();
             }
 
-            Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
+            Update prepareUpdate = prepareRDF4JUpdateQuery(insertQuery);
             prepareUpdate.execute();
 
             //2.2 Relational database data
@@ -1218,7 +1215,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      */
     public Integer count(String uri, String rdfType, String experimentURI, String alias) {
         SPARQLQueryBuilder prepareCount = prepareCount(uri, rdfType, experimentURI, alias);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(prepareCount);
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {

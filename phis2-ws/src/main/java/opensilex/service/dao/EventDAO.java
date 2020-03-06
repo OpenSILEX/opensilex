@@ -25,7 +25,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
@@ -299,8 +298,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 dateRangeEnd);
 
         // get events from storage
-        TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventsQuery.toString());
-
+        TupleQuery eventsTupleQuery = prepareRDF4JTupleQuery(eventsQuery);
+        
         ArrayList<Event> events = new ArrayList<>();
         ConcernedItemDAO concernedItemDao = new ConcernedItemDAO(
                 sparql,
@@ -374,8 +373,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
         Event event = null;
 
         // Get event from storage
-        TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventQuery.toString());
-
+        TupleQuery eventsTupleQuery = prepareRDF4JTupleQuery(eventQuery);
+        
         try (TupleQueryResult eventsResult = eventsTupleQuery.evaluate()) {
             if (eventsResult.hasNext()) {
                 BindingSet bindingSet = eventsResult.next();
@@ -632,7 +631,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 dateRangeStart,
                 dateRangeEnd);
 
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, countQuery.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(countQuery);
+        
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -695,7 +695,8 @@ public class EventDAO extends Rdf4jDAO<Event> {
             List<String> annotationUris = getAllAnnotationUrisWithEventAsTarget(eventUri);
 
             UpdateBuilder deleteEventQuery = deleteEventTriples(eventUri);
-            Update deleteEventUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, deleteEventQuery.build().toString());
+            
+            Update deleteEventUpdate = prepareRDF4JUpdateQuery(deleteEventQuery);
             deleteEventUpdate.execute();
 
             if (!annotationUris.isEmpty()) {
@@ -738,7 +739,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 .buildString();
 
         List<String> annotationUris = new LinkedList<>();
-        TupleQuery getAnnotationQuery = getConnection().prepareTupleQuery(removeAnnotationQuery);
+        TupleQuery getAnnotationQuery = prepareRDF4JTupleQuery(removeAnnotationQuery);
         
         try (TupleQueryResult res = getAnnotationQuery.evaluate()) {
             while (res.hasNext()) {

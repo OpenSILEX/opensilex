@@ -13,7 +13,6 @@ import java.util.List;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -150,8 +149,8 @@ public class VocabularyDAO extends Rdf4jDAO<PropertyVocabularyDTO> {
     public ArrayList<PropertyVocabularyDTO> allPaginateContactProperties() throws DAOPersistenceException {
         //1. get all the subproperties of the hasContact Property
         SPARQLQueryBuilder query = prepareGetContactProperties();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
+        
         ArrayList<PropertyVocabularyDTO> properties = new ArrayList<>();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -177,8 +176,8 @@ public class VocabularyDAO extends Rdf4jDAO<PropertyVocabularyDTO> {
     public ArrayList<PropertyVocabularyDTO> allPaginateDeviceProperties() throws DAOPersistenceException {
         //1. get all the subproperties of the hasContact Property
         SPARQLQueryBuilder query = prepareGetDeviceProperties();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
+        
         ArrayList<PropertyVocabularyDTO> properties = new ArrayList<>();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -213,7 +212,7 @@ public class VocabularyDAO extends Rdf4jDAO<PropertyVocabularyDTO> {
                 namespacesList.add(namespace);
 	});
         // Retreive namespace from RDF4J
-        try (RepositoryResult<org.eclipse.rdf4j.model.Namespace> iterator = getConnection().getNamespaces()) {
+        try (RepositoryResult<org.eclipse.rdf4j.model.Namespace> iterator = getNamespaces()) {
             while (iterator.hasNext()) {
                 org.eclipse.rdf4j.model.Namespace rdf4jNamespace = iterator.next();
                 if(!URINamespaces.USER_SPECIFIC_NAMESPACES.containsValue(rdf4jNamespace.getName())){

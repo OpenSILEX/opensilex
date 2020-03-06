@@ -22,7 +22,6 @@ import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
@@ -113,7 +112,8 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
     public HashMap<String, String> getVariables(String experimentUri) {
         SPARQLQueryBuilder query = prepareSearchVariablesQuery(experimentUri);
         
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
+
         HashMap<String, String> variables = new HashMap<>();
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
@@ -136,7 +136,8 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
     public HashMap<String, String> getSensors(String experimentUri) {
         SPARQLQueryBuilder query = prepareSearchSensorsQuery(experimentUri);
         
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
+        
         HashMap<String, String> variables = new HashMap<>();
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
@@ -221,7 +222,7 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
             LOGGER.debug(SPARQL_QUERY + updateRequest.toString());
 
             //Insert the properties in the triplestore
-            Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, updateRequest.toString());
+            Update prepareUpdate = prepareRDF4JUpdateQuery(updateRequest);
             try {
                 prepareUpdate.execute();
             } catch (UpdateExecutionException ex) {
@@ -263,7 +264,7 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
             LOGGER.debug("delete : " + delete.toString());
 
             //2. Delete data in the triplestore
-            Update prepareDelete = getConnection().prepareUpdate(QueryLanguage.SPARQL, delete.toString());
+            Update prepareDelete = prepareRDF4JUpdateQuery(delete);
             try {
                 prepareDelete.execute();
             } catch (UpdateExecutionException ex) {
@@ -368,7 +369,7 @@ public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
             UpdateRequest query = prepareInsertQuery(experiment);
             
             try {
-                Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+                Update prepareUpdate = prepareRDF4JUpdateQuery(query);
                 prepareUpdate.execute();
 
                 createdResourcesUris.add(experiment.getUri());

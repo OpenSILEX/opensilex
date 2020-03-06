@@ -28,7 +28,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
@@ -212,7 +211,7 @@ public class MethodDAO extends Rdf4jDAO<Method> {
         Query query = prepareGetLastId();
 
         //get last method uri ID inserted
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -289,7 +288,7 @@ public class MethodDAO extends Rdf4jDAO<Method> {
                 //SILEX:todo
                 // Review the connection to the triplestore
                 // Dirty hotfix
-                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
+                Update prepareUpdate = prepareRDF4JUpdateQuery(spqlInsert);
                 LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                 prepareUpdate.execute();
                 //\SILEX:todo
@@ -368,9 +367,8 @@ public class MethodDAO extends Rdf4jDAO<Method> {
      */
     public ArrayList<Method> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Method> methods = new ArrayList<>();
-        
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -396,7 +394,7 @@ public class MethodDAO extends Rdf4jDAO<Method> {
                 
                 // Get ontology references list 
                 SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(method.getUri());
-                TupleQuery tupleQueryOntologiesReferences = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
+                TupleQuery tupleQueryOntologiesReferences = prepareRDF4JTupleQuery(queryOntologiesReferences);
                 try (TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate()) {
                     while (resultOntologiesReferences.hasNext()) {
                         BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
@@ -468,10 +466,10 @@ public class MethodDAO extends Rdf4jDAO<Method> {
                 UpdateRequest queryInsert = prepareInsertQuery(methodDTO);
                  try {
                         // transaction beginning: request check
-                        Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
+                        Update prepareDelete = prepareRDF4JUpdateQuery(deleteQuery);
                         LOGGER.trace(getTraceabilityLogs() + " query : " + prepareDelete.toString());
                         prepareDelete.execute();
-                        Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
+                        Update prepareUpdate = prepareRDF4JUpdateQuery(queryInsert);
                         LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareUpdate.execute();
 
@@ -615,7 +613,7 @@ public class MethodDAO extends Rdf4jDAO<Method> {
     @Override
     public Method findById(String id) throws DAOPersistenceException, Exception {
         SPARQLQueryBuilder query = prepareSearchByUri(id);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         
         Method method = new Method();
         method.setUri(id);

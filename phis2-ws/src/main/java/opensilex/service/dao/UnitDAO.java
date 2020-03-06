@@ -28,7 +28,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
@@ -205,7 +204,7 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
         Query query = prepareGetLastId();
 
         //get last unit uri ID inserted
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -280,7 +279,7 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
             try {
                 //SILEX:todo
                 // Connection to review. Dirty hotfix.
-                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
+                Update prepareUpdate = prepareRDF4JUpdateQuery(spqlInsert);
                 LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                 prepareUpdate.execute();
                 //\SILEX:todo
@@ -368,7 +367,7 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
      */
     public ArrayList<Unit> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+                TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Unit> units = new ArrayList<>();
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -396,8 +395,7 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
                 
                 // Get ontology references  
                 SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(unit.getUri());
-                TupleQuery tupleQueryOntologiesReferences = this.getConnection()
-                        .prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
+                TupleQuery tupleQueryOntologiesReferences = prepareRDF4JTupleQuery(queryOntologiesReferences);
                 try (TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate()) {
                     while (resultOntologiesReferences.hasNext()) {
                         BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
@@ -469,11 +467,10 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
                 UpdateRequest queryInsert = prepareInsertQuery(unitDTO);
                  try {
                         // transaction start: check connection
-                        Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
+                        Update prepareDelete = prepareRDF4JUpdateQuery(deleteQuery);
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
                         prepareDelete.execute();
-                        Update prepareUpdate = this.getConnection()
-                                .prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
+                        Update prepareUpdate = prepareRDF4JUpdateQuery(queryInsert);
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareUpdate.execute();
 
@@ -623,7 +620,7 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
     @Override
     public Unit findById(String id) throws DAOPersistenceException, Exception {
         SPARQLQueryBuilder query = prepareSearchByUri(id);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         
         Unit unit = new Unit();
         unit.setUri(id);

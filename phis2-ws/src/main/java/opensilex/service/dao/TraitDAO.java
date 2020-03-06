@@ -52,7 +52,6 @@ import org.apache.jena.vocabulary.XSD;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
@@ -173,8 +172,8 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
        Query query = prepareGetLastId(); 
 
         //get last trait uri ID inserted
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
+        
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -285,7 +284,7 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
                 /*//SILEX:todo
                 Connection te review. Dirty hot fix.
                 */
-                Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, spqlInsert.toString());
+                Update prepareUpdate = prepareRDF4JUpdateQuery(spqlInsert);
                 LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                 prepareUpdate.execute();
                 //\SILEX:test
@@ -349,7 +348,7 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
      */
     public ArrayList<Trait> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Trait> traits = new ArrayList<>();
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -377,7 +376,7 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
                 
                 // Get ontology references list 
                 SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(trait.getUri());
-                TupleQuery tupleQueryOntologiesReferences = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
+                TupleQuery tupleQueryOntologiesReferences = prepareRDF4JTupleQuery(queryOntologiesReferences);
                 try (TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate()) {
                     while (resultOntologiesReferences.hasNext()) {
                         BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
@@ -450,10 +449,10 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
                 UpdateRequest queryInsert = prepareInsertQuery(traitDTO);
                  try {
                         // Transaction start: check request
-                        Update prepareDelete = this.getConnection().prepareUpdate(deleteQuery.toString());
+                        Update prepareDelete = prepareRDF4JUpdateQuery(deleteQuery);
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareDelete.toString());
                         prepareDelete.execute();
-                        Update prepareUpdate = this.getConnection().prepareUpdate(QueryLanguage.SPARQL, queryInsert.toString());
+                        Update prepareUpdate = prepareRDF4JUpdateQuery(queryInsert);
                         LOGGER.debug(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                         prepareUpdate.execute();
 
@@ -535,7 +534,7 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
      */    
     public ArrayList<String> getVariableFromTrait(Trait trait) {                
         SPARQLQueryBuilder query = prepareSearchQueryVariables(trait.getUri());
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<String> varList = new ArrayList();
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
@@ -647,7 +646,7 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
     @Override
     public Trait findById(String id) throws DAOPersistenceException, Exception {
         SPARQLQueryBuilder query = prepareSearchByUri(id);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         
         Trait trait = new Trait();
         trait.setUri(id);

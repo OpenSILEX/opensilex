@@ -16,7 +16,6 @@ import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -62,9 +61,10 @@ public class StudyRDFDAO extends Rdf4jDAO {
      */
     public ArrayList<String> getStudiesFromGermplasms() throws DAOPersistenceException {
         SPARQLQueryBuilder query = prepareSearchOnGermplasmsQuery();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         
         ArrayList<String> studiesURI = new ArrayList();
+        
         try (TupleQueryResult studiesURIResult = tupleQuery.evaluate()) {
             while (studiesURIResult.hasNext()) {
                 String studyURI = getStringValueOfSelectNameFromBindingSet(EXP_URI, studiesURIResult.next());

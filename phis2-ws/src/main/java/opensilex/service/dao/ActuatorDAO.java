@@ -51,7 +51,6 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
@@ -166,7 +165,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
 
                 //2. Insert actuator
                 UpdateRequest updateQuery = prepareInsertQuery(actuator);
-                Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, updateQuery.toString());
+                Update prepareUpdate = prepareRDF4JUpdateQuery(updateQuery);
                 prepareUpdate.execute();
             }
             
@@ -239,7 +238,8 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         Query query = prepareGetLastIdFromYear(year);
 
         //get last sensor uri inserted
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -343,12 +343,12 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
                 
                 //2. Delete old actuators data
                 UpdateRequest deleteQuery = prepareDeleteQuery(oldActuator);
-                Update prepareDelete = getConnection().prepareUpdate(deleteQuery.toString());
+                Update prepareDelete = prepareRDF4JUpdateQuery(deleteQuery);
                 prepareDelete.execute();
                 
                 //2. Insert new actuators data
                 UpdateRequest insertQuery = prepareInsertQuery(actuator);
-                Update prepareUpdate = getConnection().prepareUpdate(insertQuery.toString());
+                Update prepareUpdate = prepareRDF4JUpdateQuery(insertQuery);
                 prepareUpdate.execute();
             }
             
@@ -629,7 +629,8 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
     private HashMap<String, String> getVariables(String actuatorUri) {
         SPARQLQueryBuilder query = prepareSearchVariablesQuery(actuatorUri);
         
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
+        
         HashMap<String, String> variables = new HashMap<>();
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
@@ -653,7 +654,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
     @Override
     public Actuator findById(String id) throws Exception {
         SPARQLQueryBuilder findQuery = prepareSearchQuery(null, null, id, null, null, null, null, null, null, null, null, null);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, findQuery.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(findQuery);
         
         Actuator actuator = new Actuator();
         try(TupleQueryResult result = tupleQuery.evaluate()) {
@@ -701,7 +702,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
     public boolean existAndIsActuator(String uri) {
         if (existUri(uri)) {
             SPARQLQueryBuilder query = prepareIsActuatorQuery(uri);
-            BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+            BooleanQuery booleanQuery = prepareRDF4JBooleanQuery(query);
 
             return booleanQuery.evaluate();
         } else {
@@ -879,7 +880,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      */
     public Integer count(String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) throws RepositoryException, MalformedQueryException {
         SPARQLQueryBuilder prepareCount = prepareCount(uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(prepareCount);
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -907,7 +908,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      */
     public ArrayList<Actuator> find(Integer page, Integer pageSize, String uri, String rdfType, String label, String brand, String serialNumber, String model, String inServiceDate, String dateOfPurchase, String dateOfLastCalibration, String personInCharge) {
         SPARQLQueryBuilder query = prepareSearchQuery(page, pageSize, uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         ArrayList<Actuator> actuators = new ArrayList<>();
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {

@@ -49,6 +49,9 @@ import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import org.apache.jena.shared.JenaException;
 import org.apache.jena.update.UpdateRequest;
 import org.eclipse.rdf4j.RDF4JException;
+import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -177,7 +180,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         try {
             UpdateRequest query = updateBuilder.buildRequest();
             LOGGER.debug(SPARQL_QUERY + " " + query.toString());
-            getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString()).execute();
+            prepareRDF4JUpdateQuery(query).execute();
         } catch (JenaException | RDF4JException ex) {
             handleTriplestoreException(ex);
         }
@@ -198,7 +201,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         query.appendSelect(null);
         query.appendTriplet(subject, predicate, object, null);
         query.appendParameters("LIMIT 1");
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
                 exist = true;
@@ -234,7 +237,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
                     + "    { ?s ?p ?r }\n");
 
             LOGGER.debug(SPARQL_QUERY + query.toString());
-            BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+            BooleanQuery booleanQuery = prepareRDF4JBooleanQuery(query);
             return booleanQuery.evaluate();
         } catch (MalformedQueryException | QueryEvaluationException | RepositoryException e) {
             throw (e);
@@ -272,7 +275,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
                     + "}";
 
             LOGGER.debug(SPARQL_QUERY + query);
-            BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query);
+            BooleanQuery booleanQuery = prepareRDF4JBooleanQuery(query);
             return booleanQuery.evaluate();
         } catch (Exception e) {
             return false;
@@ -297,7 +300,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
             query.appendTriplet(subject, predicate, "?x", null);
             query.appendParameters("LIMIT 1");
             LOGGER.trace(query.toString());
-            TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+            TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
             try (TupleQueryResult result = tupleQuery.evaluate()) {
                 if (result.hasNext()) {
                     value = result.next().getBinding("x").getValue().stringValue();
@@ -341,7 +344,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         LOGGER.debug(SPARQL_QUERY + query.toString());
 
         //Insert the properties in the triplestore
-        Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, spql.buildRequest().toString());
+        Update prepareUpdate = prepareRDF4JUpdateQuery(query);
         try {
             prepareUpdate.execute();
         } catch (UpdateExecutionException ex) {
@@ -380,7 +383,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         LOGGER.debug(request.toString());
 
         //2. Delete data in the triplestore
-        Update prepareDelete = getConnection().prepareUpdate(QueryLanguage.SPARQL, request.toString());
+        Update prepareDelete = prepareRDF4JUpdateQuery(request);
         try {
             prepareDelete.execute();
         } catch (UpdateExecutionException ex) {
@@ -474,7 +477,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         Map<String, List<String>> urisAndLabels = new HashMap<>();
 
         //2. Get the result of the query
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -513,7 +516,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         List<String> labels = new ArrayList<>();
 
         //2. Get the result of the query
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -583,8 +586,31 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         }
     }
 
-    public RepositoryConnection getConnection() {
+    private RepositoryConnection getConnection() {
         return sparql.getRepositoryConnection();
+    }
+
+    public TupleQuery prepareRDF4JTupleQuery(Object query) {
+        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        tupleQuery.setMaxExecutionTime(RDF4JConnection.TIMEOUT);
+        return tupleQuery;
+    }
+
+    public Update prepareRDF4JUpdateQuery(Object query) {
+        Update update = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+        update.setMaxExecutionTime(RDF4JConnection.TIMEOUT);
+        return update;
+    }
+
+    public BooleanQuery prepareRDF4JBooleanQuery(Object query) {
+        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        booleanQuery.setMaxExecutionTime(RDF4JConnection.TIMEOUT);
+        return booleanQuery;
+    }
+
+    public RepositoryResult<Namespace> getNamespaces() {
+        RepositoryResult<Namespace> result = getConnection().getNamespaces();
+        return result;
     }
 
     /**

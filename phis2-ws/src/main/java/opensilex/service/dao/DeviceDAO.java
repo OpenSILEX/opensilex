@@ -20,7 +20,6 @@ import opensilex.service.ontology.Rdfs;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -55,7 +54,7 @@ public class DeviceDAO extends Rdf4jDAO<Device> {
     
     private boolean isDevice(String uri) {
         SPARQLQueryBuilder query = prepareIsDeviceQuery(uri);
-        BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
+        BooleanQuery booleanQuery = prepareRDF4JBooleanQuery(query);
         
         return booleanQuery.evaluate();
     }
@@ -109,7 +108,7 @@ public class DeviceDAO extends Rdf4jDAO<Device> {
     private HashMap<String, String> getVariables(String deviceUri) {
         SPARQLQueryBuilder query = prepareSearchVariablesQuery(deviceUri);
         
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         HashMap<String, String> variables = new HashMap<>();
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {

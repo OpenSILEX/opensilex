@@ -28,7 +28,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -205,7 +204,7 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         SPARQLQueryBuilder query = prepareGetDomainQuery(relationUri);
         ArrayList<String> propertyDomains = new ArrayList<>();
         
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -228,7 +227,7 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         SPARQLQueryBuilder query = prepareGetRangeQuery(relationUri);
         ArrayList<String> propertyRangeList = new ArrayList<>();
         
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -378,7 +377,7 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         SPARQLQueryBuilder query = prepareGetCardinality(relationUri);
         HashMap<String, Cardinality> cardinalities = new HashMap<>();
         
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -412,7 +411,7 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
        SPARQLQueryBuilder query = prepareGetPropertiesCardinalitiesByConcept(concept);
         HashMap<String, ArrayList<Cardinality>> cardinalities = new HashMap<>();
         
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -630,7 +629,7 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
             int numberValues = 0;
             if (objectUri != null) {
                 SPARQLQueryBuilder query = prepareGetProperties(objectUri, relation);
-                TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+                TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
                 try (TupleQueryResult result = tupleQuery.evaluate()) {
                     BindingSet bindingSet = result.next();
                     numberValues = Integer.parseInt(bindingSet.getValue(COUNT).stringValue());
@@ -854,8 +853,8 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
              properties and properties type with their labels for the given 
             uri and language*/
             SPARQLQueryBuilder query = prepareSearchPropertiesQuery(objectUri, language, propertiesRelationsToIgnore);
-            TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        
+            TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
+            
             definition.setUri(objectUri);
         
             try (TupleQueryResult result = tupleQuery.evaluate()) {

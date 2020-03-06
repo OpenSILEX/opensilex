@@ -24,7 +24,6 @@ import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
@@ -124,7 +123,8 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
      */
     public ArrayList<RadiometricTarget> allPaginate() {
         SPARQLQueryBuilder query = prepareSearchQuery();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
+        
         ArrayList<RadiometricTarget> radiometricTargets;
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -168,7 +168,7 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
      */
     public Integer count() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         SPARQLQueryBuilder prepareCount = prepareCount();
-        TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(prepareCount);
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
@@ -309,7 +309,7 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
             UpdateRequest query = prepareInsertQuery(radiometricTarget);
             
             try {
-                Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
+                Update prepareUpdate = prepareRDF4JUpdateQuery(query);
                 prepareUpdate.execute();
 
                 createdResourcesUris.add(radiometricTarget.getUri());
@@ -514,8 +514,8 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
                 //\SILEX:info
                 UpdateRequest insertQuery = prepareInsertQuery(radiometricTarget);            
                 try {
-                    Update prepareDelete = getConnection().prepareUpdate(deleteQuery.toString());
-                    Update prepareUpdate = getConnection().prepareUpdate(QueryLanguage.SPARQL, insertQuery.toString());
+                    Update prepareDelete = prepareRDF4JUpdateQuery(deleteQuery);
+                    Update prepareUpdate = prepareRDF4JUpdateQuery(insertQuery);
                     prepareDelete.execute();
                     prepareUpdate.execute();
                     updatedResourcesUri.add(radiometricTarget.getUri());
@@ -589,8 +589,7 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
     public int getLastId() {
         SPARQLQueryBuilder query = prepareGetLastId();
         //get last unit uri inserted
-        TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        
+        TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
         String uri = null;
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {

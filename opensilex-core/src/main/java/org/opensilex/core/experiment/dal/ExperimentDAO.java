@@ -7,14 +7,20 @@
 
 package org.opensilex.core.experiment.dal;
 
+import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.TriplePath;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.syntax.ElementFilter;
+import org.apache.jena.sparql.syntax.ElementGroup;
+import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -29,10 +35,7 @@ import org.opensilex.utils.ListWithPagination;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 
@@ -202,6 +205,8 @@ public class ExperimentDAO {
      */
     protected void appendListFilters(ExperimentSearchDTO searchDTO, SelectBuilder select) throws Exception {
 
+        ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+
         if (searchDTO == null)
             return;
 
@@ -223,10 +228,30 @@ public class ExperimentDAO {
             addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasTechnicalSupervisor, ExperimentModel.TECHNICAL_SUPERVISOR_SPARQL_VAR);
             valuesByVar.put(ExperimentModel.TECHNICAL_SUPERVISOR_SPARQL_VAR, searchDTO.getTechnicalSupervisors());
         }
-        if (!searchDTO.getGroups().isEmpty()) {
-            addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasGroup, ExperimentModel.GROUP_SPARQL_VAR);
-            valuesByVar.put(ExperimentModel.GROUP_SPARQL_VAR, searchDTO.getGroups());
+
+        Var groupVar = makeVar(ExperimentModel.GROUP_SPARQL_VAR);
+        Triple groupTriple = new Triple(makeVar(ExperimentModel.URI_FIELD), Oeso.hasGroup.asNode(), groupVar);
+        List<URI> groupUris = searchDTO.getGroups();
+
+        if (groupUris.isEmpty()) {
+            // get experiment without any group
+            select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(groupTriple)));
+        }else{
+            // get experiment with no group specified or in the given list
+            ElementGroup rootFilteringElem = new ElementGroup();
+            ElementGroup optionals = new ElementGroup();
+            optionals.addTriplePattern(groupTriple);
+
+            Expr boundExpr = exprFactory.not(exprFactory.bound(groupVar));
+            Expr groupInUrisExpr = exprFactory.in(groupVar,groupUris.stream()
+                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
+                    .toArray());
+
+            rootFilteringElem.addElement(new ElementOptional(optionals));
+            rootFilteringElem.addElementFilter(new ElementFilter(SPARQLQueryHelper.or(boundExpr,groupInUrisExpr)));
+            select.getWhereHandler().getClause().addElement(rootFilteringElem);
         }
+
         if (!searchDTO.getVariables().isEmpty()) {
             addWhere(select, ExperimentModel.URI_FIELD, Oeso.measures, ExperimentModel.VARIABLES_SPARQL_VAR);
             valuesByVar.put(ExperimentModel.VARIABLES_SPARQL_VAR, searchDTO.getVariables());
@@ -236,9 +261,9 @@ public class ExperimentDAO {
             addWhere(select, ExperimentModel.SENSORS_SPARQL_VAR, Oeso.participatesIn, ExperimentModel.URI_FIELD);
 
             // append a restriction on ?sensors variable to make sure that only instance of SensingDevice are retrieved
-            String SENSOR_TYPE_VARIABLE_NAME = "SensingDeviceType";
-            TriplePath typePath = select.makeTriplePath(makeVar(ExperimentModel.SENSORS_SPARQL_VAR), RDF.type, makeVar(SENSOR_TYPE_VARIABLE_NAME));
-            TriplePath subClassPath = select.makeTriplePath(makeVar(SENSOR_TYPE_VARIABLE_NAME), Ontology.subClassAny, Oeso.SensingDevice.asNode());
+            Var sensorTypeVar = makeVar("SensingDeviceType");
+            TriplePath typePath = select.makeTriplePath(makeVar(ExperimentModel.SENSORS_SPARQL_VAR), RDF.type,sensorTypeVar);
+            TriplePath subClassPath = select.makeTriplePath(sensorTypeVar, Ontology.subClassAny, Oeso.SensingDevice.asNode());
             select.addWhere(subClassPath).addWhere(typePath);
         }
         if (!searchDTO.getInfrastructures().isEmpty()) {
@@ -252,14 +277,6 @@ public class ExperimentDAO {
         SPARQLQueryHelper.addWhereValues(select, valuesByVar);
     }
 
-    /**
-     * Append a triple on the WHERE clause of the given {@link SelectBuilder}
-     *
-     * @param select     the {@link SelectBuilder} to update
-     * @param subjectVar the subject variable name
-     * @param property   the property between the subject and the object
-     * @param objectVar  the object variable name
-     */
     protected void addWhere(SelectBuilder select, String subjectVar, Property property, String objectVar) {
         select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
     }
@@ -282,6 +299,7 @@ public class ExperimentDAO {
                 throw new RuntimeException(e);
             }
         });
+
     }
 
     /**

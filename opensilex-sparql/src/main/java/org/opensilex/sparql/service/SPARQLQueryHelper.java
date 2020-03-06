@@ -7,6 +7,7 @@ package org.opensilex.sparql.service;
 
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
@@ -123,8 +124,10 @@ public class SPARQLQueryHelper {
     public static Expr eq(String varName, Node node) {
         return exprFactory.eq(NodeFactory.createVariable(varName), node);
     }
-    
+
     public static Expr langFilter(String varName, String lang) {
+
+
         return or(
                 exprFactory.langMatches(exprFactory.lang(NodeFactory.createVariable(varName)), lang),
                 exprFactory.eq(exprFactory.lang(NodeFactory.createVariable(varName)), "")
@@ -134,7 +137,7 @@ public class SPARQLQueryHelper {
     /**
      * Append a VALUES clause to the given select if values are not empty,
      *
-     * @param select  the SelectBuilder to update
+     * @param where  the WhereClause to update
      * @param varName the variable name
      * @param values  the list of values to put in the VALUES set
      * @throws SPARQLDeserializerNotFoundException if no {@link SPARQLDeserializer} is found for an element of values
@@ -142,7 +145,7 @@ public class SPARQLQueryHelper {
      * @see SelectBuilder#addWhereValueVar(Object, Object...)
      * @see SPARQLDeserializers#getForClass(Class)
      */
-    public static void addWhereValues(SelectBuilder select, String varName, List<?> values) throws Exception {
+    public static void addWhereValues(WhereClause<?> where, String varName, List<?> values) throws Exception {
 
         if (values.isEmpty())
             return;
@@ -153,8 +156,9 @@ public class SPARQLQueryHelper {
         for (Object object : values) {
             nodes[i++] = SPARQLDeserializers.getForClass(object.getClass()).getNode(object);
         }
-        select.addWhereValueVar(varName, nodes);
+        where.addWhereValueVar(varName, nodes);
     }
+
 
     /**
      *
@@ -183,42 +187,42 @@ public class SPARQLQueryHelper {
      * @see <a href=https://www.w3.org/TR/sparql11-query/#func-logical-or> SPARQL LOGICAL OR</a>
      * @see <a href=https://www.w3.org/TR/sparql11-query/#expressions> SPARQL FILTER </a>
      */
-    public static void addWhereValues(SelectBuilder select, Map<String, List<?>> varValuesMap) throws Exception {
+        public static void addWhereValues(SelectBuilder select, Map<String, List<?>> varValuesMap) throws Exception {
 
-        if (varValuesMap.isEmpty())
-            return;
+            if (varValuesMap.isEmpty())
+                return;
 
-        // we use the VALUES clause only if all values list have the same size
-        boolean useValues = true;
-        Iterator<Map.Entry<String, List<?>>> mapIt = varValuesMap.entrySet().iterator();
+            // we use the VALUES clause only if all values list have the same size
+            boolean useValues = true;
+            Iterator<Map.Entry<String, List<?>>> mapIt = varValuesMap.entrySet().iterator();
 
-        int firstElemSize = mapIt.next().getValue().size();
-        while (useValues && mapIt.hasNext()) {
-            useValues = mapIt.next().getValue().size() == firstElemSize;
-        }
+            int firstElemSize = mapIt.next().getValue().size();
+            while (useValues && mapIt.hasNext()) {
+                useValues = mapIt.next().getValue().size() == firstElemSize;
+            }
 
-        if (useValues) {
+            if (useValues) {
+                for (Map.Entry<String, List<?>> entry : varValuesMap.entrySet()) {
+                    addWhereValues(select, entry.getKey(), entry.getValue());
+                }
+                return;
+            }
+
+            // else we use filter
             for (Map.Entry<String, List<?>> entry : varValuesMap.entrySet()) {
-                addWhereValues(select, entry.getKey(), entry.getValue());
+
+                List<?> values = entry.getValue();
+                Expr[] eqExprList = new Expr[values.size()];
+                int i = 0;
+
+                for (Object object : values) {
+                    Node objNode = SPARQLDeserializers.getForClass(object.getClass()).getNode(object);
+                    eqExprList[i++] = exprFactory.eq(makeVar(entry.getKey()), objNode);
+                }
+                select.addFilter(or(eqExprList));
             }
-            return;
+
         }
-
-        // else we use filter
-        for (Map.Entry<String, List<?>> entry : varValuesMap.entrySet()) {
-
-            List<?> values = entry.getValue();
-            Expr[] eqExprList = new Expr[values.size()];
-            int i = 0;
-
-            for (Object object : values) {
-                Node objNode = SPARQLDeserializers.getForClass(object.getClass()).getNode(object);
-                eqExprList[i++] = exprFactory.eq(makeVar(entry.getKey()), objNode);
-            }
-            select.addFilter(or(eqExprList));
-        }
-
-    }
 
     /**
      * @param startDateVarName the name of the startDate variable , should not be null if startDate is not null

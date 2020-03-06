@@ -6,6 +6,7 @@
 package org.opensilex.sparql.rdf4j;
 
 import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
@@ -25,6 +26,7 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
     public RDF4JServiceFactory(RDF4JConfig config) {
         LOGGER.debug("Build RDF4JServiceFactory from config");
         this.repository = new HTTPRepository(config.serverURI(), config.repository());
+        this.repository.init();
     }
     
     public RDF4JServiceFactory(Repository repository) {
@@ -35,7 +37,8 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
     @Override
     public SPARQLService provide() {
         try {
-            SPARQLService sparql = new SPARQLService(new RDF4JConnection(repository.getConnection()));
+            RepositoryConnection connection = repository.getConnection();
+            SPARQLService sparql = new SPARQLService(new RDF4JConnection(connection));
             sparql.startup();
             return sparql;
         } catch (Exception ex) {

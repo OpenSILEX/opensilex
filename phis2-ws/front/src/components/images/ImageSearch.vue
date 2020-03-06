@@ -2,11 +2,13 @@
   <div>
     <b-form>
       <phis2ws-TimeSearch></phis2ws-TimeSearch>
+      <br>
       <div class="row">
         <div class="col-sm">
           <phis2ws-ExperimentSearch></phis2ws-ExperimentSearch>
           <phis2ws-SciObjectTypeSearch></phis2ws-SciObjectTypeSearch>
           <phis2ws-SciObjectAliasSearch></phis2ws-SciObjectAliasSearch>
+          <br><br>
           <phis2ws-SciObjectURISearch></phis2ws-SciObjectURISearch>
         </div>
         <div class="col-sm">

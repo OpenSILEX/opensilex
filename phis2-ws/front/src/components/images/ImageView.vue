@@ -10,7 +10,7 @@
       Filter's parameters
       <font-awesome-icon v-if="!showSearchComponent" icon="chevron-down" size="sm" />
       <font-awesome-icon v-if="showSearchComponent" icon="chevron-up" size="sm" />
-    </b-button>
+    </b-button> <span class="beta" >(beta version, Firefox recommended)</span>
 
     <b-collapse id="collapse-1" v-model="showSearchComponent" class="mt-2">
       <phis2ws-ImageSearch @onSearchFormSubmit="onSearchFormSubmit"></phis2ws-ImageSearch>
@@ -241,6 +241,9 @@ export default class ImageView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.beta {
+  color: #00a38d;
+}
 .btn-phis {
   background-color: #00a38d;
   border: 1px solid #00a38d;

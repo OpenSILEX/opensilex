@@ -140,6 +140,7 @@ public class RDF4JConnection implements SPARQLConnection {
             resultList.add(new RDF4JStatement(result));
         }
 
+        queryResults.close();
         return resultList;
     }
 
@@ -155,6 +156,7 @@ public class RDF4JConnection implements SPARQLConnection {
             resultList.add(result);
         }
 
+        queryResults.close();
         return resultList;
     }
 

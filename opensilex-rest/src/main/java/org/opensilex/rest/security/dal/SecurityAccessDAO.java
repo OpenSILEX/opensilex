@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import javax.security.enterprise.credential.Credential;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
@@ -79,6 +78,7 @@ public class SecurityAccessDAO {
     }
 
     public List<String> getCredentialsIdList() {
+        buildCredentials();
         return credentialsIdList;
     }
     

@@ -332,6 +332,15 @@ public class AuthenticationService implements Service {
         return jwt.getClaim(CLAIM_CREDENTIALS_LIST).asArray(String.class);
     }
 
+    public String[] decodeStringArrayClaim(String token, String key){
+
+        return JWT.require(algoRSA)
+                .withIssuer(TOKEN_ISSUER)
+                .build()
+                .verify(token)
+                .getClaim(key).asArray(String.class);
+    }
+
     /**
      * Return authentication expiration delay in seconds
      *
@@ -479,4 +488,5 @@ public class AuthenticationService implements Service {
     public boolean logout(UserModel user) {
         return (removeUser(user) != null);
     }
+
 }

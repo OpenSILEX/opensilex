@@ -7,12 +7,17 @@ package org.opensilex.rest.group.dal;
 
 import java.net.URI;
 import java.util.List;
+
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.opensilex.rest.authentication.SecurityOntology;
+import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -21,7 +26,6 @@ import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
 /**
- *
  * @author vidalmor
  */
 public class GroupDAO {
@@ -53,7 +57,7 @@ public class GroupDAO {
     private List<URI> getGroupUserProfileURIsList(URI groupURI) throws Exception {
         List<URI> userProfilesURIs = sparql.searchURIs(GroupUserProfileModel.class, null, (SelectBuilder select) -> {
             WhereHandler whereHandler = new WhereHandler();
-            Node groupUriNode =  SPARQLDeserializers.nodeURI(groupURI);
+            Node groupUriNode = SPARQLDeserializers.nodeURI(groupURI);
             whereHandler.addWhere(select.makeTriplePath(groupUriNode, SecurityOntology.hasUserProfile, SPARQLClassObjectMapper.getForClass(GroupModel.class).getURIFieldVar()));
             Node graph = SPARQLClassObjectMapper.getForClass(GroupModel.class).getDefaultGraph();
             ElementNamedGraph elementNamedGraph = new ElementNamedGraph(graph, whereHandler.getElement());
@@ -94,12 +98,23 @@ public class GroupDAO {
 
     }
 
+    public List<URI> getGroupUriList(UserModel user) throws Exception {
+
+        return sparql.searchURIs(GroupModel.class, null, (SelectBuilder select) -> {
+            Var groupUriVar = SPARQLClassObjectMapper.getForClass(GroupModel.class).getURIFieldVar();
+            Var groupUserProfileVar = makeVar("gup");
+            select.addWhere(groupUriVar, SecurityOntology.hasUserProfile, groupUserProfileVar);
+            select.addWhere(groupUserProfileVar, SecurityOntology.hasUser, SPARQLDeserializers.nodeURI(user.getUri()));
+        });
+
+    }
+
     public ListWithPagination<GroupModel> search(String namePattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
 
         Expr nameFilter = SPARQLQueryHelper.regexFilter(GroupModel.NAME_FIELD, namePattern);
 
         return sparql.searchWithPagination(
-                GroupModel.class, 
+                GroupModel.class,
                 null,
                 (SelectBuilder select) -> {
                     if (nameFilter != null) {

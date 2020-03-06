@@ -80,9 +80,9 @@ import org.opensilex.sparql.service.SPARQLService;
  * "concernedItem(s)"
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-@Deprecated
-@Api("/images")
-@Path("/images")
+//@Deprecated
+//@Api("/images")
+//@Path("/images")
 public class ImageResourceService extends ResourceService {
 
     final static Logger LOGGER = LoggerFactory.getLogger(ImageResourceService.class);

@@ -50,9 +50,9 @@ import org.opensilex.sparql.service.SPARQLService;
  *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-@Deprecated
-@Api("/datasets")
-@Path("/datasets")
+//@Deprecated
+//@Api("/datasets")
+//@Path("/datasets")
 public class DatasetResourceService extends ResourceService {
 
     @Inject

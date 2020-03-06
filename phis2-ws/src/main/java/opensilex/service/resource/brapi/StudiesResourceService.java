@@ -9,8 +9,6 @@ package opensilex.service.resource.brapi;
 
 import opensilex.service.resource.dto.experiment.StudyDTO;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -34,10 +32,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
-import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.DataDAO;
 import opensilex.service.dao.ScientificObjectRdf4jDAO;
-import opensilex.service.dao.SpeciesDAO;
 import opensilex.service.dao.VariableDAO;
 import opensilex.service.model.Call;
 import opensilex.service.resource.dto.data.BrapiObservationDTO;
@@ -47,7 +43,6 @@ import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.BrapiVariable;
 import opensilex.service.model.Data;
-import opensilex.service.model.Experiment;
 import opensilex.service.model.ScientificObject;
 import opensilex.service.model.StudyDetails;
 import opensilex.service.model.Variable;
@@ -56,13 +51,16 @@ import opensilex.service.resource.ResourceService;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
+import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.BrapiMultiResponseForm;
 import opensilex.service.view.brapi.form.BrapiSingleResponseForm;
+import opensilex.service.view.brapi.form.ResponseFormPOST;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
-import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
@@ -82,7 +80,11 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
     final static Logger LOGGER = LoggerFactory.getLogger(StudiesResourceService.class);
        
     @Inject
-    private SPARQLService sparql;
+    public StudiesResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
     
     /**
      * Overriding BrapiCall method
@@ -177,12 +179,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-    @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)   
 
     public Response getStudies (
@@ -205,7 +202,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             ArrayList<OrderBy> orderByList = new ArrayList();
             
             if (!StringUtils.isEmpty(studyDbId)) {
-                searchDTO.setUri(URI.create(studyDbId));
+                searchDTO.setUri(URI.create(studyDbId));                
             }            
 
             if (!StringUtils.isEmpty(seasonDbId)) {
@@ -255,7 +252,8 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }  
         } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
         }  
 
     }
@@ -308,17 +306,12 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-    @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)   
 
     public Response getStudyDetails (
         @ApiParam(value = "Search by studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") @URL @Required String studyDbId
-        ) throws SQLException {   
+        ) throws Exception {   
         try {
             
             ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();  
@@ -343,7 +336,8 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
                 return Response.status(Response.Status.OK).entity(getResponse).build();
             }  
         } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
         }    
        
     }
@@ -397,16 +391,8 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-
-    @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
-
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)   
-
     public Response getObservations (
         @ApiParam(value = "studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") @URL @Required String studyDbId,
         @ApiParam(value = "observationVariableDbIds") @QueryParam(value = "observationVariableDbIds") @URL List<String> observationVariableDbIds,  
@@ -504,46 +490,51 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-
-    @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
-
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)   
-
     public Response getObservationVariables (
         @ApiParam(value = "studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") @URL @Required String studyDbId,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
-    ) throws SQLException {               
+    ) throws Exception {               
 
-        ArrayList<Status> statusList = new ArrayList<>();  
-
-        ArrayList<BrapiObservationDTO> observationsList = getObservationsList(studyDbId, new ArrayList());
-        ArrayList<String> variableURIs = new ArrayList();
-        ArrayList<BrapiVariable> obsVariablesList = new ArrayList();
-        for (BrapiObservationDTO obs:observationsList) {  
-            if (!variableURIs.contains(obs.getObservationVariableDbId())){
-                variableURIs.add(obs.getObservationVariableDbId());
-                VariableDAO varDAO = new VariableDAO();
-                try {
-                    BrapiVariable obsVariable = varDAO.findBrapiVariableById(obs.getObservationVariableDbId());
-                    obsVariablesList.add(obsVariable);  
-                } catch (Exception ex) {
-                    // Ignore unknown variable id
+        try {
+            
+            ExperimentSearchDTO searchDTO = new ExperimentSearchDTO(); 
+            ExperimentDAO xpDao = new ExperimentDAO(sparql);
+            ExperimentModel xpModel = xpDao.get(new URI(studyDbId));
+            
+            ArrayList<Status> statusList = new ArrayList<>();  
+            
+            if (xpModel != null) {
+                List<URI> variables = xpModel.getVariables();
+                //SPARQLDeserializers.getExpandedURI(xp.getUri().toString())
+                ArrayList<BrapiVariable> brapiVariables= new ArrayList();
+            
+                for (URI var:variables) {
+                    VariableDAO varDAO = new VariableDAO(sparql);
+                    BrapiVariable brapiVar = varDAO.findBrapiVariableById(SPARQLDeserializers.getExpandedURI(var.toString()));
+                    brapiVariables.add(brapiVar);
                 }
-            }            
+                if (brapiVariables.isEmpty()) {
+                    BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, brapiVariables, true);
+                    return noResultFound(getResponse, statusList);
+                } else {
+                    BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, brapiVariables, false);
+                    return Response.status(Response.Status.OK).entity(getResponse).build();
+                }
+            
+            } else {
+                ArrayList<BrapiVariable> var = new ArrayList<>();
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0,0,var,true);
+                return noResultFound(getResponse, statusList);            
+            }
+            
+        } catch (Exception e) {
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();        
         }
-        if (observationsList.isEmpty()) {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, obsVariablesList, true);
-            return noResultFound(getResponse, statusList);
-        } else {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, obsVariablesList, false);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
-        }      
+      
     }
     
     /**
@@ -658,50 +649,48 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-
-    @ApiImplicitParams({
-       @ApiImplicitParam(name = "Authorization", required = true,
-                         dataType = "string", paramType = "header",
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
-
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)   
-
     public Response getObservationUnits (
         @ApiParam(value = "studyDbId", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI ) @PathParam("studyDbId") @URL @Required String studyDbId,
         @ApiParam(value = "observationLevel", example = "Plot" ) @QueryParam("observationLevel") String  observationLevel,
         @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
         @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
-    ) throws SQLException, Exception {           
+    ) throws Exception {           
 
-        ArrayList<Status> statusList = new ArrayList<>();                  
-
-        String rdfType = null;
-        if (observationLevel != null) {
-            rdfType =  Oeso.NAMESPACE + observationLevel;
-        }
-        
-        ScientificObjectRdf4jDAO scientificObjectsDAO = new ScientificObjectRdf4jDAO();
-        ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, rdfType, studyDbId, null, false);
-
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql);
-        ExperimentModel xp = experimentDAO.get(new URI(studyDbId));
-        if (xp != null) {
-            ArrayList<BrapiObservationUnitDTO> observationUnits= getObservationUnitsResult(scientificObjects,xp);
-
-            if (observationUnits.isEmpty()) {
-                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observationUnits, true);
-                return noResultFound(getResponse, statusList);
-            } else {
-                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, observationUnits, false);
-                return Response.status(Response.Status.OK).entity(getResponse).build();
-            }  
+        try {
+            ArrayList<Status> statusList = new ArrayList<>();    
             
-        } else {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, new ArrayList<>(), true);
-            return noResultFound(getResponse, statusList);
-        }        
+            String rdfType = null;
+            if (observationLevel != null) {
+                rdfType =  Oeso.NAMESPACE + observationLevel;
+            }
+
+            ScientificObjectRdf4jDAO scientificObjectsDAO = new ScientificObjectRdf4jDAO(sparql);
+            ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, rdfType, studyDbId, null, false);
+
+            ExperimentDAO experimentDAO = new ExperimentDAO(sparql);
+            ExperimentModel xp = experimentDAO.get(new URI(studyDbId));
+            if (xp != null) {
+                ArrayList<BrapiObservationUnitDTO> observationUnits= getObservationUnitsResult(scientificObjects,xp);
+
+                if (observationUnits.isEmpty()) {
+                    BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observationUnits, true);
+                    return noResultFound(getResponse, statusList);
+                } else {
+                    BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, observationUnits, false);
+                    return Response.status(Response.Status.OK).entity(getResponse).build();
+                }  
+
+            } else {
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, new ArrayList<>(), true);
+                return noResultFound(getResponse, statusList);
+            }  
+        } catch (Exception e) {
+                AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();        
+        }
+              
 
     }
 
@@ -726,16 +715,23 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
      * @return observations list 
      */
     private Response getStudyObservations(String studyDbId, List<String> variableURIs, int limit, int page) {
-        ArrayList<Status> statusList = new ArrayList<>();         
-        ArrayList<BrapiObservationDTO> observations = getObservationsList(studyDbId,variableURIs);
+        ArrayList<Status> statusList = new ArrayList<>();  
+        try {
+            ArrayList<BrapiObservationDTO> observations = getObservationsList(studyDbId,variableURIs);
 
-        if (observations.isEmpty()) {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observations, true);
-            return noResultFound(getResponse, statusList);
-        } else {
-            BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, observations, false);
-            return Response.status(Response.Status.OK).entity(getResponse).build();
-        }    
+            if (observations.isEmpty()) {
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(0, 0, observations, true);
+                return noResultFound(getResponse, statusList);
+            } else {
+                BrapiMultiResponseForm getResponse = new BrapiMultiResponseForm(limit, page, observations, false);
+                return Response.status(Response.Status.OK).entity(getResponse).build();
+            }   
+            
+        } catch (Exception e) {
+            AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(postResponse).build();
+        }
+         
     }
 
     /**
@@ -749,14 +745,14 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
     private ArrayList<BrapiObservationDTO> getObservationsList(String studyDbId, List<String> variableURIs) {
 
         ArrayList<BrapiObservationDTO> observations = new ArrayList();  
-        ScientificObjectRdf4jDAO objectDAO = new ScientificObjectRdf4jDAO();
+        ScientificObjectRdf4jDAO objectDAO = new ScientificObjectRdf4jDAO(sparql);
 
         ArrayList<ScientificObject> objectsList = objectDAO.find(null, null, null, null, studyDbId, null, false);
 
         ArrayList<Variable> variablesList = new ArrayList();
 
         if (variableURIs.isEmpty()) {  
-            VariableDAO variableDaoSesame = new VariableDAO();
+            VariableDAO variableDaoSesame = new VariableDAO(sparql);
             //if variableURIs is empty, we look for all variables observations
             variablesList = variableDaoSesame.getAll(false, false); 
 
@@ -764,7 +760,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             //in case a variable uri is duplicated, we keep distinct uris
             List<String> uniqueVariableURIs= variableURIs.stream().distinct().collect(Collectors.toList());
             for (String variableURI:uniqueVariableURIs) {
-                VariableDAO variableDAO = new VariableDAO();
+                VariableDAO variableDAO = new VariableDAO(sparql);
                 try {
                     Variable variable = variableDAO.findById(variableURI);
                     variablesList.add(variable);
@@ -827,7 +823,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
      */
     private ArrayList<BrapiObservationUnitDTO> getObservationUnitsResult(ArrayList<ScientificObject> scientificObjects, ExperimentModel experiment) {
         SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
-        VariableDAO variableDaoSesame = new VariableDAO();
+        VariableDAO variableDaoSesame = new VariableDAO(sparql);
         ArrayList<Variable> variablesList = variableDaoSesame.allPaginate(); 
         ArrayList<BrapiObservationUnitDTO> observationUnitsList = new ArrayList();
 
@@ -864,17 +860,21 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         return observationUnitsList;
     }
     
-    public StudyDTO convert(ExperimentModel xp) {
+    public static StudyDTO convert(ExperimentModel xp) {
 
         StudyDTO study = new StudyDTO();
-        study.setStudyDbId(xp.getUri().toString());
+        study.setStudyDbId(SPARQLDeserializers.getExpandedURI(xp.getUri().toString()));
         study.setName(xp.getLabel());
         study.setStudyName(xp.getLabel());
         ArrayList<String> seasons = new ArrayList();
-        seasons.add(xp.getCampaign().toString());
+        if (xp.getCampaign() != null) {
+            seasons.add(xp.getCampaign().toString());
+        }        
         study.setSeasons(seasons);
         study.setStartDate(xp.getStartDate().toString());
-        study.setEndDate(xp.getEndDate().toString());
+        if (xp.getEndDate() != null) {
+            study.setEndDate(xp.getEndDate().toString());
+        }
         LocalDate startDate = xp.getStartDate();
         LocalDate endDate = xp.getEndDate();        
         if (startDate.compareTo(LocalDate.now()) <= 0  && (endDate == null | endDate.compareTo(LocalDate.now()) >= 0 )) {

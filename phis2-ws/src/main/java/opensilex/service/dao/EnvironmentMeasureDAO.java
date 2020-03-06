@@ -40,6 +40,7 @@ import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.EnvironmentMeasure;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Environmental measures DAO.
@@ -47,6 +48,11 @@ import opensilex.service.model.EnvironmentMeasure;
  */
 public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
     
+    protected SPARQLService sparql;
+    
+    public EnvironmentMeasureDAO(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
     private final static Logger LOGGER = LoggerFactory.getLogger(EnvironmentMeasureDAO.class);
     
     //MongoFields labels, used to query (CRUD) the environment mongo data
@@ -218,8 +224,8 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
         
         boolean dataOk = true;
         
-        DeviceDAO deviceDAO = new DeviceDAO();
-        VariableDAO variableDAO = new VariableDAO();
+        DeviceDAO deviceDAO = new DeviceDAO(sparql);
+        VariableDAO variableDAO = new VariableDAO(sparql);
         for (EnvironmentMeasure environmentMeasure : environmentMeasures) {
             //1. Check if the sensorUri exist and is a sensor
             if (deviceDAO.existAndIsDevice(environmentMeasure.getSensorUri())) {

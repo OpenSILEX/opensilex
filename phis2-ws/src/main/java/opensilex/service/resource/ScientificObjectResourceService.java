@@ -8,14 +8,13 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -32,7 +31,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
@@ -51,35 +49,48 @@ import opensilex.service.resource.dto.scientificObject.ScientificObjectDTO;
 import opensilex.service.resource.dto.scientificObject.ScientificObjectPostDTO;
 import opensilex.service.resource.dto.scientificObject.ScientificObjectPutDTO;
 import opensilex.service.resource.validation.interfaces.Required;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Scientific objects resource service.
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/scientificObjects")
 @Path("scientificObjects")
 public class ScientificObjectResourceService extends ResourceService {
+
     final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectResourceService.class);
-    
+
+    @Inject
+    public ScientificObjectResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
      * Transform ScientificObjectPostDTO to ScientificObject
+     *
      * @param scientificObjectDTOs
      * @return the transformed list
      */
     private List<ScientificObject> scientificObjectPostsDTOsToScientificObjects(List<ScientificObjectPostDTO> scientificObjectDTOs) {
         ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
-        
+
         for (ScientificObjectPostDTO scientificObjectDTO : scientificObjectDTOs) {
             scientificObjects.add(scientificObjectDTO.createObjectFromDTO());
         }
-        
+
         return scientificObjects;
     }
-    
+
     /**
-     * Enters a set of scientific objects into the storage and associate them to 
+     * Enters a set of scientific objects into the storage and associate them to
      * an experiment if given.
+     *
      * @param scientificObjectsDTO scientific objects to save
      * @param context query context element to get the ip address information of the user
      * @example 
@@ -95,24 +106,19 @@ public class ScientificObjectResourceService extends ResourceService {
            }
           ]
         }
-     * 
-     * @return 
+     *
+     * @return
      */
     @POST
     @ApiOperation(value = "Post scientific object(s)",
-                  notes = "Register new scientific object(s) in the database.")
+            notes = "Register new scientific object(s) in the database.")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Scientific object(s) saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-       @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                         dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postScientificObject(
@@ -120,15 +126,16 @@ public class ScientificObjectResourceService extends ResourceService {
             @Context HttpServletRequest context) {
         AbstractResultForm postResponse = null;
         //if there is at least one scientific object
-        if (!scientificObjectsDTO.isEmpty()) {
-            try {
-                ScientificObjectRdf4jDAO scientificObjectDaoSesame = new ScientificObjectRdf4jDAO();
+        try {
+            if (!scientificObjectsDTO.isEmpty()) {
+
+                ScientificObjectRdf4jDAO scientificObjectDaoSesame = new ScientificObjectRdf4jDAO(sparql);
                 if (context.getRemoteAddr() != null) {
                     scientificObjectDaoSesame.remoteUserAdress = context.getRemoteAddr();
                 }
-                
+
                 scientificObjectDaoSesame.user = userSession.getUser();
-                
+
                 //Check the scientific objects and insert them in triplestore
                 POSTResultsReturn resultSesame = scientificObjectDaoSesame.checkAndInsert(scientificObjectPostsDTOsToScientificObjects(scientificObjectsDTO));
                 if (resultSesame.getHttpStatus().equals(Response.Status.CREATED)) {
@@ -142,18 +149,21 @@ public class ScientificObjectResourceService extends ResourceService {
                     postResponse = new ResponseFormPOST(resultSesame.statusList);
                 }
                 return Response.status(resultSesame.getHttpStatus()).entity(postResponse).build();
-            } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
+
+            } else {
+                postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty scientific objects list"));
                 return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
             }
-        } else {
-            postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "Empty scientific objects list"));
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
-    
+
     /**
-     * Update the data of a given scientific object in the given context (experiment).
+     * Update the data of a given scientific object in the given context
+     * (experiment).
+     *
      * @param uri
      * @param experiment
      * @param scientificObjectDTO
@@ -191,24 +201,19 @@ public class ScientificObjectResourceService extends ResourceService {
      *          ]
      *      }
      * }
-     * @throws Exception 
+     * @throws Exception
      */
     @PUT
     @Path("{uri}/{experiment}")
     @ApiOperation(value = "Put scientific object(s) in the given experiment",
-                  notes = "Update scientific object(s) in the database.")
+            notes = "Update scientific object(s) in the database.")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Scientific object(s) updated", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-       @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                         dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response put(
@@ -216,13 +221,12 @@ public class ScientificObjectResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @PathParam("experiment") @Required @URL String experiment,
             @ApiParam(value = DocumentationAnnotation.SCIENTIFIC_OBJECT_POST_DATA_DEFINITION, required = true) @Valid ScientificObjectPutDTO scientificObjectDTO,
             @Context HttpServletRequest context) throws Exception {
-        
-        ScientificObjectRdf4jDAO scientificObjectDAO = new ScientificObjectRdf4jDAO();
-        
+        ScientificObjectRdf4jDAO scientificObjectDAO = new ScientificObjectRdf4jDAO(sparql);
+
         ScientificObject scientificObject = scientificObjectDTO.createObjectFromDTO();
         scientificObject.setUri(uri);
         POSTResultsReturn result = scientificObjectDAO.checkAndUpdateInContext(scientificObject, SPARQLDeserializers.getExpandedURI(experiment));
-        
+
         AbstractResultForm putResponse = null;
         if (result.getHttpStatus().equals(Response.Status.OK)
                 || result.getHttpStatus().equals(Response.Status.CREATED)) {
@@ -235,54 +239,47 @@ public class ScientificObjectResourceService extends ResourceService {
         }
         return Response.status(result.getHttpStatus()).entity(putResponse).build();
     }
-    
+
     @GET
     @ApiOperation(value = "Get all scientific objects corresponding to the searched params given",
-                  notes = "Retrieve all scientific objects authorized for the user corresponding to the user corresponding to the searched params given")
+            notes = "Retrieve all scientific objects authorized for the user corresponding to the user corresponding to the searched params given")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve all scientific objects", response = ScientificObjectDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-         @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                         dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                         value = DocumentationAnnotation.ACCES_TOKEN,
-                         example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getScientificObjectsBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("uri") String uri,
-        @ApiParam(value = "Search by experiment URI", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("experiment") @URL String experimentURI,
-        @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
-        @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE) @QueryParam("rdfType") @URL String rdfType,
-        @ApiParam(value = "Retreive detailled properties", example = "true") @DefaultValue("true") @QueryParam("withProperties") Boolean withProperties
-
-    ) {
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+            @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_URI) @QueryParam("uri") String uri,
+            @ApiParam(value = "Search by experiment URI", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("experiment") @URL String experimentURI,
+            @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
+            @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE) @QueryParam("rdfType") @URL String rdfType,
+            @ApiParam(value = "Retreive detailled properties", example = "true") @DefaultValue("true") @QueryParam("withProperties") Boolean withProperties
+    ) throws Exception {
         ArrayList<ScientificObjectDTO> scientificObjectsToReturn = new ArrayList<>();
         ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
 
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ScientificObjectDTO> getResponse;
-        
-        ScientificObjectRdf4jDAO scientificObjectDaoSesame = new ScientificObjectRdf4jDAO();
+
+        ScientificObjectRdf4jDAO scientificObjectDaoSesame = new ScientificObjectRdf4jDAO(sparql);
         scientificObjectDaoSesame.user = userSession.getUser();
         scientificObjectDaoSesame.setPage(page);
         scientificObjectDaoSesame.setPageSize(pageSize);
-        
+
         experimentURI = SPARQLDeserializers.getExpandedURI(experimentURI);
         //1. Get count
         Integer totalCount = scientificObjectDaoSesame.count(uri, rdfType, experimentURI, alias);
-       
+
         // If scientific objects found
-        if(totalCount > 0){
+        if (totalCount > 0) {
             //2. Get list of scientific objects
             scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias, withProperties);
         }
-       
 
         if (scientificObjects == null) { //Request failure
             getResponse = new ResultForm<>(0, 0, scientificObjectsToReturn, true);
@@ -291,7 +288,6 @@ public class ScientificObjectResourceService extends ResourceService {
             getResponse = new ResultForm<>(0, 0, scientificObjectsToReturn, true);
             return noResultFound(getResponse, statusList);
         } else {
-            
 
             //Convert all scientific objects to DTO
             scientificObjects.forEach((scientificObject) -> {

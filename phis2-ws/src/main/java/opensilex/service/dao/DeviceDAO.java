@@ -23,6 +23,7 @@ import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +38,10 @@ import org.slf4j.LoggerFactory;
 public class DeviceDAO extends Rdf4jDAO<Device> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(DeviceDAO.class);
+
+    public DeviceDAO(SPARQLService sparql) {
+        super(sparql);
+    }
 
     private SPARQLQueryBuilder prepareIsDeviceQuery(String uri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();

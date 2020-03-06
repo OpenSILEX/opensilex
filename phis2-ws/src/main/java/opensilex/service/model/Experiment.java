@@ -212,21 +212,25 @@ public class Experiment {
     }
 
 
-    public static ExperimentModel toExperimentModel(Experiment xp, SpeciesDAO speciesDAO, ProjectDAO projectDAO, UserDAO userDAO, GroupDAO groupDAO) throws Exception {
+    public static ExperimentModel toExperimentModel(Experiment xp, ExperimentModel preloadedExperiment,
+                                                    SpeciesDAO speciesDAO, ProjectDAO projectDAO, UserDAO userDAO, GroupDAO groupDAO) throws Exception {
 
-        ExperimentModel xpModel = new ExperimentModel();
+        ExperimentModel xpModel = preloadedExperiment == null ? new ExperimentModel() : preloadedExperiment;
 
         if (!StringUtils.isEmpty(xp.getUri())) {
             xpModel.setUri(new URI(xp.getUri()));
         }
-
         xpModel.setLabel(xp.getAlias());
-        if (StringUtils.isEmpty(xp.getCampaign())) {
+
+        if (! StringUtils.isEmpty(xp.getCampaign())) {
             xpModel.setCampaign(Integer.parseInt(xp.getCampaign()));
         }
-        xpModel.setObjective(xp.getObjective());
-        xpModel.setComment(xp.getComment());
-
+        if (! StringUtils.isEmpty(xp.getObjective())) {
+            xpModel.setObjective(xp.getObjective());
+        }
+        if (! StringUtils.isEmpty(xp.getComment())) {
+            xpModel.setComment(xp.getObjective());
+        }
         if (!StringUtils.isEmpty(xp.getKeywords())) {
             String[] keywords = xp.getKeywords().split("\\s+");
             xpModel.setKeywords(Arrays.asList(keywords));

@@ -31,6 +31,7 @@ import opensilex.service.ontology.Rdfs;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Ask;
 import opensilex.service.model.Uri;
+import org.opensilex.sparql.service.SPARQLService;
 
 // SILEX:todo
 // - Element: Instances
@@ -55,6 +56,10 @@ public class UriDAO extends Rdf4jDAO<Uri> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(UriDAO.class);
     public Boolean deep;
+
+    public UriDAO(SPARQLService sparql) {
+        super(sparql);
+    }
 
     /**
      * Prepares a query to get the triplets of an URI (given or not).

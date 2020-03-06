@@ -37,13 +37,19 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.model.provenance.Provenance;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Provenance DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class ProvenanceDAO extends MongoDAO<Provenance> {
+
+    private final SPARQLService sparql;
     
+    public ProvenanceDAO(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
     private final static Logger LOGGER = LoggerFactory.getLogger(ProvenanceDAO.class);
     
     //Mongodb collection of the provenance
@@ -160,7 +166,7 @@ public class ProvenanceDAO extends MongoDAO<Provenance> {
         List<Document> provenancesDocuments = new ArrayList<>();
         for (Provenance provenance : provenances) {
             //1. Generates the provenance uri
-            provenance.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_PROVENANCE.toString(), null, null));
+            provenance.setUri(UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_PROVENANCE.toString(), null, null));
             
             //2. Generates the document insert
             provenancesDocuments.add(prepareInsertProvenanceDocument(provenance));

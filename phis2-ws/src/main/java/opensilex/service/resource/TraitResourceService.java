@@ -8,13 +8,12 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -45,51 +44,58 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Trait;
+import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Trait resource service.
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/traits")
 @Path("traits")
 public class TraitResourceService extends ResourceService {
-    
+
+    @Inject
+    public TraitResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
      * Trait POST service.
+     *
      * @param traits
      * @param context
      * @return POST result
      */
     @POST
     @ApiOperation(value = "Post trait(s)",
-                  notes = "Register new trait(s) in the data base")
+            notes = "Register new trait(s) in the data base")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Trait(s) saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postTrait(@ApiParam(value = DocumentationAnnotation.TRAIT_POST_DATA_DEFINITION) @Valid ArrayList<TraitDTO> traits,
-                              @Context HttpServletRequest context) {
+            @Context HttpServletRequest context) throws Exception {
+
         AbstractResultForm postResponse = null;
         if (traits != null && !traits.isEmpty()) {
-            TraitDAO traitDao = new TraitDAO();
+            TraitDAO traitDao = new TraitDAO(sparql);
             if (context.getRemoteAddr() != null) {
                 traitDao.remoteUserAdress = context.getRemoteAddr();
             }
-            
+
             traitDao.user = userSession.getUser();
-            
+
             POSTResultsReturn result = traitDao.checkAndInsert(traits);
-            
+
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                 //Code 201, traits insérés
                 postResponse = new ResponseFormPOST(result.statusList);
@@ -105,9 +111,10 @@ public class TraitResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
-    
+
     /**
      * Trait PUT service.
+     *
      * @param traits
      * @param context
      * @return PUT result
@@ -120,28 +127,23 @@ public class TraitResourceService extends ResourceService {
         @ApiResponse(code = 404, message = "Trait not found"),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putTrait(
-        @ApiParam(value = DocumentationAnnotation.TRAIT_POST_DATA_DEFINITION) @Valid ArrayList<TraitDTO> traits,
-        @Context HttpServletRequest context) {
+            @ApiParam(value = DocumentationAnnotation.TRAIT_POST_DATA_DEFINITION) @Valid ArrayList<TraitDTO> traits,
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm response = null;
         if (traits != null && !traits.isEmpty()) {
-            TraitDAO traitDao = new TraitDAO();
+            TraitDAO traitDao = new TraitDAO(sparql);
             if (context.getRemoteAddr() != null) {
                 traitDao.remoteUserAdress = context.getRemoteAddr();
             }
-            
+
             traitDao.user = userSession.getUser();
-            
+
             POSTResultsReturn result = traitDao.checkAndUpdate(traits);
-            
+
             if (result.getHttpStatus().equals(Response.Status.OK)
                     || result.getHttpStatus().equals(Response.Status.CREATED)) {
                 response = new ResponseFormPOST(result.statusList);
@@ -157,22 +159,21 @@ public class TraitResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
         }
     }
-    
+
     /**
      * Gets trait data.
+     *
      * @param traitDao
-     * @return the traits found
-     * SILEX:todo
-     * Add other filters than URI and label
+     * @return the traits found SILEX:todo Add other filters than URI and label
      * \SILEX:todo
      */
     private Response getTraitsData(TraitDAO traitDao) {
         ArrayList<Trait> traits;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Trait> getResponse;
-        
+
         traits = traitDao.allPaginate();
-        
+
         if (traits == null) {
             getResponse = new ResultForm<>(0, 0, traits, true);
             return noResultFound(getResponse, statusList);
@@ -189,9 +190,10 @@ public class TraitResourceService extends ResourceService {
             return noResultFound(getResponse, statusList);
         }
     }
-    
+
     /**
      * Trait GET method.
+     *
      * @param limit
      * @param page
      * @param uri
@@ -200,44 +202,40 @@ public class TraitResourceService extends ResourceService {
      */
     @GET
     @ApiOperation(value = "Get all Traits corresponding to the searched params given",
-                  notes = "Retrieve all traits authorized for the user corresponding to the user corresponding to the searched params given")
+            notes = "Retrieve all traits authorized for the user corresponding to the user corresponding to the searched params given")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve all traits", response = Trait.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTraitsBySearch(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-        @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_TRAIT_URI) @QueryParam("uri") @URL String uri,
-        @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_TRAIT_LABEL) @QueryParam("label") String label
-    ) {
-        TraitDAO traitDao = new TraitDAO();
-        
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+            @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_TRAIT_URI) @QueryParam("uri") @URL String uri,
+            @ApiParam(value = "Search by label", example = DocumentationAnnotation.EXAMPLE_TRAIT_LABEL) @QueryParam("label") String label
+    ) throws Exception {
+        TraitDAO traitDao = new TraitDAO(sparql);
+
         if (uri != null) {
             traitDao.uri = uri;
         }
         if (label != null) {
             traitDao.label = label;
         }
-        
+
         traitDao.user = userSession.getUser();
         traitDao.setPage(page);
         traitDao.setPageSize(limit);
-        
+
         return getTraitsData(traitDao);
     }
-    
+
     /**
      * Trait GET service.
+     *
      * @param trait
      * @param limit
      * @param page
@@ -245,37 +243,31 @@ public class TraitResourceService extends ResourceService {
      */
     @GET
     @Path("{trait}")
-    @ApiOperation(value = "Get a trait", 
-                  notes = "Retrieve a trait. Need URL encoded trait URI (Unique resource identifier).")
+    @ApiOperation(value = "Get a trait",
+            notes = "Retrieve a trait. Need URL encoded trait URI (Unique resource identifier).")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve a trait.", response = Trait.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTraitDetails(
-        @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_TRAIT_URI, required = true) @PathParam("trait") @Required @URL String trait,
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-        
+            @ApiParam(value = DocumentationAnnotation.TRAIT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_TRAIT_URI, required = true) @PathParam("trait") @Required @URL String trait,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
         if (trait == null) {
             final Status status = new Status(StatusCodeMsg.ACCESS_ERROR, StatusCodeMsg.ERR, "Empty trait URI");
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
         }
-        
-        TraitDAO traitDao = new TraitDAO();
+
+        TraitDAO traitDao = new TraitDAO(sparql);
         traitDao.uri = trait;
         traitDao.setPageSize(limit);
         traitDao.setPage(page);
         traitDao.user = userSession.getUser();
-        
+
         return getTraitsData(traitDao);
     }
 }

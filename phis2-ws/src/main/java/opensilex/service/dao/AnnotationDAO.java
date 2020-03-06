@@ -57,6 +57,7 @@ import opensilex.service.utils.JsonConverter;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.date.Dates;
 import opensilex.service.model.Annotation;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Annotations DAO.
@@ -79,14 +80,10 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
     public static final String TARGETS = "targets";
     public static final String MOTIVATED_BY = "motivatedBy";
 
-    public AnnotationDAO() {
-        super();
+    public AnnotationDAO(SPARQLService sparql) {
+        super(sparql);
     }
 
-    public AnnotationDAO(User user) {
-        super(user);
-    }
-    
     /**
      * Generates a query to search the body values of annotations.
      * @param annotations
@@ -261,9 +258,9 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      * @param annotations
      * @throws Exception 
      */
-    public static void setNewUris (List<Annotation> annotations) throws Exception {
+    public void setNewUris (List<Annotation> annotations) throws Exception {
         for (Annotation annotation : annotations) {
-            annotation.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ANNOTATION.toString(), null, null));
+            annotation.setUri(UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_ANNOTATION.toString(), null, null));
         }
     }
 
@@ -349,7 +346,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      */
     @Override
     public void validate(List<Annotation> annotations) throws DAODataErrorAggregateException, DAOPersistenceException {
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         ArrayList<DAODataErrorException> exceptions = new ArrayList<>();
         try {
             annotations.forEach((annotation) -> {
@@ -453,7 +450,7 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
      */
     private ArrayList<Annotation> getAnnotationsWithoutBodyValuesFromResult(TupleQueryResult result, String searchUri, String searchCreator, String searchMotivatedBy) {
         ArrayList<Annotation> annotations = new ArrayList<>();
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         while (result.hasNext()) {
             BindingSet bindingSet = result.next();
        

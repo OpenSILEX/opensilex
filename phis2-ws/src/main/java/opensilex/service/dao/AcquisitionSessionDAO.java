@@ -27,6 +27,7 @@ import opensilex.service.model.Experiment;
 import opensilex.service.model.RadiometricTarget;
 import opensilex.service.model.Sensor;
 import opensilex.service.model.Vector;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Acquisition session DAO.
@@ -44,13 +45,17 @@ public class AcquisitionSessionDAO extends Rdf4jDAO<MetadataFileDTO> {
      * @example http://www.opensilex.org/vocabulary/oeso#UAV
      */
     public String vectorRdfType;
+
+    public AcquisitionSessionDAO(SPARQLService sparql) {
+        super(sparql);
+    }
     
     /**
      * Counts the number of rows of the metadata file.
      * @return The number of rows
      */
     public Integer countFileMetadataRows() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         //size of the higher list to generate all the FileMetadataDTO
         ArrayList<Integer> sizes = new ArrayList<>();
         
@@ -64,16 +69,16 @@ public class AcquisitionSessionDAO extends Rdf4jDAO<MetadataFileDTO> {
             //UAV
             if (uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
                 //3. get the number of cameras
-                SensorDAO sensorDAO = new SensorDAO();
+                SensorDAO sensorDAO = new SensorDAO(sparql);
                 sizes.add(sensorDAO.countCameras());
 
                 //4. get the number of vectors
-                VectorDAO vectorDAO = new VectorDAO();
+                VectorDAO vectorDAO = new VectorDAO(sparql);
                 vectorDAO.rdfType = Oeso.CONCEPT_UAV.toString();
                 sizes.add(vectorDAO.countUAVs());
 
                 //5. get the number of radiometric targets
-                RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO();
+                RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO(sparql);
                 sizes.add(radiometricTargetDAO.count());
             }
         }
@@ -89,7 +94,7 @@ public class AcquisitionSessionDAO extends Rdf4jDAO<MetadataFileDTO> {
      */
     private ArrayList<MetadataFileDTO> getFileMetadata() {
         ArrayList<MetadataFileDTO> fileMetadataList = new ArrayList<>();
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         //size of the higher list to generate all the FileMetadataDTO
         ArrayList<Integer> sizes = new ArrayList<>();
         
@@ -111,21 +116,21 @@ public class AcquisitionSessionDAO extends Rdf4jDAO<MetadataFileDTO> {
             //Metadata for the uav
             if (uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_UAV.toString())) {
                 //3. get the camera list
-                SensorDAO sensorDAO = new SensorDAO();
+                SensorDAO sensorDAO = new SensorDAO(sparql);
                 sensorDAO.setPage(page);
                 sensorDAO.setPageSize(pageSize);
                 sensors = sensorDAO.getCameras();
                 sizes.add(sensors.size());
 
                 //4. get the vectors list
-                VectorDAO vectorDAO = new VectorDAO();
+                VectorDAO vectorDAO = new VectorDAO(sparql);
                 vectorDAO.setPage(page);
                 vectorDAO.setPageSize(pageSize);
                 vectors = vectorDAO.getUAVs();
                 sizes.add(vectors.size());
 
                 // 5. get the radiometric targets
-                RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO();
+                RadiometricTargetDAO radiometricTargetDAO = new RadiometricTargetDAO(sparql);
                 radiometricTargetDAO.setPage(page);
                 radiometricTargetDAO.setPageSize(pageSize);
                 radiometricTargets = radiometricTargetDAO.allPaginate();
@@ -205,7 +210,7 @@ public class AcquisitionSessionDAO extends Rdf4jDAO<MetadataFileDTO> {
      */
     public ArrayList<MetadataFileDTO> allPaginateFileMetadata() {
         // Check if the rdf type is a subclass of vector
-        UriDAO uriDao = new UriDAO();
+        UriDAO uriDao = new UriDAO(sparql);
         if (uriDao.isSubClassOf(vectorRdfType, Oeso.CONCEPT_VECTOR.toString())) {
             return getFileMetadata();
         } else {

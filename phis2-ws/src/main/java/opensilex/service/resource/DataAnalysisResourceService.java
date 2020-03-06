@@ -12,13 +12,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.DefaultValue;
@@ -30,7 +29,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
-import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.RDAO;
 import opensilex.service.dao.ScientificAppDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
@@ -42,15 +40,24 @@ import opensilex.service.resource.dto.ScientificAppDTO;
 import opensilex.service.shinyProxy.ShinyProxyService;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * DataAnalysis resource service.
  *
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-@Api("/dataAnalysis")
-@Path("/dataAnalysis")
+//@Api("/dataAnalysis")
+//@Path("/dataAnalysis")
 public class DataAnalysisResourceService extends ResourceService {
+
+    @Inject
+    public DataAnalysisResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
 
     /**
      * Call R function via OpenCPU Server
@@ -71,12 +78,7 @@ public class DataAnalysisResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getRfunctionResults(
             @ApiParam(required = true) @QueryParam("packageName") @DefaultValue("stats") @NotEmpty String packageName,
@@ -121,12 +123,7 @@ public class DataAnalysisResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response shinyProxyServerStatus() {
         ResponseFormGET response;
@@ -163,19 +160,14 @@ public class DataAnalysisResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response shinyProxyServerAppList(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
         ScientificAppDAO scientificAppDAO = new ScientificAppDAO();
         scientificAppDAO.session = userSession;
-        ArrayList<ScientificAppDescription> shinyProxyAppList = scientificAppDAO.find(null, null);
+        ArrayList<ScientificAppDescription> shinyProxyAppList = scientificAppDAO.find(sparql, null, null);
         ArrayList<ScientificAppDTO> shinyProxyAppDTOList = new ArrayList<>();
         for (ScientificAppDescription scientificApplicationDescription : shinyProxyAppList) {
             shinyProxyAppDTOList.add(new ScientificAppDTO(scientificApplicationDescription));

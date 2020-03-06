@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import opensilex.service.dao.manager.MongoDAO;
 import opensilex.service.model.ScientificObject;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
@@ -40,6 +41,10 @@ public class ScientificObjectMongoDAO {
     public void checkAndInsertListAO(ArrayList<ScientificObject> scientificObjects) throws ParseException {
         ArrayList<Document> documents = new ArrayList<>();
         for (ScientificObject so : scientificObjects) {
+
+            if(StringUtils.isEmpty(so.getGeometry())){
+                continue;
+            }
             Document document = new Document();
             document.append(URI_FIELD, so.getUri());
             document.append(RDF_TYPE_FIELD, so.getRdfType());
@@ -49,8 +54,9 @@ public class ScientificObjectMongoDAO {
             documents.add(document);
         };
 
-        
-        db.getCollection(SO_COLLECTION).insertMany(documents);
+        if(! documents.isEmpty()){
+            db.getCollection(SO_COLLECTION).insertMany(documents);
+        }
     }
 
     /**

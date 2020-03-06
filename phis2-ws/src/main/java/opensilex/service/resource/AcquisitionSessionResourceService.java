@@ -5,17 +5,15 @@
 // Creation date: 30 August 2018
 // Contact: morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -34,31 +32,43 @@ import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
+import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Acquisition session resource service.
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/acquisitionSessions")
 @Path("/acquisitionSessions")
 public class AcquisitionSessionResourceService extends ResourceService {
-    
+
+    @Inject
+    public AcquisitionSessionResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
-     * Searches acquisition session metadata file metadata corresponding to the given type of file wanted.
+     * Searches acquisition session metadata file metadata corresponding to the
+     * given type of file wanted.
+     *
      * @param acquisitionSessionDAO
-     * @return the acquisition session file metadata content for the hiddenPhis 
-     *         part of the acquisition session file used for 4P.
+     * @return the acquisition session file metadata content for the hiddenPhis
+     * part of the acquisition session file used for 4P.
      */
-    private Response getAcquisitionSessionMetadataFile(AcquisitionSessionDAO acquisitionSessionDAO) {       
+    private Response getAcquisitionSessionMetadataFile(AcquisitionSessionDAO acquisitionSessionDAO) {
         ArrayList<MetadataFileDTO> fileMetadata;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<MetadataFileDTO> getResponse;
-        
+
         //Retrieve file format.
         fileMetadata = acquisitionSessionDAO.allPaginateFileMetadata();
-        
+
         Integer count = acquisitionSessionDAO.countFileMetadataRows();
-        
+
         if (fileMetadata == null) {
             getResponse = new ResultForm<>(0, 0, new ArrayList<>(), true);
             return noResultFound(getResponse, statusList);
@@ -74,10 +84,11 @@ public class AcquisitionSessionResourceService extends ResourceService {
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
-    
+
     /**
-     * Service to get the hiddenPhis content of the excel file used to define 
+     * Service to get the hiddenPhis content of the excel file used to define
      * acquisition sessions for the 4P platform.
+     *
      * @param vectorRdfType
      * @param pageSize
      * @param page
@@ -125,23 +136,18 @@ public class AcquisitionSessionResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response get4PMetadataFile(
             @ApiParam(value = DocumentationAnnotation.VECTOR_RDF_TYPE_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_VECTOR_RDF_TYPE) @QueryParam("vectorRdfType") @Required @URL String vectorRdfType,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-        AcquisitionSessionDAO acquisitionSessionDAO = new AcquisitionSessionDAO();
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
+        AcquisitionSessionDAO acquisitionSessionDAO = new AcquisitionSessionDAO(sparql);
         acquisitionSessionDAO.vectorRdfType = vectorRdfType;
         acquisitionSessionDAO.setPage(page);
         acquisitionSessionDAO.setPageSize(pageSize);
         acquisitionSessionDAO.user = userSession.getUser();
-        
+
         return getAcquisitionSessionMetadataFile(acquisitionSessionDAO);
     }
 }

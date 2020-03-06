@@ -23,6 +23,7 @@ import opensilex.service.ontology.Rdfs;
 import opensilex.service.ontology.Oeso;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.model.Species;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Specie DAO.
@@ -31,6 +32,10 @@ import opensilex.service.model.Species;
 public class SpeciesDAO extends Rdf4jDAO<Species> {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeciesDAO.class);
+
+    public SpeciesDAO(SPARQLService sparql) {
+        super(sparql);
+    }
     
     /**
      * Generates the query to count the results for a specific filter.

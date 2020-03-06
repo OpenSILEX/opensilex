@@ -8,13 +8,12 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -41,32 +40,44 @@ import opensilex.service.model.Factor;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Factor resource service.
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-@Api("/factors")
-@Path("/factors")
+//@Api("/factors")
+//@Path("/factors")
 public class FactorResourceService extends ResourceService {
-    
+
+    @Inject
+    public FactorResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
      * Generates a factorDTO list from a given list of factor.
+     *
      * @param factor
      * @return the list of factor DTOs
      */
     private ArrayList<FactorDTO> factorToFactorDTO(ArrayList<Factor> factor) {
         ArrayList<FactorDTO> factorDTO = new ArrayList<>();
-        
+
         factor.forEach((factorEntity) -> {
             factorDTO.add(new FactorDTO(factorEntity));
         });
-        
+
         return factorDTO;
     }
-    
+
     /**
      * Gets the factor corresponding to the search parameters given.
+     *
      * @param pageSize
      * @param page
      * @param uri
@@ -103,48 +114,43 @@ public class FactorResourceService extends ResourceService {
      */
     @GET
     @ApiOperation(value = "Get all factor corresponding to the search params given",
-                  notes = "Retrieve all factor authorized for the user corresponding to the searched params given")
+            notes = "Retrieve all factor authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve all factor", response = FactorDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFactorsByCriteria(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-        @ApiParam(value = "Search by factor uri", example = DocumentationAnnotation.EXAMPLE_FACTOR_URI) @QueryParam("uri") @URL String uri,
-        @ApiParam(value = "Search by factor label", example = DocumentationAnnotation.EXAMPLE_FACTOR_LABEL) @QueryParam("label") String label,
-        @ApiParam(value = "Select language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language) {
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+            @ApiParam(value = "Search by factor uri", example = DocumentationAnnotation.EXAMPLE_FACTOR_URI) @QueryParam("uri") @URL String uri,
+            @ApiParam(value = "Search by factor label", example = DocumentationAnnotation.EXAMPLE_FACTOR_LABEL) @QueryParam("label") String label,
+            @ApiParam(value = "Select language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language) throws Exception {
         //1. Initialize factor filter
         Factor filter = new Factor();
         filter.setUri(uri);
         filter.setLabel(label);
-        
+
         if (language == null) {
             language = DEFAULT_LANGUAGE;
         }
-        
-        FactorDAO factorDAO = new FactorDAO();
+
+        FactorDAO factorDAO = new FactorDAO(sparql);
         factorDAO.setPage(page);
         factorDAO.setPageSize(pageSize);
-        
+
         //2. Get number of factor result
-        int totalCount = factorDAO.countWithFilter(filter.getUri(),filter.getLabel(),language);
+        int totalCount = factorDAO.countWithFilter(filter.getUri(), filter.getLabel(), language);
         //3. Get factors result
-        ArrayList<Factor> searchResult = factorDAO.findAll(filter.getUri(),filter.getLabel(),language);
-        
+        ArrayList<Factor> searchResult = factorDAO.findAll(filter.getUri(), filter.getLabel(), language);
+
         //4. Send result
         ResultForm<FactorDTO> getResponse;
         ArrayList<Status> statusList = new ArrayList<>();
-        ArrayList<FactorDTO> factorToReturn = new ArrayList<>();       
+        ArrayList<FactorDTO> factorToReturn = new ArrayList<>();
         if (searchResult == null || searchResult.isEmpty()) {
             //No result found
             getResponse = new ResultForm<>(0, 0, factorToReturn, true, 0);
@@ -157,45 +163,39 @@ public class FactorResourceService extends ResourceService {
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
-    
-    
-    
-     /**
+
+    /**
      * Factor POST service.
+     *
      * @param factor
      * @param context
      * @return the POST result
      */
     @POST
     @ApiOperation(value = "Post factor(s)",
-                  notes = "Register new factor(s) in the data base")
+            notes = "Register new factor(s) in the data base")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Factor(s) saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                          dataType = "string", paramType = "header",
-                          value = DocumentationAnnotation.ACCES_TOKEN,
-                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postUnit(@ApiParam(value = DocumentationAnnotation.FACTOR_POST_DATA_DEFINITION, required = true) @Valid ArrayList<FactorDTO> factor,
-                              @Context HttpServletRequest context) {
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
         if (factor != null && !factor.isEmpty()) {
-            FactorDAO factorDao = new FactorDAO();
+            FactorDAO factorDao = new FactorDAO(sparql);
             if (context.getRemoteAddr() != null) {
                 factorDao.remoteUserAdress = context.getRemoteAddr();
             }
-            
+
             factorDao.user = userSession.getUser();
-            
+
             POSTResultsReturn result = factorDao.checkAndInsert(factor);
-            
+
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                 //Code 201: factor inserted
                 postResponse = new ResponseFormPOST(result.statusList);
@@ -211,5 +211,4 @@ public class FactorResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
-    
 }

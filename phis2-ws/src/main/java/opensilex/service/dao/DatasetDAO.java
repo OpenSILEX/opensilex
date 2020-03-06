@@ -37,12 +37,19 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.ScientificObject;
 import opensilex.service.model.AgronomicalData;
 import opensilex.service.model.Dataset;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Dataset DAO.
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class DatasetDAO extends MongoDAO<Dataset> {
+
+    private final SPARQLService sparql;
+    
+    public DatasetDAO(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
     
     final static Logger LOGGER = LoggerFactory.getLogger(DatasetDAO.class);
     
@@ -203,7 +210,7 @@ public class DatasetDAO extends MongoDAO<Dataset> {
      * scientific objects list.
      */
     private void updateScientificObjectsWithExperimentsScientificObjects() {
-        ScientificObjectRdf4jDAO agronomicalObjectDao = new ScientificObjectRdf4jDAO();
+        ScientificObjectRdf4jDAO agronomicalObjectDao = new ScientificObjectRdf4jDAO(sparql);
         
         ArrayList<ScientificObject> scientificObjectsSearched = agronomicalObjectDao.find(null, null, null, null, experiment, null, true);
         
@@ -287,7 +294,7 @@ public class DatasetDAO extends MongoDAO<Dataset> {
             // if the datasetDTO follows the rules
             for (AgronomicalDataDTO data : datasetDTO.getData()) {
                 // does the scientific object exist?
-                ScientificObjectRdf4jDAO agronomicalObjectDao = new ScientificObjectRdf4jDAO();
+                ScientificObjectRdf4jDAO agronomicalObjectDao = new ScientificObjectRdf4jDAO(sparql);
                 if (!agronomicalObjectDao.existScientificObject(data.getAgronomicalObject())) {
                     dataState = false;
                     insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Agronomical Object URI : " + data.getAgronomicalObject()));
@@ -295,7 +302,7 @@ public class DatasetDAO extends MongoDAO<Dataset> {
 
                 // does the sensor exist?
                 if (data.getSensor() != null) {
-                    SensorDAO sensorDAO = new SensorDAO();
+                    SensorDAO sensorDAO = new SensorDAO(sparql);
                     if (!sensorDAO.existUri(data.getSensor())) {
                         dataState = false;
                         insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown sensor : " + data.getSensor()));
@@ -304,7 +311,7 @@ public class DatasetDAO extends MongoDAO<Dataset> {
             }
 
             // does the variable exist? 
-            VariableDAO variableDao = new VariableDAO();
+            VariableDAO variableDao = new VariableDAO(sparql);
             if (!variableDao.existUri(datasetDTO.getVariableUri())) {
                 dataState = false;
                 insertStatusList.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Unknown Variable : " + datasetDTO.getVariableUri()));

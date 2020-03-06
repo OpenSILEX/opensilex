@@ -8,14 +8,13 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -79,7 +78,11 @@ public class ProjectResourceService extends ResourceService {
     public static final Resource FinancialFunding = Ontology.resource(Oeso.NS, "FinancialFunding");
 
     @Inject
-    private SPARQLService sparql;
+    public ProjectResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
 
     @Inject
     private AuthenticationService authentication;
@@ -184,20 +187,20 @@ public class ProjectResourceService extends ResourceService {
             projectModels.add(projectModel);
 
             if (project.getFinancialReference() != null && !project.getFinancialReference().isEmpty()) {
-                sparql.updateObjectRelation(
+                sparql.updateObjectRelations(
                         projectMapper.getDefaultGraph(),
                         projectModel.getUri(),
                         hasFinancialReference,
-                        new URI(project.getFinancialReference())
+                       Collections.singletonList(project.getFinancialReference())
                 );
             }
 
             if (project.getFinancialFunding() != null && !project.getFinancialFunding().isEmpty()) {
-                sparql.updateObjectRelation(
+                sparql.updateObjectRelations(
                         projectMapper.getDefaultGraph(),
                         projectModel.getUri(),
                         hasFinancialFunding,
-                        new URI(project.getFinancialFunding())
+                        Collections.singletonList( new URI(project.getFinancialFunding()))
                 );
             }
 
@@ -331,7 +334,6 @@ public class ProjectResourceService extends ResourceService {
             @ApiParam(value = "Search by home page", example = DocumentationAnnotation.EXAMPLE_PROJECT_HOME_PAGE) @QueryParam("homePage") String homePage,
             @ApiParam(value = "Search by objective", example = DocumentationAnnotation.EXAMPLE_PROJECT_OBJECTIVE) @QueryParam("objective") String objective,
             @Context SecurityContext securityContext) throws Exception {
-
         UserModel user = (UserModel) securityContext.getUserPrincipal();
         ProjectDAO projectDAO = new ProjectDAO(sparql, user.getLang());
 

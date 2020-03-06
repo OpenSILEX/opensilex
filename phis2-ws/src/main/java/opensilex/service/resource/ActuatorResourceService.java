@@ -8,14 +8,13 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -50,47 +49,60 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Actuator service.
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/actuators")
 @Path("/actuators")
 public class ActuatorResourceService extends ResourceService {
-    
+
+    @Inject
+    public ActuatorResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
      * Generates a Actuator list from a given list of ActuatorPostDTO.
+     *
      * @param actuatorsDTOs
      * @return the list of actuators.
      */
     private List<Actuator> actuatorPostDTOsToActuators(List<ActuatorPostDTO> actuatorsDTOs) {
         ArrayList<Actuator> actuators = new ArrayList<>();
-        
+
         for (ActuatorPostDTO actuatorDTO : actuatorsDTOs) {
             actuators.add(actuatorDTO.createObjectFromDTO());
         }
-        
+
         return actuators;
     }
-    
+
     /**
      * Generates an Actuator list form a given list of ActuatoDTOs
+     *
      * @param actuatorsDTOs
-     * @return 
+     * @return
      */
     private List<Actuator> actuatorDTOsToActuators(List<ActuatorDTO> actuatorsDTOs) {
         ArrayList<Actuator> actuators = new ArrayList<>();
-        
+
         for (ActuatorDTO actuatorDTO : actuatorsDTOs) {
             actuators.add(actuatorDTO.createObjectFromDTO());
         }
-        
+
         return actuators;
     }
-    
+
     /**
      * Create actuators.
+     *
      * @param actuators
      * @example
      * [
@@ -130,32 +142,27 @@ public class ActuatorResourceService extends ResourceService {
      */
     @POST
     @ApiOperation(value = "Post actuator(s)",
-                  notes = "Register actuator(s) in the database")
+            notes = "Register actuator(s) in the database")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "actuator(s) saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response post(
-        @ApiParam (value = DocumentationAnnotation.ACTUATOR_POST_DEFINITION) @Valid ArrayList<ActuatorPostDTO> actuators,
-        @Context HttpServletRequest context) throws Exception {
-        AbstractResultForm postResponse = null;
-        
+            @ApiParam(value = DocumentationAnnotation.ACTUATOR_POST_DEFINITION) @Valid ArrayList<ActuatorPostDTO> actuators,
+            @Context HttpServletRequest context) throws Exception {
+            AbstractResultForm postResponse = null;
+
         if (actuators != null && !actuators.isEmpty()) {
-            ActuatorDAO actuatorDAO = new ActuatorDAO();
+            ActuatorDAO actuatorDAO = new ActuatorDAO(sparql);
             actuatorDAO.user = userSession.getUser();
-            
+
             POSTResultsReturn result = actuatorDAO.checkAndInsert(actuatorPostDTOsToActuators(actuators));
-            
+
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                 postResponse = new ResponseFormPOST(result.statusList);
                 postResponse.getMetadata().setDatafiles(result.getCreatedResources());
@@ -170,9 +177,10 @@ public class ActuatorResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
-    
+
     /**
      * Update actuators.
+     *
      * @param actuators
      * @param context
      * @example
@@ -213,27 +221,22 @@ public class ActuatorResourceService extends ResourceService {
      */
     @PUT
     @ApiOperation(value = "Put actuator(s)",
-                  notes = "Update actuator(s) in the database")
+            notes = "Update actuator(s) in the database")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "actuator(s) updated", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response put(
             @ApiParam(value = DocumentationAnnotation.ACTUATOR_POST_DEFINITION) @Valid ArrayList<ActuatorDTO> actuators,
-            @Context HttpServletRequest context) {
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm putResponse = null;
 
-        ActuatorDAO actuatorDAO = new ActuatorDAO();
+        ActuatorDAO actuatorDAO = new ActuatorDAO(sparql);
 
         actuatorDAO.user = userSession.getUser();
 
@@ -250,9 +253,10 @@ public class ActuatorResourceService extends ResourceService {
         }
         return Response.status(result.getHttpStatus()).entity(putResponse).build();
     }
-    
+
     /**
      * Get the data of a given actuator uri.
+     *
      * @param uri
      * @param pageSize
      * @param page
@@ -287,33 +291,28 @@ public class ActuatorResourceService extends ResourceService {
     @GET
     @Path("{uri}")
     @ApiOperation(value = "Get an actuator",
-                  notes = "Retrieve an actuator. Need URL encoded actuator URI")
+            notes = "Retrieve an actuator. Need URL encoded actuator URI")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve a sensor", response = ActuatorDetailDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getActuatorDetails(
-        @ApiParam(value = DocumentationAnnotation.ACTUATOR_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_ACTUATOR_URI, required = true) @PathParam("uri") @URL @Required String uri,
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
+            @ApiParam(value = DocumentationAnnotation.ACTUATOR_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_ACTUATOR_URI, required = true) @PathParam("uri") @URL @Required String uri,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
         ArrayList<ActuatorDetailDTO> actuators = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ActuatorDetailDTO> getResponse;
-        
+
         try {
-            ActuatorDAO actuatorDAO = new ActuatorDAO();
-            
+            ActuatorDAO actuatorDAO = new ActuatorDAO(sparql);
+
             ActuatorDetailDTO actuator = new ActuatorDetailDTO(actuatorDAO.findById(uri));
-            
+
             actuators.add(actuator);
 
             getResponse = new ResultForm<>(pageSize, page, actuators, true, 1);
@@ -328,9 +327,10 @@ public class ActuatorResourceService extends ResourceService {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(getResponse).build();
         }
     }
-    
+
     /**
-     * Get actuators by search with the search params. 
+     * Get actuators by search with the search params.
+     *
      * @param pageSize
      * @param page
      * @param uri
@@ -385,19 +385,14 @@ public class ActuatorResourceService extends ResourceService {
      */
     @GET
     @ApiOperation(value = "Get all actuators corresponding to the search params given",
-                  notes = "Retrieve all actuators authorized for the user corresponding to the searched params given")
+            notes = "Retrieve all actuators authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve all actuators", response = ActuatorDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getActuatorsBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
@@ -411,15 +406,14 @@ public class ActuatorResourceService extends ResourceService {
             @ApiParam(value = "Search by service date", example = DocumentationAnnotation.EXAMPLE_SENSOR_IN_SERVICE_DATE) @QueryParam("inServiceDate") @Date(DateFormat.YMD) String inServiceDate,
             @ApiParam(value = "Search by date of purchase", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_PURCHASE) @QueryParam("dateOfPurchase") @Date(DateFormat.YMD) String dateOfPurchase,
             @ApiParam(value = "Search by date of last calibration", example = DocumentationAnnotation.EXAMPLE_SENSOR_DATE_OF_LAST_CALIBRATION) @QueryParam("dateOfLastCalibration") @Date(DateFormat.YMD) String dateOfLastCalibration,
-            @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @QueryParam("personInCharge") String personInCharge) {
-        
-        ActuatorDAO actuatorDAO = new ActuatorDAO();
+            @ApiParam(value = "Search by person in charge", example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @QueryParam("personInCharge") String personInCharge) throws Exception {
+        ActuatorDAO actuatorDAO = new ActuatorDAO(sparql);
         //1. Get count
         Integer totalCount = actuatorDAO.count(uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
-        
+
         //2. Get actuators
         ArrayList<Actuator> actuatorsFounded = actuatorDAO.find(page, pageSize, uri, rdfType, label, brand, serialNumber, model, inServiceDate, dateOfPurchase, dateOfLastCalibration, personInCharge);
-        
+
         //3. Return result
         ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<ActuatorDTO> actuatorsToReturn = new ArrayList<>();
@@ -435,17 +429,18 @@ public class ActuatorResourceService extends ResourceService {
             actuatorsFounded.forEach((actuator) -> {
                 actuatorsToReturn.add(new ActuatorDTO(actuator));
             });
-            
+
             getResponse = new ResultForm<>(pageSize, page, actuatorsToReturn, true, totalCount);
             getResponse.setStatus(statusList);
             return Response.status(Response.Status.OK).entity(getResponse).build();
         }
     }
-    
-    
+
     /**
      * Actuator PUT service.
-     * @param variables the list of variables measured by the actuator. This list can be empty but not null.
+     *
+     * @param variables the list of variables measured by the actuator. This
+     * list can be empty but not null.
      * @param uri
      * @param context
      * @return the result
@@ -478,29 +473,24 @@ public class ActuatorResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putMeasuredVariables(
             @ApiParam(value = DocumentationAnnotation.LINK_VARIABLES_DEFINITION) @URL ArrayList<String> variables,
             @ApiParam(value = DocumentationAnnotation.ACTUATOR_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_ACTUATOR_URI, required = true) @PathParam("uri") @Required @URL String uri,
-            @Context HttpServletRequest context) {
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
-        
-        ActuatorDAO actuatorDAO = new ActuatorDAO();
+
+        ActuatorDAO actuatorDAO = new ActuatorDAO(sparql);
         if (context.getRemoteAddr() != null) {
             actuatorDAO.remoteUserAdress = context.getRemoteAddr();
         }
-        
+
         actuatorDAO.user = userSession.getUser();
-        
+
         POSTResultsReturn result = actuatorDAO.checkAndUpdateMeasuredVariables(uri, variables);
-        
+
         if (result.getHttpStatus().equals(Response.Status.CREATED)) {
             postResponse = new ResponseFormPOST(result.statusList);
             postResponse.getMetadata().setDatafiles(result.getCreatedResources());
@@ -509,7 +499,7 @@ public class ActuatorResourceService extends ResourceService {
                 || result.getHttpStatus().equals(Response.Status.INTERNAL_SERVER_ERROR)) {
             postResponse = new ResponseFormPOST(result.statusList);
         }
-        
+
         return Response.status(result.getHttpStatus()).entity(postResponse).build();
     }
 }

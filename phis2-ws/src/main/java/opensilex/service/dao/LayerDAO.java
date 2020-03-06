@@ -35,6 +35,7 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.ScientificObject;
 import opensilex.service.model.Property;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Layer DAO.
@@ -42,6 +43,12 @@ import org.opensilex.fs.service.FileStorageService;
  */
 public class LayerDAO extends DAO<LayerDTO>{
 
+    private final SPARQLService sparql;
+
+    public LayerDAO(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+    
     final static Logger LOGGER = LoggerFactory.getLogger(LayerDAO.class);
     
     public String objectURI;
@@ -59,7 +66,7 @@ public class LayerDAO extends DAO<LayerDTO>{
      * @param layerDTO 
      */
       public void searchAndUpdateChildren(LayerDTO layerDTO) throws SQLException {
-        ScientificObjectRdf4jDAO agronomicalObjectDao = new ScientificObjectRdf4jDAO();
+        ScientificObjectRdf4jDAO agronomicalObjectDao = new ScientificObjectRdf4jDAO(sparql);
         ScientificObjectMongoDAO agronomicalObject = new ScientificObjectMongoDAO();
         
         HashMap<String, ScientificObject> scientificObjectChildren = agronomicalObjectDao.searchChildren(layerDTO);

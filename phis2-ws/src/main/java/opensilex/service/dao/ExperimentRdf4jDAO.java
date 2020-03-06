@@ -39,6 +39,7 @@ import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Experiment;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Experiment DAO for RDF4J. 
@@ -47,6 +48,10 @@ import opensilex.service.model.Experiment;
 public class ExperimentRdf4jDAO extends Rdf4jDAO<Experiment> {
     
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentRdf4jDAO.class);
+
+    public ExperimentRdf4jDAO(SPARQLService sparql) {
+        super(sparql);
+    }
     
     /**
      * Prepares the SPARQL query to return all variables measured by an experiment.

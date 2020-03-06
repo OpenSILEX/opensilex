@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
@@ -36,7 +34,6 @@ import org.eclipse.rdf4j.query.UpdateExecutionException;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
@@ -46,18 +43,12 @@ import opensilex.service.configuration.URINamespaces;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.ResourceAccessDeniedException;
-import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.model.User;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
-import opensilex.service.view.brapi.Status;
-import opensilex.service.view.brapi.form.ResponseFormPOST;
 import org.apache.jena.shared.JenaException;
 import org.apache.jena.update.UpdateRequest;
 import org.eclipse.rdf4j.RDF4JException;
-import org.opensilex.OpenSilex;
-import org.opensilex.sparql.exceptions.SPARQLTransactionException;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -126,17 +117,12 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
     // Triplestore relations
     protected static final URINamespaces ONTOLOGIES = new URINamespaces();
 
-    protected static String resourceType;
-
     protected Integer page;
     protected Integer pageSize;
+    protected final SPARQLService sparql;
 
-    public Rdf4jDAO(User user) {
-        this();
-        this.user = user;
-    }
-
-    public Rdf4jDAO() {
+    public Rdf4jDAO(SPARQLService sparql) {
+        this.sparql = sparql;
     }
 
     /**
@@ -334,8 +320,8 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
      * @example INSERT DATA { GRAPH <http://www.phenome-fppn.fr/diaphen/sensors>
      * {
      * <http://www.phenome-fppn.fr/diaphen/2018/s18533>
-     *  <http://www.opensilex.org/vocabulary/oeso#measures>
-     *  <http://www.phenome-fppn.fr/id/variables/v001> . }}
+     * <http://www.opensilex.org/vocabulary/oeso#measures>
+     * <http://www.phenome-fppn.fr/id/variables/v001> . }}
      * @return true if the insertion has been done false if an error occurred
      * (see the error logs to get more details)
      */
@@ -465,10 +451,11 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
      *
      * @param rdfType
      * @example SELECT DISTINCT ?uri ?label WHERE { ?uri
-     *  <http://www.w3.org/2000/01/rdf-schema#label> ?label . ?uri
-     *  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdfType . ?rdfType
-     *  <http://www.w3.org/2000/01/rdf-schema#subClassOf>*
-     *  <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . FILTER (
+     * <http://www.w3.org/2000/01/rdf-schema#label> ?label . ?uri
+     * <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdfType . ?rdfType
+     * <http://www.w3.org/2000/01/rdf-schema#subClassOf>
+     *
+     * <http://www.opensilex.org/vocabulary/oeso#ScientificObject> . FILTER (
      * (REGEX ( str(?label),".*2.*","i")) ) }
      * @param label
      * @return the list of URIs and labels
@@ -512,7 +499,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
      * @param uri
      * @example SELECT DISTINCT ?label WHERE {
      * <http://www.opensilex.org/opensilex/2019/o19000060>
-     *  <http://www.w3.org/2000/01/rdf-schema#label> ?label . }
+     * <http://www.w3.org/2000/01/rdf-schema#label> ?label . }
      * @return the list of labels.
      */
     public List<String> findLabelsForUri(String uri) {
@@ -580,14 +567,14 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
 
         Exception returnedException = null;
         try {
-            getSPARQLService().startTransaction();
+            sparql.startTransaction();
             deleteAll(uris);
-            getSPARQLService().commitTransaction();
+            sparql.commitTransaction();
         } catch (RepositoryException | UpdateExecutionException e) {
-            getSPARQLService().rollbackTransaction();
+            sparql.rollbackTransaction();
             returnedException = new DAOPersistenceException(e);
         } catch (Exception e) {
-            getSPARQLService().rollbackTransaction();
+            sparql.rollbackTransaction();
             returnedException = e;
         } finally {
             if (returnedException != null) {
@@ -596,70 +583,56 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         }
     }
 
-    public SPARQLService getSPARQLService() {
-        return OpenSilex.getInstance().getServiceInstance("sparql", SPARQLService.class);
+    public RepositoryConnection getConnection() {
+        return sparql.getRepositoryConnection();
     }
 
-    public RepositoryConnection getConnection() {
-        return getSPARQLService().getRepositoryConnection();
-    }
-    
     /**
      * Validates and creates objects.
+     *
      * @param objects
      * @return the annotations created.
      * @throws opensilex.service.dao.exception.DAOPersistenceException
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
      */
-    public List<T> validateAndCreate(List<T> objects) 
-        throws DAOPersistenceException, DAODataErrorAggregateException, ResourceAccessDeniedException, Exception {
-        validate(objects);     
+    public List<T> validateAndCreate(List<T> objects)
+            throws DAOPersistenceException, DAODataErrorAggregateException, ResourceAccessDeniedException, Exception {
+        validate(objects);
         List<T> objectsCreated;
         try {
-        	startTransaction();
+            sparql.startTransaction();
             objectsCreated = create(objects);
-            commitTransaction();
+            sparql.commitTransaction();
         } catch (Exception ex) {
-            rollbackTransaction();
+            sparql.rollbackTransaction();
             throw ex;
         }
         return objectsCreated;
     }
-    
+
     /**
      * Validates and updates objects.
+     *
      * @param objects
      * @return the objects created.
      * @throws opensilex.service.dao.exception.DAOPersistenceException
      * @throws opensilex.service.dao.exception.DAODataErrorAggregateException
      * @throws opensilex.service.dao.exception.ResourceAccessDeniedException
      */
-    public List<T> validateAndUpdate(List<T> objects) 
+    public List<T> validateAndUpdate(List<T> objects)
             throws DAOPersistenceException, DAODataErrorAggregateException, ResourceAccessDeniedException, Exception {
-        validate(objects);     
+        validate(objects);
         List<T> objectsUpdated;
         try {
-            startTransaction();
+            sparql.startTransaction();
             objectsUpdated = update(objects);
-            commitTransaction();
+            sparql.commitTransaction();
         } catch (Exception ex) {
-            rollbackTransaction();
+            sparql.rollbackTransaction();
             throw ex;
         }
         return objectsUpdated;
     }
 
-    private void startTransaction() throws SPARQLTransactionException {
-        getSPARQLService().startTransaction();
-    }
-
-    private void commitTransaction() throws SPARQLTransactionException {
-        getSPARQLService().commitTransaction();
-    }
-
-    private void rollbackTransaction() throws SPARQLTransactionException {
-        getSPARQLService().rollbackTransaction();
-    }
-    
 }

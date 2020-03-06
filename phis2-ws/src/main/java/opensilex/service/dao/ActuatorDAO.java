@@ -56,6 +56,7 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +79,10 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
     private final String PERSON_IN_CHARGE = "personInCharge";
 
     private static final String MAX_ID = "maxID";
+
+    public ActuatorDAO(SPARQLService sparql) {
+        super(sparql);
+    }
     
     /**
      * Generates an insert query for actuators.
@@ -157,7 +162,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         try {
             for (Actuator actuator : actuators) {
                 //1. Generate the URI of the actuator
-                actuator.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_ACTUATOR.toString(), null, null));
+                actuator.setUri(UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_ACTUATOR.toString(), null, null));
 
                 //2. Insert actuator
                 UpdateRequest updateQuery = prepareInsertQuery(actuator);
@@ -725,7 +730,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
                 }
             }
             //2.2 check type (subclass of Actuator)
-            UriDAO uriDAO = new UriDAO();
+            UriDAO uriDAO = new UriDAO(sparql);
             if (!uriDAO.isSubClassOf(actuator.getRdfType(), Oeso.CONCEPT_ACTUATOR.toString())) {
                 dataOk = false;
                 checkStatus.add(new Status(StatusCodeMsg.DATA_ERROR, StatusCodeMsg.ERR, "Bad actuator type given. Must be sublass of Actuator concept"));
@@ -930,7 +935,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
         
         //1. Check if the actuator exist and is an actuator in the triplestore
         if (existAndIsActuator(actuatorUri)) {
-            VariableDAO variableDao = new VariableDAO();
+            VariableDAO variableDao = new VariableDAO(sparql);
             
             for (String variableUri : variables) {
                 //2. Check for each variable uri given if it exist and if it is really a variable
@@ -945,7 +950,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
             if (dataOk) {
                 //Get all the actual variables for the actuator
                 HashMap<String, String> actualMeasuredVariables = getVariables(actuatorUri);
-                DatasetDAO datasetDAO = new DatasetDAO();
+                DatasetDAO datasetDAO = new DatasetDAO(sparql);
                 
                 for(Map.Entry<String, String> varibale : actualMeasuredVariables.entrySet()) {
                     // Check if link to the variable can be removed.

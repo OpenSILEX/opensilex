@@ -8,8 +8,6 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -34,7 +32,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
-import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.resource.dto.group.GroupPostDTO;
@@ -48,7 +45,7 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Group;
 import opensilex.service.model.User;
-import org.opensilex.rest.authentication.AuthenticationService;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.group.dal.GroupDAO;
 import org.opensilex.rest.group.dal.GroupModel;
 import org.opensilex.rest.group.dal.GroupUserProfileModel;
@@ -57,7 +54,6 @@ import org.opensilex.rest.profile.dal.ProfileModel;
 import org.opensilex.rest.security.dal.SecurityAccessDAO;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.rest.user.dal.UserModel;
-import org.opensilex.sparql.exceptions.SPARQLTransactionException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
@@ -73,12 +69,13 @@ import org.slf4j.LoggerFactory;
 public class GroupResourceService extends ResourceService {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(GroupResourceService.class);
-    
-    /**
-     * Inject SPARQL service
-     */
+
     @Inject
-    private SPARQLService sparql;
+    public GroupResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
 
     /**
      * @param limit
@@ -97,12 +94,7 @@ public class GroupResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGroupBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
@@ -110,7 +102,7 @@ public class GroupResourceService extends ResourceService {
             @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_GROUP_URI) @QueryParam("uri") @URL String uri,
             @ApiParam(value = "Search by name", example = DocumentationAnnotation.EXAMPLE_GROUP_NAME) @QueryParam("name") String name,
             @ApiParam(value = "Search by level", example = DocumentationAnnotation.EXAMPLE_GROUP_LEVEL) @QueryParam("level") @GroupLevel String level) throws Exception {
-        GroupDAO groupDao = new GroupDAO(sparql);
+            GroupDAO groupDao = new GroupDAO(sparql);
 
         if (uri != null && !uri.isEmpty()) {
             GroupModel group = groupDao.get(new URI(uri));
@@ -139,12 +131,7 @@ public class GroupResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGroupDetails(
             @ApiParam(value = DocumentationAnnotation.GROUP_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_GROUP_URI)
@@ -153,7 +140,6 @@ public class GroupResourceService extends ResourceService {
             @URL String groupUri,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
-
         if (groupUri == null) {
             final Status status = new Status("Access error", StatusCodeMsg.ERR, "Empty Group uri");
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormGET(status)).build();
@@ -174,26 +160,20 @@ public class GroupResourceService extends ResourceService {
      */
     @POST
     @ApiOperation(value = "Post a group",
-                  notes = "Register a new group in the database")
+            notes = "Register a new group in the database")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Group saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                          dataType = "string", paramType = "header",
-                          value = DocumentationAnnotation.ACCES_TOKEN,
-                          example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postGroup(
-    @ApiParam(value = DocumentationAnnotation.GROUP_POST_DATA_DEFINITION, required = true) @Valid ArrayList<GroupPostDTO> groups,
-    @Context HttpServletRequest context) throws SPARQLTransactionException {
+            @ApiParam(value = DocumentationAnnotation.GROUP_POST_DATA_DEFINITION, required = true) @Valid ArrayList<GroupPostDTO> groups,
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
-        
         List<String> createdURIs = new ArrayList<>();
         // At least one user in the data sent
         if (groups != null && !groups.isEmpty()) {
@@ -216,7 +196,7 @@ public class GroupResourceService extends ResourceService {
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
     }
-    
+
 //    /**
 //     * Groups update service.
 //     * @param groups
@@ -318,7 +298,7 @@ public class GroupResourceService extends ResourceService {
             users.add(UserResourceService.getOldUserFromModel(userProfile.getUser()));
         });
         group.setUserList(users);
-        
+
         return group;
     }
 
@@ -327,12 +307,12 @@ public class GroupResourceService extends ResourceService {
         model.setName(group.getName());
         model.setDescription(group.getDescription());
         List<GroupUserProfileModel> userProfiles = new ArrayList<>();
-        
+
         UserDAO userDAO = new UserDAO(sparql);
         ProfileDAO profileDAO = new ProfileDAO(sparql);
         URI profileURI = new URI("http://www.opensilex.org/profiles#default");
         ProfileModel profile = profileDAO.get(profileURI);
-        
+
         if (profile == null) {
             profile = new ProfileModel();
             profile.setUri(profileURI);
@@ -340,7 +320,7 @@ public class GroupResourceService extends ResourceService {
             SecurityAccessDAO securityDAO = new SecurityAccessDAO(sparql);
             profile.setCredentials(securityDAO.getCredentialsIdList());
         }
-        
+
         for (String email : group.getUsersEmails()) {
             UserModel user = userDAO.getByEmail(new InternetAddress(email));
             GroupUserProfileModel userProfile = new GroupUserProfileModel();
@@ -349,7 +329,7 @@ public class GroupResourceService extends ResourceService {
             userProfiles.add(userProfile);
         };
         model.setUserProfiles(userProfiles);
-        
+
         return model;
     }
 }

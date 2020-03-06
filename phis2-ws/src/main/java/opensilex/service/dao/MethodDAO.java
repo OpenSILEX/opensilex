@@ -59,6 +59,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.vocabulary.XSD;
 import org.eclipse.rdf4j.model.Value;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Method DAO.
@@ -75,9 +76,11 @@ public class MethodDAO extends Rdf4jDAO<Method> {
     public ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
 
     private static final String MAX_ID = "maxID";
-        
-    public MethodDAO() {
+
+    public MethodDAO(SPARQLService sparql) {
+        super(sparql);
     }
+        
 
     protected SPARQLQueryBuilder prepareSearchQuery() {
         //SILEX:todo
@@ -273,7 +276,7 @@ public class MethodDAO extends Rdf4jDAO<Method> {
         while (iteratorMethodDTO.hasNext() && annotationInsert) {
             MethodDTO methodDTO = iteratorMethodDTO.next();
             try {
-                methodDTO.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_METHOD.toString(), null, null));
+                methodDTO.setUri(UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_METHOD.toString(), null, null));
             } catch (Exception ex) { // In the method case, no exception should be raised
                 annotationInsert = false;
             }

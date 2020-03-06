@@ -55,9 +55,6 @@ public class DataQueryLogFilter implements ContainerRequestFilter {
     @Inject
     AuthenticationService authentication;
 
-    @Inject
-    SPARQLService sparql;
-
     final static String MAP_FIELD_QUERY_PARAMETERS = "queryParameters";
     final static String MAP_FIELD_RESSOURCE_PATH = "ressourcePath";
     final static String MAP_FIELD_WS_VERSION = "wsVersion";
@@ -97,7 +94,6 @@ public class DataQueryLogFilter implements ContainerRequestFilter {
                 URI userURI;
                 try {
                     userURI = authentication.decodeTokenUserURI(userToken);
-                    UserModel user = sparql.getByURI(UserModel.class, userURI, null);
                     // 6. save data search query
                     DataQueryLogDAO dataAccessLogDao = new DataQueryLogDAO();
                     dataAccessLogDao.remoteUserAdress = servletRequest.getRemoteAddr();
@@ -106,7 +102,7 @@ public class DataQueryLogFilter implements ContainerRequestFilter {
                     queryParmeters.put(MAP_FIELD_RESSOURCE_PATH, resourcePath);
                     queryParmeters.put(MAP_FIELD_WS_VERSION, getClass().getPackage().getImplementationVersion());
                     Date currentDate = new Date();
-                    dataAccessLogDao.insert(user.getUri().toString(), servletRequest.getRemoteAddr(), currentDate, queryParmeters);
+                    dataAccessLogDao.insert(userURI.toString(), servletRequest.getRemoteAddr(), currentDate, queryParmeters);
                 } catch (JWTVerificationException ex) {
                     java.util.logging.Logger.getLogger(DataQueryLogFilter.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (URISyntaxException ex) {
@@ -118,4 +114,6 @@ public class DataQueryLogFilter implements ContainerRequestFilter {
             }
         }
     }
+    
+    
 }

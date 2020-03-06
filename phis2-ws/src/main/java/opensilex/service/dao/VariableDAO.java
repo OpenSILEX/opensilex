@@ -68,6 +68,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.vocabulary.XSD;
 import org.eclipse.rdf4j.model.Value;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Variable DAO.
@@ -95,11 +96,11 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
     protected static final String PROPERTY = "property";
 
     private static final String MAX_ID = "maxID";
-        
-    public VariableDAO() {
-        
+
+    public VariableDAO(SPARQLService sparql) {
+        super(sparql);
     }
-    
+        
     /**
      * Generates the search query for the variables.
      * @return the generated query
@@ -411,7 +412,7 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
             VariableDTO variableDTO = iteratorVariablesDTO.next();
             
             try {
-                variableDTO.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_VARIABLE.toString(), null, null));
+                variableDTO.setUri(UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_VARIABLE.toString(), null, null));
             } catch (Exception ex) { //In the variable case, no exception should be raised
                 annotationInsert = false;
             }
@@ -530,21 +531,21 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
                     variable.setComment(bindingSet.getValue(COMMENT).stringValue());
                 }
                 
-                TraitDAO traitDao = new TraitDAO();
+                TraitDAO traitDao = new TraitDAO(sparql);
                 if (trait != null) {
                     traitDao.uri = trait;
                 } else {
                     traitDao.uri = bindingSet.getValue(TRAIT).stringValue();
                 }
                 
-                MethodDAO methodDao = new MethodDAO();
+                MethodDAO methodDao = new MethodDAO(sparql);
                 if (method != null) {
                     methodDao.uri = method;
                 } else {
                     methodDao.uri = bindingSet.getValue(METHOD).stringValue();
                 }
                 
-                UnitDAO unitDao = new UnitDAO();
+                UnitDAO unitDao = new UnitDAO(sparql);
                 if (unit != null) {
                     unitDao.uri = unit;
                 } else {
@@ -938,15 +939,15 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
                 variable.setOntologiesReferences(getOntologyReferences(id));
                 
                 //Get method informations
-                MethodDAO methodDAO = new MethodDAO();
+                MethodDAO methodDAO = new MethodDAO(sparql);
                 variable.setMethod(methodDAO.findById(variable.getMethod().getUri()));
                 
                 //Get unit informations
-                UnitDAO unitDAO = new UnitDAO();
+                UnitDAO unitDAO = new UnitDAO(sparql);
                 variable.setUnit(unitDAO.findById(variable.getUnit().getUri()));
                 
                 //Get trait informations
-                TraitDAO traitDAO = new TraitDAO();
+                TraitDAO traitDAO = new TraitDAO(sparql);
                 variable.setTrait(traitDAO.findById(variable.getTrait().getUri()));
                 
             } else {

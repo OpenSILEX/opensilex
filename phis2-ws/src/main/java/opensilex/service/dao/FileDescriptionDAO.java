@@ -7,7 +7,6 @@
 //******************************************************************************
 package opensilex.service.dao;
 
-import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -30,6 +29,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import javax.ws.rs.core.Response;
+import opensilex.service.PropertiesFileManager;
 import opensilex.service.dao.exception.DAODataErrorAggregateException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import org.bson.BSONObject;
@@ -46,13 +46,19 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.model.ConcernedItem;
 import opensilex.service.model.FileDescription;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * File descriptions DAO.
  * @author Vincent Migot <vincent.migot@inra.fr>
  */
 public class FileDescriptionDAO extends MongoDAO<FileDescription> {
+
+    private final SPARQLService sparql;
     
+    public FileDescriptionDAO(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
     private final static Logger LOGGER = LoggerFactory.getLogger(FileDescriptionDAO.class);
      
     private final static String DB_FIELD_URI = "uri";
@@ -301,9 +307,9 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
                 try {
                     Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                     String key = Long.toString(timestamp.getTime());
-                    String uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
+                    String uri = UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
                     while (uriExists(fileDescription.getRdfType(), uri)) {
-                        uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
+                        uri = UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
                     }
                     
                     fileDescription.setUri(uri);
@@ -390,8 +396,8 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
 
         boolean dataOk = true;
 
-        ProvenanceDAO provenanceDAO = new ProvenanceDAO();
-        ScientificObjectRdf4jDAO scientificObjectDao = new ScientificObjectRdf4jDAO();
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
+        ScientificObjectRdf4jDAO scientificObjectDao = new ScientificObjectRdf4jDAO(sparql);
         
         // 1. Check if the provenance uri exist and is a provenance
         if (!provenanceDAO.existProvenanceUri(fileDescription.getProvenanceUri())) {
@@ -451,12 +457,13 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
         boolean hasError = false;
             
         try {
-            final String fileServerDirectory =  "./dataFiles/" + fileCollectionName + "/";
+            String fileStorageDirectory = PropertiesFileManager.getConfigFileProperty("service", "uploadFileServerDirectory");
+            final String fileServerDirectory =  fileStorageDirectory + '/' + fileCollectionName + "/";
             
             String key = fileDescription.getFilename() + fileDescription.getDate();
-            String uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
+            String uri = UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
             while (uriExists(fileDescription.getRdfType(), uri)) {
-                uri = UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
+                uri = UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
             }
             
             fileDescription.setUri(uri);

@@ -8,13 +8,12 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -32,32 +31,44 @@ import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Species;
+import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Species resource service.
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 @Api("/species")
 @Path("/species")
 public class SpeciesResourceService extends ResourceService {
-    
+
+    @Inject
+    public SpeciesResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
      * Generates a speciesDTO list from a given list of species.
+     *
      * @param species
      * @return the list of species DTOs
      */
     private ArrayList<SpeciesDTO> speciesToSpeciesDTO(ArrayList<Species> species) {
         ArrayList<SpeciesDTO> speciesDTO = new ArrayList<>();
-        
+
         species.forEach((specie) -> {
             speciesDTO.add(new SpeciesDTO(specie));
         });
-        
+
         return speciesDTO;
     }
-    
+
     /**
      * Gets the species corresponding to the search parameters given.
+     *
      * @param pageSize
      * @param page
      * @param uri
@@ -92,50 +103,45 @@ public class SpeciesResourceService extends ResourceService {
      */
     @GET
     @ApiOperation(value = "Get all species corresponding to the search params given",
-                  notes = "Retrieve all species authorized for the user corresponding to the searched params given")
+            notes = "Retrieve all species authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve all species", response = SpeciesDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response get(
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-        @ApiParam(value = "Search by species uri", example = DocumentationAnnotation.EXAMPLE_SPECIES_URI) @QueryParam("uri") @URL String uri,
-        @ApiParam(value = "Search by species label", example = DocumentationAnnotation.EXAMPLE_SPECIES_LABEL) @QueryParam("label") String label,
-        @ApiParam(value = "Select language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language) {
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
+            @ApiParam(value = "Search by species uri", example = DocumentationAnnotation.EXAMPLE_SPECIES_URI) @QueryParam("uri") @URL String uri,
+            @ApiParam(value = "Search by species label", example = DocumentationAnnotation.EXAMPLE_SPECIES_LABEL) @QueryParam("label") String label,
+            @ApiParam(value = "Select language", example = DocumentationAnnotation.EXAMPLE_LANGUAGE) @QueryParam("language") String language) throws Exception {
         //1. Initialize species filter
         Species filter = new Species();
         filter.setUri(uri);
         filter.setLabel(label);
-        
+
         if (language == null) {
             language = DEFAULT_LANGUAGE;
         }
-        
-        SpeciesDAO speciesDAO = new SpeciesDAO();
+
+        SpeciesDAO speciesDAO = new SpeciesDAO(sparql);
         speciesDAO.setPage(page);
         speciesDAO.setPageSize(pageSize);
-        
+
         //2. Get number of species result
         int totalCount = speciesDAO.countWithFilter(filter, language);
-        
+
         //3. Get species result
         ArrayList<Species> searchResult = speciesDAO.searchWithFilter(filter, language);
-        
+
         //4. Send result
         ResultForm<SpeciesDTO> getResponse;
         ArrayList<Status> statusList = new ArrayList<>();
         ArrayList<SpeciesDTO> speciesToReturn = speciesToSpeciesDTO(searchResult);
-        
+
         if (searchResult == null || speciesToReturn.isEmpty()) {
             //No result found
             getResponse = new ResultForm<>(0, 0, speciesToReturn, true, 0);

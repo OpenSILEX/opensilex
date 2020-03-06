@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * JSON Converter. Converts JSON objects into strings.
+ *
  * @author Samuël Chérimont
  */
 @Singleton
@@ -27,6 +28,7 @@ public final class JsonConverter {
 
     /**
      * Converts an object to a pretty JSON format.
+     *
      * @param object
      * @return the JSON object
      */
@@ -38,6 +40,7 @@ public final class JsonConverter {
 
     /**
      * Converts an object to a JSON format.
+     *
      * @param object
      * @return the JSON object
      */
@@ -54,6 +57,7 @@ public final class JsonConverter {
 
     /**
      * Converts from JSON.
+     *
      * @param stringToConvert
      * @param classToConvertIn
      * @return object converted

@@ -59,6 +59,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.vocabulary.XSD;
 import org.eclipse.rdf4j.model.Value;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Unit DAO.
@@ -74,6 +75,10 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
     public ArrayList<OntologyReference> ontologiesReferences = new ArrayList<>();
 
     private static final String MAX_ID = "maxID";
+
+    public UnitDAO(SPARQLService sparql) {
+        super(sparql);
+    }
         
     protected SPARQLQueryBuilder prepareSearchQuery() {
         //SILEX:todo
@@ -264,7 +269,7 @@ public class UnitDAO extends Rdf4jDAO<Unit> {
         while (iteratorUnitDTO.hasNext() && annotationInsert) {
             UnitDTO unitDTO = iteratorUnitDTO.next();
             try {
-                unitDTO.setUri(UriGenerator.generateNewInstanceUri(Oeso.CONCEPT_UNIT.toString(), null, null));
+                unitDTO.setUri(UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_UNIT.toString(), null, null));
             } catch (Exception ex) { //In the unit case, no exception should be raised
                 annotationInsert = false;
             }

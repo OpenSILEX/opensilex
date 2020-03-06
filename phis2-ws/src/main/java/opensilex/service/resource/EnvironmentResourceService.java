@@ -8,14 +8,13 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -46,35 +45,47 @@ import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.EnvironmentMeasure;
+import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Environmental measure resource service.
+ *
  * @author Morgane Vidal
  */
 @Api("/environments")
 @Path("/environments")
 @Deprecated
 public class EnvironmentResourceService extends ResourceService {
-    
+
+    @Inject
+    public EnvironmentResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     private final Status deprecatedStatus = new Status(StatusCodeMsg.WARNING, StatusCodeMsg.WARNING, StatusCodeMsg.API_DEPRECATED_INFO_MESSAGE);
-    
+
     /**
-     * Generates environmental measures from a given list of environmental measures DTOs.
+     * Generates environmental measures from a given list of environmental
+     * measures DTOs.
+     *
      * @param environmentMeasureDTOs
      * @return the list of environments
      */
     private List<EnvironmentMeasure> environmentMeasurePostDTOsToEnvironmentMeasure(List<EnvironmentMeasurePostDTO> environmentMeasureDTOs) {
         ArrayList<EnvironmentMeasure> environments = new ArrayList<>();
-        
+
         environmentMeasureDTOs.forEach((environmentDTO) -> {
             environments.add(environmentDTO.createObjectFromDTO());
         });
-        
+
         return environments;
     }
-    
+
     /**
-     * Service to insert environmental measures. 
+     * Service to insert environmental measures.
      * @example
      * [
      *  {
@@ -86,40 +97,35 @@ public class EnvironmentResourceService extends ResourceService {
      * ]
      * @param environmentMeasures
      * @param context
-     * @return the insertion result. 
+     * @return the insertion result.
      */
     @POST
     @ApiOperation(value = "Post environment(s) measures",
-                  notes = "Register environment(s) measures in the database"
-                            + "<br/> The 'value' parameter could be a string representing any java BigDecimal"
-                            + "<br/> By example it could be: -2, 3.14, 1.23E+3, -1.23e-12, etc..."
-                            + "<br/> @see https://docs.oracle.com/javase/7/docs/api/java/math/BigDecimal.html#BigDecimal(java.lang.String)"
-                          )
+            notes = "Register environment(s) measures in the database"
+            + "<br/> The 'value' parameter could be a string representing any java BigDecimal"
+            + "<br/> By example it could be: -2, 3.14, 1.23E+3, -1.23e-12, etc..."
+            + "<br/> @see https://docs.oracle.com/javase/7/docs/api/java/math/BigDecimal.html#BigDecimal(java.lang.String)"
+    )
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "environment(s) saved", response = ResponseFormPOST.class),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Deprecated
     public Response postEnvironmentMeasures(
-        @ApiParam(value = DocumentationAnnotation.ENVIRONMENT_POST_DEFINITION) @Valid ArrayList<EnvironmentMeasurePostDTO> environmentMeasures,
-        @Context HttpServletRequest context) {
+            @ApiParam(value = DocumentationAnnotation.ENVIRONMENT_POST_DEFINITION) @Valid ArrayList<EnvironmentMeasurePostDTO> environmentMeasures,
+            @Context HttpServletRequest context) throws Exception {
         AbstractResultForm postResponse = null;
-        
+
         if (environmentMeasures != null && !environmentMeasures.isEmpty()) {
-            EnvironmentMeasureDAO environmentDAO = new EnvironmentMeasureDAO();
-            
+            EnvironmentMeasureDAO environmentDAO = new EnvironmentMeasureDAO(sparql);
+
             environmentDAO.user = userSession.getUser();
-            
+
             POSTResultsReturn result = environmentDAO.checkAndInsert(environmentMeasurePostDTOsToEnvironmentMeasure(environmentMeasures));
             result.statusList.add(deprecatedStatus);
 
@@ -138,11 +144,12 @@ public class EnvironmentResourceService extends ResourceService {
             statusList.add(deprecatedStatus);
             postResponse = new ResponseFormPOST(statusList);
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
-        }       
+        }
     }
-    
+
     /**
      * Service to get environment measures.
+     *
      * @param pageSize
      * @param page
      * @param variable
@@ -186,50 +193,45 @@ public class EnvironmentResourceService extends ResourceService {
      */
     @GET
     @ApiOperation(value = "Get all environment measures corresponding to the search params given",
-                  notes = "Retrieve all environment measures authorized for the user corresponding to the searched params given")
+            notes = "Retrieve all environment measures authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve all radiometric targets", response = EnvironmentMeasureDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     @Deprecated
     public Response getEnvironmentMeasures(
-        @ApiParam(value = "Search by variable uri", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI, required = true) @QueryParam("variable") @URL @Required String variable,
-        @ApiParam(value = "Search by minimal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("startDate") @Date(DateFormat.YMDTHMSZ) String startDate,
-        @ApiParam(value = "Search by maximal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("endDate") @Date(DateFormat.YMDTHMSZ) String endDate,
-        @ApiParam(value = "Search by sensor uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor")  @URL String sensor,
-        @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc,
-        @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
-        @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
-    ) {
+            @ApiParam(value = "Search by variable uri", example = DocumentationAnnotation.EXAMPLE_VARIABLE_URI, required = true) @QueryParam("variable") @URL @Required String variable,
+            @ApiParam(value = "Search by minimal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("startDate") @Date(DateFormat.YMDTHMSZ) String startDate,
+            @ApiParam(value = "Search by maximal date", example = DocumentationAnnotation.EXAMPLE_XSDDATETIME) @QueryParam("endDate") @Date(DateFormat.YMDTHMSZ) String endDate,
+            @ApiParam(value = "Search by sensor uri", example = DocumentationAnnotation.EXAMPLE_SENSOR_URI) @QueryParam("sensor") @URL String sensor,
+            @ApiParam(value = "Date search result order ('true' for ascending and 'false' for descending)", example = "true") @QueryParam("dateSortAsc") boolean dateSortAsc,
+            @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
+    ) throws Exception {
         // 1. Initialize environmentDAO with parameters
-        EnvironmentMeasureDAO environmentMeasureDAO = new EnvironmentMeasureDAO();
-        
+        EnvironmentMeasureDAO environmentMeasureDAO = new EnvironmentMeasureDAO(sparql);
+
         environmentMeasureDAO.variableUri = variable;
 
         environmentMeasureDAO.startDate = startDate;
         environmentMeasureDAO.endDate = endDate;
         environmentMeasureDAO.sensorUri = sensor;
         environmentMeasureDAO.dateSortAsc = dateSortAsc;
-        
+
         environmentMeasureDAO.user = userSession.getUser();
         environmentMeasureDAO.setPage(page);
         environmentMeasureDAO.setPageSize(pageSize);
-        
+
         // 2. Get environment measures count
         int totalCount = environmentMeasureDAO.count();
-        
+
         // 3. Get environment measures page list
         ArrayList<EnvironmentMeasure> measures = environmentMeasureDAO.allPaginate();
-        
+
         // 4. Initialize return variables
         ArrayList<EnvironmentMeasureDTO> list = new ArrayList<>();
         ArrayList<Status> statusList = new ArrayList<>();
@@ -248,7 +250,7 @@ public class EnvironmentResourceService extends ResourceService {
             measures.forEach((measure) -> {
                 list.add(new EnvironmentMeasureDTO(measure));
             });
-            
+
             // Return list of DTO
             getResponse = new ResultForm<>(environmentMeasureDAO.getPageSize(), environmentMeasureDAO.getPage(), list, true, totalCount);
             getResponse.setStatus(statusList);

@@ -34,6 +34,7 @@ import opensilex.service.model.ConcernedItem;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Concerned items DAO.
@@ -64,8 +65,8 @@ public class ConcernedItemDAO extends Rdf4jDAO<ConcernedItem> {
     private static final String CONCERNED_ITEM_LABELS_SELECT_NAME = "concernedItemLabels";
     private static final String CONCERNED_ITEM_LABELS_SELECT_NAME_SPARQL = "?" + CONCERNED_ITEM_LABELS_SELECT_NAME;
 
-    public ConcernedItemDAO(User user, String graph, String concernsRelationUri) {
-        super(user);
+    public ConcernedItemDAO(SPARQLService sparql, User user, String graph, String concernsRelationUri) {
+        super(sparql);
         this.graphString = graph;
         this.concernsRelationUri = concernsRelationUri;
     }

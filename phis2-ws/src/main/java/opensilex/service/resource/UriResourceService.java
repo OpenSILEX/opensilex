@@ -9,13 +9,12 @@
 package opensilex.service.resource;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -26,7 +25,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
-import opensilex.service.configuration.GlobalWebserviceValues;
 import opensilex.service.dao.UriDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.resource.validation.interfaces.Required;
@@ -35,21 +33,31 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.result.ResultForm;
 import opensilex.service.model.Ask;
 import opensilex.service.model.Uri;
+import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * URI resource service.
+ *
  * @author Eloan Lagier
  */
 @Api("/uri")
 @Path("uri")
 public class UriResourceService extends ResourceService {
-    
+
+    @Inject
+    public UriResourceService(SPARQLService sparql) {
+        this.sparql = sparql;
+    }
+
+    private final SPARQLService sparql;
+
     /**
      * Searches if a URI exists.
+     *
      * @param uri
-     * @return a response which contains 
-     *         true if the URI exist, 
-     *         false if it is an unknown URI
+     * @return a response which contains true if the URI exist, false if it is
+     * an unknown URI
      */
     @GET
     @Path("{uri}/exist")
@@ -61,20 +69,14 @@ public class UriResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response isUriExisting(
-            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) 
-                @PathParam("uri") 
-                @URL 
-                @Required String uri) {
-
-        UriDAO uriDao = new UriDAO();
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI)
+            @PathParam("uri")
+            @URL
+            @Required String uri) throws Exception {
+        UriDAO uriDao = new UriDAO(sparql);
         if (uri != null) {
             uriDao.uri = uri;
         }
@@ -86,10 +88,11 @@ public class UriResourceService extends ResourceService {
 
     /**
      * Returns the concept's metadata.
+     *
      * @param limit
      * @param page
      * @param uri
-     * @return concept list. The result form depends on the query results 
+     * @return concept list. The result form depends on the query results
      * @example
      * result : 
      * { 
@@ -120,23 +123,13 @@ public class UriResourceService extends ResourceService {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
-
-    /**
-     * Gets a URI's metadata.
-     */
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUriMetadata(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-            @ApiParam(value = "Search by uri", required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri) {
-
-        UriDAO uriDao = new UriDAO();
+            @ApiParam(value = "Search by uri", required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri) throws Exception {
+        UriDAO uriDao = new UriDAO(sparql);
         if (uri != null) {
             uriDao.uri = uri;
         }
@@ -150,6 +143,7 @@ public class UriResourceService extends ResourceService {
 
     /**
      * Searches URIs with the label given.
+     *
      * @param limit
      * @param page
      * @param label
@@ -163,21 +157,14 @@ public class UriResourceService extends ResourceService {
         @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
-
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUrisByLabel(
             @ApiParam(value = "Search by label", required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_LABEL) @QueryParam("label") @Required String label,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
-            ) {
-
-        UriDAO uriDao = new UriDAO();
+    ) throws Exception {
+        UriDAO uriDao = new UriDAO(sparql);
         if (label != null) {
             uriDao.label = label;
         }
@@ -191,12 +178,13 @@ public class UriResourceService extends ResourceService {
 
     /**
      * Gets all the instances of an URI.
+     *
      * @param uri
      * @param deep verify subclass or not
      * @param language
      * @param limit
      * @param page
-     * @update [Arnaud Charleroy] 18 Jul. 2018: change deep string type to real 
+     * @update [Arnaud Charleroy] 18 Jul. 2018: change deep string type to real
      * boolean type
      * @return the query result, with the list of the instances or the errors
      */
@@ -210,21 +198,15 @@ public class UriResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getInstancesByConcept(
             @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @Required @URL @PathParam("uri") String uri,
             @ApiParam(value = DocumentationAnnotation.DEEP) @QueryParam("deep") @DefaultValue(DocumentationAnnotation.EXAMPLE_DEEP) Boolean deep,
             @ApiParam(value = DocumentationAnnotation.DEEP) @QueryParam("language") @DefaultValue(DocumentationAnnotation.EXAMPLE_LANGUAGE) String language,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-
-        UriDAO uriDao = new UriDAO();
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
+        UriDAO uriDao = new UriDAO(sparql);
         if (uri != null) {
             uriDao.uri = uri;
         }
@@ -234,7 +216,7 @@ public class UriResourceService extends ResourceService {
         } else {
             uriDao.deep = true;
         }
-        
+
         if (language != null) {
             uriDao.language = language;
         } else {
@@ -250,6 +232,7 @@ public class UriResourceService extends ResourceService {
 
     /**
      * Gives all the parent class of a given URI.
+     *
      * @param uri
      * @param limit
      * @param page
@@ -283,19 +266,13 @@ public class UriResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAncestors(
             @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-
-        UriDAO uriDao = new UriDAO();
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
+        UriDAO uriDao = new UriDAO(sparql);
         if (uri != null) {
             uriDao.uri = uri;
         }
@@ -308,10 +285,11 @@ public class UriResourceService extends ResourceService {
 
     /**
      * Gives all the concepts with the same parent.
+     *
      * @param uri
      * @param limit
      * @param page
-     * @return 
+     * @return
      * @example
      * { 
      *   "metadata": { 
@@ -347,19 +325,13 @@ public class UriResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "Authorization", required = true,
-                dataType = "string", paramType = "header",
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSibblings(
             @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_SIBLING_URI) @PathParam("uri") @URL @Required String uri,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-
-        UriDAO uriDao = new UriDAO();
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
+        UriDAO uriDao = new UriDAO(sparql);
         if (uri != null) {
             uriDao.uri = uri;
         }
@@ -372,6 +344,7 @@ public class UriResourceService extends ResourceService {
 
     /**
      * Searches all descendants of a given URI.
+     *
      * @param uri
      * @param limit
      * @param page
@@ -411,19 +384,13 @@ public class UriResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDescendants(
             @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
-            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
-
-        UriDAO uriDao = new UriDAO();
+            @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
+        UriDAO uriDao = new UriDAO(sparql);
         if (uri != null) {
             uriDao.uri = uri;
         }
@@ -436,6 +403,7 @@ public class UriResourceService extends ResourceService {
 
     /**
      * Returns the type of an URI if exist else return empty list.
+     *
      * @param uri
      * @return false or type of the URI
      */
@@ -448,18 +416,11 @@ public class UriResourceService extends ResourceService {
         @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
-
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = GlobalWebserviceValues.AUTHORIZATION, required = true,
-                dataType = GlobalWebserviceValues.DATA_TYPE_STRING, paramType = GlobalWebserviceValues.HEADER,
-                value = DocumentationAnnotation.ACCES_TOKEN,
-                example = GlobalWebserviceValues.AUTHENTICATION_SCHEME + " ")
-    })
+    @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTypeIfUriExist(
-            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri) {
-
-        UriDAO uriDao = new UriDAO();
+            @ApiParam(value = DocumentationAnnotation.CONCEPT_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_CONCEPT_URI) @PathParam("uri") @URL @Required String uri) throws Exception {
+        UriDAO uriDao = new UriDAO(sparql);
         if (uri != null) {
             uriDao.uri = uri;
         }
@@ -471,6 +432,7 @@ public class UriResourceService extends ResourceService {
 
     /**
      * Collects all the data for the instances request.
+     *
      * @param uriDao
      * @return Response
      */
@@ -499,6 +461,7 @@ public class UriResourceService extends ResourceService {
 
     /**
      * Checks if the URIs exist or not and returns the formatted result.
+     *
      * @param uriDao
      * @return Response the result, containing the existing of each URI
      */
@@ -506,7 +469,7 @@ public class UriResourceService extends ResourceService {
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Ask> getResponse;
         ArrayList<Ask> ask = uriDao.askUriExistance();
-        
+
         if (ask == null) {//no result found
             getResponse = new ResultForm<>(0, 0, ask, true);
             return noResultFound(getResponse, statusList);
@@ -525,8 +488,9 @@ public class UriResourceService extends ResourceService {
     }
 
     /**
-     * Gets the metadata of a given URI. 
-     * The URI can be a concept URI or an instance
+     * Gets the metadata of a given URI. The URI can be a concept URI or an
+     * instance
+     *
      * @param uriDao
      * @return Response
      */
@@ -556,6 +520,7 @@ public class UriResourceService extends ResourceService {
 
     /**
      * Returns the list of URIs which has the given label.
+     *
      * @param uriDao collect all the Label data
      */
     private Response getLabelMetaData(UriDAO uriDao) {
@@ -584,6 +549,7 @@ public class UriResourceService extends ResourceService {
 
     /**
      * Collects all the ancestors of a given URI.
+     *
      * @param uriDao
      * @return Response
      */
@@ -612,6 +578,7 @@ public class UriResourceService extends ResourceService {
 
     /**
      * Collects all the siblings of a given URI.
+     *
      * @param uriDao
      * @return Response
      */
@@ -641,6 +608,7 @@ public class UriResourceService extends ResourceService {
 
     /**
      * Collects the descendants of a given URI.
+     *
      * @param uriDao
      * @return Response
      */
@@ -669,6 +637,7 @@ public class UriResourceService extends ResourceService {
 
     /**
      * Gets the type of a given URI.
+     *
      * @param uriDao
      * @return Response
      */
@@ -677,7 +646,7 @@ public class UriResourceService extends ResourceService {
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Uri> getResponse;
         uris = uriDao.getAskTypeAnswer();
-        
+
         if (uris == null) {//no result found
             getResponse = new ResultForm<>(0, 0, uris, true);
             return noResultFound(getResponse, statusList);

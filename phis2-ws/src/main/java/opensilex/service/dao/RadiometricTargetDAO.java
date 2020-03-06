@@ -590,13 +590,13 @@ public class RadiometricTargetDAO extends Rdf4jDAO<RadiometricTarget> {
         SPARQLQueryBuilder query = prepareGetLastId();
         //get last unit uri inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        TupleQueryResult result = tupleQuery.evaluate();
         
         String uri = null;
-        
-        if (result.hasNext()) {
-            BindingSet bindingSet = result.next();
-            uri = bindingSet.getValue(URI).stringValue();
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            if (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                uri = bindingSet.getValue(URI).stringValue();
+            }
         }
 
         if (uri == null) {

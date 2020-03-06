@@ -206,8 +206,7 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         ArrayList<String> propertyDomains = new ArrayList<>();
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        try {
-            TupleQueryResult result = tupleQuery.evaluate();
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 propertyDomains.add(bindingSet.getValue(DOMAIN).toString());
@@ -230,8 +229,7 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         ArrayList<String> propertyRangeList = new ArrayList<>();
         
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        try {
-            TupleQueryResult result = tupleQuery.evaluate();
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 propertyRangeList.add(bindingSet.getValue(RANGE).toString());
@@ -860,8 +858,7 @@ public class PropertyDAO extends Rdf4jDAO<Property> {
         
             definition.setUri(objectUri);
         
-            try {
-                TupleQueryResult result = tupleQuery.evaluate();
+            try (TupleQueryResult result = tupleQuery.evaluate()) {
                 while (result.hasNext()) {
                     BindingSet bindingSet = result.next();
 

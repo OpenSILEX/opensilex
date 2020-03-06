@@ -174,15 +174,16 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
 
         //get last trait uri ID inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        TupleQueryResult result = tupleQuery.evaluate();
-        
-        if (result.hasNext()) {
-            BindingSet bindingSet = result.next();
-            Value maxId = bindingSet.getValue(MAX_ID);
-            if (maxId != null) {
-                return Integer.valueOf(maxId.stringValue());
-            }
-        } 
+
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            if (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                Value maxId = bindingSet.getValue(MAX_ID);
+                if (maxId != null) {
+                    return Integer.valueOf(maxId.stringValue());
+                }
+            } 
+        }
         
         return 0;
     }
@@ -377,21 +378,22 @@ public class TraitDAO extends Rdf4jDAO<Trait> {
                 // Get ontology references list 
                 SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(trait.getUri());
                 TupleQuery tupleQueryOntologiesReferences = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
-                TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate();
-                while (resultOntologiesReferences.hasNext()) {
-                    BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
-                    if (bindingSetOntologiesReferences.getValue("object") != null
-                            && bindingSetOntologiesReferences.getValue("property") != null) {
-                        OntologyReference ontologyReference = new OntologyReference();
-                        ontologyReference.setObject(bindingSetOntologiesReferences.getValue("object").toString());
-                        ontologyReference.setProperty(bindingSetOntologiesReferences.getValue("property").toString());
-                        if (bindingSetOntologiesReferences.getValue("seeAlso") != null) {
-                            ontologyReference.setSeeAlso(bindingSetOntologiesReferences.getValue("seeAlso").toString());
+                try (TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate()) {
+                    while (resultOntologiesReferences.hasNext()) {
+                        BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
+                        if (bindingSetOntologiesReferences.getValue("object") != null
+                                && bindingSetOntologiesReferences.getValue("property") != null) {
+                            OntologyReference ontologyReference = new OntologyReference();
+                            ontologyReference.setObject(bindingSetOntologiesReferences.getValue("object").toString());
+                            ontologyReference.setProperty(bindingSetOntologiesReferences.getValue("property").toString());
+                            if (bindingSetOntologiesReferences.getValue("seeAlso") != null) {
+                                ontologyReference.setSeeAlso(bindingSetOntologiesReferences.getValue("seeAlso").toString());
+                            }
+
+                            trait.addOntologyReference(ontologyReference);
                         }
-                        
-                        trait.addOntologyReference(ontologyReference);
-                    }
-                }                
+                    }    
+                }
                 traits.add(trait);
             }
         }

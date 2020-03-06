@@ -24,7 +24,6 @@ import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.Rdf4jDAO;
@@ -123,13 +122,13 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
     public int getNumberOfVectors(String year) {
         SPARQLQueryBuilder queryNumberVectors = prepareGetVectorsNumber(year);
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryNumberVectors.toString());
-        TupleQueryResult result = tupleQuery.evaluate();        
-        //\SILEX:test
         
-        BindingSet bindingSet = result.next();
-        String numberVectors = bindingSet.getValue("count").stringValue();
-        
-        return Integer.parseInt(numberVectors);
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            BindingSet bindingSet = result.next();
+            String numberVectors = bindingSet.getValue("count").stringValue();
+            
+            return Integer.parseInt(numberVectors);
+        }
     }
     
     /**
@@ -422,16 +421,16 @@ public class VectorDAO extends Rdf4jDAO<Vector> {
 
         //get last vector uri inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        TupleQueryResult result = tupleQuery.evaluate();
-
-        if (result.hasNext()) {
-            BindingSet bindingSet = result.next();
-            Value maxId = bindingSet.getValue(MAX_ID);
-            if (maxId != null) {
-                return Integer.valueOf(maxId.stringValue());
-            }
-        } 
         
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            if (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                Value maxId = bindingSet.getValue(MAX_ID);
+                if (maxId != null) {
+                    return Integer.valueOf(maxId.stringValue());
+                }
+            } 
+        }        
         return 0;
     }
     

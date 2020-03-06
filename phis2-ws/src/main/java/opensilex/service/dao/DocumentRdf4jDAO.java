@@ -38,7 +38,6 @@ import opensilex.service.configuration.DocumentStatus;
 import opensilex.service.configuration.SortingValues;
 import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
@@ -50,7 +49,6 @@ import opensilex.service.utils.ResourcesUtils;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Document;
-import opensilex.service.model.Experiment;
 import org.opensilex.sparql.service.SPARQLService;
 
 //SILEX:warning
@@ -672,14 +670,15 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
                     //Check if document is linked to other elements
                     SPARQLQueryBuilder sparqlQueryConcernedItem = prepareSearchConcernedItemsQuery(document.getUri());
                     TupleQuery tupleQueryConcernedItem = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryConcernedItem.toString());
-                    TupleQueryResult resultConcernedItem = tupleQueryConcernedItem.evaluate();
-                    while (resultConcernedItem.hasNext()) {
-                        BindingSet bindingSetConcernedItem = resultConcernedItem.next();
-                        if (bindingSetConcernedItem.getValue(CONCERNED_ITEM_URI) != null) {
-                            ConcernedItemDTO concernedItem = new ConcernedItemDTO();
-                            concernedItem.setTypeURI(bindingSetConcernedItem.getValue(CONCERNED_ITEM_TYPE).stringValue());
-                            concernedItem.setUri(bindingSetConcernedItem.getValue(CONCERNED_ITEM_URI).stringValue());
-                            document.addConcernedItem(concernedItem);
+                    try (TupleQueryResult resultConcernedItem = tupleQueryConcernedItem.evaluate()) {
+                        while (resultConcernedItem.hasNext()) {
+                            BindingSet bindingSetConcernedItem = resultConcernedItem.next();
+                            if (bindingSetConcernedItem.getValue(CONCERNED_ITEM_URI) != null) {
+                                ConcernedItemDTO concernedItem = new ConcernedItemDTO();
+                                concernedItem.setTypeURI(bindingSetConcernedItem.getValue(CONCERNED_ITEM_TYPE).stringValue());
+                                concernedItem.setUri(bindingSetConcernedItem.getValue(CONCERNED_ITEM_URI).stringValue());
+                                document.addConcernedItem(concernedItem);
+                            }
                         }
                     }
 

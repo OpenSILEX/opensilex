@@ -37,7 +37,6 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -167,16 +166,17 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
 
         //Get the URI of the last scientific object inserted during the given year.
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, lastScientificObjectUriFromYearQuery.toString());
-        TupleQueryResult result = tupleQuery.evaluate();
-
-        if (result.hasNext()) {
-            BindingSet bindingSet = result.next();
-            Value maxId = bindingSet.getValue(MAX_ID);
-            if (maxId != null) {
-                return Integer.valueOf(maxId.stringValue());
+        
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            if (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                Value maxId = bindingSet.getValue(MAX_ID);
+                if (maxId != null) {
+                    return Integer.valueOf(maxId.stringValue());
+                }
             }
         }
-
+        
         return 0;
     }
 
@@ -416,35 +416,35 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             SPARQLQueryBuilder sparqlQuery = prepareSearchExperimentScientificObjects(layerDTO.getObjectUri());
             TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
 
-            TupleQueryResult result = tupleQuery.evaluate();
+            try (TupleQueryResult result = tupleQuery.evaluate()) {
+                while (result.hasNext()) {
+                    BindingSet bindingSet = result.next();
+                    ScientificObject scientificObject = children.get(bindingSet.getValue(CHILD).stringValue());
+                    if (scientificObject != null) { //Il suffit juste de lui ajouter la propriété. 
+                        Property property = new Property();
+                        property.setValue(bindingSet.getValue(PROPERTY).stringValue());
+                        property.setRelation(bindingSet.getValue(PROPERTY_RELATION).stringValue());
+                        if (bindingSet.getValue(PROPERTY_TYPE) != null) {
+                            property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
+                        }
 
-            while (result.hasNext()) {
-                BindingSet bindingSet = result.next();
-                ScientificObject scientificObject = children.get(bindingSet.getValue(CHILD).stringValue());
-                if (scientificObject != null) { //Il suffit juste de lui ajouter la propriété. 
-                    Property property = new Property();
-                    property.setValue(bindingSet.getValue(PROPERTY).stringValue());
-                    property.setRelation(bindingSet.getValue(PROPERTY_RELATION).stringValue());
-                    if (bindingSet.getValue(PROPERTY_TYPE) != null) {
-                        property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
+                        scientificObject.addProperty(property);
+                    } else { // not in the list, has to be added
+                        scientificObject = new ScientificObject();
+                        scientificObject.setUri(bindingSet.getValue(CHILD).stringValue());
+                        scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
+
+                        Property property = new Property();
+                        property.setValue(bindingSet.getValue(PROPERTY).stringValue());
+                        property.setRelation(bindingSet.getValue(PROPERTY_RELATION).stringValue());
+                        if (bindingSet.getValue(PROPERTY_TYPE) != null) {
+                            property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
+                        }
+                        scientificObject.addProperty(property);
                     }
 
-                    scientificObject.addProperty(property);
-                } else { // not in the list, has to be added
-                    scientificObject = new ScientificObject();
-                    scientificObject.setUri(bindingSet.getValue(CHILD).stringValue());
-                    scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
-
-                    Property property = new Property();
-                    property.setValue(bindingSet.getValue(PROPERTY).stringValue());
-                    property.setRelation(bindingSet.getValue(PROPERTY_RELATION).stringValue());
-                    if (bindingSet.getValue(PROPERTY_TYPE) != null) {
-                        property.setRdfType(bindingSet.getValue(PROPERTY_TYPE).stringValue());
-                    }
-                    scientificObject.addProperty(property);
+                    children.put(scientificObject.getUri(), scientificObject);
                 }
-
-                children.put(scientificObject.getUri(), scientificObject);
             }
         }
         //SILEX:INFO
@@ -461,16 +461,17 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                             child.getValue().getRdfType());
                     TupleQuery tupleQuery = this.getConnection()
                             .prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
-                    TupleQueryResult result = tupleQuery.evaluate();
+                    
+                    try (TupleQueryResult result = tupleQuery.evaluate()) {
+                        while (result.hasNext()) {
+                            BindingSet bindingSet = result.next();
+                            if (!children.containsKey(bindingSet.getValue(CHILD).stringValue())) {
+                                ScientificObject scientificObject = new ScientificObject();
+                                scientificObject.setUri(bindingSet.getValue(CHILD).stringValue());
+                                scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
 
-                    while (result.hasNext()) {
-                        BindingSet bindingSet = result.next();
-                        if (!children.containsKey(bindingSet.getValue(CHILD).stringValue())) {
-                            ScientificObject scientificObject = new ScientificObject();
-                            scientificObject.setUri(bindingSet.getValue(CHILD).stringValue());
-                            scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
-
-                            children.put(bindingSet.getValue(CHILD).stringValue(), scientificObject);
+                                children.put(bindingSet.getValue(CHILD).stringValue(), scientificObject);
+                            }
                         }
                     }
                 }
@@ -479,8 +480,25 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                         = prepareSearchChildrenWithContains(layerDTO.getObjectUri(), layerDTO.getObjectType());
                 TupleQuery tupleQuery
                         = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
-                TupleQueryResult result = tupleQuery.evaluate();
+                
+                try (TupleQueryResult result = tupleQuery.evaluate()) {
+                    while (result.hasNext()) {
+                        BindingSet bindingSet = result.next();
+                        ScientificObject scientificObject = new ScientificObject();
+                        scientificObject.setUri(bindingSet.getValue(CHILD).stringValue());
+                        scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
 
+                        children.put(bindingSet.getValue(CHILD).stringValue(), scientificObject);
+                    }
+                }
+            }
+
+        } else if (!layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
+            // If only direct descendants needed and not an experimentation
+            SPARQLQueryBuilder sparqlQuery = prepareSearchFirstChildrenWithContains(layerDTO.getObjectUri());
+            TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
+            
+            try (TupleQueryResult result = tupleQuery.evaluate()) {
                 while (result.hasNext()) {
                     BindingSet bindingSet = result.next();
                     ScientificObject scientificObject = new ScientificObject();
@@ -489,21 +507,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
 
                     children.put(bindingSet.getValue(CHILD).stringValue(), scientificObject);
                 }
-            }
-
-        } else if (!layerDTO.getObjectType().equals(Oeso.CONCEPT_EXPERIMENT.toString())) {
-            // If only direct descendants needed and not an experimentation
-            SPARQLQueryBuilder sparqlQuery = prepareSearchFirstChildrenWithContains(layerDTO.getObjectUri());
-            TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
-            TupleQueryResult result = tupleQuery.evaluate();
-
-            while (result.hasNext()) {
-                BindingSet bindingSet = result.next();
-                ScientificObject scientificObject = new ScientificObject();
-                scientificObject.setUri(bindingSet.getValue(CHILD).stringValue());
-                scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
-
-                children.put(bindingSet.getValue(CHILD).stringValue(), scientificObject);
             }
         }
         //\SILEX:INFO
@@ -548,9 +551,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         List<String> foundedProperties = new ArrayList<>();
         ArrayList<Property> properties = new ArrayList<>();
 
-        TupleQueryResult result = null;
-        try {
-            result = tupleQuery.evaluate();
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
 
@@ -569,10 +570,6 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             }
         } catch (Exception ex) {
             LOGGER.error("Error while getting scientific object properties", ex);
-        } finally {
-            if (result != null) {
-                result.close();
-            }
         }
         return properties;
     }
@@ -595,41 +592,42 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery.toString());
         Map<String, ScientificObject> foundedScientificObjects = new HashMap<>();
 
-        TupleQueryResult result = tupleQuery.evaluate();
-        while (result.hasNext()) {
-            BindingSet bindingSet = result.next();
-            boolean alreadyFoundedUri = false;
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            while (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                boolean alreadyFoundedUri = false;
 
-            String actualUri = bindingSet.getValue(URI).stringValue();
+                String actualUri = bindingSet.getValue(URI).stringValue();
 
-            if (foundedScientificObjects.containsKey(actualUri)) {
-                alreadyFoundedUri = true;
-            }
-
-            ScientificObject scientificObject = null;
-
-            if (alreadyFoundedUri) {
-                scientificObject = foundedScientificObjects.get(actualUri);
-            } else {
-                scientificObject = new ScientificObject();
-                scientificObject.setUri(actualUri);
-
-                if (experiment != null) {
-                    scientificObject.setUriExperiment(experiment);
-                } else if (bindingSet.getValue(EXPERIMENT) != null) {
-                    String expeURI = bindingSet.getValue(EXPERIMENT).stringValue();
-                    scientificObject.setExperiment(SPARQLDeserializers.getExpandedURI(expeURI));
+                if (foundedScientificObjects.containsKey(actualUri)) {
+                    alreadyFoundedUri = true;
                 }
 
-                scientificObject.setLabel(bindingSet.getValue(ALIAS).stringValue());
+                ScientificObject scientificObject = null;
 
-                if (rdfType != null) {
-                    scientificObject.setRdfType(rdfType);
+                if (alreadyFoundedUri) {
+                    scientificObject = foundedScientificObjects.get(actualUri);
                 } else {
-                    scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
-                }
+                    scientificObject = new ScientificObject();
+                    scientificObject.setUri(actualUri);
 
-                foundedScientificObjects.put(actualUri, scientificObject);
+                    if (experiment != null) {
+                        scientificObject.setUriExperiment(experiment);
+                    } else if (bindingSet.getValue(EXPERIMENT) != null) {
+                        String expeURI = bindingSet.getValue(EXPERIMENT).stringValue();
+                        scientificObject.setExperiment(SPARQLDeserializers.getExpandedURI(expeURI));
+                    }
+
+                    scientificObject.setLabel(bindingSet.getValue(ALIAS).stringValue());
+
+                    if (rdfType != null) {
+                        scientificObject.setRdfType(rdfType);
+                    } else {
+                        scientificObject.setRdfType(bindingSet.getValue(RDF_TYPE).stringValue());
+                    }
+
+                    foundedScientificObjects.put(actualUri, scientificObject);
+                }
             }
         }
 

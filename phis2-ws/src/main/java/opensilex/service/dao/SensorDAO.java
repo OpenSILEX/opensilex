@@ -156,16 +156,16 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
 
         //get last sensor uri inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        TupleQueryResult result = tupleQuery.evaluate();
-
         
-        if (result.hasNext()) {
-            BindingSet bindingSet = result.next();
-            Value maxId = bindingSet.getValue(MAX_ID);
-            if (maxId != null) {
-                return Integer.valueOf(maxId.stringValue());
-            }
-        } 
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            if (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                Value maxId = bindingSet.getValue(MAX_ID);
+                if (maxId != null) {
+                    return Integer.valueOf(maxId.stringValue());
+                }
+            } 
+        }
         
         return 0;
     }

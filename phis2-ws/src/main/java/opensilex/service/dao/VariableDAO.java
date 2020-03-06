@@ -33,10 +33,8 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import opensilex.service.PropertiesFileManager;
 import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.BrapiMethod;
@@ -247,15 +245,16 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
 
         //get last variable uri ID inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        TupleQueryResult result = tupleQuery.evaluate();
-
-        if (result.hasNext()) {
-            BindingSet bindingSet = result.next();
-            Value maxId = bindingSet.getValue(MAX_ID);
-            if (maxId != null) {
-                return Integer.valueOf(maxId.stringValue());
-            }
-        } 
+        
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            if (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                Value maxId = bindingSet.getValue(MAX_ID);
+                if (maxId != null) {
+                    return Integer.valueOf(maxId.stringValue());
+                }
+            } 
+        }
         
         return 0;
     }
@@ -908,19 +907,20 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
         
         SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(uri);
         TupleQuery tupleQueryOntologiesReferences = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
-        TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate();
-        while (resultOntologiesReferences.hasNext()) {
-            BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
-            if (bindingSetOntologiesReferences.getValue(OBJECT) != null
-                    && bindingSetOntologiesReferences.getValue(PROPERTY) != null) {
-                OntologyReference ontologyReference = new OntologyReference();
-                ontologyReference.setObject(bindingSetOntologiesReferences.getValue(OBJECT).toString());
-                ontologyReference.setProperty(bindingSetOntologiesReferences.getValue(PROPERTY).toString());
-                if (bindingSetOntologiesReferences.getValue(SEE_ALSO) != null) {
-                    ontologyReference.setSeeAlso(bindingSetOntologiesReferences.getValue(SEE_ALSO).toString());
-                }
+        try (TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate()) {
+            while (resultOntologiesReferences.hasNext()) {
+                BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
+                if (bindingSetOntologiesReferences.getValue(OBJECT) != null
+                        && bindingSetOntologiesReferences.getValue(PROPERTY) != null) {
+                    OntologyReference ontologyReference = new OntologyReference();
+                    ontologyReference.setObject(bindingSetOntologiesReferences.getValue(OBJECT).toString());
+                    ontologyReference.setProperty(bindingSetOntologiesReferences.getValue(PROPERTY).toString());
+                    if (bindingSetOntologiesReferences.getValue(SEE_ALSO) != null) {
+                        ontologyReference.setSeeAlso(bindingSetOntologiesReferences.getValue(SEE_ALSO).toString());
+                    }
 
-                ontologyReferences.add(ontologyReference);
+                    ontologyReferences.add(ontologyReference);
+                }
             }
         }
         

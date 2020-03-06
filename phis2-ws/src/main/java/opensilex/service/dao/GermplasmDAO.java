@@ -440,13 +440,14 @@ public class GermplasmDAO extends Rdf4jDAO<Germplasm> {
         Query query = prepareGetLastId();
         //get last accession uri ID inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        TupleQueryResult result = tupleQuery.evaluate();
-
-        if (result.hasNext()) {
-            BindingSet bindingSet = result.next();
-            return Integer.valueOf(bindingSet.getValue(MAX_ID).stringValue());
-        } else {
-            return 0;
+        
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            if (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                return Integer.valueOf(bindingSet.getValue(MAX_ID).stringValue());
+            } else {
+                return 0;
+            }
         }
     }
 

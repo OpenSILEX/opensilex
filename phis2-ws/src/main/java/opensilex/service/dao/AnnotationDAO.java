@@ -48,7 +48,6 @@ import opensilex.service.dao.exception.DAODataErrorException;
 import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.exception.WrongTypeException;
 import opensilex.service.dao.manager.Rdf4jDAO;
-import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Oa;
 import opensilex.service.ontology.Oeso;
@@ -205,8 +204,8 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
                 dateSortAsc);
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, prepareCount.toString());
         Integer count = 0;
-        try {
-            TupleQueryResult result = tupleQuery.evaluate();
+        
+        try (TupleQueryResult result = tupleQuery.evaluate()){
             if (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 count = Integer.parseInt(bindingSet.getValue(COUNT_ELEMENT_QUERY).stringValue());

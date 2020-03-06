@@ -65,8 +65,7 @@ public class StudyRDFDAO extends Rdf4jDAO {
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
         
         ArrayList<String> studiesURI = new ArrayList();
-        try {
-            TupleQueryResult studiesURIResult = tupleQuery.evaluate();
+        try (TupleQueryResult studiesURIResult = tupleQuery.evaluate()) {
             while (studiesURIResult.hasNext()) {
                 String studyURI = getStringValueOfSelectNameFromBindingSet(EXP_URI, studiesURIResult.next());
                 if (studyURI != null) {

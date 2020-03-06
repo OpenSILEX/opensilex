@@ -9,7 +9,6 @@ package opensilex.service.dao;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,7 +40,6 @@ import opensilex.service.dao.exception.NotAnAdminException;
 import opensilex.service.dao.exception.DAOPersistenceException;
 import opensilex.service.dao.exception.UnknownUriException;
 import opensilex.service.dao.manager.Rdf4jDAO;
-import opensilex.service.model.User;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.Oa;
 import opensilex.service.ontology.Oeev;
@@ -378,8 +376,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
         // Get event from storage
         TupleQuery eventsTupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, eventQuery.toString());
 
-        try {
-            TupleQueryResult eventsResult = eventsTupleQuery.evaluate();
+        try (TupleQueryResult eventsResult = eventsTupleQuery.evaluate()) {
             if (eventsResult.hasNext()) {
                 BindingSet bindingSet = eventsResult.next();
                 event = getEventFromBindingSet(bindingSet);
@@ -742,11 +739,12 @@ public class EventDAO extends Rdf4jDAO<Event> {
 
         List<String> annotationUris = new LinkedList<>();
         TupleQuery getAnnotationQuery = getConnection().prepareTupleQuery(removeAnnotationQuery);
-        TupleQueryResult res = getAnnotationQuery.evaluate();
-
-        while (res.hasNext()) {
-            BindingSet bs = res.next();
-            annotationUris.add(bs.getValue("a").stringValue());
+        
+        try (TupleQueryResult res = getAnnotationQuery.evaluate()) {
+            while (res.hasNext()) {
+                BindingSet bs = res.next();
+                annotationUris.add(bs.getValue("a").stringValue());
+            }
         }
         return annotationUris;
     }

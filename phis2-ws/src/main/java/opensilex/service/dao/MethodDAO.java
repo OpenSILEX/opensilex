@@ -213,13 +213,14 @@ public class MethodDAO extends Rdf4jDAO<Method> {
 
         //get last method uri ID inserted
         TupleQuery tupleQuery = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        TupleQueryResult result = tupleQuery.evaluate();
         
-        if (result.hasNext()) {
-            BindingSet bindingSet = result.next();
-            Value maxId = bindingSet.getValue(MAX_ID);
-            if (maxId != null) {
-                return Integer.valueOf(maxId.stringValue());
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
+            if (result.hasNext()) {
+                BindingSet bindingSet = result.next();
+                Value maxId = bindingSet.getValue(MAX_ID);
+                if (maxId != null) {
+                    return Integer.valueOf(maxId.stringValue());
+                }
             }
         } 
         
@@ -396,19 +397,20 @@ public class MethodDAO extends Rdf4jDAO<Method> {
                 // Get ontology references list 
                 SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(method.getUri());
                 TupleQuery tupleQueryOntologiesReferences = this.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryOntologiesReferences.toString());
-                TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate();
-                while (resultOntologiesReferences.hasNext()) {
-                    BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
-                    if (bindingSetOntologiesReferences.getValue("object") != null
-                            && bindingSetOntologiesReferences.getValue("property") != null) {
-                        OntologyReference ontologyReference = new OntologyReference();
-                        ontologyReference.setObject(bindingSetOntologiesReferences.getValue("object").toString());
-                        ontologyReference.setProperty(bindingSetOntologiesReferences.getValue("property").toString());
-                        if (bindingSetOntologiesReferences.getValue("seeAlso") != null) {
-                            ontologyReference.setSeeAlso(bindingSetOntologiesReferences.getValue("seeAlso").toString());
+                try (TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate()) {
+                    while (resultOntologiesReferences.hasNext()) {
+                        BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
+                        if (bindingSetOntologiesReferences.getValue("object") != null
+                                && bindingSetOntologiesReferences.getValue("property") != null) {
+                            OntologyReference ontologyReference = new OntologyReference();
+                            ontologyReference.setObject(bindingSetOntologiesReferences.getValue("object").toString());
+                            ontologyReference.setProperty(bindingSetOntologiesReferences.getValue("property").toString());
+                            if (bindingSetOntologiesReferences.getValue("seeAlso") != null) {
+                                ontologyReference.setSeeAlso(bindingSetOntologiesReferences.getValue("seeAlso").toString());
+                            }
+
+                            method.addOntologyReference(ontologyReference);
                         }
-                        
-                        method.addOntologyReference(ontologyReference);
                     }
                 }
                 methods.add(method);

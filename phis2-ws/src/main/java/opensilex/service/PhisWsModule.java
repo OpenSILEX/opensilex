@@ -7,20 +7,30 @@
 //******************************************************************************
 package opensilex.service;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Set;
+
+import com.auth0.jwt.JWTCreator;
 import org.opensilex.OpenSilex;
+import org.opensilex.rest.extensions.LoginExtension;
+import org.opensilex.rest.group.dal.GroupDAO;
+import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.rest.extensions.APIExtension;
 import org.opensilex.sparql.SPARQLConfig;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
+
+import static org.opensilex.core.CoreModule.TOKEN_USER_GROUP_URIS;
 
 /**
  * Phis opensilex module implementation
  */
-public class PhisWsModule extends OpenSilexModule implements APIExtension {
+public class PhisWsModule extends OpenSilexModule implements APIExtension, LoginExtension {
 
     @Override
     public Class<? extends ModuleConfig> getConfigClass() {
@@ -55,7 +65,7 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension {
 
         return list;
     }
-    
+
     @Override
     public Set<String> apiPackages() {
         Set<String> packageSet = APIExtension.super.apiPackages();
@@ -63,4 +73,23 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension {
         return packageSet;
     }
 
+    @Override
+    public void login(UserModel user, JWTCreator.Builder tokenBuilder) {
+
+        // TODO add experiments, projects, infrastructures related to the user as token claims...
+        SPARQLServiceFactory sparqlServiceFactory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        GroupDAO groupDAO = new GroupDAO(sparqlServiceFactory.provide());
+        try {
+
+            List<URI> groupUris = groupDAO.getGroupUriList(user);
+            if (groupUris.isEmpty()) {
+                tokenBuilder.withArrayClaim(TOKEN_USER_GROUP_URIS, new String[0]);
+            } else {
+                String[] groupArray = (String[]) groupUris.stream().map(URI::toString).toArray();
+                tokenBuilder.withArrayClaim(TOKEN_USER_GROUP_URIS, groupArray);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

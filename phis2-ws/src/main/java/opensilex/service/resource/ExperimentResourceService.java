@@ -23,12 +23,15 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import org.apache.commons.lang3.StringUtils;
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
 import org.opensilex.core.project.dal.ProjectDAO;
+import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.group.dal.GroupDAO;
 import org.opensilex.rest.user.dal.UserDAO;
+import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
@@ -49,6 +52,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import org.opensilex.rest.authentication.ApiProtected;
 
 /**
@@ -68,7 +72,9 @@ public class ExperimentResourceService extends ResourceService {
         this.sparql = sparql;
     }
 
-    
+    @Inject
+    private AuthenticationService authentication;
+
     private final SPARQLService sparql;
 
     final static Logger LOGGER = LoggerFactory.getLogger(ExperimentResourceService.class);
@@ -91,10 +97,10 @@ public class ExperimentResourceService extends ResourceService {
     @ApiOperation(value = "Get all experiments corresponding to the searched params given",
             notes = "Retrieve all experiments authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all experiments", response = Experiment.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
+            @ApiResponse(code = 200, message = "Retrieve all experiments", response = Experiment.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExperimentsBySearch(
@@ -108,7 +114,8 @@ public class ExperimentResourceService extends ResourceService {
             @ApiParam(value = "Search by campaign", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_CAMPAIGN) @QueryParam("campaign") @Pattern(regexp = DateFormats.YEAR_REGEX, message = "This is not a valid year. Excepted format : YYYY (e.g. 2017)") String campaign,
             @ApiParam(value = "Search by place", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_PLACE) @QueryParam("place") String place,
             @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
-            @ApiParam(value = "Search by keywords", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_KEYWORDS) @QueryParam("keywords") String keywords) {
+            @ApiParam(value = "Search by keywords", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_KEYWORDS) @QueryParam("keywords") String keywords,
+            @Context SecurityContext securityContext) {
 
         try {
 
@@ -128,6 +135,14 @@ public class ExperimentResourceService extends ResourceService {
             if (projectUri != null) {
                 searchDTO.setProjects(Collections.singletonList(projectUri));
             }
+
+
+            UserModel userModel = authentication.getCurrentUser(securityContext);
+            List<URI> groupUris = new ArrayList<>();
+            for (String groupUri : authentication.decodeStringArrayClaim(userModel.getToken(), CoreModule.TOKEN_USER_GROUP_URIS)) {
+                groupUris.add(new URI(groupUri));
+            }
+            searchDTO.setGroups(groupUris);
 
             // use the new DAO in order to get paginated model List
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
@@ -180,7 +195,8 @@ public class ExperimentResourceService extends ResourceService {
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExperimentDetail(
-            @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI, required = true) @PathParam("experiment") URI experimentURI,
+            @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI, required = true) @PathParam("experiment") URI
+                    experimentURI,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 

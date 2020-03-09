@@ -143,6 +143,7 @@ public class ExperimentResourceService extends ResourceService {
                 groupUris.add(new URI(groupUri));
             }
             searchDTO.setGroups(groupUris);
+            searchDTO.setAdmin(userModel.isAdmin());
 
             // use the new DAO in order to get paginated model List
             ExperimentDAO xpDao = new ExperimentDAO(sparql);

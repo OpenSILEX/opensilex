@@ -142,9 +142,6 @@ public class ExperimentDAO {
      */
     protected void appendFilters(ExperimentSearchDTO searchDTO, SelectBuilder select) throws Exception {
 
-        if (searchDTO == null)
-            return;
-
         List<Expr> exprList = new ArrayList<>();
 
         // build equality filters
@@ -205,10 +202,6 @@ public class ExperimentDAO {
      */
     protected void appendListFilters(ExperimentSearchDTO searchDTO, SelectBuilder select) throws Exception {
 
-
-        if (searchDTO == null)
-            return;
-
         Map<String, List<?>> valuesByVar = new HashMap<>();
 
         if (!searchDTO.getKeywords().isEmpty()) {
@@ -253,7 +246,7 @@ public class ExperimentDAO {
         SPARQLQueryHelper.addWhereValues(select, valuesByVar);
     }
 
-    protected void handleGroupsFiltering(SelectBuilder select, ExperimentSearchDTO searchDTO) {
+    protected void handleGroupsFiltering(ExperimentSearchDTO searchDTO,SelectBuilder select) {
 
         if (searchDTO.isAdmin()){
             // add no filter on groups for the admin
@@ -324,9 +317,11 @@ public class ExperimentDAO {
                 ExperimentModel.class,
                 null,
                 (SelectBuilder select) -> {
-                    handleGroupsFiltering(select,searchDTO);
-                    appendFilters(searchDTO, select);
-                    appendListFilters(searchDTO, select);
+                    if(searchDTO != null){
+                        handleGroupsFiltering(searchDTO,select);
+                        appendFilters(searchDTO, select);
+                        appendListFilters(searchDTO, select);
+                    }
                 },
                 orderByList,
                 page,

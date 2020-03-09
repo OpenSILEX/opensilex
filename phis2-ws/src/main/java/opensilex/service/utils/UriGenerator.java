@@ -737,6 +737,27 @@ public class UriGenerator {
     }
     
     /**
+     * Generates scientific objects uris for a year. The number depends on the given numberOfUrisToGenerate.
+     * @param year
+     * @param numberOfUrisToGenerate
+     * @return the list of uri generated
+     */
+    public synchronized static List<String> generateScientificObjectUris(SPARQLService sparql, String year, Integer numberOfUrisToGenerate) {
+        if (year == null) {
+            year = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
+        }
+        UriGenerator instance = new UriGenerator(sparql);
+
+        List<String> scientificObjectUris = new ArrayList<>();
+               
+        for (int i = 0; i < numberOfUrisToGenerate; i++) {
+            scientificObjectUris.add(instance.generateScientificObjectUri(year));            
+        }
+        
+        return scientificObjectUris;
+    }
+
+    /**
      * Generates the URI of a new instance of instanceType.
      * This method is syncronized to prevent URI duplication in case of multiple thread request for new URIs
      * @param instanceType the RDF type of the instance (a concept URI)

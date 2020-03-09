@@ -783,14 +783,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      */
     private ArrayList<ScientificObject> generateUrisByYear(HashMap<Integer, ArrayList<ScientificObject>> scientificObjecstSortedByYear) throws Exception {
         ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
-        for (Entry<Integer, ArrayList<ScientificObject>> entry : scientificObjecstSortedByYear.entrySet()) {
-            List<String> scientificObjectUris = new ArrayList<>();
-
-            for (ScientificObject i : entry.getValue()) {
-                scientificObjectUris.add(
-                        UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_SCIENTIFIC_OBJECT.toString(), Integer.toString(entry.getKey()), null)
-                );
-            }
+        for (Entry<Integer, ArrayList<ScientificObject>> entry : scientificObjecstSortedByYear.entrySet()) {            
+            List<String> scientificObjectUris = UriGenerator.generateScientificObjectUris(sparql, Integer.toString(entry.getKey()), entry.getValue().size());
 
             int numSo = 0;
             for (ScientificObject scientificObject : entry.getValue()) {

@@ -205,7 +205,6 @@ public class ExperimentDAO {
      */
     protected void appendListFilters(ExperimentSearchDTO searchDTO, SelectBuilder select) throws Exception {
 
-        ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
 
         if (searchDTO == null)
             return;
@@ -227,29 +226,6 @@ public class ExperimentDAO {
         if (!searchDTO.getTechnicalSupervisors().isEmpty()) {
             addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasTechnicalSupervisor, ExperimentModel.TECHNICAL_SUPERVISOR_SPARQL_VAR);
             valuesByVar.put(ExperimentModel.TECHNICAL_SUPERVISOR_SPARQL_VAR, searchDTO.getTechnicalSupervisors());
-        }
-
-        Var groupVar = makeVar(ExperimentModel.GROUP_SPARQL_VAR);
-        Triple groupTriple = new Triple(makeVar(ExperimentModel.URI_FIELD), Oeso.hasGroup.asNode(), groupVar);
-        List<URI> groupUris = searchDTO.getGroups();
-
-        if (groupUris.isEmpty()) {
-            // get experiment without any group
-            select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(groupTriple)));
-        }else{
-            // get experiment with no group specified or in the given list
-            ElementGroup rootFilteringElem = new ElementGroup();
-            ElementGroup optionals = new ElementGroup();
-            optionals.addTriplePattern(groupTriple);
-
-            Expr boundExpr = exprFactory.not(exprFactory.bound(groupVar));
-            Expr groupInUrisExpr = exprFactory.in(groupVar,groupUris.stream()
-                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
-                    .toArray());
-
-            rootFilteringElem.addElement(new ElementOptional(optionals));
-            rootFilteringElem.addElementFilter(new ElementFilter(SPARQLQueryHelper.or(boundExpr,groupInUrisExpr)));
-            select.getWhereHandler().getClause().addElement(rootFilteringElem);
         }
 
         if (!searchDTO.getVariables().isEmpty()) {
@@ -275,6 +251,39 @@ public class ExperimentDAO {
             valuesByVar.put(ExperimentModel.DEVICES_SPARQL_VAR, searchDTO.getInstallations());
         }
         SPARQLQueryHelper.addWhereValues(select, valuesByVar);
+    }
+
+    protected void handleGroupsFiltering(SelectBuilder select, ExperimentSearchDTO searchDTO) {
+
+        if (searchDTO.isAdmin()){
+            // add no filter on groups for the admin
+            return;
+        }
+        Var groupVar = makeVar(ExperimentModel.GROUP_SPARQL_VAR);
+        Triple groupTriple = new Triple(makeVar(ExperimentModel.URI_FIELD), Oeso.hasGroup.asNode(), groupVar);
+        List<URI> groupUris = searchDTO.getGroups();
+
+        if (groupUris.isEmpty()) {
+            // get experiment without any group
+            select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(groupTriple)));
+        }else{
+
+            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+
+            // get experiment with no group specified or in the given list
+            ElementGroup rootFilteringElem = new ElementGroup();
+            ElementGroup optionals = new ElementGroup();
+            optionals.addTriplePattern(groupTriple);
+
+            Expr boundExpr = exprFactory.not(exprFactory.bound(groupVar));
+            Expr groupInUrisExpr = exprFactory.in(groupVar,groupUris.stream()
+                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
+                    .toArray());
+
+            rootFilteringElem.addElement(new ElementOptional(optionals));
+            rootFilteringElem.addElementFilter(new ElementFilter(SPARQLQueryHelper.or(boundExpr,groupInUrisExpr)));
+            select.getWhereHandler().getClause().addElement(rootFilteringElem);
+        }
     }
 
     protected void addWhere(SelectBuilder select, String subjectVar, Property property, String objectVar) {
@@ -315,6 +324,7 @@ public class ExperimentDAO {
                 ExperimentModel.class,
                 null,
                 (SelectBuilder select) -> {
+                    handleGroupsFiltering(select,searchDTO);
                     appendFilters(searchDTO, select);
                     appendListFilters(searchDTO, select);
                 },

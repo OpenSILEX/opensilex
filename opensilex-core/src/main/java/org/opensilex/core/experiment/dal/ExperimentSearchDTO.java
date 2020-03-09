@@ -21,6 +21,17 @@ public class ExperimentSearchDTO extends ExperimentGetDTO {
         return ended;
     }
 
+    private Boolean admin;
+
+    public Boolean isAdmin() {
+        return admin;
+    }
+
+    public ExperimentSearchDTO setAdmin(Boolean admin) {
+        this.admin = admin;
+        return this;
+    }
+
     public ExperimentSearchDTO setEnded(Boolean ended) {
         this.ended = ended;
         return this;

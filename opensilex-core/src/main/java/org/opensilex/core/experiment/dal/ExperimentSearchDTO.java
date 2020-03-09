@@ -21,7 +21,7 @@ public class ExperimentSearchDTO extends ExperimentGetDTO {
         return ended;
     }
 
-    private Boolean admin;
+    private boolean admin = false;
 
     public Boolean isAdmin() {
         return admin;

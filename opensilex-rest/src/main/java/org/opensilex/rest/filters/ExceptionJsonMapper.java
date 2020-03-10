@@ -53,7 +53,7 @@ public class ExceptionJsonMapper implements ExceptionMapper<Throwable> {
         } else {
             response = new ErrorResponse(exception).getResponse();
         }
-        LOGGER.error("Exception returned to user service call: " + uriInfo.getAbsolutePath().toString(), exception);
+        LOGGER.error("Exception returned to user service call: \n" + uriInfo.getAbsolutePath().toString(), exception);
         return response;
     }
 

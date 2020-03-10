@@ -5,6 +5,10 @@
  */
 package org.opensilex.sparql.rdf4j;
 
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.pool.PoolStats;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
@@ -22,12 +26,21 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
     private final static Logger LOGGER = LoggerFactory.getLogger(RDF4JServiceFactory.class);
 
     private final Repository repository;
+    private PoolingHttpClientConnectionManager cm;
 
     public RDF4JServiceFactory(RDF4JConfig config) {
         LOGGER.debug("Build RDF4JServiceFactory from config");
         synchronized (this) {
-            this.repository = new HTTPRepository(config.serverURI(), config.repository());
-            this.repository.init();
+            HTTPRepository repo = new HTTPRepository(config.serverURI(), config.repository());
+            cm = new PoolingHttpClientConnectionManager();
+            cm.setDefaultMaxPerRoute(20);
+            CloseableHttpClient httpClient = HttpClients.custom()
+                    .setConnectionManager(cm)
+                    .build();
+
+            repo.setHttpClient(httpClient);
+            repo.init();
+            this.repository = repo;
         }
 
     }
@@ -42,6 +55,16 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
 
     private synchronized SPARQLService getNewService() throws Exception {
         RepositoryConnection connection = repository.getConnection();
+        if (cm != null && LOGGER.isDebugEnabled()) {
+            PoolStats stats = cm.getTotalStats();
+            LOGGER.debug(
+                    "Connection pool stats: \n" +
+                    "In use    -> " + stats.getLeased()+ "\n" +
+                    "Pending   -> " + stats.getPending()+ "\n" +
+                    "Available -> " + stats.getAvailable() + "\n" +
+                    "Max       -> " + stats.getMax()+ "\n"
+            );
+        }
         SPARQLService sparql = new SPARQLService(new RDF4JConnection(connection));
         sparql.startup();
 
@@ -69,6 +92,6 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
         } catch (Exception ex) {
             LOGGER.error("Error while closing RDF4J service connectioninstance instance", ex);
         }
-        
+
     }
 }

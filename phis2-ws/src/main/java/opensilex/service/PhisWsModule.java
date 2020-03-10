@@ -78,9 +78,9 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension, Login
 
         // TODO add experiments, projects, infrastructures related to the user as token claims...
         SPARQLServiceFactory sparqlServiceFactory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-        GroupDAO groupDAO = new GroupDAO(sparqlServiceFactory.provide());
+        SPARQLService sparql = sparqlServiceFactory.provide();
         try {
-
+            GroupDAO groupDAO = new GroupDAO(sparql);
             List<URI> groupUris = groupDAO.getGroupUriList(user);
             if (groupUris.isEmpty()) {
                 tokenBuilder.withArrayClaim(TOKEN_USER_GROUP_URIS, new String[0]);
@@ -90,6 +90,8 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension, Login
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            sparqlServiceFactory.dispose(sparql);
         }
     }
 }

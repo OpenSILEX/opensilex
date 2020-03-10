@@ -1,6 +1,14 @@
 /*********************************
 * GLOBAL STYLE
 *********************************/
+body {
+    display: flex;
+}
+
+.wrapper {
+    flex: 1;
+}
+
 .bg-phis-green {
     background-color: #00A38D
 }

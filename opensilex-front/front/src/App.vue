@@ -170,9 +170,10 @@ main {
   box-shadow: none;
 }
 
-.embed main {
+.wrapper.embed .page-wrap .main-content {
     margin-top: 0px;
     margin-left: 0px;
+    padding: 15px;
 }
 
 </style>

@@ -76,6 +76,8 @@ opensilex:build:
   artifacts:
     paths:
       - $REVISION
+  only:
+    - master
       
 # Trigger pipeline for sixtine module deployment
 trigger:sixtine:build:

@@ -1,9 +1,9 @@
 /*
  * ******************************************************************************
- *                                     FactorDAO.java
+ *                                     FactorLevelDAO.java
  *  OpenSILEX
- *  Copyright © INRA 2019
- *  Creation date:  17 December, 2019
+ *  Copyright © INRAE 2020
+ *  Creation date:  11 March, 2020
  *  Contact: arnaud.charleroy@inra.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * ******************************************************************************
  */
@@ -14,8 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
-import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
+import org.opensilex.core.factor.api.FactorLevelSearchDTO;
 import org.opensilex.core.factor.api.FactorSearchDTO;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
@@ -25,39 +27,39 @@ import org.opensilex.utils.ListWithPagination;
  * 
  * @author Arnaud Charleroy
  */
-public class FactorDAO {
+public class FactorLevelDAO {
 
     protected final SPARQLService sparql;
 
-    public FactorDAO(SPARQLService sparql) {
+    public FactorLevelDAO(SPARQLService sparql) {
         this.sparql = sparql;
     }
 
-    public FactorModel create(FactorModel instance) throws Exception {
+    public FactorLevelModel create(FactorLevelModel instance) throws Exception {
         sparql.create(instance);
         return instance;
     }
 
-    public FactorModel update(FactorModel instance) throws Exception {
+    public FactorLevelModel update(FactorLevelModel instance) throws Exception {
         sparql.update(instance);
         return instance;
     }
 
     public void delete(URI instanceURI) throws Exception {
-        sparql.delete(FactorModel.class, instanceURI);
+        sparql.delete(FactorLevelModel.class, instanceURI);
     }
 
-    public FactorModel get(URI instanceURI) throws Exception {
-        return sparql.getByURI(FactorModel.class, instanceURI, null);
+    public FactorLevelModel get(URI instanceURI) throws Exception {
+        return sparql.getByURI(FactorLevelModel.class, instanceURI, null);
     }
 
-    public ListWithPagination<FactorModel> search(FactorSearchDTO factorSearchDTO, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public ListWithPagination<FactorLevelModel> search(FactorLevelSearchDTO factorLevelSearchDTO, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         return sparql.searchWithPagination(
-                FactorModel.class,
+                FactorLevelModel.class,
                 null,
                 (SelectBuilder select) -> {
                     // TODO implements filters
-                    appendFilters(factorSearchDTO, select);
+                    appendFilters(factorLevelSearchDTO, select);
                 },
                 orderByList,
                 page,
@@ -65,26 +67,30 @@ public class FactorDAO {
         );
     }
     
-    /**
+     /**
      * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty simple attribute ( not a {@link List} from the {@link ExperimentSearchDTO}
      *
-     * @param searchDTO a search DTO which contains all attributes about an {@link FactorModel} search
+     * @param searchDTO a search DTO which contains all attributes about an {@link FactorLevelModel} search
      * @param select search query
      * @throws java.lang.Exception can throw an exception
      * @see SPARQLQueryHelper the utility class used to build Expr
      */
-    protected void appendFilters(FactorSearchDTO searchDTO, SelectBuilder select) throws Exception {
+    protected void appendFilters(FactorLevelSearchDTO searchDTO, SelectBuilder select) throws Exception {
 
-        List<Expr> exprList = new ArrayList<>(); 
+        List<Expr> exprList = new ArrayList<>();
+
+        // build equality filters
+        if (searchDTO.getHasFactor()!= null) {
+            exprList.add(SPARQLQueryHelper.eq(FactorLevelModel.HAS_FACTOR_FIELD, searchDTO.getUri()));
+        }
         
         // build regex filters
         if (searchDTO.getAlias()!= null) {
-            exprList.add(SPARQLQueryHelper.regexFilter(FactorModel.ALIAS_FIELD, searchDTO.getAlias()));
+            exprList.add(SPARQLQueryHelper.regexFilter(FactorLevelModel.ALIAS_FIELD, searchDTO.getAlias()));
         }
 
         for (Expr filterExpr : exprList) {
             select.addFilter(filterExpr);
         }
     }
-    
 }

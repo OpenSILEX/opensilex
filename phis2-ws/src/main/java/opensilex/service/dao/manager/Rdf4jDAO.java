@@ -586,7 +586,7 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
         }
     }
 
-    private RepositoryConnection getConnection() {
+    private synchronized RepositoryConnection getConnection() {
         return sparql.getRepositoryConnection();
     }
 

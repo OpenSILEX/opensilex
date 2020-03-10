@@ -66,10 +66,15 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         SPARQL_RESOURCES_MAPPER.forEach(lambda);
     }
 
+    @SuppressWarnings("unchecked")
     public static void initialize() throws SPARQLInvalidClassDefinitionException {
         if (SPARQL_CLASSES_LIST == null) {
             SPARQL_CLASSES_LIST = ClassUtils.getAnnotatedClasses(SPARQLResource.class);
 
+            SPARQL_CLASSES_LIST.forEach((clazz) -> {
+                LOGGER.debug("SPARQL Resource class found: " + clazz.getCanonicalName());
+            });
+            
             SPARQL_CLASSES_LIST.removeIf((Class<?> resource) -> {
                 SPARQLManualLoading manualAnnotation = resource.getAnnotation(SPARQLManualLoading.class);
                 return (manualAnnotation != null);
@@ -128,7 +133,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return SPARQL_CLASSES_LIST.contains(c);
     }
 
-    static void clearResourcesRegistry() {
+    public static void reset() {
         SPARQL_CLASSES_LIST = null;
         SPARQL_CLASSES_MAPPER = new HashMap<>();
         SPARQL_RESOURCES_MAPPER = new HashMap<>();
@@ -191,6 +196,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     }
 
+    @SuppressWarnings("unchecked")
     public T createInstance(SPARQLResult result, SPARQLService service) throws Exception {
         String realType = result.getStringValue(SPARQLQueryHelper.typeDefVar.getName());
         if (!realType.equals(getRDFType().toString())) {
@@ -259,6 +265,19 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         }
 
         return instance;
+    }
+
+    
+    @SuppressWarnings("unchecked")
+    public List<T> createInstanceList(List<URI> uris, SPARQLService service) throws Exception {
+        SPARQLProxyResourceList<T> proxy = new SPARQLProxyResourceList<>(getDefaultGraph(), uris, objectClass, service);
+        List<T> instances = proxy.loadIfNeeded();
+        if (instances != null) {
+            return proxy.getInstance();
+        } else {
+            return null;
+        }
+
     }
 
     public Node getDefaultGraph() {
@@ -401,5 +420,4 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public Resource getRDFType() {
         return classAnalizer.getRDFType();
     }
-
 }

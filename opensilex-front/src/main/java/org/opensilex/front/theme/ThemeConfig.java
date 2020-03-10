@@ -14,5 +14,4 @@ public interface ThemeConfig {
     List<String> stylesheets();
     
     List<FontConfig> fonts();
-    
 }

@@ -29,11 +29,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.group.dal.GroupDAO;
 import org.opensilex.rest.group.dal.GroupModel;
-import org.opensilex.rest.group.dal.GroupUserProfile;
+import org.opensilex.rest.group.dal.GroupUserProfileModel;
 import org.opensilex.rest.profile.dal.ProfileDAO;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.rest.validation.ValidURI;
@@ -50,9 +51,21 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author vidalmor
  */
-@Api("Group")
+@Api(GroupAPI.CREDENTIAL_GROUP_GROUP_ID)
 @Path("/group")
 public class GroupAPI {
+
+    public static final String CREDENTIAL_GROUP_GROUP_ID = "Groups";
+    public static final String CREDENTIAL_GROUP_GROUP_LABEL_KEY = "credential-groups.groups";
+
+    public static final String CREDENTIAL_GROUP_MODIFICATION_ID = "group-modification";
+    public static final String CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY = "credential.group.modification";
+
+    public static final String CREDENTIAL_GROUP_DELETE_ID = "group-delete";
+    public static final String CREDENTIAL_GROUP_DELETE_LABEL_KEY = "credential.group.delete";
+
+    public static final String CREDENTIAL_GROUP_READ_ID = "group-read";
+    public static final String CREDENTIAL_GROUP_READ_LABEL_KEY = "credential.group.read";
 
     /**
      * Inject SPARQL service
@@ -65,7 +78,7 @@ public class GroupAPI {
      */
     @Inject
     private AuthenticationService authentication;
-    
+
     /**
      * Create a group and return it's URI
      *
@@ -81,6 +94,12 @@ public class GroupAPI {
         @ApiResponse(code = 201, message = "Group sucessfully created")
     })
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_GROUP_ID,
+            groupLabelKey = CREDENTIAL_GROUP_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_GROUP_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createGroup(
@@ -93,28 +112,88 @@ public class GroupAPI {
         return new ObjectUriResponse(Response.Status.CREATED, group.getUri()).getResponse();
     }
 
-        
-    public GroupModel getModel(GroupGetDTO dto) throws Exception {
+    @PUT
+    @Path("update")
+    @ApiOperation("Update a group")
+    @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_GROUP_ID,
+            groupLabelKey = CREDENTIAL_GROUP_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_GROUP_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return group uri of the updated group", response = String.class),
+        @ApiResponse(code = 400, message = "Invalid parameters")
+    })
+    public Response updateGroup(
+            @ApiParam("Group description")
+            @Valid GroupUpdateDTO dto
+    ) throws Exception {
+        GroupDAO dao = new GroupDAO(sparql);
+
+        GroupModel model = dao.get(dto.getUri());
+
+        if (model != null) {
+            GroupModel group = getModel(dto);
+            group.setUri(dto.getUri());
+            group = dao.update(group);
+
+            return new ObjectUriResponse(Response.Status.OK, group.getUri()).getResponse();
+        } else {
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Group not found",
+                    "Unknown group URI: " + dto.getUri()
+            ).getResponse();
+        }
+    }
+
+    @DELETE
+    @Path("delete/{uri}")
+    @ApiOperation("Delete a group")
+    @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_GROUP_ID,
+            groupLabelKey = CREDENTIAL_GROUP_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_GROUP_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_GROUP_DELETE_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteGroup(
+            @ApiParam(value = "Group URI", example = "http://example.com/", required = true)
+            @PathParam("uri")
+            @NotNull
+            @ValidURI URI uri
+    ) throws Exception {
+        GroupDAO dao = new GroupDAO(sparql);
+        dao.delete(uri);
+        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+    }
+
+    private GroupModel getModel(GroupCreationDTO dto) throws Exception {
         GroupModel group = new GroupModel();
-        group.setUri(dto.getUri());
         group.setName(dto.getName());
         group.setDescription(dto.getDescription());
-        
+
         UserDAO userDAO = new UserDAO(sparql, authentication);
         ProfileDAO profileDAO = new ProfileDAO(sparql);
-        List<GroupUserProfile> userProfilesModel = new ArrayList<>();
-        for (GroupUserProfileDTO userProfile :  dto.getUserProfiles()) {
-            GroupUserProfile userProfileModel = new GroupUserProfile();
+        List<GroupUserProfileModel> userProfilesModel = new ArrayList<>();
+        for (GroupUserProfileModificationDTO userProfile : dto.getUserProfiles()) {
+            GroupUserProfileModel userProfileModel = new GroupUserProfileModel();
             userProfileModel.setProfile(profileDAO.get(userProfile.getProfileURI()));
             userProfileModel.setUser(userDAO.get(userProfile.getUserURI()));
-            userProfileModel.setUri(userProfile.getUri());
             userProfilesModel.add(userProfileModel);
         };
-        
+
         group.setUserProfiles(userProfilesModel);
 
         return group;
     }
+
     /**
      * Return a group by URI
      *
@@ -124,9 +203,15 @@ public class GroupAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("{uri}")
+    @Path("get/{uri}")
     @ApiOperation("Get a group by it's URI")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_GROUP_ID,
+            groupLabelKey = CREDENTIAL_GROUP_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_GROUP_READ_ID,
+            credentialLabelKey = CREDENTIAL_GROUP_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -174,6 +259,12 @@ public class GroupAPI {
     @Path("search")
     @ApiOperation("Search groups")
     @ApiProtected
+        @ApiCredential(
+            groupId = CREDENTIAL_GROUP_GROUP_ID,
+            groupLabelKey = CREDENTIAL_GROUP_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_GROUP_READ_ID,
+            credentialLabelKey = CREDENTIAL_GROUP_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -213,51 +304,4 @@ public class GroupAPI {
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
-    @PUT
-    @Path("update")
-    @ApiOperation("Update a group")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return group uri of the updated group", response = String.class),
-        @ApiResponse(code = 400, message = "Invalid parameters")
-    })
-    public Response updateGroup(
-            @ApiParam("Group description")
-            @Valid GroupUpdateDTO dto
-    ) throws Exception {
-        GroupDAO dao = new GroupDAO(sparql);
-
-        GroupModel model = dao.get(dto.getUri());
-
-        if (model != null) {
-            GroupModel group = dao.update(getModel(dto));
-
-            return new ObjectUriResponse(Response.Status.OK, group.getUri()).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Group not found",
-                    "Unknown group URI: " + dto.getUri()
-            ).getResponse();
-        }
-    }
-
-    @DELETE
-    @Path("{uri}")
-    @ApiOperation("Delete a group")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteGroup(
-            @ApiParam(value = "Group URI", example = "http://example.com/", required = true)
-            @PathParam("uri")
-            @NotNull
-            @ValidURI URI uri
-    ) throws Exception {
-        GroupDAO dao = new GroupDAO(sparql);
-        dao.delete(uri);
-        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
-    }
 }

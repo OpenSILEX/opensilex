@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.mail.internet.InternetAddress;
@@ -34,6 +35,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import static org.apache.jena.vocabulary.RDF.uri;
+import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
@@ -62,9 +64,21 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author Vincent Migot
  */
-@Api("User")
+@Api(UserAPI.CREDENTIAL_GROUP_USER_ID)
 @Path("/user")
 public class UserAPI {
+
+    public static final String CREDENTIAL_GROUP_USER_ID = "Users";
+    public static final String CREDENTIAL_GROUP_USER_LABEL_KEY = "credential-groups.users";
+
+    public static final String CREDENTIAL_USER_MODIFICATION_ID = "user-modification";
+    public static final String CREDENTIAL_USER_MODIFICATION_LABEL_KEY = "credential.user.modification";
+
+    public static final String CREDENTIAL_USER_DELETE_ID = "user-delete";
+    public static final String CREDENTIAL_USER_DELETE_LABEL_KEY = "credential.user.delete";
+
+    public static final String CREDENTIAL_USER_READ_ID = "user-read";
+    public static final String CREDENTIAL_USER_READ_LABEL_KEY = "credential.user.read";
 
     /**
      * Inject SPARQL service
@@ -90,14 +104,20 @@ public class UserAPI {
     @POST
     @Path("create")
     @ApiOperation("Create a user and return it's URI")
+    @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_USER_ID,
+            groupLabelKey = CREDENTIAL_GROUP_USER_LABEL_KEY,
+            credentialId = CREDENTIAL_USER_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_USER_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses({
         @ApiResponse(code = 201, message = "User sucessfully created"),
         @ApiResponse(code = 403, message = "Current user can't create other users with given parameters"),
         @ApiResponse(code = 409, message = "User already exists (duplicate email)")
     })
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response createUser(
             @ApiParam("User creation informations") @Valid UserCreationDTO userDTO,
             @Context SecurityContext securityContext
@@ -123,7 +143,8 @@ public class UserAPI {
                     userDTO.getFirstName(),
                     userDTO.getLastName(),
                     userDTO.isAdmin(),
-                    userDTO.getPassword()
+                    userDTO.getPassword(),
+                    userDTO.getLang()
             );
             // return user URI
             return new ObjectUriResponse(Response.Status.CREATED, user.getUri()).getResponse();
@@ -146,9 +167,15 @@ public class UserAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("{uri}")
+    @Path("get/{uri}")
     @ApiOperation("Get a user by it's URI")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_USER_ID,
+            groupLabelKey = CREDENTIAL_GROUP_USER_LABEL_KEY,
+            credentialId = CREDENTIAL_USER_READ_ID,
+            credentialLabelKey = CREDENTIAL_USER_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -180,6 +207,57 @@ public class UserAPI {
     }
 
     /**
+     * *
+     * Return a list of users corresponding to the given URIs
+     *
+     * @param uris list of users uri
+     * @return Corresponding list of users
+     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     */
+    @GET
+    @Path("get-list-by-uris")
+    @ApiOperation("Get a list of users by their URIs")
+    @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_USER_ID,
+            groupLabelKey = CREDENTIAL_GROUP_USER_LABEL_KEY,
+            credentialId = CREDENTIAL_USER_READ_ID,
+            credentialLabelKey = CREDENTIAL_USER_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return user", response = UserGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "User not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response getUsersByURI(
+            @ApiParam(value = "Users URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+    ) throws Exception {
+        // Get user list from DAO by URIs
+        UserDAO dao = new UserDAO(sparql, authentication);
+        List<UserModel> models = dao.getList(uris);
+
+        // Check if users are found
+        if (!models.isEmpty()) {
+            // Return user list converted in UserGetDTO
+            List<UserGetDTO> resultDTOList = new ArrayList<>();
+            models.forEach(result -> {
+                resultDTOList.add(UserGetDTO.fromModel(result));
+            });
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Users not found",
+                    "Unknown user URIs"
+            ).getResponse();
+        }
+    }
+
+    /**
      * Search users
      *
      * @see org.opensilex.rest.user.dal.UserDAO
@@ -195,6 +273,12 @@ public class UserAPI {
     @Path("search")
     @ApiOperation("Search users")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_USER_ID,
+            groupLabelKey = CREDENTIAL_GROUP_USER_LABEL_KEY,
+            credentialId = CREDENTIAL_USER_READ_ID,
+            credentialLabelKey = CREDENTIAL_USER_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -230,6 +314,12 @@ public class UserAPI {
     @Path("update")
     @ApiOperation("Update a user")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_USER_ID,
+            groupLabelKey = CREDENTIAL_GROUP_USER_LABEL_KEY,
+            credentialId = CREDENTIAL_USER_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_USER_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -252,7 +342,8 @@ public class UserAPI {
                     dto.getFirstName(),
                     dto.getLastName(),
                     dto.isAdmin(),
-                    dto.getPassword()
+                    dto.getPassword(),
+                    dto.getLang()
             );
 
             return new ObjectUriResponse(Response.Status.OK, user.getUri()).getResponse();
@@ -266,9 +357,15 @@ public class UserAPI {
     }
 
     @DELETE
-    @Path("{uri}")
+    @Path("delete/{uri}")
     @ApiOperation("Delete a user")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_USER_ID,
+            groupLabelKey = CREDENTIAL_GROUP_USER_LABEL_KEY,
+            credentialId = CREDENTIAL_USER_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_USER_DELETE_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteUser(

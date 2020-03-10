@@ -13,9 +13,9 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +35,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.opensilex.OpenSilex;
 import org.reflections.Reflections;
-import org.reflections.Store;
+import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ConfigurationBuilder;
@@ -284,6 +285,7 @@ public class ClassUtils {
         return projectId;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Constructor<T> getConstructorWithParameterImplementing(Class<T> classToInspect, Class<?> constructorParameterSuperClass) {
         for (Constructor<?> constructor : classToInspect.getConstructors()) {
             if (constructor.getParameterCount() == 1) {
@@ -298,29 +300,26 @@ public class ClassUtils {
 
     private static Reflections reflections;
 
+    private static final Set<URL> REFLECTION_URLS = new HashSet<>();
+
+    public static void addURLToScan(URL url) {
+        reflections = null;
+        REFLECTION_URLS.add(url);
+    }
+
     public static Reflections getReflectionInstance() {
         if (reflections == null) {
-            List<URL> urls = new ArrayList<>();
-            if (OpenSilex.getInstance() != null) {
-                OpenSilex.getInstance().getModules().forEach(module -> {
-                    File jar = getJarFile(module.getClass());
-                    try {
-                        URL url = jar.toURI().toURL();
-                        urls.add(url);
-                    } catch (MalformedURLException ex) {
-                        LOGGER.error("Error in jar file", ex);
-                    }
-                });
+            if (!REFLECTION_URLS.isEmpty()) {
                 reflections = new Reflections(
                         ConfigurationBuilder.build("", OpenSilex.getClassLoader())
-                                .setUrls(urls)
-                                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner())
+                                .setUrls(REFLECTION_URLS)
+                                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
                                 .setExpandSuperTypes(false)
                 );
             } else {
                 reflections = new Reflections(
                         ConfigurationBuilder.build("", OpenSilex.getClassLoader())
-                                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner())
+                                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
                                 .setExpandSuperTypes(false)
                 );
             }
@@ -331,6 +330,10 @@ public class ClassUtils {
 
     public static Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> annotation) {
         return getReflectionInstance().getTypesAnnotatedWith(annotation);
+    }
+
+    public static Set<Method> getAnnotatedMethods(Class<? extends Annotation> annotation) {
+        return getReflectionInstance().getMethodsAnnotatedWith(annotation);
     }
 
     public static Map<String, Class<?>> getAnnotatedClassesMap(Class<? extends Annotation> annotation) {

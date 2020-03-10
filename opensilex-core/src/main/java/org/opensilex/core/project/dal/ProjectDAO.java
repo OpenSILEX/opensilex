@@ -34,6 +34,10 @@ public class ProjectDAO {
         sparql.update(instance);
         return instance;
     }
+    
+    public void update(List<ProjectModel> instances) throws Exception {
+        sparql.update(instances);
+    }
 
     public void delete(URI instanceURI) throws Exception {
         sparql.delete(ProjectModel.class, instanceURI);
@@ -43,9 +47,27 @@ public class ProjectDAO {
         return sparql.getByURI(ProjectModel.class, instanceURI);
     }
 
-    public ListWithPagination<ProjectModel> search(List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public ListWithPagination<ProjectModel> search(String uri,
+            String name, String shortname, String description, String startDate, String endDate, String homePage, String objective,
+            List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         SPARQLClassObjectMapper<ProjectModel> mapper = SPARQLClassObjectMapper.getForClass(ProjectModel.class);
 
+        return sparql.searchWithPagination(
+                ProjectModel.class,
+                (SelectBuilder select) -> {
+                    // TODO implements filters
+                },
+                orderByList,
+                page,
+                pageSize
+        );
+    }
+
+    public void create(List<ProjectModel> instances) throws Exception {
+        sparql.create(instances);
+    }
+
+    public ListWithPagination<ProjectModel> search(List<OrderBy> orderByList, int page, int pageSize) throws Exception {
         return sparql.searchWithPagination(
                 ProjectModel.class,
                 (SelectBuilder select) -> {

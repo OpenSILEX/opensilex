@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -208,9 +207,9 @@ public class SPARQLClassQueryBuilder {
             if (field != null) {
                 isReverse = analyzer.isReverseRelation(field);
                 try {
-                    Object newFieldValue = analyzer.getGetterFromField(field).invoke(newInstance);
+                    Object newFieldValue = analyzer.getFieldValue(field, newInstance);
                     ignoreUpdateIfNull = newFieldValue == null && analyzer.getFieldAnnotation(field).ignoreUpdateIfNull();
-                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                } catch (Exception ex) {
                     LOGGER.warn("Unexpected error (should never happend) while reading field: " + field.getName(), ex);
                 }
 
@@ -318,12 +317,12 @@ public class SPARQLClassQueryBuilder {
 
     private void executeOnInstanceTriples(Object instance, BiConsumer<Triple, Field> tripleHandler, boolean ignoreNullFields) throws Exception {
         URI uri = analyzer.getURI(instance);
-        Node uriNode = SPARQLDeserializers.getForClass(URI.class).getNodeFromString(uri.toString());
+        Node uriNode =  SPARQLDeserializers.nodeURI(uri);
 
         tripleHandler.accept(new Triple(uriNode, RDF.type.asNode(), analyzer.getRDFType().asNode()), analyzer.getURIField());
 
         for (Field field : analyzer.getDataPropertyFields()) {
-            Object fieldValue = analyzer.getGetterFromField(field).invoke(instance);
+            Object fieldValue = analyzer.getFieldValue(field, instance);
 
             if (fieldValue == null) {
                 if (!ignoreNullFields && !analyzer.isOptional(field)) {
@@ -338,7 +337,7 @@ public class SPARQLClassQueryBuilder {
         }
 
         for (Field field : analyzer.getObjectPropertyFields()) {
-            Object fieldValue = analyzer.getGetterFromField(field).invoke(instance);
+            Object fieldValue = analyzer.getFieldValue(field, instance);
 
             if (fieldValue == null) {
                 if (!ignoreNullFields && !analyzer.isOptional(field)) {
@@ -358,7 +357,7 @@ public class SPARQLClassQueryBuilder {
         }
 
         for (Field field : analyzer.getDataListPropertyFields()) {
-            List<?> fieldValues = (List<?>) analyzer.getGetterFromField(field).invoke(instance);
+            List<?> fieldValues = (List<?>) analyzer.getFieldValue(field, instance);
 
             if (fieldValues != null) {
                 Property property = analyzer.getDataListPropertyByField(field);
@@ -371,7 +370,7 @@ public class SPARQLClassQueryBuilder {
         }
 
         for (Field field : analyzer.getObjectListPropertyFields()) {
-            List<?> fieldValues = (List<?>) analyzer.getGetterFromField(field).invoke(instance);
+            List<?> fieldValues = (List<?>) analyzer.getFieldValue(field, instance);
 
             if (fieldValues != null) {
                 for (Object listValue : fieldValues) {

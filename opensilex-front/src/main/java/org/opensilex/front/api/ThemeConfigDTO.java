@@ -15,9 +15,9 @@ import org.opensilex.front.theme.ThemeConfig;
  * @author vidalmor
  */
 public class ThemeConfigDTO {
-    
+
     boolean hasStyle;
-    
+
     List<FontConfigDTO> fonts;
 
     public boolean isHasStyle() {
@@ -35,16 +35,17 @@ public class ThemeConfigDTO {
     public void setFonts(List<FontConfigDTO> fonts) {
         this.fonts = fonts;
     }
-    
+
     public static ThemeConfigDTO fromThemeConfig(ThemeConfig config) {
         ThemeConfigDTO dto = new ThemeConfigDTO();
         dto.setHasStyle(config.stylesheets().size() > 0);
-        
+
         List<FontConfigDTO> fonts = new ArrayList<>();
         config.fonts().forEach((FontConfig f) -> {
             fonts.add(FontConfigDTO.fromFontConfig(f));
         });
         dto.setFonts(fonts);
+
         return dto;
     }
 }

@@ -4,7 +4,7 @@ import org.opensilex.sparql.annotations.SPARQLManualLoading;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import test.opensilex.sparql.model.TEST_ONTOLOGY;
+import org.opensilex.sparql.model.TEST_ONTOLOGY;
 
 @SPARQLResource(
     ontology = TEST_ONTOLOGY.class,

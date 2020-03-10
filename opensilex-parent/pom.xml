@@ -27,7 +27,7 @@
 
     <properties>
         <!-- common projects version -->
-        <revision>4.0.0-SNAPSHOT</revision>
+        <revision>BUILD-SNAPSHOT</revision>
         
         <!-- global encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -38,7 +38,12 @@
         <!-- build variation flags -->
         <skipFrontBuild>false</skipFrontBuild>
         <skipFrontAudit>true</skipFrontAudit>
-
+        <skipIntegrationTest>false</skipIntegrationTest>
+        <skipTypeScriptLibBuild>false</skipTypeScriptLibBuild>
+        <skipFrontLibInstall>false</skipFrontLibInstall>
+        <skipFrontTypesGeneration>false</skipFrontTypesGeneration>
+        <ignoreMavenPluginVersion>false</ignoreMavenPluginVersion>
+        
         <!-- Front-end Node & Yarn version -->
         <node.version>v12.13.1</node.version>
         <yarn.version>v1.19.2</yarn.version>
@@ -51,7 +56,7 @@
         
         <!-- dependencies version -->
         <jersey.version>2.30</jersey.version>
-        <tomcat.version>9.0.30</tomcat.version>
+        <tomcat.version>9.0.31</tomcat.version>
         <hibernate.validator.version>6.1.2.Final</hibernate.validator.version>
         <jackson.version>2.10.2</jackson.version>
         <jackson.jaxrs.version>2.10.2.1</jackson.jaxrs.version>
@@ -59,16 +64,16 @@
         <swagger.jersey2.jaxrs.version>1.6.0</swagger.jersey2.jaxrs.version>
         <maven.resolver.version>1.4.1</maven.resolver.version>
         <maven.resolver.provider.version>3.6.3</maven.resolver.provider.version>
-        <rdf4j.version>3.0.4</rdf4j.version>
+        <rdf4j.version>3.1.0</rdf4j.version>
         <jena.query.builder.version>3.14.0</jena.query.builder.version>
         <data.nucleus.version>5.2.2</data.nucleus.version>
         <data.nucleus.api.jdo.version>5.2.3</data.nucleus.api.jdo.version>
         <data.nucleus.jdo.version>3.2.0-m12</data.nucleus.jdo.version>
         <data.nucleus.jta.version>5.10.4.Final</data.nucleus.jta.version>
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
-        <bytebuddy.version>1.10.7</bytebuddy.version>
-        <java.jwt.version>3.9.0</java.jwt.version>
-        <picocli.version>4.1.4</picocli.version>
+        <bytebuddy.version>1.10.8</bytebuddy.version>
+        <java.jwt.version>3.10.0</java.jwt.version>
+        <picocli.version>4.2.0</picocli.version>
         <bcript.version>0.9.0</bcript.version>
         <commons.io.version>2.6</commons.io.version>
         <logback.version>1.2.3</logback.version>
@@ -98,12 +103,14 @@
         <maven.enforcer.plugin.version>3.0.0-M2</maven.enforcer.plugin.version>
         <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
         <maven.surefire.plugin.version>3.0.0-M3</maven.surefire.plugin.version>
+        <maven.failsafe.plugin.version>3.0.0-M4</maven.failsafe.plugin.version>
         <maven.resources.plugin.version>3.1.0</maven.resources.plugin.version>
         <maven.antrun.plugin.version>1.8</maven.antrun.plugin.version>
         <maven.site.plugin.version>3.8.2</maven.site.plugin.version>
         <maven.assembly.plugin.version>3.1.1</maven.assembly.plugin.version>
         <maven.archetype.plugin.version>3.1.2</maven.archetype.plugin.version>
         <maven.dependency.plugin.version>3.1.1</maven.dependency.plugin.version>
+        <maven.shade.plugin.version>3.2.1</maven.shade.plugin.version>
         <versions.maven.plugin.version>2.7</versions.maven.plugin.version>
         <flatten.maven.plugin.version>1.1.0</flatten.maven.plugin.version>
         <properties.maven.plugin.version>1.0.0</properties.maven.plugin.version>
@@ -114,6 +121,10 @@
         <maven.project.info.reports.plugin.version>3.0.0</maven.project.info.reports.plugin.version>
         <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
+        <maven.pmd.plugin.version>3.13.0</maven.pmd.plugin.version>
+        <maven.surefire.report.plugin.version>3.0.0-M3</maven.surefire.report.plugin.version>
+        <maven.jxr.plugin.version>3.0.0</maven.jxr.plugin.version>
+        <spotbugs.maven.plugin.version>3.1.12.2</spotbugs.maven.plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -469,6 +480,10 @@
     <build>
         <!-- define front resources folder -->
         <resources>
+            <!-- Default resources folder -->
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
             <resource>
                 <directory>front</directory>
                 <excludes>
@@ -514,6 +529,10 @@
                     </configuration>
                 </plugin>
                 <plugin>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${maven.failsafe.plugin.version}</version>
+                </plugin>
+                <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>${maven.assembly.plugin.version}</version>
                 </plugin>
@@ -535,10 +554,19 @@
                     <version>${maven.dependency.plugin.version}</version>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${maven.shade.plugin.version}</version>
+                </plugin>
+                <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>versions-maven-plugin</artifactId>
                     <version>${versions.maven.plugin.version}</version>
               
+                    <configuration>
+                        <skip>${ignoreMavenPluginVersion}</skip>
+                    </configuration>
+                    
                     <executions>
                         <execution>
                             <phase>generate-resources</phase>
@@ -568,6 +596,9 @@
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
                     <version>${owasp.dependency.check.maven.plugin.version}</version>
+                    <configuration>
+                        <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                    </configuration>
                 </plugin>
                 <!-- Generate swagger.json file -->
                 <plugin>
@@ -597,7 +628,7 @@
                     <version>${revision}</version>
                     
                     <configuration>
-                        <skip>${skipFrontBuild}</skip>
+                        <skip>${skipTypeScriptLibBuild}</skip>
                     </configuration>
                     
                     <executions>
@@ -630,7 +661,6 @@
                     <version>${frontend.maven.plugin.version}</version>
                         
                     <configuration>
-                        <skip>${skipFrontBuild}</skip>
                         <nodeVersion>${node.version}</nodeVersion>
                         <yarnVersion>${yarn.version}</yarnVersion>
                         <installDirectory>../.node</installDirectory>
@@ -645,6 +675,48 @@
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>${maven.resources.plugin.version}</version>
                 </plugin>
+                
+                <!--mongodb embed testing server--> 
+                <plugin>
+                    <groupId>com.github.joelittlejohn.embedmongo</groupId>
+                    <artifactId>embedmongo-maven-plugin</artifactId>
+                    <version>0.4.2</version>
+                    <executions>
+                        <execution>
+                            <id>start</id>
+                            <phase>pre-integration-test</phase>
+                            <goals>
+                                <goal>start</goal>
+                            </goals>
+                            <configuration>
+                                <port>37017</port>
+                                <bindIp>127.0.0.1</bindIp>
+                                <version>4.0.16</version>
+                                <!--optional, default 2.2.1--> 
+        
+                                <!--<downloadPath>http://internal-mongo-repo/</downloadPath>-->
+                                <!--optional, default is http://fastdl.mongodb.org/--> 
+
+                                <features>ONLY_WITH_SSL, NO_HTTP_INTERFACE_ARG</features>
+                                <storageEngine>wiredTiger</storageEngine>
+                                <!--optional, one of wiredTiger or mmapv1 (default is mmapv1)--> 
+        
+                                <skip>${skipIntegrationTest}</skip>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>stop</id>
+                            <phase>post-integration-test</phase>
+                            <goals>
+                                <goal>stop</goal>
+                            </goals>
+                            <configuration>
+                                <port>37017</port>
+                                <bindIp>127.0.0.1</bindIp>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
         
@@ -657,7 +729,10 @@
                 <configuration>
                     <source>${java.compiler.version}</source>
                     <target>${java.compiler.version}</target>
-                    <compilerArgument>-proc:none</compilerArgument>
+                    <compilerArgs>
+                        <!--<arg>-proc:none</arg>-->
+                        <arg>-Xlint:all</arg>
+                    </compilerArgs>
                     <!-- Add hibernate validation -->
                     <annotationProcessorPaths>
                         <path>
@@ -833,7 +908,7 @@
                             <goal>clean</goal>
                         </goals>
                         <configuration>
-                            <skip>${skipFrontBuild}</skip>
+                            <skip>${skipTypeScriptLibBuild}</skip>
                             <filesets>
                                 <fileset>
                                     <directory>front/src/lib</directory>
@@ -878,12 +953,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>   
-                <version>3.0.0-M3</version>   
+                <version>${maven.surefire.report.plugin.version}</version>
             </plugin>  
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>${maven.jxr.plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -896,6 +971,22 @@
                         </reports>
                     </reportSet>
                 </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>${maven.pmd.plugin.version}</version>
+                <configuration>
+                    <linkXref>true</linkXref>
+                    <sourceEncoding>utf-8</sourceEncoding>
+                    <minimumTokens>100</minimumTokens>
+                    <targetJdk>${java.compiler.version}</targetJdk>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>${spotbugs.maven.plugin.version}</version>
             </plugin>
         </plugins>
     </reporting>
@@ -911,7 +1002,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>${maven.surefire.plugin.version}</version>
                         <configuration>
-                            <argLine>${jaCoCoArgLine} -Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                            <argLine>${surefireArgLine} -Dfile.encoding=${project.build.sourceEncoding}</argLine>
                             <trimStackTrace>false</trimStackTrace>
                             <useFile>false</useFile>
                             <reuseForks>true</reuseForks>
@@ -934,22 +1025,61 @@
                                     <goal>prepare-agent</goal>
                                 </goals>
                                 <configuration>
-                                    <propertyName>jaCoCoArgLine</propertyName>
+                                    <destFile>${project.build.directory}/jacoco-ut.exec</destFile>
+                                    <propertyName>surefireArgLine</propertyName>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>report</id>
-                                <phase>test</phase>
+                                <id>pre-integration-test</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                                <configuration>
+                                    <destFile>${project.build.directory}/jacoco-it.exec</destFile>
+                                    <propertyName>failsafeArgLine</propertyName>
+                                </configuration>
+                            </execution> 
+                            <execution>
+                                <id>merge</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>merge</goal>
+                                </goals>
+                                <configuration>
+                                    <fileSets>
+                                        <fileSet implementation="org.apache.maven.shared.model.fileset.FileSet">
+                                            <directory>${project.build.directory}</directory>
+                                            <includes>
+                                                <include>*.exec</include>
+                                            </includes>
+                                        </fileSet>
+                                    </fileSets>
+                                    <destFile>${project.build.directory}/jacoco.exec</destFile>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>jacoco report</id>
+                                <phase>post-integration-test</phase>
                                 <goals>
                                     <goal>report</goal>
                                 </goals>
+                                <configuration>
+                                    <title>${project.name} - ${project.version}</title>
+                                    <footer>Code Coverage Report for ${project.name} - ${project.version}</footer>
+                                    <dataFile>${project.build.directory}/jacoco.exec</dataFile>
+                                    <includes>
+                                        <!--Analyze class files only to exclude shaded agent JAR from report--> 
+                                        <include>**/*.class</include>
+                                    </includes>
+                                </configuration>                                
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
         </profile>
-        <!-- Build Vue app if present -->
+        <!-- Build Vue app if present -->    
         <profile>
             <id>with-vue-app</id>
             <activation>
@@ -973,24 +1103,24 @@
                                 </goals>
 
                                 <configuration>
+                                    <skip>${skipFrontLibInstall}</skip>
                                     <arguments>--network-timeout 1000000 install</arguments>
                                 </configuration>
                             </execution>
-                            
                             <!-- Build typescript definition for auto-generated webservice access service library -->
                             <execution>
-                                <id>build typescript definition</id>
+                                <id>build-typescript-definition</id>
                                 <phase>process-classes</phase>
                                 <goals>
                                     <goal>yarn</goal>
                                 </goals>
 
                                 <configuration>
+                                    <skip>${skipFrontTypesGeneration}</skip>
                                     <arguments>run build:types</arguments>
                                     <workingDirectory>front/src/lib</workingDirectory>
                                 </configuration>
                             </execution>
-                            
                             <!-- Build Vue.js project -->
                             <execution>
                                 <id>build Vue application</id>
@@ -1000,6 +1130,7 @@
                                 </goals>
 
                                 <configuration>
+                                    <skip>${skipFrontBuild}</skip>
                                     <arguments>run build</arguments>
                                 </configuration>
                             </execution>
@@ -1028,7 +1159,7 @@
 
                                 <configuration>
                                     <skip>${skipFrontAudit}</skip>
-                                    <arguments>audit</arguments>
+                                    <arguments>run check:security</arguments>
                                 </configuration>
                             </execution>
                             
@@ -1042,7 +1173,7 @@
                             <!-- Copy Vue.js compiled application into generated Jar file -->
                             <execution>
                                 <id>Copy Vue application dist files</id>
-                                <phase>process-classes</phase>
+                                <phase>prepare-package</phase>
                                 <goals>
                                     <goal>copy-resources</goal>
                                 </goals>
@@ -1124,6 +1255,9 @@
         <!-- Profile which enable OWASP security check for libraries, could be VERY slow -->
         <profile>
             <id>with-security-check</id>
+            <properties>
+                <skipFrontAudit>false</skipFrontAudit>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -1140,6 +1274,21 @@
                     </plugin>
                 </plugins>
             </build>
+            <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <reportSets>
+                            <reportSet>
+                                <reports>
+                                    <report>check</report>
+                                </reports>
+                            </reportSet>
+                        </reportSets>
+                    </plugin>
+                </plugins>
+            </reporting>
         </profile>
         
         <!-- Profile to enable in eclipse to avoid build errors -->
@@ -1180,6 +1329,17 @@
                     </plugins>
                 </pluginManagement>
             </build>
+        </profile>
+        
+        <profile>
+            <id>for-module</id>
+            <properties>
+                <skipFrontBuild>true</skipFrontBuild>
+                <skipFrontAudit>true</skipFrontAudit>
+                <skipIntegrationTest>true</skipIntegrationTest>
+                <ignoreMavenPluginVersion>true</ignoreMavenPluginVersion>
+                <skipTests>true</skipTests>
+            </properties>
         </profile>
     </profiles>
 </project>

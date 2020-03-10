@@ -18,10 +18,24 @@ big-data:
 
 front:
     theme: inrae-sixtine#sixtine
+    homeComponent: inrae-sixtine-SixtineHomeComponent
     loginComponent: inrae-sixtine-SixtineLoginComponent
     footerComponent: inrae-sixtine-SixtineFooterComponent
     menuComponent: inrae-sixtine-SixtineMenuComponent
     headerComponent: inrae-sixtine-SixtineHeaderComponent
+    menuExclusions:
+        - factors
+        - radiometricTargets
+        - vectors
+        - actuators
+        - sensors
+        - equipments
+        - scientificObjects
+        - projects
+        - installations
+        - experiments
+        - data
+        - dashboard
     
 phisws:
     postgreSQL:

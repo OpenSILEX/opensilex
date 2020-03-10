@@ -29,7 +29,7 @@ import org.opensilex.rest.validation.ValidURI;
  * }
  * </pre>
  *
- * @see org.opensilex.rest.profile.api.ProfileAPI#createProfile(org.opensilex.rest.profile.api.ProfileCreationDTO, javax.ws.rs.core.SecurityContext) 
+ * @see org.opensilex.rest.profile.api.ProfileAPI#createProfile(org.opensilex.rest.profile.api.ProfileCreationDTO) 
  * @author Vincent Migot
  */
 @ApiModel

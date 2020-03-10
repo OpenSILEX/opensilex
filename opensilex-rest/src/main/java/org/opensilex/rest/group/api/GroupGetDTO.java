@@ -11,7 +11,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.rest.group.dal.GroupModel;
-import org.opensilex.rest.group.dal.GroupUserProfile;
+import org.opensilex.rest.group.dal.GroupUserProfileModel;
 import org.opensilex.rest.profile.dal.ProfileModel;
 import org.opensilex.rest.user.dal.UserModel;
 
@@ -22,9 +22,6 @@ import org.opensilex.rest.user.dal.UserModel;
 @ApiModel
 public class GroupGetDTO {
 
-    /**
-     * Group URI
-     */
     protected URI uri;
     
     protected String name;

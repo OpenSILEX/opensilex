@@ -11,8 +11,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Extension;
-import io.swagger.annotations.ExtensionProperty;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -138,18 +136,8 @@ public class SecurityAPI {
      */
     @PUT
     @Path("renew-token")
-    @ApiProtected(noCredential=true)
-    @ApiOperation(
-            value = "Send back a new token if the provided one is still valid",
-            extensions = @Extension(
-                    name = ApiProtected.OPENSILEX_CREDENTIAL_EXTENSION,
-                    properties = {
-                        @ExtensionProperty(
-                                name = ApiProtected.OPENSILEX_NO_CREDENTIAL_REQUIRED_PROPERTY,
-                                value = ApiProtected.OPENSILEX_NO_CREDENTIAL_REQUIRED_PROPERTY_VALUE
-                        )
-                    }
-            ))
+    @ApiOperation("Send back a new token if the provided one is still valid")
+    @ApiProtected
     @ApiResponses({
         @ApiResponse(code = 200, message = "Token sucessfully renewed", response = TokenGetDTO.class)
     })
@@ -175,20 +163,10 @@ public class SecurityAPI {
      */
     @DELETE
     @Path("logout")
+    @ApiOperation("Logout by discarding a user token")
     @ApiProtected
-    @ApiOperation(
-            value = "Logout by discarding a user token",
-            extensions = @Extension(
-                    name = ApiProtected.OPENSILEX_CREDENTIAL_EXTENSION,
-                    properties = {
-                        @ExtensionProperty(
-                                name = ApiProtected.OPENSILEX_NO_CREDENTIAL_REQUIRED_PROPERTY,
-                                value = ApiProtected.OPENSILEX_NO_CREDENTIAL_REQUIRED_PROPERTY_VALUE
-                        )
-                    }
-            ))
     @ApiResponses({
-    @ApiResponse(code = 200, message = "User sucessfully logout")})
+        @ApiResponse(code = 200, message = "User sucessfully logout")})
     public Response logout(
             @Context SecurityContext securityContext
     ) {
@@ -230,6 +208,7 @@ public class SecurityAPI {
         if (credentialsGroupList == null) {
             SecurityAccessDAO securityDAO = new SecurityAccessDAO(sparql);
             credentialsGroupList = new ArrayList<>();
+            Map<String, String> groupLabels = securityDAO.getCredentialsGroupLabels();
             securityDAO.getCredentialsGroups().forEach((String groupId, Map<String, String> credentialMap) -> {
                 CredentialsGroupDTO credentialsGroup = new CredentialsGroupDTO();
                 credentialsGroup.setGroupId(groupId);
@@ -240,6 +219,7 @@ public class SecurityAPI {
                     credential.setLabel(label);
                     credentials.add(credential);
                 });
+                credentialsGroup.setGroupKeyLabel(groupLabels.get(groupId));
                 credentialsGroup.setCredentials(credentials);
                 credentialsGroupList.add(credentialsGroup);
             });

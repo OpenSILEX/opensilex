@@ -40,9 +40,4 @@ public @interface ApiProtected {
     public final static String HEADER_NAME = "Authorization";
     public final static String TOKEN_PARAMETER_PREFIX = "Bearer ";
     
-    public final static String OPENSILEX_CREDENTIAL_EXTENSION = "x-opensilex-credential";
-    public final static String OPENSILEX_NO_CREDENTIAL_REQUIRED_PROPERTY = "no-credential-required";
-    public final static String OPENSILEX_NO_CREDENTIAL_REQUIRED_PROPERTY_VALUE = "true";
-    
-    boolean noCredential() default false;
 }

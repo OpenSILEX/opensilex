@@ -1,16 +1,18 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                          ExperimentDAO.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: vincent.migot@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
+
 package org.opensilex.core.experiment.dal;
 
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.expr.Expr;
-import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -38,47 +40,41 @@ public class ExperimentDAO {
     }
 
     public ExperimentModel create(ExperimentModel instance) throws Exception {
+        checkURIs(instance);
         sparql.create(instance);
         return instance;
     }
 
-    public List<ExperimentModel> createAll(List<ExperimentModel> instances) throws Exception {
-        sparql.create(instances);
-        return instances;
-    }
-
-    public ExperimentModel update(ExperimentModel xp) throws Exception {
-        sparql.update(xp);
-        return xp;
+    public ExperimentModel update(ExperimentModel instance) throws Exception {
+        checkURIs(instance);
+        sparql.update(instance);
+        return instance;
     }
 
     /**
-     * Update the given experiment in the TripleStore
-     *
-     * @param xpUri        the experiment to update URI
-     * @param variableUris list of {@link VariableModel} URI
-     * @return the updated experiment
+     * Check that all URI(s) which refers to a non {@link org.opensilex.sparql.annotations.SPARQLResource}-compliant model exists.
+     * @param model the experiment for which we check if all URI(s) exists
+     * @throws SPARQLException
+     * @throws IllegalArgumentException if the given model contains a unknown URI
      */
-    public ExperimentModel updateWithVariableList(URI xpUri, List<URI> variableUris) throws Exception {
-        return get(xpUri);
-    }
+    protected void checkURIs(ExperimentModel model) throws SPARQLException, IllegalArgumentException {
 
-    /**
-     * Update the given experiment in the TripleStore
-     *
-     * @param xpUri       the experiment to update URI
-     * @param sensorsUris list of sensor URI
-     * @return the updated experiment
-     */
-    public ExperimentModel updateWithSensorList(URI xpUri, List<URI> sensorsUris) throws Exception {
-        return get(xpUri);
+        if(model.getSpecies() != null && ! sparql.uriExists(model.getSpecies())){
+            throw new IllegalArgumentException("Trying to insert an experiment with an unknown species : "+model.getSpecies());
+        }
+        for(URI infraUri : model.getInfrastructures()){
+            if(! sparql.uriExists(infraUri)){
+                throw new IllegalArgumentException("Trying to insert an experiment with an unknown infrastructure : "+infraUri);
+            }
+        }
+
     }
 
     public void delete(URI xpUri) throws Exception {
         sparql.delete(ExperimentModel.class, xpUri);
     }
 
-    public void deleteAll(List<URI> xpUris) throws Exception {
+    public void delete(List<URI> xpUris) throws Exception {
         sparql.delete(ExperimentModel.class, xpUris);
     }
 
@@ -87,9 +83,10 @@ public class ExperimentDAO {
     }
 
     /**
-     * @param searchDTO
-     * @return
+     * @param searchDTO a search DTO which contains all attributes about an {@link ExperimentModel} search
+     * @return the list of {@link Expr} extracted from the given searchDTO.
      * @throws Exception
+     * @see SPARQLQueryHelper the utility class used to build Expr
      */
     protected List<Expr> extractFilters(ExperimentSearchDTO searchDTO) throws Exception {
 
@@ -104,6 +101,12 @@ public class ExperimentDAO {
         }
         if (searchDTO.getCampaign() != null) {
             exprList.add(SPARQLQueryHelper.eq(ExperimentModel.CAMPAIGN_SPARQL_FIELD, searchDTO.getCampaign()));
+        }
+        if(searchDTO.getSpecies() != null){
+            exprList.add(SPARQLQueryHelper.eq(ExperimentModel.SPECIES_SPARQL_FIELD, searchDTO.getSpecies()));
+        }
+        if(searchDTO.getIsPublic() != null){
+            exprList.add(SPARQLQueryHelper.eq(ExperimentModel.IS_PUBLIC_SPARQL_VAR, searchDTO.getIsPublic()));
         }
 
         // build regex based filter
@@ -131,21 +134,28 @@ public class ExperimentDAO {
             }
         }
 
-        // get an Expr build according startDate and endDate
-        Expr dateExpr = SPARQLQueryHelper.dateRange(
-            ExperimentModel.START_DATE_SPARQL_VAR, searchDTO.getStartDate(),
-            ExperimentModel.END_DATE_SPARQL_VAR, searchDTO.getEndDate()
-        );
-        if (dateExpr != null) {
-            exprList.add(dateExpr);
+        if (searchDTO.getStartDate() != null) {
+            exprList.add(SPARQLQueryHelper.eq(ExperimentModel.START_DATE_SPARQL_VAR, LocalDate.parse(searchDTO.getStartDate())));
         }
+        if (searchDTO.getEndDate() != null) {
+            exprList.add(SPARQLQueryHelper.eq(ExperimentModel.END_DATE_SPARQL_VAR,  LocalDate.parse(searchDTO.getEndDate())));
+        }
+
+        // get an Expr build according startDate and endDate
+//        LocalDate startDate = searchDTO.getStartDate() != null ? LocalDate.parse(searchDTO.getStartDate()) : null;
+//        LocalDate endDate = searchDTO.getEndDate() != null ? LocalDate.parse(searchDTO.getEndDate()) : null;
+//
+//        Expr dateExpr = SPARQLQueryHelper.dateRange(ExperimentModel.START_DATE_SPARQL_VAR, startDate, ExperimentModel.END_DATE_SPARQL_VAR, endDate);
+//        if (dateExpr != null) {
+//            exprList.add(dateExpr);
+//        }
 
         return exprList;
     }
 
     /**
-     * @param searchDTO
-     * @return for each attribute variable name, the list of values to put in the VALUES set
+     * @param searchDTO a search DTO which contains all attributes about an {@link ExperimentModel} search
+     * @return a {@link Map} between SPARQL variable name and the list of values for this variable.
      */
     protected Map<String, List<?>> getValuesByVarName(ExperimentSearchDTO searchDTO) {
 
@@ -161,9 +171,6 @@ public class ExperimentDAO {
         if (!searchDTO.getProjects().isEmpty()) {
             valuesByVar.put(ExperimentModel.PROJECT_URI_SPARQL_VAR, searchDTO.getProjects());
         }
-        if(!searchDTO.getSpecies().isEmpty()){
-            valuesByVar.put(ExperimentModel.SPECIES_SPARQL_FIELD,searchDTO.getSpecies());
-        }
         if (!searchDTO.getScientificSupervisors().isEmpty()) {
             valuesByVar.put(ExperimentModel.SCIENTIFIC_SUPERVISOR_SPARQL_VAR, searchDTO.getScientificSupervisors());
         }
@@ -173,11 +180,23 @@ public class ExperimentDAO {
         if (!searchDTO.getGroups().isEmpty()) {
             valuesByVar.put(ExperimentModel.GROUP_SPARQL_VAR, searchDTO.getGroups());
         }
+        if(! searchDTO.getVariables().isEmpty()){
+            valuesByVar.put(ExperimentModel.VARIABLES_SPARQL_VAR, searchDTO.getVariables());
+        }
+        if(! searchDTO.getSensors().isEmpty()){
+            valuesByVar.put(ExperimentModel.SENSORS_SPARQL_VAR, searchDTO.getSensors());
+        }
+        if(! searchDTO.getInfrastructures().isEmpty()){
+            valuesByVar.put(ExperimentModel.INFRASTRUCTURE_SPARQL_VAR, searchDTO.getInfrastructures());
+        }
+        if(! searchDTO.getInstallations().isEmpty()){
+            valuesByVar.put(ExperimentModel.DISPOSITIVES_SPARQL_VAR, searchDTO.getInstallations());
+        }
         return valuesByVar;
     }
 
     /**
-     * @param searchDTO   DTO which contains a subset of attribute values for an {@link ExperimentModel}
+     * @param searchDTO a search DTO which contains all attributes about an {@link ExperimentModel} search
      * @param orderByList an OrderBy List
      * @param page        the current page
      * @param pageSize    the page size

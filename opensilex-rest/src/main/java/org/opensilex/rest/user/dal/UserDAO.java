@@ -13,6 +13,7 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.rest.authentication.AuthenticationService;
+import org.opensilex.rest.group.dal.GroupUserProfileModel;
 import org.opensilex.rest.profile.dal.ProfileDAO;
 import org.opensilex.rest.profile.dal.ProfileModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -46,7 +47,8 @@ public class UserDAO {
             String firstName,
             String lastName,
             boolean admin,
-            String password
+            String password,
+            String lang
     ) throws Exception {
         UserModel user = new UserModel();
         user.setUri(uri);
@@ -54,6 +56,7 @@ public class UserDAO {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setAdmin(admin);
+        user.setLang(lang);
 
         if (password != null) {
             user.setPasswordHash(authentication.getPasswordHash(password));
@@ -103,8 +106,22 @@ public class UserDAO {
         return sparql.getByURI(UserModel.class, uri);
     }
 
+    public List<UserModel> getList(List<URI> uri) throws Exception {
+        return sparql.getListByURIs(UserModel.class, uri);
+    }
+
     public void delete(URI instanceURI) throws Exception {
-        sparql.delete(UserModel.class, instanceURI);
+        try {
+            sparql.startTransaction();
+            // Delete existing user profile group relations
+            sparql.deleteByObjectRelation(GroupUserProfileModel.class, GroupUserProfileModel.USER_FIELD, instanceURI);
+            // Delete user
+            sparql.delete(UserModel.class, instanceURI);
+            sparql.commitTransaction();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction();
+            throw ex;
+        }
     }
 
     public UserModel update(
@@ -112,7 +129,9 @@ public class UserDAO {
             InternetAddress email,
             String firstName,
             String lastName,
-            boolean admin, String password
+            boolean admin, 
+            String password,
+            String lang
     ) throws Exception {
         UserModel user = new UserModel();
         user.setUri(uri);
@@ -120,13 +139,14 @@ public class UserDAO {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setAdmin(admin);
-
+        user.setLang(lang);
+        
         if (password != null) {
             user.setPasswordHash(authentication.getPasswordHash(password));
         }
 
         sparql.update(user);
-        
+
         return user;
     }
 

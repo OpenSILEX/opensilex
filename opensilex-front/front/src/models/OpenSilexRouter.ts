@@ -46,7 +46,6 @@ export class OpenSilexRouter {
 
         let $opensilex: OpenSilexVuePlugin = Vue["$opensilex"];
         let frontConfig = this.frontConfig;
-
         if (frontConfig != undefined) {
             routes.push({
                 path: "/",
@@ -56,7 +55,7 @@ export class OpenSilexRouter {
             for (let i in frontConfig.routes) {
                 let route = frontConfig.routes[i];
 
-                if (user.hasCredentials(route.credentials)) {
+                if (user.hasAllCredentials(route.credentials)) {
                     routes.push({
                         path: route.path,
                         component: this.getAsyncComponentLoader($opensilex, route.component)
@@ -114,7 +113,7 @@ export class OpenSilexRouter {
 
             if (item.route) {
                 let route = item.route;
-                if (user.hasCredentials(route.credentials)) {
+                if (user.hasAllCredentials(route.credentials)) {
                     hasRouteAccess = true;
                     menu.push(item);
                     routes.push({

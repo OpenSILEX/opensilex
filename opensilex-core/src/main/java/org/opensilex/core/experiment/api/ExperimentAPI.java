@@ -1,8 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                          ExperimentAPI.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: vincent.migot@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
+
 package org.opensilex.core.experiment.api;
 
 import io.swagger.annotations.*;
@@ -10,10 +12,11 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
 import org.opensilex.rest.authentication.ApiProtected;
-import org.opensilex.rest.validation.ValidURI;
 import org.opensilex.rest.validation.date.DateConstraint;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
@@ -26,153 +29,148 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.opensilex.rest.authentication.ApiCredential;
 
 /**
  * @author Vincent MIGOT
  * @author Renaud COLIN
  */
-@Api("Experiments")
+@Api(ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_ID)
 @Path("/core/experiment")
 public class ExperimentAPI {
+
+    public static final String CREDENTIAL_EXPERIMENT_GROUP_ID = "Experiments";
+    public static final String CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY = "credential-groups.experiments";
+
+    public static final String CREDENTIAL_EXPERIMENT_MODIFICATION_ID = "experiment-modification";
+    public static final String CREDENTIAL_EXPERIMENT_MODIFICATION_LABEL_KEY = "credential.experiment.modification";
+
+    public static final String CREDENTIAL_EXPERIMENT_READ_ID = "experiment-read";
+    public static final String CREDENTIAL_EXPERIMENT_READ_LABEL_KEY = "credential.experiment.read";
+
+    public static final String CREDENTIAL_EXPERIMENT_DELETE_ID = "experiment-delete";
+    public static final String CREDENTIAL_EXPERIMENT_DELETE_LABEL_KEY = "credential.experiment.delete";
+
+    protected static final String EXPERIMENT_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
 
     @Inject
     private SPARQLService sparql;
 
+    /**
+     * Create an Experiment
+     *
+     * @param xpDto the Experiment to create
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing
+     * the created Experiment {@link URI}
+     */
     @POST
+    @Path("create")
     @ApiOperation("Create an experiment")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
+            groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_EXPERIMENT_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response create(
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Create an experiment", response = ObjectUriResponse.class),
+        @ApiResponse(code = 409, message = "An experiment with the same URI already exists", response = ErrorResponse.class),
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+
+    public Response createExperiment(
             @ApiParam("Experiment description") @Valid ExperimentCreationDTO xpDto
     ) {
-        ExperimentDAO dao = new ExperimentDAO(sparql);
         try {
+            ExperimentDAO dao = new ExperimentDAO(sparql);
             ExperimentModel createdXp = dao.create(xpDto.newModel());
             return new ObjectUriResponse(Response.Status.CREATED, createdXp.getUri()).getResponse();
 
-        } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-            return new ErrorResponse(
-                    Response.Status.CONFLICT,
-                    "Experiment already exists",
-                    duplicateUriException.getMessage()
-            ).getResponse();
+        } catch (SPARQLAlreadyExistingUriException e) {
+            return new ErrorResponse(Response.Status.CONFLICT, "Experiment already exists", e.getMessage()).getResponse();
         } catch (Exception e) {
             return new ErrorResponse(e).getResponse();
         }
     }
 
-    @POST
-    @Path("experiments")
-    @ApiOperation("Create a list of experiment")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response createAll(
-            @ApiParam("Experiment description") @Valid List<ExperimentCreationDTO> xpDtoList
-    ) {
-        try {
-            ExperimentDAO dao = new ExperimentDAO(sparql);
-
-            List<URI> uris = new ArrayList<>(xpDtoList.size());
-            for (ExperimentCreationDTO xpDto : xpDtoList) {
-                URI xpUri = dao.create(xpDto.newModel()).getUri();
-                uris.add(xpUri);
-            }
-            return new PaginatedListResponse<>(uris).setStatus(Response.Status.CREATED).getResponse();
-
-        } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-            return new ErrorResponse(
-                    Response.Status.CONFLICT,
-                    "Experiment already exists",
-                    duplicateUriException.getMessage()
-            ).getResponse();
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
-        }
-    }
-
-
+    /**
+     * @param xpDto the Experiment to update
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing
+     * the updated Experiment {@link URI}
+     */
     @PUT
+    @Path("update")
     @ApiOperation("Update an experiment")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
+            groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_EXPERIMENT_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response update(
-            @ApiParam("Experiment description") @Valid ExperimentCreationDTO dto
+
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Experiment updated", response = ObjectUriResponse.class),
+        @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+    public Response updateExperiment(
+            @ApiParam("Experiment description") @Valid ExperimentCreationDTO xpDto
     ) {
         try {
             ExperimentDAO dao = new ExperimentDAO(sparql);
-            ExperimentModel model = dto.newModel();
+
+            ExperimentModel model = xpDto.newModel();
             dao.update(model);
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
+
+        } catch (SPARQLInvalidURIException e) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Experiment URI", e.getMessage()).getResponse();
         } catch (Exception e) {
             return new ErrorResponse(e).getResponse();
         }
     }
 
-
-//    @PUT
-//    @Path("{uri}/variables")
-//    @ApiOperation("Update an experiment with a list of variables")
-//    @ApiProtected
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response updateWithVariableList(
-//            @ApiParam("Experiment URI") @PathParam("uri") @NotNull @ValidURI URI uri,
-//            @ApiParam("Variables URI list") @URL List<URI> variableUris
-//    ) {
-//        try {
-//            ExperimentDAO dao = new ExperimentDAO(sparql);
-//            dao.updateWithVariableList(uri, variableUris);
-//            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
-//        } catch (Exception e) {
-//            return new ErrorResponse(e).getResponse();
-//        }
-//    }
-
-//    @PUT
-//    @Path("{uri}/sensors")
-//    @ApiOperation("Update an experiment with a list of sensors")
-//    @ApiProtected
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response updateWithSensorsList(
-//            @ApiParam("Experiment URI") @PathParam("uri") @NotNull @ValidURI URI uri,
-//            @ApiParam("Sensors URI list") @URL List<URI> sensorsUris
-//    ) {
-//        try {
-//            ExperimentDAO dao = new ExperimentDAO(sparql);
-//            dao.updateWithSensorList(uri, sensorsUris);
-//            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
-//        } catch (Exception e) {
-//            return new ErrorResponse(e).getResponse();
-//        }
-//    }
-
+    /**
+     * @param xpUri the Experiment URI
+     * @return a {@link Response} with a {@link SingleObjectResponse} containing
+     * the {@link ExperimentGetDTO}
+     */
     @GET
-    @Path("{uri}")
+    @Path("get/{uri}")
     @ApiOperation("Get an experiment by URI")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
+            groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_EXPERIMENT_READ_ID,
+            credentialLabelKey = CREDENTIAL_EXPERIMENT_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get(
-            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Experiment retrieved", response = ExperimentGetDTO.class),
+        @ApiResponse(code = 404, message = "Experiment not found", response = ErrorResponse.class),
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+    public Response getExperiment(
+            @ApiParam(value = "Experiment URI", example = "http://opensilex.dev/set/experiments/ZA17", required = true) @PathParam("uri") @NotNull URI xpUri
     ) {
         try {
             ExperimentDAO dao = new ExperimentDAO(sparql);
-            ExperimentModel model = dao.get(uri);
+            ExperimentModel model = dao.get(xpUri);
 
             if (model != null) {
                 return new SingleObjectResponse<>(ExperimentGetDTO.fromModel(model)).getResponse();
             } else {
                 return new ErrorResponse(
-                        Response.Status.NOT_FOUND,
-                        "Experiment not found",
-                        "Unknown Experiment URI: " + uri.toString()
+                        Response.Status.NOT_FOUND, "Experiment not found",
+                        "Unknown Experiment URI: " + xpUri.toString()
                 ).getResponse();
             }
         } catch (Exception e) {
@@ -190,42 +188,68 @@ public class ExperimentAPI {
     @Path("search")
     @ApiOperation("Search Experiments")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
+            groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_EXPERIMENT_READ_ID,
+            credentialLabelKey = CREDENTIAL_EXPERIMENT_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return Experiment list", response = ExperimentGetDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 204, message = "No experiment found", response = ExperimentGetDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+        @ApiResponse(code = 200, message = "Return Experiment list", response = ExperimentGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 204, message = "No experiment found", response = ErrorResponse.class),
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     public Response searchExperiments(
-            @ApiParam(value = "Search by uri") @QueryParam("uri") URI uri,
+            @ApiParam(value = "Search by uri", example = EXPERIMENT_EXAMPLE_URI) @QueryParam("uri") URI uri,
             @ApiParam(value = "Search by start date", example = "2017-06-15") @QueryParam("startDate") @DateConstraint String startDate,
             @ApiParam(value = "Search by end date", example = "2017-06-15") @QueryParam("endDate") @DateConstraint String endDate,
-            @ApiParam(value = "Search by campaign") @QueryParam("campaign") Integer campaign,
-            @ApiParam(value = "Search by label") @QueryParam("label") String label,
+            @ApiParam(value = "Search by campaign", example = "2019") @QueryParam("campaign") Integer campaign,
+            @ApiParam(value = "Search by label", example = "ZA17") @QueryParam("label") String label,
             @ApiParam(value = "Search by keywords") @QueryParam("keywords") List<String> keywords,
-            @ApiParam(value = "Search by related project uri") @QueryParam("projects") List<URI> projects,
-            @ApiParam(value = "Search by involved species") @QueryParam("species") List<URI> species,
-
-            @ApiParam(value = "search ended(false) or active projects(true") @QueryParam("isArchived") Boolean isEnded,
-
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "alias=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
+            @ApiParam(value = "Search by involved species") @QueryParam("species") URI species,
+            @ApiParam(value = "Search by related project uri") @QueryParam("project") List<URI> projects,
+            @ApiParam(value = "Search by scientific(s) supervisor(s)") @QueryParam("scientific_supervisors") List<URI> scientificSupervisors,
+            @ApiParam(value = "Search by technical(s) supervisor(s)") @QueryParam("technical_supervisors") List<URI> technicalSupervisors,
+            @ApiParam(value = "Search by infrastructure(s)") @QueryParam("infrastructures") List<URI> infrastructures,
+            @ApiParam(value = "Search by devices(s)") @QueryParam("devices") List<URI> installations,
+            @ApiParam(value = "Search by groups(s)") @QueryParam("groups") List<URI> groups,
+            @ApiParam(value = "Search by sensor(s)") @QueryParam("sensors") List<URI> sensors,
+            @ApiParam(value = "Search by involved variable(s)") @QueryParam("variables") List<URI> variables,
+            @ApiParam(value = "search private(false) or public projects(true)", example = "true") @QueryParam("isPublic") Boolean isPublic,
+            @ApiParam(value = "search ended(false) or active projects(true)", example = "true") @QueryParam("isEnded") Boolean isEnded,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "label=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) {
 
         try {
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
-            ExperimentSearchDTO searchDTO = new ExperimentSearchDTO().setEnded(isEnded);
 
+            // set searchDTO specifics attributes
+            ExperimentSearchDTO searchDTO = new ExperimentSearchDTO()
+                    .setEnded(isEnded);
+
+            // set general experiment DTO attributes
             searchDTO.setUri(uri)
                     .setCampaign(campaign)
                     .setLabel(label)
-                    .setKeywords(keywords)
-                    .setProjects(projects)
                     .setSpecies(species)
-                    .setStartDate(startDate != null ? LocalDate.parse(startDate) : null)
-                    .setEndDate(endDate != null ? LocalDate.parse(endDate) : null);
+                    .setStartDate(startDate)
+                    .setEndDate(endDate)
+                    .setIsPublic(isPublic);
+
+            // set list based DTO attributes
+            searchDTO.setTechnicalSupervisors(technicalSupervisors)
+                    .setScientificSupervisors(scientificSupervisors)
+                    .setProjects(projects)
+                    .setGroups(groups)
+                    .setVariables(variables)
+                    .setSensors(sensors)
+                    .setKeywords(keywords)
+                    .setInfrastructures(infrastructures)
+                    .setInstallations(installations);
 
             ListWithPagination<ExperimentModel> resultList = xpDao.search(searchDTO, orderByList, page, pageSize);
             if (resultList.getList().isEmpty()) {
@@ -244,25 +268,37 @@ public class ExperimentAPI {
     /**
      * Remove an experiment
      *
-     * @param uri the experiment URI
-     * @return the URI of the deleted experiment
+     * @param xpUri the experiment URI
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing
+     * the deleted Experiment {@link URI}
      */
     @DELETE
-    @Path("{uri}")
+    @Path("delete/{uri}")
     @ApiOperation("Delete an experiment")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
+            groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_EXPERIMENT_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_EXPERIMENT_DELETE_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response delete(
-            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Experiment deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+    public Response deleteExperiment(
+            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) {
         try {
             ExperimentDAO dao = new ExperimentDAO(sparql);
-            dao.delete(uri);
-            return new ObjectUriResponse(uri).getResponse();
+            dao.delete(xpUri);
+            return new ObjectUriResponse(xpUri).getResponse();
 
-//        } catch (SPARQLUnknownUriException e) {
-//            return new ErrorResponse(Response.Status.BAD_REQUEST, "", e.getMessage()).getResponse();
+        } catch (SPARQLInvalidURIException e) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Experiment URI", e.getMessage()).getResponse();
         } catch (Exception e) {
             return new ErrorResponse(e).getResponse();
         }

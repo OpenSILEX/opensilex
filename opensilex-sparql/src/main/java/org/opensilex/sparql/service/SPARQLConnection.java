@@ -14,6 +14,7 @@ import org.apache.jena.arq.querybuilder.DescribeBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.opensilex.service.ServiceConnection;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.exceptions.SPARQLTransactionException;
 import org.opensilex.sparql.service.SPARQLResult;
@@ -44,6 +45,8 @@ public interface SPARQLConnection extends ServiceConnection {
     public void executeDeleteQuery(UpdateBuilder update) throws SPARQLQueryException;
 
     public void clearGraph(URI graph) throws SPARQLQueryException;
+
+    void renameGraph(URI oldGraphURI, URI newGraphURI) throws SPARQLException;
 
     public void clear() throws SPARQLQueryException;
 

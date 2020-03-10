@@ -26,6 +26,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -36,9 +37,21 @@ import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
-@Api("Variables")
+@Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
 @Path("/core/variable")
 public class VariableAPI {
+
+    public static final String CREDENTIAL_VARIABLE_GROUP_ID = "Variables";
+    public static final String CREDENTIAL_VARIABLE_GROUP_LABEL_KEY = "credential-groups.variables";
+
+    public static final String CREDENTIAL_VARIABLE_MODIFICATION_ID = "variable-modification";
+    public static final String CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY = "credential.variable.modification";
+
+    public static final String CREDENTIAL_VARIABLE_DELETE_ID = "variable-delete";
+    public static final String CREDENTIAL_VARIABLE_DELETE_LABEL_KEY = "credential.variable.delete";
+
+    public static final String CREDENTIAL_VARIABLE_READ_ID = "variable-read";
+    public static final String CREDENTIAL_VARIABLE_READ_LABEL_KEY = "credential.variable.read";
 
     @Inject
     private SPARQLService sparql;
@@ -46,9 +59,15 @@ public class VariableAPI {
     @POST
     @ApiOperation("Create a variable")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response create(
+    public Response createVariable(
             @ApiParam("Variable description") @Valid VariableCreationDTO variableDTO
     ) throws Exception {
         VariableDAO dao = new VariableDAO(sparql);
@@ -69,9 +88,15 @@ public class VariableAPI {
     @Path("{uri}")
     @ApiOperation("Update a variable")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response update(
+    public Response updateVariable(
             @ApiParam(value = "Variable URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam("Variable description") @Valid VariableUpdateDTO variableDTO
     ) throws Exception {
@@ -94,9 +119,15 @@ public class VariableAPI {
     @Path("{uri}")
     @ApiOperation("Delete a variable")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response delete(
+    public Response deleteVariable(
             @ApiParam(value = "Variable URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         VariableDAO dao = new VariableDAO(sparql);
@@ -108,9 +139,15 @@ public class VariableAPI {
     @Path("{uri}")
     @ApiOperation("Get a variable")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_READ_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get(
+    public Response getVariable(
             @ApiParam(value = "Variable URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         VariableDAO dao = new VariableDAO(sparql);
@@ -133,9 +170,15 @@ public class VariableAPI {
     @Path("search")
     @ApiOperation("Search variables corresponding to given criteria")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_READ_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response search(
+    public Response searchVariables(
             @ApiParam(value = "Name regex pattern") @QueryParam("name") String namePattern,
             @ApiParam(value = "Comment regex pattern") @QueryParam("comment") String commentPattern,
             @ApiParam(value = "Filter by entity URI") @QueryParam("entity") URI entity,

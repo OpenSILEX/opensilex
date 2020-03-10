@@ -83,6 +83,7 @@ public class ConfigManager {
         return config;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T loadConfigPath(String path, Class<T> configClass) {
 
         JsonNode baseNode = root;
@@ -135,18 +136,18 @@ public class ConfigManager {
             }
 
             for (OpenSilexModule module : modules) {
-                InputStream prodFile = module.getYamlFile(OpenSilex.PROD_PROFILE_ID);
+                InputStream prodFile = module.getConfigFile(OpenSilex.PROD_PROFILE_ID);
                 if (prodFile != null) {
                     addSource(prodFile);
                 }
 
                 if (OpenSilex.DEV_PROFILE_ID.equals(extensionId)) {
-                    InputStream devFile = module.getYamlFile(OpenSilex.DEV_PROFILE_ID);
+                    InputStream devFile = module.getConfigFile(OpenSilex.DEV_PROFILE_ID);
                     if (devFile != null) {
                         addSource(devFile);
                     }
                 } else if (OpenSilex.TEST_PROFILE_ID.equals(extensionId)) {
-                    InputStream testFile = module.getYamlFile(OpenSilex.TEST_PROFILE_ID);
+                    InputStream testFile = module.getConfigFile(OpenSilex.TEST_PROFILE_ID);
                     if (testFile != null) {
                         addSource(testFile);
                     }

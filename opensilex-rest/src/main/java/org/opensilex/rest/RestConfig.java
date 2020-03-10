@@ -6,6 +6,8 @@
 //******************************************************************************
 package org.opensilex.rest;
 
+import java.util.List;
+import org.opensilex.OpenSilex;
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.rest.authentication.AuthenticationService;
@@ -25,9 +27,15 @@ public interface RestConfig extends ModuleConfig {
 
     @ConfigDescription(
             value = "Default application language",
-            defaultString = "en"
+            defaultString = OpenSilex.DEFAULT_LANGUAGE
     )
     public String defaultLanguage();
+    
+        @ConfigDescription(
+            value = "Available application language list",
+            defaultList = {OpenSilex.DEFAULT_LANGUAGE, "fr-FR"}
+    )
+    public List<String> availableLanguages();
 
     @ConfigDescription(
             value = "Authentication service"

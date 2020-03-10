@@ -14,8 +14,8 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import test.opensilex.sparql.model.A;
-import test.opensilex.sparql.model.B;
+import org.opensilex.sparql.model.A;
+import org.opensilex.sparql.model.B;
 
 import javax.mail.internet.InternetAddress;
 import java.math.BigInteger;
@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 
 import static org.junit.Assert.*;
 

@@ -19,6 +19,8 @@ public class CredentialsGroupDTO {
 
     private String groupId;
 
+    private String groupKeyLabel;
+
     private List<CredentialDTO> credentials;
 
     @ApiModelProperty(value = "Credential group identifier", example = "Security")
@@ -30,8 +32,17 @@ public class CredentialsGroupDTO {
         this.groupId = groupId;
     }
 
+    @ApiModelProperty(value = "Credential group key label", example = "security")
+    public String getGroupKeyLabel() {
+        return groupKeyLabel;
+    }
+
+    public void setGroupKeyLabel(String groupKeyLabel) {
+        this.groupKeyLabel = groupKeyLabel;
+    }
+
     @Valid()
-    @ApiModelProperty(value = "Credentials Map",  dataType = "List[org.opensilex.rest.security.api.CredentialDTO]", reference = "List")
+    @ApiModelProperty(value = "Credentials Map", dataType = "List[org.opensilex.rest.security.api.CredentialDTO]", reference = "List")
     public List<CredentialDTO> getCredentials() {
         return credentials;
     }

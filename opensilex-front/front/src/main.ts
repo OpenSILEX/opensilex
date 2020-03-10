@@ -48,18 +48,18 @@ console.debug("Logger initialized in debug mode");
 
 // Initialize service API container
 let baseApi = DEV_BASE_API_PATH;
-if (isDebug) {
+if (isDevMode) {
   console.warn(
     'Vue is running in development mode, with base API set by default to ' + DEV_BASE_API_PATH + '\n' +
     'If you start your webservices server with another host or port configuration,\n' +
     'please edit opensilex-front/front/src/main.ts and update DEV_BASE_API_PATH constant'
   );
-}
-
-if (!isDevMode) {
+} else {
   let splitURI = window.location.href.split("/");
   baseApi = splitURI[0] + "//" + splitURI[2] + "/rest"
 }
+
+console.debug("Base API URI:", baseApi);
 
 // Setup store imports
 import store from './models/Store'
@@ -86,13 +86,18 @@ import BootstrapVue from 'bootstrap-vue'
 Vue.use(BootstrapVue);
 console.debug("Bootstrap plugin initialized !");
 
+
+//Initialise DatePicker 
+//https://www.npmjs.com/package/vuejs-datepicker
+import Datepicker from 'vuejs-datepicker';
+
+Vue.component('datePicker', Datepicker);
+
 // Initialise font awesome
 console.debug("Initialize FontAwesomeIcon plugin...");
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faPowerOff, faTimes, faTrashAlt, faEdit } from '@fortawesome/free-solid-svg-icons'
-import { } from '@fortawesome/free-solid-svg-icons'
-import { } from '@fortawesome/free-solid-svg-icons'
 library.add(faPowerOff, faTimes, faTrashAlt, faEdit);
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 console.debug("FontAwesomeIcon plugin initialized !");
@@ -165,7 +170,8 @@ Vue.use(DatePicker, datepickerOptions);
 
 // Enable Vue front plugin manager for OpenSilex API
 console.debug("Enable OpenSilex plugin...");
-let $opensilex = new OpenSilexVuePlugin(baseApi, store);
+let $opensilex = new OpenSilexVuePlugin(baseApi, store, i18n);
+$opensilex.setCookieSuffix(baseApi);
 Vue.use($opensilex);
 console.debug("OpenSilex plugin enabled !");
 
@@ -297,13 +303,14 @@ $opensilex.initAsyncComponents(components)
             console.debug("Try to load user from URL token...");
             if (token != null) {
               user = User.fromToken(token);
+              $opensilex.setCookieValue(user);
               console.debug("User sucessfully loaded from URL token !");
             }
           }
 
           if (user == undefined) {
             console.debug("Try to load user from cookie...");
-            user = User.fromCookie();
+            user = $opensilex.loadUserFromCookie();
             console.debug("User sucessfully loaded from cookie !");
           }
 

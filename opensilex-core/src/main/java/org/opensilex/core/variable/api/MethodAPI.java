@@ -24,8 +24,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DELETE_ID;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DELETE_LABEL_KEY;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_GROUP_LABEL_KEY;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_ID;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_READ_ID;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_READ_LABEL_KEY;
 import org.opensilex.core.variable.dal.MethodDAO;
 import org.opensilex.core.variable.dal.MethodModel;
+import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -36,12 +45,9 @@ import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
-
-
-
-@Api("Variables")
+@Api(CREDENTIAL_VARIABLE_GROUP_ID)
 @Path("/core/variable/method")
-public class MethodAPI  {
+public class MethodAPI {
 
     @Inject
     private SPARQLService sparql;
@@ -49,9 +55,15 @@ public class MethodAPI  {
     @POST
     @ApiOperation("Create a method")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response create(
+    public Response createMethod(
             @ApiParam("Method description") @Valid MethodCreationDTO dto
     ) throws Exception {
         MethodDAO dao = new MethodDAO(sparql);
@@ -72,9 +84,15 @@ public class MethodAPI  {
     @Path("{uri}")
     @ApiOperation("Update a method")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response update(
+    public Response updateMethod(
             @ApiParam(value = "Method URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam("Method description") @Valid MethodUpdateDTO dto
     ) throws Exception {
@@ -97,9 +115,15 @@ public class MethodAPI  {
     @Path("{uri}")
     @ApiOperation("Delete a method")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response delete(
+    public Response deleteMethod(
             @ApiParam(value = "Method URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         MethodDAO dao = new MethodDAO(sparql);
@@ -111,9 +135,15 @@ public class MethodAPI  {
     @Path("{uri}")
     @ApiOperation("Get a method")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_READ_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get(
+    public Response getMethod(
             @ApiParam(value = "Method URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         MethodDAO dao = new MethodDAO(sparql);
@@ -136,9 +166,15 @@ public class MethodAPI  {
     @Path("search")
     @ApiOperation("Search methods corresponding to given criteria")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_READ_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response search(
+    public Response searchMethods(
             @ApiParam(value = "Name regex pattern") @QueryParam("name") String namePattern,
             @ApiParam(value = "Comment regex pattern") @QueryParam("comment") String commentPattern,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("orderBy") List<OrderBy> orderByList,
@@ -149,8 +185,8 @@ public class MethodAPI  {
         ListWithPagination<MethodModel> resultList = dao.search(
                 namePattern,
                 commentPattern,
-                orderByList, 
-                page, 
+                orderByList,
+                page,
                 pageSize
         );
         ListWithPagination<MethodGetDTO> resultDTOList = resultList.convert(

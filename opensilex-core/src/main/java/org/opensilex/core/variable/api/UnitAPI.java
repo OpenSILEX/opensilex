@@ -24,8 +24,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DELETE_ID;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DELETE_LABEL_KEY;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_GROUP_LABEL_KEY;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_ID;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_READ_ID;
+import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_READ_LABEL_KEY;
 import org.opensilex.core.variable.dal.UnitDAO;
 import org.opensilex.core.variable.dal.UnitModel;
+import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -36,7 +45,7 @@ import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
-@Api("Variables")
+@Api(CREDENTIAL_VARIABLE_GROUP_ID)
 @Path("/core/variable/unit")
 public class UnitAPI {
 
@@ -46,9 +55,15 @@ public class UnitAPI {
     @POST
     @ApiOperation("Create a unit")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response create(
+    public Response createUnit(
             @ApiParam("Unit description") @Valid UnitCreationDTO dto
     ) throws Exception {
         UnitDAO dao = new UnitDAO(sparql);
@@ -69,9 +84,15 @@ public class UnitAPI {
     @Path("{uri}")
     @ApiOperation("Update a unit")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response update(
+    public Response updateUnit(
             @ApiParam(value = "Unit URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam("Unit description") @Valid UnitUpdateDTO dto
     ) throws Exception {
@@ -94,9 +115,15 @@ public class UnitAPI {
     @Path("{uri}")
     @ApiOperation("Delete a unit")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response delete(
+    public Response deleteUnit(
             @ApiParam(value = "Unit URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         UnitDAO dao = new UnitDAO(sparql);
@@ -108,9 +135,15 @@ public class UnitAPI {
     @Path("{uri}")
     @ApiOperation("Get a unit")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_READ_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get(
+    public Response getUnit(
             @ApiParam(value = "Unit URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         UnitDAO dao = new UnitDAO(sparql);
@@ -133,9 +166,15 @@ public class UnitAPI {
     @Path("search")
     @ApiOperation("Search entities corresponding to given criteria")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
+            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_VARIABLE_READ_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response search(
+    public Response searchUnits(
             @ApiParam(value = "Name regex pattern") @QueryParam("name") String namePattern,
             @ApiParam(value = "Comment regex pattern") @QueryParam("comment") String commentPattern,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("orderBy") List<OrderBy> orderByList,

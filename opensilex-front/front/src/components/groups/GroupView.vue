@@ -1,13 +1,23 @@
 <template>
   <div>
-    <b-button @click="showCreateForm" variant="success">Add group</b-button>
+    <b-button
+      v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
+      @click="showCreateForm"
+      variant="success"
+    >{{$t('component.group.add')}}</b-button>
     <opensilex-GroupForm
       ref="groupForm"
+      v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
       @onCreate="callCreateGroupService"
       @onUpdate="callUpdateGroupService"
       :profiles="profiles"
     ></opensilex-GroupForm>
-    <opensilex-GroupList ref="groupList" @onEdit="editGroup" @onDelete="deleteGroup"></opensilex-GroupList>
+    <opensilex-GroupList
+      ref="groupList"
+      v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_READ_ID)"
+      @onEdit="editGroup"
+      @onDelete="deleteGroup"
+    ></opensilex-GroupList>
   </div>
 </template>
 
@@ -16,11 +26,11 @@ import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
-  GroupService,
+  GroupsService,
   GroupCreationDTO,
   GroupUpdateDTO,
   GroupGetDTO,
-  ProfileService,
+  ProfilesService,
   ProfileGetDTO
 } from "opensilex-rest/index";
 
@@ -28,22 +38,26 @@ import {
 export default class GroupView extends Vue {
   $opensilex: any;
   $store: any;
-  service: GroupService;
+  service: GroupsService;
   profiles: Array<ProfileGetDTO> = [];
 
   get user() {
     return this.$store.state.user;
   }
 
+  get credentials() {
+    return this.$store.state.credentials;
+  }
+
   async created() {
-    this.service = this.$opensilex.getService("opensilex.GroupService");
+    this.service = this.$opensilex.getService("opensilex.GroupsService");
     console.debug("Loading profiles list...");
-    let profileService: ProfileService = await this.$opensilex.loadService(
-      "opensilex-rest.ProfileService"
+    let profilesService: ProfilesService = await this.$opensilex.loadService(
+      "opensilex-rest.ProfilesService"
     );
     let http: HttpResponse<OpenSilexResponse<
       Array<ProfileGetDTO>
-    >> = await profileService.getAllProfiles(
+    >> = await profilesService.getAllProfiles(
       this.$opensilex.getUser().getAuthorizationHeader()
     );
     this.profiles = http.response.result;

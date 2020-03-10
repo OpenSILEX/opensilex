@@ -111,8 +111,8 @@ export default class DefaultLoginComponent extends Vue {
         password: this.form.password
       })
       .then((http: HttpResponse<OpenSilexResponse<TokenGetDTO>>) => {
-        let user = new User();
-        user.setToken(http.response.result.token);
+        let user = User.fromToken(http.response.result.token);
+        this.$opensilex.setCookieValue(user);
         this.forceRefresh = true;
         this.$store.commit("login", user);
         this.$store.commit("refresh");

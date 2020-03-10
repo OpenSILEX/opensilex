@@ -80,7 +80,7 @@ export default class DefaultMenuComponent extends Vue {
     if(code != result) {
       return result.toString();
     }
-    return this.$i18n.t("icon.component.menu.default").toString();
+    return "ik-folder";
   }
 
   isActive(item: Menu): boolean {

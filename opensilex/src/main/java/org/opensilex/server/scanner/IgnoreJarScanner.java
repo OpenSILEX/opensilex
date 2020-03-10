@@ -17,12 +17,7 @@ import org.apache.tomcat.JarScannerCallback;
  */
 public class IgnoreJarScanner implements JarScanner {
 
-    private JarScanFilter jarScanFilter = new JarScanFilter() {
-        @Override
-        public boolean check(JarScanType jst, String string) {
-            return false;
-        }
-    };
+    private JarScanFilter jarScanFilter = (JarScanType jst, String string) -> false;
 
     @Override
     public void scan(JarScanType jst, ServletContext sc, JarScannerCallback jsc) {

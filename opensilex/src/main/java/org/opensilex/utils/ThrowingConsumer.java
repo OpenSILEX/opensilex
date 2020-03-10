@@ -6,9 +6,13 @@
 package org.opensilex.utils;
 
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @FunctionalInterface
 public interface ThrowingConsumer<T, E extends Exception> {
+
+    final static Logger LOGGER = LoggerFactory.getLogger(ThrowingConsumer.class);
 
     void accept(T t) throws E;
 
@@ -18,6 +22,7 @@ public interface ThrowingConsumer<T, E extends Exception> {
             try {
                 throwingConsumer.accept(i);
             } catch (Exception ex) {
+                LOGGER.warn("Unexpected silent exception:", ex);
                 try {
                     exceptionClass.cast(ex);
                 } catch (ClassCastException ccEx) {

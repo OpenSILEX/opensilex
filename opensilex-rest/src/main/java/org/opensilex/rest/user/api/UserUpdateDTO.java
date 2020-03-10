@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
+import org.opensilex.OpenSilex;
 import org.opensilex.rest.validation.NullOrNotEmpty;
 import org.opensilex.rest.validation.Required;
 import org.opensilex.rest.validation.ValidURI;
@@ -29,7 +30,8 @@ import org.opensilex.rest.validation.ValidURI;
  * }
  * </pre>
  *
- * @see org.opensilex.rest.user.api.UserAPI#updateUser(org.opensilex.rest.user.api.UserUpdateDTO) 
+ * @see
+ * org.opensilex.rest.user.api.UserAPI#updateUser(org.opensilex.rest.user.api.UserUpdateDTO)
  * @author Vincent Migot
  */
 @ApiModel
@@ -79,6 +81,12 @@ public class UserUpdateDTO extends UserGetDTO {
     @ApiModelProperty(value = "User admin flag", example = "false", required = true)
     public boolean isAdmin() {
         return super.isAdmin();
+    }
+
+    @NotNull
+    @ApiModelProperty(value = "User language", example = OpenSilex.DEFAULT_LANGUAGE, required = true)
+    public String getLang() {
+        return super.getLang();
     }
 
 }

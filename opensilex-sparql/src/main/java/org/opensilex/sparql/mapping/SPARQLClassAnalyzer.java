@@ -73,6 +73,7 @@ public class SPARQLClassAnalyzer {
 
     private final URIGenerator<? extends SPARQLResourceModel> uriGenerator;
 
+    @SuppressWarnings("unchecked")
     public SPARQLClassAnalyzer(Class<?> objectClass) throws SPARQLInvalidClassDefinitionException {
         LOGGER.debug("Start SPARQL model class analyze for: " + objectClass.getName());
         this.objectClass = objectClass;
@@ -161,16 +162,16 @@ public class SPARQLClassAnalyzer {
         for (Field field : ClassUtils.getClassFieldsRecursivly(objectClass)) {
 
             SPARQLProperty sProperty = field.getAnnotation(SPARQLProperty.class);
-            if(sProperty == null){
+            if (sProperty == null) {
                 continue;
             }
             Method getter = getGetterFromField(field);
-            if(getter == null){
-                throw new SPARQLInvalidClassDefinitionException(objectClass,"no getter found for the field :"+field.getName());
+            if (getter == null) {
+                throw new SPARQLInvalidClassDefinitionException(objectClass, "no getter found for the field :" + field.getName());
             }
             Method setter = getSetterFromField(field);
-            if(setter == null){
-                throw new SPARQLInvalidClassDefinitionException(objectClass,"no setter found for the field :"+field.getName());
+            if (setter == null) {
+                throw new SPARQLInvalidClassDefinitionException(objectClass, "no setter found for the field :" + field.getName());
             }
         }
     }
@@ -230,7 +231,7 @@ public class SPARQLClassAnalyzer {
         }
 
         annotationsByField.put(field, sProperty);
-        
+
         LOGGER.debug("Store field " + field.getName() + " in global index by name");
         fieldsByName.put(field.getName(), field);
 
@@ -349,8 +350,12 @@ public class SPARQLClassAnalyzer {
         return fieldsBySetter.get(method);
     }
 
-    public Method getGetterFromField(Field field) {
+    private Method getGetterFromField(Field field) {
         return fieldsByGetter.inverse().get(field);
+    }
+
+    public Object getFieldValue(Field field, Object instance) throws Exception {
+        return instance.getClass().getMethod(fieldsByGetter.inverse().get(field).getName()).invoke(instance);
     }
 
     public Method getSetterFromField(Field field) {
@@ -435,8 +440,8 @@ public class SPARQLClassAnalyzer {
 
     public URI getURI(Object instance) {
         try {
-            return (URI) getGetterFromField(getURIField()).invoke(instance);
-        } catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException ex) {
+            return (URI) getFieldValue(getURIField(), instance);
+        } catch (Exception ex) {
             LOGGER.error("Exception while getting SPARQL object URI (should never happend)", ex);
             return null;
         }

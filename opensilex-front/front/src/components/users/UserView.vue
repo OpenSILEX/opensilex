@@ -1,12 +1,22 @@
 <template>
   <div>
-    <b-button @click="showCreateForm" variant="success">Add user</b-button>
+    <b-button
+      @click="showCreateForm"
+      variant="success"
+      v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
+    >{{$t('component.user.add')}}</b-button>
     <opensilex-UserForm
       ref="userForm"
+      v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
       @onCreate="callCreateUserService"
       @onUpdate="callUpdateUserService"
     ></opensilex-UserForm>
-    <opensilex-UserList ref="userList" @onEdit="editUser" @onDelete="deleteUser"></opensilex-UserList>
+    <opensilex-UserList
+      v-if="user.hasCredential(credentials.CREDENTIAL_USER_READ_ID)"
+      ref="userList"
+      @onEdit="editUser"
+      @onDelete="deleteUser"
+    ></opensilex-UserList>
   </div>
 </template>
 
@@ -14,20 +24,29 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { UserCreationDTO, UserUpdateDTO, UserService, UserGetDTO } from "opensilex-rest/index";
+import {
+  UserCreationDTO,
+  UserUpdateDTO,
+  UsersService,
+  UserGetDTO
+} from "opensilex-rest/index";
 
 @Component
 export default class UserView extends Vue {
   $opensilex: any;
   $store: any;
-  service: UserService;
-
+  service: UsersService;
+  
   get user() {
     return this.$store.state.user;
   }
 
+  get credentials() {
+    return this.$store.state.credentials;
+  }
+
   created() {
-    this.service = this.$opensilex.getService("opensilex.UserService");
+    this.service = this.$opensilex.getService("opensilex.UsersService");
   }
 
   showCreateForm() {
@@ -67,11 +86,13 @@ export default class UserView extends Vue {
   }
 
   deleteUser(uri: string) {
-    this.service.deleteUser(this.user.getAuthorizationHeader(), uri).then(() => {
-      let userList: any = this.$refs.userList;
-      userList.refresh();
-    })
-    .catch(this.$opensilex.errorHandler);
+    this.service
+      .deleteUser(this.user.getAuthorizationHeader(), uri)
+      .then(() => {
+        let userList: any = this.$refs.userList;
+        userList.refresh();
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 }
 </script>

@@ -107,19 +107,28 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                         throw new ForbiddenException("User not found with URI: " + userURI);
                     }
 
-                    // If user is not an admin check credentials
-                    if (!user.isAdmin() && !securityAnnotation.noCredential()) {
-                        // Get current API service credential
-                        String credentialId = SecurityAccessDAO.getCredentialIdFromMethod(apiMethod, requestContext.getMethod());
+                    boolean hasCredential = false;
+                    if (user.isAdmin()) {
+                        hasCredential = true;
+                    } else {
+                        // If user is not an admin check credentials if needed
+                        String credentialId = SecurityAccessDAO.getCredentialIdFromMethod(apiMethod);
+                        if (credentialId != null) {
+                            // Get current API service credential
+                            
+                            // Get user credentials from token
+                            String[] accessList = authentication.decodeTokenCredentialsList(user.getToken());
 
-                        // Get user credentials from token
-                        String[] accessList = authentication.decodeTokenCredentialsList(user.getToken());
-
-                        // Check user credential existence
-                        boolean hasAccess = Arrays.stream(accessList).anyMatch(credentialId::equals);
-                        if (!hasAccess) {
-                            throw new ForbiddenException("You don't have credentials to access this API");
+                            // Check user credential existence
+                            hasCredential = Arrays.stream(accessList).anyMatch(credentialId::equals);
+                        } else {
+                            // If no specific credential, user logged in is sufficient
+                            hasCredential = true;
                         }
+                    }
+
+                    if (!hasCredential) {
+                        throw new ForbiddenException("You don't have credentials to access this API");
                     }
 
                     // Define user to be accessed through SecurityContext

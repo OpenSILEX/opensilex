@@ -7,6 +7,7 @@
 package org.opensilex.cli;
 
 import org.opensilex.OpenSilex;
+import static org.opensilex.cli.MainCommand.run;
 import org.opensilex.cli.help.HelpPrinterCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +73,15 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
 
         LOGGER.info("Check Modules");
         opensilex.check();
+    }
+    
+     public static void main(String[] args) {
+        MainCommand.main(new String[]{
+            "system",
+            "install",
+            "--reset=true",
+            "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.DEV_PROFILE_ID
+        });
     }
 
 }

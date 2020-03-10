@@ -6,8 +6,6 @@
 //******************************************************************************
 package org.opensilex.rest.cli;
 
-import java.net.URI;
-import java.util.List;
 import javax.mail.internet.InternetAddress;
 import org.opensilex.OpenSilex;
 import org.opensilex.cli.MainCommand;
@@ -22,7 +20,6 @@ import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
-import org.opensilex.sparql.service.SPARQLStatement;
 import picocli.CommandLine;
 
 /**

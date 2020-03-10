@@ -76,7 +76,7 @@
         <bcript.version>0.9.0</bcript.version>
         <commons.io.version>2.6</commons.io.version>
         <logback.version>1.2.3</logback.version>
-        <janino.version>3.1.0</janino.version>
+        <janino.version>3.1.1</janino.version>
         <slf4j.api.version>1.7.30</slf4j.api.version>
         <javax.xml.bind.version>2.3.1</javax.xml.bind.version>
         <javax.mail.api.version>1.6.2</javax.mail.api.version>
@@ -85,7 +85,7 @@
         <jaxb.impl.version>2.3.2</jaxb.impl.version>
         <javax.activation.api.version>1.2.0</javax.activation.api.version>
         <reflections.version>0.9.12</reflections.version>
-        <httpclient.version>4.5.11</httpclient.version>
+        <httpclient.version>4.5.12</httpclient.version>
         <httpcore.version>4.4.13</httpcore.version>
         <javaee.web.api.version>8.0.1</javaee.web.api.version>
         <apache.tika.version>1.23</apache.tika.version>

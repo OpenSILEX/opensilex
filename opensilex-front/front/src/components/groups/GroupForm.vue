@@ -145,6 +145,7 @@
                   text-field="name"
                   :options="profiles"
                   v-model="data.item.profile"
+                  :required="true"
                   class="profile-selector"
                 ></b-form-select>
               </template>
@@ -313,7 +314,11 @@ export default class GroupForm extends Vue {
 
   toggleUserSelection(user) {
     if (!this.selectedUsersId[user.uri]) {
+      if (this.profiles.length > 0) {
+        user.profile = this.profiles[0].uri;
+      }
       this.selectedUsers.push(user);
+
     } else {
       this.selectedUsers = this.selectedUsers.filter(element => {
         return element.uri != user.uri;

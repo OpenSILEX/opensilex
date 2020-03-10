@@ -66,6 +66,7 @@ import org.slf4j.LoggerFactory;
  */
 @Api("/group")
 @Path("groups")
+@Deprecated
 public class GroupResourceService extends ResourceService {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(GroupResourceService.class);
@@ -95,6 +96,7 @@ public class GroupResourceService extends ResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiProtected
+    @Deprecated
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGroupBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
@@ -132,6 +134,7 @@ public class GroupResourceService extends ResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiProtected
+    @Deprecated
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGroupDetails(
             @ApiParam(value = DocumentationAnnotation.GROUP_URI_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_GROUP_URI)
@@ -168,6 +171,7 @@ public class GroupResourceService extends ResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiProtected
+    @Deprecated
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postGroup(

@@ -63,6 +63,7 @@ import org.slf4j.LoggerFactory;
  */
 @Api("/user")
 @Path("users")
+@Deprecated
 public class UserResourceService extends ResourceService {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(UserResourceService.class);
@@ -107,6 +108,7 @@ public class UserResourceService extends ResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiProtected
+    @Deprecated
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
@@ -150,6 +152,7 @@ public class UserResourceService extends ResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiProtected
+    @Deprecated
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserDetails(
             @ApiParam(value = DocumentationAnnotation.USER_EMAIL_DEFINITION, required = true, example = DocumentationAnnotation.EXAMPLE_USER_EMAIL) @PathParam("userEmail") @Email @Required String userEmail,
@@ -183,6 +186,7 @@ public class UserResourceService extends ResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiProtected
+    @Deprecated
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postUser(
@@ -239,6 +243,7 @@ public class UserResourceService extends ResourceService {
         @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiProtected
+    @Deprecated
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response putUser(

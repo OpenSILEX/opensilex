@@ -30,13 +30,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
+import org.opensilex.unit.test.AbstractUnitTest;
 
 
 /**
  *
  * @author vincent
  */
-public abstract class SPARQLServiceTest {
+public abstract class SPARQLServiceTest extends AbstractUnitTest  {
 
     protected static SPARQLService service;
 

@@ -17,6 +17,8 @@
             <include>opensilex.service</include>
             <include>test.opensilex</include>
             <!-- List of classes to include at DEBUG log level -->
+            <debug>org.opensilex.unit.test.AbstractUnitTest </debug> 
+            <debug>org.opensilex.integration.test.AbstractIntegrationTest</debug>            
             <!-- <debug>org.opensilex.server.Server</debug> -->
             <debug>org.opensilex.sparql.rdf4j.RDF4JConnection</debug> 
             <debug>org.opensilex.sparql.rdf4j.RDF4JServiceFactory</debug>

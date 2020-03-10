@@ -6,8 +6,6 @@
 //******************************************************************************
 package org.opensilex.rest.filters;
 
-import java.net.URI;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;

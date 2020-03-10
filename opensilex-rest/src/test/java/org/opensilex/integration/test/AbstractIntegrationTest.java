@@ -4,7 +4,6 @@
 // Copyright © INRAE 2020
 // Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
-
 package org.opensilex.integration.test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -37,7 +36,11 @@ import java.util.List;
 import java.util.Map;
 
 import static junit.framework.TestCase.assertEquals;
+import org.junit.Rule;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,8 +53,15 @@ import org.slf4j.LoggerFactory;
 @Category(IntegrationTestCategory.class)
 public abstract class AbstractIntegrationTest extends JerseyTest {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(AbstractIntegrationTest.class);
-       
+    private final static Logger LOGGER = LoggerFactory.getLogger(AbstractIntegrationTest.class);
+
+    @Rule
+    public TestRule watcher = new TestWatcher() {
+        protected void starting(Description description) {
+            LOGGER.debug("\n####### Starting IT: " + description.getTestClass().getSimpleName() + " - " + description.getMethodName() + " #######");
+        }
+    };
+
     protected static IntegrationTestContext context;
 
     @Override
@@ -106,7 +116,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      *
      * @return a new Token
      */
-    protected TokenGetDTO getToken() throws Exception{
+    protected TokenGetDTO getToken() throws Exception {
 
         AuthenticationDTO authDto = new AuthenticationDTO();
         authDto.setIdentifier("admin@opensilex.org");
@@ -121,7 +131,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         // need to convert according a TypeReference, because the expected SingleObjectResponse is a generic object
         ObjectMapper mapper = new ObjectMapper();
         Object json = mapper.readValue(node.toString(), Object.class);
-        LOGGER.debug(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json));
         SingleObjectResponse<TokenGetDTO> res = mapper.convertValue(node, new TypeReference<SingleObjectResponse<TokenGetDTO>>() {
         });
 
@@ -130,7 +139,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return res.getResult();
     }
 
-    
     /**
      *
      * Get {@link Response} from an {@link ApiProtected} POST service call.
@@ -183,7 +191,8 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      *
      * Get {@link Response} from a {@link ApiProtected} GET{uri} service call.
      *
-     * @param target the {@link WebTarget} on which get an entity with the given URI
+     * @param target the {@link WebTarget} on which get an entity with the given
+     * URI
      * @param uri the URI of the resource to fetch from the given target.
      * @return target invocation response.
      *
@@ -197,7 +206,8 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      *
      * Get {@link Response} from an open GET{uri} service call.
      *
-     * @param target the {@link WebTarget} on which get an entity with the given URI
+     * @param target the {@link WebTarget} on which get an entity with the given
+     * URI
      * @param uri the URI of the resource to fetch from the given target.
      * @return target invocation response.
      *
@@ -206,7 +216,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     protected Response getJsonGetByUriPublicResponse(WebTarget target, String uri) {
         return target.resolveTemplate("uri", uri).request(MediaType.APPLICATION_JSON).get();
     }
-
 
     /**
      *
@@ -221,7 +230,8 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
 
     /**
      *
-     * Get {@link Response} from a {@link ApiProtected} DELETE{uri} service call.
+     * Get {@link Response} from a {@link ApiProtected} DELETE{uri} service
+     * call.
      *
      * @param target the {@link WebTarget} on which DELETE the given uri
      * @param uri the URI of the resource to DELETE
@@ -255,7 +265,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      *
      * @param target the {@link WebTarget} on which DELETE some content
      * @return target invocation response.
-
+     *
      */
     protected Response getDeleteJsonResponse(WebTarget target) throws Exception {
         return appendToken(target).delete();
@@ -269,7 +279,8 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     }
 
     /**
-     * Append pagination, ordering and a set of query params to a given {@link WebTarget}
+     * Append pagination, ordering and a set of query params to a given
+     * {@link WebTarget}
      *
      * @param target the {@link WebTarget} on which append params
      * @param page the current page index
@@ -293,6 +304,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
 
     /**
      * Append a set of query params to a given {@link WebTarget}
+     *
      * @param target the {@link WebTarget} on which append params
      * @param params the map between param name and param value
      *
@@ -315,6 +327,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
 
     /**
      * Append a token header to the given {@link WebTarget}
+     *
      * @param target the {@link WebTarget} on which append params
      *
      * @return the updated {@link WebTarget}
@@ -330,13 +343,14 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     }
 
     /**
-     * This method try to extract an URI from the given {@link Response} and is expecting that the Response
-     * describe a {@link ObjectUriResponse}
+     * This method try to extract an URI from the given {@link Response} and is
+     * expecting that the Response describe a {@link ObjectUriResponse}
      *
      * @param response the Response on which we want to extract URI
      * @return the URI extracted from the given Response
      *
-     * @throws URISyntaxException if the extracted URI as String could not be parse as an {@link URI}
+     * @throws URISyntaxException if the extracted URI as String could not be
+     * parse as an {@link URI}
      */
     protected URI extractUriFromResponse(final Response response) throws URISyntaxException {
         JsonNode node = response.readEntity(JsonNode.class);
@@ -346,8 +360,8 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     }
 
     /**
-     * This method try to extract an URI from the given {@link Response} and is expecting that the Response
-     * describe a {@link PaginatedListResponse}
+     * This method try to extract an URI from the given {@link Response} and is
+     * expecting that the Response describe a {@link PaginatedListResponse}
      *
      * @param response the Response on which we want to extract an URI List
      * @return the List of URI extracted from the given Response

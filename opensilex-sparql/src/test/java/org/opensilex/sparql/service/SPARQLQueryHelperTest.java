@@ -34,11 +34,12 @@ import java.util.*;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 
 import static org.junit.Assert.*;
+import org.opensilex.unit.test.AbstractUnitTest;
 
 /**
  * @author Renaud COLIN
  */
-public class SPARQLQueryHelperTest {
+public class SPARQLQueryHelperTest extends AbstractUnitTest  {
 
     @Test
     public void testGetURIField() throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {

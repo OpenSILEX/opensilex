@@ -38,12 +38,13 @@ import org.opensilex.rest.RestModule;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.rdf4j.RDF4JInMemoryService;
+import org.opensilex.unit.test.AbstractUnitTest;
 
 /**
  * @author Renaud COLIN
  * @author Vincent MIGOT
  */
-public class ExperimentDAOTest {
+public class ExperimentDAOTest extends AbstractUnitTest{
 
     private static RDF4JInMemoryService factory;
 

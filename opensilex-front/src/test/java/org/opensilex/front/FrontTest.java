@@ -9,12 +9,13 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.unit.test.AbstractUnitTest;
 
 /**
  *
  * @author vincent
  */
-public abstract class FrontTest {
+public abstract class FrontTest extends AbstractUnitTest {
 
     public static void initialize(FileStorageService service) throws Exception {
         // TODO implement connecion init

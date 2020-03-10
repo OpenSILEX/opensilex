@@ -22,16 +22,14 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
-import org.opensilex.config.ConfigDescription;
-import org.opensilex.config.ConfigManager;
-import org.opensilex.config.InvalidConfigException;
+import org.opensilex.unit.test.AbstractUnitTest;
 
 
 /**
  *
  * @author vincent
  */
-public class ConfigTest {
+public class ConfigTest extends AbstractUnitTest {
 
     interface TestConfig {
 

@@ -9,12 +9,13 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.opensilex.nosql.service.NoSQLService;
+import org.opensilex.unit.test.AbstractUnitTest;
 
 /**
  *
  * @author vincent
  */
-public abstract class NoSQLServiceTest {
+public abstract class NoSQLServiceTest extends AbstractUnitTest  {
 
     protected static NoSQLService service;
 

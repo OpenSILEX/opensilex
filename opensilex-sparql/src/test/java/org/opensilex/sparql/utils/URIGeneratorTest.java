@@ -9,12 +9,13 @@ import java.io.UnsupportedEncodingException;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.opensilex.sparql.utils.URIGenerator;
+import org.opensilex.unit.test.AbstractUnitTest;
 
 /**
  *
  * @author vince
  */
-public class URIGeneratorTest {
+public class URIGeneratorTest extends AbstractUnitTest  {
 
     @Test
     public void testNormalization() throws UnsupportedEncodingException {

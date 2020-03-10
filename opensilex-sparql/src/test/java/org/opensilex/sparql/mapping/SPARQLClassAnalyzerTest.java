@@ -7,14 +7,15 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
-import org.opensilex.sparql.mapping.SPARQLClassAnalyzer;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
-import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.SPARQLServiceTest;
+import org.opensilex.sparql.rdf4j.RDF4JServiceFactory;
+import org.opensilex.unit.test.AbstractUnitTest;
 
-public class SPARQLClassAnalyzerTest {
+public class SPARQLClassAnalyzerTest extends AbstractUnitTest  {
 
+    private static SPARQLService sparql;
+    
     @BeforeClass
     public static void initialize() throws Exception {
 
@@ -23,10 +24,9 @@ public class SPARQLClassAnalyzerTest {
         SPARQLClassObjectMapper.includeResourceClass(NoSetterClass.class);
 
         Repository repository = new SailRepository(new MemoryStore());
-        repository.init();
 
-        SPARQLService localService = new SPARQLService(new RDF4JConnection(repository.getConnection()));
-        SPARQLServiceTest.initialize(localService);
+        sparql = new RDF4JServiceFactory(repository).provide();
+        SPARQLServiceTest.initialize(sparql);
     }
 
     @AfterClass

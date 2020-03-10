@@ -5,8 +5,10 @@
 //******************************************************************************
 package org.opensilex.sparql.rdf4j;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.opensilex.sparql.SPARQLServiceTest;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  *
@@ -14,8 +16,11 @@ import org.opensilex.sparql.SPARQLServiceTest;
  */
 public class RDF4JConnectionTest extends SPARQLServiceTest {
 
+    private static SPARQLService sparql;
+
     @BeforeClass
     public static void initialize() throws Exception {
-        SPARQLServiceTest.initialize(new RDF4JInMemoryService().provide());
+        sparql = new RDF4JInMemoryService().provide();
+        SPARQLServiceTest.initialize(sparql);
     }
 }

@@ -85,6 +85,8 @@ trigger:sixtine:build:
   image: curlimages/curl
   script:
     - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/1757/trigger/pipeline
+  only:
+    - master    
   needs: 
     - job: "opensilex:build"
 
@@ -94,5 +96,7 @@ trigger:phis:deploy:test:
   image: curlimages/curl
   script:
     - curl --request POST --form "variables[DEPLOY]=phis-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+  only:
+    - master    
   needs: 
     - job: "opensilex:build"

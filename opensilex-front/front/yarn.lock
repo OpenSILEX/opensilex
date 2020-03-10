@@ -2996,6 +2996,11 @@ dashdash@^1.12.0:
   dependencies:
     assert-plus "^1.0.0"
 
+date-fns@^1.29.0:
+  version "1.30.1"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-1.30.1.tgz#2e71bf0b119153dbb4cc4e88d9ea5acfb50dc05c"
+  integrity sha512-hBSVCvSmWC+QypYObzwGOd9wqdDpOt+0wl0KbU+R+uuZBS1jN8VsD1ss3irQDknRj5NvxiTF6oj/nDRnN/UQNw==
+
 debug@2.6.9, debug@^2.2.0, debug@^2.3.3:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
@@ -8065,6 +8070,11 @@ uuid@^3.0.1, uuid@^3.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
 
+v-click-outside@^2.0.1:
+  version "2.1.5"
+  resolved "https://registry.yarnpkg.com/v-click-outside/-/v-click-outside-2.1.5.tgz#aa69172fb41fcc79b26b9a4bc72a30ccf03f7a3c"
+  integrity sha512-VPNCOTZK6WZy73lcWc+R7IW1uaBFEO3/Csrs5CzWVOdvE30V8Y1+BE/BtTlcEmeDGx0eqdE7bSCg55Jj37PMJg==
+
 validate-npm-package-license@^3.0.1:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/validate-npm-package-license/-/validate-npm-package-license-3.0.4.tgz#fc91f6b9c7ba15c857f4cb2c5defeec39d4f410a"
@@ -8097,10 +8107,24 @@ vm-browserify@^1.0.1:
   resolved "https://registry.yarnpkg.com/vm-browserify/-/vm-browserify-1.1.2.tgz#78641c488b8e6ca91a75f511e7a3b32a86e5dda0"
   integrity sha512-2ham8XPWTONajOR0ohOKOHXkm3+gaBmGut3SRuu75xLd/RRaY6vqgh8NBYYk7+RW3u5AtzPQZG8F10LHkl0lAQ==
 
+vue-airbnb-style-datepicker@^2.7.1:
+  version "2.7.1"
+  resolved "https://registry.yarnpkg.com/vue-airbnb-style-datepicker/-/vue-airbnb-style-datepicker-2.7.1.tgz#d04d7334be4aec962abc3c432fca2af8d8bed969"
+  integrity sha512-3ipqsZvP0OwIleX1NKsxl+Swi6BaU7BHee1+7OHL+FrmVodbhzfoVt5tbCodA3DFpDiWTRdGa+Tt/LhSAf+DmQ==
+  dependencies:
+    v-click-outside "^2.0.1"
+
 vue-cookies@1.6.1:
   version "1.6.1"
   resolved "https://registry.yarnpkg.com/vue-cookies/-/vue-cookies-1.6.1.tgz#ab036382d37a3f4c83140e0175d9dc60ce67fe01"
   integrity sha512-qyzhuq0x9xLEwniSXFoEsFErHgQ24jviB527IDul+8KrlxU9jdqrvVunRRBk4lPpxPgL0ywv8NxcD6MDWcTMug==
+
+vue-date-fns@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/vue-date-fns/-/vue-date-fns-1.1.0.tgz#f487046197e168dc2c44a385f79518715394aa02"
+  integrity sha512-9xgVtDtK97C5ztLAelecfd+lfUpYn6nGRVxuD6SCk/FiN9pr7C81qP83STcsFw4hz0MfcOinfqd8ctBarMsmpA==
+  dependencies:
+    date-fns "^1.29.0"
 
 vue-eslint-parser@^7.0.0:
   version "7.0.0"
@@ -8139,6 +8163,11 @@ vue-loader@^15.8.3:
     loader-utils "^1.1.0"
     vue-hot-reload-api "^2.3.0"
     vue-style-loader "^4.1.0"
+
+vue-multiselect@^2.1.6:
+  version "2.1.6"
+  resolved "https://registry.yarnpkg.com/vue-multiselect/-/vue-multiselect-2.1.6.tgz#5be5d811a224804a15c43a4edbb7485028a89c7f"
+  integrity sha512-s7jmZPlm9FeueJg1RwJtnE9KNPtME/7C8uRWSfp9/yEN4M8XcS/d+bddoyVwVnvFyRh9msFo0HWeW0vTL8Qv+w==
 
 vue-style-loader@^4.1.0, vue-style-loader@^4.1.2:
   version "4.1.2"

@@ -453,7 +453,7 @@ export default class ExperimentList extends Vue {
         endDate = moment(dates[1], 'DD/MM/YYYY').format('YYYY-MM-DD');
       }
     }
-
+/*
     service.searchExperiments(
       this.user.getAuthorizationHeader(),
       this.filter.uri,
@@ -483,6 +483,7 @@ export default class ExperimentList extends Vue {
       }
     })
     .catch(this.resetExperiments);
+*/
   }
 
   resetExperiments(error) {
@@ -503,7 +504,7 @@ export default class ExperimentList extends Vue {
     let service: ProjectsService = this.$opensilex.getService(
       "opensilex.ProjectsService"
     );
-
+/*
     service.search(
       this.user.getAuthorizationHeader(),
       null,
@@ -522,6 +523,7 @@ export default class ExperimentList extends Vue {
       this.projectsList = resultsList;
       this.projects = results;
     }).catch(this.$opensilex.errorHandler);
+*/
   }
 
   formatDate(value: any): String {

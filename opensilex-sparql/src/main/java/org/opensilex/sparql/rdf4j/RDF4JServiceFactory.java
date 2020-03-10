@@ -34,13 +34,22 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
         this.repository = repository;
     }
 
+    private synchronized SPARQLService getNewService() throws Exception {
+        RepositoryConnection connection = repository.getConnection();
+        SPARQLService sparql = new SPARQLService(new RDF4JConnection(connection));
+        sparql.startup();
+        
+        return sparql;
+    }
+    
+    private synchronized void closeService(SPARQLService sparql) throws Exception {
+        sparql.shutdown();
+    }
+    
     @Override
     public SPARQLService provide() {
         try {
-            RepositoryConnection connection = repository.getConnection();
-            SPARQLService sparql = new SPARQLService(new RDF4JConnection(connection));
-            sparql.startup();
-            return sparql;
+            return getNewService();
         } catch (Exception ex) {
             LOGGER.error("Error while opening RDF4J service connectioninstance", ex);
             return null;
@@ -50,7 +59,7 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
     @Override
     public void dispose(SPARQLService sparql) {
         try {
-            sparql.shutdown();
+            closeService(sparql);
         } catch (Exception ex) {
             LOGGER.error("Error while closing RDF4J service connectioninstance instance", ex);
         }

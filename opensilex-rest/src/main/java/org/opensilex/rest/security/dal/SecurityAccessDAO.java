@@ -42,7 +42,7 @@ public class SecurityAccessDAO {
 
     public static String getCredentialIdFromMethod(Method method) {
         ApiCredential credentialAnnotation = method.getAnnotation(ApiCredential.class);
-        return credentialAnnotation.credentialId();
+        return credentialAnnotation != null ? credentialAnnotation.credentialId() : null;
     }
 
     private static TreeMap<String, Map<String, String>> credentialsGroups;

@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.opensilex.core.experiment.dal.ExperimentDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 

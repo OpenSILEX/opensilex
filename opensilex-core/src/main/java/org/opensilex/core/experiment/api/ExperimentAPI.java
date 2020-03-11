@@ -10,7 +10,7 @@ package org.opensilex.core.experiment.api;
 import io.swagger.annotations.*;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
+import org.opensilex.core.experiment.dal.ExperimentSearch;
 import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.validation.date.DateConstraint;
@@ -217,8 +217,6 @@ public class ExperimentAPI {
             @ApiParam(value = "Regex pattern for filtering by objective", example = ".*") @QueryParam("objective") String objective,
             @ApiParam(value = "Search by involved species", example = "http://www.phenome-fppn.fr/id/species/zeamays") @QueryParam("species") URI species,
             @ApiParam(value = "Search by related project uri", example = "http://www.phenome-fppn.fr/projects/ZA17\nhttp://www.phenome-fppn.fr/id/projects/ZA18") @QueryParam("projects") List<URI> projects,
-            @ApiParam(value = "Search by scientific(s) supervisor(s)", example = "http://www.phenome-fppn.fr/users/anne.tireau\nhttp://www.phenome-fppn.fr/users/pascal.neveu") @QueryParam("scientificSupervisors") List<URI> scientificSupervisors,
-            @ApiParam(value = "Search by technical(s) supervisor(s)", example = "http://www.phenome-fppn.fr/users/anne.tireau\nhttp://www.phenome-fppn.fr/users/pascal.neveu") @QueryParam("technicalSupervisors") List<URI> technicalSupervisors,
             @ApiParam(value = "Search by infrastructure(s)") @QueryParam("infrastructures") List<URI> infrastructures,
             @ApiParam(value = "Search by devices(s)") @QueryParam("devices") List<URI> installations,
             @ApiParam(value = "Search by groups(s)") @QueryParam("groups") List<URI> groups,
@@ -235,7 +233,7 @@ public class ExperimentAPI {
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
 
             // set searchDTO specifics attributes
-            ExperimentSearchDTO searchDTO = new ExperimentSearchDTO()
+            ExperimentSearch searchDTO = new ExperimentSearch()
                     .setEnded(isEnded);
 
             // set general experiment DTO attributes
@@ -245,14 +243,12 @@ public class ExperimentAPI {
                     .setSpecies(species)
                     .setStartDate(startDate)
                     .setEndDate(endDate)
-                    .setIsPublic(isPublic)
+                    .setPublic(isPublic)
                     .setComment(comment)
                     .setObjective(objective);
 
             // set list based DTO attributes
-            searchDTO.setTechnicalSupervisors(technicalSupervisors)
-                    .setScientificSupervisors(scientificSupervisors)
-                    .setProjects(projects)
+            searchDTO.setProjects(projects)
                     .setGroups(groups)
                     .setVariables(variables)
                     .setSensors(sensors)

@@ -32,36 +32,46 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
             required = true
     )
     private String name;
+    public static final String NAME_SPARQL_VAR = "name";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasShortname"
     )
     private String shortname;
+    public static final String SHORTNAME_SPARQL_VAR = "shortname";
 
     @SPARQLProperty(
             ontology = DCTerms.class,
             property = "description"
     )
     private String description;
+    public static final String DESCRIPTION_SPARQL_VAR = "description";
+
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasObjective"
     )
     private String objective;
+    public static final String OBJECTIVE_SPARQL_VAR = "objective";
+
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "startDate"
     )
     private LocalDate startDate;
+    public static final String START_DATE_SPARQL_VAR = "startDate";
+
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "endDate"
     )
     private LocalDate endDate;
+    public static final String END_DATE_SPARQL_VAR = "endDate";
+
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -74,6 +84,8 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
             property = "homepage"
     )
     private URI homePage;
+    public static final String HOMEPAGE_SPARQL_VAR = "homePage";
+
 
     @SPARQLProperty(
             ontology = Oeso.class,

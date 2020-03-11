@@ -138,20 +138,20 @@ public class ExperimentDAO {
     }
 
     /**
-     * @param searchDTO   a search DTO which contains all attributes about an {@link ExperimentModel} search
+     * @param search  a subset of all attributes about an {@link ExperimentModel} search
      * @param orderByList an OrderBy List
      * @param page        the current page
      * @param pageSize    the page size
      * @return the ExperimentModel list
      */
-    public ListWithPagination<ExperimentModel> search(ExperimentSearch searchDTO, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public ListWithPagination<ExperimentModel> search(ExperimentSearch search, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
 
         ListWithPagination<ExperimentModel> xps = sparql.searchWithPagination(
                 ExperimentModel.class,
                 null,
                 (SelectBuilder select) -> {
-                    if (searchDTO != null) {
-                        searchDTO.apply(select);
+                    if (search != null) {
+                        search.apply(select);
                     }
                 },
                 orderByList,

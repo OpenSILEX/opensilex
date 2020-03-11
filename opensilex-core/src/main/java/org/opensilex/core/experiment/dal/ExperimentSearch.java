@@ -201,7 +201,7 @@ public class ExperimentSearch {
         return isPublic;
     }
 
-    public ExperimentSearch setPublic(Boolean aPublic) {
+    public ExperimentSearch setIsPublic(Boolean aPublic) {
         isPublic = aPublic;
         return this;
     }
@@ -280,7 +280,9 @@ public class ExperimentSearch {
 
     protected void appendUriRegexFilter(SelectBuilder select) {
         if (uri != null) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(SPARQLResourceModel.URI_FIELD, uri.toString()));
+            Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+            Expr strUriExpr = SPARQLQueryHelper.getExprFactory().str(uriVar);
+            select.addFilter(SPARQLQueryHelper.regexFilter(strUriExpr, uri.toString(),null));
         }
     }
 

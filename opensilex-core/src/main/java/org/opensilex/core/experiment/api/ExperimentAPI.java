@@ -243,7 +243,7 @@ public class ExperimentAPI {
                     .setSpecies(species)
                     .setStartDate(startDate)
                     .setEndDate(endDate)
-                    .setPublic(isPublic)
+                    .setIsPublic(isPublic)
                     .setComment(comment)
                     .setObjective(objective);
 

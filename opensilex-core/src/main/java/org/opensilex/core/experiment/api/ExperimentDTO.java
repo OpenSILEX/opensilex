@@ -5,14 +5,14 @@
 // Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
 
-package org.opensilex.core.experiment.dal;
+package org.opensilex.core.experiment.api;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.rest.validation.Required;
 import org.opensilex.rest.validation.date.DateConstraint;
 
 import java.net.URI;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 

@@ -322,7 +322,7 @@ public class ProjectResourceService extends ResourceService {
     public Response getBySearch(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page,
-            @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_PROJECT_URI) @QueryParam("uri") String uri,
+            @ApiParam(value = "Search by URI", example = DocumentationAnnotation.EXAMPLE_PROJECT_URI) @QueryParam("uri") URI uri,
             @ApiParam(value = "Search by project name", example = DocumentationAnnotation.EXAMPLE_PROJECT_NAME) @QueryParam("name") String name,
             @ApiParam(value = "Search by shortname", example = DocumentationAnnotation.EXAMPLE_PROJECT_SHORTNAME) @QueryParam("shortname") String shortname,
             @ApiParam(value = "Search by financial funding", example = DocumentationAnnotation.EXAMPLE_PROJECT_FINANCIAL_FUNDING) @QueryParam("financialFunding") String financialFunding,
@@ -331,7 +331,7 @@ public class ProjectResourceService extends ResourceService {
             @ApiParam(value = "Search by description", example = DocumentationAnnotation.EXAMPLE_PROJECT_DESCRIPTION) @QueryParam("description") String description,
             @ApiParam(value = "Search by start date", example = DocumentationAnnotation.EXAMPLE_PROJECT_DATE_START) @QueryParam("startDate") String startDate,
             @ApiParam(value = "Search by end date", example = DocumentationAnnotation.EXAMPLE_PROJECT_DATE_END) @QueryParam("endDate") String endDate,
-            @ApiParam(value = "Search by home page", example = DocumentationAnnotation.EXAMPLE_PROJECT_HOME_PAGE) @QueryParam("homePage") String homePage,
+            @ApiParam(value = "Search by home page", example = DocumentationAnnotation.EXAMPLE_PROJECT_HOME_PAGE) @QueryParam("homePage") URI homePage,
             @ApiParam(value = "Search by objective", example = DocumentationAnnotation.EXAMPLE_PROJECT_OBJECTIVE) @QueryParam("objective") String objective,
             @Context SecurityContext securityContext) throws Exception {
         UserModel user = (UserModel) securityContext.getUserPrincipal();

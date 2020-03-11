@@ -7,35 +7,6 @@
 //******************************************************************************
 package opensilex.service.dao.manager;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.sparql.modify.request.UpdateDeleteWhere;
-import static org.apache.jena.sparql.vocabulary.VocabTestQuery.query;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.BooleanQuery;
-import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.query.QueryLanguage;
-import org.eclipse.rdf4j.query.TupleQuery;
-import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.Update;
-import org.eclipse.rdf4j.query.UpdateExecutionException;
-import org.eclipse.rdf4j.repository.Repository;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.RepositoryException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import opensilex.service.PropertiesFileManager;
 import opensilex.service.configuration.DateFormat;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
@@ -46,13 +17,33 @@ import opensilex.service.dao.exception.ResourceAccessDeniedException;
 import opensilex.service.ontology.Rdf;
 import opensilex.service.ontology.Rdfs;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.shared.JenaException;
+import org.apache.jena.sparql.modify.request.UpdateDeleteWhere;
 import org.apache.jena.update.UpdateRequest;
 import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.*;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.service.SPARQLService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DAO class to query the triplestore
@@ -341,10 +332,10 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
             spql.addInsert(graph, subjectUriNode, predicateUriNode, objectPropertyNode);
         });
 
-        LOGGER.debug(SPARQL_QUERY + query.toString());
+        LOGGER.debug(SPARQL_QUERY + spql.toString());
 
         //Insert the properties in the triplestore
-        Update prepareUpdate = prepareRDF4JUpdateQuery(query);
+        Update prepareUpdate = prepareRDF4JUpdateQuery(spql.build());
         try {
             prepareUpdate.execute();
         } catch (UpdateExecutionException ex) {

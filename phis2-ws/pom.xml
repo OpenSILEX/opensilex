@@ -169,6 +169,15 @@
                     <outputDirectory>../../${generated.doc.site.directory}/${project.name}/</outputDirectory>
                 </configuration>
             </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <outputFile>../../${generated.doc.site.directory}/${project.name}/checkstyle-result.xml</outputFile>
+                    <outputDirectory>../../${generated.doc.site.directory}/${project.name}/checkstyle/</outputDirectory>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     
@@ -191,6 +200,15 @@
                     <additionalparam>-Xdoclint:none</additionalparam>
                     <additionalOptions>-Xdoclint:none</additionalOptions>
                     <additionalJOption>-Xdoclint:none</additionalJOption>
+                </configuration>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <outputFile>../../${generated.doc.site.directory}/${project.name}/checkstyle-result.xml</outputFile>
+                    <outputDirectory>../../${generated.doc.site.directory}/${project.name}/checkstyle/</outputDirectory>
                 </configuration>
             </plugin>
         </plugins>

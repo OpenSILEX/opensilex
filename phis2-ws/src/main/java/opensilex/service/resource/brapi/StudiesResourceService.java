@@ -58,7 +58,7 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
+import org.opensilex.core.experiment.dal.ExperimentSearch;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
@@ -198,7 +198,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         ) throws SQLException {               
 
         try {
-            ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();  
+            ExperimentSearch searchDTO = new ExperimentSearch();
             ArrayList<OrderBy> orderByList = new ArrayList();
             
             if (!StringUtils.isEmpty(studyDbId)) {
@@ -314,7 +314,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         ) throws Exception {   
         try {
             
-            ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();  
+            ExperimentSearch searchDTO = new ExperimentSearch();
             ArrayList<OrderBy> orderByList = new ArrayList();
             searchDTO.setUri(URI.create(studyDbId));
 
@@ -500,7 +500,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
 
         try {
             
-            ExperimentSearchDTO searchDTO = new ExperimentSearchDTO(); 
+            ExperimentSearch searchDTO = new ExperimentSearch();
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
             ExperimentModel xpModel = xpDao.get(new URI(studyDbId));
             

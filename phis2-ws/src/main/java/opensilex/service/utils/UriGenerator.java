@@ -572,7 +572,7 @@ public class UriGenerator {
      */
     private String generateEventUri() {
         // To check if URI already exists
-        EventDAO eventDao = new EventDAO(null);
+        EventDAO eventDao = new EventDAO(sparql);
         String newEventUri = PLATFORM_URI_ID_EVENT + UUID.randomUUID();
         while (eventDao.existUri(newEventUri)) {
             newEventUri = PLATFORM_URI_ID_EVENT + UUID.randomUUID();
@@ -590,7 +590,7 @@ public class UriGenerator {
      */
     private String generateInstantUri() {
         // To check if the URI already exists
-        EventDAO timeDao = new EventDAO(null);
+        EventDAO timeDao = new EventDAO(sparql);
         String newInstantUri = PLATFORM_URI_ID_INSTANT + UUID.randomUUID();
         while (timeDao.existUri(newInstantUri)) {
             newInstantUri = PLATFORM_URI_ID_INSTANT + UUID.randomUUID();

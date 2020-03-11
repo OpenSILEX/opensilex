@@ -712,7 +712,7 @@ public class SensorResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam(GlobalWebserviceValues.PAGE_SIZE) @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int pageSize,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
     ) throws Exception {
-        DataDAO dataDAO = new DataDAO();
+        DataDAO dataDAO = new DataDAO(sparql);
         dataDAO.setPage(page);
         dataDAO.setPageSize(pageSize);
 

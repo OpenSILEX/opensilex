@@ -402,7 +402,7 @@ public class VariableResourceService extends ResourceService implements BrapiCal
         }
 
         for (Variable variable : variablesList) {
-            DataDAO dataDAOMongo = new DataDAO();
+            DataDAO dataDAOMongo = new DataDAO(sparql);
             dataDAOMongo.variableUri = variable.getUri();
             ArrayList<BrapiObservationDTO> observationsPerVariable = new ArrayList();
             for (ScientificObject object : objectsList) {

@@ -52,9 +52,10 @@ public class DataDAO extends MongoDAO<Data> {
 
     private SPARQLService sparql;
 
-    public void DataDAO(SPARQLService sparql) {
+    public DataDAO(SPARQLService sparql) {
         this.sparql = sparql;
     }
+    
     private final static Logger LOGGER = LoggerFactory.getLogger(DataDAO.class);
 
     // MongoDB fields labels, used to query (CRUD) the mongo data

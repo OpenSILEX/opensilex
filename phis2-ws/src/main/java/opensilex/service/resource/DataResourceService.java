@@ -128,7 +128,7 @@ public class DataResourceService extends ResourceService {
 
         try {
             if (data != null && !data.isEmpty()) {
-                DataDAO dataDAO = new DataDAO();
+                DataDAO dataDAO = new DataDAO(sparql);
 
                 dataDAO.user = userSession.getUser();
 
@@ -240,7 +240,7 @@ public class DataResourceService extends ResourceService {
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam(GlobalWebserviceValues.PAGE) @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
     ) {
         // 1. Initialize dataDAO with parameters
-        DataDAO dataDAO = new DataDAO();
+        DataDAO dataDAO = new DataDAO(sparql);
 
         dataDAO.variableUri = variable;
 
@@ -723,7 +723,7 @@ public class DataResourceService extends ResourceService {
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<DataSearchDTO> getResponse;
 
-        DataDAO dataDAO = new DataDAO();
+        DataDAO dataDAO = new DataDAO(sparql);
 
         List<String> objectsUris = new ArrayList<>();
         List<String> provenancesUris = new ArrayList<>();

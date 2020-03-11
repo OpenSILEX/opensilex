@@ -772,7 +772,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         }
 
         for (Variable variable:variablesList) {
-            DataDAO dataDAOMongo = new DataDAO();
+            DataDAO dataDAOMongo = new DataDAO(sparql);
             dataDAOMongo.variableUri = variable.getUri();
             ArrayList<BrapiObservationDTO> observationsPerVariable = new ArrayList();
             for (ScientificObject object:objectsList) {            
@@ -838,7 +838,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             ArrayList<BrapiObservationSummaryDTO> observationsPerObsUnit = new ArrayList(); 
             for (Variable variable:variablesList) {
                 //retrieve observations
-                DataDAO dataDAOMongo = new DataDAO();
+                DataDAO dataDAOMongo = new DataDAO(sparql);
                 ArrayList<BrapiObservationSummaryDTO> observationsPerObjectAndVariable = new ArrayList();          
                 dataDAOMongo.objectUri = object.getUri();
                 dataDAOMongo.variableUri = variable.getUri();

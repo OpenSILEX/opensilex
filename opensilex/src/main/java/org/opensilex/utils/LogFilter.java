@@ -33,11 +33,6 @@ public class LogFilter extends ThresholdFilter {
         if (!isStarted()) {
             return FilterReply.NEUTRAL;
         }
-
-        if (event.getLoggerName().equals("org.opensilex.server.Server")) {
-            boolean a = true;
-            a = false;
-        }
         
         if (debug.contains(event.getLoggerName())) {
             return FilterReply.ACCEPT;

@@ -44,7 +44,7 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
+import org.opensilex.core.experiment.dal.ExperimentSearch;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
@@ -119,7 +119,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
             try {
                 int page = 0;
                 int pageSize = 1000;
-                ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();
+                ExperimentSearch searchDTO = new ExperimentSearch();
                 ArrayList<OrderBy> orderByList = new ArrayList();
 
                 if (studySearch.getStudyDbIds() != null) {
@@ -288,7 +288,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
     ) {
         try {
-            ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();
+            ExperimentSearch searchDTO = new ExperimentSearch();
             ArrayList<OrderBy> orderByList = new ArrayList();
 
             if (!StringUtils.isEmpty(studyDbId)) {

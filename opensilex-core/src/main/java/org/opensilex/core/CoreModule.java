@@ -38,7 +38,12 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
             if (groupUris.isEmpty()) {
                 tokenBuilder.withArrayClaim(TOKEN_USER_GROUP_URIS, new String[0]);
             } else {
-                String[] groupArray = (String[]) groupUris.stream().map(URI::toString).toArray();
+                String[] groupArray = new String[groupUris.size()];
+                int index = 0;
+                for (URI groupUri : groupUris) {
+                    groupArray[index] = groupUri.toString();
+                    index++;
+                }
                 tokenBuilder.withArrayClaim(TOKEN_USER_GROUP_URIS, groupArray);
             }
         } catch (Exception e) {

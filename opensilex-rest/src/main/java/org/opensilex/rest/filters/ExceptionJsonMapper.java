@@ -48,6 +48,8 @@ public class ExceptionJsonMapper implements ExceptionMapper<Throwable> {
                     exceptionResponse.getStatusInfo().getFamily().toString(),
                     exceptionResponse.getStatusInfo().getReasonPhrase()
             ).getResponse();
+        } else if (exception instanceof RuntimeException) {
+            response = new ErrorResponse(exception.getCause()).getResponse();
         } else {
             response = new ErrorResponse(exception).getResponse();
         }

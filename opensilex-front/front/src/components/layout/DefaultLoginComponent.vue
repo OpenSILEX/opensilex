@@ -17,6 +17,7 @@
                   id="login-group"
                   required
                 >
+                 <ValidationProvider rules="email" v-slot="{ errors }">
                   <b-form-input
                     id="email"
                     type="email"
@@ -25,6 +26,8 @@
                     :placeholder="$t('component.login.input.email')"
                   ></b-form-input>
                   <i class="ik ik-user"></i>
+                  <span>{{ errors[0] }}</span>
+                 </ValidationProvider>
                 </b-form-group>
 
                 <b-form-group

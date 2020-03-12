@@ -10,19 +10,20 @@
         "check:security": "yarn audit || cd ."
     },
     "dependencies": {
+        "@fortawesome/fontawesome-svg-core": "1.2.27",
+        "@fortawesome/free-solid-svg-icons": "5.12.1",
+        "@fortawesome/vue-fontawesome": "0.1.9",
         "core-js": "3.6.4",
         "inversify": "^5.0.1",
         "node-fetch": "^2.6.0",
         "reflect-metadata": "0.1.13",
+        "vee-validate": "^3.2.5",
         "vue": "2.6.11",
         "vue-class-component": "^7.1.0",
         "vue-property-decorator": "8.4.0",
         "vue-router": "3.1.6",
         "vuex": "^3.1.2",
-        "whatwg-fetch": "~3.0.0",
-        "@fortawesome/fontawesome-svg-core": "1.2.27",
-        "@fortawesome/free-solid-svg-icons": "5.12.1",
-        "@fortawesome/vue-fontawesome": "0.1.9"
+        "whatwg-fetch": "~3.0.0"
     },
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "2.21.0",
@@ -38,8 +39,8 @@
         "eslint-plugin-vue": "6.2.1",
         "sass": "1.26.1",
         "sass-loader": "8.0.2",
-        "typescript": "3.8.2",
         "terser-webpack-plugin": "2.3.5",
+        "typescript": "3.8.2",
         "vue-template-compiler": "2.6.11"
     },
     "eslintConfig": {

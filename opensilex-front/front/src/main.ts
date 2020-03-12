@@ -86,7 +86,6 @@ import BootstrapVue from 'bootstrap-vue'
 Vue.use(BootstrapVue);
 console.debug("Bootstrap plugin initialized !");
 
-
 //Initialise DatePicker 
 //https://www.npmjs.com/package/vuejs-datepicker
 import Datepicker from 'vuejs-datepicker';
@@ -130,6 +129,39 @@ const i18n = new VueI18n({
   fallbackLocale: 'en-US',
   locale: lang,
   messages
+});
+
+//Initialise validation 
+//https://logaretm.github.io/vee-validate/
+import { ValidationProvider, ValidationObserver } from 'vee-validate';
+Vue.component('ValidationProvider', ValidationProvider);
+Vue.component('ValidationObserver', ValidationObserver);
+
+import { configure, extend } from 'vee-validate';
+import validationMessagesEN from 'vee-validate/dist/locale/en.json';
+import validationMessagesFR from 'vee-validate/dist/locale/fr.json';
+import * as rules from 'vee-validate/dist/rules';
+
+for (let [rule, validation] of Object.entries(rules)) {
+  extend(rule, {
+    ...validation
+  });
+}
+console.log(validationMessagesEN);
+let validationTranslations = {
+  "validations": validationMessagesEN.messages
+}
+i18n.mergeLocaleMessage("en-US", validationTranslations);
+
+validationTranslations = {
+  "validations": validationMessagesFR.messages
+}
+i18n.mergeLocaleMessage("fr", validationTranslations);
+
+configure({
+  defaultMessage: (_, values)  => {
+    return "" + i18n.t(`validations.${values._rule_}`, values)
+  }
 });
 
 // Initialize date picker

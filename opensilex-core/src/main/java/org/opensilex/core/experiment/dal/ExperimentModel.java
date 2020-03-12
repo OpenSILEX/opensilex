@@ -9,7 +9,6 @@ package org.opensilex.core.experiment.dal;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.rest.group.dal.GroupModel;
 import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -22,6 +21,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import org.opensilex.core.factor.dal.FactorLevelModel;
 
 /**
  * @author Vincent MIGOT
@@ -156,7 +156,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
     )
     List<URI> variables = new LinkedList<>();
     public static final String VARIABLES_SPARQL_VAR = "variables";
-
+    
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "participatesIn",

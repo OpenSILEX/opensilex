@@ -1,30 +1,31 @@
 /*
  * ******************************************************************************
- *                                     FactorCreationDTO.java
+ *                                     FactorLevelGetDTO.java
  *  OpenSILEX
- *  Copyright © INRA 2019
- *  Creation date:  17 December, 2019
+ *  Copyright © INRAE 2020
+ *  Creation date:  11 March, 2020
  *  Contact: arnaud.charleroy@inra.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * ******************************************************************************
  */
 package org.opensilex.core.factor.api;
 
 import java.net.URI;
+import org.opensilex.core.factor.dal.FactorLevelModel;
 import org.opensilex.core.factor.dal.FactorModel;
-import org.opensilex.rest.validation.Required;
 
 /**
  * 
  * @author Arnaud Charleroy
  */
-public class FactorCreationDTO {
-
+public class FactorLevelGetDTO {
+    
     private URI uri;
 
-    @Required
     private String alias;
 
     private String comment;
+    
+    private URI hasFactor;
 
     public URI getUri() {
         return uri;
@@ -41,7 +42,7 @@ public class FactorCreationDTO {
     public void setAlias(String alias) {
         this.alias = alias;
     }
-
+   
     public String getComment() {
         return comment;
     }
@@ -50,13 +51,22 @@ public class FactorCreationDTO {
         this.comment = comment;
     }
 
-    public FactorModel newModel() {
-        FactorModel model = new FactorModel();
-        model.setUri(getUri());
-        model.setAlias(getAlias());
-        model.setComment(getComment());
-
-        return model;
+    public URI getHasFactor() {
+        return hasFactor;
     }
 
+    public void setHasFactor(URI hasFactor) {
+        this.hasFactor = hasFactor;
+    }
+    
+    public static FactorLevelGetDTO fromModel(FactorLevelModel model) {
+        FactorLevelGetDTO dto = new FactorLevelGetDTO();
+
+        dto.setUri(model.getUri());
+        dto.setAlias(model.getAlias());
+        dto.setComment(model.getComment());
+        dto.setHasFactor(model.getHasFactor());
+
+        return dto;
+    }
 }

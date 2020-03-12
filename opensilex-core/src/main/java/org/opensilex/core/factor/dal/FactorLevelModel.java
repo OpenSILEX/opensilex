@@ -1,14 +1,15 @@
 /*
  * ******************************************************************************
- *                                     FactorModel.java
+ *                                     FactorLevelModel.java
  *  OpenSILEX
- *  Copyright © INRA 2019
- *  Creation date:  17 December, 2019
+ *  Copyright © INRAE 2020
+ *  Creation date:  11 March, 2020
  *  Contact: arnaud.charleroy@inra.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * ******************************************************************************
  */
 package org.opensilex.core.factor.dal;
 
+import java.net.URI;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -22,11 +23,11 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
  */
 @SPARQLResource(
         ontology = Oeso.class,
-        resource = "Factor",
-        graph = "set/factors",
-        prefix = "factor"
+        resource = "FactorLevel",
+        graph = "set/factorsLevels",
+        prefix = "factorLevel"
 )
-public class FactorModel extends SPARQLResourceModel implements ClassURIGenerator<FactorModel> {
+public class FactorLevelModel extends SPARQLResourceModel implements ClassURIGenerator<FactorLevelModel> {
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -42,6 +43,13 @@ public class FactorModel extends SPARQLResourceModel implements ClassURIGenerato
             property = "comment"
     )
     String comment;
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasFactor"
+    )
+    URI hasFactor;
+    public static final String HAS_FACTOR_FIELD = "hasFactor";
 
     public String getAlias() {
         return alias;
@@ -60,8 +68,16 @@ public class FactorModel extends SPARQLResourceModel implements ClassURIGenerato
         this.comment = comment;
     }
 
+    public URI getHasFactor() {
+        return hasFactor;
+    }
+
+    public void setHasFactor(URI hasFactor) {
+        this.hasFactor = hasFactor;
+    }
+    
     @Override
-    public String[] getUriSegments(FactorModel instance) {
+    public String[] getUriSegments(FactorLevelModel instance) {
         return new String[]{
             instance.getAlias()
         };

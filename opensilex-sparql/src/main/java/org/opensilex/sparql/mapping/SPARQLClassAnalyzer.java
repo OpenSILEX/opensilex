@@ -187,7 +187,7 @@ public class SPARQLClassAnalyzer {
             Class<?> propertyOntology = sProperty.ontology();
             Field propertyField = propertyOntology.getField(sProperty.property());
             property = (Property) propertyField.get(null);
-        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException ex) {
+        } catch (Exception ex) {
             throw new SPARQLInvalidClassDefinitionException(objectClass, "Property type " + sProperty.property() + " does not exists in ontology: " + sProperty.ontology().getName(), ex);
         }
 

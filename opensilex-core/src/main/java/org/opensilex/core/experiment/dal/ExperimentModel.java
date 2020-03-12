@@ -18,10 +18,8 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import org.opensilex.core.factor.dal.FactorLevelModel;
 
 /**
  * @author Vincent MIGOT

@@ -100,8 +100,8 @@ public class Oeso {
     // ---- FACTORS ----
     public static final Resource Factor = Ontology.resource(NS, "Factor");
     public static final Resource FactorLevel = Ontology.resource(NS, "FactorLevel");
-    public static final Resource hasFactorLevel = Ontology.resource(NS, "hasFactorLevel");
-    public static final Resource hasFactor= Ontology.resource(NS, "hasFactor");
+    public static final Property hasFactorLevel = Ontology.property(NS, "hasFactorLevel");
+    public static final Property hasFactor= Ontology.property(NS, "hasFactor");
 
     public static final Resource SensingDevice = Ontology.resource(NS, "SensingDevice");
 

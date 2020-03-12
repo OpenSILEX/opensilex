@@ -173,6 +173,22 @@
                     <aggregate>true</aggregate>
                 </configuration>
             </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <outputFile>./${generated.doc.site.directory}/${project.name}/checkstyle-result.xml</outputFile>
+                    <outputDirectory>./${generated.doc.site.directory}/${project.name}/checkstyle/</outputDirectory>
+                </configuration>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>checkstyle-aggregate</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
         </plugins>
     </reporting>
     

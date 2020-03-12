@@ -22,6 +22,7 @@ import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.util.IOTools;
+import org.apache.catalina.valves.StuckThreadDetectionValve;
 import org.apache.catalina.valves.rewrite.RewriteValve;
 import org.apache.catalina.webresources.StandardRoot;
 import org.apache.commons.io.FileUtils;
@@ -111,6 +112,10 @@ public class Server extends Tomcat {
         // Load Swagger root application
         Context appContext = initApp("", "/", "/webapp", getClass());
         appContext.getPipeline().addValve(new RewriteValve());
+        StuckThreadDetectionValve threadTimeoutValve = new StuckThreadDetectionValve ();
+        threadTimeoutValve.setThreshold(120);
+        threadTimeoutValve.setInterruptThreadThreshold(30);
+        appContext.getPipeline().addValve(threadTimeoutValve);
 
         try {
             ClassUtils.listFilesByExtension(instance.getBaseDirectory() + "/webapps", "war", (File warfile) -> {

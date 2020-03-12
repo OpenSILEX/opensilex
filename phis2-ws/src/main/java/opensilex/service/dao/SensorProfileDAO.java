@@ -177,7 +177,7 @@ public class SensorProfileDAO extends Rdf4jDAO<SensorProfile> {
             if (property.getRdfType() != null) {
                 Node propertyValue = NodeFactory.createURI(property.getValue());
                 spql.addInsert(graph, sensorProfileUri, propertyRelation, propertyValue);
-                spql.addInsert(graph,propertyValue, RDF.type, property.getRdfType());
+                spql.addInsert(graph,propertyValue, RDF.type, NodeFactory.createURI(property.getRdfType()));
             } else {
                 Literal propertyValue = ResourceFactory.createStringLiteral(property.getValue());
                 spql.addInsert(graph, sensorProfileUri, propertyRelation, propertyValue);

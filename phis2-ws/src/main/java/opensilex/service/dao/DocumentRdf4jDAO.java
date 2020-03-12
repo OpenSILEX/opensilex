@@ -54,55 +54,57 @@ import org.opensilex.sparql.service.SPARQLService;
 //After the update of the June 12, 2018 document's metadata are inserted inside 
 //the triplestore and in mongodb, the document is updated (linked/unlinked)
 //\SILEX:warning
-
 //SILEX:conception
 //If the object concerned by the document does not exist in the triplestore, 
 //dont add the triplet (element rdf:type elementType). It allows more genericity
 //but might need to be updated in the future
 //\SILEX:conception
-
 /**
  * Document DAO for RDF4J.
- * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal <morgane.vidal@inra.fr>
- * @update [Morgane Vidal] 12 October, 2017 : add status on documents : linked/unlinked
- * @update [Andréas Garcia] 15 Jan. 2019 : Replace "concern" occurences by "concernedItem"
+ *
+ * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal
+ * <morgane.vidal@inra.fr>
+ * @update [Morgane Vidal] 12 October, 2017 : add status on documents :
+ * linked/unlinked
+ * @update [Andréas Garcia] 15 Jan. 2019 : Replace "concern" occurences by
+ * "concernedItem"
  */
 public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
+
     final static Logger LOGGER = LoggerFactory.getLogger(DocumentRdf4jDAO.class);
     public String uri;
-    
+
     public String documentType;
     public static final String DOCUMENT_TYPE = "documentType";
-    
+
     public String creator;
     public static final String CREATOR = "creator";
-    
+
     public String language;
     public static final String LANGUAGE = "language";
-    
+
     public String title;
     public static final String TITLE = "title";
-    
+
     public String creationDate;
     public static final String CREATION_DATE = "creationDate";
-    
+
     public String format;
     public static final String FORMAT = "format";
-    
+
     public String comment;
     public static final String COMMENTS = "comments";
 
     /**
-     * Sort document by date
-     * Allowable values : asc, desc
+     * Sort document by date Allowable values : asc, desc
      */
     public String sortByDate;
-    
+
     //List of the elements concerned by the document
     public List<String> concernedItemsUris = new ArrayList<>();
     public static final String CONCERNED_ITEM_URI = "concernedItemUri";
     public static final String CONCERNED_ITEM_TYPE = "concernedItemType";
-    
+
     //Document's status. Equals to linked if the document has been linked to at 
     //least one element (concernedItems). Unlinked if the document isnt linked 
     //to any element
@@ -114,10 +116,11 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
     }
 
     /**
-     * Check if document's metadata are valid 
-     * (check rules, documents types, documents status)
-     * @see phis2ws.service.resources.dto.DocumentMetadataDTO#rules() 
-     * @param documentsMetadata 
+     * Check if document's metadata are valid (check rules, documents types,
+     * documents status)
+     *
+     * @see phis2ws.service.resources.dto.DocumentMetadataDTO#rules()
+     * @param documentsMetadata
      * @return The POSTResultsReturn of the check. Contains list of errors if
      * errors found.
      */
@@ -125,7 +128,7 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         POSTResultsReturn documentsMetadataCheck = null;
         // status list which will be returned. It will contains some fails or
         // informations
-        List<Status> checkStatus = new ArrayList<>(); 
+        List<Status> checkStatus = new ArrayList<>();
 
         //Get ontology documents types to check
         ArrayList<String> documentsTypes = null;
@@ -134,8 +137,8 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         } catch (RepositoryException | MalformedQueryException | QueryEvaluationException ex) {
             LOGGER.error(ex.getMessage(), ex);
         }
-        
-        boolean dataOk = true; 
+
+        boolean dataOk = true;
         for (DocumentMetadataDTO documentMetadata : documentsMetadata) {
             //1. Check document's type
             if (documentsTypes != null && !documentsTypes.contains(documentMetadata.getDocumentType())) {
@@ -146,29 +149,30 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
             //3. Check status (equals to linked or unlinked)
             if (!(documentMetadata.getStatus().equals(DocumentStatus.LINKED.toString()) || documentMetadata.getStatus().equals(DocumentStatus.UNLINKED.toString()))) {
                 dataOk = false;
-                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
-                        "Wrong status value given : " + documentMetadata.getStatus() + ". Expected : \"" + DocumentStatus.LINKED.toString() + "\" or \"" + DocumentStatus.UNLINKED.toString() + "\"" ));
+                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
+                        "Wrong status value given : " + documentMetadata.getStatus() + ". Expected : \"" + DocumentStatus.LINKED.toString() + "\" or \"" + DocumentStatus.UNLINKED.toString() + "\""));
             }
         }
         documentsMetadataCheck = new POSTResultsReturn(dataOk, null, dataOk);
         documentsMetadataCheck.statusList = checkStatus;
         return documentsMetadataCheck;
     }
-    
+
     /**
      * Save the document in mongodb
+     *
      * @param filePath the file path of the document to save in mongodb
-     * @return true document saved in mongodb
-     *         false an error occurred
+     * @return true document saved in mongodb false an error occurred
      */
     private POSTResultsReturn saveFileInMongoDB(String fileURI, File file) {
         DocumentMongoDAO documentDaoMongo = new DocumentMongoDAO();
         return documentDaoMongo.insertFile(fileURI, file);
     }
-    
+
     /**
-     * Generate a unique document uri. 
-     * @see phis2ws.service.utils.ResourcesUtils#getUniqueID() 
+     * Generate a unique document uri.
+     *
+     * @see phis2ws.service.utils.ResourcesUtils#getUniqueID()
      * @return the generated document's uri
      */
     private String generateDocumentsURI() {
@@ -189,7 +193,7 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
 
     /**
      * Prepare insert query for document metadata
-     * 
+     *
      * @param documentMetadata
      * @return update request
      */
@@ -212,13 +216,13 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
 
         Property relationStatus = ResourceFactory.createProperty(Oeso.RELATION_STATUS.toString());
         spql.addInsert(graph, documentUri, relationStatus, documentMetadata.getStatus());
-            
+
         if (documentMetadata.getExtension() != null) {
             spql.addInsert(graph, documentUri, DCTerms.format, documentMetadata.getExtension());
         } else {
             spql.addInsert(graph, documentUri, DCTerms.format, "");
         }
-        
+
         if (documentMetadata.getComment() != null && !documentMetadata.getComment().equals("")) {
             spql.addInsert(graph, documentUri, RDFS.comment, documentMetadata.getComment());
         }
@@ -235,20 +239,20 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         }
 
         return spql.buildRequest();
-    } 
-    
+    }
+
     /**
      * Prepare delete query for document metadata
-     * 
+     *
      * @param documentMetadata
      * @return delete request
      */
     private UpdateRequest prepareDeleteQuery(Document document) {
         UpdateBuilder spql = new UpdateBuilder();
-        
+
         Node graph = NodeFactory.createURI(Contexts.DOCUMENTS.toString());
         Node documentUri = NodeFactory.createURI(document.getUri());
-        
+
         spql.addDelete(graph, documentUri, DCTerms.creator, document.getCreator());
 
         spql.addDelete(graph, documentUri, DCTerms.language, document.getLanguage());
@@ -259,10 +263,10 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
 
         Node documentType = NodeFactory.createURI(document.getDocumentType());
         spql.addDelete(graph, documentUri, RDF.type, documentType);
-        
+
         Property relationStatus = ResourceFactory.createProperty(Oeso.RELATION_STATUS.toString());
         spql.addDelete(graph, documentUri, relationStatus, document.getStatus());
-        
+
         if (document.getComment() != null) {
             spql.addDelete(graph, documentUri, RDFS.comment, document.getComment());
         }
@@ -272,12 +276,13 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
             Property relationConcern = ResourceFactory.createProperty(Oeso.RELATION_CONCERNS.toString());
             spql.addDelete(graph, documentUri, relationConcern, concernedItemUri);
         }
-                
+
         return spql.buildRequest();
     }
-    
+
     /**
      * Insert document's metadata in the triplestore and the file in mongo
+     *
      * @param documentsMetadata
      * @param file
      * @return the insert result, with each error or information
@@ -297,16 +302,16 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
 
         while (itAnot.hasNext() && AnnotationInsert) {
             DocumentMetadataDTO annotObject = itAnot.next();
-            
+
             //1. Save document in mongodb
-            final String documentName = generateDocumentsURI(); 
-            
+            final String documentName = generateDocumentsURI();
+
             annotObject.setUri(documentName);
             POSTResultsReturn saveFileResult = saveFileInMongoDB(documentName, file);
             insertStatus.addAll(saveFileResult.statusList);
-            
+
             //Document has been save
-            if (saveFileResult.getResultState()) { 
+            if (saveFileResult.getResultState()) {
                 //2. Save document's metadata
                 //SILEX:conception
                 // Here, the triplet corresponding to the concerned element which
@@ -319,7 +324,7 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
                 try {
                     // transaction begining
                     Update prepareUpdate = prepareRDF4JUpdateQuery(query);
-                    
+
                     LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
                     prepareUpdate.execute();
 
@@ -330,14 +335,14 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
                     insertStatus.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_CREATE_QUERY + " : " + e.getMessage()));
                 }
 
-                 // JSON bien formé et pas de problème avant l'insertion
+                // JSON bien formé et pas de problème avant l'insertion
                 if (AnnotationInsert && documentsMetadataState) {
                     resultState = true;
                 } else {
                 }
             }
         }
-            
+
         results = new POSTResultsReturn(resultState, AnnotationInsert, documentsMetadataState);
         results.statusList = insertStatus;
         if (resultState && !createdResourcesURIs.isEmpty()) {
@@ -346,13 +351,15 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         }
         return results;
     }
-    
+
     /**
-     * Return the list of documents types Retourne les types de documents disponibles
-     * @return List de concepts de document 
+     * Return the list of documents types Retourne les types de documents
+     * disponibles
+     *
+     * @return List de concepts de document
      * @throws RepositoryException
      * @throws MalformedQueryException
-     * @throws QueryEvaluationException 
+     * @throws QueryEvaluationException
      */
     public ArrayList<String> getDocumentsTypes() throws RepositoryException, MalformedQueryException, QueryEvaluationException {
         ArrayList<String> documentsSchemasUri = new ArrayList<>();
@@ -360,11 +367,11 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         sparqlQ.appendDistinct(true);
         sparqlQ.appendSelect("?documentType");
         sparqlQ.appendTriplet("?documentType", "<" + Rdfs.RELATION_SUBCLASS_OF.toString() + ">*", Oeso.CONCEPT_DOCUMENT.toString(), null);
-        sparqlQ.appendFilter("?documentType != <" + Oeso.CONCEPT_DOCUMENT.toString() +">");
+        sparqlQ.appendFilter("?documentType != <" + Oeso.CONCEPT_DOCUMENT.toString() + ">");
 
         LOGGER.debug(sparqlQ.toString());
         TupleQuery tupleQueryTo = prepareRDF4JTupleQuery(sparqlQ);
-        
+
         try (TupleQueryResult resultTo = tupleQueryTo.evaluate()) {
             while (resultTo.hasNext()) {
                 BindingSet bindingSet = resultTo.next();
@@ -375,54 +382,51 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         }
         return documentsSchemasUri;
     }
+
     /**
-     * @example
-     * SELECT DISTINCT  ?documentUri ?documentType ?creator ?title ?creationDate ?format ?status (GROUP_CONCAT(DISTINCT ?comment; SEPARATOR=",") AS ?comments) WHERE {
-     * GRAPH <http://www.phenome-fppn.fr/phis2/documents> { ?documentUri  rdf:type  ?documentType  . 
-     *  ?documentUri  dc:creator  ?creator  . 
-     *  ?documentUri  dc:language  "en"  . 
-     *  ?documentUri  dc:title  ?title  . 
-     *  ?documentUri  dc:date  ?creationDate  . 
-     *  ?documentUri  dc:format  ?format  . 
-     *  ?documentUri  <http://www.opensilex.org/vocabulary/oeso#status>  ?status  . 
-     *  ?documentUri  rdfs:comment  ?comment  . 
-     * FILTER ( (regex(STR(?creator), 'admin', 'i')) && (regex(STR(?title), 'liste', 'i')) ) 
-     * }}
-     * GROUP BY  ?documentUri ?documentType ?creator ?title ?creationDate ?format ?status 
-     * ORDER BY DESC(?creationDate) 
-     * LIMIT 20 
-     * OFFSET 0 
+     * @example SELECT DISTINCT ?documentUri ?documentType ?creator ?title
+     * ?creationDate ?format ?status (GROUP_CONCAT(DISTINCT ?comment;
+     * SEPARATOR=",") AS ?comments) WHERE { GRAPH
+     * <http://www.phenome-fppn.fr/phis2/documents> { ?documentUri rdf:type
+     * ?documentType . ?documentUri dc:creator ?creator . ?documentUri
+     * dc:language "en" . ?documentUri dc:title ?title . ?documentUri dc:date
+     * ?creationDate . ?documentUri dc:format ?format . ?documentUri
+     *  <http://www.opensilex.org/vocabulary/oeso#status> ?status . ?documentUri
+     * rdfs:comment ?comment . FILTER ( (regex(STR(?creator), 'admin', 'i')) &&
+     * (regex(STR(?title), 'liste', 'i')) ) }} GROUP BY ?documentUri
+     * ?documentType ?creator ?title ?creationDate ?format ?status ORDER BY
+     * DESC(?creationDate) LIMIT 20 OFFSET 0
      * @return the query
      */
     protected SPARQLQueryBuilder prepareSearchQuery() {
-       SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
-       sparqlQuery.appendDistinct(true);
-       sparqlQuery.appendGraph(Contexts.DOCUMENTS.toString());
-       String select;
-       if (uri != null) {
-           select = "<" + uri + ">";
-       } else {
+        SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
+        sparqlQuery.appendDistinct(true);
+        sparqlQuery.appendGraph(Contexts.DOCUMENTS.toString());
+        String select;
+        if (uri != null) {
+            select = "<" + uri + ">";
+        } else {
             select = "?" + URI;
             sparqlQuery.appendSelect(select);
             sparqlQuery.appendGroupBy(select);
-       }
+        }
 
         if (documentType != null) {
-             sparqlQuery.appendTriplet(select, Rdf.RELATION_TYPE.toString(), documentType, null);
+            sparqlQuery.appendTriplet(select, Rdf.RELATION_TYPE.toString(), documentType, null);
         } else {
             sparqlQuery.appendGroupBy("?" + DOCUMENT_TYPE);
             sparqlQuery.appendSelect("?" + DOCUMENT_TYPE);
             sparqlQuery.appendTriplet(select, Rdf.RELATION_TYPE.toString(), "?" + DOCUMENT_TYPE, null);
         }
-        
+
         sparqlQuery.appendGroupBy("?" + CREATOR);
         sparqlQuery.appendSelect("?" + CREATOR);
         sparqlQuery.appendTriplet(select, DCTerms.creator.getURI(), "?" + CREATOR, null);
-        
+
         if (creator != null) {
-            sparqlQuery.appendAndFilter("regex(STR(?" + CREATOR +"), '" + creator + "', 'i')");
+            sparqlQuery.appendAndFilter("regex(STR(?" + CREATOR + "), '" + creator + "', 'i')");
         }
-        
+
         if (language != null) {
             sparqlQuery.appendTriplet(select, DCTerms.language.getURI(), "\"" + language + "\"", null);
         } else {
@@ -430,15 +434,15 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
             sparqlQuery.appendGroupBy(" ?" + LANGUAGE);
             sparqlQuery.appendTriplet(select, DCTerms.language.getURI(), "?" + LANGUAGE, null);
         }
-        
+
         sparqlQuery.appendGroupBy("?" + TITLE);
         sparqlQuery.appendSelect("?" + TITLE);
         sparqlQuery.appendTriplet(select, DCTerms.title.getURI(), "?" + TITLE, null);
-        
+
         if (title != null) {
-            sparqlQuery.appendAndFilter("regex(STR(?" + TITLE +"), '" + title + "', 'i')");
+            sparqlQuery.appendAndFilter("regex(STR(?" + TITLE + "), '" + title + "', 'i')");
         }
-        
+
         if (creationDate != null) {
             sparqlQuery.appendTriplet(select, DCTerms.date.getURI(), "\"" + creationDate + "\"", null);
         } else {
@@ -446,7 +450,7 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
             sparqlQuery.appendSelect("?" + CREATION_DATE);
             sparqlQuery.appendTriplet(select, DCTerms.date.getURI(), "?" + CREATION_DATE, null);
         }
-        
+
         if (format != null) {
             sparqlQuery.appendTriplet(select, DCTerms.format.getURI(), "\"" + format + "\"", null);
         } else {
@@ -454,13 +458,13 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
             sparqlQuery.appendSelect("?" + FORMAT);
             sparqlQuery.appendTriplet(select, DCTerms.format.getURI(), "?" + FORMAT, null);
         }
-        
+
         if (!concernedItemsUris.isEmpty() && concernedItemsUris.size() > 0) {
             for (String concernedItemUri : concernedItemsUris) {
                 sparqlQuery.appendTriplet(select, Oeso.RELATION_CONCERNS.toString(), concernedItemUri, null);
             }
-        } 
-        
+        }
+
         if (status != null) {
             sparqlQuery.appendTriplet(select, Oeso.RELATION_STATUS.toString(), "\"" + status + "\"", null);
         } else {
@@ -468,7 +472,7 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
             sparqlQuery.appendGroupBy("?" + STATUS);
             sparqlQuery.appendTriplet(select, Oeso.RELATION_STATUS.toString(), "?" + STATUS, null);
         }
-        
+
         //SILEX:info
         // Add group concat to prevent multiple triplestore requests
         // the query return a list with comma separated value in one column
@@ -478,24 +482,25 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         sparqlQuery.appendTriplet(select, Rdfs.RELATION_COMMENT.toString(), "?" + COMMENT, null);
         sparqlQuery.endBodyOptional();
         if (comment != null) {
-            sparqlQuery.appendFilter("regex(STR(?" + COMMENT +"), '" + comment + "', 'i')");
+            sparqlQuery.appendFilter("regex(STR(?" + COMMENT + "), '" + comment + "', 'i')");
         }
-        
+
         if (sortByDate != null && sortByDate.equals("asc")) {
             sparqlQuery.appendOrderBy("ASC(?" + CREATION_DATE + ")");
         } else if (sortByDate != null && sortByDate.equals("desc")) {
             sparqlQuery.appendOrderBy("DESC(?" + CREATION_DATE + ")");
         }
-        
+
         sparqlQuery.appendLimit(getPageSize());
         sparqlQuery.appendOffset(getPage() * getPageSize());
         LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
-        
-       return sparqlQuery;
+
+        return sparqlQuery;
     }
-    
+
     /**
      * prepare the query to search the comments of a document
+     *
      * @param uriDocument
      * @return the document's comments search query
      */
@@ -505,24 +510,26 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         sparqlQuery.appendGraph(Contexts.DOCUMENTS.toString());
         sparqlQuery.appendSelect("?comment");
         sparqlQuery.appendTriplet(uriDocument, Rdfs.RELATION_COMMENT.toString(), "?comment", null);
-        
+
         if (sortByDate != null) {
             sparqlQuery.appendOrderBy(sortByDate.toUpperCase() + "(?" + CREATION_DATE + ")");
         } else {
             // Use by default DESC if the sortByDate parameter is null
             sparqlQuery.appendOrderBy(SortingValues.DESC.toString().toUpperCase() + "(?" + CREATION_DATE + ")");
         }
-        
+
         sparqlQuery.appendLimit(this.getPageSize());
         sparqlQuery.appendOffset(this.getPage() * this.getPageSize());
-        
+
         LOGGER.debug(SPARQL_QUERY + sparqlQuery.toString());
-        
+
         return sparqlQuery;
     }
-    
+
     /**
-     * Prepare the query to search the elements which are concerned by the document
+     * Prepare the query to search the elements which are concerned by the
+     * document
+     *
      * @param uriDocument
      * @return the search query
      */
@@ -540,26 +547,22 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         return sparqlQuery;
     }
 
-     /**
-     * Count query generated by the searched parameters (class attributes)
- (uri, documentType, creator, language, title, creationDate, format, comment, sortByDate). 
-     * Must be done to find the total of instances
-     * found in the triplestore using these search parameters because the query
-     * is paginated (reduce the amount of data retrieved and the time to process
-     * data before to send it to the client) 
-     * @example
-     * SELECT (COUNT(DISTINCT ?documentUri) as ?count) WHERE {
-     * GRAPH <http://www.phenome-fppn.fr/phis2/documents> { 
-     *  ?documentUri  rdf:type  ?documentType  . 
-     *  ?documentUri  dc:creator  ?creator  . 
-     *  ?documentUri  dc:language  "en"  . 
-     *  ?documentUri  dc:title  ?title  . 
-     *  ?documentUri  dc:date  ?creationDate  . 
-     *  ?documentUri  dc:format  ?format  . 
-     *  ?documentUri  <http://www.opensilex.org/vocabulary/oeso#status>  ?status  . 
-     *  ?documentUri  rdfs:comment  ?comment  . 
-     * FILTER ( (regex(STR(?creator), 'admin', 'i')) && (regex(STR(?title), 'liste', 'i')) ) 
-     * }}
+    /**
+     * Count query generated by the searched parameters (class attributes) (uri,
+     * documentType, creator, language, title, creationDate, format, comment,
+     * sortByDate). Must be done to find the total of instances found in the
+     * triplestore using these search parameters because the query is paginated
+     * (reduce the amount of data retrieved and the time to process data before
+     * to send it to the client)
+     *
+     * @example SELECT (COUNT(DISTINCT ?documentUri) as ?count) WHERE { GRAPH
+     * <http://www.phenome-fppn.fr/phis2/documents> { ?documentUri rdf:type
+     * ?documentType . ?documentUri dc:creator ?creator . ?documentUri
+     * dc:language "en" . ?documentUri dc:title ?title . ?documentUri dc:date
+     * ?creationDate . ?documentUri dc:format ?format . ?documentUri
+     *  <http://www.opensilex.org/vocabulary/oeso#status> ?status . ?documentUri
+     * rdfs:comment ?comment . FILTER ( (regex(STR(?creator), 'admin', 'i')) &&
+     * (regex(STR(?title), 'liste', 'i')) ) }}
      * @return query generated with the searched parameters
      */
     private SPARQLQueryBuilder prepareCount() {
@@ -573,7 +576,7 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         LOGGER.debug(SPARQL_QUERY + " " + query.toString());
         return query;
     }
-    
+
     /**
      * @return number of total annotation returned with the search fields
      * @inheritdoc
@@ -590,21 +593,22 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         }
         return count;
     }
-    
+
     /**
      * Retreive the list of the searched documents.
-     * @return  a list of documents
+     *
+     * @return a list of documents
      */
     public ArrayList<Document> allPaginate() {
         SPARQLQueryBuilder sparqlQuery = prepareSearchQuery();
         TupleQuery tupleQuery = prepareRDF4JTupleQuery(sparqlQuery);
         ArrayList<Document> documents = new ArrayList<>();
-        
+
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 Document document = new Document();
-                
+
                 if (uri != null) {
                     document.setUri(uri);
                 } else {
@@ -614,12 +618,12 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
                     //             DocumentUri	DocumentType	Creator	Title	CreationDate	Format	Status	Comments
                     // Document 1                                                                                  ""
                     //SILEX:info
-                    if(bindingSet.getValue(URI) != null){
+                    if (bindingSet.getValue(URI) != null) {
                         document.setUri(bindingSet.getValue(URI).stringValue());
                     }
                 }
                 // See SILEX:info above
-                if(document.getUri() != null){
+                if (document.getUri() != null) {
                     if (documentType != null) {
                         document.setDocumentType(documentType);
                     } else {
@@ -664,21 +668,6 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
                             // for now only one comment can be linked to document
                             //\SILEX:info
                             document.setComment(comments.get(0));
-                        } 
-                    }
-
-                    //Check if document is linked to other elements
-                    SPARQLQueryBuilder sparqlQueryConcernedItem = prepareSearchConcernedItemsQuery(document.getUri());
-                    TupleQuery tupleQueryConcernedItem = prepareRDF4JTupleQuery(sparqlQueryConcernedItem);
-                    try (TupleQueryResult resultConcernedItem = tupleQueryConcernedItem.evaluate()) {
-                        while (resultConcernedItem.hasNext()) {
-                            BindingSet bindingSetConcernedItem = resultConcernedItem.next();
-                            if (bindingSetConcernedItem.getValue(CONCERNED_ITEM_URI) != null) {
-                                ConcernedItemDTO concernedItem = new ConcernedItemDTO();
-                                concernedItem.setTypeURI(bindingSetConcernedItem.getValue(CONCERNED_ITEM_TYPE).stringValue());
-                                concernedItem.setUri(bindingSetConcernedItem.getValue(CONCERNED_ITEM_URI).stringValue());
-                                document.addConcernedItem(concernedItem);
-                            }
                         }
                     }
 
@@ -686,15 +675,33 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
                 }
             }
         }
+
+        for (Document document : documents) {
+            //Check if document is linked to other elements
+            SPARQLQueryBuilder sparqlQueryConcernedItem = prepareSearchConcernedItemsQuery(document.getUri());
+            TupleQuery tupleQueryConcernedItem = prepareRDF4JTupleQuery(sparqlQueryConcernedItem);
+            try (TupleQueryResult resultConcernedItem = tupleQueryConcernedItem.evaluate()) {
+                while (resultConcernedItem.hasNext()) {
+                    BindingSet bindingSetConcernedItem = resultConcernedItem.next();
+                    if (bindingSetConcernedItem.getValue(CONCERNED_ITEM_URI) != null) {
+                        ConcernedItemDTO concernedItem = new ConcernedItemDTO();
+                        concernedItem.setTypeURI(bindingSetConcernedItem.getValue(CONCERNED_ITEM_TYPE).stringValue());
+                        concernedItem.setUri(bindingSetConcernedItem.getValue(CONCERNED_ITEM_URI).stringValue());
+                        document.addConcernedItem(concernedItem);
+                    }
+                }
+            }
+        }
         return documents;
     }
-    
+
     //SILEX:todo
     //Create a check method for the update and the insert
     //\SILEX:todo
     /**
      * check the metadata and update them if metadata valid
-     * @see phis2ws.service.resources.dto.DocumentMetadataDTO#rules() 
+     *
+     * @see phis2ws.service.resources.dto.DocumentMetadataDTO#rules()
      * @param documentsMetadata
      * @return the query result with the list of error or informations
      */
@@ -702,11 +709,11 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         List<Status> updateStatusList = new ArrayList<>(); // Failed or Info
         List<String> updatedResourcesURIList = new ArrayList<>(); // Failed or Info
         POSTResultsReturn results;
-        
+
         boolean annotationUpdate = true; // true if the update has been done
         boolean docsMetadataState = true;
         boolean resultState = false; // To know if the metadata where valid and updated
-        
+
         for (DocumentMetadataDTO documentMetadata : documentsMetadata) {
             //1. Delete actual metadata
             //1.1 Get informations which will be updated (to remove triplets)
@@ -718,12 +725,12 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
             UpdateRequest deleteQuery = null;
             //1.2 Delete metatada associated to the URI
             if (documentsCorresponding.size() > 0) {
-                 deleteQuery = prepareDeleteQuery(documentsCorresponding.get(0));
+                deleteQuery = prepareDeleteQuery(documentsCorresponding.get(0));
             }
 
             //2. Insert updated metadata
             UpdateRequest query = prepareInsertQuery(documentMetadata);
-            
+
             try {
                 // début de la transaction : vérification de la requête
                 if (deleteQuery != null) {
@@ -739,12 +746,12 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
                 LOGGER.error(e.getMessage(), e);
                 annotationUpdate = false;
                 updateStatusList.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, StatusCodeMsg.MALFORMED_UPDATE_QUERY + e.getMessage()));
-            }   
-                
+            }
+
             // Data ok, update
             if (annotationUpdate && docsMetadataState) {
                 resultState = true;
-            } 
+            }
         }
         results = new POSTResultsReturn(resultState, annotationUpdate, docsMetadataState);
         results.statusList = updateStatusList;
@@ -755,17 +762,18 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
 
         return results;
     }
-    
+
     /**
      * check new metadata and update if no error
+     *
      * @param objectsToUpdate
      * @return the update result, with errors or informations
      */
     public POSTResultsReturn checkAndUpdateList(List<DocumentMetadataDTO> objectsToUpdate) {
         POSTResultsReturn postResult;
-        
+
         postResult = this.checkAndUpdateDocumentsMetadataList(objectsToUpdate);
-        
+
         return postResult;
     }
 

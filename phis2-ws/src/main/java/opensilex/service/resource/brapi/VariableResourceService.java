@@ -373,7 +373,7 @@ public class VariableResourceService extends ResourceService implements BrapiCal
      * @param page the page number
      * @return observations list
      */
-    private ArrayList<BrapiObservationDTO> getObservationsList(String studyDbId, List<String> variableURIs) {
+    private ArrayList<BrapiObservationDTO> getObservationsList(String studyDbId, List<String> variableURIs) throws Exception {
 
         ArrayList<BrapiObservationDTO> observations = new ArrayList();
         ScientificObjectRdf4jDAO objectDAO = new ScientificObjectRdf4jDAO(sparql);

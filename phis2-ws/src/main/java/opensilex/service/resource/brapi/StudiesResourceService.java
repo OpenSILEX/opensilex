@@ -742,7 +742,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
      * @param page the page number
      * @return observations list 
      */
-    private ArrayList<BrapiObservationDTO> getObservationsList(String studyDbId, List<String> variableURIs) {
+    private ArrayList<BrapiObservationDTO> getObservationsList(String studyDbId, List<String> variableURIs) throws Exception {
 
         ArrayList<BrapiObservationDTO> observations = new ArrayList();  
         ScientificObjectRdf4jDAO objectDAO = new ScientificObjectRdf4jDAO(sparql);
@@ -821,7 +821,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
      * @param experiment Experiment linked to those scientific objects (user query filter)
      * @return observationUnits list 
      */
-    private ArrayList<BrapiObservationUnitDTO> getObservationUnitsResult(ArrayList<ScientificObject> scientificObjects, ExperimentModel experiment) {
+    private ArrayList<BrapiObservationUnitDTO> getObservationUnitsResult(ArrayList<ScientificObject> scientificObjects, ExperimentModel experiment) throws Exception {
         SimpleDateFormat df = new SimpleDateFormat(DateFormat.YMDTHMSZ.toString());
         VariableDAO variableDaoSesame = new VariableDAO(sparql);
         ArrayList<Variable> variablesList = variableDaoSesame.allPaginate(); 

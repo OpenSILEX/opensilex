@@ -48,8 +48,8 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author Arnaud Charleroy
  */
-//@Api("FactorLevelLevels")
-//@Path("/core/factorLevelLevels")
+//@Api("FactorLevels")
+//@Path("/core/FactorLevels")
 public class FactorLevelAPI {
 
     @Inject

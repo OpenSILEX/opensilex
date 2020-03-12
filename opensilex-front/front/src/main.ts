@@ -147,10 +147,20 @@ for (let [rule, validation] of Object.entries(rules)) {
     ...validation
   });
 }
-console.log(validationMessagesEN);
+
+extend("url", (value) => {
+  try {
+    new URL(value);
+    return true;
+  } catch (error) {
+    return false;
+  }
+});
+
 let validationTranslations = {
   "validations": validationMessagesEN.messages
 }
+
 i18n.mergeLocaleMessage("en-US", validationTranslations);
 
 validationTranslations = {

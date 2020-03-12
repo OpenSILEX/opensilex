@@ -225,5 +225,8 @@
             "read": "View variables",
             "delete": "Delete variables"
         }
+    },
+    "validations": {
+        "url": "The {_field_} field must be a valid URL"
     }
 }

@@ -330,28 +330,31 @@ public class EventDAO extends Rdf4jDAO<Event> {
                         INSTANT_SELECT_NAME,
                         DATETIMESTAMP_SELECT_NAME));
 
-                // Concerned items
-                event.setConcernedItems(concernedItemDao.find(
-                        event.getUri(),
-                        null,
-                        null,
-                        0,
-                        pageSizeMaxValue));
-
-                // Concerned items
-                event.setConcernedItems(concernedItemDao.find(
-                        event.getUri(),
-                        null,
-                        null,
-                        0,
-                        pageSizeMaxValue));
-
                 events.add(event);
             }
         } catch (RepositoryException | MalformedQueryException | QueryEvaluationException ex) {
             handleTriplestoreException(ex);
         }
 
+        for (Event event : events) {
+            
+                // Concerned items
+                event.setConcernedItems(concernedItemDao.find(
+                        event.getUri(),
+                        null,
+                        null,
+                        0,
+                        pageSizeMaxValue));
+
+                // Concerned items
+                event.setConcernedItems(concernedItemDao.find(
+                        event.getUri(),
+                        null,
+                        null,
+                        0,
+                        pageSizeMaxValue));
+        }
+        
         return events;
     }
 

@@ -156,13 +156,6 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
     )
     List<URI> variables = new LinkedList<>();
     public static final String VARIABLES_SPARQL_VAR = "variables";
-
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasFactorLevel"
-    )
-    List<FactorLevelModel> factorLevels = new LinkedList<>();
-    public static final String FACTOR_LEVELS_SPARQL_VAR = "hasFactorLevel";
     
     @SPARQLProperty(
             ontology = Oeso.class,

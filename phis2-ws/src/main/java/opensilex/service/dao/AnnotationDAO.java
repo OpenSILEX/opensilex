@@ -7,9 +7,12 @@
 //******************************************************************************
 package opensilex.service.dao;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import opensilex.service.dao.exception.DAOPersistenceException;
 
@@ -55,6 +58,8 @@ import opensilex.service.utils.JsonConverter;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.date.Dates;
 import opensilex.service.model.Annotation;
+import org.opensilex.rest.user.dal.UserDAO;
+import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -413,6 +418,20 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
             LOGGER.debug(JsonConverter.ConvertToJson(annotations));
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
             handleTriplestoreException(ex);
+        }
+        
+        UserDAO userDAO = new UserDAO(sparql);
+        for (Annotation annotation : annotations) {
+            String creatorValue = annotation.getCreator();
+            if (creatorValue != null && !creatorValue.isEmpty()) {
+                try {
+                    UserModel user =userDAO.get(new URI(creatorValue));
+                    annotation.setCreator(user.getName());
+                } catch (Exception ex) {
+                    // ignore exception
+                    LOGGER.warn("User not found: " + creatorValue);
+                }
+            }
         }
         return annotations;
     }

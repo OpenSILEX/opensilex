@@ -5,7 +5,7 @@
 
 ```
 opensilex-dev
-├── opensilex-{module_name}
+├── {module_name}
 ├── opensilex
 ├── opensilex-core
 ├── opensilex-dev-tools
@@ -41,9 +41,9 @@ opensilex-dev
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>opensilex-{module_name}</artifactId>
+    <artifactId>{module_name}</artifactId>
     <packaging>jar</packaging>
-    <name>opensilex-{module_name}</name>
+    <name>{module_name}</name>
 
     <parent>
         <groupId>org.opensilex</groupId>
@@ -72,7 +72,7 @@ public class {module_name}Module extends OpenSilexModule implements APIExtension
 }
 ```
 
-# Use new opensilex module for development in the global build stage
+4. Update global pom.xml definition 
 
 You need to the new module to the full build stage you need to add it to the global pom.xml
  ```xml

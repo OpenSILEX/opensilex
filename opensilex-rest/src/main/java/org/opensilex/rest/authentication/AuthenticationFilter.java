@@ -7,10 +7,12 @@
 package org.opensilex.rest.authentication;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import javax.annotation.Priority;
 import javax.inject.Inject;
@@ -21,6 +23,7 @@ import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
+import org.apache.commons.io.IOUtils;
 import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.exceptions.UnauthorizedException;
 import org.opensilex.server.exceptions.UnexpectedErrorException;
@@ -80,6 +83,20 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         Method apiMethod = resourceInfo.getResourceMethod();
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Incoming request URI: " + requestContext.getUriInfo().getRequestUri());
+            LOGGER.debug("Incoming request method: " + requestContext.getMethod());
+            requestContext.getHeaders().forEach((header, value) -> {
+                LOGGER.debug("Incoming request header: " + header + " -> " + value);
+            });
+            try {
+                String body = IOUtils.toString(requestContext.getEntityStream(), Charset.forName("UTF-8"));
+                LOGGER.debug("Incoming request body: \n" + body);
+                requestContext.setEntityStream(new ByteArrayInputStream(body.getBytes(Charset.forName("UTF-8"))));
+            } catch (IOException ex) {
+                LOGGER.debug("Error while reading request body: ", ex);
+            }
+        }
 
         if (apiMethod != null) {
             // Get method ApiProtected annotation
@@ -115,7 +132,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                         String credentialId = SecurityAccessDAO.getCredentialIdFromMethod(apiMethod);
                         if (credentialId != null) {
                             // Get current API service credential
-                            
+
                             // Get user credentials from token
                             String[] accessList = authentication.decodeTokenCredentialsList(user.getToken());
 

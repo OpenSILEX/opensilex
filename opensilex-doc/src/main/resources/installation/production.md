@@ -136,6 +136,12 @@ cd /home/opensilex/bin
 wget https://github.com/OpenSILEX/opensilex-dev/releases/download/4.0.0-beta/opensilex-dev-X.Y.Z.zip
 unzip opensilex-dev-X.Y.Z.zip
 ```
+For latest version
+```
+cd /home/opensilex/bin
+wget https://github.com/OpenSILEX/opensilex-dev/releases/download/4.0.0-beta/opensilex-dev-4.0.0-beta.zip
+unzip opensilex-dev-4.0.0-beta.zip
+```
 
 You should get the following directory structure:
 
@@ -280,6 +286,8 @@ sudo systemctl restart apache2
 ```
 cd /home/opensilex
 git clone https://github.com/OpenSILEX/phis-webapp.git
+cd phis-webapp
+git checkout hybrid
 ```
 
 ### Install Composer

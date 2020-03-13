@@ -116,11 +116,11 @@ export const languages = {
 };
 
 const messages = Object.assign(languages);
-          
+
 let lang = navigator.language;
 
 if (urlParams.has('lang')) {
-    lang = urlParams.get("lang");
+  lang = urlParams.get("lang");
 }
 
 console.debug("Detected language", lang);
@@ -169,7 +169,11 @@ validationTranslations = {
 i18n.mergeLocaleMessage("fr", validationTranslations);
 
 configure({
-  defaultMessage: (_, values)  => {
+  classes: {
+    valid: 'is-valid',
+    invalid: 'is-invalid'
+  },
+  defaultMessage: (_, values) => {
     return "" + i18n.t(`validations.${values._rule_}`, values)
   }
 });
@@ -179,7 +183,7 @@ import DatePicker from 'vue-airbnb-style-datepicker';
 
 const datepickerOptions = {
   monthNames: [
-    i18n.t('component.common.datePicker.monthNames.january'), 
+    i18n.t('component.common.datePicker.monthNames.january'),
     i18n.t('component.common.datePicker.monthNames.february'),
     i18n.t('component.common.datePicker.monthNames.march'),
     i18n.t('component.common.datePicker.monthNames.april'),
@@ -193,20 +197,20 @@ const datepickerOptions = {
     i18n.t('component.common.datePicker.monthNames.december')
   ],
   days: [
-    i18n.t('component.common.datePicker.dayNames.monday'), 
-    i18n.t('component.common.datePicker.dayNames.tuesday'), 
-    i18n.t('component.common.datePicker.dayNames.wednesday'), 
-    i18n.t('component.common.datePicker.dayNames.thursday'), 
-    i18n.t('component.common.datePicker.dayNames.friday'), 
+    i18n.t('component.common.datePicker.dayNames.monday'),
+    i18n.t('component.common.datePicker.dayNames.tuesday'),
+    i18n.t('component.common.datePicker.dayNames.wednesday'),
+    i18n.t('component.common.datePicker.dayNames.thursday'),
+    i18n.t('component.common.datePicker.dayNames.friday'),
     i18n.t('component.common.datePicker.dayNames.saturday'),
     i18n.t('component.common.datePicker.dayNames.sunday')
   ],
   daysShort: [
-    i18n.t('component.common.datePicker.dayShortNames.mon'), 
-    i18n.t('component.common.datePicker.dayShortNames.tue'), 
-    i18n.t('component.common.datePicker.dayShortNames.wed'), 
-    i18n.t('component.common.datePicker.dayShortNames.thu'), 
-    i18n.t('component.common.datePicker.dayShortNames.fri'), 
+    i18n.t('component.common.datePicker.dayShortNames.mon'),
+    i18n.t('component.common.datePicker.dayShortNames.tue'),
+    i18n.t('component.common.datePicker.dayShortNames.wed'),
+    i18n.t('component.common.datePicker.dayShortNames.thu'),
+    i18n.t('component.common.datePicker.dayShortNames.fri'),
     i18n.t('component.common.datePicker.dayShortNames.sat'),
     i18n.t('component.common.datePicker.dayShortNames.sun')
   ],

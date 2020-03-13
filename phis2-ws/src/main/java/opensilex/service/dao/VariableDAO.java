@@ -66,7 +66,9 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.vocabulary.XSD;
 import org.eclipse.rdf4j.model.Value;
+import org.opensilex.OpenSilex;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
 
 /**
  * Variable DAO.
@@ -548,17 +550,6 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
                     variable.setUnit(new Unit(bindingSet.getValue(UNIT).stringValue()));
                 }
 
-//                if (withTraitMethodUnit) {
-//                    //Get method informations
-//                    variable.setMethod(methodDao.findById(methodDao.uri));
-//
-//                    //Get unit informations
-//                    variable.setUnit(unitDao.findById(unitDao.uri));
-//
-//                    //Get trait informations
-//                    variable.setTrait(traitDao.findById(traitDao.uri));
-//
-//                }
                 variables.add(variable);
             }
         } catch (Exception ex) {
@@ -567,10 +558,11 @@ public class VariableDAO extends Rdf4jDAO<Variable> {
         }
 
         if (withTraitMethodUnit) {
-            TraitDAO traitDao = new TraitDAO(sparql);
-            MethodDAO methodDao = new MethodDAO(sparql);
-            UnitDAO unitDao = new UnitDAO(sparql);
             for (Variable variable : variables) {
+                TraitDAO traitDao = new TraitDAO(sparql);
+                MethodDAO methodDao = new MethodDAO(sparql);
+                UnitDAO unitDao = new UnitDAO(sparql);
+
                 Trait traitModel = traitDao.findById(variable.getTrait().getUri());
                 Method methodModel = methodDao.findById(variable.getMethod().getUri());
                 Unit unitModel = unitDao.findById(variable.getUnit().getUri());

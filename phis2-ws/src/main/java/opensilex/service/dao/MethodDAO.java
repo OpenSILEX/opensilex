@@ -62,13 +62,15 @@ import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Method DAO.
+ *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
- * @update [Vincent Migot] 17 July 2019: Update getLastId method to fix bug and limitation in URI generation
+ * @update [Vincent Migot] 17 July 2019: Update getLastId method to fix bug and
+ * limitation in URI generation
  */
 public class MethodDAO extends Rdf4jDAO<Method> {
 
     final static Logger LOGGER = LoggerFactory.getLogger(MethodDAO.class);
-    
+
     public String uri;
     public String label;
     public String comment;
@@ -79,7 +81,6 @@ public class MethodDAO extends Rdf4jDAO<Method> {
     public MethodDAO(SPARQLService sparql) {
         super(sparql);
     }
-        
 
     protected SPARQLQueryBuilder prepareSearchQuery() {
         //SILEX:todo
@@ -89,23 +90,23 @@ public class MethodDAO extends Rdf4jDAO<Method> {
         query.appendDistinct(Boolean.TRUE);
         query.appendGraph(Contexts.VARIABLES.toString());
         String methodUri;
-        
+
         if (uri != null) {
             methodUri = "<" + uri + ">";
         } else {
             methodUri = "?uri";
             query.appendSelect("?uri");
         }
-        
+
         query.appendTriplet(methodUri, Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_METHOD.toString(), null);
-        
+
         if (label != null) {
-            query.appendTriplet(methodUri, Rdfs.RELATION_LABEL.toString(),"\"" + label + "\"", null);
+            query.appendTriplet(methodUri, Rdfs.RELATION_LABEL.toString(), "\"" + label + "\"", null);
         } else {
             query.appendSelect(" ?" + LABEL);
             query.appendTriplet(methodUri, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
         }
-        
+
         if (comment != null) {
             query.appendTriplet(methodUri, Rdfs.RELATION_COMMENT.toString(), "\"" + comment + "\"", null);
         } else {
@@ -114,16 +115,17 @@ public class MethodDAO extends Rdf4jDAO<Method> {
             query.appendToBody(methodUri + " <" + Rdfs.RELATION_COMMENT.toString() + "> " + "?" + COMMENT + " . ");
             query.endBodyOptional();
         }
-        
+
         LOGGER.debug(SPARQL_QUERY + query.toString());
 
         return query;
     }
-    
+
     /**
      * Checks if methods are valid.
+     *
      * @param methodsDTO
-     * @return 
+     * @return
      */
     public POSTResultsReturn check(List<MethodDTO> methodsDTO) {
         // Results
@@ -131,39 +133,39 @@ public class MethodDAO extends Rdf4jDAO<Method> {
         // Returned status
         List<Status> checkStatusList = new ArrayList<>();
         boolean dataOk = true;
-        
+
         // Check methods
         for (MethodDTO methodDTO : methodsDTO) {
             // Check ontology referencies relations
             for (OntologyReference ontologyReference : methodDTO.getOntologiesReferences()) {
                 if (!ontologyReference.getProperty().equals(Skos.RELATION_EXACT_MATCH.toString())
-                   && !ontologyReference.getProperty().equals(Skos.RELATION_CLOSE_MATCH.toString())
-                   && !ontologyReference.getProperty().equals(Skos.RELATION_NARROWER.toString())
-                   && !ontologyReference.getProperty().equals(Skos.RELATION_BROADER.toString())) {
+                        && !ontologyReference.getProperty().equals(Skos.RELATION_CLOSE_MATCH.toString())
+                        && !ontologyReference.getProperty().equals(Skos.RELATION_NARROWER.toString())
+                        && !ontologyReference.getProperty().equals(Skos.RELATION_BROADER.toString())) {
                     dataOk = false;
                     //SILEX:todo
                     //create a java beans validator for this check
                     //\SILEX:todo
-                    
-                    checkStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR, 
+
+                    checkStatusList.add(new Status("Wrong value", StatusCodeMsg.ERR,
                             "Bad property relation given. Must be one of the following : " + Skos.RELATION_EXACT_MATCH.toString()
                             + ", " + Skos.RELATION_CLOSE_MATCH.toString()
                             + ", " + Skos.RELATION_NARROWER.toString()
                             + ", " + Skos.RELATION_BROADER.toString()
-                            +". Given : " + ontologyReference.getProperty()));
+                            + ". Given : " + ontologyReference.getProperty()));
                 }
             }
         }
-        
+
         traitsCheck = new POSTResultsReturn(dataOk, null, dataOk);
         traitsCheck.statusList = checkStatusList;
         return traitsCheck;
     }
-    
+
     /**
      * Prepares a query to get the higher id of the methods.
-     * @example
-     * <pre>
+     *
+     * @example      <pre>
      * SELECT ?maxID WHERE {
      *   ?uri a <http://www.opensilex.org/vocabulary/oeso#Method>
      *   BIND(xsd:integer>(strafter(str(?uri), "http://www.opensilex.org/diaphen/id/methods/m")) AS ?maxID)
@@ -171,40 +173,42 @@ public class MethodDAO extends Rdf4jDAO<Method> {
      * ORDER BY DESC(?maxID)
      * LIMIT 1
      * </pre>
-     * @return 
+     *
+     * @return
      */
     private Query prepareGetLastId() {
         SelectBuilder query = new SelectBuilder();
-        
+
         Var uri = makeVar(URI);
         Var maxID = makeVar(MAX_ID);
-        
+
         // Select the highest identifier
         query.addVar(maxID);
-        
+
         // Filter by method
         Node methodConcept = NodeFactory.createURI(Oeso.CONCEPT_METHOD.toString());
         query.addWhere(uri, RDF.type, methodConcept);
-        
+
         // Binding to extract the last part of the URI as a MAX_ID integer
         ExprFactory expr = new ExprFactory();
-        Expr indexBinding =  expr.function(
-            XSD.integer.getURI(), 
-            ExprList.create(Arrays.asList(
-                expr.strafter(expr.str(uri), UriGenerator.PLATFORM_URI_ID_METHOD))
-            )
+        Expr indexBinding = expr.function(
+                XSD.integer.getURI(),
+                ExprList.create(Arrays.asList(
+                        expr.strafter(expr.str(uri), UriGenerator.PLATFORM_URI_ID_METHOD))
+                )
         );
         query.addBind(indexBinding, maxID);
-        
+
         // Order MAX_ID integer from highest to lowest and select the first value
-        query.addOrderBy(new SortCondition(maxID,  Query.ORDER_DESCENDING));
+        query.addOrderBy(new SortCondition(maxID, Query.ORDER_DESCENDING));
         query.setLimit(1);
-        
+
         return query.build();
     }
-    
+
     /**
      * Gets the higher id of the methods.
+     *
      * @return the id
      */
     public int getLastId() {
@@ -212,7 +216,7 @@ public class MethodDAO extends Rdf4jDAO<Method> {
 
         //get last method uri ID inserted
         TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
-        
+
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             if (result.hasNext()) {
                 BindingSet bindingSet = result.next();
@@ -221,31 +225,32 @@ public class MethodDAO extends Rdf4jDAO<Method> {
                     return Integer.valueOf(maxId.stringValue());
                 }
             }
-        } 
-        
+        }
+
         return 0;
     }
-    
+
     /**
      * Prepares update query for a method.
+     *
      * @param methodDTO
      * @return update request
      */
     private UpdateRequest prepareInsertQuery(MethodDTO methodDTO) {
         UpdateBuilder spql = new UpdateBuilder();
-        
+
         Node graph = NodeFactory.createURI(Contexts.VARIABLES.toString());
-        
+
         Node methodConcept = NodeFactory.createURI(Oeso.CONCEPT_METHOD.toString());
         Resource methodUri = ResourceFactory.createResource(methodDTO.getUri());
 
         spql.addInsert(graph, methodUri, RDF.type, methodConcept);
         spql.addInsert(graph, methodUri, RDFS.label, methodDTO.getLabel());
-        
+
         if (methodDTO.getComment() != null) {
             spql.addInsert(graph, methodUri, RDFS.comment, methodDTO.getComment());
         }
-        
+
         methodDTO.getOntologiesReferences().forEach((ontologyReference) -> {
             Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());
             Node ontologyObject = NodeFactory.createURI(ontologyReference.getObject());
@@ -253,26 +258,26 @@ public class MethodDAO extends Rdf4jDAO<Method> {
             Literal seeAlso = ResourceFactory.createStringLiteral(ontologyReference.getSeeAlso());
             spql.addInsert(graph, ontologyObject, RDFS.seeAlso, seeAlso);
         });
-        
+
         return spql.buildRequest();
     }
-    
+
     /**
-     * Create methods.
-     * Methods integrity must have been checked.
+     * Create methods. Methods integrity must have been checked.
+     *
      * @param methodsDTO
-     * @return 
+     * @return
      */
     public POSTResultsReturn insert(List<MethodDTO> methodsDTO) {
         List<Status> insertStatusList = new ArrayList<>();
         List<String> createdResourcesURI = new ArrayList<>();
-        
+
         POSTResultsReturn results;
         boolean resultState = false; // To know if the data is valid and inserted well
         boolean annotationInsert = true; // If the insertion has been correctly done
-        
+
         final Iterator<MethodDTO> iteratorMethodDTO = methodsDTO.iterator();
-        
+
         while (iteratorMethodDTO.hasNext() && annotationInsert) {
             MethodDTO methodDTO = iteratorMethodDTO.next();
             try {
@@ -280,10 +285,10 @@ public class MethodDAO extends Rdf4jDAO<Method> {
             } catch (Exception ex) { // In the method case, no exception should be raised
                 annotationInsert = false;
             }
-            
+
             // Register in the triplestore
             UpdateRequest spqlInsert = prepareInsertQuery(methodDTO);
-            
+
             try {
                 //SILEX:todo
                 // Review the connection to the triplestore
@@ -300,14 +305,14 @@ public class MethodDAO extends Rdf4jDAO<Method> {
                 } else {
                 }
             } catch (RepositoryException ex) {
-                    LOGGER.error("Error during commit or rolleback Triplestore statements: ", ex);
+                LOGGER.error("Error during commit or rolleback Triplestore statements: ", ex);
             } catch (MalformedQueryException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    annotationInsert = false;
-                    insertStatusList.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "Malformed insertion query: " + e.getMessage()));
-            } 
+                LOGGER.error(e.getMessage(), e);
+                annotationInsert = false;
+                insertStatusList.add(new Status(StatusCodeMsg.QUERY_ERROR, StatusCodeMsg.ERR, "Malformed insertion query: " + e.getMessage()));
+            }
         }
-        
+
         results = new POSTResultsReturn(resultState, annotationInsert, true);
         results.statusList = insertStatusList;
         results.setCreatedResources(createdResourcesURI);
@@ -315,12 +320,13 @@ public class MethodDAO extends Rdf4jDAO<Method> {
             results.createdResources = createdResourcesURI;
             results.statusList.add(new Status(StatusCodeMsg.RESOURCES_CREATED, StatusCodeMsg.INFO, createdResourcesURI.size() + " new resource(s) created."));
         }
-        
+
         return results;
     }
-    
+
     /**
      * Checks the data and inserts them.
+     *
      * @param methodsDTO
      * @return POSTResultsReturn the insertion result.
      */
@@ -332,36 +338,36 @@ public class MethodDAO extends Rdf4jDAO<Method> {
             return checkResult;
         }
     }
-    
+
     /**
      * @param uri
      * @return the ontology references links
      */
     private SPARQLQueryBuilder prepareSearchOntologiesReferencesQuery(String uri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
-        
+
         query.appendDistinct(Boolean.TRUE);
         query.appendGraph(Contexts.VARIABLES.toString());
-        
+
         if (ontologiesReferences.isEmpty()) {
             query.appendSelect(" ?property ?object ?seeAlso");
             query.appendTriplet(uri, "?property", "?object", null);
             query.appendOptional("{?object <" + Rdfs.RELATION_SEE_ALSO.toString() + "> ?seeAlso}");
             query.appendFilter("?property IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
-                                               + Skos.RELATION_EXACT_MATCH.toString() + ">, <"
-                                               + Skos.RELATION_NARROWER.toString() + ">, <"
-                                               + Skos.RELATION_BROADER.toString() + ">)");
+                    + Skos.RELATION_EXACT_MATCH.toString() + ">, <"
+                    + Skos.RELATION_NARROWER.toString() + ">, <"
+                    + Skos.RELATION_BROADER.toString() + ">)");
         } else {
             for (OntologyReference ontologyReference : ontologiesReferences) {
                 query.appendTriplet(uri, ontologyReference.getProperty(), ontologyReference.getObject(), null);
                 query.appendTriplet(ontologyReference.getObject(), Rdfs.RELATION_SEE_ALSO.toString(), ontologyReference.getSeeAlso(), null);
             }
         }
-        
+
         LOGGER.debug(SPARQL_QUERY + query.toString());
         return query;
     }
-    
+
     /**
      * @return methods found
      */
@@ -373,66 +379,69 @@ public class MethodDAO extends Rdf4jDAO<Method> {
             while (result.hasNext()) {
                 BindingSet bindingSet = result.next();
                 Method method = new Method();
-                
+
                 if (uri != null) {
                     method.setUri(uri);
                 } else {
                     method.setUri(bindingSet.getValue("uri").stringValue());
                 }
-                
+
                 if (label != null) {
                     method.setLabel(label);
                 } else {
                     method.setLabel(bindingSet.getValue("label").stringValue());
                 }
-                
+
                 if (comment != null) {
                     method.setComment(comment);
                 } else if (bindingSet.getValue(COMMENT) != null) {
                     method.setComment(bindingSet.getValue(COMMENT).stringValue());
                 }
-                
-                // Get ontology references list 
-                SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(method.getUri());
-                TupleQuery tupleQueryOntologiesReferences = prepareRDF4JTupleQuery(queryOntologiesReferences);
-                try (TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate()) {
-                    while (resultOntologiesReferences.hasNext()) {
-                        BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
-                        if (bindingSetOntologiesReferences.getValue("object") != null
-                                && bindingSetOntologiesReferences.getValue("property") != null) {
-                            OntologyReference ontologyReference = new OntologyReference();
-                            ontologyReference.setObject(bindingSetOntologiesReferences.getValue("object").toString());
-                            ontologyReference.setProperty(bindingSetOntologiesReferences.getValue("property").toString());
-                            if (bindingSetOntologiesReferences.getValue("seeAlso") != null) {
-                                ontologyReference.setSeeAlso(bindingSetOntologiesReferences.getValue("seeAlso").toString());
-                            }
+            }
+        }
 
-                            method.addOntologyReference(ontologyReference);
+        for (Method method : methods) {
+            // Get ontology references list 
+            SPARQLQueryBuilder queryOntologiesReferences = prepareSearchOntologiesReferencesQuery(method.getUri());
+            TupleQuery tupleQueryOntologiesReferences = prepareRDF4JTupleQuery(queryOntologiesReferences);
+            try (TupleQueryResult resultOntologiesReferences = tupleQueryOntologiesReferences.evaluate()) {
+                while (resultOntologiesReferences.hasNext()) {
+                    BindingSet bindingSetOntologiesReferences = resultOntologiesReferences.next();
+                    if (bindingSetOntologiesReferences.getValue("object") != null
+                            && bindingSetOntologiesReferences.getValue("property") != null) {
+                        OntologyReference ontologyReference = new OntologyReference();
+                        ontologyReference.setObject(bindingSetOntologiesReferences.getValue("object").toString());
+                        ontologyReference.setProperty(bindingSetOntologiesReferences.getValue("property").toString());
+                        if (bindingSetOntologiesReferences.getValue("seeAlso") != null) {
+                            ontologyReference.setSeeAlso(bindingSetOntologiesReferences.getValue("seeAlso").toString());
                         }
+
+                        method.addOntologyReference(ontologyReference);
                     }
                 }
-                methods.add(method);
             }
+            methods.add(method);
         }
         return methods;
     }
-    
+
     /**
      * Prepares a delete request for a method.
+     *
      * @param method
      * @return delete request
      */
     private UpdateRequest prepareDeleteQuery(Method method) {
         UpdateBuilder spql = new UpdateBuilder();
-        
+
         Node graph = NodeFactory.createURI(Contexts.VARIABLES.toString());
         Resource methodUri = ResourceFactory.createResource(method.getUri());
-        
+
         spql.addDelete(graph, methodUri, RDFS.label, method.getLabel());
         if (method.getComment() != null) {
             spql.addDelete(graph, methodUri, RDFS.comment, method.getComment());
         }
-        
+
         for (OntologyReference ontologyReference : method.getOntologiesReferences()) {
             Property ontologyProperty = ResourceFactory.createProperty(ontologyReference.getProperty());
             Node ontologyObject = NodeFactory.createURI(ontologyReference.getObject());
@@ -442,18 +451,18 @@ public class MethodDAO extends Rdf4jDAO<Method> {
                 spql.addDelete(graph, ontologyObject, RDFS.seeAlso, seeAlso);
             }
         }
-                
-        return spql.buildRequest();        
+
+        return spql.buildRequest();
     }
-    
+
     private POSTResultsReturn updateAndReturnPOSTResultsReturn(List<MethodDTO> methodsDTO) {
         List<Status> updateStatusList = new ArrayList<>();
         List<String> updatedResourcesURIList = new ArrayList<>();
         POSTResultsReturn results;
-        
+
         boolean annotationUpdate = true; // Insertion done well
         boolean resultState = false; // To know if the data are valid and well updated
-        
+
         for (MethodDTO methodDTO : methodsDTO) {
             //1. Delete existing data
             //1.1 Get the information that will be modified (to delete the right triplets)
@@ -464,43 +473,44 @@ public class MethodDAO extends Rdf4jDAO<Method> {
 
                 //2. Create new data
                 UpdateRequest queryInsert = prepareInsertQuery(methodDTO);
-                 try {
-                        // transaction beginning: request check
-                        Update prepareDelete = prepareRDF4JUpdateQuery(deleteQuery);
-                        LOGGER.trace(getTraceabilityLogs() + " query : " + prepareDelete.toString());
-                        prepareDelete.execute();
-                        Update prepareUpdate = prepareRDF4JUpdateQuery(queryInsert);
-                        LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
-                        prepareUpdate.execute();
+                try {
+                    // transaction beginning: request check
+                    Update prepareDelete = prepareRDF4JUpdateQuery(deleteQuery);
+                    LOGGER.trace(getTraceabilityLogs() + " query : " + prepareDelete.toString());
+                    prepareDelete.execute();
+                    Update prepareUpdate = prepareRDF4JUpdateQuery(queryInsert);
+                    LOGGER.trace(getTraceabilityLogs() + " query : " + prepareUpdate.toString());
+                    prepareUpdate.execute();
 
-                        updatedResourcesURIList.add(methodDTO.getUri());
-                    } catch (MalformedQueryException e) {
-                        LOGGER.error(e.getMessage(), e);
-                        annotationUpdate = false;
-                        updateStatusList.add(new Status("Query error", StatusCodeMsg.ERR, "Malformed update query: " + e.getMessage()));
-                    }   
+                    updatedResourcesURIList.add(methodDTO.getUri());
+                } catch (MalformedQueryException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    annotationUpdate = false;
+                    updateStatusList.add(new Status("Query error", StatusCodeMsg.ERR, "Malformed update query: " + e.getMessage()));
+                }
             } else {
                 annotationUpdate = false;
                 updateStatusList.add(new Status("Unknown instance", StatusCodeMsg.ERR, "Unknown method " + methodDTO.getUri()));
             }
         }
-        
+
         if (annotationUpdate) {
             resultState = true;
         }
-        
+
         results = new POSTResultsReturn(resultState, annotationUpdate, true);
         results.statusList = updateStatusList;
         if (resultState && !updatedResourcesURIList.isEmpty()) {
             results.createdResources = updatedResourcesURIList;
             results.statusList.add(new Status("Resources updated", StatusCodeMsg.INFO, updatedResourcesURIList.size() + " resources updated"));
         }
-        
+
         return results;
     }
-    
+
     /**
      * Checks the data and updates the triplestore.
+     *
      * @param methodsDTO
      * @return POSTResultsReturn data update result
      */
@@ -535,63 +545,66 @@ public class MethodDAO extends Rdf4jDAO<Method> {
 
     /**
      * Prepare query to get method by it's URI
-     * @example
-     * SELECT DISTINCT   ?label ?comment ?property ?object ?seeAlso WHERE {
-     * GRAPH <http://www.phenome-fppn.fr/diaphen/variables> { 
-     *      <http://www.phenome-fppn.fr/diaphen/id/methods/m001>  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  <http://www.opensilex.org/vocabulary/oeso#Method> . 
-     *      <http://www.phenome-fppn.fr/diaphen/id/methods/m001>  <http://www.w3.org/2000/01/rdf-schema#label>  ?label  . 
-     *      OPTIONAL {
-     *          <http://www.phenome-fppn.fr/diaphen/id/methods/m001> <http://www.w3.org/2000/01/rdf-schema#comment> ?comment . 
-     *      }
-     *      OPTIONAL {
-     *          <http://www.phenome-fppn.fr/diaphen/id/methods/m001> ?property ?object . 
-     *          ?object <http://www.w3.org/2000/01/rdf-schema#seeAlso> ?seeAlso .  
-     *          FILTER (?property IN(<http://www.w3.org/2008/05/skos#closeMatch>, <http://www.w3.org/2008/05/skos#exactMatch>, <http://www.w3.org/2008/05/skos#narrower>, <http://www.w3.org/2008/05/skos#broader>)) 
-     *      } 
-     *  }}
+     *
+     * @example SELECT DISTINCT ?label ?comment ?property ?object ?seeAlso WHERE
+     * { GRAPH <http://www.phenome-fppn.fr/diaphen/variables> {
+     * <http://www.phenome-fppn.fr/diaphen/id/methods/m001>
+     *  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>
+     *  <http://www.opensilex.org/vocabulary/oeso#Method> .
+     * <http://www.phenome-fppn.fr/diaphen/id/methods/m001>
+     *  <http://www.w3.org/2000/01/rdf-schema#label> ?label . OPTIONAL {
+     * <http://www.phenome-fppn.fr/diaphen/id/methods/m001>
+     * <http://www.w3.org/2000/01/rdf-schema#comment> ?comment . } OPTIONAL {
+     * <http://www.phenome-fppn.fr/diaphen/id/methods/m001> ?property ?object .
+     * ?object <http://www.w3.org/2000/01/rdf-schema#seeAlso> ?seeAlso . FILTER
+     * (?property IN(<http://www.w3.org/2008/05/skos#closeMatch>,
+     * <http://www.w3.org/2008/05/skos#exactMatch>,
+     * <http://www.w3.org/2008/05/skos#narrower>,
+     * <http://www.w3.org/2008/05/skos#broader>)) } }}
      * @param uri
-     * @return 
+     * @return
      */
     private SPARQLQueryBuilder prepareSearchByUri(String uri) {
         SPARQLQueryBuilder query = new SPARQLQueryBuilder();
         query.appendDistinct(Boolean.TRUE); //???????
-        
+
         query.appendGraph(Contexts.VARIABLES.toString());
-        
+
         String methodURI = "<" + uri + ">";
         query.appendTriplet(methodURI, Rdf.RELATION_TYPE.toString(), Oeso.CONCEPT_METHOD.toString(), null);
-        
+
         query.appendSelect(" ?" + LABEL + " ?" + COMMENT + " ?" + PROPERTY + " ?" + OBJECT + " ?" + SEE_ALSO);
-        
+
         //Label
         query.appendTriplet(methodURI, Rdfs.RELATION_LABEL.toString(), "?" + LABEL, null);
-        
+
         //Comment
         query.beginBodyOptional();
         query.appendToBody(methodURI + " <" + Rdfs.RELATION_COMMENT.toString() + "> " + "?" + COMMENT + " . ");
         query.endBodyOptional();
-        
+
         //Ontologies references
-        query.appendOptional(methodURI + " ?" + PROPERTY + " ?" + OBJECT + " . "                
+        query.appendOptional(methodURI + " ?" + PROPERTY + " ?" + OBJECT + " . "
                 + "?" + OBJECT + " <" + Rdfs.RELATION_SEE_ALSO.toString() + "> ?" + SEE_ALSO + " . "
                 + " FILTER (?" + PROPERTY + " IN(<" + Skos.RELATION_CLOSE_MATCH.toString() + ">, <"
-                                           + Skos.RELATION_EXACT_MATCH.toString() + ">, <"
-                                           + Skos.RELATION_NARROWER.toString() + ">, <"
-                                           + Skos.RELATION_BROADER.toString() + ">))");
-        
+                + Skos.RELATION_EXACT_MATCH.toString() + ">, <"
+                + Skos.RELATION_NARROWER.toString() + ">, <"
+                + Skos.RELATION_BROADER.toString() + ">))");
+
         LOGGER.debug(SPARQL_QUERY + query.toString());
-        
+
         return query;
     }
 
     /**
      * Map binding set value to OntologyReference object
+     *
      * @param bindingSet
-     * @return 
+     * @return
      */
     private OntologyReference getOntologyReferenceFromBindingSet(BindingSet bindingSet) {
         if (bindingSet.getValue(OBJECT) != null
-                    && bindingSet.getValue(PROPERTY) != null) {
+                && bindingSet.getValue(PROPERTY) != null) {
             OntologyReference ontologyReference = new OntologyReference();
             ontologyReference.setObject(bindingSet.getValue(OBJECT).toString());
             ontologyReference.setProperty(bindingSet.getValue(PROPERTY).toString());
@@ -602,22 +615,23 @@ public class MethodDAO extends Rdf4jDAO<Method> {
         }
         return null;
     }
-    
+
     /**
      * Find a method by it's id
+     *
      * @param id
      * @return
      * @throws DAOPersistenceException
-     * @throws Exception 
+     * @throws Exception
      */
     @Override
     public Method findById(String id) throws DAOPersistenceException, Exception {
         SPARQLQueryBuilder query = prepareSearchByUri(id);
         TupleQuery tupleQuery = prepareRDF4JTupleQuery(query);
-        
+
         Method method = new Method();
         method.setUri(id);
-        try(TupleQueryResult result = tupleQuery.evaluate()) {
+        try (TupleQueryResult result = tupleQuery.evaluate()) {
             while (result.hasNext()) {
                 BindingSet row = result.next();
 

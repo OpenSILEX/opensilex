@@ -4,11 +4,10 @@
 1. Create a directory in opensilex-dev directory with the name of the module, here {module_name}.
 
 ```
-.
-├── node_modules
+opensilex-dev
+├── opensilex-{module_name}
 ├── opensilex
 ├── opensilex-core
-├── opensilex-{module_name}
 ├── opensilex-dev-tools
 ├── opensilex-doc
 ├── opensilex-front
@@ -81,7 +80,7 @@ You need to the new module to the full build stage you need to add it to the glo
 <!--
 ******************************************************************************
  OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
- Copyright © INRA 2019
+ Copyright © INRAE 2020
  Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
  
  OpenSilex Development Environment main pom.xml

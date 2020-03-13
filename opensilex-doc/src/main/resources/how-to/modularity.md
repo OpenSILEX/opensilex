@@ -1,7 +1,7 @@
 
-# Create a new opensilex module for development purpose
+# Create a new module for opensilex 
 
-1. Create a directory in opensilex-dev directory with the name of the module, here {module_name}.
+1. Create a directory in ``opensilex-dev`` directory with the name of the module, here {module_name}.
 
 ```
 opensilex-dev
@@ -21,7 +21,7 @@ opensilex-dev
 ├── opensilex-swagger-codegen-maven-plugin
 ```
 
-2. Add a pom file to configure the maven project
+2. Add a pom file to configure the maven project **pom.xml** in module directory ``opensilex-dev/{module_name}``
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -72,7 +72,7 @@ public class {module_name}Module extends OpenSilexModule implements APIExtension
 }
 ```
 
-4. Update global pom.xml definition 
+4. Update global ***pom.xml definition**
 
 You need to the new module to the full build stage you need to add it to the global pom.xml
  ```xml

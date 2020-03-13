@@ -397,6 +397,8 @@ public class MethodDAO extends Rdf4jDAO<Method> {
                 } else if (bindingSet.getValue(COMMENT) != null) {
                     method.setComment(bindingSet.getValue(COMMENT).stringValue());
                 }
+                
+                methods.add(method);
             }
         }
 
@@ -420,7 +422,6 @@ public class MethodDAO extends Rdf4jDAO<Method> {
                     }
                 }
             }
-            methods.add(method);
         }
         return methods;
     }

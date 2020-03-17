@@ -7,6 +7,7 @@
 package org.opensilex.rest.authentication;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -14,6 +15,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.ws.rs.Priorities;
@@ -21,6 +23,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import org.apache.commons.io.IOUtils;
@@ -86,13 +89,21 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Incoming request URI: " + requestContext.getUriInfo().getRequestUri());
             LOGGER.debug("Incoming request method: " + requestContext.getMethod());
+            final AtomicBoolean isJSON = new AtomicBoolean(false);
             requestContext.getHeaders().forEach((header, value) -> {
+                if (header.equalsIgnoreCase("content-type") && value.equals(MediaType.APPLICATION_JSON)) {
+                    isJSON.set(true);
+                }
                 LOGGER.debug("Incoming request header: " + header + " -> " + value);
             });
             try {
-                String body = IOUtils.toString(requestContext.getEntityStream(), Charset.forName("UTF-8"));
-                LOGGER.debug("Incoming request body: \n" + body);
-                requestContext.setEntityStream(new ByteArrayInputStream(body.getBytes(Charset.forName("UTF-8"))));
+                if (isJSON.get()) {
+                    String body = IOUtils.toString(requestContext.getEntityStream(), Charset.forName("UTF-8"));
+                    ObjectMapper mapper = new ObjectMapper();
+                    String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.readTree(body));
+                    LOGGER.debug("Incoming request JSON body: \n" + json);
+                    requestContext.setEntityStream(new ByteArrayInputStream(body.getBytes(Charset.forName("UTF-8"))));
+                }
             } catch (IOException ex) {
                 LOGGER.debug("Error while reading request body: ", ex);
             }

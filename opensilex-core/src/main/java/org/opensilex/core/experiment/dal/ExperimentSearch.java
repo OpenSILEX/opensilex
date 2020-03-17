@@ -55,8 +55,6 @@ public class ExperimentSearch {
 
     protected String objective;
 
-    protected String comment;
-
     protected Integer campaign;
 
     protected List<String> keywords = new LinkedList<>();
@@ -131,15 +129,6 @@ public class ExperimentSearch {
 
     public ExperimentSearch setObjective(String objective) {
         this.objective = objective;
-        return this;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public ExperimentSearch setComment(String comment) {
-        this.comment = comment;
         return this;
     }
 
@@ -263,12 +252,6 @@ public class ExperimentSearch {
     protected void appendRegexLabelFilter(SelectBuilder select) {
         if (!StringUtils.isEmpty(label)) {
             select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.LABEL_VAR, label));
-        }
-    }
-
-    protected void appendRegexCommentFilter(SelectBuilder select) {
-        if (!StringUtils.isEmpty(comment)) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.COMMENT_SPARQL_VAR, comment));
         }
     }
 
@@ -409,7 +392,6 @@ public class ExperimentSearch {
         // build regex based filter
         appendUriRegexFilter(select);
         appendRegexObjectiveFilter(select);
-        appendRegexCommentFilter(select);
         appendRegexLabelFilter(select);
 
         appendDateFilters(select);

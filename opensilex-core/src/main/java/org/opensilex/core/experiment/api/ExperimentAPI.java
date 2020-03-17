@@ -213,15 +213,10 @@ public class ExperimentAPI {
             @ApiParam(value = "Search by campaign", example = "2019") @QueryParam("campaign") Integer campaign,
             @ApiParam(value = "Regex pattern for filtering by label", example = "ZA17") @QueryParam("label") String label,
             @ApiParam(value = "Search by keywords", example = "opensilex \ndigital agriculture") @QueryParam("keywords") List<String> keywords,
-            @ApiParam(value = "Regex pattern for filtering by comment", example = ".*") @QueryParam("comment") String comment,
-            @ApiParam(value = "Regex pattern for filtering by objective", example = ".*") @QueryParam("objective") String objective,
             @ApiParam(value = "Search by involved species", example = "http://www.phenome-fppn.fr/id/species/zeamays") @QueryParam("species") URI species,
             @ApiParam(value = "Search by related project uri", example = "http://www.phenome-fppn.fr/projects/ZA17\nhttp://www.phenome-fppn.fr/id/projects/ZA18") @QueryParam("projects") List<URI> projects,
             @ApiParam(value = "Search by infrastructure(s)") @QueryParam("infrastructures") List<URI> infrastructures,
             @ApiParam(value = "Search by devices(s)") @QueryParam("devices") List<URI> installations,
-            @ApiParam(value = "Search by groups(s)") @QueryParam("groups") List<URI> groups,
-            @ApiParam(value = "Search by sensor(s)") @QueryParam("sensors") List<URI> sensors,
-            @ApiParam(value = "Search by involved variable(s)") @QueryParam("variables") List<URI> variables,
             @ApiParam(value = "Search private(false) or public projects(true)", example = "true") @QueryParam("isPublic") Boolean isPublic,
             @ApiParam(value = "Search ended(false) or active projects(true)", example = "true") @QueryParam("isEnded") Boolean isEnded,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "label=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
@@ -244,14 +239,7 @@ public class ExperimentAPI {
                     .setStartDate(startDate)
                     .setEndDate(endDate)
                     .setIsPublic(isPublic)
-                    .setComment(comment)
-                    .setObjective(objective);
-
-            // set list based DTO attributes
-            searchDTO.setProjects(projects)
-                    .setGroups(groups)
-                    .setVariables(variables)
-                    .setSensors(sensors)
+                    .setProjects(projects)
                     .setKeywords(keywords)
                     .setInfrastructures(infrastructures)
                     .setInstallations(installations);

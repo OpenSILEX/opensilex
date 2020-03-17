@@ -255,12 +255,6 @@ public class ExperimentSearch {
         }
     }
 
-    protected void appendPublicFilter(SelectBuilder select) throws Exception {
-        if (isPublic != null) {
-            select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.IS_PUBLIC_SPARQL_VAR, isPublic));
-        }
-    }
-
     protected void appendUriRegexFilter(SelectBuilder select) {
         if (uri != null) {
             Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
@@ -387,7 +381,6 @@ public class ExperimentSearch {
         // build equality filters
         appendCampaignFilter(select);
         appendSpeciesFilter(select);
-        appendPublicFilter(select);
 
         // build regex based filter
         appendUriRegexFilter(select);

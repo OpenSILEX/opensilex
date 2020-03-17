@@ -359,13 +359,6 @@ public class AnnotationDAO extends Rdf4jDAO<Annotation> {
                 else if (!uriDao.isInstanceOf(annotation.getMotivatedBy(), Oa.CONCEPT_MOTIVATION.toString())) {
                     exceptions.add(new WrongTypeException(annotation.getMotivatedBy(), "the motivation"));
                 }
-
-                // check target
-                annotation.getTargets().forEach((targetUri) -> {
-                    if (!uriDao.existUri(targetUri)) {
-                        exceptions.add(new UnknownUriException(targetUri, "the target"));
-                    }
-                });
             });
         } catch (RepositoryException|MalformedQueryException|QueryEvaluationException ex) {
             handleTriplestoreException(ex);

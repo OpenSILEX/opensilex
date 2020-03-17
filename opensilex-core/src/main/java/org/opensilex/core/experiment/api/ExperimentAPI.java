@@ -8,11 +8,14 @@
 package org.opensilex.core.experiment.api;
 
 import io.swagger.annotations.*;
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearch;
 import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.rest.authentication.AuthenticationService;
+import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.rest.validation.date.DateConstraint;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -29,9 +32,12 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -62,6 +68,9 @@ public class ExperimentAPI {
     }
 
     private final SPARQLService sparql;
+
+    @Inject
+    private AuthenticationService authentication;
 
     /**
      * Create an Experiment
@@ -212,16 +221,17 @@ public class ExperimentAPI {
             @ApiParam(value = "Search by end date", example = "2017-06-15") @QueryParam("endDate") @DateConstraint String endDate,
             @ApiParam(value = "Search by campaign", example = "2019") @QueryParam("campaign") Integer campaign,
             @ApiParam(value = "Regex pattern for filtering by label", example = "ZA17") @QueryParam("label") String label,
-            @ApiParam(value = "Search by keywords", example = "opensilex \ndigital agriculture") @QueryParam("keywords") List<String> keywords,
+//            @ApiParam(value = "Search by keywords", example = "opensilex \ndigital agriculture") @QueryParam("keywords") List<String> keywords,
             @ApiParam(value = "Search by involved species", example = "http://www.phenome-fppn.fr/id/species/zeamays") @QueryParam("species") URI species,
             @ApiParam(value = "Search by related project uri", example = "http://www.phenome-fppn.fr/projects/ZA17\nhttp://www.phenome-fppn.fr/id/projects/ZA18") @QueryParam("projects") List<URI> projects,
-            @ApiParam(value = "Search by infrastructure(s)") @QueryParam("infrastructures") List<URI> infrastructures,
-            @ApiParam(value = "Search by devices(s)") @QueryParam("devices") List<URI> installations,
+//            @ApiParam(value = "Search by infrastructure(s)") @QueryParam("infrastructures") List<URI> infrastructures,
+//            @ApiParam(value = "Search by devices(s)") @QueryParam("devices") List<URI> installations,
             @ApiParam(value = "Search private(false) or public projects(true)", example = "true") @QueryParam("isPublic") Boolean isPublic,
             @ApiParam(value = "Search ended(false) or active projects(true)", example = "true") @QueryParam("isEnded") Boolean isEnded,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "label=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
+            @Context SecurityContext securityContext
     ) {
 
         try {
@@ -240,9 +250,19 @@ public class ExperimentAPI {
                     .setEndDate(endDate)
                     .setIsPublic(isPublic)
                     .setProjects(projects)
-                    .setKeywords(keywords)
-                    .setInfrastructures(infrastructures)
-                    .setInstallations(installations);
+//                    .setKeywords(keywords)
+//                    .setInfrastructures(infrastructures)
+//                    .setInstallations(installations)
+                    ;
+
+            UserModel userModel = authentication.getCurrentUser(securityContext);
+            List<URI> groupUris = new ArrayList<>();
+            for (String groupUri : authentication.decodeStringArrayClaim(userModel.getToken(), CoreModule.TOKEN_USER_GROUP_URIS)) {
+                groupUris.add(new URI(groupUri));
+            }
+            searchDTO.setGroups(groupUris);
+            searchDTO.setAdmin(userModel.isAdmin());
+
 
             ListWithPagination<ExperimentModel> resultList = xpDao.search(searchDTO, orderByList, page, pageSize);
             if (resultList.getList().isEmpty()) {

@@ -215,6 +215,7 @@
     import VueRouter from "vue-router";
     import VueI18n from 'vue-i18n';
     import moment from "moment";
+import { SpeciesService } from "phis2ws/index";
 
     export class ExperimentState {
 
@@ -241,7 +242,7 @@
         private _projects: Array<ProjectCreationDTO>;
         private _installations: Array<string>;
         private _places: Array<string>;
-        private _species: Array<string>;
+        private _species: string;
         private _state: ExperimentState;
 
         constructor(experimentList: ExperimentList) {
@@ -362,9 +363,8 @@
             return this._places;
         }
 
-        set species(values: Array<string>) {
+        set species(values: string) {
             console.log("new species = " + values);
-            console.log("species size = " + values.length);
             this._species = values;
             this._experimentList.loadExperiments();
         }
@@ -446,31 +446,31 @@
             let startDate;
             let endDate;
 
-            if(this.filter.beginDate) {
-                let dates = this.filter.beginDate.split(" - ");
-                if(dates.length == 2 && dates[0].length == 10 && dates[1].length == 10) {
-                    startDate = moment(dates[0], 'DD/MM/YYYY').format('YYYY-MM-DD');
-                    endDate = moment(dates[1], 'DD/MM/YYYY').format('YYYY-MM-DD');
-                }
-            }
+            // if(this.filter.beginDate) {
+            //     let dates = this.filter.beginDate.split(" - ");
+            //     if(dates.length == 2 && dates[0].length == 10 && dates[1].length == 10) {
+            //         startDate = moment(dates[0], 'DD/MM/YYYY').format('YYYY-MM-DD');
+            //         endDate = moment(dates[1], 'DD/MM/YYYY').format('YYYY-MM-DD');
+            //     }
+            // }
 
                 service.searchExperiments(
                   this.user.getAuthorizationHeader(),
                   this.filter.uri,
-                  startDate,
-                  endDate,
+                  undefined,
+                  undefined,
                   this.filter.campaign,
                   this.filter.alias,
-                    null,
+                  this.filter.species,
                   projects,
-                  false,
-                  isArchived,
+                  undefined,
+                  undefined,
                   this.orderBy,
                   this.currentPage - 1,
                   this.pageSize
                 )
                 .then((http: HttpResponse<OpenSilexResponse<Array<ExperimentGetDTO>>>) => {
-                  console.log(http.response);
+                //   console.log(http.response);
 
                   this.totalRow = http.response.metadata.pagination.totalCount;
                   this.experiments = http.response.result;
@@ -526,8 +526,18 @@
 
         }
 
+        // loadSpecies(){
+
+        //     let SPECIES_SERVICE_NAME: string = "opensilex.SpeciesService";
+        //     let service: SpeciesService = this.$opensilex.getService(SPECIES_SERVICE_NAME);
+
+            
+        // }
+
         formatDate(value: any): String {
-            return moment().year(value.year).month(value.month).date(value.day).format('DD/MM/YYYY');
+            // console.log("FORMAT :"+value);
+            return value;
+            // return moment().year(value.year).month(value.month).date(value.day).format('DD/MM/YYYY');
         }
 
         getProjectName(uri: String): String {

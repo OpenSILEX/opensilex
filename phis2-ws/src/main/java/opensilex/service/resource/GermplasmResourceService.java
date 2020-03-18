@@ -7,6 +7,7 @@
 //******************************************************************************
 package opensilex.service.resource;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -21,6 +22,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -51,8 +53,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-//@Api("/germplasm")
-//@Path("germplasm")
+@Api("/germplasm")
+@Path("germplasm")
 public class GermplasmResourceService extends ResourceService {
 
     final static Logger LOGGER = LoggerFactory.getLogger(GermplasmResourceService.class);
@@ -117,7 +119,7 @@ public class GermplasmResourceService extends ResourceService {
     /**
      * Generates a germplasm list from a given list of AccessionPostDTO
      *
-     * @param accessionDTOs
+     * @param germplasmDTOs
      * @return the list of sensors
      */
     private List<Germplasm> germplasmPostDTOsToGermplasm(List<GermplasmPostDTO> germplasmDTOs) throws Exception {

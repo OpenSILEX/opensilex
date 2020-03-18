@@ -29,6 +29,9 @@ public class ScientificObject {
     private String year;    
     //label of the scientific object
     private String label;        
+    //germplasm
+    private Germplasm germplasm;
+
 
     //The properties of the scientific object
     private ArrayList<Property> properties = new ArrayList<>();
@@ -116,5 +119,13 @@ public class ScientificObject {
     public void setYear(String year) {
         this.year = year;
     }
+    
+    public Germplasm getGermplasm() {
+        return germplasm;
+    }
 
+    public void setGermplasm(Germplasm germplasm) {
+        this.germplasm = germplasm;
+    }
+    
 }

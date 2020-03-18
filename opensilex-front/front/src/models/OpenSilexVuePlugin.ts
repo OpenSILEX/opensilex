@@ -19,6 +19,7 @@ export default class OpenSilexVuePlugin {
     private config: FrontConfigDTO;
     public $store: Store<any>;
     public $i18n: VueI18n;
+    public $bvToast: any;
 
     constructor(baseApi: string, store: Store<any>, i18n: VueI18n) {
         this.container = new Container();
@@ -36,7 +37,7 @@ export default class OpenSilexVuePlugin {
         return this.$store.state.user;
     }
 
-    getBaseAPI(){
+    getBaseAPI() {
         return this.baseApi;
     }
 
@@ -328,26 +329,80 @@ export default class OpenSilexVuePlugin {
         return hash;
     }
 
-    private handleError(error) {
+    private handleError(error, message?) {
         switch (error.status) {
             case 400:
                 console.error("Constraint validation error", error);
+                this.handleConstraintError(error, message);
                 break;
             case 401:
                 console.error("Unhautorized error", error);
+                this.handleUnauthorizedError(error, message);
                 this.$store.commit("logout");
                 break;
             case 403:
                 console.error("Forbidden error", error);
+                this.handleForbiddenError(error, message);
                 break;
             case 500:
                 console.error("Internal server error", error);
+                this.handleServerError(error, message);
                 break;
             default:
                 console.error("Unhandled error", error);
+                this.handleUnexpectedError(error, message);
                 break;
         }
     }
 
     public errorHandler = this.handleError.bind(this);
+
+    public handleConstraintError(error, message?) {
+        if (message == null) {
+            message = this.$i18n.t("component.common.errors.constraint-error");
+        }
+        this.showErrorToast(message);
+    }
+
+    public handleForbiddenError(error, message?) {
+        if (message == null) {
+            message = this.$i18n.t("component.common.errors.forbidden-error");
+        }
+        console.warn(message);
+        this.showErrorToast(message);
+    }
+
+    public handleServerError(error, message?) {
+        if (message == null) {
+            message = this.$i18n.t("component.common.errors.server-error");
+        }
+        this.showErrorToast(message);
+    }
+
+    public handleUnexpectedError(error, message?) {
+        if (message == null) {
+            message = this.$i18n.t("component.common.errors.unexpected-error");
+        }
+        this.showErrorToast(message);
+    }
+
+    public handleUnauthorizedError(error, message?) {
+        if (message == null) {
+            message = this.$i18n.t("component.common.errors.unauthorized-error");
+        }
+        this.showErrorToast(message);
+    }
+
+    public showErrorToast(message: string) {
+        this.showToast(message, {
+            variant: "danger",
+            toaster: "b-toaster-bottom-full",
+            solid: true,
+            title: this.$i18n.t("component.common.errors.error-title")
+        });
+    }
+
+    public showToast(message: string, options: any) {
+        this.$bvToast.toast(message, options);
+    }
 }

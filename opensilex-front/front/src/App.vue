@@ -49,6 +49,11 @@ export default class App extends Vue {
   @Prop() footerComponent!: string | Component;
 
   $opensilex: OpenSilexVuePlugin;
+  $bvToast: any;
+
+  created() {
+    this.$opensilex.$bvToast = this.$bvToast
+  }
 
   get disconnected() {
     return this.$store.state.disconnected;

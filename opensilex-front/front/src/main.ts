@@ -141,6 +141,7 @@ import { configure, extend } from 'vee-validate';
 import validationMessagesEN from 'vee-validate/dist/locale/en.json';
 import validationMessagesFR from 'vee-validate/dist/locale/fr.json';
 import * as rules from 'vee-validate/dist/rules';
+import { email } from 'vee-validate/dist/rules';
 
 for (let [rule, validation] of Object.entries(rules)) {
   extend(rule, {
@@ -156,6 +157,16 @@ extend("url", (value) => {
     return false;
   }
 });
+
+extend("emailOrUrl", (value) => {
+  try {
+    new URL(value);
+    return true;
+  } catch (error) {
+    return email.validate(value);
+  }
+});
+
 
 let validationTranslations = {
   "validations": validationMessagesEN.messages

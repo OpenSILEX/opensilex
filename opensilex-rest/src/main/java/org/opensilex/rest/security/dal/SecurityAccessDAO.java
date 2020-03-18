@@ -42,7 +42,7 @@ public class SecurityAccessDAO {
 
     public static String getCredentialIdFromMethod(Method method) {
         ApiCredential credentialAnnotation = method.getAnnotation(ApiCredential.class);
-        return credentialAnnotation != null ? credentialAnnotation.credentialId() : null;
+        return (credentialAnnotation != null && !credentialAnnotation.hide()) ? credentialAnnotation.credentialId() : null;
     }
 
     private static TreeMap<String, Map<String, String>> credentialsGroups;
@@ -59,8 +59,7 @@ public class SecurityAccessDAO {
             Set<Method> methods = ClassUtils.getAnnotatedMethods(ApiCredential.class);
             methods.forEach((method) -> {
                 ApiCredential apiCredential = method.getAnnotation(ApiCredential.class);
-
-                if (apiCredential != null) {
+                if (apiCredential != null && !apiCredential.hide()) {
                     String groupId = apiCredential.groupId();
                     if (!credentialsGroups.containsKey(groupId)) {
                         credentialsGroups.put(groupId, new HashMap<>());

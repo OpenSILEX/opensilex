@@ -122,7 +122,7 @@ public class SecurityAPI {
         }
 
         // Authenticate found user with provided password
-        if (authentication.authenticate(user, authenticationDTO.getPassword(), userDAO.getAccessList(user.getUri()))) {
+        if (user != null && authentication.authenticate(user, authenticationDTO.getPassword(), userDAO.getAccessList(user.getUri()))) {
             // Return user token
             return new SingleObjectResponse<TokenGetDTO>(new TokenGetDTO(user.getToken())).getResponse();
         } else {

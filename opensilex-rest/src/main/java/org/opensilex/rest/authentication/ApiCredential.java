@@ -27,12 +27,14 @@ import java.lang.annotation.Target;
 @Documented
 public @interface ApiCredential {
 
-    String groupId();
+    public String groupId();
     
-    String groupLabelKey();
+    public String groupLabelKey();
     
-    String credentialId();
+    public String credentialId();
     
-    String credentialLabelKey();
+    public String credentialLabelKey();
+
+    public boolean hide() default false;
     
 }

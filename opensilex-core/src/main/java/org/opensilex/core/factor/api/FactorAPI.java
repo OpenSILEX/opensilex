@@ -9,6 +9,7 @@
  */
 package org.opensilex.core.factor.api;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -34,7 +35,6 @@ import org.opensilex.core.factor.dal.FactorDAO;
 import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.rest.authentication.ApiProtected;
-import org.opensilex.rest.validation.ValidURI;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -50,14 +50,13 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author Arnaud Charleroy
  */
-//@Api("Factors")
-//@Path("/core/factor")
+@Api(value = "Factors", hidden = true)
+@Path("/core/factor")
 public class FactorAPI {
 
     protected static final String FACTOR_EXAMPLE_URI = "http://opensilex/set/factors/ZA17";
-
     
-    public static final String CREDENTIAL_FACTOR_GROUP_ID = "Experiments";
+    public static final String CREDENTIAL_FACTOR_GROUP_ID = "Factors";
     public static final String CREDENTIAL_FACTOR_GROUP_LABEL_KEY = "credential-groups.factors";
 
     public static final String CREDENTIAL_FACTOR_MODIFICATION_ID = "factor-modification";
@@ -203,7 +202,8 @@ public class FactorAPI {
             groupId = CREDENTIAL_FACTOR_GROUP_ID,
             groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_FACTOR_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_FACTOR_DELETE_LABEL_KEY
+            credentialLabelKey = CREDENTIAL_FACTOR_DELETE_LABEL_KEY,
+            hide = true
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

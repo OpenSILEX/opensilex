@@ -265,8 +265,8 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         Node documentType = NodeFactory.createURI(document.getDocumentType());
         spql.addDelete(graph, documentUri, RDF.type, documentType);
 
-        spql.addDelete(graph, documentUri, DCTerms.format, makeVar("xFormat"));
-        
+        spql.addDelete(graph, documentUri, DCTerms.format, document.getFormat());
+
         Property relationStatus = ResourceFactory.createProperty(Oeso.RELATION_STATUS.toString());
         spql.addDelete(graph, documentUri, relationStatus, document.getStatus());
 

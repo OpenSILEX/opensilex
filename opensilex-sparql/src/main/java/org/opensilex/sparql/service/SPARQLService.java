@@ -334,6 +334,9 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> boolean existsByUniquePropertyValue(Class<T> objectClass, Property property, Object propertyValue) throws Exception {
+        if (propertyValue == null) {
+            return false;
+        }
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
         AskBuilder ask = sparqlObjectMapper.getAskBuilder();
         Field field = sparqlObjectMapper.getFieldFromUniqueProperty(property);

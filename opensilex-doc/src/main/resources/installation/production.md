@@ -133,14 +133,14 @@ Linux example commands:
 
 ```
 cd /home/opensilex/bin
-wget https://github.com/OpenSILEX/opensilex-dev/releases/download/X.Y.Z/opensilex-dev-X.Y.Z.zip
-unzip opensilex-dev-X.Y.Z.zip
+wget https://github.com/OpenSILEX/opensilex-dev/releases/download/X.Y.Z/opensilex-X.Y.Z.zip
+unzip opensilex-X.Y.Z.zip
 ```
 For latest version
 ```
 cd /home/opensilex/bin
-wget https://github.com/OpenSILEX/opensilex-dev/releases/download/3.4.0-beta/opensilex-dev-3.4.0-beta.zip
-unzip opensilex-dev-3.4.0-beta.zip
+wget https://github.com/OpenSILEX/opensilex-dev/releases/download/3.4.0-beta/opensilex-3.4.0-beta.zip
+unzip opensilex-3.4.0-beta.zip
 ```
 
 You should get the following directory structure:

@@ -48,6 +48,7 @@ import opensilex.service.utils.ResourcesUtils;
 import opensilex.service.utils.sparql.SPARQLQueryBuilder;
 import opensilex.service.view.brapi.Status;
 import opensilex.service.model.Document;
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
 
 //SILEX:warning
@@ -264,6 +265,8 @@ public class DocumentRdf4jDAO extends Rdf4jDAO<Document> {
         Node documentType = NodeFactory.createURI(document.getDocumentType());
         spql.addDelete(graph, documentUri, RDF.type, documentType);
 
+        spql.addDelete(graph, documentUri, DCTerms.format, makeVar("xFormat"));
+        
         Property relationStatus = ResourceFactory.createProperty(Oeso.RELATION_STATUS.toString());
         spql.addDelete(graph, documentUri, relationStatus, document.getStatus());
 

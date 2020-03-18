@@ -137,22 +137,19 @@ public class UserAPI {
         // Create user DAO
         UserDAO userDAO = new UserDAO(sparql);
 
+        // check if user URI already exists
+        if (sparql.uriExists(UserModel.class, userDTO.getUri())) {
+            // Return error response 409 - CONFLICT if user URI already exists
+            return new ErrorResponse(
+                    Response.Status.CONFLICT,
+                    "User already exists",
+                    "Duplicated URI: " + userDTO.getUri()
+            ).getResponse();
+        }
+
         // check if user email already exists
         InternetAddress userEmail = new InternetAddress(userDTO.getEmail());
         if (!userDAO.userEmailexists(userEmail)) {
-            // create new user
-            UserModel user = userDAO.create(
-                    userDTO.getUri(),
-                    userEmail,
-                    userDTO.getFirstName(),
-                    userDTO.getLastName(),
-                    userDTO.isAdmin(),
-                    authentication.getPasswordHash(userDTO.getPassword()),
-                    userDTO.getLang()
-            );
-            // return user URI
-            return new ObjectUriResponse(Response.Status.CREATED, user.getUri()).getResponse();
-        } else {
             // Return error response 409 - CONFLICT if user already exists
             return new ErrorResponse(
                     Status.CONFLICT,
@@ -160,6 +157,19 @@ public class UserAPI {
                     "Duplicated email: " + userEmail.toString()
             ).getResponse();
         }
+
+        // create new user
+        UserModel user = userDAO.create(
+                userDTO.getUri(),
+                userEmail,
+                userDTO.getFirstName(),
+                userDTO.getLastName(),
+                userDTO.isAdmin(),
+                authentication.getPasswordHash(userDTO.getPassword()),
+                userDTO.getLang()
+        );
+        // return user URI
+        return new ObjectUriResponse(Response.Status.CREATED, user.getUri()).getResponse();
     }
 
     /**

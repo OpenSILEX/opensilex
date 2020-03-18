@@ -109,16 +109,6 @@ public class ProfileDAO {
         );
     }
 
-    public ProfileModel getProfileByName(String name) throws Exception {
-        ProfileModel profile = sparql.getByUniquePropertyValue(ProfileModel.class,
-                null,
-                DCTerms.title,
-                name
-        );
-
-        return profile;
-    }
-
     public List<ProfileModel> getByUserURI(URI uri) throws Exception {
         return sparql.search(
                 ProfileModel.class,
@@ -129,12 +119,20 @@ public class ProfileDAO {
                     Var groupURIVar = makeVar("__userProfileURI");
                     WhereHandler whereHandler = new WhereHandler();
                     whereHandler.addWhere(select.makeTriplePath(groupURIVar, SecurityOntology.hasProfile, profileURIVar));
-                    whereHandler.addWhere(select.makeTriplePath(groupURIVar, SecurityOntology.hasUser,  SPARQLDeserializers.nodeURI(uri)));
+                    whereHandler.addWhere(select.makeTriplePath(groupURIVar, SecurityOntology.hasUser, SPARQLDeserializers.nodeURI(uri)));
 
                     SPARQLClassObjectMapper<GroupUserProfileModel> groupUserProfileMapper = SPARQLClassObjectMapper.getForClass(GroupUserProfileModel.class);
                     ElementNamedGraph elementNamedGraph = new ElementNamedGraph(groupUserProfileMapper.getDefaultGraph(), whereHandler.getElement());
                     select.getWhereHandler().getClause().addElement(elementNamedGraph);
                 }
+        );
+    }
+
+    public boolean profileNameExists(String name) throws Exception {
+        return sparql.existsByUniquePropertyValue(
+                ProfileModel.class,
+                DCTerms.title,
+                name
         );
     }
 }

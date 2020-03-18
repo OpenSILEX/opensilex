@@ -30,7 +30,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import static org.apache.jena.vocabulary.RDF.uri;
 import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.server.response.ErrorResponse;
@@ -112,37 +111,34 @@ public class ProfileAPI {
         // Create profile DAO
         ProfileDAO profileDAO = new ProfileDAO(sparql);
 
-        // check if profile name already exists
-        ProfileModel profile = profileDAO.getProfileByName(profileDTO.getName());
-        if (profile == null) {
-            if (profileDTO.getUri() != null) {
-                profile = profileDAO.get(profileDTO.getUri());
-                if (profile != null) {
-                    // Return error response 409 - CONFLICT if profile URI already exists
-                    return new ErrorResponse(
-                            Status.CONFLICT,
-                            "Profile already exists",
-                            "Duplicated URI: " + profileDTO.getUri()
-                    ).getResponse();
-                }
-            }
+        // check if profile URI already exists
+        if (sparql.uriExists(ProfileModel.class, profileDTO.getUri())) {
+            // Return error response 409 - CONFLICT if user URI already exists
+            return new ErrorResponse(
+                    Response.Status.CONFLICT,
+                    "Profile already exists",
+                    "Duplicated URI: " + profileDTO.getUri()
+            ).getResponse();
+        }
 
-            // create new user
-            profile = profileDAO.create(
-                    profileDTO.getUri(),
-                    profileDTO.getName(),
-                    profileDTO.getCredentials()
-            );
-            // return user URI
-            return new ObjectUriResponse(Response.Status.CREATED, profile.getUri()).getResponse();
-        } else {
+        // check if profile name already exists
+        if (profileDAO.profileNameExists(profileDTO.getName())) {
             // Return error response 409 - CONFLICT if profile name already exists
             return new ErrorResponse(
-                    Status.CONFLICT,
+                    Response.Status.CONFLICT,
                     "Profile already exists",
                     "Duplicated name: " + profileDTO.getName()
             ).getResponse();
         }
+
+        // create new profile
+        ProfileModel profile = profileDAO.create(
+                profileDTO.getUri(),
+                profileDTO.getName(),
+                profileDTO.getCredentials()
+        );
+        // return user URI
+        return new ObjectUriResponse(Response.Status.CREATED, profile.getUri()).getResponse();
     }
 
     @PUT

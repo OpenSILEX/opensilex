@@ -580,6 +580,9 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> boolean uriExists(Class<T> objectClass, URI uri) throws Exception {
+        if (uri == null) {
+            return false;
+        }
         return executeAskQuery(getUriExistsQuery(objectClass, uri));
     }
 

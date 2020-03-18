@@ -58,6 +58,16 @@ body {
     margin-bottom: 2px;
 }
 
+.error-message {
+    margin-top: 2px;
+    padding: 10px;
+}
+
+.error-message:empty
+{
+    display:none;
+}
+
 /*************************************
 * CARDS
 *************************************/

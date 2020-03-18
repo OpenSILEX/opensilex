@@ -28,11 +28,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
 import static org.apache.jena.vocabulary.RDF.uri;
 import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.server.response.ErrorResponse;
@@ -117,6 +115,18 @@ public class ProfileAPI {
         // check if profile name already exists
         ProfileModel profile = profileDAO.getProfileByName(profileDTO.getName());
         if (profile == null) {
+            if (profileDTO.getUri() != null) {
+                profile = profileDAO.get(profileDTO.getUri());
+                if (profile != null) {
+                    // Return error response 409 - CONFLICT if profile URI already exists
+                    return new ErrorResponse(
+                            Status.CONFLICT,
+                            "Profile already exists",
+                            "Duplicated URI: " + profileDTO.getUri()
+                    ).getResponse();
+                }
+            }
+
             // create new user
             profile = profileDAO.create(
                     profileDTO.getUri(),
@@ -126,7 +136,7 @@ public class ProfileAPI {
             // return user URI
             return new ObjectUriResponse(Response.Status.CREATED, profile.getUri()).getResponse();
         } else {
-            // Return error response 409 - CONFLICT if user already exists
+            // Return error response 409 - CONFLICT if profile name already exists
             return new ErrorResponse(
                     Status.CONFLICT,
                     "Profile already exists",

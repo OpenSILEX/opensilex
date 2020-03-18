@@ -31,7 +31,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.rest.authentication.ApiProtected;
-import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.group.dal.GroupDAO;
 import org.opensilex.rest.group.dal.GroupModel;
 import org.opensilex.rest.group.dal.GroupUserProfileModel;
@@ -105,10 +104,34 @@ public class GroupAPI {
     ) throws Exception {
         GroupDAO dao = new GroupDAO(sparql);
 
-        GroupModel group = dao.create(getModel(dto));
+        // check if group name already exists
+        GroupModel group = dao.getGroupByName(dto.getName());
+        if (group == null) {
+            if (dto.getUri() != null) {
+                group = dao.get(dto.getUri());
+                if (group != null) {
+                    // Return error response 409 - CONFLICT if profile URI already exists
+                    return new ErrorResponse(
+                            Response.Status.CONFLICT,
+                            "Group already exists",
+                            "Duplicated URI: " + dto.getUri()
+                    ).getResponse();
+                }
+            }
 
-        Response response = new ObjectUriResponse(Response.Status.CREATED, group.getUri()).getResponse();
-        return response;
+            // create new group
+            group = dao.create(getModel(dto));
+
+            // return user URI
+            return new ObjectUriResponse(Response.Status.CREATED, group.getUri()).getResponse();
+        } else {
+            // Return error response 409 - CONFLICT if profile name already exists
+            return new ErrorResponse(
+                    Response.Status.CONFLICT,
+                    "Group already exists",
+                    "Duplicated name: " + dto.getName()
+            ).getResponse();
+        }
     }
 
     @PUT

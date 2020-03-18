@@ -149,7 +149,7 @@ public class UserAPI {
 
         // check if user email already exists
         InternetAddress userEmail = new InternetAddress(userDTO.getEmail());
-        if (!userDAO.userEmailexists(userEmail)) {
+        if (userDAO.userEmailexists(userEmail)) {
             // Return error response 409 - CONFLICT if user already exists
             return new ErrorResponse(
                     Status.CONFLICT,

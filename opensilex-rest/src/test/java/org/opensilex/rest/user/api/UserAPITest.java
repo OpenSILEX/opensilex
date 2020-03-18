@@ -34,24 +34,28 @@ public class UserAPITest extends AbstractIntegrationTest {
     protected String searchPath = path + "/search";
     protected String urisListPath = path + "/get-list-by-uris";
 
+    private int userCount = 0;
     protected UserCreationDTO getUser1CreationDTO() {
-
+        int count = userCount++;
+        
         UserCreationDTO dto = new UserCreationDTO();
         dto.setAdmin(true);
-        dto.setEmail("user1@opensilex.org");
-        dto.setFirstName("user1");
-        dto.setLastName("user1 last name");
+        dto.setEmail("user" + count + "@opensilex.org");
+        dto.setFirstName("user" + count + "");
+        dto.setLastName("user" + count + " last name");
         dto.setPassword("1234");
         dto.setLang(OpenSilex.DEFAULT_LANGUAGE);
         return dto;
     }
 
     protected UserCreationDTO getUser2CreationDTO() {
+        int count = userCount++;
+        
         UserCreationDTO dto = new UserCreationDTO();
         dto.setAdmin(false);
-        dto.setEmail("user2@opensilex.org");
-        dto.setFirstName("user2");
-        dto.setLastName("user2 last name");
+        dto.setEmail("user" + count + "@opensilex.org");
+        dto.setFirstName("user" + count + "");
+        dto.setLastName("user" + count + " last name");
         dto.setPassword("6789");
         dto.setLang(OpenSilex.DEFAULT_LANGUAGE);
         return dto;
@@ -59,7 +63,6 @@ public class UserAPITest extends AbstractIntegrationTest {
 
     @Test
     public void testCreate() throws Exception {
-
         Response postResult = getJsonPostResponse(target(createPath), getUser1CreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
@@ -79,7 +82,6 @@ public class UserAPITest extends AbstractIntegrationTest {
 
     @Test
     public void testUpdate() throws Exception {
-
         // create the user
         Response postResult = getJsonPostResponse(target(createPath), getUser1CreationDTO());
 
@@ -112,7 +114,6 @@ public class UserAPITest extends AbstractIntegrationTest {
 
     @Test
     public void testDelete() throws Exception {
-
         // create object and check if URI exists
         Response postResponse = getJsonPostResponse(target(createPath), getUser1CreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
@@ -128,7 +129,6 @@ public class UserAPITest extends AbstractIntegrationTest {
 
     @Test
     public void testGetByUriFail() throws Exception {
-
         final Response postResponse = getJsonPostResponse(target(createPath), getUser1CreationDTO());
         String uri = extractUriFromResponse(postResponse).toString();
 
@@ -139,7 +139,6 @@ public class UserAPITest extends AbstractIntegrationTest {
 
     @Test
     public void testSearch() throws Exception {
-
         Response postResult = getJsonPostResponse(target(createPath), getUser1CreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
@@ -178,8 +177,7 @@ public class UserAPITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testGetByURIs() throws Exception  {
-
+    public void testGetByURIs() throws Exception {
         Response postResult = getJsonPostResponse(target(createPath), getUser1CreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
         URI user1URI = extractUriFromResponse(postResult);
@@ -215,10 +213,5 @@ public class UserAPITest extends AbstractIntegrationTest {
         assertEquals(expectedUserDTO.getLastName(), actualUserDTO.getLastName());
         assertEquals(expectedUserDTO.isAdmin(), actualUserDTO.isAdmin());
         assertEquals(expectedUserDTO.getLang(), actualUserDTO.getLang());
-    }
-
-    @Override
-    protected List<String> getGraphsToCleanNames() {
-        return Collections.singletonList("users");
     }
 }

@@ -11,7 +11,6 @@ package org.opensilex.core.experiment.dal;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
@@ -195,7 +194,7 @@ public class ExperimentDAOTest extends AbstractUnitTest{
         ExperimentModel xpModel = getModel(0);
         xpDao.create(xpModel);
 
-        ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();
+        ExperimentSearch searchDTO = new ExperimentSearch();
         searchDTO.setLabel(xpModel.getLabel())
                 .setCampaign(xpModel.getCampaign())
                 .setStartDate(xpModel.getStartDate().toString())
@@ -258,7 +257,7 @@ public class ExperimentDAOTest extends AbstractUnitTest{
         xpModel.setProjects(projects);
         xpDao.create(xpModel);
 
-        ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();
+        ExperimentSearch searchDTO = new ExperimentSearch();
         searchDTO.setProjects(Arrays.asList(projectModel.getUri(), project2.getUri()));
 
         List<ExperimentModel> xpModelResults = xpDao.search(searchDTO, null, 0, 10).getList();
@@ -286,7 +285,7 @@ public class ExperimentDAOTest extends AbstractUnitTest{
         ExperimentModel xpModel = getModel(0);
         xpDao.create(xpModel);
 
-        ExperimentSearchDTO getDTO = new ExperimentSearchDTO();
+        ExperimentSearch getDTO = new ExperimentSearch();
 
         // set a bad label in order to check if the result set from dao is empty
         getDTO.setLabel(xpModel.getLabel() + "str");
@@ -327,16 +326,16 @@ public class ExperimentDAOTest extends AbstractUnitTest{
         xpDao.create(unarchivedXp);
 
         // try to retrieve xps from dao
-        List<ExperimentModel> archivedXps = xpDao.search(new ExperimentSearchDTO().setEnded(true), null, 0, 10).getList();
+        List<ExperimentModel> archivedXps = xpDao.search(new ExperimentSearch().setEnded(true), null, 0, 10).getList();
         assertEquals(1, archivedXps.size());
         assertTrue(archivedXps.contains(archivedXp));
 
-        List<ExperimentModel> unarchivedXps = xpDao.search(new ExperimentSearchDTO().setEnded(false), null, 0, 10).getList();
+        List<ExperimentModel> unarchivedXps = xpDao.search(new ExperimentSearch().setEnded(false), null, 0, 10).getList();
         assertEquals(1, unarchivedXps.size());
         assertTrue(unarchivedXps.contains(unarchivedXp));
 
         // search all archived projects
-        List<ExperimentModel> allXps = xpDao.search(new ExperimentSearchDTO(), null, 0, 10).getList();
+        List<ExperimentModel> allXps = xpDao.search(new ExperimentSearch(), null, 0, 10).getList();
         assertEquals(2, allXps.size());
         assertTrue(allXps.contains(archivedXp));
         assertTrue(allXps.contains(unarchivedXp));

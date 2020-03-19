@@ -18,7 +18,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.opensilex.core.experiment.api.ExperimentCreationDTO;
+import opensilex.service.germplasm.dal.GermplasmDAO;
+import opensilex.service.germplasm.dal.GermplasmModel;
 import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.server.response.ErrorResponse;
@@ -67,15 +68,52 @@ public class GermplasmAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Create an experiment", response = ObjectUriResponse.class),
+        @ApiResponse(code = 201, message = "Create a germplasm (variety, accession, plantMaterialLot)", response = ObjectUriResponse.class),
         @ApiResponse(code = 409, message = "A germplasm with the same URI already exists", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     
     public Response createGermplasm(
         @ApiParam("Germplasm description") @Valid GermplasmCreationDTO germplasmDTO
-    ) {
-        try {
-            
+    ) throws Exception {
+ 
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql);
+
+        // check if germplasm URI already exists
+        if (sparql.uriExists(GermplasmModel.class, germplasmDTO.getUri())) {
+            // Return error response 409 - CONFLICT if URI already exists
+            return new ErrorResponse(
+                    Response.Status.CONFLICT,
+                    "Germplasm URI already exists",
+                    "Duplicated URI: " + germplasmDTO.getUri()
+            ).getResponse();
         }
+        
+        // check if germplasm label already exists
+        if (germplasmDAO.germplasmLabelExists(germplasmDTO.getLabel())) {
+            // Return error response 409 - CONFLICT if label already exists
+            return new ErrorResponse(
+                    Response.Status.CONFLICT,
+                    "Germplasm label already exists",
+                    "Duplicated label: " + germplasmDTO.getUri()
+            ).getResponse();
+        }
+               
+        
+        try {
+            // create new profile
+            GermplasmModel germplasm = germplasmDAO.create(
+                    germplasmDTO.getUri(),
+                    germplasmDTO.getLabel(),
+                    germplasmDTO.getRdfType(),
+                    germplasmDTO.getFromSpecies(),
+                    germplasmDTO.getFromVariety(),
+                    germplasmDTO.getFromAccession()
+            );
+            //return germplasm uri
+            return new ObjectUriResponse(Response.Status.CREATED, germplasm.getUri()).getResponse();
+        } catch (Exception e) {
+            return new ErrorResponse(e).getResponse();
+        }
+        
     }
 }

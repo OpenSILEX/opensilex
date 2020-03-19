@@ -5,9 +5,9 @@
  */
 package opensilex.service.germplasm.dal;
 
+import java.net.URI;
 import java.util.ArrayList;
 import opensilex.service.model.Property;
-import opensilex.service.resource.dto.rdfResourceDefinition.PropertyPostDTO;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
@@ -24,7 +24,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Germplasm",
-        graph = "set/germplasm",
+        graph = "opensilex/germplasm",
         prefix = "germplasm"
 )
 public class GermplasmModel extends SPARQLResourceModel implements ClassURIGenerator<GermplasmModel>{
@@ -41,10 +41,8 @@ public class GermplasmModel extends SPARQLResourceModel implements ClassURIGener
         property = "type",
         required = true
     )
-    String rdfType;
+    URI rdfType;
     public static final String RDF_TYPE_VAR = "rdfType";
-    
-    ArrayList<Property> properties;
     
     public String getLabel() {
         return label;
@@ -54,71 +52,57 @@ public class GermplasmModel extends SPARQLResourceModel implements ClassURIGener
         this.label = label;
     }
 
-    public String getRdfType() {
+    public URI getRdfType() {
         return rdfType;
     }
 
-    public void setRdfType(String rdfType) {
+    public void setRdfType(URI rdfType) {
         this.rdfType = rdfType;
     }      
-    
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "fromGenus"
-    )
-    String genus;
-    public static final String GENUS_URI_SPARQL_VAR = "genus";
+
 
     @SPARQLProperty(
         ontology = Oeso.class,
         property = "fromSpecies"
     )
-    String species;
+    URI species;
     public static final String SPECIES_URI_SPARQL_VAR = "species";
     
     @SPARQLProperty(
         ontology = Oeso.class,
         property = "fromVariety"
     )
-    String variety;
+    URI variety;
     public static final String VARIETY_URI_SPARQL_VAR = "variety";
     
     @SPARQLProperty(
         ontology = Oeso.class,
         property = "fromAccession"
     )
-    String accession;
+    URI accession;
     public static final String ACCESSION_URI_SPARQL_VAR = "accession";    
 
-    public String getGenus() {
-        return genus;
-    }
-
-    public void setGenus(String genus) {
-        this.genus = genus;
-    }
-
-    public String getSpecies() {
+    public URI getSpecies() {
         return species;
     }
 
-    public void setSpecies(String species) {
+    public void setSpecies(URI species) {
         this.species = species;
     }
 
-    public String getVariety() {
+    public URI getVariety() {
         return variety;
     }
 
-    public void setVariety(String variety) {
+    public void setVariety(URI variety) {
         this.variety = variety;
     }
 
-    public String getAccession() {
+    public URI getAccession() {
         return accession;
     }
 
-    public void setAccession(String accession) {
+    public void setAccession(URI accession) {
         this.accession = accession;
     }
     

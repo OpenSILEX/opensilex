@@ -1,4 +1,4 @@
-package org.opensilex.core.species;
+package org.opensilex.core.species.dal;
 
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;

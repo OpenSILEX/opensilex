@@ -596,10 +596,10 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
      * rdfType
      */
     public boolean uriExists(URI rdfType, URI uri) throws SPARQLException {
-
+        Var typeVar = makeVar("type");
         return executeAskQuery(new AskBuilder()
-                .addWhere(SPARQLDeserializers.nodeURI(uri), RDF.type, SPARQLQueryHelper.typeDefVar)
-                .addWhere(SPARQLQueryHelper.typeDefVar, Ontology.subClassAny, SPARQLDeserializers.nodeURI(rdfType))
+                .addWhere(SPARQLDeserializers.nodeURI(uri), RDF.type, typeVar)
+                .addWhere(typeVar, Ontology.subClassAny, SPARQLDeserializers.nodeURI(rdfType))
         );
     }
 
@@ -608,11 +608,13 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
 
         AskBuilder askQuery = new AskBuilder();
         Node nodeUri = SPARQLDeserializers.nodeURI(uri);
-        askQuery.addWhere(nodeUri, RDF.type, SPARQLQueryHelper.typeDefVar);
+        
+        Var fieldType = sparqlObjectMapper.getTypeFieldVar();
+        askQuery.addWhere(nodeUri, RDF.type, fieldType);
 
         Resource typeDef = sparqlObjectMapper.getRDFType();
 
-        askQuery.addWhere(SPARQLQueryHelper.typeDefVar, Ontology.subClassAny, typeDef);
+        askQuery.addWhere(fieldType, Ontology.subClassAny, typeDef);
         return askQuery;
     }
 

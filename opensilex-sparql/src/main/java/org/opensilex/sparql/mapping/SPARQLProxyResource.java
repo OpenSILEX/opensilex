@@ -5,29 +5,41 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
+import java.lang.reflect.Method;
 import java.net.URI;
 import org.apache.jena.graph.Node;
+import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-
 
 /**
  *
  * @author vincent
  */
 class SPARQLProxyResource<T extends SPARQLResourceModel> extends SPARQLProxy<T> {
-    
-    
-    SPARQLProxyResource(Node graph, URI uri, Class<T> type, String lang, SPARQLService service) {
+
+    SPARQLProxyResource(Node graph, URI uri, Class<T> type, String lang, SPARQLService service) throws Exception {
         super(graph, type, lang, service);
         this.uri = uri;
+        this.mapper = SPARQLClassObjectMapper.getForClass(type);
     }
-    
+
+    protected final SPARQLClassObjectMapper<T> mapper;
     protected final URI uri;
 
     @Override
     protected T loadData() throws Exception {
         return service.loadByURI(type, uri, lang);
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        if (method.equals(mapper.getURIMethod())) {
+            return uri;
+        } else {
+            loadIfNeeded();
+            return method.invoke(instance, args);
+        }
     }
 
 }

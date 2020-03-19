@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.opensilex.sparql.annotations.SPARQLResourceURI;
+import org.opensilex.sparql.annotations.SPARQLTypeRDF;
 
 
 /**
@@ -21,6 +22,10 @@ public abstract class SPARQLResourceModel implements SPARQLModel {
     @SPARQLResourceURI()
     private URI uri;
     public static final String URI_FIELD = "uri";
+    
+    @SPARQLTypeRDF()
+    private URI type;
+    public static final String TYPE_FIELD = "type";
     
     protected List<SPARQLModelRelation> relations = new ArrayList<>();
         

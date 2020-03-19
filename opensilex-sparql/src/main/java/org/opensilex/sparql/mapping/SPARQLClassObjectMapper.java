@@ -198,7 +198,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     @SuppressWarnings("unchecked")
     public T createInstance(SPARQLResult result, String lang, SPARQLService service) throws Exception {
-        String realType = result.getStringValue(SPARQLQueryHelper.typeDefVar.getName());
+        String realType = result.getStringValue(getTypeFieldName());
         if (!realType.equals(getRDFType().toString())) {
             // TODO handle sub classes
         }
@@ -393,6 +393,14 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public Var getURIFieldVar() {
         return makeVar(getURIFieldName());
     }
+    
+    public String getTypeFieldName() {
+        return classAnalizer.getTypeFieldName();
+    }
+        
+    public Var getTypeFieldVar() {
+        return makeVar(getTypeFieldName());
+    }
 
     public ExprVar getFieldExprVar(String fieldName) throws SPARQLUnknownFieldException {
         Field f = classAnalizer.getFieldFromName(fieldName);
@@ -432,4 +440,9 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public Resource getRDFType() {
         return classAnalizer.getRDFType();
     }
+
+    public Method getURIMethod() {
+        return classAnalizer.getURIMethod();
+    }
+
 }

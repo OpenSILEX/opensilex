@@ -8,7 +8,6 @@ package org.opensilex.core.project.dal;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
-import javax.mail.internet.InternetAddress;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.core.ontology.Oeso;
@@ -22,7 +21,8 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Project",
-        graph = "set/projects"
+        graph = "set/projects",
+        prefix = "prj"
 )
 public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerator<ProjectModel> {
 

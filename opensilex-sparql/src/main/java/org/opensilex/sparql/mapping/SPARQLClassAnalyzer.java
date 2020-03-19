@@ -33,6 +33,7 @@ import org.opensilex.sparql.utils.URIGenerator;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.opensilex.sparql.annotations.SPARQLTypeRDF;
 
 /**
  *
@@ -49,6 +50,8 @@ public class SPARQLClassAnalyzer {
     private final String graphPrefix;
 
     private Field fieldURI;
+    private Field fieldType;
+
     private final Map<Field, Property> dataProperties = new HashMap<>();
 
     private final Map<Field, Property> objectProperties = new HashMap<>();
@@ -137,6 +140,12 @@ public class SPARQLClassAnalyzer {
                 if (sURI != null) {
                     LOGGER.debug("Analyse " + SPARQLResourceURI.class.getCanonicalName() + " annotation for field: " + field.getName());
                     analyzeSPARQLResourceURIField(field);
+                } else {
+                    SPARQLTypeRDF sType = field.getAnnotation(SPARQLTypeRDF.class);
+                    if (sType != null) {
+                        LOGGER.debug("Analyse " + SPARQLTypeRDF.class.getCanonicalName() + " annotation for field: " + field.getName());
+                        analyzeSPARQLTypeField(field);
+                    }
                 }
             }
         }
@@ -144,6 +153,11 @@ public class SPARQLClassAnalyzer {
         LOGGER.debug("Check URI field is defined");
         if (fieldURI == null) {
             throw new SPARQLInvalidClassDefinitionException(objectClass, SPARQLResourceURI.class.getCanonicalName() + " annotation not found");
+        }
+
+        LOGGER.debug("Check Type field is defined");
+        if (fieldType == null) {
+            throw new SPARQLInvalidClassDefinitionException(objectClass, SPARQLTypeRDF.class.getCanonicalName() + " annotation not found");
         }
 
         LOGGER.debug("Init fields accessor registry for: " + objectClass.getName());
@@ -260,6 +274,22 @@ public class SPARQLClassAnalyzer {
                     objectClass,
                     SPARQLResourceURI.class.getCanonicalName() + " annotation must be unique "
                     + "and is defined multiple times for field " + fieldURI.getName()
+                    + " and for field " + field.getName()
+            );
+        }
+    }
+
+    private void analyzeSPARQLTypeField(Field field) throws SPARQLInvalidClassDefinitionException {
+        if (fieldType == null) {
+            LOGGER.debug("Field " + field.getName() + " defined as type field for: " + objectClass.getName());
+            fieldType = field;
+            LOGGER.debug("Store field " + field.getName() + " in global index by name");
+            fieldsByName.put(field.getName(), field);
+        } else {
+            throw new SPARQLInvalidClassDefinitionException(
+                    objectClass,
+                    SPARQLTypeRDF.class.getCanonicalName() + " annotation must be unique "
+                    + "and is defined multiple times for field " + fieldType.getName()
                     + " and for field " + field.getName()
             );
         }
@@ -468,7 +498,7 @@ public class SPARQLClassAnalyzer {
     public Set<Field> getLabelPropertyFields() {
         return labelProperties.keySet();
     }
-    
+
     public Property getLabelPropertyByField(Field field) {
         return labelProperties.get(field);
     }
@@ -476,7 +506,7 @@ public class SPARQLClassAnalyzer {
     public Set<Field> getLabelListPropertyFields() {
         return labelPropertiesLists.keySet();
     }
-    
+
     public Property getLabelListPropertyByField(Field field) {
         return labelPropertiesLists.get(field);
     }
@@ -513,5 +543,13 @@ public class SPARQLClassAnalyzer {
 
     public SPARQLProperty getFieldAnnotation(Field field) {
         return annotationsByField.get(field);
+    }
+
+    public String getTypeFieldName() {
+        return fieldType.getName();
+    }
+
+    public Method getURIMethod() {
+        return getGetterFromField(getURIField());
     }
 }

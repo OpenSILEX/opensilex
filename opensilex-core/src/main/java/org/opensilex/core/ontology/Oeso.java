@@ -91,7 +91,7 @@ public class Oeso {
 
     public static final Resource Infrastructure = Ontology.resource(NS, "Infrastructure");
     public static final Resource Installation = Ontology.resource(NS, "Installation");
-
+    public static final Property hasChild = Ontology.property(NS,"hasChild");
 
     // ---- SPECIES ----
      public static final Resource Species = Ontology.resource(NS, "Species");

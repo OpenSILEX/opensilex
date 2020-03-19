@@ -29,10 +29,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
-import org.apache.commons.lang3.LocaleUtils;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
-import static org.opensilex.sparql.service.SPARQLQueryHelper.typeDefVar;
 
 /**
  * @author vincent
@@ -57,12 +55,14 @@ public class SPARQLClassQueryBuilder {
 
             String uriFieldName = analyzer.getURIFieldName();
             selectBuilder.addVar(uriFieldName);
-            selectBuilder.addVar(typeDefVar);
+            String typeFieldName = analyzer.getTypeFieldName();
+            Var typeFieldVar = makeVar(typeFieldName);
+            selectBuilder.addVar(typeFieldName);
 
             // WhereHandler used for adding all WHERE clause
             WhereHandler rootWhereHandler = new WhereHandler();
-            rootWhereHandler.addWhere(selectBuilder.makeTriplePath(makeVar(uriFieldName), RDF.type, typeDefVar));
-            rootWhereHandler.addWhere(selectBuilder.makeTriplePath(typeDefVar, Ontology.subClassAny, analyzer.getRDFType()));
+            rootWhereHandler.addWhere(selectBuilder.makeTriplePath(makeVar(uriFieldName), RDF.type, typeFieldVar));
+            rootWhereHandler.addWhere(selectBuilder.makeTriplePath(typeFieldVar, Ontology.subClassAny, analyzer.getRDFType()));
 
             analyzer.forEachDataProperty((Field field, Property property) -> {
                 selectBuilder.addVar(field.getName());
@@ -103,8 +103,10 @@ public class SPARQLClassQueryBuilder {
             }
 
             String uriFieldName = analyzer.getURIFieldName();
-            askBuilder.addWhere(makeVar(uriFieldName), RDF.type, typeDefVar);
-            askBuilder.addWhere(typeDefVar, Ontology.subClassAny, analyzer.getRDFType());
+            String typeFieldName = analyzer.getTypeFieldName();
+            Var typeFieldVar = makeVar(typeFieldName);
+            askBuilder.addWhere(makeVar(uriFieldName), RDF.type, typeFieldVar);
+            askBuilder.addWhere(typeFieldVar, Ontology.subClassAny, analyzer.getRDFType());
             analyzer.forEachDataProperty((Field field, Property property) -> {
                 addAskProperty(askBuilder, uriFieldName, property, field);
             });
@@ -122,6 +124,8 @@ public class SPARQLClassQueryBuilder {
             countBuilder = new SelectBuilder();
 
             String uriFieldName = analyzer.getURIFieldName();
+            String typeFieldName = analyzer.getTypeFieldName();
+            Var typeFieldVar = makeVar(typeFieldName);
             try {
                 // TODO generate properly count/distinct trought Jena API
                 countBuilder.addVar("(COUNT(DISTINCT ?" + uriFieldName + "))", makeVar(countFieldName));
@@ -129,8 +133,8 @@ public class SPARQLClassQueryBuilder {
                 LOGGER.error("Error while building count query (should never happend)", ex);
             }
             WhereHandler rootWhereHandler = new WhereHandler();
-            rootWhereHandler.addWhere(countBuilder.makeTriplePath(makeVar(uriFieldName), RDF.type, typeDefVar));
-            rootWhereHandler.addWhere(countBuilder.makeTriplePath(typeDefVar, Ontology.subClassAny, analyzer.getRDFType()));
+            rootWhereHandler.addWhere(countBuilder.makeTriplePath(makeVar(uriFieldName), RDF.type, typeFieldVar));
+            rootWhereHandler.addWhere(countBuilder.makeTriplePath(typeFieldVar, Ontology.subClassAny, analyzer.getRDFType()));
 
             analyzer.forEachDataProperty((Field field, Property property) -> {
                 addSelectProperty(countBuilder, uriFieldName, property, field, rootWhereHandler);

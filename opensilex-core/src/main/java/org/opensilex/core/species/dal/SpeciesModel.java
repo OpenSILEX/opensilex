@@ -4,36 +4,31 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Species",
-        graph = "set/species"
+        graph = "species"
 )
-public class SpeciesModel extends SPARQLResourceModel implements ClassURIGenerator<SpeciesModel> {
+public class SpeciesModel extends SPARQLResourceModel  {
 
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "label",
             required = true
     )
-    String label;
+    SPARQLLabel label;
     public static final String LABEL_FIELD = "label";
 
-    @Override
-    public String[] getUriSegments(SpeciesModel instance) {
-        return new String[]{
-                instance.getLabel()
-        };
-    }
 
-    public String getLabel() {
+    public SPARQLLabel getLabel() {
         return label;
     }
 
-    public void setLabel(String label) {
+    public void setLabel(SPARQLLabel label) {
         this.label = label;
     }
 }

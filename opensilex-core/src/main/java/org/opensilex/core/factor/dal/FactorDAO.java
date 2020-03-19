@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
-import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
 import org.opensilex.core.factor.api.FactorSearchDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -66,7 +65,7 @@ public class FactorDAO {
     }
     
     /**
-     * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty simple attribute ( not a {@link List} from the {@link ExperimentSearchDTO}
+     * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty simple attribute ( not a {@link List} from the {@link FactorSearchDTO}
      *
      * @param searchDTO a search DTO which contains all attributes about an {@link FactorModel} search
      * @param select search query

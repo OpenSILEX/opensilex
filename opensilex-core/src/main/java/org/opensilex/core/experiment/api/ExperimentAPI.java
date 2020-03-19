@@ -221,7 +221,6 @@ public class ExperimentAPI {
             @ApiParam(value = "Search by end date", example = "2017-06-15") @QueryParam("endDate") @DateConstraint String endDate,
             @ApiParam(value = "Search by campaign", example = "2019") @QueryParam("campaign") Integer campaign,
             @ApiParam(value = "Regex pattern for filtering by label", example = "ZA17") @QueryParam("label") String label,
-//            @ApiParam(value = "Search by keywords", example = "opensilex \ndigital agriculture") @QueryParam("keywords") List<String> keywords,
             @ApiParam(value = "Search by involved species", example = "http://www.phenome-fppn.fr/id/species/zeamays") @QueryParam("species") URI species,
             @ApiParam(value = "Search by related project uri", example = "http://www.phenome-fppn.fr/projects/ZA17\nhttp://www.phenome-fppn.fr/id/projects/ZA18") @QueryParam("projects") List<URI> projects,
 //            @ApiParam(value = "Search by infrastructure(s)") @QueryParam("infrastructures") List<URI> infrastructures,
@@ -238,11 +237,11 @@ public class ExperimentAPI {
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
 
             // set searchDTO specifics attributes
-            ExperimentSearch searchDTO = new ExperimentSearch()
+            ExperimentSearch search = new ExperimentSearch()
                     .setEnded(isEnded);
 
             // set general experiment DTO attributes
-            searchDTO.setUri(uri)
+            search.setUri(uri)
                     .setCampaign(campaign)
                     .setLabel(label)
                     .setSpecies(species)
@@ -260,11 +259,10 @@ public class ExperimentAPI {
             for (String groupUri : authentication.decodeStringArrayClaim(userModel.getToken(), CoreModule.TOKEN_USER_GROUP_URIS)) {
                 groupUris.add(new URI(groupUri));
             }
-            searchDTO.setGroups(groupUris);
-            searchDTO.setAdmin(userModel.isAdmin());
-
-
-            ListWithPagination<ExperimentModel> resultList = xpDao.search(searchDTO, orderByList, page, pageSize);
+            search.setGroups(groupUris);
+            search.setAdmin(userModel.isAdmin());
+            
+            ListWithPagination<ExperimentModel> resultList = xpDao.search(search, orderByList, page, pageSize);
             if (resultList.getList().isEmpty()) {
                 return new ErrorResponse(Response.Status.NO_CONTENT, "No experiment found", "").getResponse();
             }

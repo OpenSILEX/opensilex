@@ -111,7 +111,8 @@ public class ExperimentDAO {
         checkURIs(model.getSensors(), (Oeso.SensingDevice));
         checkURIs(model.getVariables(), (Oeso.Variable));
         checkURIs(model.getDevices(), (Oeso.Installation));
-
+        checkURIs(model.getFactors(), (Oeso.Factor));
+        
         if (model.getSpecies() != null && !sparql.uriExists(new URI(Oeso.Species.getURI()), model.getSpecies())) {
             throw new IllegalArgumentException("Trying to insert an experiment with an unknown species : " + model.getSpecies());
         }

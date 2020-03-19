@@ -19,7 +19,6 @@ import org.opensilex.rest.validation.Required;
  */
 public class FactorLevelCreationDTO {
 
-    private URI uri;
 
     @Required
     private String alias;
@@ -28,14 +27,6 @@ public class FactorLevelCreationDTO {
     private URI hasFactor;
     
     private String comment;
-
-    public URI getUri() {
-        return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
 
     public String getAlias() {
         return alias;
@@ -65,7 +56,6 @@ public class FactorLevelCreationDTO {
 
     public FactorLevelModel newModel() {
         FactorLevelModel model = new FactorLevelModel();
-        model.setUri(getUri());
         model.setAlias(getAlias());
         model.setComment(getComment());
         model.setHasFactor(getHasFactor());

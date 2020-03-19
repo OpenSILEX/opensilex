@@ -25,6 +25,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -50,7 +51,7 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author Arnaud Charleroy
  */
-@Api(value = "Factors", hidden = true)
+@Api(value = "Factors")
 @Path("/core/factor")
 public class FactorAPI {
 
@@ -218,6 +219,45 @@ public class FactorAPI {
             FactorDAO dao = new FactorDAO(sparql);
             dao.delete(xpUri);
             return new ObjectUriResponse(xpUri).getResponse();
+
+        } catch (SPARQLInvalidURIException e) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Factor URI", e.getMessage()).getResponse();
+        } catch (Exception e) {
+            return new ErrorResponse(e).getResponse();
+        }
+    }
+    
+    /**
+     * @param factorDTO the Factor to update
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing
+     * the updated Factor {@link URI}
+     */
+    @PUT
+    @Path("update")
+    @ApiOperation("Update a factor")
+    @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_FACTOR_GROUP_ID,
+            groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_FACTOR_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Experiment updated", response = ObjectUriResponse.class),
+        @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+    public Response updateExperiment(
+            @ApiParam("Factor description") @Valid FactorUpdateDTO factorDTO
+    ) {
+        try {
+            FactorDAO dao = new FactorDAO(sparql);
+
+            FactorModel model = factorDTO.newModel();
+            dao.update(model);
+            return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
 
         } catch (SPARQLInvalidURIException e) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Factor URI", e.getMessage()).getResponse();

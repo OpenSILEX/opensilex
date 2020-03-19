@@ -1,28 +1,41 @@
 /*
  * ******************************************************************************
- *                                     FactorCreationDTO.java
+ *                                     FactorLevelUpdateDTO.java
  *  OpenSILEX
- *  Copyright © INRA 2019
- *  Creation date:  17 December, 2019
+ *  Copyright © INRAE 2020
+ *  Creation date:  11 March, 2020
  *  Contact: arnaud.charleroy@inra.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * ******************************************************************************
  */
 package org.opensilex.core.factor.api;
 
 import java.net.URI;
-import org.opensilex.core.factor.dal.FactorModel;
+import org.opensilex.core.factor.dal.FactorLevelModel;
 import org.opensilex.rest.validation.Required;
 
 /**
  * 
  * @author Arnaud Charleroy
  */
-public class FactorCreationDTO {
+public class FactorLevelUpdateDTO {
+
+    private URI uri;
 
     @Required
     private String alias;
 
+    @Required
+    private URI hasFactor;
+    
     private String comment;
+
+    public URI getUri() {
+        return uri;
+    }
+
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
 
     public String getAlias() {
         return alias;
@@ -40,11 +53,22 @@ public class FactorCreationDTO {
         this.comment = comment;
     }
 
-    public FactorModel newModel() {
-        FactorModel model = new FactorModel();
+    public URI getHasFactor() {
+        return hasFactor;
+    }
+
+    public void setHasFactor(URI hasFactor) {
+        this.hasFactor = hasFactor;
+    }
+    
+    
+
+    public FactorLevelModel newModel() {
+        FactorLevelModel model = new FactorLevelModel();
+        model.setUri(getUri());
         model.setAlias(getAlias());
         model.setComment(getComment());
-
+        model.setHasFactor(getHasFactor());
         return model;
     }
 

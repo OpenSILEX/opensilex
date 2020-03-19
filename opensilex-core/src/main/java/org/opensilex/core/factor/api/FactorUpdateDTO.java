@@ -1,6 +1,6 @@
 /*
  * ******************************************************************************
- *                                     FactorCreationDTO.java
+ *                                     FactorUpdateDTO.java
  *  OpenSILEX
  *  Copyright © INRA 2019
  *  Creation date:  17 December, 2019
@@ -17,12 +17,22 @@ import org.opensilex.rest.validation.Required;
  * 
  * @author Arnaud Charleroy
  */
-public class FactorCreationDTO {
+public class FactorUpdateDTO {
+
+    private URI uri;
 
     @Required
     private String alias;
 
     private String comment;
+
+    public URI getUri() {
+        return uri;
+    }
+
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
 
     public String getAlias() {
         return alias;
@@ -42,6 +52,7 @@ public class FactorCreationDTO {
 
     public FactorModel newModel() {
         FactorModel model = new FactorModel();
+        model.setUri(getUri());
         model.setAlias(getAlias());
         model.setComment(getComment());
 

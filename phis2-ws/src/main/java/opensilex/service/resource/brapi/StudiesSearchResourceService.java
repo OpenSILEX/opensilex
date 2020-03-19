@@ -41,10 +41,10 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.BrapiMultiResponseForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.experiment.dal.ExperimentSearch;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
@@ -119,28 +119,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
             try {
                 int page = 0;
                 int pageSize = 1000;
-                ExperimentSearch searchDTO = new ExperimentSearch();
                 ArrayList<OrderBy> orderByList = new ArrayList();
-
-                if (studySearch.getStudyDbIds() != null) {
-                    searchDTO.setUri(URI.create(studySearch.getStudyDbIds().get(0)));
-                }
-
-                if (studySearch.getStudyNames() != null) {
-                    searchDTO.setLabel(studySearch.getStudyNames().get(0));
-                }
-
-                if (studySearch.getSeasonDbId() != null) {
-                    searchDTO.setCampaign(Integer.parseInt(studySearch.getSeasonDbId()));
-                }
-
-                if (studySearch.getObservationVariableDbIds() != null) {
-                    ArrayList<URI> variableURIs = new ArrayList();
-                    for (String var : studySearch.getObservationVariableDbIds()) {
-                        variableURIs.add(new URI(var));
-                    }
-                    searchDTO.setVariables(variableURIs);
-                }
 
                 if (studySearch.getPage() != null) {
                     page = studySearch.getPage();
@@ -177,8 +156,20 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
                     orderByList.add(order);
                 }
 
+                URI studyUri = !CollectionUtils.isEmpty(studySearch.getStudyDbIds()) ? URI.create(studySearch.getStudyDbIds().get(0)) : null;
+                String label = ! CollectionUtils.isEmpty(studySearch.getStudyNames()) ? studySearch.getStudyNames().get(0) : null;
+                Integer campaign = !StringUtils.isEmpty(studySearch.getSeasonDbId()) ? Integer.parseInt(studySearch.getSeasonDbId()) : null;
+
+                ArrayList<URI> variableURIs = new ArrayList<>();
+                if (studySearch.getObservationVariableDbIds() != null) {
+                    for (String var : studySearch.getObservationVariableDbIds()) {
+                        variableURIs.add(new URI(var));
+                    }
+                }
+
                 ExperimentDAO xpDao = new ExperimentDAO(sparql);
-                ListWithPagination<ExperimentModel> resultList = xpDao.search(searchDTO, orderByList, page, pageSize);
+                ListWithPagination<ExperimentModel> resultList = xpDao.search(studyUri,label,campaign,null,variableURIs,orderByList,page,pageSize);
+
 
                 ArrayList<StudyDTO> studies = new ArrayList();
                 for (ExperimentModel exp : resultList.getList()) {
@@ -288,26 +279,17 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page
     ) {
         try {
-            ExperimentSearch searchDTO = new ExperimentSearch();
             ArrayList<OrderBy> orderByList = new ArrayList();
 
-            if (!StringUtils.isEmpty(studyDbId)) {
-                searchDTO.setUri(URI.create(studyDbId));
-            }
+            URI studyUri = !StringUtils.isEmpty(studyDbId) ? URI.create(studyDbId) : null;
+            Integer campaign = !StringUtils.isEmpty(seasonDbId) ? Integer.parseInt(seasonDbId) : null;
+            Boolean isEnded = !StringUtils.isEmpty(active) ? !Boolean.parseBoolean(active) : null;
 
-            if (!StringUtils.isEmpty(seasonDbId)) {
-                searchDTO.setCampaign(Integer.parseInt(seasonDbId));
-            }
-            if (!StringUtils.isEmpty(active)) {
-                searchDTO.setEnded(!Boolean.parseBoolean(active));
-            }
-
+            ArrayList<URI> variableURIs = new ArrayList<>();
             if (observationVariableDbIds != null) {
-                ArrayList<URI> variableURIs = new ArrayList();
-                for (String v : observationVariableDbIds) {
-                    variableURIs.add(URI.create(v));
+                for (String var : observationVariableDbIds) {
+                    variableURIs.add(new URI(var));
                 }
-                searchDTO.setVariables(variableURIs);
             }
 
             if (!StringUtils.isEmpty(sortBy)) {
@@ -337,7 +319,7 @@ public class StudiesSearchResourceService extends ResourceService implements Bra
             }
 
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
-            ListWithPagination<ExperimentModel> resultList = xpDao.search(searchDTO, orderByList, page, pageSize);
+            ListWithPagination<ExperimentModel> resultList = xpDao.search(studyUri,null,campaign,isEnded,variableURIs,orderByList,page,pageSize);
 
             ArrayList<StudyDTO> studies = new ArrayList();
             for (ExperimentModel exp : resultList.getList()) {

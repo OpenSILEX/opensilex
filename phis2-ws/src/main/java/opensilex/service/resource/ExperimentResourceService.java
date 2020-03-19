@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.experiment.dal.ExperimentSearch;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.authentication.AuthenticationService;
@@ -105,35 +104,30 @@ public class ExperimentResourceService extends ResourceService {
 
         try {
 
-            // create a new search from the old xp search attributes
-            ExperimentSearch searchDTO = new ExperimentSearch();
-            searchDTO.setUri(uri)
-                    .setStartDate(startDate)
-                    .setEndDate(endDate)
-                    .setLabel(alias);
-
-            if (!StringUtils.isEmpty(campaign)) {
-                searchDTO.setCampaign(Integer.parseInt(campaign));
-            }
-            if (!StringUtils.isEmpty(keywords)) {
-                searchDTO.setKeywords(Collections.singletonList(keywords));
-            }
-            if (projectUri != null) {
-                searchDTO.setProjects(Collections.singletonList(projectUri));
-            }
-
+            ExperimentDAO xpDao = new ExperimentDAO(sparql);
 
             UserModel userModel = authentication.getCurrentUser(securityContext);
             List<URI> groupUris = new ArrayList<>();
             for (String groupUri : authentication.decodeStringArrayClaim(userModel.getToken(), CoreModule.TOKEN_USER_GROUP_URIS)) {
                 groupUris.add(new URI(groupUri));
             }
-            searchDTO.setGroups(groupUris);
-            searchDTO.setAdmin(userModel.isAdmin());
 
-            // use the new DAO in order to get paginated model List
-            ExperimentDAO xpDao = new ExperimentDAO(sparql);
-            ListWithPagination<ExperimentModel> resultList = xpDao.search(searchDTO, Collections.emptyList(), page, limit);
+            ListWithPagination<ExperimentModel> resultList = xpDao.search(
+                    uri,
+                    StringUtils.isEmpty(campaign) ? null : Integer.parseInt(campaign),
+                    alias,
+                    null,
+                    startDate,
+                    endDate,
+                    null,
+                    Collections.singletonList(projectUri),
+                    null,
+                    groupUris,
+                    userModel.isAdmin(),
+                    null,
+                    page,
+                    limit
+            );
 
             // convert model list to dto list
             ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment(sparql);

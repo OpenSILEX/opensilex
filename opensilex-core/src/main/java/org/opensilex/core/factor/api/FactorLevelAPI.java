@@ -234,7 +234,7 @@ public class FactorLevelAPI {
         @ApiResponse(code = 400, message = "Invalid or unknown FactorLevel URI", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response updateFactorLevel(
-            @ApiParam("Factor description") @Valid FactorLevelUpdateDTO factorLevelDTO
+            @ApiParam("Factor description") @Valid FactorLevelCreationDTO factorLevelDTO
     ) {
         try {
             FactorLevelDAO dao = new FactorLevelDAO(sparql);

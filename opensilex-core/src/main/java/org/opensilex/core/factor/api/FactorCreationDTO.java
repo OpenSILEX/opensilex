@@ -19,10 +19,20 @@ import org.opensilex.rest.validation.Required;
  */
 public class FactorCreationDTO {
 
+    private URI uri;
+
     @Required
     private String alias;
 
     private String comment;
+
+    public URI getUri() {
+        return uri;
+    }
+
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
 
     public String getAlias() {
         return alias;
@@ -42,10 +52,10 @@ public class FactorCreationDTO {
 
     public FactorModel newModel() {
         FactorModel model = new FactorModel();
+        model.setUri(getUri());
         model.setAlias(getAlias());
         model.setComment(getComment());
 
         return model;
     }
-
 }

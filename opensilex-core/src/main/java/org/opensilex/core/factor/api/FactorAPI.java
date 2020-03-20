@@ -249,8 +249,8 @@ public class FactorAPI {
         @ApiResponse(code = 200, message = "Experiment updated", response = ObjectUriResponse.class),
         @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    public Response updateExperiment(
-            @ApiParam("Factor description") @Valid FactorUpdateDTO factorDTO
+    public Response updateFactor(
+            @ApiParam("Factor description") @Valid FactorCreationDTO factorDTO
     ) {
         try {
             FactorDAO dao = new FactorDAO(sparql);

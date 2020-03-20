@@ -19,14 +19,14 @@ import org.opensilex.sparql.service.SPARQLService;
  */
 class SPARQLProxyLabel extends SPARQLProxy<SPARQLLabel> {
 
-    SPARQLProxyLabel(Node graph, String defaultValue,  URI resourceURI, Property labelProperty, boolean reverseRelation, String lang, SPARQLService service) {
+    SPARQLProxyLabel(Node graph, String defaultValue, URI resourceURI, Property labelProperty, boolean reverseRelation, String lang, SPARQLService service) {
         super(graph, SPARQLLabel.class, lang, service);
         this.defaultValue = defaultValue;
         this.resourceURI = resourceURI;
         this.labelProperty = labelProperty;
         this.reverseRelation = reverseRelation;
     }
-    
+
     private final URI resourceURI;
     private final Property labelProperty;
     private final boolean reverseRelation;
@@ -34,23 +34,26 @@ class SPARQLProxyLabel extends SPARQLProxy<SPARQLLabel> {
 
     @Override
     protected SPARQLLabel loadData() throws Exception {
-        Map<String, String> translations = service.getOtherTranslations(resourceURI, labelProperty, reverseRelation, lang);
-        this.instance.setTranslations(translations);
-        this.instance.setDefaultLang(this.lang);
-        this.instance.setDefaultValue(defaultValue);
-        
-        return this.instance;
+        Map<String, String> translations = service.getTranslations(graph, resourceURI, labelProperty, reverseRelation);
+        translations.remove(lang);
+        SPARQLLabel label = new SPARQLLabel(defaultValue, lang);
+        label.setTranslations(translations);
+
+        return label;
     }
-    
+
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (method.getName().equals("getDefaultLang")) {
+        boolean noParameters = (method.getParameterCount() == 0);
+        if (method.getName().equals("getDefaultLang") && noParameters) {
             return this.lang;
-        } else if (method.getName().equals("getDefaultValue")) {
+        } else if (method.getName().equals("getDefaultValue") && noParameters) {
+            return defaultValue;
+        } else if (method.getName().equals("toString") && noParameters) {
             return defaultValue;
         } else {
             return super.invoke(proxy, method, args);
         }
     }
-    
+
 }

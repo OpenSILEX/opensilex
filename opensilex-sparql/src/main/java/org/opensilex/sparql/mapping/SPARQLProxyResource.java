@@ -34,11 +34,10 @@ class SPARQLProxyResource<T extends SPARQLResourceModel> extends SPARQLProxy<T> 
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (method.equals(mapper.getURIMethod())) {
+        if (method.getName().equals(mapper.getURIMethod().getName())) {
             return uri;
         } else {
-            loadIfNeeded();
-            return method.invoke(instance, args);
+            return super.invoke(proxy, method, args);
         }
     }
 

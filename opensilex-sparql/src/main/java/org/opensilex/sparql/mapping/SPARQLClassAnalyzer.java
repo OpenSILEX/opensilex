@@ -43,6 +43,10 @@ public class SPARQLClassAnalyzer {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLClassAnalyzer.class);
 
+    public Class<?> getObjectClass() {
+        return objectClass;
+    }
+
     private final Class<?> objectClass;
 
     private final Resource resource;
@@ -61,8 +65,6 @@ public class SPARQLClassAnalyzer {
     private final Map<Field, Property> objectPropertiesLists = new HashMap<>();
 
     private final Map<Field, Property> labelProperties = new HashMap<>();
-
-    private final Map<Field, Property> labelPropertiesLists = new HashMap<>();
 
     private final Map<String, Field> fieldsByName = new HashMap<>();
 
@@ -213,8 +215,7 @@ public class SPARQLClassAnalyzer {
                 Class<?> genericParameter = (Class<?>) parameterizedType.getActualTypeArguments()[0];
                 LOGGER.debug("Field " + field.getName() + " is a list of: " + genericParameter.getName());
                 if (genericParameter == SPARQLLabel.class) {
-                    LOGGER.debug("Field " + field.getName() + " is a label list of: " + objectClass.getName());
-                    labelPropertiesLists.put(field, property);
+                    throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " as an unsupported type, List<SPARQLLabel> are not supported");
                 } else if (SPARQLDeserializers.existsForClass(genericParameter)) {
                     LOGGER.debug("Field " + field.getName() + " is a data property list of: " + objectClass.getName());
                     dataPropertiesLists.put(field, property);
@@ -387,8 +388,8 @@ public class SPARQLClassAnalyzer {
         labelProperties.forEach(lambda);
     }
 
-    public void forEachLabelPropertyList(BiConsumer<Field, Property> lambda) {
-        labelPropertiesLists.forEach(lambda);
+    public boolean hasLabelProperty() {
+        return labelProperties.size() > 0;
     }
 
     public Field getFieldFromGetter(Method method) {
@@ -441,10 +442,6 @@ public class SPARQLClassAnalyzer {
 
     public boolean isLabelField(Field f) {
         return labelProperties.containsKey(f);
-    }
-
-    public boolean isLabelListField(Field f) {
-        return labelPropertiesLists.containsKey(f);
     }
 
     public Resource getRDFType() {
@@ -501,14 +498,6 @@ public class SPARQLClassAnalyzer {
 
     public Property getLabelPropertyByField(Field field) {
         return labelProperties.get(field);
-    }
-
-    public Set<Field> getLabelListPropertyFields() {
-        return labelPropertiesLists.keySet();
-    }
-
-    public Property getLabelListPropertyByField(Field field) {
-        return labelPropertiesLists.get(field);
     }
 
     public URI getURI(Object instance) {

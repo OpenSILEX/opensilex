@@ -27,9 +27,12 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.graph.NodeFactory;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 
 /**
@@ -39,10 +42,6 @@ public class SPARQLClassQueryBuilder {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLClassQueryBuilder.class);
 
-    private SelectBuilder selectBuilder;
-    private AskBuilder askBuilder;
-    private SelectBuilder countBuilder;
-
     private final SPARQLClassAnalyzer analyzer;
 
     public SPARQLClassQueryBuilder(SPARQLClassAnalyzer analyzer) {
@@ -50,118 +49,125 @@ public class SPARQLClassQueryBuilder {
     }
 
     public SelectBuilder getSelectBuilder(Node graph, String lang) {
-        if (selectBuilder == null) {
-            selectBuilder = new SelectBuilder();
+        String uriFieldName = analyzer.getURIFieldName();
 
-            String uriFieldName = analyzer.getURIFieldName();
-            selectBuilder.addVar(uriFieldName);
-            String typeFieldName = analyzer.getTypeFieldName();
-            Var typeFieldVar = makeVar(typeFieldName);
-            selectBuilder.addVar(typeFieldName);
+        SelectBuilder selectBuilder = new SelectBuilder();
 
-            // WhereHandler used for adding all WHERE clause
-            WhereHandler rootWhereHandler = new WhereHandler();
-            rootWhereHandler.addWhere(selectBuilder.makeTriplePath(makeVar(uriFieldName), RDF.type, typeFieldVar));
-            rootWhereHandler.addWhere(selectBuilder.makeTriplePath(typeFieldVar, Ontology.subClassAny, analyzer.getRDFType()));
+        selectBuilder.addVar(uriFieldName);
+        String typeFieldName = analyzer.getTypeFieldName();
+        Var typeFieldVar = makeVar(typeFieldName);
+        selectBuilder.addVar(typeFieldName);
 
-            analyzer.forEachDataProperty((Field field, Property property) -> {
-                selectBuilder.addVar(field.getName());
-                addSelectProperty(selectBuilder, uriFieldName, property, field, rootWhereHandler);
-            });
+        // WhereHandler used for adding all WHERE clause
+        WhereHandler rootWhereHandler = new WhereHandler();
+        rootWhereHandler.addWhere(selectBuilder.makeTriplePath(makeVar(uriFieldName), RDF.type, typeFieldVar));
+        rootWhereHandler.addWhere(selectBuilder.makeTriplePath(typeFieldVar, Ontology.subClassAny, analyzer.getRDFType()));
 
-            analyzer.forEachObjectProperty((Field field, Property property) -> {
-                selectBuilder.addVar(field.getName());
-                addSelectProperty(selectBuilder, uriFieldName, property, field, rootWhereHandler);
-            });
+        analyzer.forEachDataProperty((Field field, Property property) -> {
+            selectBuilder.addVar(field.getName());
+            addSelectProperty(selectBuilder, uriFieldName, property, field, rootWhereHandler);
+        });
 
-            analyzer.forEachLabelProperty((Field field, Property property) -> {
-                selectBuilder.addVar(field.getName());
-                addSelectProperty(selectBuilder, uriFieldName, property, field, rootWhereHandler);
-                if (lang != null) {
-                    addSelectLangFilter(selectBuilder, field.getName(), lang);
-                }
-            });
+        analyzer.forEachObjectProperty((Field field, Property property) -> {
+            selectBuilder.addVar(field.getName());
+            addSelectProperty(selectBuilder, uriFieldName, property, field, rootWhereHandler);
+        });
 
-            // add the rootWhereHandler inside a GRAPH clause
-            if (graph != null) {
-                ElementNamedGraph elementNamedGraph = new ElementNamedGraph(graph, rootWhereHandler.getElement());
-                selectBuilder.getWhereHandler().getClause().addElement(elementNamedGraph);
-            } else {
-                selectBuilder.getHandlerBlock().addAll(rootWhereHandler);
-            }
+        analyzer.forEachLabelProperty((Field field, Property property) -> {
+            selectBuilder.addVar(field.getName());
+            addSelectProperty(selectBuilder, uriFieldName, property, field, rootWhereHandler);
+            addSelectLangFilter(selectBuilder, field.getName(), lang);
+        });
+
+        // add the rootWhereHandler inside a GRAPH clause
+        if (graph != null) {
+            ElementNamedGraph elementNamedGraph = new ElementNamedGraph(graph, rootWhereHandler.getElement());
+            selectBuilder.getWhereHandler().getClause().addElement(elementNamedGraph);
+        } else {
+            selectBuilder.getHandlerBlock().addAll(rootWhereHandler);
         }
 
-        SelectBuilder select = selectBuilder.clone();
-
-        // just update the lang filter which can differ from the last SELECT building
-        if(lang != null){
-            analyzer.forEachLabelProperty((Field field, Property property) -> {
-                addSelectLangFilter(select, field.getName(), lang);
-            });
-        }
-        return select;
+        return selectBuilder;
     }
 
-    public AskBuilder getAskBuilder(Node graph) {
-        if (askBuilder == null) {
-            askBuilder = new AskBuilder();
+    public AskBuilder getAskBuilder(Node graph, String lang) {
+        AskBuilder askBuilder = new AskBuilder();
 
-            if (graph != null) {
-                askBuilder.from(graph.toString());
-            }
-
-            String uriFieldName = analyzer.getURIFieldName();
-            String typeFieldName = analyzer.getTypeFieldName();
-            Var typeFieldVar = makeVar(typeFieldName);
-            askBuilder.addWhere(makeVar(uriFieldName), RDF.type, typeFieldVar);
-            askBuilder.addWhere(typeFieldVar, Ontology.subClassAny, analyzer.getRDFType());
-            analyzer.forEachDataProperty((Field field, Property property) -> {
-                addAskProperty(askBuilder, uriFieldName, property, field);
-            });
-
-            analyzer.forEachObjectProperty((Field field, Property property) -> {
-                addAskProperty(askBuilder, uriFieldName, property, field);
-            });
+        if (graph != null) {
+            askBuilder.from(graph.toString());
         }
 
-        return askBuilder.clone();
-    }
+        String uriFieldName = analyzer.getURIFieldName();
+        String typeFieldName = analyzer.getTypeFieldName();
+        Var typeFieldVar = makeVar(typeFieldName);
+        WhereHandler rootWhereHandler = new WhereHandler();
+        rootWhereHandler.addWhere(askBuilder.makeTriplePath(makeVar(uriFieldName), RDF.type, typeFieldVar));
+        rootWhereHandler.addWhere(askBuilder.makeTriplePath(typeFieldVar, Ontology.subClassAny, analyzer.getRDFType()));
 
-    public SelectBuilder getCountBuilder(Node graph, String countFieldName) {
-        if (countBuilder == null) {
-            countBuilder = new SelectBuilder();
+        analyzer.forEachDataProperty((Field field, Property property) -> {
+            addAskProperty(askBuilder, uriFieldName, property, field, rootWhereHandler);
+        });
 
-            String uriFieldName = analyzer.getURIFieldName();
-            String typeFieldName = analyzer.getTypeFieldName();
-            Var typeFieldVar = makeVar(typeFieldName);
-            try {
-                // TODO generate properly count/distinct trought Jena API
-                countBuilder.addVar("(COUNT(DISTINCT ?" + uriFieldName + "))", makeVar(countFieldName));
-            } catch (ParseException ex) {
-                LOGGER.error("Error while building count query (should never happend)", ex);
-            }
-            WhereHandler rootWhereHandler = new WhereHandler();
-            rootWhereHandler.addWhere(countBuilder.makeTriplePath(makeVar(uriFieldName), RDF.type, typeFieldVar));
-            rootWhereHandler.addWhere(countBuilder.makeTriplePath(typeFieldVar, Ontology.subClassAny, analyzer.getRDFType()));
+        analyzer.forEachObjectProperty((Field field, Property property) -> {
+            addAskProperty(askBuilder, uriFieldName, property, field, rootWhereHandler);
+        });
 
-            analyzer.forEachDataProperty((Field field, Property property) -> {
-                addSelectProperty(countBuilder, uriFieldName, property, field, rootWhereHandler);
-            });
-
-            analyzer.forEachObjectProperty((Field field, Property property) -> {
-                addSelectProperty(countBuilder, uriFieldName, property, field, rootWhereHandler);
-            });
+        analyzer.forEachLabelProperty((Field field, Property property) -> {
+            addAskProperty(askBuilder, uriFieldName, property, field, rootWhereHandler);
+            addAskLangFilter(askBuilder, field.getName(), lang);
+        });
 
             // add the rootWhereHandler inside a GRAPH clause
-            if (graph != null) {
-                ElementNamedGraph elementNamedGraph = new ElementNamedGraph(graph, rootWhereHandler.getElement());
-                countBuilder.getWhereHandler().getClause().addElement(elementNamedGraph);
-            } else {
-                countBuilder.getHandlerBlock().addAll(rootWhereHandler);
-            }
+        if (graph != null) {
+            ElementNamedGraph elementNamedGraph = new ElementNamedGraph(graph, rootWhereHandler.getElement());
+            askBuilder.getWhereHandler().getClause().addElement(elementNamedGraph);
+        } else {
+            askBuilder.getHandlerBlock().addAll(rootWhereHandler);
+        }
+        
+        return askBuilder;
+    }
+
+    public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang) {
+        String uriFieldName = analyzer.getURIFieldName();
+
+        SelectBuilder countBuilder = new SelectBuilder();
+
+        String typeFieldName = analyzer.getTypeFieldName();
+        Var typeFieldVar = makeVar(typeFieldName);
+        try {
+            // TODO generate properly count/distinct trought Jena API
+            countBuilder.addVar("(COUNT(DISTINCT ?" + uriFieldName + "))", makeVar(countFieldName));
+        } catch (ParseException ex) {
+            LOGGER.error("Error while building count query (should never happend)", ex);
+        }
+        WhereHandler rootWhereHandler = new WhereHandler();
+        rootWhereHandler.addWhere(countBuilder.makeTriplePath(makeVar(uriFieldName), RDF.type, typeFieldVar));
+        rootWhereHandler.addWhere(countBuilder.makeTriplePath(typeFieldVar, Ontology.subClassAny, analyzer.getRDFType()));
+
+        analyzer.forEachDataProperty((Field field, Property property) -> {
+            addSelectProperty(countBuilder, uriFieldName, property, field, rootWhereHandler);
+        });
+
+        analyzer.forEachObjectProperty((Field field, Property property) -> {
+            addSelectProperty(countBuilder, uriFieldName, property, field, rootWhereHandler);
+        });
+
+        analyzer.forEachLabelProperty((Field field, Property property) -> {
+
+            addSelectProperty(countBuilder, uriFieldName, property, field, rootWhereHandler);
+            addSelectLangFilter(countBuilder, field.getName(), lang);
+        });
+
+        // add the rootWhereHandler inside a GRAPH clause
+        if (graph != null) {
+            ElementNamedGraph elementNamedGraph = new ElementNamedGraph(graph, rootWhereHandler.getElement());
+            countBuilder.getWhereHandler().getClause().addElement(elementNamedGraph);
+        } else {
+            countBuilder.getHandlerBlock().addAll(rootWhereHandler);
         }
 
-        return countBuilder.clone();
+        return countBuilder;
     }
 
     public <T extends SPARQLResourceModel> UpdateBuilder getCreateBuilder(Node graph, T instance) throws Exception {
@@ -303,7 +309,7 @@ public class SPARQLClassQueryBuilder {
      * @see SelectBuilder#makeTriplePath(Object, Object, Object)
      */
     private void addSelectProperty(SelectBuilder select, String uriFieldName, Property property, Field field,
-                                   WhereHandler handler) {
+            WhereHandler handler) {
 
         Var uriFieldVar = makeVar(uriFieldName);
         Var propertyFieldVar = makeVar(field.getName());
@@ -328,17 +334,23 @@ public class SPARQLClassQueryBuilder {
         select.addFilter(SPARQLQueryHelper.langFilter(fieldName, locale.getLanguage()));
     }
 
-    private void addAskProperty(AskBuilder ask, String uriFieldName, Property property, Field field) {
+    private void addAskLangFilter(AskBuilder ask, String fieldName, String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+        ask.addFilter(SPARQLQueryHelper.langFilter(fieldName, locale.getLanguage()));
+    }
+
+    private void addAskProperty(AskBuilder ask, String uriFieldName, Property property, Field field,
+            WhereHandler handler) {
         Var uriFieldVar = makeVar(uriFieldName);
         Var propertyFieldVar = makeVar(field.getName());
 
         if (analyzer.isReverseRelation(field)) {
             if (!analyzer.isOptional(field)) {
-                ask.addWhere(propertyFieldVar, property, uriFieldVar);
+                handler.addWhere(ask.makeTriplePath(propertyFieldVar, property, uriFieldVar));
             }
         } else {
             if (!analyzer.isOptional(field)) {
-                ask.addWhere(uriFieldVar, property, propertyFieldVar);
+                handler.addWhere(ask.makeTriplePath(uriFieldVar, property, propertyFieldVar));
             }
         }
     }
@@ -380,6 +392,23 @@ public class SPARQLClassQueryBuilder {
                 } else {
                     Property property = analyzer.getObjectPropertyByField(field);
                     tripleHandler.accept(new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), SPARQLDeserializers.nodeURI(propertyFieldURI)), field);
+                }
+            }
+        }
+
+        for (Field field : analyzer.getLabelPropertyFields()) {
+            Object fieldValue = analyzer.getFieldValue(field, instance);
+            if (fieldValue == null) {
+                if (!ignoreNullFields && !analyzer.isOptional(field)) {
+                    // TODO change exception type
+                    throw new Exception("Field value can't be null: " + field.getName());
+                }
+            } else {
+                SPARQLLabel label = (SPARQLLabel) fieldValue;
+                Property property = analyzer.getLabelPropertyByField(field);
+                for (Map.Entry<String, String> translation : label.getAllTranslations().entrySet()) {
+                    Node translationNode = NodeFactory.createLiteral(translation.getValue(), translation.getKey());
+                    tripleHandler.accept(new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), translationNode), field);
                 }
             }
         }

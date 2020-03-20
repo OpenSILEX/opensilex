@@ -1,7 +1,8 @@
-@prefix test: <http://test.opensilex.org/>
-@prefix testA: <http://test.opensilex.org/a/>
-@prefix testB: <http://test.opensilex.org/b/>
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+@prefix test: <http://test.opensilex.org/> .
+@prefix testA: <http://test.opensilex.org/a/> .
+@prefix testB: <http://test.opensilex.org/b/> .
+@prefix testC: <http://test.opensilex.org/c/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 testB:001
     a test:B ;
@@ -33,3 +34,10 @@ testA:001
     test:hasByte "10"^^xsd:byte ;
     test:hasDate "2017-12-10"^^xsd:date ;
     test:hasDateTime "2017-05-01T09:30:10+06:00"^^xsd:dateTime .
+
+testC:001
+    a test:C ;
+    test:hasLabel "c001fr"@fr ;
+    test:hasLabel "c001en"@en ;
+    test:hasLabel "c001la"@la ;
+    test:hasLabel "c001ru"@ru .

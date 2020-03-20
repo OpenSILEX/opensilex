@@ -28,16 +28,18 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
+import org.opensilex.sparql.model.C;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.unit.test.AbstractUnitTest;
-
 
 /**
  *
  * @author vincent
  */
-public abstract class SPARQLServiceTest extends AbstractUnitTest  {
+public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
     protected static SPARQLService service;
 
@@ -85,7 +87,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest  {
         B b = a.getB();
 
         assertNotNull("Instance object relation should exists", b);
-        assertTrue("b Must be an instance of B", b  instanceof B);
+        assertTrue("b Must be an instance of B", b instanceof B);
 
         URI bURI = new URI("http://test.opensilex.org/b/001");
 
@@ -209,7 +211,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest  {
     }
 
     @Test
-    public void testRenameGraph() throws Exception{
+    public void testRenameGraph() throws Exception {
 
         B b = new B();
         b.setUri(new URI("http://test.opensilex.org/a/testUriExistsWithClass"));
@@ -219,13 +221,61 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest  {
         List<B> bList = service.search(B.class, null);
         assertFalse(bList.isEmpty());
         Node oldGraphNode = objectMapper.getDefaultGraph();
-        URI newGraphUri =  new URI(oldGraphNode.getURI()+"new_suffix");
-        service.renameGraph(new URI(oldGraphNode.getURI()),newGraphUri);
+        URI newGraphUri = new URI(oldGraphNode.getURI() + "new_suffix");
+        service.renameGraph(new URI(oldGraphNode.getURI()), newGraphUri);
 
         // the graph have changed so no B should be found from the old graph
         bList = service.search(B.class, null);
         assertTrue(bList.isEmpty());
 
+    }
+
+    @Test
+    public void testLabel() throws Exception {
+        C c = new C();
+        SPARQLLabel label = new SPARQLLabel("testCreateFR", "fr");
+        label.addTranslation("testCreateEN", "en");
+        c.setLabel(label);
+        service.create(c);
+
+        C cActual = service.getByURI(C.class, c.getUri(), "fr");
+        assertEquals(c.getUri(), cActual.getUri());
+        SPARQLLabel labelActual = cActual.getLabel();
+        assertEquals(label.getDefaultValue(), labelActual.getDefaultValue());
+        assertEquals(label.getDefaultLang(), labelActual.getDefaultLang());
+        
+        Map<String, String> others = labelActual.getTranslations();
+        assertTrue(others.containsKey("en"));
+        assertEquals("testCreateEN", others.get("en"));
+        
+        assertTrue(labelActual.getAllTranslations().size() == 2);
+        
+        cActual = service.getByURI(C.class, c.getUri(), "en");
+        labelActual = cActual.getLabel();
+        assertEquals("testCreateEN", labelActual.getDefaultValue());
+        assertEquals("en", labelActual.getDefaultLang());
+
+        others = labelActual.getTranslations();
+        assertTrue(others.containsKey("fr"));
+        assertEquals("testCreateFR", others.get("fr"));
+        
+        List<C> list = service.search(C.class, "fr");
+        assertFalse(list.isEmpty());
+        assertTrue(list.size() == 2);
+
+        list = service.search(C.class, "ru");
+        assertFalse(list.isEmpty());
+        assertTrue(list.size() == 1);
+        assertEquals("ru",list.get(0).getLabel().getDefaultLang());
+        
+        list = service.search(C.class, null);
+        assertFalse(list.isEmpty());
+        assertTrue(list.size() == 2);
+        assertEquals(OpenSilex.getDefaultLanguage() ,list.get(0).getLabel().getDefaultLang());
+        
+        // TODO test delete
+        
+        // TODO test update
     }
 
 }

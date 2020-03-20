@@ -334,11 +334,15 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> boolean existsByUniquePropertyValue(Class<T> objectClass, Property property, Object propertyValue) throws Exception {
+        return existsByUniquePropertyValue(objectClass, property, propertyValue, null);
+    }
+    
+    public <T extends SPARQLResourceModel> boolean existsByUniquePropertyValue(Class<T> objectClass, Property property, Object propertyValue, String lang) throws Exception {
         if (propertyValue == null) {
             return false;
         }
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-        AskBuilder ask = sparqlObjectMapper.getAskBuilder();
+        AskBuilder ask = sparqlObjectMapper.getAskBuilder(lang);
         Field field = sparqlObjectMapper.getFieldFromUniqueProperty(property);
         SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForClass(propertyValue.getClass());
         ask.setVar(field.getName(), deserializer.getNode(propertyValue));
@@ -415,9 +419,9 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         return resultList;
     }
 
-    public <T extends SPARQLResourceModel> int count(Class<T> objectClass, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+    public <T extends SPARQLResourceModel> int count(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-        SelectBuilder selectCount = sparqlObjectMapper.getCountBuilder("count");
+        SelectBuilder selectCount = sparqlObjectMapper.getCountBuilder("count", lang);
 
         if (filterHandler != null) {
             filterHandler.accept(selectCount);
@@ -437,7 +441,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
-        int total = count(objectClass, filterHandler);
+        int total = count(objectClass, lang, filterHandler);
 
         List<T> list;
         if (pageSize == null || pageSize == 0) {
@@ -710,8 +714,36 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
 
-    public Map<String, String> getOtherTranslations(URI resourceURI, Property labelProperty, boolean reverseRelation, String lang) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Map<String, String> getOtherTranslations(Node graph, URI resourceURI, Property labelProperty, boolean reverseRelation, String lang) throws Exception {
+        Map<String, String> translations = new HashMap<>();
+        
+        SelectBuilder select = new SelectBuilder();
+        
+        Var valueVar = makeVar("value");
+        Var langVar = makeVar("lang");
+
+        select.addVar(valueVar);
+        select.addVar(SPARQLQueryHelper.getExprFactory().lang(valueVar), langVar);
+        
+        if (reverseRelation) {
+            select.addWhere(valueVar, labelProperty, SPARQLDeserializers.nodeURI(resourceURI));
+        } else {
+            select.addWhere(SPARQLDeserializers.nodeURI(resourceURI), labelProperty, valueVar);
+        }
+        
+        executeSelectQuery(select, (SPARQLResult result) -> {
+            String value = result.getStringValue("value");
+            String resultLang = result.getStringValue("lang");
+            if (!resultLang.equals(lang)) {
+                translations.put(resultLang, value);
+            }
+        });
+        
+        return translations;
+    }
+    
+    public Map<String, String> getTranslations(Node graph, URI resourceURI, Property labelProperty, boolean reverseRelation) throws Exception {
+        return getOtherTranslations(graph, resourceURI, labelProperty, reverseRelation, null);
     }
 
     @Deprecated

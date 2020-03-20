@@ -87,7 +87,7 @@
                                         deselectLabel="X"
                                         :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"/>
                             </td>
-                            <td width="250">
+                            <td width="200">
                                 <multiselect
                                         :limit="1"
                                         :placeholder="$t('component.experiment.search.filter.campains')"
@@ -119,7 +119,8 @@
                                         :placeholder="$t('component.experiment.search.filter.species')"
                                         :closeOnSelect="false"
                                         v-model="filter.species"
-                                        :options="campains"
+                                        :options="speciesList"
+                                        :custom-label="species => species.label"
                                         selectLabel=""
                                         selectedLabel="X"
                                         deselectLabel="X"
@@ -160,18 +161,14 @@
                         <tr v-for="experiment in experiments" v-bind:key="experiment.id">
                             <td>{{ experiment.label }}</td>
                             <td>
-                    <span :key="index" v-for="(uri, index) in experiment.projects">
-                      <span :title="uri">{{ getProjectName(uri) }}</span><span v-if="index + 1 < experiment.projects.length">, </span>
-                    </span>
+                                <span :key="index" v-for="(uri, index) in experiment.projects">
+                                <span :title="uri">{{ getProjectName(uri) }}</span><span v-if="index + 1 < experiment.projects.length">, </span>
+                                </span>
                             </td>
                             <td></td>
                             <td>{{ experiment.campaign }}</td>
                             <td></td>
-                            <td>
-                    <span :key="index" v-for="(uri, index) in experiment.species">
-                      <span :title="uri">{{ getSpeciesName(uri) }}</span><span v-if="index + 1 < experiment.species.length">, </span>
-                    </span>
-                            </td>
+                            <td>{{ getSpeciesName(experiment.species) }}</td>
                             <td>{{ formatDate(experiment.startDate) }}</td>
                             <td><span class="uri">{{ experiment.uri }}<a href="#" class="uri-copy" title="Copier dans le presse-papier"><i class="ik ik-copy"></i></a></span></td>
                             <td>
@@ -209,13 +206,15 @@
     import VueConstructor from "vue";
     import { ExperimentsService } from "../../lib/api/experiments.service";
     import { ProjectsService } from "../../lib/api/projects.service";
+    import { SpeciesService } from "../../lib/api/species.service";
     import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
     import { ExperimentGetDTO } from "../../lib//model/experimentGetDTO";
     import { ProjectCreationDTO } from "../../lib//model/projectCreationDTO";
+    import { SpeciesDTO } from "../../lib//model/speciesDTO";
+
     import VueRouter from "vue-router";
     import VueI18n from 'vue-i18n';
     import moment from "moment";
-import { SpeciesService } from "phis2ws/index";
 
     export class ExperimentState {
 
@@ -392,9 +391,11 @@ import { SpeciesService } from "phis2ws/index";
         $router: VueRouter;
 
         projectsList = [];
-        projects: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
+        projectsByUri: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
         experiments: Array<ExperimentGetDTO> = new Array<ExperimentGetDTO>();
-        species: Array<String> = new Array<String>();
+
+        speciesList = [];
+        speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
         experimentStates: Array<ExperimentState> = new Array<ExperimentState>();
         campains: Array<Number> = new Array<Number>();
 
@@ -421,6 +422,7 @@ import { SpeciesService } from "phis2ws/index";
 
         loadDatas() {
             this.loadProjects();
+            this.loadSpecies();
             this.loadExperiments();
             this.loadExperimentStates();
         }
@@ -462,7 +464,7 @@ import { SpeciesService } from "phis2ws/index";
                   this.filter.campaign,
                   this.filter.alias,
                   this.filter.species,
-                  projects,
+                  undefined,
                   undefined,
                   undefined,
                   this.orderBy,
@@ -474,7 +476,6 @@ import { SpeciesService } from "phis2ws/index";
 
                   this.totalRow = http.response.metadata.pagination.totalCount;
                   this.experiments = http.response.result;
-
                   if(this.campains.length == 0) {
                     let allCampaigns = this.experiments.map(experiment => experiment.campaign);
                     this.campains = allCampaigns.filter((campaign, index) => {
@@ -521,18 +522,26 @@ import { SpeciesService } from "phis2ws/index";
                     resultsList.push(http.response.result[i]);
                   }
                   this.projectsList = resultsList;
-                  this.projects = results;
+                  this.projectsByUri = results;
                 }).catch(this.$opensilex.errorHandler);
 
         }
 
-        // loadSpecies(){
+        loadSpecies(){
 
-        //     let SPECIES_SERVICE_NAME: string = "opensilex.SpeciesService";
-        //     let service: SpeciesService = this.$opensilex.getService(SPECIES_SERVICE_NAME);
+            let service: SpeciesService = this.$opensilex.getService("opensilex.SpeciesService");
+            service.getAllSpecies("fr")
+            .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
 
-            
-        // }
+                for(let i=0; i<http.response.result.length; i++) {
+                    let res = http.response.result[i];
+                    this.speciesList.push(res);
+                    this.speciesByUri.set(res.uri,res);
+                }
+
+            }).catch(this.$opensilex.errorHandler);
+
+        }
 
         formatDate(value: any): String {
             // console.log("FORMAT :"+value);
@@ -541,15 +550,18 @@ import { SpeciesService } from "phis2ws/index";
         }
 
         getProjectName(uri: String): String {
-            if(this.projects.has(uri)) {
-                let project = this.projects.get(uri);
+            if(this.projectsByUri.has(uri)) {
+                let project = this.projectsByUri.get(uri);
                 return project.label;
             }
             return null;
         }
 
         getSpeciesName(uri: String): String {
-            return uri;
+            if(! this.speciesByUri.has(uri)){
+                return null;
+            }
+            return this.speciesByUri.get(uri).label;
         }
 
     }

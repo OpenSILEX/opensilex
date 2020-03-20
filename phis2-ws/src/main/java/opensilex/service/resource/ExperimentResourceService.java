@@ -15,7 +15,9 @@ import opensilex.service.dao.SpeciesDAO;
 import opensilex.service.documentation.DocumentationAnnotation;
 import opensilex.service.documentation.StatusCodeMsg;
 import opensilex.service.model.Experiment;
-import opensilex.service.resource.dto.experiment.*;
+import opensilex.service.resource.dto.experiment.ExperimentDTO;
+import opensilex.service.resource.dto.experiment.ExperimentModelToExperiment;
+import opensilex.service.resource.dto.experiment.ExperimentPostDTO;
 import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.result.ResultForm;
@@ -26,16 +28,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.experiment.dal.ExperimentSearchDTO;
 import org.opensilex.core.project.dal.ProjectDAO;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.group.dal.GroupDAO;
 import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -52,8 +52,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import org.opensilex.rest.authentication.ApiProtected;
 
 /**
  * Experiment resource service.
@@ -77,20 +75,7 @@ public class ExperimentResourceService extends ResourceService {
 
     private final SPARQLService sparql;
 
-    final static Logger LOGGER = LoggerFactory.getLogger(ExperimentResourceService.class);
-
     /**
-     * @param uri
-     * @param limit
-     * @param page
-     * @param projectUri
-     * @param startDate
-     * @param endDate
-     * @param field
-     * @param campaign
-     * @param place
-     * @param alias
-     * @param keywords
      * @return found experiments
      */
     @GET
@@ -119,35 +104,30 @@ public class ExperimentResourceService extends ResourceService {
 
         try {
 
-            // create a new search DTO from  the old xp search attributes
-            ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();
-            searchDTO.setUri(uri)
-                    .setStartDate(startDate)
-                    .setEndDate(endDate)
-                    .setLabel(alias);
-
-            if (!StringUtils.isEmpty(campaign)) {
-                searchDTO.setCampaign(Integer.parseInt(campaign));
-            }
-            if (!StringUtils.isEmpty(keywords)) {
-                searchDTO.setKeywords(Collections.singletonList(keywords));
-            }
-            if (projectUri != null) {
-                searchDTO.setProjects(Collections.singletonList(projectUri));
-            }
-
+            ExperimentDAO xpDao = new ExperimentDAO(sparql);
 
             UserModel userModel = authentication.getCurrentUser(securityContext);
             List<URI> groupUris = new ArrayList<>();
             for (String groupUri : authentication.decodeStringArrayClaim(userModel.getToken(), CoreModule.TOKEN_USER_GROUP_URIS)) {
                 groupUris.add(new URI(groupUri));
             }
-            searchDTO.setGroups(groupUris);
-            searchDTO.setAdmin(userModel.isAdmin());
 
-            // use the new DAO in order to get paginated model List
-            ExperimentDAO xpDao = new ExperimentDAO(sparql);
-            ListWithPagination<ExperimentModel> resultList = xpDao.search(searchDTO, Collections.emptyList(), page, limit);
+            ListWithPagination<ExperimentModel> resultList = xpDao.search(
+                    uri,
+                    StringUtils.isEmpty(campaign) ? null : Integer.parseInt(campaign),
+                    alias,
+                    null,
+                    startDate,
+                    endDate,
+                    null,
+                    Collections.singletonList(projectUri),
+                    null,
+                    groupUris,
+                    userModel.isAdmin(),
+                    null,
+                    page,
+                    limit
+            );
 
             // convert model list to dto list
             ExperimentModelToExperiment modelToExperiment = new ExperimentModelToExperiment(sparql);
@@ -160,7 +140,7 @@ public class ExperimentResourceService extends ResourceService {
             ArrayList<Status> statusList = new ArrayList<>();
             ResultForm<Experiment> getResponse;
             if (xps.isEmpty()) { //Request failure || No result found
-                getResponse = new ResultForm<Experiment>(0, 0, xps, true);
+                getResponse = new ResultForm<>(0, 0, xps, true);
                 return noResultFound(getResponse, statusList);
             } else { //Results
 
@@ -178,9 +158,6 @@ public class ExperimentResourceService extends ResourceService {
     /**
      * Get an experiment.
      *
-     * @param experimentURI
-     * @param limit
-     * @param page
      * @return the experiment corresponding to the URI given
      */
     @GET
@@ -230,8 +207,6 @@ public class ExperimentResourceService extends ResourceService {
     }
 
     /**
-     * @param experiments
-     * @param context
      * @return result of the experiment creation request
      */
     @POST
@@ -249,7 +224,7 @@ public class ExperimentResourceService extends ResourceService {
     public Response postExperiment(
             @ApiParam(value = DocumentationAnnotation.EXPERIMENT_POST_DATA_DEFINITION) @Valid ArrayList<ExperimentPostDTO> experiments,
             @Context HttpServletRequest context,
-            @Context SecurityContext securityContext) throws Exception {
+            @Context SecurityContext securityContext) {
 
         if (experiments == null || experiments.isEmpty()) {
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "No experiments provided"));
@@ -299,8 +274,6 @@ public class ExperimentResourceService extends ResourceService {
     /**
      * Experiment update service.
      *
-     * @param experiments
-     * @param context
      * @return the update result
      */
     @PUT
@@ -317,7 +290,7 @@ public class ExperimentResourceService extends ResourceService {
     public Response putExperiment(
             @ApiParam(value = DocumentationAnnotation.EXPERIMENT_POST_DATA_DEFINITION) @Valid ArrayList<ExperimentDTO> experiments,
             @Context HttpServletRequest context,
-            @Context SecurityContext securityContext) throws Exception {
+            @Context SecurityContext securityContext) {
 
         if (experiments == null || experiments.isEmpty()) {
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, "No experiments provided"));
@@ -360,9 +333,6 @@ public class ExperimentResourceService extends ResourceService {
     /**
      * Updates the variables linked to an experiment.
      *
-     * @param variables
-     * @param uri
-     * @param context
      * @return the result
      * @example [ "http://www.opensilex.fr/platform/id/variables/v001",
      * "http://www.opensilex.fr/platform/id/variables/v003" ]
@@ -417,9 +387,6 @@ public class ExperimentResourceService extends ResourceService {
     /**
      * Updates the sensors linked to an experiment.
      *
-     * @param sensors
-     * @param uri
-     * @param context
      * @return the query result
      * @example [ "http://www.phenome-fppn.fr/opensilex/2018/s18001" ]
      * @example { "metadata": { "pagination": null, "status": [ { "message":

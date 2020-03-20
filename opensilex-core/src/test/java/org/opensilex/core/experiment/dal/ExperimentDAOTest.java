@@ -45,7 +45,7 @@ import org.opensilex.unit.test.AbstractUnitTest;
  */
 public class ExperimentDAOTest extends AbstractUnitTest{
 
-    private static RDF4JInMemoryService factory;
+   /* private static RDF4JInMemoryService factory;
 
     protected ExperimentDAO xpDao;
     protected static String xpGraph;
@@ -181,7 +181,7 @@ public class ExperimentDAOTest extends AbstractUnitTest{
         int pageSize = 10;
         int nbPage = n / pageSize;
         for (int i = 0; i < nbPage; i++) {
-            ListWithPagination<ExperimentModel> xpModelResults = xpDao.search(null, null, i, pageSize);
+            ListWithPagination<ExperimentModel> xpModelResults = xpDao.getAllXp(null, i, pageSize);
             List<ExperimentModel> xpsFromDao = xpModelResults.getList();
             assertEquals(pageSize, xpsFromDao.size());
         }
@@ -429,4 +429,6 @@ public class ExperimentDAOTest extends AbstractUnitTest{
 //        xp.setSpecies(new URI("http://www.opensilex.org/id/species/zeamays"));
 //        xpDao.create(xp);
 //    }
+
+    */
 }

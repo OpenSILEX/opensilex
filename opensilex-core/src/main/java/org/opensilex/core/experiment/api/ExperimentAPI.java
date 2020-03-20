@@ -11,7 +11,6 @@ import io.swagger.annotations.*;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.experiment.dal.ExperimentSearch;
 import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.authentication.AuthenticationService;
@@ -92,9 +91,9 @@ public class ExperimentAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Create an experiment", response = ObjectUriResponse.class),
-        @ApiResponse(code = 409, message = "An experiment with the same URI already exists", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(code = 201, message = "Create an experiment", response = ObjectUriResponse.class),
+            @ApiResponse(code = 409, message = "An experiment with the same URI already exists", response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 
     public Response createExperiment(
             @ApiParam("Experiment description") @Valid ExperimentCreationDTO xpDto
@@ -130,9 +129,9 @@ public class ExperimentAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Experiment updated", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(code = 200, message = "Experiment updated", response = ObjectUriResponse.class),
+            @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response updateExperiment(
             @ApiParam("Experiment description") @Valid ExperimentCreationDTO xpDto
     ) {
@@ -169,9 +168,9 @@ public class ExperimentAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Experiment retrieved", response = ExperimentGetDTO.class),
-        @ApiResponse(code = 204, message = "No experiment found", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(code = 200, message = "Experiment retrieved", response = ExperimentGetDTO.class),
+            @ApiResponse(code = 204, message = "No experiment found", response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response getExperiment(
             @ApiParam(value = "Experiment URI", example = "http://opensilex.dev/set/experiments/ZA17", required = true) @PathParam("uri") @NotNull URI xpUri
     ) {
@@ -211,9 +210,9 @@ public class ExperimentAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return Experiment list", response = ExperimentGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 204, message = "No experiment found", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+            @ApiResponse(code = 200, message = "Return Experiment list", response = ExperimentGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 204, message = "No experiment found", response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     public Response searchExperiments(
             @ApiParam(value = "Search by uri", example = EXPERIMENT_EXAMPLE_URI) @QueryParam("uri") URI uri,
@@ -236,33 +235,29 @@ public class ExperimentAPI {
         try {
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
 
-            // set searchDTO specifics attributes
-            ExperimentSearch search = new ExperimentSearch()
-                    .setEnded(isEnded);
-
-            // set general experiment DTO attributes
-            search.setUri(uri)
-                    .setCampaign(campaign)
-                    .setLabel(label)
-                    .setSpecies(species)
-                    .setStartDate(startDate)
-                    .setEndDate(endDate)
-                    .setIsPublic(isPublic)
-                    .setProjects(projects)
-//                    .setKeywords(keywords)
-//                    .setInfrastructures(infrastructures)
-//                    .setInstallations(installations)
-                    ;
-
             UserModel userModel = authentication.getCurrentUser(securityContext);
             List<URI> groupUris = new ArrayList<>();
             for (String groupUri : authentication.decodeStringArrayClaim(userModel.getToken(), CoreModule.TOKEN_USER_GROUP_URIS)) {
                 groupUris.add(new URI(groupUri));
             }
-            search.setGroups(groupUris);
-            search.setAdmin(userModel.isAdmin());
-            
-            ListWithPagination<ExperimentModel> resultList = xpDao.search(search, orderByList, page, pageSize);
+
+            ListWithPagination<ExperimentModel> resultList = xpDao.search(
+                    uri,
+                    campaign,
+                    label,
+                    species,
+                    startDate,
+                    endDate,
+                    isEnded,
+                    projects,
+                    isPublic,
+                    groupUris,
+                    userModel.isAdmin(),
+                    orderByList,
+                    page,
+                    pageSize
+            );
+
             if (resultList.getList().isEmpty()) {
                 return new ErrorResponse(Response.Status.NO_CONTENT, "No experiment found", "").getResponse();
             }
@@ -297,9 +292,9 @@ public class ExperimentAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Experiment deleted", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(code = 200, message = "Experiment deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response deleteExperiment(
             @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) {

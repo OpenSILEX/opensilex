@@ -84,7 +84,6 @@ export default class FactorList extends Vue {
       this.currentPage = parseInt(query.currentPage);
     }
   }
-  
 
   fields = [
     {
@@ -98,11 +97,11 @@ export default class FactorList extends Vue {
       sortable: false
     },
     {
-      key: "actions",
-      label: "component.common.actions"
+      label: "component.common.actions",
+      key: "actions"
     }
   ];
-  
+
   refresh() {
     let tableRef: any = this.$refs.tableRef;
     tableRef.refresh();
@@ -124,6 +123,7 @@ export default class FactorList extends Vue {
         this.pageSize
       )
       .then((http: HttpResponse<OpenSilexResponse<Array<FactorGetDTO>>>) => {
+        console.log(service)
         this.totalRow = http.response.metadata.pagination.totalCount;
         this.pageSize = http.response.metadata.pagination.pageSize;
         setTimeout(() => {

@@ -1,0 +1,33 @@
+{
+    "component": {
+        "factor": {
+            "factor-uri": "User URI",
+            "factor-alias-placeholder": "Enter factor alias",
+            "filter-placeholder": "Use this field to filter factors",
+            "factors": "factor",
+            "add": "add factor",
+            "update": "update factor",
+            "alias": "alias",
+            "comment": "comment", 
+            "errors": {
+                "user-already-exists": "Factor already exists with this URI."
+            }
+        }
+    },
+    "credential-experimentalDesign": {
+        "factors": "Factors",
+        "factorLevels": "FactorLevels"
+    },
+    "credential": {
+        "factors": {
+            "modification": "Create / update factors",
+            "read": "View factors",
+            "delete": "Delete factors"
+        },
+        "factorLevels": {
+            "modification": "Create / update FactorLevels",
+            "read": "View FactorLevels",
+            "delete": "Delete FactorLevels"
+        }
+    }
+}

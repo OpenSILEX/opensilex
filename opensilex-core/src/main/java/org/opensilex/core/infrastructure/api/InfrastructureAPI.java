@@ -27,8 +27,9 @@ import org.opensilex.core.infrastructure.dal.InfrastructureDAO;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.rest.group.api.GroupGetDTO;
 import org.opensilex.rest.user.dal.UserModel;
-import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
@@ -64,6 +65,14 @@ public class InfrastructureAPI {
         this.sparql = sparql;
     }
 
+    /**
+     * Return a group by URI
+     *
+     * @see org.opensilex.rest.group.dal.InfrastructureDAO
+     * @param uri URI of the group
+     * @return Corresponding group
+     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     */
     @GET
     @Path("search")
     @ApiOperation("Get a group by it's URI")
@@ -77,8 +86,9 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-//        @ApiResponse(code = 200, message = "Return Infrastructure list", response = InfrastructureGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)        
+        @ApiResponse(code = 200, message = "Return group", response = GroupGetDTO.class),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Group not found", response = ErrorDTO.class)
     })
     public Response searchInfrastructures(
             @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,

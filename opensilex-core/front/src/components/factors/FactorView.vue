@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-button
-      @click="showCreateFactorForm"
+      @click="showCreateForm"
       variant="success"
     >{{$t('component.factor.add')}}</b-button>
     <opensilex-core-FactorForm
@@ -42,7 +42,7 @@ export default class factorView extends Vue {
     this.service = this.$opensilex.getService("opensilex.FactorsService");
   }
 
-  showCreateFactorForm() {
+  showCreateForm() {
     let factorForm: any = this.$refs.factorForm;
     factorForm.showCreateForm();
   }

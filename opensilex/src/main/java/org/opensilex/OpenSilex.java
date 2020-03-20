@@ -25,6 +25,8 @@ import org.opensilex.module.ModuleConfig;
 import org.opensilex.module.ModuleManager;
 import org.opensilex.module.ModuleNotFoundException;
 import org.opensilex.dependencies.DependencyManager;
+import org.opensilex.server.ServerConfig;
+import org.opensilex.server.ServerModule;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
 import org.opensilex.utils.ClassUtils;
@@ -55,8 +57,8 @@ public class OpenSilex {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(OpenSilex.class);
 
-    public final static String DEFAULT_LANGUAGE = "en-US";
-
+    public final static String DEFAULT_LANGUAGE = "en";
+    
     /**
      * Production profile identifier
      */
@@ -682,5 +684,21 @@ public class OpenSilex {
 
     public File getConfigFile() {
         return this.configFile;
+    }
+    
+    public static String getDefaultLanguage() {
+        String lang = OpenSilex.DEFAULT_LANGUAGE;
+        
+        OpenSilex opensilex = OpenSilex.getInstance();
+        if (opensilex != null) {
+            try {
+                ServerConfig cfg = (ServerConfig) opensilex.getModuleByClass(ServerModule.class).getConfig();
+                lang = cfg.defaultLanguage();
+            } catch (Exception ex) {
+                LOGGER.warn("Error while retriving default configured language", ex);
+            }
+        }
+        
+        return lang;
     }
 }

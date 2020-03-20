@@ -13,7 +13,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         resource = "Species",
         graph = "species"
 )
-public class SpeciesModel extends SPARQLResourceModel  {
+public class SpeciesModel extends SPARQLResourceModel implements ClassURIGenerator<SpeciesModel>{
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -23,12 +23,18 @@ public class SpeciesModel extends SPARQLResourceModel  {
     SPARQLLabel label;
     public static final String LABEL_FIELD = "label";
 
-
     public SPARQLLabel getLabel() {
         return label;
     }
 
     public void setLabel(SPARQLLabel label) {
         this.label = label;
+    }
+    
+    @Override
+    public String[] getUriSegments(SpeciesModel instance) {
+        return new String[]{
+            instance.getLabel().getDefaultValue()
+        };
     }
 }

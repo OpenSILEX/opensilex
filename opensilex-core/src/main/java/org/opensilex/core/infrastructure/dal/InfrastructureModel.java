@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.rest.authentication.SecurityOntology;
 import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -40,7 +41,8 @@ public class InfrastructureModel extends SPARQLResourceModel implements ClassURI
             property = "hasChild"
     )
     private List<InfrastructureModel> children;
-
+    public static final String CHILDREN_FIELD = "children";
+    
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasChild",
@@ -50,7 +52,7 @@ public class InfrastructureModel extends SPARQLResourceModel implements ClassURI
     public static final String PARENT_FIELD = "parent";
     
     @SPARQLProperty(
-        ontology = Oeso.class,
+        ontology = SecurityOntology.class,
         property = "hasUser"
     )
     private List<UserModel> users;

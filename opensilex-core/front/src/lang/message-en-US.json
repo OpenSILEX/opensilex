@@ -1,7 +1,7 @@
 {
     "component": {
         "factor": {
-            "factor-uri": "User URI",
+            "factor-uri": "Factor URI",
             "factor-alias-placeholder": "Enter factor alias",
             "filter-placeholder": "Use this field to filter factors",
             "factors": "factor",

@@ -1,5 +1,14 @@
 <template>
   <div>
+    <b-button
+      @click="showCreateFactorForm"
+      variant="success"
+    >{{$t('component.factor.add')}}</b-button>
+    <opensilex-core-FactorForm
+      ref="factorFrom"
+      @onCreate="callCreateFactorService"
+      @onUpdate="callUpdateFactorService"
+    ></opensilex-core-FactorForm>
     <opensilex-core-FactorList
       ref="factorList"
     ></opensilex-core-FactorList>
@@ -20,60 +29,64 @@ export default class factorView extends Vue {
   $store: any;
   service: FactorsService;
 
+  get user() {
+    return this.$store.state.user;
+  }
+
   get credentials() {
     return this.$store.state.credentials;
   }
 
   created() {
+    console.debug("Loading form view...");
     this.service = this.$opensilex.getService("opensilex.FactorsService");
-    console.log(this.service);
   }
 
-  // showCreateForm() {
-  //   let factorForm: any = this.$refs.factorForm;
-  //   factorForm.showCreateForm();
-  // }
+  showCreateFactorForm() {
+    let factorForm: any = this.$refs.factorForm;
+    factorForm.showCreateForm();
+  }
 
-  // callCreatefactorService(form: FactorCreationDTO, done) {
-  //   done(
-  //     this.service
-  //       .createFactor(this.Factor.getAuthorizationHeader(), form)
-  //       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-  //         let uri = http.response.result;
-  //         console.debug("factor created", uri);
-  //         let factorList: any = this.$refs.factorList;
-  //         factorList.refresh();
-  //       })
-  //   );
-  // }
+  callCreateFactorService(form: FactorCreationDTO, done) {
+    done(
+      this.service
+        .createFactor(this.user.getAuthorizationHeader(), form)
+        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+          let uri = http.response.result;
+          console.debug("factor created", uri);
+          let factorList: any = this.$refs.factorList;
+          factorList.refresh();
+        })
+    );
+  }
 
-  // callUpdatefactorService(form: factorUpdateDTO, done) {
-  //   done(
-  //     this.service
-  //       .updatefactor(this.factor.getAuthorizationHeader(), form)
-  //       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-  //         let uri = http.response.result;
-  //         console.debug("factor updated", uri);
-  //         let factorList: any = this.$refs.factorList;
-  //         factorList.refresh();
-  //       })
-  //   );
-  // }
+  callUpdateFactorService(form: FactorCreationDTO, done) {
+    done(
+      this.service
+        .updateFactor(this.user.getAuthorizationHeader(), form)
+        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+          let uri = http.response.result;
+          console.debug("factor updated", uri);
+          let factorList: any = this.$refs.factorList;
+          factorList.refresh();
+        })
+    );
+  }
 
-  // editfactor(form: factorGetDTO) {
-  //   let factorForm: any = this.$refs.factorForm;
-  //   factorForm.showEditForm(form);
-  // }
+  editFactor(form: FactorGetDTO) {
+    let factorForm: any = this.$refs.factorForm;
+    factorForm.showEditForm(form);
+  }
 
-  // deletefactor(uri: string) {
-  //   this.service
-  //     .deletefactor(this.factor.getAuthorizationHeader(), uri)
-  //     .then(() => {
-  //       let factorList: any = this.$refs.factorList;
-  //       factorList.refresh();
-  //     })
-  //     .catch(this.$opensilex.errorHandler);
-  // }
+  deleteFactor(uri: string) {
+    this.service
+      .deleteFactor(this.user.getAuthorizationHeader(), uri)
+      .then(() => {
+        let factorList: any = this.$refs.factorList;
+        factorList.refresh();
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
 }
 </script>
 

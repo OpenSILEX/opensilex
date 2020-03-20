@@ -39,7 +39,6 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { FactorsService } from "../../lib/api/factors.service";
 import { FactorGetDTO } from "../../lib/model/factorGetDTO";
 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";

@@ -91,7 +91,15 @@ public class SPARQLClassQueryBuilder {
             }
         }
 
-        return selectBuilder.clone();
+        SelectBuilder select = selectBuilder.clone();
+
+        // just update the lang filter which can differ from the last SELECT building
+        if(lang != null){
+            analyzer.forEachLabelProperty((Field field, Property property) -> {
+                addSelectLangFilter(select, field.getName(), lang);
+            });
+        }
+        return select;
     }
 
     public AskBuilder getAskBuilder(Node graph) {
@@ -291,7 +299,7 @@ public class SPARQLClassQueryBuilder {
      * @see SelectBuilder#makeTriplePath(Object, Object, Object)
      */
     private void addSelectProperty(SelectBuilder select, String uriFieldName, Property property, Field field,
-            WhereHandler handler) {
+                                   WhereHandler handler) {
 
         Var uriFieldVar = makeVar(uriFieldName);
         Var propertyFieldVar = makeVar(field.getName());

@@ -23,6 +23,11 @@ public class FloatDeserializer implements SPARQLDeserializer<Float> {
 
     @Override
     public Node getNode(Object value) throws Exception {
-        return NodeFactory.createLiteralByValue(value, XSDDatatype.XSDfloat);
+        return NodeFactory.createLiteralByValue(value, getDataType());
+    }
+    
+    @Override
+    public XSDDatatype getDataType() {
+        return XSDDatatype.XSDfloat;
     }
 }

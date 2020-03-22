@@ -66,11 +66,13 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
 
     @Override
     protected ResourceConfig configure() {
-        try {
-            // init the OpenSilex instance to use during the API test(s)
-            context = new IntegrationTestContext(isDebug());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (context == null) {
+            try {
+                // init the OpenSilex instance to use during the API test(s)
+                context = new IntegrationTestContext(isDebug());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
 
         return context.getResourceConfig();
@@ -325,6 +327,8 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return target;
     }
 
+    private TokenGetDTO token = null;
+
     /**
      * Append a token header to the given {@link WebTarget}
      *
@@ -337,7 +341,9 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      * @see ApiProtected#TOKEN_PARAMETER_PREFIX
      */
     protected Invocation.Builder appendToken(WebTarget target) throws Exception {
-        TokenGetDTO token = getToken();
+        if (token == null) {
+            token = getToken();
+        }
         return target.request(MediaType.APPLICATION_JSON_TYPE)
                 .header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + token.getToken());
     }

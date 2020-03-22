@@ -23,7 +23,6 @@ import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.URIGenerator;
@@ -38,9 +37,15 @@ import java.net.URI;
 import java.util.*;
 import java.util.function.BiConsumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.vocabulary.RDF;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.annotations.SPARQLManualLoading;
+import org.opensilex.sparql.utils.SHACL;
 
 /**
  *
@@ -112,6 +117,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         } else {
             throw new SPARQLMapperNotFoundException(concreteObjectClass);
         }
+    }
+    
+    public static synchronized Set<Class<?>> getResourceClasses() {
+        return Collections.unmodifiableSet(SPARQL_CLASSES_MAPPER.keySet());
     }
 
     @SuppressWarnings("unchecked")
@@ -457,5 +466,11 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public Method getURIMethod() {
         return classAnalizer.getURIMethod();
     }
+
+    public String generateSHACL() {
+        return classQueryBuilder.generateSHACL();
+    }
+
+    
 
 }

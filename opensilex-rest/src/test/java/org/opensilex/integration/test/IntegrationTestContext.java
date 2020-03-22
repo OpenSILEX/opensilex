@@ -46,8 +46,6 @@ public class IntegrationTestContext {
         // initialize application
         OpenSilex.setup(args);
 
-        OpenSilex opensilex = OpenSilex.getInstance();
-
         resourceConfig = new RestApplication(OpenSilex.getInstance());
 
         // create a mock for HttpServletRequest which is not available with grizzly
@@ -59,13 +57,7 @@ public class IntegrationTestContext {
             }
         });
 
-        // add the admin user
-        try (SPARQLService sparqlService = getSparqlService()) {
-            AuthenticationService authentication = opensilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
-            UserDAO userDAO = new UserDAO(sparqlService);
-            InternetAddress email = new InternetAddress("admin@opensilex.org");
-            userDAO.create(null, email, "Admin", "OpenSilex", true, authentication.getPasswordHash("admin"), "en-US");
-        }
+        addAdminUser();
     }
 
     public ResourceConfig getResourceConfig() {
@@ -107,5 +99,15 @@ public class IntegrationTestContext {
      */
     public void shutdown() throws Exception {
         OpenSilex.getInstance().shutdown();
+    }
+
+    public void addAdminUser() throws Exception {
+        // add the admin user
+        try (SPARQLService sparqlService = getSparqlService()) {
+            AuthenticationService authentication = OpenSilex.getInstance().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
+            UserDAO userDAO = new UserDAO(sparqlService);
+            InternetAddress email = new InternetAddress("admin@opensilex.org");
+            userDAO.create(null, email, "Admin", "OpenSilex", true, authentication.getPasswordHash("admin"), "en-US");
+        }
     }
 }

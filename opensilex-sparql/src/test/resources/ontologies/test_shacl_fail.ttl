@@ -1,0 +1,33 @@
+@prefix test: <http://test.opensilex.org/> .
+@prefix testA: <http://test.opensilex.org/a/> .
+@prefix testB: <http://test.opensilex.org/b/> .
+@prefix testC: <http://test.opensilex.org/c/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+testB:002
+    a test:B ;
+    test:hasInt -6 ;
+    test:hasString "Zfdsfs" ;
+    test:hasString "Ydsfs" ;
+    test:hasShort "8"^^xsd:short ;
+    test:hasShort "azerty" ;
+    <http://unknown.com/property> 1234 .
+
+
+testA:002
+    a test:A ;
+    test:hasRelationToB testC:001 ;
+    test:hasString "-5"^^xsd:long ;
+    test:hasInt 4 ;
+    test:hasBoolean 4 ;
+    test:hasFloat "3.25"^^xsd:float ;
+    test:hasChar "3.25"^^xsd:float  ;
+    test:hasShort "8"^^xsd:short  ;
+    test:hasByte "10"^^xsd:byte ;
+    test:hasDate "10"^^xsd:byte ;
+    test:hasDateTime "8"^^xsd:short .
+
+testC:002
+    a test:C ;
+    test:hasLabel "c001fr"@fr ;
+    test:hasLabel "c001fr-duplicate"@fr .

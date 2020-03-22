@@ -11,7 +11,6 @@ import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 
-
 /**
  *
  * @author vincent
@@ -26,6 +25,11 @@ public class DateDeserializer implements SPARQLDeserializer<LocalDate> {
     @Override
     public Node getNode(Object value) throws Exception {
         LocalDate date = (LocalDate) value;
-        return NodeFactory.createLiteralByValue(date.format(DateTimeFormatter.ISO_DATE), XSDDatatype.XSDdate) ;
+        return NodeFactory.createLiteralByValue(date.format(DateTimeFormatter.ISO_DATE), getDataType());
+    }
+
+    @Override
+    public XSDDatatype getDataType() {
+        return XSDDatatype.XSDdate;
     }
 }

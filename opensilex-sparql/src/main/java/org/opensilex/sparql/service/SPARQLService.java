@@ -15,14 +15,9 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Var;
@@ -84,6 +79,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     @Override
     public void startup() throws Exception {
         connection.startup();
+        connection.enableSHACL();
     }
 
     @Override
@@ -135,7 +131,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     @Override
-    public boolean executeAskQuery(AskBuilder ask) throws SPARQLQueryException {
+    public boolean executeAskQuery(AskBuilder ask) throws SPARQLException {
         addPrefixes(ask);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("SPARQL ASK\n" + ask.buildString());
@@ -144,7 +140,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     @Override
-    public List<SPARQLStatement> executeDescribeQuery(DescribeBuilder describe) throws SPARQLQueryException {
+    public List<SPARQLStatement> executeDescribeQuery(DescribeBuilder describe) throws SPARQLException {
         addPrefixes(describe);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("SPARQL DESCRIBE\n" + describe.buildString());
@@ -152,7 +148,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         return connection.executeDescribeQuery(describe);
     }
 
-    public List<SPARQLStatement> describe(URI uri) throws SPARQLQueryException {
+    public List<SPARQLStatement> describe(URI uri) throws SPARQLException {
         DescribeBuilder describe = new DescribeBuilder();
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         describe.addVar(uriVar);
@@ -161,7 +157,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     @Override
-    public List<SPARQLStatement> executeConstructQuery(ConstructBuilder construct) throws SPARQLQueryException {
+    public List<SPARQLStatement> executeConstructQuery(ConstructBuilder construct) throws SPARQLException {
         addPrefixes(construct);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("SPARQL CONSTRUCT\n" + construct.buildString());
@@ -170,7 +166,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     @Override
-    public List<SPARQLResult> executeSelectQuery(SelectBuilder select, Consumer<SPARQLResult> resultHandler) throws SPARQLQueryException {
+    public List<SPARQLResult> executeSelectQuery(SelectBuilder select, Consumer<SPARQLResult> resultHandler) throws SPARQLException {
         addPrefixes(select);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("SPARQL SELECT\n" + select.buildString());
@@ -179,7 +175,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     @Override
-    public void executeUpdateQuery(UpdateBuilder update) throws SPARQLQueryException {
+    public void executeUpdateQuery(UpdateBuilder update) throws SPARQLException {
         addPrefixes(update);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("SPARQL UPDATE\n" + update.build().toString());
@@ -188,7 +184,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     @Override
-    public void executeDeleteQuery(UpdateBuilder delete) throws SPARQLQueryException {
+    public void executeDeleteQuery(UpdateBuilder delete) throws SPARQLException {
         addPrefixes(delete);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("SPARQL DELETE\n" + delete.buildRequest().toString());
@@ -199,7 +195,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     private int transactionLevel = 0;
 
     @Override
-    public void startTransaction() throws SPARQLTransactionException {
+    public void startTransaction() throws SPARQLException {
         if (transactionLevel == 0) {
             LOGGER.debug("SPARQL TRANSACTION START");
             connection.startTransaction();
@@ -208,7 +204,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     @Override
-    public void commitTransaction() throws SPARQLTransactionException {
+    public void commitTransaction() throws SPARQLException {
         transactionLevel--;
         if (transactionLevel == 0) {
             LOGGER.debug("SPARQL TRANSACTION COMMIT");
@@ -217,7 +213,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     @Override
-    public void rollbackTransaction() throws SPARQLTransactionException {
+    public void rollbackTransaction() throws SPARQLException {
         if (transactionLevel != 0) {
             LOGGER.debug("SPARQL TRANSACTION ROLLBACK");
             connection.rollbackTransaction();
@@ -226,38 +222,28 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     @Override
-    public void clearGraph(URI graph) throws SPARQLQueryException {
+    public void clearGraph(URI graph) throws SPARQLException {
         LOGGER.debug("SPARQL CLEAR GRAPH: " + graph);
         connection.clearGraph(graph);
     }
 
     @Override
     public void renameGraph(URI oldGraphURI, URI newGraphURI) throws SPARQLException {
+        disableSHACL();
         LOGGER.debug("MOVE GRAPH " + oldGraphURI + " TO " + newGraphURI);
         connection.renameGraph(oldGraphURI, newGraphURI);
+        enableSHACL();
     }
 
     @Override
-    public void clear() throws SPARQLQueryException {
+    public void clear() throws SPARQLException {
         LOGGER.debug("SPARQL CLEAR REPOSITORY");
         connection.clear();
     }
 
-    public void loadOntologyStream(URI graph, InputStream ontology, Lang format) throws SPARQLQueryException {
-        Node graphNode = NodeFactory.createURI(graph.toString());
-        LOGGER.debug("SPARQL LOAD " + format.getName() + " FILE INTO GRAPH: " + graphNode);
-        Model model = ModelFactory.createDefaultModel();
-        model.read(ontology, null, format.getName());
-
-        UpdateBuilder insertQuery = new UpdateBuilder();
-        StmtIterator iterator = model.listStatements();
-
-        while (iterator.hasNext()) {
-            Statement statement = iterator.nextStatement();
-            insertQuery.addInsert(graphNode, statement.asTriple());
-        }
-        insertQuery.buildRequest().toString();
-        executeUpdateQuery(insertQuery);
+    public void loadOntology(URI graph, InputStream ontology, Lang format) throws SPARQLException {
+        LOGGER.debug("SPARQL LOAD " + format.getName() + " FILE INTO GRAPH: " + graph.toString());
+        connection.loadOntology(graph, ontology, format);
     }
 
     public <T extends SPARQLResourceModel> T getByURI(Class<T> objectClass, URI uri, String lang) throws Exception {
@@ -336,7 +322,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     public <T extends SPARQLResourceModel> boolean existsByUniquePropertyValue(Class<T> objectClass, Property property, Object propertyValue) throws Exception {
         return existsByUniquePropertyValue(objectClass, property, propertyValue, null);
     }
-    
+
     public <T extends SPARQLResourceModel> boolean existsByUniquePropertyValue(Class<T> objectClass, Property property, Object propertyValue, String lang) throws Exception {
         if (propertyValue == null) {
             return false;
@@ -481,7 +467,6 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         }
     }
 
-
     private <T extends SPARQLResourceModel> void generateUniqueUriIfNullOrValidateCurrent(SPARQLClassObjectMapper<T> sparqlObjectMapper, T instance, boolean checkUriExist) throws Exception {
         URIGenerator<T> uriGenerator = sparqlObjectMapper.getUriGenerator(instance);
         URI uri = sparqlObjectMapper.getURI(instance);
@@ -526,16 +511,9 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
 
     public <T extends SPARQLResourceModel> void update(List<T> instances) throws Exception {
         if (instances.size() > 0) {
-//            UpdateBuilder update = new UpdateBuilder();
             for (T instance : instances) {
                 update(instance);
-//                @SuppressWarnings("unchecked")
-//                Class<T> objectClass = (Class<T>) instance.getClass();
-//                SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-//                sparqlObjectMapper.addUpdateBuilder(loadByURI(objectClass, sparqlObjectMapper.getURI(instance), null), instance, update);
             }
-
-//            executeUpdateQuery(update);
         }
     }
 
@@ -595,7 +573,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
 
     /**
      * @param rdfType the {@link RDF#type} to check
-     * @param uri     the {@link URI} to check
+     * @param uri the {@link URI} to check
      * @return true if uri exists in the TripleStore and if it's an instance of
      * rdfType
      */
@@ -612,7 +590,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
 
         AskBuilder askQuery = new AskBuilder();
         Node nodeUri = SPARQLDeserializers.nodeURI(uri);
-        
+
         Var fieldType = sparqlObjectMapper.getTypeFieldVar();
         askQuery.addWhere(nodeUri, RDF.type, fieldType);
 
@@ -641,17 +619,17 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         }
     }
 
-
     /**
-     * Insert a list of quad (graph,subject,property,object), (graph,subject,property,object_1) ... (graph,subject,property,object_k)
+     * Insert a list of quad (graph,subject,property,object),
+     * (graph,subject,property,object_1) ... (graph,subject,property,object_k)
      *
-     * and remove any old quad (graph,subject,property,?object)
-     * in the SPARQL graph
+     * and remove any old quad (graph,subject,property,?object) in the SPARQL
+     * graph
      *
-     * @param graph    the graph in which the triple(s) are present
-     * @param subject  the triple subject URI
+     * @param graph the graph in which the triple(s) are present
+     * @param subject the triple subject URI
      * @param property the triple property
-     * @param objects  the list of object values
+     * @param objects the list of object values
      */
     public void updateObjectRelations(Node graph, URI subject, Property property, List<?> objects) throws Exception {
 
@@ -677,17 +655,17 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         executeUpdateQuery(updateBuilder);
     }
 
-
     /**
-     * Insert a list of quad (graph,subject,property,object), (graph,subject_1,property,object) ... (graph,subject_k,property,object)
+     * Insert a list of quad (graph,subject,property,object),
+     * (graph,subject_1,property,object) ... (graph,subject_k,property,object)
      *
-     * and remove any old quad (graph,?subject,property,object)
-     * in the SPARQL graph
+     * and remove any old quad (graph,?subject,property,object) in the SPARQL
+     * graph
      *
-     * @param graph    the graph in which the triple(s) are present
+     * @param graph the graph in which the triple(s) are present
      * @param subjects the list of subject URIS
      * @param property the triple property
-     * @param object  the triple(s) object
+     * @param object the triple(s) object
      */
     public void updateSubjectRelations(Node graph, List<URI> subjects, Property property, Object object) throws Exception {
 
@@ -713,24 +691,23 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         executeUpdateQuery(updateBuilder);
     }
 
-
     public Map<String, String> getOtherTranslations(Node graph, URI resourceURI, Property labelProperty, boolean reverseRelation, String lang) throws Exception {
         Map<String, String> translations = new HashMap<>();
-        
+
         SelectBuilder select = new SelectBuilder();
-        
+
         Var valueVar = makeVar("value");
         Var langVar = makeVar("lang");
 
         select.addVar(valueVar);
         select.addVar(SPARQLQueryHelper.getExprFactory().lang(valueVar), langVar);
-        
+
         if (reverseRelation) {
             select.addWhere(valueVar, labelProperty, SPARQLDeserializers.nodeURI(resourceURI));
         } else {
             select.addWhere(SPARQLDeserializers.nodeURI(resourceURI), labelProperty, valueVar);
         }
-        
+
         executeSelectQuery(select, (SPARQLResult result) -> {
             String value = result.getStringValue("value");
             String resultLang = result.getStringValue("lang");
@@ -738,12 +715,29 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
                 translations.put(resultLang, value);
             }
         });
-        
+
         return translations;
     }
-    
+
     public Map<String, String> getTranslations(Node graph, URI resourceURI, Property labelProperty, boolean reverseRelation) throws Exception {
         return getOtherTranslations(graph, resourceURI, labelProperty, reverseRelation, null);
+    }
+
+    @Override
+    public URI getGraphSHACL() {
+        return connection.getGraphSHACL();
+    }
+
+    @Override
+    public void disableSHACL() throws SPARQLException {
+        LOGGER.debug("DISABLE SHACL Validation");
+        connection.disableSHACL();
+    }
+
+    @Override
+    public void enableSHACL() throws SPARQLException {
+        LOGGER.debug("ENABLE SHACL Validation");
+        connection.enableSHACL();
     }
 
     @Deprecated
@@ -751,5 +745,4 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         RDF4JConnection cnt = (RDF4JConnection) this.connection;
         return cnt.getRepositoryConnectionImpl();
     }
-
 }

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -34,6 +35,8 @@ import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.sparql.annotations.SPARQLTypeRDF;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
+import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 
 /**
  *
@@ -540,5 +543,42 @@ public class SPARQLClassAnalyzer {
 
     public Method getURIMethod() {
         return getGetterFromField(getURIField());
+    }
+
+    protected XSDDatatype getFieldDatatype(Field field) {
+        try {
+            return SPARQLDeserializers.getForClass(getGetterFromField(field).getReturnType()).getDataType();
+        } catch (SPARQLDeserializerNotFoundException ex) {
+            return null;
+        }
+    }
+
+    protected Resource getFieldRDFType(Field field) {
+        try {
+            return SPARQLClassObjectMapper.getForClass(getGetterFromField(field).getReturnType()).getRDFType();
+        } catch (SPARQLMapperNotFoundException | SPARQLInvalidClassDefinitionException ex) {
+            return null;
+        }
+    }
+
+    protected Resource getFieldListRDFType(Field field) {
+        try {
+            ParameterizedType genericReturnType = (ParameterizedType) getGetterFromField(field).getGenericReturnType();
+            Type genericParameter = genericReturnType.getActualTypeArguments()[0];
+            return SPARQLClassObjectMapper.getForClass((Class<?>) genericParameter).getRDFType();
+        } catch (SPARQLMapperNotFoundException | SPARQLInvalidClassDefinitionException ex) {
+            return null;
+        }
+    }
+
+    protected XSDDatatype getFieldListDatatype(Field field) {
+        try {
+            
+            ParameterizedType genericReturnType = (ParameterizedType) getGetterFromField(field).getGenericReturnType();
+            Type genericParameter = genericReturnType.getActualTypeArguments()[0];
+            return SPARQLDeserializers.getForClass((Class<?>) genericParameter).getDataType();
+        } catch (SPARQLDeserializerNotFoundException ex) {
+            return null;
+        }
     }
 }

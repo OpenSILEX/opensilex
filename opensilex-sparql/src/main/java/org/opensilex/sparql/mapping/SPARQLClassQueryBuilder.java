@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
+import java.io.StringWriter;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
@@ -31,9 +32,15 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Seq;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.utils.SHACL;
 
 /**
  * @author vincent
@@ -117,14 +124,14 @@ public class SPARQLClassQueryBuilder {
             addAskLangFilter(askBuilder, field.getName(), lang);
         });
 
-            // add the rootWhereHandler inside a GRAPH clause
+        // add the rootWhereHandler inside a GRAPH clause
         if (graph != null) {
             ElementNamedGraph elementNamedGraph = new ElementNamedGraph(graph, rootWhereHandler.getElement());
             askBuilder.getWhereHandler().getClause().addElement(elementNamedGraph);
         } else {
             askBuilder.getHandlerBlock().addAll(rootWhereHandler);
         }
-        
+
         return askBuilder;
     }
 
@@ -450,5 +457,97 @@ public class SPARQLClassQueryBuilder {
                 }
             }
         }
+    }
+
+    public String generateSHACL() {
+        Model model = ModelFactory.createDefaultModel();
+
+        Resource shape = model.createResource(analyzer.getRDFType() + "_ShapeSHACL");
+        
+        shape.addProperty(RDF.type, SHACL.NodeShape);
+        shape.addProperty(SHACL.targetClass, analyzer.getRDFType());
+
+        analyzer.forEachDataProperty((field, property) -> {
+            Seq seq = model.createSeq();
+
+            seq.addProperty(SHACL.path, property);
+            seq.addProperty(SHACL.datatype, model.createResource(analyzer.getFieldDatatype(field).getURI()));
+            seq.addProperty(SHACL.maxCount, "1", XSDDatatype.XSDinteger);
+
+            if (analyzer.isOptional(field)) {
+                seq.addProperty(SHACL.minCount, "0", XSDDatatype.XSDinteger);
+            } else {
+                seq.addProperty(SHACL.minCount, "1", XSDDatatype.XSDinteger);
+            }
+
+            shape.addProperty(SHACL.property, seq);
+        });
+
+        analyzer.forEachObjectProperty((field, property) -> {
+            Seq seq = model.createSeq();
+            seq.addProperty(SHACL.path, property);
+
+            seq.addProperty(SHACL.classProperty, analyzer.getFieldRDFType(field));
+            seq.addProperty(SHACL.maxCount, "1", XSDDatatype.XSDinteger);
+
+            if (analyzer.isOptional(field)) {
+                seq.addProperty(SHACL.minCount, "0", XSDDatatype.XSDinteger);
+            } else {
+                seq.addProperty(SHACL.minCount, "1", XSDDatatype.XSDinteger);
+            }
+
+            shape.addProperty(SHACL.property, seq);
+        });
+
+        analyzer.forEachLabelProperty((field, property) -> {
+
+            Seq seq = model.createSeq();
+            seq.addProperty(SHACL.path, property);
+
+            seq.addProperty(SHACL.uniqueLang, "true", XSDDatatype.XSDboolean);
+
+            if (analyzer.isOptional(field)) {
+                seq.addProperty(SHACL.minCount, "0", XSDDatatype.XSDinteger);
+            } else {
+                seq.addProperty(SHACL.minCount, "1", XSDDatatype.XSDinteger);
+            }
+
+            shape.addProperty(SHACL.property, seq);
+        });
+
+        analyzer.forEachDataPropertyList((field, property) -> {
+            Seq seq = model.createSeq();
+            seq.addProperty(SHACL.path, property);
+
+            seq.addProperty(SHACL.datatype, model.createResource(analyzer.getFieldListDatatype(field).getURI()));
+
+            if (analyzer.isOptional(field)) {
+                seq.addProperty(SHACL.minCount, "0", XSDDatatype.XSDinteger);
+            } else {
+                seq.addProperty(SHACL.minCount, "1", XSDDatatype.XSDinteger);
+            }
+
+            shape.addProperty(SHACL.property, seq);
+        });
+
+        analyzer.forEachObjectPropertyList((field, property) -> {
+            Seq seq = model.createSeq();
+            seq.addProperty(SHACL.path, property);
+
+            seq.addProperty(SHACL.classProperty, analyzer.getFieldListRDFType(field));
+
+            if (analyzer.isOptional(field)) {
+                seq.addProperty(SHACL.minCount, "0", XSDDatatype.XSDinteger);
+            } else {
+                seq.addProperty(SHACL.minCount, "1", XSDDatatype.XSDinteger);
+            }
+
+            shape.addProperty(SHACL.property, seq);
+        });
+
+        StringWriter str = new StringWriter();
+        model.write(str, "TURTLE");
+        
+        return str.toString();
     }
 }

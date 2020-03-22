@@ -6,6 +6,7 @@
 package org.opensilex.sparql.deserializer;
 
 import java.math.BigInteger;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.expr.nodevalue.NodeValueInteger;
@@ -26,5 +27,10 @@ public class BigIntegerDeserializer implements SPARQLDeserializer<BigInteger> {
     public Node getNode(Object value) throws Exception {
         NodeValue v = new NodeValueInteger((BigInteger) value);
         return v.asNode();
+    }
+    
+    @Override
+    public XSDDatatype getDataType() {
+        return XSDDatatype.XSDinteger;
     }
 }

@@ -137,7 +137,7 @@ public class SPARQLQueryHelper {
         return exprFactory.eq(NodeFactory.createVariable(varName), node);
     }
 
-    public static void inOrEmpty(SelectBuilder select, String uriField, Property relation, String varName, List<URI> uris) {
+    public static void inPropertyOrEmpty(SelectBuilder select, String uriField, Property relation, String varName, List<URI> uris) {
         Var var = makeVar(varName);
         Triple relationTriple = new Triple(makeVar(uriField), relation.asNode(), var);
 
@@ -164,7 +164,7 @@ public class SPARQLQueryHelper {
         }
     }
 
-    public static void in(SelectBuilder select, String uriField, Property relation, String varName, List<URI> uris) {
+    public static void inProperty(SelectBuilder select, String uriField, Property relation, String varName, List<URI> uris) {
         Var var = makeVar(varName);
         Triple relationTriple = new Triple(makeVar(uriField), relation.asNode(), var);
 
@@ -179,17 +179,36 @@ public class SPARQLQueryHelper {
             ElementGroup elementGroup = new ElementGroup();
             elementGroup.addTriplePattern(relationTriple);
 
-            Expr groupInUrisExpr = exprFactory.in(var, uris.stream()
+            Expr resourceInUrisExpr = exprFactory.in(var, uris.stream()
                     .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
                     .toArray());
 
             rootFilteringElem.addElement(elementGroup);
 
-            rootFilteringElem.addElementFilter(new ElementFilter(groupInUrisExpr));
+            rootFilteringElem.addElementFilter(new ElementFilter(resourceInUrisExpr));
             select.getWhereHandler().getClause().addElement(rootFilteringElem);
         }
     }
 
+    public static void inURI(SelectBuilder select, String uriField, Collection<URI> uris) {
+        if (uris != null && !uris.isEmpty()) {
+            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+
+            // get ressource with relation specified in the given list
+            ElementGroup rootFilteringElem = new ElementGroup();
+            ElementGroup elementGroup = new ElementGroup();
+
+            Expr resourceInUrisExpr = exprFactory.in(makeVar(uriField), uris.stream()
+                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
+                    .toArray());
+
+            rootFilteringElem.addElement(elementGroup);
+
+            rootFilteringElem.addElementFilter(new ElementFilter(resourceInUrisExpr));
+            select.getWhereHandler().getClause().addElement(rootFilteringElem);
+        }
+    }
+    
     public static Expr langFilter(String varName, String lang) {
 
         return or(

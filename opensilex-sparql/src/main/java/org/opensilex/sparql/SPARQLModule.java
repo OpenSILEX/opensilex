@@ -43,7 +43,7 @@ import org.opensilex.module.ModuleConfig;
 import org.opensilex.module.ModuleNotFoundException;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.exceptions.SPARQLQueryException;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
@@ -97,7 +97,6 @@ public class SPARQLModule extends OpenSilexModule {
 
         SPARQLConfig cfg = OpenSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         SPARQLService.addPrefix(cfg.baseURIAlias(), cfg.baseURI());
-
     }
 
     @Override
@@ -134,7 +133,7 @@ public class SPARQLModule extends OpenSilexModule {
         return getPlatformURI().resolve(graphSuffix);
     }
 
-    public static void clearPlatformGraphs(SPARQLService sparql, List<String> graphsSuffixToClear) throws SPARQLQueryException {
+    public static void clearPlatformGraphs(SPARQLService sparql, List<String> graphsSuffixToClear) throws SPARQLException {
         for (String graphName : graphsSuffixToClear) {
             sparql.clearGraph(SPARQLModule.getPlatformDomainGraphURI(graphName));
         }
@@ -178,17 +177,17 @@ public class SPARQLModule extends OpenSilexModule {
         // Import default ontologies
         LOGGER.info("Install oa ontology: http://www.w3.org/ns/oa");
         InputStream ontologyStream = new FileInputStream(ClassUtils.getFileFromClassArtifact(SPARQLModule.class, "install/oa.rdf"));
-        sparql.loadOntologyStream(new URI("http://www.w3.org/ns/oa"), ontologyStream, Lang.RDFXML);
+        sparql.loadOntology(new URI("http://www.w3.org/ns/oa"), ontologyStream, Lang.RDFXML);
         ontologyStream.close();
 
         LOGGER.info("Install oeso ontology: http://www.opensilex.org/vocabulary/oeso");
         ontologyStream = new FileInputStream(ClassUtils.getFileFromClassArtifact(SPARQLModule.class, "install/oeso.owl"));
-        sparql.loadOntologyStream(new URI("http://www.opensilex.org/vocabulary/oeso"), ontologyStream, Lang.RDFXML);
+        sparql.loadOntology(new URI("http://www.opensilex.org/vocabulary/oeso"), ontologyStream, Lang.RDFXML);
         ontologyStream.close();
 
         LOGGER.info("Install oeev ontology: http://www.opensilex.org/vocabulary/oeev");
         ontologyStream = new FileInputStream(ClassUtils.getFileFromClassArtifact(SPARQLModule.class, "install/oeev.owl"));
-        sparql.loadOntologyStream(new URI("http://www.opensilex.org/vocabulary/oeev"), ontologyStream, Lang.RDFXML);
+        sparql.loadOntology(new URI("http://www.opensilex.org/vocabulary/oeev"), ontologyStream, Lang.RDFXML);
         ontologyStream.close();
         
         SPARQLConfig sparqlConfig = OpenSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
@@ -196,7 +195,7 @@ public class SPARQLModule extends OpenSilexModule {
         
         LOGGER.info("Install Agrovoc species: " + graph.toString());
         ontologyStream = new FileInputStream(ClassUtils.getFileFromClassArtifact(SPARQLModule.class, "install/species.ttl"));
-        sparql.loadOntologyStream(graph, ontologyStream, Lang.TTL);
+        sparql.loadOntology(graph, ontologyStream, Lang.TTL);
         ontologyStream.close();
         
         factory.dispose(sparql);

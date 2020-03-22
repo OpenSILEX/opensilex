@@ -281,7 +281,7 @@ public class RDF4JConnection implements SPARQLConnection {
         queryResults.close();
         return resultList;
     }
-    
+
     private List<SPARQLStatement> repoStatementsToSPARQLResultList(RepositoryResult<Statement> queryResults) {
         List<SPARQLStatement> resultList = new ArrayList<>();
 
@@ -365,7 +365,8 @@ public class RDF4JConnection implements SPARQLConnection {
     public void enableSHACL() throws SPARQLException {
         URI shaclGraph = getGraphSHACL();
         if (shaclGraph != null) {
-
+            clearGraph(shaclGraph);
+            
             List<String> shaclList = new ArrayList<>();
 
             for (Class<?> c : SPARQLClassObjectMapper.getResourceClasses()) {

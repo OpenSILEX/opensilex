@@ -97,6 +97,11 @@ public class SPARQLModule extends OpenSilexModule {
 
         SPARQLConfig cfg = OpenSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         SPARQLService.addPrefix(cfg.baseURIAlias(), cfg.baseURI());
+        
+        SPARQLServiceFactory factory = sparqlConfig.sparql();
+        SPARQLService sparql = factory.provide();
+        sparql.enableSHACL();
+        factory.dispose(sparql);
     }
 
     @Override

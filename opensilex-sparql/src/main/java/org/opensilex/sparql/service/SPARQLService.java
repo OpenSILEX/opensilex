@@ -79,7 +79,6 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     @Override
     public void startup() throws Exception {
         connection.startup();
-        connection.enableSHACL();
     }
 
     @Override

@@ -16,18 +16,19 @@ import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.OpenSilex;
 import org.opensilex.config.ConfigManager;
 import org.opensilex.dependencies.DependencyManager;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
+import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +46,18 @@ import org.slf4j.LoggerFactory;
  * @author Vincent Migot
  */
 public class ModuleManager {
+
+    private final static List<String> BUILD_IN_MODULES_ORDER = new ArrayList<String>() {
+        {
+            add("opensilex");
+            add("opensilex-fs");
+            add("opensilex-nosql");
+            add("opensilex-sparql");
+            add("opensilex-rest");
+            add("opensilex-core");
+            add("opensilex-front");
+        }
+    };
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ModuleManager.class);
 
@@ -78,11 +91,11 @@ public class ModuleManager {
 
             // Get modules dependencies and load them
             Set<URL> dependencies = loadModulesWithDependencies(dependencyManager, modulesUrl);
-            
+
             // Rewrite old & new dependencies in cache file
             dependencies.addAll(readDependencies);
             ModuleManager.writeDependencies(baseDirectory, dependencies);
-            
+
             registerDependencies(readDependencies);
         } else {
             // Otherwise simply register known dependencies
@@ -219,13 +232,50 @@ public class ModuleManager {
      */
     public Iterable<OpenSilexModule> getModules() {
         if (modules == null) {
+
             modules = new ArrayList<>();
-            ServiceLoader.load(OpenSilexModule.class, OpenSilex.getClassLoader())
-                    .forEach(modules::add);
+            modules = ServiceLoader.load(OpenSilexModule.class, OpenSilex.getClassLoader())
+                    .stream()
+                    .sorted((mp1, mp2) -> {
+                        OpenSilexModule m1 = mp1.get();
+                        OpenSilexModule m2 = mp2.get();
+                        String artifact1 = ClassUtils.getProjectIdFromClass(m1.getClass());
+                        String artifact2 = ClassUtils.getProjectIdFromClass(m2.getClass());
+
+                        int index1 = BUILD_IN_MODULES_ORDER.indexOf(artifact1);
+                        int index2 = BUILD_IN_MODULES_ORDER.indexOf(artifact2);
+
+                        if (index1 == index2) {
+                            return 0;
+                        }
+
+                        if (index1 == -1) {
+                            return 1;
+                        }
+
+                        if (index2 == -1) {
+                            return -1;
+                        }
+
+                        return index1 - index2;
+                    })
+                    .map(m -> m.get())
+                    .collect(Collectors.toList());
         }
 
-        return Collections.unmodifiableList(modules);
+        return modules;
+    }
 
+    public void addOptionalModulesOrder(List<String> modulesOrder) {
+        if (modulesOrder != null && !modulesOrder.isEmpty()) {
+            for (String optionalModule : modulesOrder) {
+                if (!BUILD_IN_MODULES_ORDER.contains(optionalModule)) {
+                    BUILD_IN_MODULES_ORDER.add(optionalModule);
+                }
+            }
+
+            modules = null;
+        }
     }
 
     /**
@@ -444,6 +494,7 @@ public class ModuleManager {
     public void check() throws Exception {
         for (OpenSilexModule module : getModules()) {
             try {
+                LOGGER.info("Check module: " + module.getClass().getCanonicalName());
                 module.check();
             } catch (Exception ex) {
                 LOGGER.error("Fail to check module: " + module.getClass().getCanonicalName(), ex);

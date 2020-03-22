@@ -23,7 +23,7 @@ public interface Service {
     public default void shutdown() throws Exception {
 
     }
-
+    
     public static boolean hasEmptyConstructor(Class<? extends Service> serviceClass) {
         try {
             return (serviceClass.getConstructor() != null);
@@ -40,10 +40,10 @@ public interface Service {
         return ClassUtils.getConstructorWithParameterImplementing(serviceClass, ServiceConnection.class) != null;
     }
 
-    public static ServiceConfig getDefaultConfig(Class<? extends Service> serviceClass) {
-        ServiceConfigDefault defaultConfigAnnotation = serviceClass.getAnnotation(ServiceConfigDefault.class);
+    public static ServiceDefinition getDefaultServiceDefinition(Class<? extends Service> serviceClass) {
+        ServiceDefaultDefinition defaultConfigAnnotation = serviceClass.getAnnotation(ServiceDefaultDefinition.class);
 
-        return new ServiceConfig() {
+        return new ServiceDefinition() {
 
             @Override
             public Class<?> configClass() {
@@ -62,7 +62,7 @@ public interface Service {
             }
 
             @Override
-            public Class<?> connectionConfig() {
+            public Class<?> connectionConfigClass() {
                 if (defaultConfigAnnotation == null) {
                     return Class.class;
                 }

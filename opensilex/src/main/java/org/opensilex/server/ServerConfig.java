@@ -35,4 +35,9 @@ public interface ServerConfig extends ModuleConfig {
             defaultList = {OpenSilex.DEFAULT_LANGUAGE, "fr"}
     )
     public List<String> availableLanguages();
+
+    @ConfigDescription(
+            value = "Modules loading order list"
+    )
+    public List<String> modulesOrder();
 }

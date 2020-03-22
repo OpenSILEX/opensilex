@@ -24,6 +24,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF4J;
 import org.eclipse.rdf4j.query.*;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.sail.shacl.ShaclSailValidationException;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLConnection;
@@ -240,6 +241,22 @@ public class RDF4JConnection implements SPARQLConnection {
     }
 
     @Override
+    public List<SPARQLStatement> getGraphStatement(URI graph) throws SPARQLException {
+        try {
+            RepositoryResult<Statement> results = rdf4JConnection.getStatements(null, null, null, SimpleValueFactory.getInstance().createIRI(graph.toString()));
+
+            return repoStatementsToSPARQLResultList(results);
+        } catch (RepositoryException ex) {
+            Throwable cause = ex.getCause();
+            if (cause instanceof ShaclSailValidationException) {
+                throw convertRDF4JSHACLException((ShaclSailValidationException) cause);
+            } else {
+                throw new SPARQLException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
     public void clear() throws SPARQLException {
         try {
             rdf4JConnection.clear();
@@ -254,6 +271,18 @@ public class RDF4JConnection implements SPARQLConnection {
     }
 
     private List<SPARQLStatement> statementsToSPARQLResultList(QueryResult<Statement> queryResults) {
+        List<SPARQLStatement> resultList = new ArrayList<>();
+
+        while (queryResults.hasNext()) {
+            Statement result = queryResults.next();
+            resultList.add(new RDF4JStatement(result));
+        }
+
+        queryResults.close();
+        return resultList;
+    }
+    
+    private List<SPARQLStatement> repoStatementsToSPARQLResultList(RepositoryResult<Statement> queryResults) {
         List<SPARQLStatement> resultList = new ArrayList<>();
 
         while (queryResults.hasNext()) {

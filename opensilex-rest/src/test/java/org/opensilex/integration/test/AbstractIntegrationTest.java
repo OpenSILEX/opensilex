@@ -58,7 +58,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
-            LOGGER.debug("\n####### Starting IT: " + description.getTestClass().getSimpleName() + " - " + description.getMethodName() + " #######");
+            LOGGER.debug("\n\n####### Starting IT: " + description.getTestClass().getSimpleName() + " - " + description.getMethodName() + " #######");
         }
     };
 

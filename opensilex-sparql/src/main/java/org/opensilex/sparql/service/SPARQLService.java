@@ -5,12 +5,10 @@
 //******************************************************************************
 package org.opensilex.sparql.service;
 
-import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.DescribeBuilder;
-import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
@@ -30,7 +28,6 @@ import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.opensilex.service.Service;
-import org.opensilex.service.ServiceConfigDefault;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.*;
@@ -55,11 +52,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.function.Consumer;
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.opensilex.service.ServiceDefaultDefinition;
 
 /**
  * Implementation of SPARQLService
  */
-@ServiceConfigDefault(
+@ServiceDefaultDefinition(
         connection = RDF4JConnection.class,
         connectionConfig = RDF4JConfig.class,
         connectionConfigID = "rdf4j"
@@ -148,12 +148,21 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         return connection.executeDescribeQuery(describe);
     }
 
-    public List<SPARQLStatement> describe(URI uri) throws SPARQLException {
+    public List<SPARQLStatement> describe(Node graph, URI uri) throws SPARQLException {
         DescribeBuilder describe = new DescribeBuilder();
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         describe.addVar(uriVar);
+        if (graph != null) {
+            describe.from(graph.getURI());
+        }
         describe.addBind(new ExprFactory().iri(uri), uriVar);
         return executeDescribeQuery(describe);
+    }
+
+    @Override
+    public List<SPARQLStatement> getGraphStatement(URI graph) throws SPARQLException {
+        LOGGER.debug("SPARQL GET GRAPH STATEMENTS FOR: " + graph);
+        return connection.getGraphStatement(graph);
     }
 
     @Override
@@ -403,6 +412,10 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         }, Exception.class));
 
         return resultList;
+    }
+
+    public <T extends SPARQLResourceModel> int count(Class<T> objectClass) throws Exception {
+        return count(objectClass, null, null);
     }
 
     public <T extends SPARQLResourceModel> int count(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {

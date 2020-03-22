@@ -58,7 +58,7 @@ public class OpenSilex {
     private final static Logger LOGGER = LoggerFactory.getLogger(OpenSilex.class);
 
     public final static String DEFAULT_LANGUAGE = "en";
-    
+
     /**
      * Production profile identifier
      */
@@ -413,7 +413,7 @@ public class OpenSilex {
 
         this.debug = debug;
     }
-    
+
     /**
      * <pre>
      * Initialize application
@@ -459,6 +459,10 @@ public class OpenSilex {
         };
         Runtime.getRuntime().addShutdownHook(SHUTDOWN_HOOK);
 
+        moduleManager.addOptionalModulesOrder(getModuleConfig(ServerModule.class, ServerConfig.class).modulesOrder());
+        
+        LOGGER.debug("Current expanded configuration:" + getExpandedYAMLConfig());
+
         LOGGER.debug("Startup modules");
         moduleManager.startup();
     }
@@ -500,11 +504,10 @@ public class OpenSilex {
     public void install(boolean reset) throws Exception {
         moduleManager.install(reset);
     }
-    
+
     public void check() throws Exception {
         moduleManager.check();
     }
-    
 
     /**
      * Return module instance corresponding to the given class Throw an
@@ -685,10 +688,10 @@ public class OpenSilex {
     public File getConfigFile() {
         return this.configFile;
     }
-    
+
     public static String getDefaultLanguage() {
         String lang = OpenSilex.DEFAULT_LANGUAGE;
-        
+
         OpenSilex opensilex = OpenSilex.getInstance();
         if (opensilex != null) {
             try {
@@ -698,7 +701,11 @@ public class OpenSilex {
                 LOGGER.warn("Error while retriving default configured language", ex);
             }
         }
-        
+
         return lang;
+    }
+
+    public String getExpandedYAMLConfig() throws Exception {
+        return configManager.getExpandedYAMLConfig(getModules());
     }
 }

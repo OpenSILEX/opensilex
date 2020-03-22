@@ -47,6 +47,8 @@ public interface SPARQLConnection extends ServiceConnection {
 
     public void executeDeleteQuery(UpdateBuilder update) throws SPARQLException;
 
+    public List<SPARQLStatement> getGraphStatement(URI graph) throws SPARQLException ;
+    
     public void clearGraph(URI graph) throws SPARQLException;
 
     void renameGraph(URI oldGraphURI, URI newGraphURI) throws SPARQLException;

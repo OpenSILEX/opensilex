@@ -10,7 +10,7 @@ import org.opensilex.nosql.exceptions.NoSQLTransactionException;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBConnection;
 import org.opensilex.service.Service;
-import org.opensilex.service.ServiceConfigDefault;
+import org.opensilex.service.ServiceDefaultDefinition;
 
 /**
  * Service for big data access and storage.
@@ -21,7 +21,7 @@ import org.opensilex.service.ServiceConfigDefault;
  *
  * @author Vincent Migot
  */
-@ServiceConfigDefault(
+@ServiceDefaultDefinition(
         connection = MongoDBConnection.class,
         connectionConfig = MongoDBConfig.class,
         connectionConfigID = "mongodb"

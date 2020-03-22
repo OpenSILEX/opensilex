@@ -16,10 +16,10 @@ import org.opensilex.OpenSilexModule;
 import org.opensilex.rest.profile.dal.ProfileModel;
 import org.opensilex.rest.security.dal.SecurityAccessDAO;
 import org.opensilex.rest.user.dal.UserDAO;
-import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
-import org.opensilex.utils.ListWithPagination;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <pre>
@@ -37,6 +37,8 @@ import org.opensilex.utils.ListWithPagination;
  */
 public class RestModule extends OpenSilexModule implements APIExtension {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RestModule.class);
+    
     @Override
     public Class<? extends ModuleConfig> getConfigClass() {
         return RestConfig.class;
@@ -93,11 +95,11 @@ public class RestModule extends OpenSilexModule implements APIExtension {
         SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
         UserDAO userDAO = new UserDAO(sparql);
-        ListWithPagination<UserModel> result = userDAO.search(null, null, null, null);
+        int userCount = userDAO.getCount();
         factory.dispose(sparql);
-        if (result.getTotal() == 0) {
-            LOGGER.error("You should at least have one user defined to have a valid configuration");
-            throw new Exception();
+        if (userCount == 0) {
+            LOGGER.warn("/!\\ Caution, you don't have any user registered in OpenSilex");
+            LOGGER.warn("/!\\ You probably should add one with command `opensilex user add ...` (use --help flag for more information)");
         }
     }
 

@@ -23,7 +23,7 @@ public class AbstractUnitTest {
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
-            LOGGER.debug("\n####### Starting UT: " + description.getTestClass().getSimpleName() + " - " + description.getMethodName() + " #######");
+            LOGGER.debug("\n\n####### Starting UT: " + description.getTestClass().getSimpleName() + " - " + description.getMethodName() + " #######");
         }
     };
 }

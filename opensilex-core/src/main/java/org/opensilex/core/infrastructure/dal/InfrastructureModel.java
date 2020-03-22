@@ -26,7 +26,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         graph = "set/infrastructures",
         prefix = "infra"
 )
-public class InfrastructureModel extends SPARQLResourceModel implements ClassURIGenerator<ProjectModel> {
+public class InfrastructureModel extends SPARQLResourceModel implements ClassURIGenerator<InfrastructureModel> {
 
     @SPARQLProperty(
             ontology = FOAF.class,
@@ -41,6 +41,7 @@ public class InfrastructureModel extends SPARQLResourceModel implements ClassURI
             property = "hasChild"
     )
     private List<InfrastructureModel> children;
+    public static final String CHILDREN_FIELD = "children";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -49,6 +50,14 @@ public class InfrastructureModel extends SPARQLResourceModel implements ClassURI
     )
     private InfrastructureModel parent;
     public static final String PARENT_FIELD = "parent";
+    
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasDevice",
+            inverse = true
+    )
+    private List<InfrastructureDeviceModel> devices;
+    public static final String DEVICE_FIELD = "devices";
     
     @SPARQLProperty(
         ontology = SecurityOntology.class,
@@ -88,9 +97,17 @@ public class InfrastructureModel extends SPARQLResourceModel implements ClassURI
     public void setUsers(List<UserModel> users) {
         this.users = users;
     }
+
+    public List<InfrastructureDeviceModel> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(List<InfrastructureDeviceModel> devices) {
+        this.devices = devices;
+    }
     
     @Override
-    public String[] getUriSegments(ProjectModel instance) {
+    public String[] getUriSegments(InfrastructureModel instance) {
         return new String[]{
             "infrastructures",
             instance.getName()

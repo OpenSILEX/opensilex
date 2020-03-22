@@ -50,7 +50,6 @@ import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -112,6 +111,10 @@ public class ExperimentResourceService extends ResourceService {
                 groupUris.add(new URI(groupUri));
             }
 
+            List<URI> projectUris = new ArrayList<>();
+            if(projectUri != null) {
+                projectUris.add(projectUri);
+            }
             ListWithPagination<ExperimentModel> resultList = xpDao.search(
                     uri,
                     StringUtils.isEmpty(campaign) ? null : Integer.parseInt(campaign),
@@ -120,7 +123,7 @@ public class ExperimentResourceService extends ResourceService {
                     startDate,
                     endDate,
                     null,
-                    Collections.singletonList(projectUri),
+                    projectUris,
                     null,
                     groupUris,
                     userModel.isAdmin(),

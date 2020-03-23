@@ -3,7 +3,7 @@
     <!-- configuration variables-->
     <property name="log.pattern" value="%d{dd MMM yyyy;HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n" />
     <property name="default.log.level" value="WARN"/>
-    <property name="opensilex.log.level" value="${opensilex.log.level:-INFO}"/>
+    <property name="opensilex.log.level" value="${opensilex.log.level:-DEBUG}"/>
     
     <!-- output -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
@@ -19,11 +19,11 @@
             <!-- List of classes to include at DEBUG log level -->
             <debug>org.opensilex.unit.test.AbstractUnitTest </debug> 
             <debug>org.opensilex.integration.test.AbstractIntegrationTest</debug>            
-            <!--<debug>org.opensilex.server.Server</debug>--> 
-            <!--<debug>org.opensilex.sparql.rdf4j.RDF4JConnection</debug>--> 
-            <!--<debug>org.opensilex.sparql.rdf4j.RDF4JServiceFactory</debug>-->
             <debug>org.apache.catalina.valves.StuckThreadDetectionValve</debug>
-            <!--<debug>org.opensilex.sparql.service.SPARQLService</debug>-->
+            <!--<debug>org.opensilex.server.Server</debug>--> 
+<!--            <debug>org.opensilex.sparql.rdf4j.RDF4JConnection</debug> 
+            <debug>org.opensilex.sparql.rdf4j.RDF4JServiceFactory</debug>
+            <debug>org.opensilex.sparql.service.SPARQLService</debug>-->
         </filter>
 	
         <encoder>

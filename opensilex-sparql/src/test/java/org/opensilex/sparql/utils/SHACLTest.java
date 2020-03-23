@@ -40,7 +40,6 @@ public abstract class SHACLTest extends AbstractUnitTest {
         SHACLTest.service = service;
 
         service.clear();
-        service.enableSHACL();
         
         InputStream ontology = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.FILE_PATH.toString());
         service.loadOntology(SPARQLModule.getPlatformURI(), ontology, TEST_ONTOLOGY.FILE_FORMAT);
@@ -54,6 +53,8 @@ public abstract class SHACLTest extends AbstractUnitTest {
 
     @Test
     public void testSHACLGeneration() throws Exception {
+        service.enableSHACL();
+        
         InputStream ontologyData = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.DATA_FILE_PATH.toString());
         service.loadOntology(SPARQLModule.getPlatformDomainGraphURI("data"), ontologyData, TEST_ONTOLOGY.DATA_FILE_FORMAT);
 

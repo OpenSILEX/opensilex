@@ -115,7 +115,6 @@
                             <td width="250">
                                 <multiselect
                                         :limit="1"
-                                        :multiple="true"
                                         :placeholder="$t('component.experiment.search.filter.species')"
                                         :closeOnSelect="false"
                                         v-model="filter.species"
@@ -241,11 +240,12 @@
         private _projects: Array<ProjectCreationDTO>;
         private _installations: Array<string>;
         private _places: Array<string>;
-        private _species: string;
+        private _species: SpeciesDTO;
         private _state: ExperimentState;
 
         constructor(experimentList: ExperimentList) {
             this._experimentList = experimentList;
+            this._species = null;
         }
 
         get alias() {
@@ -362,9 +362,8 @@
             return this._places;
         }
 
-        set species(values: string) {
-            console.log("new species = " + values);
-            this._species = values;
+        set species(value: SpeciesDTO) {
+            this._species = value;
             this._experimentList.loadExperiments();
         }
 
@@ -377,7 +376,6 @@
         }
 
         set state(value: ExperimentState) {
-            console.log("new state = " + value);
             this._state = value;
             this._experimentList.loadExperiments();
         }
@@ -456,6 +454,13 @@
             //     }
             // }
 
+            let speciesUri;
+
+            console.log("FILTER SPECIES "+this.filter.species);
+            if(this.filter.species != null){
+                speciesUri = this.filter.species.uri;
+            }
+
                 service.searchExperiments(
                   this.user.getAuthorizationHeader(),
                   this.filter.uri,
@@ -463,8 +468,8 @@
                   undefined,
                   this.filter.campaign,
                   this.filter.alias,
-                  this.filter.species,
-                  undefined,
+                  speciesUri,
+                  projects,
                   undefined,
                   undefined,
                   this.orderBy,

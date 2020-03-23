@@ -355,33 +355,52 @@ public class RDF4JConnection implements SPARQLConnection {
 
     @Override
     public void disableSHACL() throws SPARQLException {
-        URI shaclGraph = getGraphSHACL();
-        if (shaclGraph != null) {
-            clearGraph(shaclGraph);
+        try {
+            URI shaclGraph = getGraphSHACL();
+            if (shaclGraph != null) {
+                clearGraph(shaclGraph);
+            }
+        } catch (RepositoryException ex) {
+            Throwable cause = ex.getCause();
+            if (cause instanceof ShaclSailValidationException) {
+                throw convertRDF4JSHACLException((ShaclSailValidationException) cause);
+            } else {
+                throw new SPARQLException(ex.getMessage());
+            }
         }
     }
 
     @Override
     public void enableSHACL() throws SPARQLException {
-        URI shaclGraph = getGraphSHACL();
-        if (shaclGraph != null) {
-            clearGraph(shaclGraph);
-            
-            List<String> shaclList = new ArrayList<>();
+        try {
 
-            for (Class<?> c : SPARQLClassObjectMapper.getResourceClasses()) {
-                shaclList.add(SHACL.generateSHACL(c));
+            URI shaclGraph = getGraphSHACL();
+            if (shaclGraph != null) {
+                clearGraph(shaclGraph);
+
+                List<String> shaclList = new ArrayList<>();
+
+                for (Class<?> c : SPARQLClassObjectMapper.getResourceClasses()) {
+                    shaclList.add(SHACL.generateSHACL(c));
+                }
+
+                String shaclString = StringUtils.join(shaclList, '\n');
+
+                LOGGER.debug("Generated SHACL: \n" + shaclString);
+
+                if (!shaclList.isEmpty()) {
+                    loadOntology(getGraphSHACL(), shaclString, Lang.TURTLE);
+                }
+            } else {
+                LOGGER.warn("No SHACL graph specified, SHACL validation will be disabled");
             }
-
-            String shaclString = StringUtils.join(shaclList, '\n');
-
-            LOGGER.debug("Generated SHACL: \n" + shaclString);
-
-            if (!shaclList.isEmpty()) {
-                loadOntology(getGraphSHACL(), shaclString, Lang.TURTLE);
+        } catch (RepositoryException ex) {
+            Throwable cause = ex.getCause();
+            if (cause instanceof ShaclSailValidationException) {
+                throw convertRDF4JSHACLException((ShaclSailValidationException) cause);
+            } else {
+                throw new SPARQLException(ex.getMessage());
             }
-        } else {
-            LOGGER.warn("No SHACL graph specified, SHACL validation will be disabled");
         }
 
     }

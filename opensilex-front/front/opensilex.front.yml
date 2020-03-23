@@ -97,15 +97,26 @@ menu:
           component: opensilex-ProfileView
           credentials: 
             - profile-read
-  - id: factors
-    label: Factors
+  - id: experimentalDesign
+    label: component.menu.experimentalDesign.label
+    icon: ik-lock
     children:
-      - id: factors-list
-        label: Factors
+      - id: factors
+        label: component.menu.experimentalDesign.factors
+        icon: ik-cloud-rain
         route: 
-          path: /factors 
-          component: opensilex-core-FactorList
+          path: /factors
+          component: opensilex-core-FactorView
           credentials: []
+      - id: factor-levels
+        label: component.menu.experimentalDesign.factorLevels
+        icon: ik-cloud-rain
+        route: 
+          path: /factorLevels
+          component: opensilex-core-FactorLevelView
+          credentials: []
+
+
 routes:
 # Route item example:
 #  - path: /users/create

@@ -23,6 +23,11 @@ public class LongDeserializer implements SPARQLDeserializer<Long> {
 
     @Override
     public Node getNode(Object value) throws Exception {
-        return NodeFactory.createLiteralByValue(value, XSDDatatype.XSDlong);
+        return NodeFactory.createLiteralByValue(value, getDataType());
+    }
+    
+    @Override
+    public XSDDatatype getDataType() {
+        return XSDDatatype.XSDlong;
     }
 }

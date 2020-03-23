@@ -186,4 +186,8 @@ public class UserDAO {
                 pageSize
         );
     }
+
+    public int getCount() throws Exception {
+        return sparql.count(UserModel.class);
+    }
 }

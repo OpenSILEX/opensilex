@@ -10,7 +10,7 @@ import java.io.File;
 import java.nio.file.Path;
 import org.opensilex.fs.local.LocalFileSystemConnection;
 import org.opensilex.service.Service;
-import org.opensilex.service.ServiceConfigDefault;
+import org.opensilex.service.ServiceDefaultDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Vincent Migot
  */
-@ServiceConfigDefault(
+@ServiceDefaultDefinition(
         connection = LocalFileSystemConnection.class
 )
 public class FileStorageService implements Service, FileStorageConnection {

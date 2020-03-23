@@ -5,8 +5,6 @@
  */
 package org.opensilex.rest.group.dal;
 
-import java.util.List;
-import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.rest.authentication.SecurityOntology;
 import org.opensilex.rest.profile.dal.ProfileModel;
 import org.opensilex.rest.user.dal.UserModel;

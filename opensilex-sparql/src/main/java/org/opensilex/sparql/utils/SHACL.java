@@ -11,6 +11,10 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
+import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
+import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 
 /**
@@ -35,8 +39,8 @@ public class SHACL {
     public static final Resource PropertyShape = Ontology.resource(NAMESPACE, "PropertyShape");
 
     public static final Property deactivated = Ontology.property(NAMESPACE, "deactivated");
-    public static final Property targetClass  = Ontology.property(NAMESPACE, "targetClass ");
-    public static final Property targetNode  = Ontology.property(NAMESPACE, "targetNode ");
+    public static final Property targetClass  = Ontology.property(NAMESPACE, "targetClass");
+    public static final Property targetNode  = Ontology.property(NAMESPACE, "targetNode");
     public static final Property targetObjectsOf = Ontology.property(NAMESPACE, "targetObjectsOf");
     public static final Property targetSubjectsOf = Ontology.property(NAMESPACE, "targetSubjectsOf");
     public static final Property message = Ontology.property(NAMESPACE, "message");
@@ -115,7 +119,7 @@ public class SHACL {
 
     public static final Property and = Ontology.property(NAMESPACE, "and");
 
-    public static final Resource ClassConstraintComponent  = Ontology.resource(NAMESPACE, "ClassConstraintComponent ");
+    public static final Resource ClassConstraintComponent  = Ontology.resource(NAMESPACE, "ClassConstraintComponent");
     public static final Resource ClassConstraintComponentClass = Ontology.resource(NAMESPACE, "ClassConstraintComponent-class");
 
     public static final Property classProperty = Ontology.property(NAMESPACE, "class");
@@ -376,4 +380,9 @@ public class SHACL {
     public static final Resource JSLibrary = Ontology.resource(NAMESPACE, "JSLibrary");
     public static final Resource JSRule = Ontology.resource(NAMESPACE, "JSRule");
     public static final Resource JSValidator = Ontology.resource(NAMESPACE, "JSValidator");
+    
+    public static String generateSHACL(Class<?> concept) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+        SPARQLClassObjectMapper<?> mapper = SPARQLClassObjectMapper.getForClass(concept);
+        return mapper.generateSHACL();
+    }
 }

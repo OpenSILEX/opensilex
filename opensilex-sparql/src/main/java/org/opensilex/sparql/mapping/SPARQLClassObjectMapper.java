@@ -23,7 +23,6 @@ import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.URIGenerator;
@@ -39,6 +38,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.sparql.core.Var;
+import org.opensilex.OpenSilex;
 import org.opensilex.sparql.annotations.SPARQLManualLoading;
 
 /**
@@ -74,7 +74,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             SPARQL_CLASSES_LIST.forEach((clazz) -> {
                 LOGGER.debug("SPARQL Resource class found: " + clazz.getCanonicalName());
             });
-            
+
             SPARQL_CLASSES_LIST.removeIf((Class<?> resource) -> {
                 SPARQLManualLoading manualAnnotation = resource.getAnnotation(SPARQLManualLoading.class);
                 return (manualAnnotation != null);
@@ -111,6 +111,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         } else {
             throw new SPARQLMapperNotFoundException(concreteObjectClass);
         }
+    }
+    
+    public static synchronized Set<Class<?>> getResourceClasses() {
+        return Collections.unmodifiableSet(SPARQL_CLASSES_MAPPER.keySet());
     }
 
     @SuppressWarnings("unchecked")
@@ -198,7 +202,11 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     @SuppressWarnings("unchecked")
     public T createInstance(SPARQLResult result, String lang, SPARQLService service) throws Exception {
-        String realType = result.getStringValue(SPARQLQueryHelper.typeDefVar.getName());
+        if (lang == null) {
+            lang = OpenSilex.getDefaultLanguage();
+        }
+
+        String realType = result.getStringValue(getTypeFieldName());
         if (!realType.equals(getRDFType().toString())) {
             // TODO handle sub classes
         }
@@ -235,7 +243,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                 setter.invoke(instance, proxy.getInstance());
             }
         }
-        
+
         for (Field field : classAnalizer.getLabelPropertyFields()) {
             Method setter = classAnalizer.getSetterFromField(field);
 
@@ -262,9 +270,9 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             SPARQLProxyListObject<? extends SPARQLResourceModel> proxy = new SPARQLProxyListObject<>(getDefaultGraph(), uri, classAnalizer.getObjectListPropertyByField(field), model, classAnalizer.isReverseRelation(field), lang, service);
             setter.invoke(instance, proxy.getInstance());
         }
-        
+
         Set<String> properties = classAnalizer.getManagedProperties();
-        instance.setRelations(new SPARQLProxyRelationList(null, uri, properties,lang,  service).getInstance());
+        instance.setRelations(new SPARQLProxyRelationList(null, uri, properties, lang, service).getInstance());
         return instance;
     }
 
@@ -279,7 +287,6 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return instance;
     }
 
-    
     @SuppressWarnings("unchecked")
     public List<T> createInstanceList(List<URI> uris, String lang, SPARQLService service) throws Exception {
         SPARQLProxyResourceList<T> proxy = new SPARQLProxyResourceList<>(getDefaultGraph(), uris, objectClass, lang, service);
@@ -305,12 +312,15 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return null;
     }
 
-    public AskBuilder getAskBuilder() {
-        return getAskBuilder(getDefaultGraph());
+    public AskBuilder getAskBuilder(String lang) {
+        return getAskBuilder(getDefaultGraph(), lang);
     }
 
-    public AskBuilder getAskBuilder(Node graph) {
-        return classQueryBuilder.getAskBuilder(graph);
+    public AskBuilder getAskBuilder(Node graph, String lang) {
+        if (lang == null) {
+            lang = OpenSilex.getDefaultLanguage();
+        }
+        return classQueryBuilder.getAskBuilder(graph, lang);
     }
 
     public SelectBuilder getSelectBuilder(String lang) {
@@ -318,15 +328,21 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public SelectBuilder getSelectBuilder(Node graph, String lang) {
+        if (lang == null) {
+            lang = OpenSilex.getDefaultLanguage();
+        }
         return classQueryBuilder.getSelectBuilder(graph, lang);
     }
 
-    public SelectBuilder getCountBuilder(String countFieldName) {
-        return getCountBuilder(getDefaultGraph(), countFieldName);
+    public SelectBuilder getCountBuilder(String countFieldName, String lang) {
+        return getCountBuilder(getDefaultGraph(), countFieldName, lang);
     }
 
-    public SelectBuilder getCountBuilder(Node graph, String countFieldName) {
-        return classQueryBuilder.getCountBuilder(graph, countFieldName);
+    public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang) {
+        if (lang == null) {
+            lang = OpenSilex.getDefaultLanguage();
+        }
+        return classQueryBuilder.getCountBuilder(graph, countFieldName, lang);
     }
 
     public UpdateBuilder getCreateBuilder(T instance) throws Exception {
@@ -394,6 +410,14 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return makeVar(getURIFieldName());
     }
 
+    public String getTypeFieldName() {
+        return classAnalizer.getTypeFieldName();
+    }
+
+    public Var getTypeFieldVar() {
+        return makeVar(getTypeFieldName());
+    }
+
     public ExprVar getFieldExprVar(String fieldName) throws SPARQLUnknownFieldException {
         Field f = classAnalizer.getFieldFromName(fieldName);
         if (f != null) {
@@ -432,4 +456,15 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public Resource getRDFType() {
         return classAnalizer.getRDFType();
     }
+
+    public Method getURIMethod() {
+        return classAnalizer.getURIMethod();
+    }
+
+    public String generateSHACL() {
+        return classQueryBuilder.generateSHACL();
+    }
+
+    
+
 }

@@ -68,7 +68,6 @@ public class SecurityAPITest extends AbstractIntegrationTest {
         Response putResult = target(renewTokenPath).request(MediaType.APPLICATION_JSON_TYPE)
                 .header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + oldToken.getToken())
                 .put(Entity.entity("", MediaType.APPLICATION_JSON_TYPE));
-//        Response putResult = getJsonPutResponse(target(renewTokenPath), "");
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), putResult.getStatus());
     }
 

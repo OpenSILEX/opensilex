@@ -24,6 +24,11 @@ public class ByteDeserializer implements SPARQLDeserializer<Byte> {
 
     @Override
     public Node getNode(Object value) throws Exception {
-        return NodeFactory.createLiteralByValue(value, XSDDatatype.XSDbyte);
+        return NodeFactory.createLiteralByValue(value, getDataType());
+    }
+    
+    @Override
+    public XSDDatatype getDataType() {
+        return XSDDatatype.XSDbyte;
     }
 }

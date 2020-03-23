@@ -22,6 +22,11 @@ public class DoubleDeserializer implements SPARQLDeserializer<Double> {
 
     @Override
     public Node getNode(Object value) throws Exception {
-        return NodeFactory.createLiteralByValue(value, XSDDatatype.XSDdouble);
+        return NodeFactory.createLiteralByValue(value, getDataType());
+    }
+
+    @Override
+    public XSDDatatype getDataType() {
+        return XSDDatatype.XSDdouble;
     }
 }

@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = ElementType.TYPE)
 @Documented
-public @interface ServiceConfigDefault {
+public @interface ServiceDefaultDefinition {
 
     public Class<? extends Service> implementation() default Service.class;
 

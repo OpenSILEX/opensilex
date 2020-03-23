@@ -236,9 +236,16 @@ public class GroupAPITest extends AbstractIntegrationTest {
         return new ArrayList<String>() {
             {
                 add("groups");
-                add("users");
+                add("groupUserProfiles");
                 add("profiles");
+                add("users");
             }
         };
+    }
+
+    @Override
+    public void clearGraph() throws Exception {
+        super.clearGraph();
+        context.addAdminUser();
     }
 }

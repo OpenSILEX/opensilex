@@ -28,6 +28,11 @@ public class DateTimeDeserializer implements SPARQLDeserializer<OffsetDateTime> 
     @Override
     public Node getNode(Object value) throws Exception {
         OffsetDateTime date = (OffsetDateTime) value;
-        return NodeFactory.createLiteralByValue(date.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), XSDDatatype.XSDdateTime) ;
+        return NodeFactory.createLiteralByValue(date.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), getDataType()) ;
+    }
+    
+    @Override
+    public XSDDatatype getDataType() {
+        return XSDDatatype.XSDdateTime;
     }
 }

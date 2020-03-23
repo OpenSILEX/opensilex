@@ -12,6 +12,24 @@
             "errors": {
                 "user-already-exists": "Factor already exists with this URI."
             }
+        },
+        "factorLevel": {
+            "factorLevel-uri": "Factor level URI",
+            "factorLevel-alias-placeholder": "Enter factor level alias",
+            "factorLevel-factor-selector-placeholder": "Please select a factor to filter factor levels",
+            "filter-placeholder": "Use this field to filter factor levels",
+            "factorLevel": "factor level",
+            "add": "add factor level",
+            "update": "update factor level",
+            "alias": "alias",
+            "factor": "factor",
+            "comment": "comment", 
+            "errors": {
+                "user-already-exists": "Factor level already exists with this URI."
+            }
+        },
+        "common" : {
+            "actions" : "actions"
         }
     },
     "credential-experimentalDesign": {

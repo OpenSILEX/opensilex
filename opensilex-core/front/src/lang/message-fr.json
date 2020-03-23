@@ -1,33 +1,51 @@
 {
     "component": {
         "factor": {
-            "factor-uri": "User URI",
-            "factor-alias-placeholder": "Enter factor alias",
-            "filter-placeholder": "Use this field to filter factors",
-            "factors": "factor",
-            "add": "add factor",
-            "update": "update factor",
+            "factor-uri": "URI du facteur",
+            "factor-alias-placeholder": "Renseignez un alias de facteur",
+            "filter-placeholder": "Utiliser ce filter pour filter les facteurs",
+            "factors": "facteur",
+            "add": "ajouter un facteur",
+            "update": "mettre à jour un facteur",
             "alias": "alias",
-            "comment": "comment", 
+            "comment": "description", 
             "errors": {
-                "user-already-exists": "Factor already exists with this URI."
+                "user-already-exists": "URI du facteur déjà existante."
             }
+        },
+        "factorLevel": {
+            "factorLevel-uri": "URI du niveau de facteur",
+            "factorLevel-alias-placeholder": "Renseignez l'alias d'un niveau de facteur",
+            "factorLevel-factor-selector-placeholder": "Sélectionnez un alias de facteur",
+            "filter-placeholder": "Utilisez ce change pour filter vos niveau de facteur",
+            "factorLevel": "niveau de facteur",
+            "add": "ajouter un niveau de facteur",
+            "update": "mettre à jour niveau de facteur",
+            "alias": "alias",
+            "factor": "facteur",
+            "comment": "description", 
+            "errors": {
+                "user-already-exists": "URI du niveau de facteur déjà existante."
+            }
+        },
+        "common" : {
+            "actions" : "actions"
         }
     },
     "credential-experimentalDesign": {
-        "factors": "Factors",
-        "factorLevels": "FactorLevels"
+        "factors": "Facteurs",
+        "factorLevels": "Niveaux de facteurs"
     },
     "credential": {
         "factors": {
-            "modification": "Create / update factors",
-            "read": "View factors",
-            "delete": "Delete factors"
+            "modification": "Créer / mettre à jour des facteurs",
+            "read": "Voir facteurs",
+            "delete": "Supprimer des facteurs"
         },
         "factorLevels": {
-            "modification": "Create / update FactorLevels",
-            "read": "View FactorLevels",
-            "delete": "Delete FactorLevels"
+            "modification": "Create / mettre à jour  niveau de facteur",
+            "read": "Voir des niveau de facteur",
+            "delete": "Supprimer des niveau de facteur"
         }
     }
 }

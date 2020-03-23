@@ -5,12 +5,14 @@
       variant="success"
     >{{$t('component.factor.add')}}</b-button>
     <opensilex-core-FactorForm
-      ref="factorFrom"
+      ref="factorForm"
       @onCreate="callCreateFactorService"
       @onUpdate="callUpdateFactorService"
     ></opensilex-core-FactorForm>
     <opensilex-core-FactorList
       ref="factorList"
+      @onEdit="editFactor"
+      @onDelete="deleteFactor"
     ></opensilex-core-FactorList>
   </div>
 </template>
@@ -24,7 +26,7 @@ import { FactorGetDTO } from "../../lib/model/factorGetDTO";
 import { FactorsService } from "../../lib/api/factors.service";
 
 @Component
-export default class factorView extends Vue {
+export default class FactorView extends Vue {
   $opensilex: any;
   $store: any;
   service: FactorsService;
@@ -43,6 +45,7 @@ export default class factorView extends Vue {
   }
 
   showCreateForm() {
+    console.log(this.$refs) 
     let factorForm: any = this.$refs.factorForm;
     factorForm.showCreateForm();
   }
@@ -74,11 +77,13 @@ export default class factorView extends Vue {
   }
 
   editFactor(form: FactorGetDTO) {
+    console.debug("editFactor" + form.uri)
     let factorForm: any = this.$refs.factorForm;
     factorForm.showEditForm(form);
   }
 
   deleteFactor(uri: string) {
+     console.debug("deleteFactor " + uri)
     this.service
       .deleteFactor(this.user.getAuthorizationHeader(), uri)
       .then(() => {

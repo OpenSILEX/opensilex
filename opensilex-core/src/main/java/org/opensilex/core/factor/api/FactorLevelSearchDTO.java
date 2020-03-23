@@ -57,6 +57,10 @@ public class FactorLevelSearchDTO {
     }
 
     public URI getHasFactor() {
+        if(hasFactor != null
+            && (hasFactor.toString().isBlank() || hasFactor.toString().isEmpty())){
+            return null;
+        } 
         return hasFactor;
     }
 

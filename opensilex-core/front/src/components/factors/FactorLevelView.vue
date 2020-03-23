@@ -1,7 +1,18 @@
 <template>
   <div>
+    <b-button
+      @click="showCreateForm"
+      variant="success"
+    >{{$t('component.factorLevel.add')}}</b-button>
+    <opensilex-core-FactorLevelForm
+      ref="factorLevelForm"
+      @onCreate="callCreateFactorLevelService"
+      @onUpdate="callUpdateFactorLevelService"
+    ></opensilex-core-FactorLevelForm>
     <opensilex-core-FactorLevelList
       ref="factorLevelList"
+      @onEdit="editFactorLevel"
+      @onDelete="deleteFactorLevel"
     ></opensilex-core-FactorLevelList>
   </div>
 </template>
@@ -12,67 +23,92 @@ import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import { FactorLevelCreationDTO } from "../../lib/model/factorLevelCreationDTO";
 import { FactorLevelGetDTO } from "../../lib/model/factorLevelGetDTO";
+import { FactorGetDTO } from "../../lib/model/factorGetDTO";
+
 import { FactorLevelsService } from "../../lib/api/factorLevels.service";
+import { FactorsService } from "../../lib/api/factors.service";
 
 @Component
-export default class factorLevelView extends Vue {
+export default class FactorLevelView extends Vue {
   $opensilex: any;
   $store: any;
   service: FactorLevelsService;
+  factorList: Array<FactorGetDTO> = [];
+
+
+  get user() {
+    return this.$store.state.user;
+  }
 
   get credentials() {
     return this.$store.state.credentials;
   }
 
+  // TODO :
+  // add factors list in form selector
+  // add async factors list loading
+  // static credentialsGroups = [];
+  // static async asyncInit($opensilex) {
+  //   console.debug("Loading factors list...");
+  //   let security: FactorsService = await $opensilex.loadService(
+  //     "opensilex-core.FactorsService"
+  //   );
+  
+  // }
+
   created() {
+    console.debug("Loading form view...");
     this.service = this.$opensilex.getService("opensilex.FactorLevelsService");
   }
 
-  // showCreateForm() {
-  //   let factorLevelForm: any = this.$refs.factorLevelForm;
-  //   factorLevelForm.showCreateForm();
-  // }
+  showCreateForm() {
+    console.log(this.$refs) 
+    let factorLevelForm: any = this.$refs.factorLevelForm;
+    factorLevelForm.showCreateForm();
+  }
 
-  // callCreatefactorLevelService(form: FactorLevelCreationDTO, done) {
-  //   done(
-  //     this.service
-  //       .createFactorLevel(this.FactorLevel.getAuthorizationHeader(), form)
-  //       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-  //         let uri = http.response.result;
-  //         console.debug("factorLevel created", uri);
-  //         let factorLevelList: any = this.$refs.factorLevelList;
-  //         factorLevelList.refresh();
-  //       })
-  //   );
-  // }
+  callCreateFactorLevelService(form: FactorLevelCreationDTO, done) {
+    done(
+      this.service
+        .createFactorLevel(this.user.getAuthorizationHeader(), form)
+        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+          let uri = http.response.result;
+          console.debug("factorLevel created", uri);
+          let factorLevelList: any = this.$refs.factorLevelList;
+          factorLevelList.refresh();
+        })
+    );
+  }
 
-  // callUpdatefactorLevelService(form: factorLevelUpdateDTO, done) {
-  //   done(
-  //     this.service
-  //       .updatefactorLevel(this.factorLevel.getAuthorizationHeader(), form)
-  //       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-  //         let uri = http.response.result;
-  //         console.debug("factorLevel updated", uri);
-  //         let factorLevelList: any = this.$refs.factorLevelList;
-  //         factorLevelList.refresh();
-  //       })
-  //   );
-  // }
+  callUpdateFactorLevelService(form: FactorLevelCreationDTO, done) {
+    done(
+      this.service
+        .updateFactorLevel(this.user.getAuthorizationHeader(), form)
+        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+          let uri = http.response.result;
+          console.debug("factorLevel updated", uri);
+          let factorLevelList: any = this.$refs.factorLevelList;
+          factorLevelList.refresh();
+        })
+    );
+  }
 
-  // editfactorLevel(form: factorLevelGetDTO) {
-  //   let factorLevelForm: any = this.$refs.factorLevelForm;
-  //   factorLevelForm.showEditForm(form);
-  // }
+  editFactorLevel(form: FactorLevelGetDTO) {
+    console.log("edit")
+    let factorLevelForm: any = this.$refs.factorLevelForm;
+    factorLevelForm.showEditForm(form);
+  }
 
-  // deletefactorLevel(uri: string) {
-  //   this.service
-  //     .deletefactorLevel(this.factorLevel.getAuthorizationHeader(), uri)
-  //     .then(() => {
-  //       let factorLevelList: any = this.$refs.factorLevelList;
-  //       factorLevelList.refresh();
-  //     }) 
-  //     .catch(this.$opensilex.errorHandler);
-  // }
+  deleteFactorLevel(uri: string) {
+     console.log("delete" + uri)
+    this.service
+      .deleteFactorLevel(this.user.getAuthorizationHeader(), uri)
+      .then(() => {
+        let factorLevelList: any = this.$refs.factorLevelList;
+        factorLevelList.refresh();
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
 }
 </script>
 

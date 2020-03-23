@@ -25,6 +25,27 @@
       :sort-desc.sync="sortDesc"
       no-provider-paging
     >
+      <template v-slot:head(alias)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(comment)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
+       <template v-slot:cell(actions)="data">
+        <b-button-group>
+          <b-button
+            size="sm"
+            @click="$emit('onEdit', data.item)"
+            variant="outline-primary"
+          >
+            <font-awesome-icon icon="edit" size="sm" />
+          </b-button>
+          <b-button
+            size="sm"
+            @click="$emit('onDelete', data.item.uri)"
+            variant="danger"
+          >
+            <font-awesome-icon icon="trash-alt" size="sm" />
+          </b-button>
+        </b-button-group>
+      </template>
     </b-table>
     <b-pagination
       v-model="currentPage"
@@ -61,7 +82,9 @@ export default class FactorList extends Vue {
   currentPage: number = 1;
   pageSize = 20;
   totalRow = 0;
- 
+  sortBy = "alias";
+  sortDesc = false;
+
   private filterPatternValue: any = "";
   set filterPattern(value: string) {
     this.filterPatternValue = value;
@@ -83,8 +106,13 @@ export default class FactorList extends Vue {
     if (query.currentPage) {
       this.currentPage = parseInt(query.currentPage);
     }
+    if (query.sortBy) {
+      this.sortBy = decodeURI(query.sortBy);
+    }
+    if (query.sortDesc) {
+      this.sortDesc = query.sortDesc == "true";
+    }
   }
-  
 
   fields = [
     {
@@ -102,7 +130,7 @@ export default class FactorList extends Vue {
       label: "component.common.actions"
     }
   ];
-  
+
   refresh() {
     let tableRef: any = this.$refs.tableRef;
     tableRef.refresh();
@@ -113,7 +141,15 @@ export default class FactorList extends Vue {
       "opensilex.FactorsService"
     );
 
-    let orderBy = [];
+    let orderBy : string[] = [];
+    if (this.sortBy) {
+      let orderByText = this.sortBy + "=";
+      if (this.sortDesc) {
+        orderBy.push(orderByText + "desc");
+      } else {
+        orderBy.push(orderByText + "asc");
+      }
+    }
 
     return service
       .searchFactors(

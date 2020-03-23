@@ -441,9 +441,16 @@
                 projects = this.filter.projects.map(project => project.uri);
             }
 
-            let isArchived;
+            let isEnded;
+            let isPublic;
             if(this.filter.state) {
-                isArchived = this.filter.state.code === "finished";
+                if(this.filter.state.code === "finished"){
+                    isEnded = true;
+                }else if(this.filter.state.code === "in-progress"){
+                    isEnded = false;
+                }else if(this.filter.state.code === "public"){
+                    isPublic = true;
+                }
             }
 
             let startDate;
@@ -473,8 +480,8 @@
                   this.filter.alias,
                   speciesUri,
                   projects,
-                  undefined,
-                  undefined,
+                  isPublic,
+                  isEnded,
                   this.orderBy,
                   this.currentPage - 1,
                   this.pageSize
@@ -505,6 +512,7 @@
             this.experimentStates = new Array<ExperimentState>();
             this.experimentStates.push(new ExperimentState("in-progress", this.$i18n.t("component.experiment.common.status.in-progress").toString()));
             this.experimentStates.push(new ExperimentState("finished", this.$i18n.t("component.experiment.common.status.finished").toString()));
+            this.experimentStates.push(new ExperimentState("public", this.$i18n.t("component.experiment.common.status.public").toString()));
         }
 
         loadProjects() {

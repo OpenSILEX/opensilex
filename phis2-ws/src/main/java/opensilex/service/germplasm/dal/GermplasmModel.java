@@ -6,8 +6,6 @@
 package opensilex.service.germplasm.dal;
 
 import java.net.URI;
-import java.util.ArrayList;
-import opensilex.service.model.Property;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
@@ -108,8 +106,9 @@ public class GermplasmModel extends SPARQLResourceModel implements ClassURIGener
     
     @Override
     public String[] getUriSegments(GermplasmModel instance) {
-        return new String[]{
-                instance.getLabel()
+        String germplasmType = instance.getRdfType().toString().split("#")[1];
+        return new String[]{                
+                germplasmType + "_" + instance.getLabel()
         };
     }
     

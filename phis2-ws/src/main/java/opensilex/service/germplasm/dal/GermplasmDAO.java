@@ -7,8 +7,13 @@ package opensilex.service.germplasm.dal;
 
 import java.net.URI;
 import java.util.List;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.OrderBy;
+import org.opensilex.utils.ListWithPagination;
 
 /**
  *
@@ -66,4 +71,26 @@ public class GermplasmDAO {
         
         return germplasm;
     }  
+    
+    public GermplasmModel get(URI uri) throws Exception {
+        return sparql.getByURI(GermplasmModel.class, uri, null);
+    }
+    
+    public ListWithPagination<GermplasmModel> search(String namePattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+
+    Expr nameFilter = SPARQLQueryHelper.regexFilter(GermplasmModel.LABEL_VAR, namePattern);
+
+    return sparql.searchWithPagination(
+            GermplasmModel.class,
+            null,
+            (SelectBuilder select) -> {
+                if (nameFilter != null) {
+                    select.addFilter(nameFilter);
+                }
+            },
+            orderByList,
+            page,
+            pageSize
+    );
+}
 }

@@ -11,12 +11,19 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
+import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import opensilex.service.germplasm.dal.GermplasmDAO;
@@ -24,9 +31,14 @@ import opensilex.service.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
+import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.OrderBy;
+import org.opensilex.utils.ListWithPagination;
 
 /**
  *
@@ -216,4 +228,86 @@ public class GermplasmAPI {
         return new ObjectUriResponse(Response.Status.CREATED, germplasm.getUri()).getResponse();
         
     }
+    
+    @GET
+    @Path("get/{uri}")
+    @ApiOperation("Get a germplasm by its URI")
+    @ApiProtected
+    @ApiCredential(
+        groupId = CREDENTIAL_GERMPLASM_GROUP_ID,
+        groupLabelKey = CREDENTIAL_GERMPLASM_GROUP_LABEL_KEY,
+        credentialId = CREDENTIAL_GERMPLASM_READ_ID,
+        credentialLabelKey = CREDENTIAL_GERMPLASM_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return profile", response = GermplasmGetDTO.class),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Germplasm not found", response = ErrorDTO.class)
+    })
+    public Response getGermplasm(
+            @ApiParam(value = "User URI", example = "dev-users:Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+        // Get germplasm from DAO by URI
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql);
+        GermplasmModel model = germplasmDAO.get(uri);
+
+        // Check if germplasm is found
+        if (model != null) {
+            // Return GermplasmGetDTO
+            return new SingleObjectResponse<>(
+                    GermplasmGetDTO.fromModel(model)
+            ).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Germplasm not found",
+                    "Unknown germplasm URI: " + uri.toString()
+            ).getResponse();
+        }
+    }
+    
+    @GET
+    @Path("search")
+    @ApiOperation("Search germplasm")
+    @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GERMPLASM_GROUP_ID,
+            groupLabelKey = CREDENTIAL_GERMPLASM_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_GERMPLASM_READ_ID,
+            credentialLabelKey = CREDENTIAL_GERMPLASM_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return germplasm list", response = GermplasmGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response searchGermplasmList(
+            @ApiParam(value = "Regex pattern for filtering list by name", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+        // Search profiles with Profile DAO
+        GermplasmDAO dao = new GermplasmDAO(sparql);
+        ListWithPagination<GermplasmModel> resultList = dao.search(
+                pattern,
+                orderByList,
+                page,
+                pageSize
+        );
+
+        // Convert paginated list to DTO
+        ListWithPagination<GermplasmGetDTO> resultDTOList = resultList.convert(
+                GermplasmGetDTO.class,
+                GermplasmGetDTO::fromModel
+        );
+
+        // Return paginated list of profiles DTO
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+
 }

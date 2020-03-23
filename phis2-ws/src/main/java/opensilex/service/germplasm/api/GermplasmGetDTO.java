@@ -48,11 +48,6 @@ class GermplasmGetDTO {
      */
     protected URI fromAccession;
     
-    /**
-     * Germplasm properties
-     */
-    protected List<Property> properties;
-
     @ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
     public URI getUri() {
         return uri;
@@ -105,14 +100,6 @@ class GermplasmGetDTO {
 
     public void setFromAccession(URI fromAccession) {
         this.fromAccession = fromAccession;
-    }
-
-    public List<Property> getProperties() {
-        return properties;
-    }
-
-    public void setProperties(List<Property> properties) {
-        this.properties = properties;
     }
 
     /**

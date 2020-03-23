@@ -10,9 +10,11 @@ import java.net.URI;
 import org.opensilex.rest.authentication.SecurityOntology;
 import org.opensilex.rest.extensions.APIExtension;
 import java.util.*;
+import javax.mail.internet.InternetAddress;
 import org.opensilex.OpenSilex;
 import org.opensilex.module.ModuleConfig;
 import org.opensilex.OpenSilexModule;
+import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.profile.dal.ProfileModel;
 import org.opensilex.rest.security.dal.SecurityAccessDAO;
 import org.opensilex.rest.user.dal.UserDAO;
@@ -102,6 +104,19 @@ public class RestModule extends OpenSilexModule implements APIExtension {
             LOGGER.warn("/!\\ You probably should add one with command `opensilex user add ...` (use --help flag for more information)");
         }
     }
+    
+    public static void createDefaultSuperAdmin() throws Exception {
+        OpenSilex opensilex = OpenSilex.getInstance();
+        SPARQLService sparql = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
+        try {
+            AuthenticationService authentication = opensilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
 
+            UserDAO userDAO = new UserDAO(sparql);
 
+            InternetAddress email = new InternetAddress("admin@opensilex.org");
+            userDAO.create(null, email, "Admin", "OpenSilex", true, authentication.getPasswordHash("admin"), "en-US");
+        } finally {
+            sparql.shutdown();
+        }
+    }
 }

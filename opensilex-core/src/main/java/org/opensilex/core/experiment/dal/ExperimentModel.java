@@ -29,7 +29,8 @@ import java.util.List;
         ontology = Oeso.class,
         resource = "Experiment",
         graph = "set/experiments",
-        prefix = "expe"
+        prefix = "expe",
+        ignoreValidation = true
 )
 public class ExperimentModel extends SPARQLResourceModel implements ClassURIGenerator<ExperimentModel> {
 

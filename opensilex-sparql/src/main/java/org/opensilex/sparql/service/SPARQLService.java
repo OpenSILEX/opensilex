@@ -736,11 +736,6 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     @Override
-    public URI getGraphSHACL() {
-        return connection.getGraphSHACL();
-    }
-
-    @Override
     public void disableSHACL() throws SPARQLException {
         LOGGER.debug("DISABLE SHACL Validation");
         connection.disableSHACL();

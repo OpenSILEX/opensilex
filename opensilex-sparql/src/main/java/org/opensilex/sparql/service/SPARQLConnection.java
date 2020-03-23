@@ -61,10 +61,6 @@ public interface SPARQLConnection extends ServiceConnection {
 
     public void rollbackTransaction() throws SPARQLException;
 
-    public default URI getGraphSHACL() {
-        return null;
-    };
-
     public void disableSHACL() throws SPARQLException;
 
     public void enableSHACL() throws SPARQLException;

@@ -20,7 +20,7 @@ public class RDF4JSHACLTest extends SHACLTest {
 
     @BeforeClass
     public static void initialize() throws Exception {
-        sparql = new RDF4JInMemoryService().provide();
+        sparql = new RDF4JInMemoryServiceFactory().provide();
         SHACLTest.initialize(sparql);
     }
 }

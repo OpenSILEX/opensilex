@@ -251,16 +251,12 @@
             <artifactId>rdf4j-sail-nativerdf</artifactId>
             <version>${rdf4j.version}</version>
         </dependency>  
-        
-        <!--RDF4J memory sail for Testing--> 
         <dependency>
             <groupId>org.eclipse.rdf4j</groupId>
             <artifactId>rdf4j-sail-memory</artifactId>
             <version>${rdf4j.version}</version>
-            <scope>test</scope>
         </dependency>  
-      
-               
+
         <!--DataNucleus - Big data object mapping--> 
         <dependency>
             <groupId>org.datanucleus</groupId>

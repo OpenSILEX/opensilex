@@ -5,19 +5,18 @@
 //******************************************************************************
 package org.opensilex.sparql.rdf4j;
 
+import java.io.StringReader;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.DescribeBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.riot.Lang;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF4J;
@@ -25,6 +24,7 @@ import org.eclipse.rdf4j.query.*;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.sail.shacl.ShaclSailValidationException;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLConnection;
@@ -139,7 +139,7 @@ public class RDF4JConnection implements SPARQLConnection {
             Update updateQuery = rdf4JConnection.prepareUpdate(QueryLanguage.SPARQL, update.buildRequest().toString());
             updateQuery.setMaxExecutionTime(TIMEOUT);
             updateQuery.execute();
-        } catch (RepositoryException ex) {
+        } catch (Exception ex) {
             Throwable cause = ex.getCause();
             if (cause instanceof ShaclSailValidationException) {
                 throw convertRDF4JSHACLException((ShaclSailValidationException) cause);
@@ -209,8 +209,12 @@ public class RDF4JConnection implements SPARQLConnection {
 
     @Override
     public void clearGraph(URI graph) throws SPARQLException {
+        clearGraph(SimpleValueFactory.getInstance().createIRI(graph.toString()));
+    }
+
+    public void clearGraph(IRI graph) throws SPARQLException {
         try {
-            rdf4JConnection.clear(SimpleValueFactory.getInstance().createIRI(graph.toString()));
+            rdf4JConnection.clear(graph);
         } catch (RepositoryException ex) {
             Throwable cause = ex.getCause();
             if (cause instanceof ShaclSailValidationException) {
@@ -338,16 +342,6 @@ public class RDF4JConnection implements SPARQLConnection {
         return exception;
     }
 
-    @Override
-    public URI getGraphSHACL() {
-        try {
-            return new URI(RDF4J.SHACL_SHAPE_GRAPH.toString());
-        } catch (URISyntaxException ex) {
-            LOGGER.error("Unexpected error that should never happend", ex);
-            return null;
-        }
-    }
-
     @Deprecated
     public RepositoryConnection getRepositoryConnectionImpl() {
         return rdf4JConnection;
@@ -356,10 +350,7 @@ public class RDF4JConnection implements SPARQLConnection {
     @Override
     public void disableSHACL() throws SPARQLException {
         try {
-            URI shaclGraph = getGraphSHACL();
-            if (shaclGraph != null) {
-                clearGraph(shaclGraph);
-            }
+            clearGraph(RDF4J.SHACL_SHAPE_GRAPH);
         } catch (RepositoryException ex) {
             Throwable cause = ex.getCause();
             if (cause instanceof ShaclSailValidationException) {
@@ -372,41 +363,26 @@ public class RDF4JConnection implements SPARQLConnection {
 
     @Override
     public void enableSHACL() throws SPARQLException {
-        try {
+        rdf4JConnection.begin();
+        clearGraph(RDF4J.SHACL_SHAPE_GRAPH);
 
-            URI shaclGraph = getGraphSHACL();
-            if (shaclGraph != null) {
-                clearGraph(shaclGraph);
-
-                List<String> shaclList = new ArrayList<>();
-
-                for (Class<?> c : SPARQLClassObjectMapper.getResourceClasses()) {
-                    shaclList.add(SHACL.generateSHACL(c));
+        for (Class<?> c : SPARQLClassObjectMapper.getResourceClasses()) {
+            try {
+                if (!c.getCanonicalName().equals("org.opensilex.core.project.dal.ProjectModel")) {
+                    String shaclTTL = SHACL.generateSHACL(c);
+                    if (shaclTTL != null) {
+                    LOGGER.debug("Generated SHACL for: " + c.getCanonicalName() + "\n" + shaclTTL);
+                    rdf4JConnection.add(new StringReader(shaclTTL), "", RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
+                    } else {
+                        LOGGER.debug("No SHACL Validation for: " + c.getCanonicalName() + "\n" + shaclTTL);
+                    }
                 }
-
-                String shaclString = StringUtils.join(shaclList, '\n');
-
-                LOGGER.debug("Generated SHACL: \n" + shaclString);
-
-                if (!shaclList.isEmpty()) {
-                    loadOntology(getGraphSHACL(), shaclString, Lang.TURTLE);
-                }
-            } else {
-                LOGGER.warn("No SHACL graph specified, SHACL validation will be disabled");
-            }
-        } catch (Exception ex) {
-            Throwable cause = ex.getCause();
-            if (cause instanceof ShaclSailValidationException) {
-                throw convertRDF4JSHACLException((ShaclSailValidationException) cause);
-            } else if (cause instanceof RepositoryException) {
-                Throwable validationCause = ex.getCause();
-                if (validationCause instanceof ShaclSailValidationException) {
-                    throw convertRDF4JSHACLException((ShaclSailValidationException) validationCause);
-                }
-            } else {
-                throw new SPARQLException(ex.getMessage());
+            } catch (Exception ex) {
+                LOGGER.warn("Error while loading SHACL", ex);
             }
         }
+
+        rdf4JConnection.commit();
 
     }
 }

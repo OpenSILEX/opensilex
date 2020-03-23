@@ -18,7 +18,7 @@ import org.opensilex.rest.validation.Required;
  * @author Arnaud Charleroy
  */
 public class FactorLevelCreationDTO {
-
+    
     private URI uri;
 
     @Required
@@ -60,8 +60,6 @@ public class FactorLevelCreationDTO {
     public void setHasFactor(URI hasFactor) {
         this.hasFactor = hasFactor;
     }
-    
-    
 
     public FactorLevelModel newModel() {
         FactorLevelModel model = new FactorLevelModel();
@@ -71,5 +69,4 @@ public class FactorLevelCreationDTO {
         model.setHasFactor(getHasFactor());
         return model;
     }
-
 }

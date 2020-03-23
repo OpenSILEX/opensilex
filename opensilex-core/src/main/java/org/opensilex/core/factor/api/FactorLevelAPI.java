@@ -9,6 +9,7 @@
  */
 package org.opensilex.core.factor.api;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -24,6 +25,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -32,6 +34,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.factor.dal.FactorLevelDAO;
 import org.opensilex.core.factor.dal.FactorLevelModel;
+import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.validation.ValidURI;
 import org.opensilex.server.response.ErrorDTO;
@@ -40,6 +43,7 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
@@ -48,9 +52,21 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author Arnaud Charleroy
  */
-//@Api("FactorLevels")
-//@Path("/core/FactorLevels")
+@Api("FactorLevels")
+@Path("/core/FactorLevels")
 public class FactorLevelAPI {
+    
+    public static final String CREDENTIAL_FACTOR_LEVEL_GROUP_ID = "FactorLevels";
+    public static final String CREDENTIAL_FACTOR_LEVEL_GROUP_LABEL_KEY = "credential-groups.factorLevels";
+
+    public static final String CREDENTIAL_FACTOR_LEVEL_MODIFICATION_ID = "factor-modification";
+    public static final String CREDENTIAL_FACTOR_LEVEL_MODIFICATION_LABEL_KEY = "credential.factorLevel.modification";
+
+    public static final String CREDENTIAL_FACTOR_LEVEL_READ_ID = "factor-read";
+    public static final String CREDENTIAL_FACTOR_LEVEL_READ_LABEL_KEY = "credential.factorLevel.read";
+
+    public static final String CREDENTIAL_FACTOR_LEVEL_DELETE_ID = "factor-delete";
+    public static final String CREDENTIAL_FACTOR_LEVEL_DELETE_LABEL_KEY = "credential.factorLevel.delete";
 
     @Inject
     public FactorLevelAPI(SPARQLService sparql) {
@@ -60,7 +76,7 @@ public class FactorLevelAPI {
     private final SPARQLService sparql;
 
     /**
-     * Create a factorLevel model from a FactorLevelCreationDTO object
+     * Create a factor Level model from a FactorLevelCreationDTO object
      *
      * @param dto FactorLevelCreationDTO object
      * @return FactorLevel URI
@@ -89,7 +105,7 @@ public class FactorLevelAPI {
     }
 
     /**
-     * Retreive factorLevel by uri
+     * Retreive factor Level by uri
      *
      * @param uri factorLevel uri
      * @return Return factorLevel detail
@@ -123,9 +139,10 @@ public class FactorLevelAPI {
     /**
      * Search factorLevels
      *
-     * @param factor Factor URI used to filter list
+
+     * @param hasFactor Factor URI used to filter list
      * @see org.opensilex.core.factorLevel.dal.FactorLevelDAO
-     * @param alias Regex pattern for filtering list by alias
+     * @param hasAlias Regex pattern for filtering list by alias
      * @param orderByList List of fields to sort as an array of
      * fieldName=asc|desc
      * @param page Page number
@@ -174,9 +191,9 @@ public class FactorLevelAPI {
     }
 
     /**
-     * Remove a factorLevel
+     * Remove a factor level
      *
-     * @param uri factorLevel uri
+     * @param uri factor level uri
      * @return URI of deleted factorLevel
      * @throws Exception if suppression failed
      */
@@ -192,5 +209,44 @@ public class FactorLevelAPI {
         FactorLevelDAO dao = new FactorLevelDAO(sparql);
         dao.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+    }
+    
+    /**
+     * @param factorLevelDTO the factor level to update
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing
+     * the updated Factor level {@link URI}
+     */
+    @PUT
+    @Path("update")
+    @ApiOperation("Update a factor level")
+    @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_FACTOR_LEVEL_GROUP_ID,
+            groupLabelKey = CREDENTIAL_FACTOR_LEVEL_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_FACTOR_LEVEL_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_FACTOR_LEVEL_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "FactorLevel updated", response = ObjectUriResponse.class),
+        @ApiResponse(code = 400, message = "Invalid or unknown FactorLevel URI", response = ErrorResponse.class),
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+    public Response updateFactorLevel(
+            @ApiParam("Factor description") @Valid FactorLevelCreationDTO factorLevelDTO
+    ) {
+        try {
+            FactorLevelDAO dao = new FactorLevelDAO(sparql);
+
+            FactorLevelModel model = factorLevelDTO.newModel();
+            dao.update(model);
+            return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
+
+        } catch (SPARQLInvalidURIException e) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Factor Level URI", e.getMessage()).getResponse();
+        } catch (Exception e) {
+            return new ErrorResponse(e).getResponse();
+        }
     }
 }

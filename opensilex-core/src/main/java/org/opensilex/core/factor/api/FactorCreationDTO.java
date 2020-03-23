@@ -58,5 +58,4 @@ public class FactorCreationDTO {
 
         return model;
     }
-
 }

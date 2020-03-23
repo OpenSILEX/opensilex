@@ -3,15 +3,23 @@
     <b-input-group class="mt-3 mb-3" size="sm">
       <b-input-group>
         <b-form-input
-          v-model="filterPattern"
+          v-model="aliasPattern"
           debounce="300"
-          :placeholder="$t('component.factor.filter-placeholder')"
+          :placeholder="$t('component.factorLevel.filter-placeholder')"
         ></b-form-input>
         <template v-slot:append>
-          <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
+          <b-btn :disabled="!aliasPattern" variant="primary" @click="aliasPattern = ''">
             <font-awesome-icon icon="times" size="sm" />
           </b-btn>
         </template>
+      </b-input-group>
+      <b-input-group>
+          <b-form-select v-model="factors" :options="options" size="sm" class="mt-3">
+            <template v-slot:first>
+              <b-form-select-option value="" disabled>-- {{$t('component.factorLevel.factorLevel-factor-selector-placeholder')}} --</b-form-select-option>
+            </template>
+          </b-form-select>
+          <div class="mt-3">Selected: <strong>{{ selected }}</strong></div>
       </b-input-group>
     </b-input-group>
     <b-table
@@ -60,13 +68,13 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { FactorsService } from "../../lib/api/factors.service";
-import { FactorGetDTO } from "../../lib/model/factorGetDTO";
+import { FactorLevelsService } from "../../lib/api/factorLevels.service";
+import { FactorLevelGetDTO } from "../../lib/model/factorLevelGetDTO";
 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
-export default class FactorList extends Vue {
+export default class FactorLevelList extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
@@ -85,20 +93,20 @@ export default class FactorList extends Vue {
   sortBy = "alias";
   sortDesc = false;
 
-  private filterPatternValue: any = "";
-  set filterPattern(value: string) {
-    this.filterPatternValue = value;
+  private aliasPatternValue: any = "";
+  set aliasPattern(value: string) {
+    this.aliasPatternValue = value;
     this.refresh();
   }
 
-  get filterPattern() {
-    return this.filterPatternValue;
+  get aliasPattern() {
+    return this.aliasPatternValue;
   }
 
   created() {
     let query: any = this.$route.query;
-    if (query.filterPattern) {
-      this.filterPatternValue = decodeURI(query.filterPattern);
+    if (query.aliasPattern) {
+      this.aliasPatternValue = decodeURI(query.aliasPattern);
     }
     if (query.pageSize) {
       this.pageSize = parseInt(query.pageSize);
@@ -117,12 +125,17 @@ export default class FactorList extends Vue {
   fields = [
     {
       key: "alias",
-      label: "component.factor.alias",
+      label: "component.factorLevel.alias",
       sortable: true
     },
     {
       key: "comment",
-      label: "component.factor.comment",
+      label: "component.factorLevel.comment",
+      sortable: false
+    },
+    {
+      key: "factor",
+      label: "component.factorLevel.factor",
       sortable: false
     },
     {
@@ -137,10 +150,10 @@ export default class FactorList extends Vue {
   }
 
   loadData() {
-    let service: FactorsService = this.$opensilex.getService(
-      "opensilex.FactorsService"
+    let service: FactorLevelsService = this.$opensilex.getService(
+      "opensilex.FactorLevelsService"
     );
-
+  service
     let orderBy : string[] = [];
     if (this.sortBy) {
       let orderByText = this.sortBy + "=";
@@ -152,14 +165,15 @@ export default class FactorList extends Vue {
     }
 
     return service
-      .searchFactors(
+      .searchFactorLevels(
         this.user.getAuthorizationHeader(),
-        this.filterPattern,
+        this.aliasPattern,
+        "",
         orderBy,
         this.currentPage - 1,
         this.pageSize
       )
-      .then((http: HttpResponse<OpenSilexResponse<Array<FactorGetDTO>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<FactorLevelGetDTO>>>) => {
         this.totalRow = http.response.metadata.pagination.totalCount;
         this.pageSize = http.response.metadata.pagination.pageSize;
         setTimeout(() => {
@@ -170,7 +184,7 @@ export default class FactorList extends Vue {
           .push({
             path: this.$route.fullPath,
             query: {
-              filterPattern: encodeURI(this.filterPattern),
+              aliasPattern: encodeURI(this.aliasPattern),
               currentPage: "" + this.currentPage,
               pageSize: "" + this.pageSize
             }

@@ -40,6 +40,7 @@ public abstract class SHACLTest extends AbstractUnitTest {
         SHACLTest.service = service;
 
         service.clear();
+        service.enableSHACL();
         
         InputStream ontology = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.FILE_PATH.toString());
         service.loadOntology(SPARQLModule.getPlatformURI(), ontology, TEST_ONTOLOGY.FILE_FORMAT);

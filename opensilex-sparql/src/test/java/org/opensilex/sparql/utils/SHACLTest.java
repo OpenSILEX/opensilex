@@ -31,9 +31,9 @@ import org.opensilex.sparql.service.SPARQLService;
  */
 public abstract class SHACLTest extends AbstractUnitTest {
 
-    protected static SPARQLService service;
+    private static SPARQLService service;
 
-    protected static URI shaclURI;
+    private static URI shaclURI;
 
     public static void initialize(SPARQLService service) throws Exception {
         shaclURI = new URI(RDF4J.SHACL_SHAPE_GRAPH.toString());

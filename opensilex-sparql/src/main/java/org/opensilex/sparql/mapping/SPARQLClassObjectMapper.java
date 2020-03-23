@@ -37,15 +37,9 @@ import java.net.URI;
 import java.util.*;
 import java.util.function.BiConsumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
-import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.rdf.model.Bag;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.vocabulary.RDF;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.annotations.SPARQLManualLoading;
-import org.opensilex.sparql.utils.SHACL;
 
 /**
  *

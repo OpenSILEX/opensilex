@@ -749,6 +749,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     @Override
     public void enableSHACL() throws SPARQLException {
         LOGGER.debug("ENABLE SHACL Validation");
+        SPARQLClassObjectMapper.initialize();
         connection.enableSHACL();
     }
 

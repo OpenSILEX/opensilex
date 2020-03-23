@@ -6,7 +6,7 @@
 package org.opensilex.sparql.service;
 
 import javax.ws.rs.ext.Provider;
-import org.opensilex.service.ServiceConfigDefault;
+import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.service.ServiceFactory;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.sparql.rdf4j.RDF4JServiceFactory;
@@ -15,7 +15,7 @@ import org.opensilex.sparql.rdf4j.RDF4JServiceFactory;
  *
  * @author vince
  */
-@ServiceConfigDefault(
+@ServiceDefaultDefinition(
         implementation = RDF4JServiceFactory.class,
         configClass = RDF4JConfig.class,
         configID = "rdf4j"
@@ -26,5 +26,9 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
     public Class<SPARQLService> getServiceClass() {
         return SPARQLService.class;   
     }
+
+    public abstract void createRepository() throws Exception;
+
+    public abstract void deleteRepository()throws Exception;
     
 }

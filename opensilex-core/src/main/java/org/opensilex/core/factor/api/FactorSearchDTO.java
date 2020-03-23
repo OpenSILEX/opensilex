@@ -32,9 +32,6 @@ public class FactorSearchDTO {
     }
 
     public String getAlias() {
-        if(alias.isBlank() || alias.isEmpty()){
-            return null;
-        }
         return alias;
     }
 

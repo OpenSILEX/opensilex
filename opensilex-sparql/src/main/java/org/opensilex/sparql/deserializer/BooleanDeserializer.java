@@ -25,6 +25,11 @@ public class BooleanDeserializer implements SPARQLDeserializer<Boolean> {
 
     @Override
     public Node getNode(Object value) throws Exception {
-        return NodeFactory.createLiteralByValue(value, XSDDatatype.XSDboolean);
+        return NodeFactory.createLiteralByValue(value, getDataType());
+    }
+    
+    @Override
+    public XSDDatatype getDataType() {
+        return XSDDatatype.XSDboolean;
     }
 }

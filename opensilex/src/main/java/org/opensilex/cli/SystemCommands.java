@@ -7,7 +7,6 @@
 package org.opensilex.cli;
 
 import org.opensilex.OpenSilex;
-import static org.opensilex.cli.MainCommand.run;
 import org.opensilex.cli.help.HelpPrinterCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,17 +70,28 @@ public class SystemCommands extends HelpPrinterCommand implements OpenSilexComma
     public void check() throws Exception {
         OpenSilex opensilex = OpenSilex.getInstance();
 
-        LOGGER.info("Check Modules");
+        displayFullConfig();
+        
+        LOGGER.debug("Check Modules");
         opensilex.check();
     }
     
      public static void main(String[] args) {
         MainCommand.main(new String[]{
             "system",
-            "install",
-            "--reset=true",
+            "check",
             "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.DEV_PROFILE_ID
         });
     }
+     
+     @Command(
+            name = "full-config",
+            header = "Return full configuration"
+    )
+    public void displayFullConfig() throws Exception {
+        OpenSilex opensilex = OpenSilex.getInstance();
 
+        LOGGER.debug("Actual expanded configuration");
+        System.out.print(opensilex.getExpandedYAMLConfig());
+    }
 }

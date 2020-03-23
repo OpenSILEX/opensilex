@@ -8,7 +8,6 @@ package org.opensilex.sparql.model;
 import java.util.List;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 
 
 
@@ -50,25 +49,29 @@ public class B extends SPARQLResourceModel {
 
     @SPARQLProperty(
             ontology = TEST_ONTOLOGY.class,
-            property = "hasFloat"
+            property = "hasFloat",
+            required = true
     )
     private Float floatVar;
 
     @SPARQLProperty(
             ontology = TEST_ONTOLOGY.class,
-            property = "hasDouble"
+            property = "hasDouble",
+            required = true
     )
     private Double doubleVar;
 
     @SPARQLProperty(
             ontology = TEST_ONTOLOGY.class,
-            property = "hasChar"
+            property = "hasChar",
+            required = true
     )
     private Character charVar;
 
     @SPARQLProperty(
             ontology = TEST_ONTOLOGY.class,
-            property = "hasShort"
+            property = "hasShort",
+            required = true
     )
     private Short shortVar;
 

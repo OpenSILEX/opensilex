@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -33,6 +34,9 @@ import org.opensilex.sparql.utils.URIGenerator;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.opensilex.sparql.annotations.SPARQLTypeRDF;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
+import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 
 /**
  *
@@ -42,6 +46,10 @@ public class SPARQLClassAnalyzer {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLClassAnalyzer.class);
 
+    public Class<?> getObjectClass() {
+        return objectClass;
+    }
+
     private final Class<?> objectClass;
 
     private final Resource resource;
@@ -49,6 +57,8 @@ public class SPARQLClassAnalyzer {
     private final String graphPrefix;
 
     private Field fieldURI;
+    private Field fieldType;
+
     private final Map<Field, Property> dataProperties = new HashMap<>();
 
     private final Map<Field, Property> objectProperties = new HashMap<>();
@@ -58,8 +68,6 @@ public class SPARQLClassAnalyzer {
     private final Map<Field, Property> objectPropertiesLists = new HashMap<>();
 
     private final Map<Field, Property> labelProperties = new HashMap<>();
-
-    private final Map<Field, Property> labelPropertiesLists = new HashMap<>();
 
     private final Map<String, Field> fieldsByName = new HashMap<>();
 
@@ -137,6 +145,12 @@ public class SPARQLClassAnalyzer {
                 if (sURI != null) {
                     LOGGER.debug("Analyse " + SPARQLResourceURI.class.getCanonicalName() + " annotation for field: " + field.getName());
                     analyzeSPARQLResourceURIField(field);
+                } else {
+                    SPARQLTypeRDF sType = field.getAnnotation(SPARQLTypeRDF.class);
+                    if (sType != null) {
+                        LOGGER.debug("Analyse " + SPARQLTypeRDF.class.getCanonicalName() + " annotation for field: " + field.getName());
+                        analyzeSPARQLTypeField(field);
+                    }
                 }
             }
         }
@@ -144,6 +158,11 @@ public class SPARQLClassAnalyzer {
         LOGGER.debug("Check URI field is defined");
         if (fieldURI == null) {
             throw new SPARQLInvalidClassDefinitionException(objectClass, SPARQLResourceURI.class.getCanonicalName() + " annotation not found");
+        }
+
+        LOGGER.debug("Check Type field is defined");
+        if (fieldType == null) {
+            throw new SPARQLInvalidClassDefinitionException(objectClass, SPARQLTypeRDF.class.getCanonicalName() + " annotation not found");
         }
 
         LOGGER.debug("Init fields accessor registry for: " + objectClass.getName());
@@ -199,8 +218,7 @@ public class SPARQLClassAnalyzer {
                 Class<?> genericParameter = (Class<?>) parameterizedType.getActualTypeArguments()[0];
                 LOGGER.debug("Field " + field.getName() + " is a list of: " + genericParameter.getName());
                 if (genericParameter == SPARQLLabel.class) {
-                    LOGGER.debug("Field " + field.getName() + " is a label list of: " + objectClass.getName());
-                    labelPropertiesLists.put(field, property);
+                    throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " as an unsupported type, List<SPARQLLabel> are not supported");
                 } else if (SPARQLDeserializers.existsForClass(genericParameter)) {
                     LOGGER.debug("Field " + field.getName() + " is a data property list of: " + objectClass.getName());
                     dataPropertiesLists.put(field, property);
@@ -260,6 +278,22 @@ public class SPARQLClassAnalyzer {
                     objectClass,
                     SPARQLResourceURI.class.getCanonicalName() + " annotation must be unique "
                     + "and is defined multiple times for field " + fieldURI.getName()
+                    + " and for field " + field.getName()
+            );
+        }
+    }
+
+    private void analyzeSPARQLTypeField(Field field) throws SPARQLInvalidClassDefinitionException {
+        if (fieldType == null) {
+            LOGGER.debug("Field " + field.getName() + " defined as type field for: " + objectClass.getName());
+            fieldType = field;
+            LOGGER.debug("Store field " + field.getName() + " in global index by name");
+            fieldsByName.put(field.getName(), field);
+        } else {
+            throw new SPARQLInvalidClassDefinitionException(
+                    objectClass,
+                    SPARQLTypeRDF.class.getCanonicalName() + " annotation must be unique "
+                    + "and is defined multiple times for field " + fieldType.getName()
                     + " and for field " + field.getName()
             );
         }
@@ -357,8 +391,8 @@ public class SPARQLClassAnalyzer {
         labelProperties.forEach(lambda);
     }
 
-    public void forEachLabelPropertyList(BiConsumer<Field, Property> lambda) {
-        labelPropertiesLists.forEach(lambda);
+    public boolean hasLabelProperty() {
+        return labelProperties.size() > 0;
     }
 
     public Field getFieldFromGetter(Method method) {
@@ -413,10 +447,6 @@ public class SPARQLClassAnalyzer {
         return labelProperties.containsKey(f);
     }
 
-    public boolean isLabelListField(Field f) {
-        return labelPropertiesLists.containsKey(f);
-    }
-
     public Resource getRDFType() {
         return resource;
     }
@@ -468,17 +498,9 @@ public class SPARQLClassAnalyzer {
     public Set<Field> getLabelPropertyFields() {
         return labelProperties.keySet();
     }
-    
+
     public Property getLabelPropertyByField(Field field) {
         return labelProperties.get(field);
-    }
-
-    public Set<Field> getLabelListPropertyFields() {
-        return labelPropertiesLists.keySet();
-    }
-    
-    public Property getLabelListPropertyByField(Field field) {
-        return labelPropertiesLists.get(field);
     }
 
     public URI getURI(Object instance) {
@@ -513,5 +535,50 @@ public class SPARQLClassAnalyzer {
 
     public SPARQLProperty getFieldAnnotation(Field field) {
         return annotationsByField.get(field);
+    }
+
+    public String getTypeFieldName() {
+        return fieldType.getName();
+    }
+
+    public Method getURIMethod() {
+        return getGetterFromField(getURIField());
+    }
+
+    protected XSDDatatype getFieldDatatype(Field field) {
+        try {
+            return SPARQLDeserializers.getForClass(getGetterFromField(field).getReturnType()).getDataType();
+        } catch (SPARQLDeserializerNotFoundException ex) {
+            return null;
+        }
+    }
+
+    protected Resource getFieldRDFType(Field field) {
+        try {
+            return SPARQLClassObjectMapper.getForClass(getGetterFromField(field).getReturnType()).getRDFType();
+        } catch (SPARQLMapperNotFoundException | SPARQLInvalidClassDefinitionException ex) {
+            return null;
+        }
+    }
+
+    protected Resource getFieldListRDFType(Field field) {
+        try {
+            ParameterizedType genericReturnType = (ParameterizedType) getGetterFromField(field).getGenericReturnType();
+            Type genericParameter = genericReturnType.getActualTypeArguments()[0];
+            return SPARQLClassObjectMapper.getForClass((Class<?>) genericParameter).getRDFType();
+        } catch (SPARQLMapperNotFoundException | SPARQLInvalidClassDefinitionException ex) {
+            return null;
+        }
+    }
+
+    protected XSDDatatype getFieldListDatatype(Field field) {
+        try {
+            
+            ParameterizedType genericReturnType = (ParameterizedType) getGetterFromField(field).getGenericReturnType();
+            Type genericParameter = genericReturnType.getActualTypeArguments()[0];
+            return SPARQLDeserializers.getForClass((Class<?>) genericParameter).getDataType();
+        } catch (SPARQLDeserializerNotFoundException ex) {
+            return null;
+        }
     }
 }

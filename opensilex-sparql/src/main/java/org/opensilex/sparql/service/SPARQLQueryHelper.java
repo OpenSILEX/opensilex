@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.sparql.service;
 
+import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -32,6 +33,12 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.sparql.syntax.ElementFilter;
+import org.apache.jena.sparql.syntax.ElementGroup;
+import org.apache.jena.sparql.syntax.ElementOptional;
 
 /**
  * @author Vincent MIGOT
@@ -46,8 +53,6 @@ public class SPARQLQueryHelper {
     public static ExprFactory getExprFactory() {
         return exprFactory;
     }
-
-    public static final Var typeDefVar = makeVar("__type");
 
     public final static <T> Var getUriFieldVar(Class<T> objectClass) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
         SPARQLClassObjectMapper<SPARQLResourceModel> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
@@ -108,9 +113,11 @@ public class SPARQLQueryHelper {
 
     /**
      * @param varName the variable name
-     * @param object  the object to compare with the given variable
-     * @return an E_Equals expression between the given variable and the given object
-     * @throws SPARQLDeserializerNotFoundException if no {@link SPARQLDeserializer} is found for object
+     * @param object the object to compare with the given variable
+     * @return an E_Equals expression between the given variable and the given
+     * object
+     * @throws SPARQLDeserializerNotFoundException if no
+     * {@link SPARQLDeserializer} is found for object
      * @see ExprFactory#eq(Object, Object)
      * @see SPARQLDeserializers#getForClass(Class)
      */
@@ -121,16 +128,88 @@ public class SPARQLQueryHelper {
 
     /**
      * @param varName the variable name
-     * @param node    the Jena node to compare with the given variable
-     * @return an E_Equals expression between the given variable and the given object
+     * @param node the Jena node to compare with the given variable
+     * @return an E_Equals expression between the given variable and the given
+     * object
      * @see ExprFactory#eq(Object, Object)
      */
     public static Expr eq(String varName, Node node) {
         return exprFactory.eq(NodeFactory.createVariable(varName), node);
     }
 
-    public static Expr langFilter(String varName, String lang) {
+    public static void inPropertyOrEmpty(SelectBuilder select, String uriField, Property relation, String varName, List<URI> uris) {
+        Var var = makeVar(varName);
+        Triple relationTriple = new Triple(makeVar(uriField), relation.asNode(), var);
 
+        if (uris == null || uris.isEmpty()) {
+            // get ressource without any relation
+            select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(relationTriple)));
+        } else {
+            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+
+            // get ressource with no relation specified or in the given list
+            ElementGroup rootFilteringElem = new ElementGroup();
+            ElementGroup optionals = new ElementGroup();
+            optionals.addTriplePattern(relationTriple);
+
+            Expr boundExpr = exprFactory.not(exprFactory.bound(var));
+            Expr groupInUrisExpr = exprFactory.in(var, uris.stream()
+                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
+                    .toArray());
+
+            rootFilteringElem.addElement(new ElementOptional(optionals));
+
+            rootFilteringElem.addElementFilter(new ElementFilter(SPARQLQueryHelper.or(boundExpr, groupInUrisExpr)));
+            select.getWhereHandler().getClause().addElement(rootFilteringElem);
+        }
+    }
+
+    public static void inProperty(SelectBuilder select, String uriField, Property relation, String varName, List<URI> uris) {
+        Var var = makeVar(varName);
+        Triple relationTriple = new Triple(makeVar(uriField), relation.asNode(), var);
+
+        if (uris == null || uris.isEmpty()) {
+            // get ressource without any relation
+            select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(relationTriple)));
+        } else {
+            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+
+            // get ressource with relation specified in the given list
+            ElementGroup rootFilteringElem = new ElementGroup();
+            ElementGroup elementGroup = new ElementGroup();
+            elementGroup.addTriplePattern(relationTriple);
+
+            Expr resourceInUrisExpr = exprFactory.in(var, uris.stream()
+                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
+                    .toArray());
+
+            rootFilteringElem.addElement(elementGroup);
+
+            rootFilteringElem.addElementFilter(new ElementFilter(resourceInUrisExpr));
+            select.getWhereHandler().getClause().addElement(rootFilteringElem);
+        }
+    }
+
+    public static void inURI(SelectBuilder select, String uriField, Collection<URI> uris) {
+        if (uris != null && !uris.isEmpty()) {
+            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+
+            // get ressource with relation specified in the given list
+            ElementGroup rootFilteringElem = new ElementGroup();
+            ElementGroup elementGroup = new ElementGroup();
+
+            Expr resourceInUrisExpr = exprFactory.in(makeVar(uriField), uris.stream()
+                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
+                    .toArray());
+
+            rootFilteringElem.addElement(elementGroup);
+
+            rootFilteringElem.addElementFilter(new ElementFilter(resourceInUrisExpr));
+            select.getWhereHandler().getClause().addElement(rootFilteringElem);
+        }
+    }
+    
+    public static Expr langFilter(String varName, String lang) {
 
         return or(
                 exprFactory.langMatches(exprFactory.lang(NodeFactory.createVariable(varName)), lang),
@@ -141,18 +220,22 @@ public class SPARQLQueryHelper {
     /**
      * Append a VALUES clause to the given select if values are not empty,
      *
-     * @param where   the WhereClause to update
+     * @param where the WhereClause to update
      * @param varName the variable name
-     * @param values  the list of values to put in the VALUES set
-     * @throws SPARQLDeserializerNotFoundException if no {@link SPARQLDeserializer} is found for an element of values
-     * @see <a href=www.w3.org/TR/2013/REC-sparql11-query-20130321/#inline-data>W3C SPARQL VALUES specifications</a>
+     * @param values the list of values to put in the VALUES set
+     * @throws SPARQLDeserializerNotFoundException if no
+     * {@link SPARQLDeserializer} is found for an element of values
+     * @see
+     * <a href=www.w3.org/TR/2013/REC-sparql11-query-20130321/#inline-data>W3C
+     * SPARQL VALUES specifications</a>
      * @see SelectBuilder#addWhereValueVar(Object, Object...)
      * @see SPARQLDeserializers#getForClass(Class)
      */
     public static void addWhereValues(WhereClause<?> where, String varName, List<?> values) throws Exception {
 
-        if (values.isEmpty())
+        if (values.isEmpty()) {
             return;
+        }
 
         // convert list to JENA node array and return the new SelectBuilder
         Object[] nodes = new Node[values.size()];
@@ -163,35 +246,43 @@ public class SPARQLQueryHelper {
         where.addWhereValueVar(varName, nodes);
     }
 
-
     /**
-     * Update the given {@link SelectBuilder} by adding a list of FILTER clause or a VALUES ( ?var1 ?var2 ). <br>
-     * If each {@link List} from varValuesMap has the same {@link List#size()}, then a VALUES clause is build. <br>
+     * Update the given {@link SelectBuilder} by adding a list of FILTER clause
+     * or a VALUES ( ?var1 ?var2 ). <br>
+     * If each {@link List} from varValuesMap has the same {@link List#size()},
+     * then a VALUES clause is build. <br>
      * <p>
-     * e.g. given the following map :  { var1 -> {v1,v2} , var2 -> {v3,v4}}, the following VALUES clause will be built
+     * e.g. given the following map : { var1 -> {v1,v2} , var2 -> {v3,v4}}, the
+     * following VALUES clause will be built
      * <pre>
      * VALUES (?var1 ?var2) { (v1 v3) (v2 v4)}
      * </pre>
      * <p>
-     * Else we use a FILTER clause
-     * e.g. given the following map { var1 -> {v1,v2} , var2 -> {v3,v4,v5}}, the following list of FILTER clause will be built
+     * Else we use a FILTER clause e.g. given the following map { var1 ->
+     * {v1,v2} , var2 -> {v3,v4,v5}}, the following list of FILTER clause will
+     * be built
      *
      * <pre>
      * FILTER(?v1 = v1 || ?v1 = v2)
      * FILTER(?v2 = v3 || ?v2 = v4 || ?v2 = v5)
      * </pre>
      *
-     * @param select       the SelectBuilder to update
-     * @param varValuesMap a map between variable name and the list of values for this variable
+     * @param select the SelectBuilder to update
+     * @param varValuesMap a map between variable name and the list of values
+     * for this variable
      * @throws Exception
-     * @see <a href=www.w3.org/TR/2013/REC-sparql11-query-20130321/#inline-data> SPARQL VALUES</a>
-     * @see <a href=https://www.w3.org/TR/sparql11-query/#func-logical-or> SPARQL LOGICAL OR</a>
-     * @see <a href=https://www.w3.org/TR/sparql11-query/#expressions> SPARQL FILTER </a>
+     * @see <a href=www.w3.org/TR/2013/REC-sparql11-query-20130321/#inline-data>
+     * SPARQL VALUES</a>
+     * @see <a href=https://www.w3.org/TR/sparql11-query/#func-logical-or>
+     * SPARQL LOGICAL OR</a>
+     * @see <a href=https://www.w3.org/TR/sparql11-query/#expressions> SPARQL
+     * FILTER </a>
      */
     public static void addWhereValues(SelectBuilder select, Map<String, List<?>> varValuesMap) throws Exception {
 
-        if (varValuesMap.isEmpty())
+        if (varValuesMap.isEmpty()) {
             return;
+        }
 
         // we use the VALUES clause only if all values list have the same size
         boolean useValues = true;
@@ -226,17 +317,19 @@ public class SPARQLQueryHelper {
     }
 
     /**
-     * @param startDateVarName the name of the startDate variable , should not be null if startDate is not null
-     * @param startDate        the start date
-     * @param endDateVarName   the name of the endDate variable , should not be null if endDate is not null
-     * @param endDate          the end date
-     * @return an Expr according the two given LocalDate and variable names
-     * <pre>
+     * @param startDateVarName the name of the startDate variable , should not
+     * be null if startDate is not null
+     * @param startDate the start date
+     * @param endDateVarName the name of the endDate variable , should not be
+     * null if endDate is not null
+     * @param endDate the end date
+     * @return an Expr according the two given LocalDate and variable names      <pre>
      *     null if startDate and endDate are both null
      *     an {@link E_LogicalAnd} if startDate and endDate are both non null
      *     an {@link E_GreaterThanOrEqual} if only startDate is not null
      *     an {@link E_LessThanOrEqual} if only endDate is not null
      * </pre>
+     *
      * @see ExprFactory#and(Object, Object)
      * @see ExprFactory#le(Object, Object)
      * @see ExprFactory#ge(Object, Object)

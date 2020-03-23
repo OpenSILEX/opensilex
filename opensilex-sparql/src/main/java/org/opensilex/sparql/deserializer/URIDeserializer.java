@@ -7,6 +7,7 @@ package org.opensilex.sparql.deserializer;
 
 import java.net.URI;
 import java.util.Map;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.shared.PrefixMapping;
@@ -51,6 +52,11 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
 
     public static void setPrefixes(PrefixMapping prefixesMap) {
         prefixes = prefixesMap;
+    }
+
+    @Override
+    public XSDDatatype getDataType() {
+       return XSDDatatype.XSDanyURI;
     }
 
 }

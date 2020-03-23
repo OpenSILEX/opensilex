@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 
@@ -52,6 +53,11 @@ public class EmailDeserializer
         private EmailDeserializationException(String message, JsonLocation location, Throwable cause) {
             super(message, location, cause);
         }
+    }
+
+    @Override
+    public XSDDatatype getDataType() {
+        return XSDDatatype.XSDstring;
     }
 
 }

@@ -197,7 +197,7 @@ public class AuthenticationService implements Service {
      * @param user User to build token on
      * @param credentialsList Credential list to setup for user in token
      */
-    public void generateToken(UserModel user, List<String> credentialsList) {
+    public void generateToken(UserModel user, List<String> credentialsList) throws Exception {
         // Set issue date a now
         Date issuedDate = new Date();
 
@@ -224,9 +224,9 @@ public class AuthenticationService implements Service {
         }
 
         // Allow any module implementing LoginExtension to add custom claims on login
-        OpenSilex.getInstance().getModulesImplementingInterface(LoginExtension.class).forEach(module -> {
+        for (LoginExtension module : OpenSilex.getInstance().getModulesImplementingInterface(LoginExtension.class)) {
             module.login(user, tokenBuilder);
-        });
+        }
 
         // Set signed token to the user
         user.setToken(tokenBuilder.sign(algoRSA));
@@ -241,7 +241,7 @@ public class AuthenticationService implements Service {
      *
      * @param user User having token to renew
      */
-    public boolean renewToken(UserModel user) {
+    public boolean renewToken(UserModel user) throws Exception {
         if (user.getToken() != null) {
 
             // Check and decode current user token
@@ -386,7 +386,7 @@ public class AuthenticationService implements Service {
      * @param user Userto add
      * @param expireMs authentication delay in milliseconds
      */
-    public synchronized void addUser(UserModel user, long expireMs) {
+    public synchronized void addUser(UserModel user, long expireMs) throws Exception {
         URI userURI = user.getUri();
 
         // If user already registred remove it
@@ -400,8 +400,10 @@ public class AuthenticationService implements Service {
                 Thread.sleep(expireMs);
                 LOGGER.debug("User connection timeout: " + userURI);
                 removeUser(user);
-            } catch (InterruptedException e) {
-                LOGGER.debug("Revoke user: " + userURI + " - " + e.getMessage());
+            } catch (InterruptedException ex) {
+                LOGGER.debug("Revoke user: " + userURI + " - " + ex.getMessage());
+            } catch (Exception ex) {
+                LOGGER.warn("Error while removing user: " + userURI + " - ", ex);
             }
         });
 
@@ -421,7 +423,7 @@ public class AuthenticationService implements Service {
      * @param user User to remove from registry
      * @return removed user or null
      */
-    public synchronized UserModel removeUser(UserModel user) {
+    public synchronized UserModel removeUser(UserModel user) throws Exception {
         return removeUserByURI(user.getUri());
     }
 
@@ -431,7 +433,7 @@ public class AuthenticationService implements Service {
      * @param userURI User URI to remove from registry
      * @return removed user or null if not found
      */
-    public synchronized UserModel removeUserByURI(URI userURI) {
+    public synchronized UserModel removeUserByURI(URI userURI) throws Exception {
         if (hasUserURI(userURI)) {
             LOGGER.debug("Unregister user: " + userURI);
             schedulerRegistry.get(userURI).interrupt();
@@ -440,9 +442,9 @@ public class AuthenticationService implements Service {
             UserModel user = userRegistry.remove(userURI);
             
             // Allow any module implementing LoginExtension to do something on logout
-            OpenSilex.getInstance().getModulesImplementingInterface(LoginExtension.class).forEach(module -> {
+            for (LoginExtension module : OpenSilex.getInstance().getModulesImplementingInterface(LoginExtension.class)){
                 module.logout(user);
-            });
+            }
 
             return user;
         }
@@ -485,7 +487,7 @@ public class AuthenticationService implements Service {
         return true;
     }
 
-    public boolean logout(UserModel user) {
+    public boolean logout(UserModel user) throws Exception {
         return (removeUser(user) != null);
     }
 

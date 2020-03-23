@@ -5,9 +5,9 @@
 //******************************************************************************
 package org.opensilex.sparql.deserializer;
 
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-
 
 /**
  *
@@ -23,5 +23,10 @@ public class StringDeserializer implements SPARQLDeserializer<String> {
     @Override
     public Node getNode(Object value) throws Exception {
         return NodeFactory.createLiteral(value.toString());
+    }
+
+    @Override
+    public XSDDatatype getDataType() {
+        return XSDDatatype.XSDstring;
     }
 }

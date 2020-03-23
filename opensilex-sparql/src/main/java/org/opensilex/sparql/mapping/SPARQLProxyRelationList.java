@@ -40,7 +40,7 @@ public class SPARQLProxyRelationList extends SPARQLProxy<List> {
 
     @Override
     protected List loadData() throws Exception {
-        List<SPARQLStatement> results = this.service.describe(uri);
+        List<SPARQLStatement> results = this.service.describe(graph, uri);
 
         List<SPARQLModelRelation> list = new ArrayList<>();
         

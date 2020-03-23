@@ -6,7 +6,6 @@
 //******************************************************************************
 package org.opensilex.core.experiment.api;
 
-import org.opensilex.core.experiment.dal.ExperimentDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.rest.group.dal.GroupModel;

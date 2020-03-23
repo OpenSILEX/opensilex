@@ -29,7 +29,7 @@ public interface LoginExtension {
      * @param user Current user
      * @param tokenBuilder Token builder on which to add claims
      */
-    public default void login(UserModel user, JWTCreator.Builder tokenBuilder) {
+    public default void login(UserModel user, JWTCreator.Builder tokenBuilder) throws Exception {
         LOGGER.debug(this.getClass().getCanonicalName() + " - User logged in: " + user.getEmail());
     }
 
@@ -39,7 +39,7 @@ public interface LoginExtension {
      *
      * @param user User logged out
      */
-    public default void logout(UserModel user) {
+    public default void logout(UserModel user) throws Exception {
         LOGGER.debug(this.getClass().getCanonicalName() + " - User logged out: " + user.getEmail());
     }
 }

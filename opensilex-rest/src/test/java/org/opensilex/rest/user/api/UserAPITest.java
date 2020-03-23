@@ -7,7 +7,6 @@ import org.opensilex.integration.test.AbstractIntegrationTest;
 import org.junit.Test;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import javax.ws.rs.client.WebTarget;
 
@@ -25,7 +24,6 @@ public class UserAPITest extends AbstractIntegrationTest {
 //    protected boolean isDebug() {
 //        return true;
 //    }
-    
     protected String path = "/user";
     protected String createPath = path + "/create";
     protected String updatePath = path + "/update";
@@ -35,9 +33,10 @@ public class UserAPITest extends AbstractIntegrationTest {
     protected String urisListPath = path + "/get-list-by-uris";
 
     private int userCount = 0;
+
     protected UserCreationDTO getUser1CreationDTO() {
         int count = userCount++;
-        
+
         UserCreationDTO dto = new UserCreationDTO();
         dto.setAdmin(true);
         dto.setEmail("user" + count + "@opensilex.org");
@@ -50,7 +49,7 @@ public class UserAPITest extends AbstractIntegrationTest {
 
     protected UserCreationDTO getUser2CreationDTO() {
         int count = userCount++;
-        
+
         UserCreationDTO dto = new UserCreationDTO();
         dto.setAdmin(false);
         dto.setEmail("user" + count + "@opensilex.org");
@@ -213,5 +212,20 @@ public class UserAPITest extends AbstractIntegrationTest {
         assertEquals(expectedUserDTO.getLastName(), actualUserDTO.getLastName());
         assertEquals(expectedUserDTO.isAdmin(), actualUserDTO.isAdmin());
         assertEquals(expectedUserDTO.getLang(), actualUserDTO.getLang());
+    }
+
+    @Override
+    protected List<String> getGraphsToCleanNames() {
+        return new ArrayList<String>() {
+            {
+                add("users");
+            }
+        };
+    }
+
+    @Override
+    public void clearGraph() throws Exception {
+        super.clearGraph();
+        context.addAdminUser();
     }
 }

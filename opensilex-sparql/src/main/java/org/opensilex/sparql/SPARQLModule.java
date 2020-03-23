@@ -43,7 +43,8 @@ import org.opensilex.module.ModuleConfig;
 import org.opensilex.module.ModuleNotFoundException;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.exceptions.SPARQLQueryException;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLValidationException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
@@ -98,6 +99,25 @@ public class SPARQLModule extends OpenSilexModule {
         SPARQLConfig cfg = OpenSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         SPARQLService.addPrefix(cfg.baseURIAlias(), cfg.baseURI());
 
+        SPARQLServiceFactory factory = sparqlConfig.sparql();
+        SPARQLService sparql = factory.provide();
+        try {
+            sparql.enableSHACL();
+        } catch (SPARQLValidationException ex) {
+            LOGGER.warn("Error while enable SHACL validation:");
+            Map<URI, Map<URI, List<URI>>> errors = ex.getValidationErrors();
+            errors.forEach((URI uri, Map<URI, List<URI>> error) -> {
+                LOGGER.warn( "--> " + uri + ":");
+                error.forEach((URI protpertyUri, List<URI> brokenConstraints) -> {
+                    LOGGER.warn( "    " + protpertyUri + ":");
+                    brokenConstraints.forEach(constraintURI -> {
+                        LOGGER.warn( "      " + constraintURI);
+                    });
+                });
+            });
+            sparql.disableSHACL();
+        }
+        factory.dispose(sparql);
     }
 
     @Override
@@ -106,8 +126,6 @@ public class SPARQLModule extends OpenSilexModule {
         URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping());
         SPARQLClassObjectMapper.reset();
     }
-    
-    
 
     /**
      * Return configured platform base URI
@@ -134,7 +152,7 @@ public class SPARQLModule extends OpenSilexModule {
         return getPlatformURI().resolve(graphSuffix);
     }
 
-    public static void clearPlatformGraphs(SPARQLService sparql, List<String> graphsSuffixToClear) throws SPARQLQueryException {
+    public static void clearPlatformGraphs(SPARQLService sparql, List<String> graphsSuffixToClear) throws SPARQLException {
         for (String graphName : graphsSuffixToClear) {
             sparql.clearGraph(SPARQLModule.getPlatformDomainGraphURI(graphName));
         }
@@ -143,122 +161,21 @@ public class SPARQLModule extends OpenSilexModule {
 
     @Override
     public void install(boolean reset) throws Exception {
-        LOGGER.info("Initialize RDF4J");
-        initRDF4J(reset);
+        SPARQLConfig cfg = this.getConfig(SPARQLConfig.class);
+        SPARQLServiceFactory sparql = cfg.sparql();
+        if (reset) {
+            sparql.deleteRepository();
+        }
+        sparql.createRepository();
+        OpenSilex.getInstance().restart();
     }
-    
+
     @Override
     public void check() throws Exception {
-        LOGGER.info("Check RDF4J connnection & ontologies initialization");
+        LOGGER.info("Check RDF4J connnection");
         SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
-        List<SPARQLStatement> results = sparql.describe(new URI("http://www.opensilex.org/vocabulary/oeso"));
+        sparql.getGraphStatement(new URI("http://www.opensilex.org/vocabulary/oeso"));
         factory.dispose(sparql);
-        
-        if (results.size() == 0) {
-            LOGGER.error("There is missing data into your triple store, did you execute 'opensilex system setup' command ?");
-            throw new Exception("There is missing data into your triple store, did you execute 'opensilex system setup' command ?");
-        }
-    }
-
-    public static void initRDF4J(boolean reset) throws Exception {
-        OpenSilex opensilex = OpenSilex.getInstance();
-        
-        // initialise repository manager
-        RDF4JConfig config = opensilex.loadConfigPath("ontologies.sparql.rdf4j", RDF4JConfig.class);
-
-        // Create repository
-        createRDF4JRepository(config, reset);
-
-        // Restart repository to reload sparql service
-        opensilex.restart();
-        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-        SPARQLService sparql = factory.provide();
-
-        // Import default ontologies
-        LOGGER.info("Install oa ontology: http://www.w3.org/ns/oa");
-        InputStream ontologyStream = new FileInputStream(ClassUtils.getFileFromClassArtifact(SPARQLModule.class, "install/oa.rdf"));
-        sparql.loadOntologyStream(new URI("http://www.w3.org/ns/oa"), ontologyStream, Lang.RDFXML);
-        ontologyStream.close();
-
-        LOGGER.info("Install oeso ontology: http://www.opensilex.org/vocabulary/oeso");
-        ontologyStream = new FileInputStream(ClassUtils.getFileFromClassArtifact(SPARQLModule.class, "install/oeso.owl"));
-        sparql.loadOntologyStream(new URI("http://www.opensilex.org/vocabulary/oeso"), ontologyStream, Lang.RDFXML);
-        ontologyStream.close();
-
-        LOGGER.info("Install oeev ontology: http://www.opensilex.org/vocabulary/oeev");
-        ontologyStream = new FileInputStream(ClassUtils.getFileFromClassArtifact(SPARQLModule.class, "install/oeev.owl"));
-        sparql.loadOntologyStream(new URI("http://www.opensilex.org/vocabulary/oeev"), ontologyStream, Lang.RDFXML);
-        ontologyStream.close();
-        
-        SPARQLConfig sparqlConfig = OpenSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
-        URI graph = new URI(sparqlConfig.baseURI() + "species");
-        
-        LOGGER.info("Install Agrovoc species: " + graph.toString());
-        ontologyStream = new FileInputStream(ClassUtils.getFileFromClassArtifact(SPARQLModule.class, "install/species.ttl"));
-        sparql.loadOntologyStream(graph, ontologyStream, Lang.TTL);
-        ontologyStream.close();
-        
-        factory.dispose(sparql);
-    }
-    
-    private static void createRDF4JRepository(RDF4JConfig config, boolean reset) throws IOException {
-        RepositoryManager repositoryManager = RepositoryProvider.getRepositoryManager(config.serverURI());
-        repositoryManager.init();
-
-        // Remove existing repository
-        if (reset) {
-            repositoryManager.removeRepository(config.repository());
-        }
-
-        // Read repository configuration file located in jar
-        File rdf4jApiJar = ClassUtils.getJarFile(RepositoryConfig.class);
-        File templateFile = ClassUtils.getFileFromJar(rdf4jApiJar, "org/eclipse/rdf4j/repository/config/native-shacl.ttl");
-        InputStream templateStream = new FileInputStream(templateFile);
-        String template;
-        try {
-            template = IOUtil.readString(new InputStreamReader(templateStream, "UTF-8"));
-        } finally {
-            templateStream.close();
-        }
-        final ConfigTemplate configTemplate = new ConfigTemplate(template);
-
-        // This variable contains all keys parsed from template, use debugger to watch them.
-        // final Map<String, List<String>> variableMap = configTemplate.getVariableMap();
-        // Define repository template parameters
-        final Map<String, String> valueMap = new HashMap<String, String>() {
-            {
-                put("Repository ID", config.repository());
-                put("Repository title", config.repository());
-                // Default template value write here for information
-                 put("Query Iteration Cache size", "10000");
-                 put("Triple indexes", "spoc,posc");
-                // put("EvaluationStrategyFactory", "org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory");
-
-            }
-        };
-
-        final String configString = configTemplate.render(valueMap);
-        final Model graph = new LinkedHashModel();
-
-        final RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, SimpleValueFactory.getInstance());
-        rdfParser.setRDFHandler(new StatementCollector(graph));
-        rdfParser.parse(new StringReader(configString), RepositoryConfigSchema.NAMESPACE);
-
-        final org.eclipse.rdf4j.model.Resource repositoryNode = Models
-                .subject(graph.filter(null, RDF.TYPE, RepositoryConfigSchema.REPOSITORY))
-                .orElseThrow(() -> new RepositoryConfigException("missing repository node"));
-
-        RepositoryRegistry registry = RepositoryRegistry.getInstance();
-        ServiceLoader<RepositoryFactory> services = ServiceLoader.load(RepositoryFactory.class, OpenSilex.getClassLoader());
-        services.forEach(action -> {
-            registry.add(action);
-        });
-
-        final RepositoryConfig repConfig = RepositoryConfig.create(graph, repositoryNode);
-        repConfig.validate();
-
-        repositoryManager.addRepositoryConfig(repConfig);
-        repositoryManager.shutDown();
     }
 }

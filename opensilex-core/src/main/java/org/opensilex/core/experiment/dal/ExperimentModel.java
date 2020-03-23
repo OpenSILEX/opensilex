@@ -156,13 +156,6 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
     public static final String VARIABLES_SPARQL_VAR = "variables";
     
     @SPARQLProperty(
-        ontology = Oeso.class,
-        property = "hasFactor"
-    )
-    List<URI> factors = new LinkedList<>();
-    public static final String FACTOR_SPARQL_VAR = "factors";
-    
-    @SPARQLProperty(
             ontology = Oeso.class,
             property = "participatesIn",
             inverse = true
@@ -305,14 +298,6 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
 
     public void setDevices(List<URI> devices) {
         this.devices = devices;
-    }
-
-    public List<URI> getFactors() {
-        return factors;
-    }
-
-    public void setFactors(List<URI> factors) {
-        this.factors = factors;
     }
 
     @Override

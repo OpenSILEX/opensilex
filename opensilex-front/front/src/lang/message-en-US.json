@@ -136,11 +136,6 @@
                 "users": "Users",
                 "groups": "Groups",
                 "profiles": "Profiles"
-            },   
-            "experimentalDesign" : {
-                "label": "Experimental Design",
-                "factors": "Factors",
-                "factorLevels": "Factor levels"
             }
         },
         "login": {

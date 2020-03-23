@@ -157,6 +157,12 @@
     </owl:DatatypeProperty>
     
 
+    <!-- http://test.opensilex.org/hasLabel -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/hasLabel">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
 
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -178,6 +184,10 @@
     <!-- http://test.opensilex.org/B -->
 
     <owl:Class rdf:about="http://test.opensilex.org/B"/>
+    
+    <!-- http://test.opensilex.org/C -->
+
+    <owl:Class rdf:about="http://test.opensilex.org/C"/>
 </rdf:RDF>
 
 

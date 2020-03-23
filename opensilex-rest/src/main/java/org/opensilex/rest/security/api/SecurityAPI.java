@@ -175,7 +175,7 @@ public class SecurityAPI {
         @ApiResponse(code = 200, message = "User sucessfully logout")})
     public Response logout(
             @Context SecurityContext securityContext
-    ) {
+    ) throws Exception {
         authentication.logout(authentication.getCurrentUser(securityContext));
         return Response.ok().build();
     }

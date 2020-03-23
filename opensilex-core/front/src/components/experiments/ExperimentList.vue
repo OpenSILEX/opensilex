@@ -81,7 +81,7 @@
                                         :placeholder="$t('component.experiment.search.filter.installations')"
                                         :closeOnSelect="false"
                                         v-model="filter.installations"
-                                        :options="campains"
+                                        :options="installations"
                                         selectLabel=""
                                         selectedLabel="X"
                                         deselectLabel="X"
@@ -106,7 +106,7 @@
                                         :placeholder="$t('component.experiment.search.filter.places')"
                                         :closeOnSelect="false"
                                         v-model="filter.places"
-                                        :options="campains"
+                                        :options="places"
                                         selectLabel=""
                                         selectedLabel="X"
                                         deselectLabel="X"
@@ -396,6 +396,9 @@
         speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
         experimentStates: Array<ExperimentState> = new Array<ExperimentState>();
         campains: Array<Number> = new Array<Number>();
+
+        installations = [];
+        places = [];
 
         filter: ExperimentFilter;
 

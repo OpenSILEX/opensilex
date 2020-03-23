@@ -115,7 +115,6 @@ export default class FactorForm extends Vue {
 
   showCreateForm() {
     this.clearForm();
-    console.log(this.$refs);
     this.editMode = false;
     this.title = this.$t("component.factor.add").toString();
     this.uriGenerated = true;

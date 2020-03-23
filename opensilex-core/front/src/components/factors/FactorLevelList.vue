@@ -161,7 +161,7 @@ export default class FactorLevelList extends Vue {
     let service: FactorLevelsService = this.$opensilex.getService(
       "opensilex.FactorLevelsService"
     );
-  service
+  
     let orderBy : string[] = [];
     if (this.sortBy) {
       let orderByText = this.sortBy + "=";

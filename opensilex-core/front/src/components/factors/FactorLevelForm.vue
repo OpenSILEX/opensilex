@@ -49,8 +49,12 @@
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
-        <!-- Last name -->
-        <b-form-group :label="$t('component.factorLevel.comment') + ':'" label-for="comment" required>
+        <!-- Comment -->
+        <b-form-group
+          :label="$t('component.factorLevel.comment') + ':'"
+          label-for="comment"
+          required
+        >
           <ValidationProvider
             :name="$t('component.factorLevel.comment')"
             rules="required"
@@ -66,18 +70,23 @@
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
-        <b-form-group :label="$t('component.factorLevel.comment') + ':'" label-for="comment" required>
+        <!-- hasFactor -->
+        <b-form-group
+          :label="$t('component.factorLevel.hasFactor') + ':'"
+          label-for="hasFactor"
+          required
+        >
           <ValidationProvider
-            :name="$t('component.factorLevel.comment')"
+            :name="$t('component.factorLevel.hasFactor')"
             rules="required"
             v-slot="{ errors }"
           >
             <b-form-input
-              id="comment"
-              v-model="form.comment"
+              id="hasFactor"
+              v-model="form.hasFactor"
               type="text"
               required
-              :placeholder="$t('component.factorLevel.form-comment-placeholder')"
+              :placeholder="$t('component.factorLevel-factor-selector-placeholder')"
             ></b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
@@ -112,8 +121,9 @@ export default class FactorLevelForm extends Vue {
   form: FactorLevelCreationDTO = {
     uri: "",
     alias: "",
-    comment:"",
-     // lang: "en-US"
+    comment: "",
+    hasFactor: ""
+    // lang: "en-US"
   };
 
   title = "";
@@ -122,9 +132,10 @@ export default class FactorLevelForm extends Vue {
 
   clearForm() {
     this.form = {
-     uri: "",
+      uri: "",
       alias: "",
-      comment:"",
+      comment: "",
+      hasFactor: ""
       // lang: "en-US"
     };
   }
@@ -195,7 +206,9 @@ export default class FactorLevelForm extends Vue {
               console.error("factorLevel already exists", error);
               this.$opensilex.errorHandler(
                 error,
-                this.$i18n.t("component.factorLevel.errors.factorLevel-already-exists")
+                this.$i18n.t(
+                  "component.factorLevel.errors.factorLevel-already-exists"
+                )
               );
             } else {
               this.$opensilex.errorHandler(error);
@@ -204,7 +217,6 @@ export default class FactorLevelForm extends Vue {
       }
     });
   }
- 
 }
 </script>
 

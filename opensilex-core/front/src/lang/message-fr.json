@@ -24,6 +24,7 @@
             "alias": "alias",
             "factor": "facteur",
             "comment": "description", 
+            "hasFactor": "est lié au facteur",
             "errors": {
                 "user-already-exists": "URI du niveau de facteur déjà existante."
             }

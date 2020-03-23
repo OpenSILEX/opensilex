@@ -23,7 +23,8 @@
             "update": "update factor level",
             "alias": "alias",
             "factor": "factor",
-            "comment": "comment", 
+            "comment": "comment",
+            "hasFactor": "has factor",
             "errors": {
                 "user-already-exists": "Factor level already exists with this URI."
             }

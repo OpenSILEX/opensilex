@@ -394,10 +394,15 @@ public class RDF4JConnection implements SPARQLConnection {
             } else {
                 LOGGER.warn("No SHACL graph specified, SHACL validation will be disabled");
             }
-        } catch (RepositoryException ex) {
+        } catch (Exception ex) {
             Throwable cause = ex.getCause();
             if (cause instanceof ShaclSailValidationException) {
                 throw convertRDF4JSHACLException((ShaclSailValidationException) cause);
+            } else if (cause instanceof RepositoryException) {
+                Throwable validationCause = ex.getCause();
+                if (validationCause instanceof ShaclSailValidationException) {
+                    throw convertRDF4JSHACLException((ShaclSailValidationException) validationCause);
+                }
             } else {
                 throw new SPARQLException(ex.getMessage());
             }

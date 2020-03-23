@@ -44,6 +44,7 @@ import org.opensilex.module.ModuleNotFoundException;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLValidationException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
@@ -97,10 +98,25 @@ public class SPARQLModule extends OpenSilexModule {
 
         SPARQLConfig cfg = OpenSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         SPARQLService.addPrefix(cfg.baseURIAlias(), cfg.baseURI());
-        
+
         SPARQLServiceFactory factory = sparqlConfig.sparql();
         SPARQLService sparql = factory.provide();
-        sparql.enableSHACL();
+        try {
+            sparql.enableSHACL();
+        } catch (SPARQLValidationException ex) {
+            LOGGER.warn("Error while enable SHACL validation:");
+            Map<URI, Map<URI, List<URI>>> errors = ex.getValidationErrors();
+            errors.forEach((URI uri, Map<URI, List<URI>> error) -> {
+                LOGGER.warn( "--> " + uri + ":");
+                error.forEach((URI protpertyUri, List<URI> brokenConstraints) -> {
+                    LOGGER.warn( "    " + protpertyUri + ":");
+                    brokenConstraints.forEach(constraintURI -> {
+                        LOGGER.warn( "      " + constraintURI);
+                    });
+                });
+            });
+            sparql.disableSHACL();
+        }
         factory.dispose(sparql);
     }
 

@@ -8,35 +8,6 @@
 
 package org.opensilex.core.experiment.dal;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.opensilex.core.project.dal.ProjectDAO;
-import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.utils.ListWithPagination;
-
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.junit.After;
-import org.junit.AfterClass;
-
-import static org.junit.Assert.*;
-
-import org.opensilex.OpenSilex;
-import org.opensilex.core.CoreModule;
-import org.opensilex.rest.RestModule;
-import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.rdf4j.RDF4JInMemoryService;
 import org.opensilex.unit.test.AbstractUnitTest;
 
 /**

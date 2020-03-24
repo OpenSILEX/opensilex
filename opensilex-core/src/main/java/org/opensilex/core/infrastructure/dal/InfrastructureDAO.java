@@ -9,9 +9,10 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.sparql.tree.ResourceTree;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 
@@ -26,22 +27,18 @@ public class InfrastructureDAO {
         this.sparql = sparql;
     }
 
-    public TreeSet<InfrastructureModel> searchTree(String pattern, URI parent, URI userURI, String lang) throws Exception {
-        Set<URI> infras = getUserInfrastructures(userURI, lang);
+    public ResourceTree<InfrastructureModel> searchTree(String pattern, UserModel user, String lang) throws Exception {
+        Set<URI> infras = getUserInfrastructures(user, lang);
         if (infras != null && infras.isEmpty()) {
-            return new TreeSet<InfrastructureModel>();
+            return new ResourceTree<>();
         }
 
-        return sparql.searchTree(
+        return sparql.searchResourceTree(
                 InfrastructureModel.class,
                 lang,
                 (SelectBuilder select) -> {
-                    if (pattern != null) {
+                    if (pattern != null && !pattern.isEmpty()) {
                         select.addFilter(SPARQLQueryHelper.regexFilter(InfrastructureModel.NAME_FIELD, pattern));
-                    }
-
-                    if (parent != null) {
-                        select.addFilter(SPARQLQueryHelper.eq(InfrastructureModel.PARENT_FIELD, parent));
                     }
 
                     if (infras != null) {
@@ -51,14 +48,14 @@ public class InfrastructureDAO {
         );
     }
 
-    private Set<URI> getUserInfrastructures(URI userURI, String lang) throws Exception {
-        if (userURI == null) {
+    private Set<URI> getUserInfrastructures(UserModel user, String lang) throws Exception {
+        if (user == null || user.isAdmin()) {
             return null;
         }
-        
+
         Set<URI> userInfras = new HashSet<>();
         List<URI> infras = sparql.searchURIs(InfrastructureModel.class, lang, (SelectBuilder select) -> {
-            select.addFilter(SPARQLQueryHelper.eq(InfrastructureModel.USERS_FIELD, userURI));
+            select.addFilter(SPARQLQueryHelper.eq(InfrastructureModel.USERS_FIELD, user.getUri()));
         });
 
         userInfras.addAll(infras);
@@ -95,8 +92,12 @@ public class InfrastructureDAO {
 
     public InfrastructureModel create(InfrastructureModel instance) throws Exception {
         sparql.create(instance);
-        
+
         return instance;
+    }
+
+    public InfrastructureModel get(URI uri) throws Exception {
+        return sparql.getByURI(InfrastructureModel.class, uri, null);
     }
 
 }

@@ -11,11 +11,11 @@
     </header>
 
     <section id="content-wrapper" class="page-wrap" v-if="user.isLoggedIn() && !disconnected">
-        <component v-if="!embed" v-bind:is="menuComponent"></component>
+      <component v-if="!embed" v-bind:is="menuComponent"></component>
 
-        <main class="main-content">
-          <router-view />
-        </main>
+      <main class="main-content">
+        <router-view />
+      </main>
 
       <footer v-if="!embed">
         <component v-bind:is="footerComponent"></component>
@@ -52,7 +52,7 @@ export default class App extends Vue {
   $bvToast: any;
 
   created() {
-    this.$opensilex.$bvToast = this.$bvToast
+    this.$opensilex.$bvToast = this.$bvToast;
   }
 
   get disconnected() {
@@ -70,13 +70,56 @@ export default class App extends Vue {
 </script>
 
 <style lang="scss">
+@import "./styles/common.scss";
+// @import "../node_modules/sl-vue-tree/dist/sl-vue-tree-minimal.css";
+@import "../node_modules/sl-vue-tree/dist/sl-vue-tree-dark.css";
 
-@import './styles/common.scss';
+.sl-vue-tree.sl-vue-tree-root {
+  border: 1px solid #545454;
+  background-color: white;
+  color: #545454;
+}
+
+.sl-vue-tree-selected > .sl-vue-tree-node-item {
+  color: #545454;
+  background-color: #e9e9e9;
+}
+
+.sl-vue-tree-node-item:hover,
+.sl-vue-tree-node-item.sl-vue-tree-cursor-hover {
+  color: #545454;
+  background-color: #f3f3f3;
+}
+
+.sl-vue-tree-selected > .sl-vue-tree-node-item:hover,
+.sl-vue-tree-selected > .sl-vue-tree-node-item.sl-vue-tree-cursor-hover {
+  color: black;
+  background-color: #e9e9e9;
+}
+
+.sl-vue-tree-node-item {
+  border: 1px solid transparent;
+}
+
+.sl-vue-tree-node-item.sl-vue-tree-cursor-inside {
+  border: 1px solid #545454;
+}
+
+.sl-vue-tree-cursor {
+  border: 1px solid #545454;
+}
+
+.sl-vue-tree-drag-info {
+  color: #e9e9e9;
+  background-color: rgba(0, 0, 0, 0.7);
+  opacity: 0.5;
+}
+
 @import "../node_modules/icon-kit/dist/css/iconkit.min.css";
-@import '../node_modules/bootstrap/scss/bootstrap';
-@import '../node_modules/bootstrap-vue/src/index.scss';
-@import '../node_modules/vue-multiselect/dist/vue-multiselect.min.css';
-@import '../node_modules/vue-airbnb-style-datepicker/dist/vue-airbnb-style-datepicker.min.css';
+@import "../node_modules/bootstrap/scss/bootstrap";
+@import "../node_modules/bootstrap-vue/src/index.scss";
+@import "../node_modules/vue-multiselect/dist/vue-multiselect.min.css";
+@import "../node_modules/vue-airbnb-style-datepicker/dist/vue-airbnb-style-datepicker.min.css";
 
 #loader {
   display: none;
@@ -176,9 +219,8 @@ main {
 }
 
 .wrapper.embed .page-wrap .main-content {
-    margin-top: 0px;
-    margin-left: 0px;
-    padding: 15px;
+  margin-top: 0px;
+  margin-left: 0px;
+  padding: 15px;
 }
-
 </style>

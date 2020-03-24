@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.integration.test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +50,7 @@ import org.slf4j.LoggerFactory;
  *
  * Abstract class used for DAO testing
  */
-@Category(IntegrationTestCategory.class)
+//@Category(IntegrationTestCategory.class)
 public abstract class AbstractIntegrationTest extends JerseyTest {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(AbstractIntegrationTest.class);
@@ -137,7 +138,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
             });
             return res.getResult();
         }
-        
+
         throw new Exception("Error while getting token: " + json);
     }
 
@@ -388,5 +389,11 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
 
         return first.entrySet().stream()
                 .allMatch(e -> e.getValue().equals(second.get(e.getKey())));
+    }
+
+    protected void printJsonNode(JsonNode node) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        Object json = mapper.readValue(node.toString(), Object.class);
+        System.out.println(json);
     }
 }

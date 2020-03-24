@@ -247,6 +247,11 @@ const manageError = function manageError(error) {
   document.getElementById('opensilex-error-loading').style.visibility = 'visible';
 }
 
+// Load tree component
+console.debug("Load tree component...");
+import SlVueTree from 'sl-vue-tree';
+Vue.component("sl-vue-tree", SlVueTree);
+
 // Load default components
 console.debug("Load default components...");
 import components from './components';

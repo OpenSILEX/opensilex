@@ -11,34 +11,38 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
-import java.util.List;
-import java.util.TreeSet;
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.infrastructure.dal.InfrastructureDAO;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.group.api.GroupGetDTO;
+import org.opensilex.rest.sparql.dto.ResourceTreeDTO;
 import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.TreeResponse;
+import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.rest.sparql.response.ResourceTreeResponse;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.utils.OrderBy;
+import org.opensilex.sparql.tree.ResourceTree;
 
 /**
  *
@@ -101,6 +105,44 @@ public class InfrastructureAPI {
     }
 
     /**
+     * @param xpUri the Experiment URI
+     * @return a {@link Response} with a {@link SingleObjectResponse} containing
+     * the {@link ExperimentGetDTO}
+     */
+    @GET
+    @Path("get/{uri}")
+    @ApiOperation("Get an experiment by URI")
+    @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
+            groupLabelKey = CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY,
+            credentialId = CREDENTIAL_INFRASTRUCTURE_READ_ID,
+            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Infrastructure retrieved", response = InfrastructureGetDTO.class),
+        @ApiResponse(code = 204, message = "No experiment found", response = ErrorResponse.class)
+    })
+    public Response getInfrastructure(
+            @ApiParam(value = "Infrastructure URI", example = "http://opensilex.dev/infrastructures/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+        InfrastructureDAO dao = new InfrastructureDAO(sparql);
+        InfrastructureModel model = dao.get(uri);
+
+        if (model != null) {
+            return new SingleObjectResponse<>(InfrastructureGetDTO.fromModel(model)).getResponse();
+        } else {
+            return new ErrorResponse(
+                    Response.Status.NO_CONTENT, "Infrastructure not found",
+                    "Unknown infrastructure URI: " + uri.toString()
+            ).getResponse();
+        }
+    }
+
+    /**
      * Return a group by URI
      *
      * @see org.opensilex.rest.group.dal.InfrastructureDAO
@@ -110,7 +152,7 @@ public class InfrastructureAPI {
      */
     @GET
     @Path("search")
-    @ApiOperation("Get a group by it's URI")
+    @ApiOperation("Search infrastructures tree")
     @ApiProtected
     @ApiCredential(
             groupId = CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
@@ -121,28 +163,22 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return group", response = GroupGetDTO.class),
+        @ApiResponse(code = 200, message = "Return group", response = ResourceTreeDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
-    public Response searchInfrastructures(
-            @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
-            @ApiParam(value = "Parent infrastructure URI") @QueryParam("parent") URI parent,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("orderBy") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number") @QueryParam("page") int page,
-            @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize,
+    public Response searchInfrastructuresTree(
+            @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") @NotEmpty String pattern,
             @Context SecurityContext securityContext
     ) throws Exception {
         UserModel user = (UserModel) securityContext.getUserPrincipal();
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
 
-        TreeSet<InfrastructureModel> tree = dao.searchTree(
+        ResourceTree<InfrastructureModel> tree = dao.searchTree(
                 pattern,
-                parent,
-                user.getUri(),
+                user,
                 user.getLang()
         );
 
-        return new TreeResponse<InfrastructureModel>(tree).getResponse();
+        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree)).getResponse();
     }
-
 }

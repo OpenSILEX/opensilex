@@ -98,6 +98,8 @@ export default class FactorLevelForm extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
+  $t: any;
+  $i18n: any;
 
   get user() {
     return this.$store.state.user;

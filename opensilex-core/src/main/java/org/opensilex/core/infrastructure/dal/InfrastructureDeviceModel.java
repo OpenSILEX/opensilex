@@ -15,8 +15,8 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "InfrastructureDevice",
-        graph = "set/devices",
-        prefix = "device"
+        graph = "devices",
+        prefix = "dvc"
 )
 public class InfrastructureDeviceModel extends SPARQLResourceModel implements ClassURIGenerator<InfrastructureDeviceModel> {
 

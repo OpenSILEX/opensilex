@@ -458,7 +458,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
             
         try {
             String fileStorageDirectory = PropertiesFileManager.getConfigFileProperty("service", "uploadFileServerDirectory");
-            final String fileServerDirectory =  fileStorageDirectory + '/' + fileCollectionName + "/";
+            final String fileServerDirectory =  Paths.get(fileStorageDirectory + '/' + fileCollectionName + "/").toFile().getAbsolutePath();
             
             String key = fileDescription.getFilename() + fileDescription.getDate();
             String uri = UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);

@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -76,7 +77,8 @@ public class DocumentMongoDAO extends MongoDAO<Document> {
         GridFSDBFile out = (GridFSDBFile) gridFS.findOne(new BasicDBObject("uri", documentURI));
         InputStream is = out.getInputStream();
         
-        File file = new File(PropertiesFileManager.getConfigFileProperty("service", "uploadFileServerDirectory") + "/" + out.get("filename"));
+        String fileStorageDirectory = PropertiesFileManager.getConfigFileProperty("service", "uploadFileServerDirectory");
+        File file = Paths.get(fileStorageDirectory + '/' + out.get("filename")).toFile();
         
         try {
             OutputStream outputStream = new FileOutputStream(file);

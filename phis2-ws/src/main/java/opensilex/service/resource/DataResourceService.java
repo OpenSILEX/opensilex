@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiResponses;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -391,7 +392,8 @@ public class DataResourceService extends ResourceService {
             for (FileDescriptionWebPathPostDTO description : descriptionsDto) {
                 FileDescription fileDescription = description.createObjectFromDTO();
                 // get the the absolute file path according to the fileStorageDirectory
-                File realFile = new File(FilenameUtils.separatorsToSystem(fileStorageDirectory + '/' + fileDescription.getPath()));
+                File realFile = Paths.get(fileStorageDirectory + '/' + fileDescription.getPath()).toFile();
+                
                 checkFsError = checkFilePath(realFile);
                 if (checkFsError.isPresent()) { // check if a error msg was returned
                     break;

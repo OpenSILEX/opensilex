@@ -265,15 +265,13 @@ public class ExperimentDAO {
             if (ended) {
                 select.addFilter(SPARQLQueryHelper.getExprFactory().le(endDateVar, currentDateNode));
             } else {
-                select.addFilter(SPARQLQueryHelper.getExprFactory().gt(endDateVar, currentDateNode));
+                ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+                Expr noEndDateFilter = exprFactory.not(exprFactory.bound(endDateVar));
+                select.addFilter(exprFactory.or(noEndDateFilter,exprFactory.gt(endDateVar, currentDateNode)));
             }
         }
-        if (startDate != null) {
-            select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.START_DATE_SPARQL_VAR, LocalDate.parse(startDate)));
-        }
-        if (endDate != null) {
-            select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.END_DATE_SPARQL_VAR, LocalDate.parse(endDate)));
-        }
+        Expr dateRangeExpr = SPARQLQueryHelper.dateRange(ExperimentModel.START_DATE_SPARQL_VAR,LocalDate.parse(startDate),ExperimentModel.END_DATE_SPARQL_VAR,LocalDate.parse(endDate));
+        select.addFilter(dateRangeExpr);
     }
 
     protected void appendProjectListFilter(SelectBuilder select, List<URI> projects) throws Exception {

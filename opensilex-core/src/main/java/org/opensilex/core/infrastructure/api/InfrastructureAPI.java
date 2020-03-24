@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.util.List;
+import java.util.TreeSet;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -34,11 +35,10 @@ import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.TreeResponse;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
-import org.opensilex.utils.ListWithPagination;
 
 /**
  *
@@ -83,13 +83,13 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Create an infrastructure", response = ObjectUriResponse.class),
-            @ApiResponse(code = 409, message = "An infrastructure with the same URI already exists", response = ErrorResponse.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+        @ApiResponse(code = 201, message = "Create an infrastructure", response = ObjectUriResponse.class),
+        @ApiResponse(code = 409, message = "An infrastructure with the same URI already exists", response = ErrorResponse.class)
+    })
 
     public Response createInfrastructure(
-            @ApiParam("Enfrastructure description") @Valid InfrastructureCreationDTO dto
-    ) {
+            @ApiParam("Infrastructure description") @Valid InfrastructureCreationDTO dto
+    ) throws Exception {
         try {
             InfrastructureDAO dao = new InfrastructureDAO(sparql);
             InfrastructureModel model = dao.create(dto.newModel());
@@ -97,11 +97,9 @@ public class InfrastructureAPI {
 
         } catch (SPARQLAlreadyExistingUriException e) {
             return new ErrorResponse(Response.Status.CONFLICT, "Infrastructure already exists", e.getMessage()).getResponse();
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
         }
     }
-    
+
     /**
      * Return a group by URI
      *
@@ -124,8 +122,7 @@ public class InfrastructureAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return group", response = GroupGetDTO.class),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Group not found", response = ErrorDTO.class)
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchInfrastructures(
             @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
@@ -137,18 +134,15 @@ public class InfrastructureAPI {
     ) throws Exception {
         UserModel user = (UserModel) securityContext.getUserPrincipal();
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        
-        ListWithPagination<InfrastructureModel> model = dao.search(
+
+        TreeSet<InfrastructureModel> tree = dao.searchTree(
                 pattern,
                 parent,
                 user.getUri(),
-                user.getLang(),
-                orderByList,
-                page,
-                pageSize
+                user.getLang()
         );
 
-        return new PaginatedListResponse<>(model).getResponse();
+        return new TreeResponse<InfrastructureModel>(tree).getResponse();
     }
 
 }

@@ -12,16 +12,15 @@ import org.mockito.Mockito;
 import org.opensilex.OpenSilex;
 import org.opensilex.rest.RestApplication;
 import org.opensilex.rest.authentication.AuthenticationService;
-import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.service.SPARQLService;
 
-import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.opensilex.rest.RestModule;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 
 /**
@@ -58,6 +57,10 @@ public class IntegrationTestContext {
         });
 
         addAdminUser();
+    }
+    
+    public void addAdminUser() throws Exception {
+        RestModule.createDefaultSuperAdmin(getSparqlService(), getAuthenticationService());
     }
 
     public ResourceConfig getResourceConfig() {
@@ -101,13 +104,4 @@ public class IntegrationTestContext {
         OpenSilex.getInstance().shutdown();
     }
 
-    public void addAdminUser() throws Exception {
-        // add the admin user
-        try (SPARQLService sparqlService = getSparqlService()) {
-            AuthenticationService authentication = OpenSilex.getInstance().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
-            UserDAO userDAO = new UserDAO(sparqlService);
-            InternetAddress email = new InternetAddress("admin@opensilex.org");
-            userDAO.create(null, email, "Admin", "OpenSilex", true, authentication.getPasswordHash("admin"), "en-US");
-        }
-    }
 }

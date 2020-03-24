@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import org.apache.jena.riot.Lang;
 import org.eclipse.rdf4j.model.vocabulary.RDF4J;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -19,9 +18,6 @@ import org.opensilex.OpenSilex;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLValidationException;
 import org.opensilex.unit.test.AbstractUnitTest;
-import org.opensilex.sparql.model.A;
-import org.opensilex.sparql.model.B;
-import org.opensilex.sparql.model.C;
 import org.opensilex.sparql.model.TEST_ONTOLOGY;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -33,10 +29,7 @@ public abstract class SHACLTest extends AbstractUnitTest {
 
     private static SPARQLService service;
 
-    private static URI shaclURI;
-
     public static void initialize(SPARQLService service) throws Exception {
-        shaclURI = new URI(RDF4J.SHACL_SHAPE_GRAPH.toString());
         SHACLTest.service = service;
 
         service.clear();

@@ -48,13 +48,17 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.opensilex.service.ServiceDefaultDefinition;
+import org.opensilex.sparql.model.SPARQLTreeModel;
 
 /**
  * Implementation of SPARQLService
@@ -365,6 +369,62 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         return resultList;
     }
 
+    public <T extends SPARQLTreeModel> TreeSet<T> searchTree(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+        List<T> list = search(objectClass, lang, filterHandler);
+
+        Map<T, Set<T>> treeMap = new HashMap<T, Set<T>>();
+        treeMap.put(null, new HashSet<>());
+        list.forEach(item -> {
+            treeMap.put(item, new HashSet<>());
+        });
+
+        for (T item : list) {
+            buildTreeMap(item, treeMap);
+        }
+
+        TreeSet<T> tree = new TreeSet<>();
+        buildTreeSet(null, tree, treeMap);
+
+        return tree;
+    }
+
+    private <T extends SPARQLTreeModel> void buildTreeSet(T parent, TreeSet<T> tree, Map<T, Set<T>> treeMap) {
+        Set<T> children = treeMap.get(parent);
+
+        if (children != null) {
+            List<T> selectedChildren = new ArrayList<>();
+
+            children.forEach(child -> {
+                buildTreeSet(child, tree, treeMap);
+                if (parent != null) {
+                    child.setParent(parent);
+                }
+                selectedChildren.add(child);
+            });
+
+            if (parent != null) {
+                parent.setChildren(selectedChildren);
+            } else {
+                tree.addAll(selectedChildren);
+            }
+        }
+    }
+
+    private <T extends SPARQLTreeModel> void buildTreeMap(T candidate, Map<T, Set<T>> treeMap) {
+        if (!treeMap.containsKey(candidate)) {
+
+            T parent = (T) candidate.getParent();
+            if (parent == null) {
+                treeMap.get(null).add(candidate);
+            }
+
+            if (!treeMap.containsKey(parent)) {
+                treeMap.put(parent, new HashSet<>());
+            }
+            treeMap.get(parent).add(candidate);
+        }
+    }
+
     public <T extends SPARQLResourceModel> List<T> search(Class<T> objectClass, String lang) throws Exception {
         return search(objectClass, lang, null, null, null, null);
     }
@@ -454,12 +514,28 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> void create(T instance) throws Exception {
-        create(instance, true);
+        create(instance, true, null);
     }
 
-    private <T extends SPARQLResourceModel> void create(T instance, boolean checkUriExist) throws Exception {
+    public <T extends SPARQLResourceModel> void create(T instance, Resource rdfType) throws Exception {
+        create(instance, new URI(rdfType.getURI()));
+    }
+    
+        public <T extends SPARQLResourceModel> void create(T instance, URI rdfType) throws Exception {
+        create(instance, true, rdfType);
+    }
 
+    public <T extends SPARQLResourceModel> void create(T instance, boolean checkUriExist) throws Exception {
+        create(instance, checkUriExist, null);
+    }
+        
+    private <T extends SPARQLResourceModel> void create(T instance, boolean checkUriExist, URI rdfType) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(instance.getClass());
+        if (rdfType == null) {
+            instance.setType(new URI(sparqlObjectMapper.getRDFType().getURI()));
+        } else {
+            instance.setType(rdfType);
+        }
         generateUniqueUriIfNullOrValidateCurrent(sparqlObjectMapper, instance, checkUriExist);
 
         UpdateBuilder create = sparqlObjectMapper.getCreateBuilder(instance);

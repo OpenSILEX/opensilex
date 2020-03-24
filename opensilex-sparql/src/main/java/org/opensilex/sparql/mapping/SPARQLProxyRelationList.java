@@ -21,7 +21,7 @@ import org.opensilex.sparql.utils.Ontology;
  * @author vidalmor
  */
 @SuppressWarnings("rawtypes")
-public class SPARQLProxyRelationList extends SPARQLProxy<List> {
+class SPARQLProxyRelationList extends SPARQLProxy<List> {
 
     private final Set<String> propertiesToIgnore;
     private final URI uri;

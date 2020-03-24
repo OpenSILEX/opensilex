@@ -112,7 +112,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             throw new SPARQLMapperNotFoundException(concreteObjectClass);
         }
     }
-    
+
     public static synchronized Set<Class<?>> getResourceClasses() {
         return Collections.unmodifiableSet(SPARQL_CLASSES_MAPPER.keySet());
     }
@@ -166,6 +166,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         LOGGER.debug("Init SPARQL class query builder: " + objectClass.getName());
         classQueryBuilder = new SPARQLClassQueryBuilder(classAnalizer);
 
+    }
+
+    public boolean hasValidation() {
+        return classAnalizer.hasValidation();
     }
 
     public Class<T> getObjectClass() {
@@ -462,9 +466,11 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public String generateSHACL() {
-        return classQueryBuilder.generateSHACL();
+        if (hasValidation()) {
+            return classQueryBuilder.generateSHACL();
+        }
+        
+        return null;
     }
-
-    
 
 }

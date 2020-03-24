@@ -20,8 +20,10 @@ import org.opensilex.sparql.service.SPARQLServiceFactory;
 import java.net.URI;
 import java.util.List;
 import org.apache.jena.riot.Lang;
+import org.opensilex.rest.RestModule;
 import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory;
 import org.opensilex.sparql.service.SPARQLStatement;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
@@ -129,4 +131,12 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
         factory.dispose(sparql);
     }
 
+    @Override
+    public void startup() throws Exception {
+        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        if (factory instanceof RDF4JInMemoryServiceFactory) {
+            install(false);
+            RestModule.createDefaultSuperAdmin();
+        }
+    }
 }

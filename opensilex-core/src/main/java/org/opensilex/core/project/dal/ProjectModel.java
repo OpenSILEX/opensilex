@@ -22,7 +22,8 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         ontology = Oeso.class,
         resource = "Project",
         graph = "set/projects",
-        prefix = "prj"
+        prefix = "prj",
+        ignoreValidation = true
 )
 public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerator<ProjectModel> {
 

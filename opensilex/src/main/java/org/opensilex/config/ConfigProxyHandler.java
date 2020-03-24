@@ -395,7 +395,7 @@ public class ConfigProxyHandler implements InvocationHandler {
                     implementation = newImplementation;
                 }
             } catch (Exception ex) {
-                LOGGER.error("Error while getting service implementation class for: " + serviceName);
+                LOGGER.error("Error while getting service implementation class for: " + serviceName + " (" + implementation.getCanonicalName() + ")");
                 throw ex;
             }
 

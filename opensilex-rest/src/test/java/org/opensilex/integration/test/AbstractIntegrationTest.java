@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static junit.framework.TestCase.assertEquals;
 import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestRule;
@@ -133,12 +132,13 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         // need to convert according a TypeReference, because the expected SingleObjectResponse is a generic object
         ObjectMapper mapper = new ObjectMapper();
         Object json = mapper.readValue(node.toString(), Object.class);
-        SingleObjectResponse<TokenGetDTO> res = mapper.convertValue(node, new TypeReference<SingleObjectResponse<TokenGetDTO>>() {
-        });
-
-        assertEquals(Response.Status.OK.getStatusCode(), callResult.getStatus());
-        assertEquals(Response.Status.OK, res.getStatus());
-        return res.getResult();
+        if (callResult.getStatus() == Response.Status.OK.getStatusCode()) {
+            SingleObjectResponse<TokenGetDTO> res = mapper.convertValue(node, new TypeReference<SingleObjectResponse<TokenGetDTO>>() {
+            });
+            return res.getResult();
+        }
+        
+        throw new Exception("Error while getting token: " + json);
     }
 
     /**

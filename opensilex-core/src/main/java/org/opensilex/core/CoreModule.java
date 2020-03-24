@@ -136,7 +136,6 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
         SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         if (factory instanceof RDF4JInMemoryServiceFactory) {
             install(false);
-            RestModule.createDefaultSuperAdmin();
         }
     }
 }

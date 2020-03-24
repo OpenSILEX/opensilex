@@ -42,7 +42,7 @@ import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
  *
  * @author vincent
  */
-public class SPARQLClassAnalyzer {
+class SPARQLClassAnalyzer {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLClassAnalyzer.class);
 

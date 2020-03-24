@@ -16,7 +16,7 @@ import org.opensilex.sparql.service.SPARQLService;
  * @author vincent
  */
 @SuppressWarnings("rawtypes")
-abstract public class SPARQLProxyList<T> extends SPARQLProxy<List> {
+abstract class SPARQLProxyList<T> extends SPARQLProxy<List> {
 
     protected final URI uri;
     protected final Property property;

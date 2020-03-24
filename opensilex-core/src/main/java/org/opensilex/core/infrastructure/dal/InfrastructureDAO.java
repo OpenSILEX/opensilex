@@ -6,16 +6,14 @@
 package org.opensilex.core.infrastructure.dal;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
-import org.opensilex.sparql.utils.OrderBy;
-import org.opensilex.utils.ListWithPagination;
 
 /**
  * @author vidalmor
@@ -28,13 +26,13 @@ public class InfrastructureDAO {
         this.sparql = sparql;
     }
 
-    public ListWithPagination<InfrastructureModel> search(String pattern, URI parent, URI userURI, String lang, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+    public TreeSet<InfrastructureModel> searchTree(String pattern, URI parent, URI userURI, String lang) throws Exception {
         Set<URI> infras = getUserInfrastructures(userURI, lang);
         if (infras != null && infras.isEmpty()) {
-            return new ListWithPagination<InfrastructureModel>(new ArrayList<>(), page, pageSize, 0);
+            return new TreeSet<InfrastructureModel>();
         }
 
-        return sparql.searchWithPagination(
+        return sparql.searchTree(
                 InfrastructureModel.class,
                 lang,
                 (SelectBuilder select) -> {
@@ -49,10 +47,7 @@ public class InfrastructureDAO {
                     if (infras != null) {
                         SPARQLQueryHelper.inURI(select, InfrastructureModel.URI_FIELD, infras);
                     }
-                },
-                orderByList,
-                page,
-                pageSize
+                }
         );
     }
 

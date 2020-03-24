@@ -10,8 +10,6 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.eclipse.rdf4j.sail.shacl.ShaclSail;
-import org.opensilex.OpenSilex;
-import org.opensilex.sparql.service.SPARQLService;
 
 /**
  *

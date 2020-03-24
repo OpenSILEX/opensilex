@@ -210,16 +210,14 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             lang = OpenSilex.getDefaultLanguage();
         }
 
-        String realType = result.getStringValue(getTypeFieldName());
-        if (!realType.equals(getRDFType().toString())) {
-            // TODO handle sub classes
-        }
-
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
         URI uri = uriDeserializer.fromString((result.getStringValue(classAnalizer.getURIFieldName())));
 
         T instance = createInstance(uri);
 
+        String realType = result.getStringValue(getTypeFieldName());
+        instance.setType(new URI(realType));
+        
         for (Field field : classAnalizer.getDataPropertyFields()) {
             Method setter = classAnalizer.getSetterFromField(field);
 
@@ -469,8 +467,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         if (hasValidation()) {
             return classQueryBuilder.generateSHACL();
         }
-        
+
         return null;
     }
-
 }

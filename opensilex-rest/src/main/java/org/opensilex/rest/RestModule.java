@@ -18,6 +18,7 @@ import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.profile.dal.ProfileModel;
 import org.opensilex.rest.security.dal.SecurityAccessDAO;
 import org.opensilex.rest.user.dal.UserDAO;
+import org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
@@ -40,7 +41,7 @@ import org.slf4j.LoggerFactory;
 public class RestModule extends OpenSilexModule implements APIExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RestModule.class);
-    
+
     @Override
     public Class<? extends ModuleConfig> getConfigClass() {
         return RestConfig.class;
@@ -65,23 +66,27 @@ public class RestModule extends OpenSilexModule implements APIExtension {
     @Override
     public void startup() throws Exception {
         SPARQLService.addPrefix(SecurityOntology.PREFIX, SecurityOntology.NAMESPACE);
+        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        if (factory instanceof RDF4JInMemoryServiceFactory) {
+            RestModule.createDefaultSuperAdmin();
+        }
     }
-
+    
     @Override
     public void install(boolean reset) throws Exception {
         LOGGER.info("Create default profile");
         createDefaultProfile(reset);
     }
-    
+
     private final static String DEFAULT_PROFILE_URI = "http://www.opensilex.org/profiles/default-profile";
     private final static String DEFAULT_PROFILE_NAME = "Default profile";
-    
+
     public static void createDefaultProfile(boolean reset) throws Exception {
         SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
-        
+
         SecurityAccessDAO securityDAO = new SecurityAccessDAO(sparql);
-        
+
         ProfileModel profile = new ProfileModel();
         profile.setUri(new URI(DEFAULT_PROFILE_URI));
         profile.setName(DEFAULT_PROFILE_NAME);
@@ -89,8 +94,7 @@ public class RestModule extends OpenSilexModule implements APIExtension {
         sparql.create(profile);
         factory.dispose(sparql);
     }
-    
-    
+
     @Override
     public void check() throws Exception {
         LOGGER.info("Check User existence");
@@ -104,19 +108,25 @@ public class RestModule extends OpenSilexModule implements APIExtension {
             LOGGER.warn("/!\\ You probably should add one with command `opensilex user add ...` (use --help flag for more information)");
         }
     }
-    
+
     public static void createDefaultSuperAdmin() throws Exception {
         OpenSilex opensilex = OpenSilex.getInstance();
         SPARQLService sparql = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
         try {
             AuthenticationService authentication = opensilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
 
-            UserDAO userDAO = new UserDAO(sparql);
-
-            InternetAddress email = new InternetAddress("admin@opensilex.org");
-            userDAO.create(null, email, "Admin", "OpenSilex", true, authentication.getPasswordHash("admin"), "en-US");
+            createDefaultSuperAdmin(sparql, authentication);
         } finally {
             sparql.shutdown();
+        }
+    }
+
+    public static void createDefaultSuperAdmin(SPARQLService sparql, AuthenticationService authentication) throws Exception {
+        UserDAO userDAO = new UserDAO(sparql);
+        InternetAddress email = new InternetAddress("admin@opensilex.org");
+        
+        if (!userDAO.userEmailexists(email)) {
+            userDAO.create(null, email, "Admin", "OpenSilex", true, authentication.getPasswordHash("admin"), "en-US");
         }
     }
 }

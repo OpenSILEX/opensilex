@@ -8,12 +8,11 @@ package org.opensilex.core.infrastructure.dal;
 import java.util.List;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.rest.authentication.SecurityOntology;
 import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.model.SPARQLTreeModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
 /**
@@ -26,7 +25,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         graph = "set/infrastructures",
         prefix = "infra"
 )
-public class InfrastructureModel extends SPARQLResourceModel implements ClassURIGenerator<InfrastructureModel> {
+public class InfrastructureModel extends SPARQLTreeModel implements ClassURIGenerator<InfrastructureModel> {
 
     @SPARQLProperty(
             ontology = FOAF.class,
@@ -40,7 +39,7 @@ public class InfrastructureModel extends SPARQLResourceModel implements ClassURI
             ontology = Oeso.class,
             property = "hasChild"
     )
-    private List<InfrastructureModel> children;
+    protected List<InfrastructureModel> children;
     public static final String CHILDREN_FIELD = "children";
 
     @SPARQLProperty(
@@ -48,7 +47,7 @@ public class InfrastructureModel extends SPARQLResourceModel implements ClassURI
             property = "hasChild",
             inverse = true
     )
-    private InfrastructureModel parent;
+    protected InfrastructureModel parent;
     public static final String PARENT_FIELD = "parent";
     
     @SPARQLProperty(
@@ -76,10 +75,6 @@ public class InfrastructureModel extends SPARQLResourceModel implements ClassURI
 
     public List<InfrastructureModel> getChildren() {
         return children;
-    }
-
-    public void setChildren(List<InfrastructureModel> children) {
-        this.children = children;
     }
 
     public InfrastructureModel getParent() {

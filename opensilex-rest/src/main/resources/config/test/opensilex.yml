@@ -3,6 +3,6 @@ ontologies:
     baseURIAlias: test
     usePrefixes: false
     sparql:
-        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryService
+        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
 
 

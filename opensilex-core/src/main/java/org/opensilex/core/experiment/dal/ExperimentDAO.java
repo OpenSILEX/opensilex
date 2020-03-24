@@ -36,7 +36,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 
@@ -270,7 +269,10 @@ public class ExperimentDAO {
                 select.addFilter(exprFactory.or(noEndDateFilter,exprFactory.gt(endDateVar, currentDateNode)));
             }
         }
-        Expr dateRangeExpr = SPARQLQueryHelper.dateRange(ExperimentModel.START_DATE_SPARQL_VAR,LocalDate.parse(startDate),ExperimentModel.END_DATE_SPARQL_VAR,LocalDate.parse(endDate));
+        LocalDate startLocateDate = startDate != null ? LocalDate.parse(startDate) : null;
+        LocalDate endLocalDate = endDate != null ? LocalDate.parse(endDate) : null;
+
+        Expr dateRangeExpr = SPARQLQueryHelper.dateRange(ExperimentModel.START_DATE_SPARQL_VAR,startLocateDate,ExperimentModel.END_DATE_SPARQL_VAR,endLocalDate);
         select.addFilter(dateRangeExpr);
     }
 

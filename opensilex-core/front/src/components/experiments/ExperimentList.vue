@@ -233,7 +233,6 @@
 
         private _alias: string;
         private _uri: string;
-        private _beginDate: string;
         private _startDate: string;
         private _endDate: string;
         private _campaign: number;
@@ -253,13 +252,11 @@
         }
 
         set alias(value: string) {
-            console.log("new alias = " + value);
             this._alias = value;
             this._experimentList.loadExperiments();
         }
 
         set uri(value: string) {
-            console.log("new uri = " + value);
             this._uri = value;
             this._experimentList.loadExperiments();
         }
@@ -269,41 +266,12 @@
         }
 
         updateBeginDate() {
-            let startDate = moment(this.startDate, 'YYYY-MM-DD');
-            let endDate = moment(this.endDate, 'YYYY-MM-DD');
-            this.beginDate = startDate.format("DD/MM/YYYY") + " - " + endDate.format("DD/MM/YYYY");
-        }
-
-        set beginDate(value: string) {
-            console.log("new beginDate = " + value);
-            this._beginDate = value;
-
-            let dates = value.split(" - ");
-
-            if(dates.length == 2 && dates[0].length == 10 && dates[1].length == 10) {
-                let startDate = moment(dates[0], 'DD/MM/YYYY');
-                let endDate = moment(dates[1], 'DD/MM/YYYY');
-
-                console.log("startDate = " + startDate);
-                console.log("endDate = " + endDate);
-
-                if(startDate.isValid() && endDate.isValid()) {
-                    console.log("Date valid");
-                    this._startDate = startDate.format('YYYY-MM-DD');
-                    this._endDate = endDate.format('YYYY-MM-DD');
-                }
-            }
-
             this._experimentList.loadExperiments();
         }
 
-        get beginDate() {
-            return this._beginDate;
-        }
-
         set startDate(value) {
-            console.log("new startDate = " + value);
             this._startDate = value;
+            console.log("new startDate = " + this._startDate);
         }
 
         get startDate() {
@@ -311,8 +279,9 @@
         }
 
         set endDate(value) {
-            console.log("new endDate = " + value);
             this._endDate = value;
+            console.log("new endDate = " + this._endDate);
+
         }
 
         get endDate() {
@@ -320,7 +289,6 @@
         }
 
         set campaign(value: number) {
-            console.log("new campaign = " + value);
             this._campaign = value;
             this._experimentList.loadExperiments();
         }
@@ -330,8 +298,6 @@
         }
 
         set projects(values: Array<ProjectCreationDTO>) {
-            console.log("new projects = " + values);
-            console.log("projects size = " + values.length);
             this._projects = values;
             this._experimentList.loadExperiments();
         }
@@ -341,8 +307,6 @@
         }
 
         set installations(values: Array<string>) {
-            console.log("new installations = " + values);
-            console.log("installations size = " + values.length);
             this._installations = values;
             this._experimentList.loadExperiments();
         }
@@ -352,8 +316,6 @@
         }
 
         set places(values: Array<string>) {
-            console.log("new places = " + values);
-            console.log("places size = " + values.length);
             this._places = values;
             this._experimentList.loadExperiments();
         }
@@ -413,7 +375,6 @@
         }
 
         created () {
-            console.log("created()");
             this.loadDatas();
         }
 
@@ -429,8 +390,6 @@
         }
 
         loadExperiments() {
-            console.log("loadExperiments()");
-            console.log("currentPage = " + this.currentPage);
 
             let service: ExperimentsService = this.$opensilex.getService(
                 "opensilex.ExperimentsService"
@@ -453,29 +412,20 @@
                 }
             }
 
-            let startDate;
-            let endDate;
-
-            // if(this.filter.beginDate) {
-            //     let dates = this.filter.beginDate.split(" - ");
-            //     if(dates.length == 2 && dates[0].length == 10 && dates[1].length == 10) {
-            //         startDate = moment(dates[0], 'DD/MM/YYYY').format('YYYY-MM-DD');
-            //         endDate = moment(dates[1], 'DD/MM/YYYY').format('YYYY-MM-DD');
-            //     }
-            // }
-
             let speciesUri;
 
-            console.log("FILTER SPECIES "+this.filter.species);
             if(this.filter.species != null){
                 speciesUri = this.filter.species.uri;
             }
 
+            console.log("FILTER start :"+this.filter.startDate);
+            console.log("FILTER end :"+this.filter.endDate);
+
                 service.searchExperiments(
                   this.user.getAuthorizationHeader(),
                   this.filter.uri,
-                  undefined,
-                  undefined,
+                  this.filter.startDate,
+                  this.filter.endDate,
                   this.filter.campaign,
                   this.filter.alias,
                   speciesUri,
@@ -487,8 +437,6 @@
                   this.pageSize
                 )
                 .then((http: HttpResponse<OpenSilexResponse<Array<ExperimentGetDTO>>>) => {
-                //   console.log(http.response);
-
                   this.totalRow = http.response.metadata.pagination.totalCount;
                   this.experiments = http.response.result;
                   if(this.campains.length == 0) {
@@ -516,8 +464,6 @@
         }
 
         loadProjects() {
-            console.log("loadProjects()");
-
             let service: ProjectsService = this.$opensilex.getService(
                 "opensilex.ProjectsService"
             );
@@ -529,8 +475,6 @@
                   1000
                 )
                 .then((http: HttpResponse<OpenSilexResponse<Array<ProjectCreationDTO>>>) => {
-                  console.log(http.response);
-
                   let results: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
                   let resultsList = [];
                   for(let i=0; i<http.response.result.length; i++) {
@@ -560,7 +504,6 @@
         }
 
         formatDate(value: any): String {
-            // console.log("FORMAT :"+value);
             return value;
             // return moment().year(value.year).month(value.month).date(value.day).format('DD/MM/YYYY');
         }

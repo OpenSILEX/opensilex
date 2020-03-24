@@ -55,12 +55,6 @@ public class IntegrationTestContext {
                 bind(request).to(HttpServletRequest.class);
             }
         });
-
-        addAdminUser();
-    }
-    
-    public void addAdminUser() throws Exception {
-        RestModule.createDefaultSuperAdmin(getSparqlService(), getAuthenticationService());
     }
 
     public ResourceConfig getResourceConfig() {
@@ -93,7 +87,6 @@ public class IntegrationTestContext {
         try (SPARQLService sparqlService = getSparqlService()) {
             SPARQLModule.clearPlatformGraphs(sparqlService, graphsToClear);
         }
-
     }
 
     /**

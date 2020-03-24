@@ -13,6 +13,7 @@ import javax.ws.rs.client.WebTarget;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import org.opensilex.OpenSilex;
+import org.opensilex.rest.RestModule;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 
@@ -226,6 +227,6 @@ public class UserAPITest extends AbstractIntegrationTest {
     @Override
     public void clearGraph() throws Exception {
         super.clearGraph();
-        context.addAdminUser();
+        RestModule.createDefaultSuperAdmin();
     }
 }

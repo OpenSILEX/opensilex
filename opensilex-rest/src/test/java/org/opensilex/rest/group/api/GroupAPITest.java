@@ -16,6 +16,7 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import org.opensilex.OpenSilex;
+import org.opensilex.rest.RestModule;
 import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.profile.dal.ProfileDAO;
 import org.opensilex.rest.user.dal.UserDAO;
@@ -246,6 +247,6 @@ public class GroupAPITest extends AbstractIntegrationTest {
     @Override
     public void clearGraph() throws Exception {
         super.clearGraph();
-        context.addAdminUser();
+        RestModule.createDefaultSuperAdmin();
     }
 }

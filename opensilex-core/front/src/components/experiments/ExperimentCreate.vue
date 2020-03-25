@@ -36,6 +36,7 @@ import { ExperimentsService } from "../../lib/api/experiments.service";
 export default class ExperimentCreate extends Vue {
   $opensilex: any;
   $store: any;
+  $i18n: any;
   service: ExperimentsService;
 
   get user() {

@@ -3,6 +3,7 @@
     <br>
     <opensilex-core-ExperimentList
       ref="experimentList"
+      @onCreate="goToExperimentCreate"
     ></opensilex-core-ExperimentList> 
   </div>
 </template>
@@ -38,8 +39,8 @@ export default class ExperimentView extends Vue {
     this.service = this.$opensilex.getService("opensilex.ExperimentsService");
   }
 
-  gotToCreateForm() {
-    this.$router.push('Home') 
+  goToExperimentCreate(){
+    this.$router.push({ path: '/experiments/create' });
   }
 
   // callCreateExperimentService(form: ExperimentCreationDTO, done) {

@@ -100,6 +100,7 @@ export default class ExperimentForm extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
+  $i18n: any;
 
   get user() {
     return this.$store.state.user;

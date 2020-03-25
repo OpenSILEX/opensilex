@@ -30,7 +30,8 @@
             <div class="card-header row clearfix">
                 <div class="col col-sm-3">
                     <div class="card-options d-inline-block">
-                        <b-button id="create-experiment" @click="goToExperimentCreateComponent" variant="primary"><i class="ik ik-plus"></i>{{ $t('component.experiment.search.buttons.create-experiment') }}</b-button>
+                        <b-button id="create-experiment" @click="$emit('onCreate')" variant="primary"><i class="ik ik-plus"></i>{{ $t('component.experiment.search.buttons.create-experiment') }}</b-button>
+                        <!-- todo: add theming color -->
                         <b-tooltip target="create-experiment" >{{ $t('component.experiment.search.buttons.create-experiment-help') }}</b-tooltip>
                     </div>
                 </div>
@@ -212,7 +213,6 @@
     import { SpeciesDTO } from "../../lib//model/speciesDTO";
 
     import VueRouter from "vue-router";
-    import VueI18n from 'vue-i18n';
     import moment from "moment";
 
     export class ExperimentState {
@@ -349,6 +349,7 @@
         $opensilex: any;
         $store: any;
         $router: VueRouter;
+        $i18n: any;
 
         projectsList = [];
         projectsByUri: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();

@@ -63,45 +63,6 @@
                 "unauthorized-error": "Votre session à expirée, merci de vous connecter à nouveau."
             }
         },
-        "experiment": {
-            "common": {
-                "status": {
-                    "finished": "Terminé",
-                    "in-progress": "En cours",
-                    "public": "Public"
-                }
-            },
-            "search": {
-                "description": "Gérer et configurer les expérimentations",
-                "buttons": {
-                    "add-experiment": "Ajouter Expérimentation"
-                },
-                "column": {
-                    "alias": "Alias",
-                    "projects": "Projet(s)",
-                    "installations": "Installation(s)",
-                    "campaign": "Campagne",
-                    "places": "Lieux",
-                    "species": "Espèces",
-                    "startDate": "Date de début",
-                    "endDate": "Date de fin",
-                    "uri": "URI",
-                    "state": "Etat"
-                },
-                "filter": {
-                    "alias": "Filtrer par Alias",
-                    "campains": "Filtrer par Campagne(s)",
-                    "installations": "Filtrer par Installation(s)",
-                    "projects": "Filtrer par Projet(s)",
-                    "places": "Filtrer par Lieux",
-                    "species": "Filtrer par Espèce(s)",
-                    "startDate": "Filtrer par Date de début",
-                    "endDate": "Filtrer par Date de fin",
-                    "uri": "Filtrer par URI",
-                    "state": "Filtrer par état"
-                }
-            }
-        },
         "header": {
             "language": {
                 "fr": "Français",

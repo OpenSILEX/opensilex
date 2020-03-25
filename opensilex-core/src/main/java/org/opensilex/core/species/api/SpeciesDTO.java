@@ -31,6 +31,6 @@ public class SpeciesDTO {
     public static SpeciesDTO fromModel(SpeciesModel model) {
         return new SpeciesDTO()
                 .setUri(model.getUri())
-                .setLabel(model.getLabel().toString());
+                .setLabel(model.getLabel().getDefaultValue());
     }
 }

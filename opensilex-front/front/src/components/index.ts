@@ -13,6 +13,7 @@ import ProfileList from './profiles/ProfileList.vue';
 import GroupForm from './groups/GroupForm.vue';
 import GroupView from './groups/GroupView.vue';
 import GroupList from './groups/GroupList.vue';
+import FormInputMessageHelper from './common/FormInputMessageHelper.vue'
 import ToDoComponent from './layout/ToDoComponent.vue';
 
 export default {
@@ -31,5 +32,6 @@ export default {
     'opensilex-GroupForm': GroupForm,
     'opensilex-GroupView': GroupView,
     'opensilex-GroupList': GroupList,
+    'opensilex-FormInputMessageHelper': FormInputMessageHelper,
     'opensilex-ToDoComponent': ToDoComponent
 };

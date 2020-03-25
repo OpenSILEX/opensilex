@@ -36,7 +36,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 
@@ -265,15 +264,20 @@ public class ExperimentDAO {
             if (ended) {
                 select.addFilter(SPARQLQueryHelper.getExprFactory().le(endDateVar, currentDateNode));
             } else {
-                select.addFilter(SPARQLQueryHelper.getExprFactory().gt(endDateVar, currentDateNode));
+                ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+                Expr noEndDateFilter = exprFactory.not(exprFactory.bound(endDateVar));
+                select.addFilter(exprFactory.or(noEndDateFilter,exprFactory.gt(endDateVar, currentDateNode)));
             }
         }
-        if (startDate != null) {
-            select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.START_DATE_SPARQL_VAR, LocalDate.parse(startDate)));
+        if(startDate == null && endDate == null){
+            return;
         }
-        if (endDate != null) {
-            select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.END_DATE_SPARQL_VAR, LocalDate.parse(endDate)));
-        }
+
+        LocalDate startLocateDate = startDate == null ? null : LocalDate.parse(startDate);
+        LocalDate endLocalDate = endDate == null ? null : LocalDate.parse(endDate);
+
+        Expr dateRangeExpr = SPARQLQueryHelper.dateRange(ExperimentModel.START_DATE_SPARQL_VAR,startLocateDate,ExperimentModel.END_DATE_SPARQL_VAR,endLocalDate);
+        select.addFilter(dateRangeExpr);
     }
 
     protected void appendProjectListFilter(SelectBuilder select, List<URI> projects) throws Exception {

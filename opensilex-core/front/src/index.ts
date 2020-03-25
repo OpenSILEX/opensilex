@@ -1,5 +1,9 @@
 import { ApiServiceBinder } from './lib'
+
+import ExperimentForm from './components/experiments/ExperimentForm.vue';
 import ExperimentList from './components/experiments/ExperimentList.vue';
+import ExperimentCreate from './components/experiments/ExperimentCreate.vue';
+import ExperimentView from './components/experiments/ExperimentView.vue';
 
 import InfrastructureView from './components/infrastructures/InfrastructureView.vue';
 import InfrastructureTree from './components/infrastructures/InfrastructureTree.vue';
@@ -18,7 +22,10 @@ export default {
     },
     components: {
         // experiments
+        "opensilex-core-ExperimentForm": ExperimentForm,
         "opensilex-core-ExperimentList": ExperimentList,
+        "opensilex-core-ExperimentCreate": ExperimentCreate,
+        "opensilex-core-ExperimentView": ExperimentView,
         // infrastructures
         "opensilex-core-InfrastructureView": InfrastructureView,
         "opensilex-core-InfrastructureTree": InfrastructureTree,

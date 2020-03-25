@@ -65,45 +65,6 @@
                 "unauthorized-error": "Your session expired, please login again."
             }
         },
-        "experiment": {
-            "common": {
-                "status": {
-                    "finished": "Finished",
-                    "in-progress": "In-progress",
-                    "public": "Public"
-                }
-            },
-            "search": {
-                "description": "Manage and configure experiments",
-                "buttons": {
-                    "add-experiment": "Add Experiment"
-                },
-                "column": {
-                    "alias": "Alias",
-                    "projects": "Project(s)",
-                    "installations": "Installation(s)",
-                    "campaign": "Campaign",
-                    "places": "Places",
-                    "species": "Species",
-                    "startDate": "Start date",
-                    "endDate": "End date",
-                    "uri": "URI",
-                    "state": "State"
-                },
-                "filter": {
-                    "alias": "Filter by Alias",
-                    "campains": "Filter by Campain(s)",
-                    "installations": "Filter by Installation(s)",
-                    "projects": "Filter by Project(s)",
-                    "places": "Filter by Place(s)",
-                    "species": "Filter by Species",
-                    "startDate": "Filter by start date",
-                    "endDate": "Filtrer by end date",
-                    "uri": "Filter by URI",
-                    "state": "Filter par state"
-                }
-            }
-        },
         "header": {
             "language": {
                 "fr": "French",

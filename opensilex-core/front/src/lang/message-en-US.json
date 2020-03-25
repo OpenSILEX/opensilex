@@ -1,5 +1,57 @@
 {
     "component": {
+        "experiment": {
+            "uri" : "uri",
+            "uri-help" :"Unique experiment identifier",
+            "label" : "label",
+            "comment" : "comment",
+            "common": {
+                "status": {
+                    "finished": "Finished",
+                    "in-progress": "In-progress",
+                    "public": "Public"
+                }
+            },
+            "search": {
+                "description": "Manage and configure experiments",
+                "buttons": {
+                    "create-experiment": "Create experiment",
+                    "create-experiment-help" : " Create an experiment (experimental informations, sensors/variables/factors linked)"
+                },
+                "column": {
+                    "alias": "Alias",
+                    "projects": "Project(s)",
+                    "installations": "Installation(s)",
+                    "campaign": "Campaign",
+                    "places": "Places",
+                    "species": "Species",
+                    "startDate": "Start date",
+                    "endDate": "End date",
+                    "uri": "URI",
+                    "state": "State"
+                },
+                "filter": {
+                    "alias": "Filter by Alias",
+                    "campains": "Filter by Campain(s)",
+                    "installations": "Filter by Installation(s)",
+                    "projects": "Filter by Project(s)",
+                    "places": "Filter by Place(s)",
+                    "species": "Filter by Species",
+                    "startDate": "Filter by start date",
+                    "endDate": "Filtrer by end date",
+                    "uri": "Filter by URI",
+                    "state": "Filter par state"
+                }
+            },
+            "form-wizard": {
+                "label" : "Experiment creation wizard",
+                "general-informations" : "General informations",
+                "variables" : "Measured variables",
+                "factors" : "Controlled factors ",
+                "sensors" : "Sensors which participates in"
+               
+            }
+        },
         "factor": {
             "factor-uri": "Factor URI",
             "factor-alias-placeholder": "Enter factor alias",
@@ -29,7 +81,8 @@
             }
         },
         "common" : {
-            "actions" : "actions"
+            "actions" : "actions",
+            "form-step-errors" : "Some field are required"
         }
     },
     "credential-experimentalDesign": {

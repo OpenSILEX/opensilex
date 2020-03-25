@@ -28,7 +28,8 @@
         "vue-i18n": "8.15.5",
         "vue-multiselect": "^2.1.6",
         "vuejs-datepicker": "^1.6.2",
-        "vuejs-logger": "1.10.2"
+        "vuejs-logger": "1.10.2",
+        "vue-form-wizard" : "0.8.4"
     },
     "devDependencies": {
         "@vue/cli-plugin-babel": "4.2.3",

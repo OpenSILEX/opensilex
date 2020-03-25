@@ -213,7 +213,6 @@
     import { SpeciesDTO } from "../../lib//model/speciesDTO";
 
     import VueRouter from "vue-router";
-    import moment from "moment";
 
     export class ExperimentState {
 
@@ -350,7 +349,6 @@
         $store: any;
         $router: VueRouter;
         $i18n: any;
-
         projectsList = [];
         projectsByUri: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
         experiments: Array<ExperimentGetDTO> = new Array<ExperimentGetDTO>();

@@ -1,9 +1,11 @@
 import { ApiServiceBinder } from './lib'
+
 import ExperimentForm from './components/experiments/ExperimentForm.vue';
 import ExperimentList from './components/experiments/ExperimentList.vue';
 import ExperimentCreate from './components/experiments/ExperimentCreate.vue';
 import ExperimentView from './components/experiments/ExperimentView.vue';
 
+import InfrastructureView from './components/infrastructures/InfrastructureView.vue';
 
 import FactorView from './components/factors/FactorView.vue';
 import FactorList from './components/factors/FactorList.vue';
@@ -23,7 +25,8 @@ export default {
         "opensilex-core-ExperimentList": ExperimentList,
         "opensilex-core-ExperimentCreate": ExperimentCreate,
         "opensilex-core-ExperimentView": ExperimentView,
-
+        // infrastructures
+        "opensilex-core-InfrastructureView": InfrastructureView,
         // factors
         "opensilex-core-FactorView": FactorView,
         "opensilex-core-FactorList": FactorList,

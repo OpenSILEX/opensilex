@@ -5,7 +5,14 @@ menu:
     route: 
       path: /users
       component: opensilex-UserView
-      credentials: []  
+      credentials: []
+  - id: infrastructures
+    label: component.menu.infrastructure
+    icon: ik-grid
+    route: 
+      path: /infrastructures
+      component: opensilex-core-InfrastructureView
+      credentials: []        
   - id: data
     label: component.menu.data.label
     icon: ik-trending-up

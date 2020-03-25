@@ -22,7 +22,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Infrastructure",
-        graph = "set/infrastructures",
+        graph = "infrastructures",
         prefix = "infra"
 )
 public class InfrastructureModel extends SPARQLTreeModel implements ClassURIGenerator<InfrastructureModel> {

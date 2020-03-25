@@ -213,8 +213,6 @@
     import { ExperimentGetDTO } from "../../lib//model/experimentGetDTO";
     import { ProjectCreationDTO } from "../../lib//model/projectCreationDTO";
     import VueRouter from "vue-router";
-    import VueI18n from 'vue-i18n';
-    import moment from "moment";
 
     export class ExperimentState {
 
@@ -269,8 +267,8 @@
         }
 
         updateBeginDate() {
-            let startDate = moment(this.startDate, 'YYYY-MM-DD');
-            let endDate = moment(this.endDate, 'YYYY-MM-DD');
+            let startDate = this._experimentList.$moment(this.startDate, 'YYYY-MM-DD');
+            let endDate = this._experimentList.$moment(this.endDate, 'YYYY-MM-DD');
             this.beginDate = startDate.format("DD/MM/YYYY") + " - " + endDate.format("DD/MM/YYYY");
         }
 
@@ -281,8 +279,8 @@
             let dates = value.split(" - ");
 
             if(dates.length == 2 && dates[0].length == 10 && dates[1].length == 10) {
-                let startDate = moment(dates[0], 'DD/MM/YYYY');
-                let endDate = moment(dates[1], 'DD/MM/YYYY');
+                let startDate = this._experimentList.$moment(dates[0], 'DD/MM/YYYY');
+                let endDate = this._experimentList.$moment(dates[1], 'DD/MM/YYYY');
 
                 console.log("startDate = " + startDate);
                 console.log("endDate = " + endDate);
@@ -389,6 +387,8 @@
         $opensilex: any;
         $store: any;
         $router: VueRouter;
+        $i18n: any;
+        $moment: any;
 
         projectsList = [];
         projects: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();

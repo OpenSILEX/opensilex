@@ -66,7 +66,7 @@ class GermplasmCreationDTO extends GermplasmGetDTO{
         GermplasmModel model = new GermplasmModel();
         model.setUri(uri);
         model.setLabel(label);
-        model.setRdfType(rdfType);
+        model.setType(rdfType);
         model.setSpecies(fromSpecies);
         model.setVariety(fromVariety);
         model.setAccession(fromAccession);

@@ -26,6 +26,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         prefix = "germplasm"
 )
 public class GermplasmModel extends SPARQLResourceModel implements ClassURIGenerator<GermplasmModel>{
+    
     @SPARQLProperty(
         ontology = RDFS.class,
         property = "label",
@@ -34,14 +35,6 @@ public class GermplasmModel extends SPARQLResourceModel implements ClassURIGener
     String label;
     public static final String LABEL_VAR = "label";
     
-    @SPARQLProperty(
-        ontology = RDF.class,
-        property = "type",
-        required = true
-    )
-    URI rdfType;
-    public static final String RDF_TYPE_VAR = "rdfType";
-    
     public String getLabel() {
         return label;
     }
@@ -49,15 +42,6 @@ public class GermplasmModel extends SPARQLResourceModel implements ClassURIGener
     public void setLabel(String label) {
         this.label = label;
     }
-
-    public URI getRdfType() {
-        return rdfType;
-    }
-
-    public void setRdfType(URI rdfType) {
-        this.rdfType = rdfType;
-    }      
-
 
     @SPARQLProperty(
         ontology = Oeso.class,
@@ -106,7 +90,8 @@ public class GermplasmModel extends SPARQLResourceModel implements ClassURIGener
     
     @Override
     public String[] getUriSegments(GermplasmModel instance) {
-        String germplasmType = instance.getRdfType().toString().split("#")[1];
+        String germplasmType = instance.getType().getFragment();
+        
         return new String[]{                
                 germplasmType + "_" + instance.getLabel()
         };

@@ -112,7 +112,7 @@ class GermplasmGetDTO {
         GermplasmGetDTO dto = new GermplasmGetDTO();
 
         dto.setUri(model.getUri());
-        dto.setRdfType(model.getRdfType());
+        dto.setRdfType(model.getType());
         dto.setLabel(model.getLabel());
         dto.setFromSpecies(model.getSpecies());
         dto.setFromVariety(model.getVariety());

@@ -7,11 +7,21 @@ package opensilex.service.germplasm.dal;
 
 import java.net.URI;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
@@ -55,19 +65,19 @@ public class GermplasmDAO {
         GermplasmModel germplasm = new GermplasmModel();
         germplasm.setUri(uri);
         germplasm.setLabel(label);
-        germplasm.setRdfType(rdfType);
+        germplasm.setType(rdfType);
         
         if (fromAccession != null) {
             germplasm.setAccession(fromAccession);
-        } else {
-            if (fromVariety != null) {
-                germplasm.setVariety(fromVariety);
-            } else {
-                germplasm.setSpecies(fromSpecies);            
-            }
+        }
+        if (fromVariety != null) {
+            germplasm.setVariety(fromVariety);
+        } 
+        if (fromSpecies != null) {
+            germplasm.setSpecies(fromSpecies);              
         }
       
-        sparql.create(germplasm);
+        sparql.create(germplasm, rdfType);
         
         return germplasm;
     }  
@@ -76,21 +86,95 @@ public class GermplasmDAO {
         return sparql.getByURI(GermplasmModel.class, uri, null);
     }
     
-    public ListWithPagination<GermplasmModel> search(String namePattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public ListWithPagination<GermplasmModel> search(
+            URI uri,
+            URI rdfType,
+            String label,
+            URI species,
+            URI variety,
+            URI accession, 
+            List<OrderBy> orderByList, 
+            Integer page, 
+            Integer pageSize) throws Exception {
 
-    Expr nameFilter = SPARQLQueryHelper.regexFilter(GermplasmModel.LABEL_VAR, namePattern);
+        return sparql.searchWithPagination(
+                GermplasmModel.class,
+                null,
+                (SelectBuilder select) -> {
+                    appendUriRegexFilter(select, uri);
+                    appendRdfTypeFilter(select, rdfType);
+                    appendRegexLabelFilter(select, label);
+                    appendSpeciesFilter(select, species);
+                    appendVarietyFilter(select, variety);
+                    appendAccessionFilter(select, accession);
+                },
+                orderByList,
+                page,
+                pageSize
+        );
+    }
 
-    return sparql.searchWithPagination(
-            GermplasmModel.class,
-            null,
-            (SelectBuilder select) -> {
-                if (nameFilter != null) {
-                    select.addFilter(nameFilter);
-                }
-            },
-            orderByList,
-            page,
-            pageSize
-    );
-}
+    private void appendUriRegexFilter(SelectBuilder select, URI uri) {
+        if (uri != null) {
+            Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+            Expr strUriExpr = SPARQLQueryHelper.getExprFactory().str(uriVar);
+            select.addFilter(SPARQLQueryHelper.regexFilter(strUriExpr, uri.toString(), null));
+        }
+    }
+    private void appendRdfTypeFilter(SelectBuilder select, URI rdfType) throws Exception {
+        if (rdfType != null) {
+            select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.TYPE_FIELD, rdfType));
+        }
+    }
+
+    private void appendRegexLabelFilter(SelectBuilder select, String label) {
+        if (!StringUtils.isEmpty(label)) {
+            select.addFilter(SPARQLQueryHelper.regexFilter(GermplasmModel.LABEL_VAR, label));
+        }
+    }
+
+    private void appendSpeciesFilter(SelectBuilder select, URI species) throws Exception {
+        if (species != null) {
+            select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.SPECIES_URI_SPARQL_VAR, species));
+        }
+    }
+
+    private void appendVarietyFilter(SelectBuilder select, URI variety) throws Exception {
+        if (variety != null) {
+            select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.VARIETY_URI_SPARQL_VAR, variety));
+        }
+    }
+
+    private void appendAccessionFilter(SelectBuilder select, URI accession) throws Exception {
+        if (accession != null) {
+            select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.ACCESSION_URI_SPARQL_VAR, accession));
+        }
+    }
+
+    public boolean isGermplasmType(URI rdfType) throws SPARQLException {
+        return sparql.executeAskQuery(new AskBuilder()
+                .addWhere(SPARQLDeserializers.nodeURI(rdfType), Ontology.subClassAny, Oeso.Germplasm)
+        );
+    }
+    
+    public boolean isPlantMaterialLot(URI rdfType) throws SPARQLException {
+        return sparql.executeAskQuery(new AskBuilder()
+                .addWhere(SPARQLDeserializers.nodeURI(rdfType), Ontology.subClassAny, Oeso.PlantMaterialLot)
+        );
+    }
+
+    public void delete(URI uri) throws Exception {
+        try {
+            sparql.startTransaction();
+            // if 
+            // Delete existing user profile group relations
+            //sparql.deleteByObjectRelation(GroupUserProfileModel.class, GroupUserProfileModel.PROFILE_FIELD, instanceURI);
+            // Delete user
+            //sparql.delete(ProfileModel.class, instanceURI);
+            sparql.commitTransaction();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction();
+            throw ex;
+        }
+    }
 }

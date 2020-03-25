@@ -54,15 +54,15 @@ public class SwaggerAPIGenerator {
 
         Set<Class<?>> classes = new HashSet<>(availableAPI.values());
         
-        List<Class<?>> moduleClassesAPI = classes.stream().filter((Class<?> c) -> {
+        Set<Class<?>> moduleClassesAPI = classes.stream().filter((Class<?> c) -> {
             String classModuleID = ClassUtils.getProjectIdFromClass(c);
             return moduleID.equals(classModuleID);
-        }).collect(Collectors.toList());
+        }).collect(Collectors.toSet());
         
         if (moduleClassesAPI.size() > 0) {
 
             Reader reader = new Reader(swagger);
-            swagger = reader.read(classes);
+            swagger = reader.read(moduleClassesAPI);
 
             return swagger;
         }

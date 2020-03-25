@@ -22,6 +22,24 @@
         </span>
         <strong v-if="node.data.selected">{{ node.title }}</strong>
         <span v-if="!node.data.selected">{{ node.title }}</span>
+        <b-button-group class="tree-button-group" size="sm">
+          <b-button
+            size="sm"
+            v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+            @click.prevent="$emit('onEdit', node.data)"
+            variant="outline-primary"
+          >
+            <font-awesome-icon icon="edit" size="sm" />
+          </b-button>
+          <b-button
+            size="sm"
+            v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID)"
+            @click.prevent="$emit('onDelete', node.data.uri)"
+            variant="danger"
+          >
+            <font-awesome-icon icon="trash-alt" size="sm" />
+          </b-button>
+        </b-button-group>
       </template>
     </sl-vue-tree>
     <div class="container" v-if="selected != null">
@@ -166,5 +184,8 @@ export default class InfrastructureTree extends Vue {
 </script>
 
 <style scoped lang="scss">
+.badge {
+  float: right;
+}
 </style>
 

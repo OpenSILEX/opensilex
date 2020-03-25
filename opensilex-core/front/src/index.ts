@@ -7,6 +7,7 @@ import ExperimentView from './components/experiments/ExperimentView.vue';
 
 import InfrastructureView from './components/infrastructures/InfrastructureView.vue';
 import InfrastructureTree from './components/infrastructures/InfrastructureTree.vue';
+import InfrastructureForm from './components/infrastructures/InfrastructureForm.vue';
 
 import FactorView from './components/factors/FactorView.vue';
 import FactorList from './components/factors/FactorList.vue';
@@ -29,6 +30,7 @@ export default {
         // infrastructures
         "opensilex-core-InfrastructureView": InfrastructureView,
         "opensilex-core-InfrastructureTree": InfrastructureTree,
+        "opensilex-core-InfrastructureForm": InfrastructureForm,
         // factors
         "opensilex-core-FactorView": FactorView,
         "opensilex-core-FactorList": FactorList,

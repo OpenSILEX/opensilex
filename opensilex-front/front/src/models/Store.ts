@@ -98,6 +98,8 @@ export default new Vuex.Store({
       CREDENTIAL_USER_DELETE_ID: "user-delete",
       CREDENTIAL_USER_READ_ID: "user-read",
       CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID: "infrastructure-modification",
+      CREDENTIAL_INFRASTRUCTURE_DELETE_ID: "infrastructure-delete",
+      CREDENTIAL_INFRASTRUCTURE_READ_ID: "infrastructure-read",
       CREDENTIAL_VARIABLE_MODIFICATION_ID: "variable-modification",
       CREDENTIAL_VARIABLE_DELETE_ID: "variable-delete",
       CREDENTIAL_VARIABLE_READ_ID: "variable-read",

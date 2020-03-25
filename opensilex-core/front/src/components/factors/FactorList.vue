@@ -29,7 +29,7 @@
       <template v-slot:head(comment)="data">{{$t(data.label)}}</template>
       <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
        <template v-slot:cell(actions)="data">
-        <b-button-group>
+        <b-button-group size="sm">
           <b-button
             size="sm"
             @click="$emit('onEdit', data.item)"

@@ -34,6 +34,7 @@ import java.util.zip.ZipFile;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.opensilex.OpenSilex;
+import org.opensilex.OpenSilexModule;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.SubTypesScanner;
@@ -368,5 +369,9 @@ public class ClassUtils {
                     .filter(f -> f.getAbsolutePath().endsWith("." + extensionFilter))
                     .forEach(action);
         }
+    }
+
+    public static boolean isJarClassDirectory(Class<?> aClass) {
+        return getJarFile(aClass).isDirectory();
     }
 }

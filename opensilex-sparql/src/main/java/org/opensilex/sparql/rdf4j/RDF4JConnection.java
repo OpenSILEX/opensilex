@@ -368,14 +368,12 @@ public class RDF4JConnection implements SPARQLConnection {
 
         for (Class<?> c : SPARQLClassObjectMapper.getResourceClasses()) {
             try {
-                if (!c.getCanonicalName().equals("org.opensilex.core.project.dal.ProjectModel")) {
-                    String shaclTTL = SHACL.generateSHACL(c);
-                    if (shaclTTL != null) {
+                String shaclTTL = SHACL.generateSHACL(c);
+                if (shaclTTL != null) {
                     LOGGER.debug("Generated SHACL for: " + c.getCanonicalName() + "\n" + shaclTTL);
                     rdf4JConnection.add(new StringReader(shaclTTL), "", RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
-                    } else {
-                        LOGGER.debug("No SHACL Validation for: " + c.getCanonicalName() + "\n" + shaclTTL);
-                    }
+                } else {
+                    LOGGER.debug("No SHACL Validation for: " + c.getCanonicalName() + "\n" + shaclTTL);
                 }
             } catch (Exception ex) {
                 LOGGER.warn("Error while loading SHACL", ex);

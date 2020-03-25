@@ -1,14 +1,11 @@
 <template>
   <div>
-    <sl-vue-tree v-model="nodes">
-      <template slot="title" slot-scope="{ node }">
-        <span class="item-icon">
-          <i class="fa fa-file" v-if="node.isLeaf"></i>
-          <i class="fa fa-folder" v-if="!node.isLeaf"></i>
-        </span>
-        {{ node.title }}
-      </template>
-    </sl-vue-tree>
+    <b-button
+      @click="showCreateForm"
+      variant="success"
+      v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+    >{{$t('component.infrastructure.add')}}</b-button>
+    <opensilex-core-InfrastructureTree></opensilex-core-InfrastructureTree>
   </div>
 </template>
 
@@ -17,7 +14,7 @@ import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import { InfrastructuresService } from "../../lib/api/api";
-import { ResourceTreeDTO } from "../../lib";
+import { ResourceTreeDTO, InfrastructureGetDTO } from "../../lib";
 
 @Component
 export default class InfrastructureView extends Vue {
@@ -32,35 +29,6 @@ export default class InfrastructureView extends Vue {
   get credentials() {
     return this.$store.state.credentials;
   }
-
-  created() {
-    this.service = this.$opensilex.getService(
-      "opensilex.InfrastructuresService"
-    );
-
-    this.service
-      .searchInfrastructuresTree(this.user.getAuthorizationHeader())
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        console.error(http.response.result);
-        // TODO map to nodes
-      });
-  }
-
-  public nodes = [
-    { title: "Item1", isLeaf: true },
-    { title: "Item2", isLeaf: true, data: { visible: false } },
-    { title: "Folder1" },
-    {
-      title: "Folder2",
-      isExpanded: true,
-      children: [
-        { title: "Item3", isLeaf: true },
-        { title: "Item4", isLeaf: true }
-      ]
-    }
-  ];
-
-  // TODO chercher l'arbre
 }
 </script>
 

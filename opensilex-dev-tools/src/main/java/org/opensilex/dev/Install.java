@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Install {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(OpenSilex.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(Install.class);
 
     private static OpenSilex opensilex;
 

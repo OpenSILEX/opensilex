@@ -370,7 +370,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     public <T extends SPARQLTreeModel> ResourceTree<T>  searchResourceTree(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
         List<T> list = search(objectClass, lang, filterHandler);
 
-        ResourceTree<T> tree = new ResourceTree<T>();
+        ResourceTree<T> tree = new ResourceTree<T>(list);
 
         for (T item : list) {
             tree.addTree(item);

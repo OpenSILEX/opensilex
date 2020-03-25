@@ -71,21 +71,40 @@ public class SPARQLModule extends OpenSilexModule {
 
         SPARQLServiceFactory factory = sparqlConfig.sparql();
         SPARQLService sparql = factory.provide();
-        try {
-            sparql.enableSHACL();
-        } catch (SPARQLValidationException ex) {
-            LOGGER.warn("Error while enable SHACL validation:");
-            Map<URI, Map<URI, List<URI>>> errors = ex.getValidationErrors();
-            errors.forEach((URI uri, Map<URI, List<URI>> error) -> {
-                LOGGER.warn( "--> " + uri + ":");
-                error.forEach((URI protpertyUri, List<URI> brokenConstraints) -> {
-                    LOGGER.warn( "    " + protpertyUri + ":");
-                    brokenConstraints.forEach(constraintURI -> {
-                        LOGGER.warn( "      " + constraintURI);
+
+        if (sparqlConfig.enableSHACL()) {
+            try {
+                sparql.enableSHACL();
+            } catch (SPARQLValidationException ex) {
+                LOGGER.warn("Error while enable SHACL validation:");
+                Map<URI, Map<URI, List<URI>>> errors = ex.getValidationErrors();
+                errors.forEach((URI uri, Map<URI, List<URI>> error) -> {
+                    LOGGER.warn("--> " + uri + ":");
+                    error.forEach((URI protpertyUri, List<URI> brokenConstraints) -> {
+                        LOGGER.warn("    " + protpertyUri + ":");
+                        brokenConstraints.forEach(constraintURI -> {
+                            LOGGER.warn("      " + constraintURI);
+                        });
                     });
                 });
-            });
-            sparql.disableSHACL();
+                sparql.disableSHACL();
+            }
+        } else {
+            try {
+                sparql.disableSHACL();
+            } catch (SPARQLValidationException ex) {
+                LOGGER.warn("Error while disabling SHACL validation:");
+                Map<URI, Map<URI, List<URI>>> errors = ex.getValidationErrors();
+                errors.forEach((URI uri, Map<URI, List<URI>> error) -> {
+                    LOGGER.warn("--> " + uri + ":");
+                    error.forEach((URI protpertyUri, List<URI> brokenConstraints) -> {
+                        LOGGER.warn("    " + protpertyUri + ":");
+                        brokenConstraints.forEach(constraintURI -> {
+                            LOGGER.warn("      " + constraintURI);
+                        });
+                    });
+                });
+            }
         }
         factory.dispose(sparql);
     }

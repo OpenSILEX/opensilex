@@ -412,19 +412,27 @@
             }
 
             let speciesUri;
-
             if(this.filter.species != null){
                 speciesUri = this.filter.species.uri;
             }
 
-            console.log("FILTER start :"+this.filter.startDate);
-            console.log("FILTER end :"+this.filter.endDate);
+            let startDate;
+            let endDate;
+            if(this.filter.startDate){
+                startDate = this.filter.startDate;
+            }
+            if(this.filter.endDate){
+                endDate = this.filter.endDate;
+            }
+
+            console.log("FILTER start :"+startDate);
+            console.log("FILTER end :"+endDate);
 
                 service.searchExperiments(
                   this.user.getAuthorizationHeader(),
                   this.filter.uri,
-                  this.filter.startDate,
-                  this.filter.endDate,
+                  startDate,
+                  endDate,
                   this.filter.campaign,
                   this.filter.alias,
                   speciesUri,

@@ -1,30 +1,30 @@
 <template>
-  <div>
-     <i class="ik folder-plus bg-phis-green"></i>
-
-
-    <opensilex-core-ExperimentList
-      ref="experimentList"
-    ></opensilex-core-ExperimentList> 
-  </div>
+  <form-wizard shape="square" color="#00a38d">
+    <h2 slot="title">
+      <i>
+        <font-awesome-icon icon="vials" />
+        {{ $t('component.experiment.form-wizard.label') }}
+      </i>
+    </h2>
+    <tab-content
+      v-bind:title="$t('component.experiment.form-wizard.general-informations')"
+      :before-change="checkBeforeVariablesStep"
+    >
+      <opensilex-core-ExperimentForm ref="experimentForm"></opensilex-core-ExperimentForm>
+    </tab-content>
+    <tab-content
+      v-bind:title="$t('component.experiment.form-wizard.variables')"
+    >Todo Add LinkExperimentVariable component</tab-content>
+    <tab-content
+      v-bind:title="$t('component.experiment.form-wizard.factors')"
+    >Todo Add LinkExperimentFactors component</tab-content>
+    <tab-content
+      v-bind:title="$t('component.experiment.form-wizard.sensors')"
+    >Todo Add LinkExperimentSensors component</tab-content>
+  </form-wizard>
 </template>
 
 <script lang="ts">
-    // <b-button
-    //   @click="gotToCreateForm"
-    //   variant="success"
-    // >{{$t('component.experiment.add')}}</b-button>
-// <opensilex-core-ExperimentList
-//       ref="experimentList"
-//       @onEdit="editExperiment"
-//       @onDelete="deleteExperiment"
-//     ></opensilex-core-ExperimentList>
-// TODO experiment form
-//  <opensilex-core-ExperimentForm
-//       ref="experimentForm"
-//       @onCreate="callCreateExperimentService"
-//       @onUpdate="callUpdateExperimentService"
-//     ></opensilex-core-ExperimentForm>
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
@@ -51,8 +51,16 @@ export default class ExperimentCreate extends Vue {
     this.service = this.$opensilex.getService("opensilex.ExperimentsService");
   }
 
-  gotToCreateForm() {
-    this.$router.push('Home') 
+  async checkBeforeVariablesStep(){
+    let experimentForm: any = this.$refs.experimentForm;
+    experimentForm.validateForm().then(isValid => {
+        if (isValid) {
+          return true;
+        }else{
+          alert(this.$i18n.t('component.common.form-step-errors'))
+        }
+      },   
+    1000)
   }
 
   // callCreateExperimentService(form: ExperimentCreationDTO, done) {

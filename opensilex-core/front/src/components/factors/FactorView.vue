@@ -45,7 +45,6 @@ export default class FactorView extends Vue {
   }
 
   showCreateForm() {
-    console.log(this.$refs) 
     let factorForm: any = this.$refs.factorForm;
     factorForm.showCreateForm();
   }

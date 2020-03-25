@@ -1,9 +1,5 @@
 <template>
-  <div>
-    <div id="app">
-       <b-button v-b-tooltip.hover title="Tooltip content"><i class="fas fa-plus-circle"></i>Hover Me</b-button>
-      
-    </div>
+  <div> 
     <br>
     <opensilex-core-ExperimentList
       ref="experimentList"

@@ -27,14 +27,14 @@
         </div>
 
         <div class="card">
-
-            <!-- div class="card-header row clearfix">
+            <div class="card-header row clearfix">
                 <div class="col col-sm-3">
                     <div class="card-options d-inline-block">
-                        <button type="button" class="btn btn-primary"><i class="ik ik-plus"></i>{{ $t('component.experiment.search.buttons.add-experiment') }}</button>
+                        <b-button id="create-experiment" @click="goToExperimentCreateComponent" variant="primary"><i class="ik ik-plus"></i>{{ $t('component.experiment.search.buttons.create-experiment') }}</b-button>
+                        <b-tooltip target="create-experiment" >{{ $t('component.experiment.search.buttons.create-experiment-help') }}</b-tooltip>
                     </div>
                 </div>
-            </div -->
+            </div>
 
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -523,6 +523,9 @@
             return this.speciesByUri.get(uri).label;
         }
 
+        goToExperimentCreateComponent(){
+            this.$router.push({ path: '/experiments/create' });
+        }
     }
 
 </script>

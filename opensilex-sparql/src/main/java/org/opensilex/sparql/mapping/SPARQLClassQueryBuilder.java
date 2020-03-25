@@ -162,7 +162,7 @@ class SPARQLClassQueryBuilder {
 
         // WhereHandler used for adding all WHERE clause
         rootWhereHandler.addWhere(builder.makeTriplePath(makeVar(uriFieldName), RDF.type, typeFieldVar));
-        rootWhereHandler.addWhere(builder.makeTriplePath(typeFieldVar, Ontology.subClassAny, analyzer.getRDFType()));
+        builder.getWhereHandler().addWhere(builder.makeTriplePath(typeFieldVar, Ontology.subClassAny, analyzer.getRDFType()));
 
         analyzer.forEachDataProperty((Field field, Property property) -> {
             if (dataPropertyHandler != null) {

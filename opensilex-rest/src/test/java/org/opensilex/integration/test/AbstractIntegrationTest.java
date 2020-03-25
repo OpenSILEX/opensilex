@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.integration.test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,7 +36,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static junit.framework.TestCase.assertEquals;
 import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestRule;
@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  *
  * Abstract class used for DAO testing
  */
-@Category(IntegrationTestCategory.class)
+//@Category(IntegrationTestCategory.class)
 public abstract class AbstractIntegrationTest extends JerseyTest {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(AbstractIntegrationTest.class);
@@ -133,12 +133,13 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         // need to convert according a TypeReference, because the expected SingleObjectResponse is a generic object
         ObjectMapper mapper = new ObjectMapper();
         Object json = mapper.readValue(node.toString(), Object.class);
-        SingleObjectResponse<TokenGetDTO> res = mapper.convertValue(node, new TypeReference<SingleObjectResponse<TokenGetDTO>>() {
-        });
+        if (callResult.getStatus() == Response.Status.OK.getStatusCode()) {
+            SingleObjectResponse<TokenGetDTO> res = mapper.convertValue(node, new TypeReference<SingleObjectResponse<TokenGetDTO>>() {
+            });
+            return res.getResult();
+        }
 
-        assertEquals(Response.Status.OK.getStatusCode(), callResult.getStatus());
-        assertEquals(Response.Status.OK, res.getStatus());
-        return res.getResult();
+        throw new Exception("Error while getting token: " + json);
     }
 
     /**
@@ -388,5 +389,11 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
 
         return first.entrySet().stream()
                 .allMatch(e -> e.getValue().equals(second.get(e.getKey())));
+    }
+
+    protected void printJsonNode(JsonNode node) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        Object json = mapper.readValue(node.toString(), Object.class);
+        System.out.println(json);
     }
 }

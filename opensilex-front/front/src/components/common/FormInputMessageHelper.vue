@@ -1,0 +1,27 @@
+<template>
+  <span>
+    <span>{{$t(label)}}: </span>
+    <font-awesome-icon icon="question-circle" v-b-tooltip.hover :title="$t(helpMessage)"/>
+  </span>
+</template>
+
+<script lang="ts">
+import { Component, Prop } from "vue-property-decorator";
+import Vue from "vue";
+
+@Component
+export default class FormInputMessageHelper extends Vue {
+  $opensilex: any;
+  $store: any;
+
+  @Prop()
+  helpMessage: string;
+  
+  @Prop()
+  label
+}
+</script>
+
+<style scoped lang="scss">
+</style>
+

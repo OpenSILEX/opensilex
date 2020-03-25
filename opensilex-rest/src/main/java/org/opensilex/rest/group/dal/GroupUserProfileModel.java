@@ -20,8 +20,8 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = SecurityOntology.class,
         resource = "GroupUserProfile",
-        graph = "groupUserProfiles",
-        prefix = "gup"
+        graph = "groups",
+        prefix = "grp"
 )
 public class GroupUserProfileModel extends SPARQLResourceModel implements ClassURIGenerator<GroupUserProfileModel> {
 

@@ -42,7 +42,7 @@ import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
  *
  * @author vincent
  */
-public class SPARQLClassAnalyzer {
+class SPARQLClassAnalyzer {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLClassAnalyzer.class);
 
@@ -86,6 +86,8 @@ public class SPARQLClassAnalyzer {
 
     private final URIGenerator<? extends SPARQLResourceModel> uriGenerator;
 
+    private final boolean ignoreValidation;
+    
     @SuppressWarnings("unchecked")
     public SPARQLClassAnalyzer(Class<?> objectClass) throws SPARQLInvalidClassDefinitionException {
         LOGGER.debug("Start SPARQL model class analyze for: " + objectClass.getName());
@@ -97,6 +99,8 @@ public class SPARQLClassAnalyzer {
             throw new SPARQLInvalidClassDefinitionException(objectClass, "annotation not found: " + SPARQLResource.class.getCanonicalName());
         }
 
+        ignoreValidation = resourceAnnotation.ignoreValidation();
+        
         try {
             if (URIGenerator.class.isAssignableFrom(objectClass)) {
                 uriGenerator = null;
@@ -198,6 +202,10 @@ public class SPARQLClassAnalyzer {
                 throw new SPARQLInvalidClassDefinitionException(objectClass, "no setter found for the field :" + field.getName());
             }
         }
+    }
+
+    public boolean hasValidation() {
+        return !ignoreValidation;
     }
 
     private void analyzeSPARQLPropertyField(SPARQLProperty sProperty, Field field) throws SPARQLInvalidClassDefinitionException {

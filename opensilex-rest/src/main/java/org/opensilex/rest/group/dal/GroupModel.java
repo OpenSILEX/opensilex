@@ -21,7 +21,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         ontology = SecurityOntology.class,
         resource = "Group",
         graph = "groups",
-        prefix = "g"
+        prefix = "grp"
 )
 public class GroupModel extends SPARQLResourceModel implements ClassURIGenerator<GroupModel> {
 

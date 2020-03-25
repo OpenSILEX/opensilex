@@ -8,6 +8,7 @@ import { User } from './User';
 import { Store } from 'vuex';
 import { VueCookies } from 'vue-cookies'
 import VueI18n from 'vue-i18n';
+import moment from 'moment';
 declare var $cookies: VueCookies;
 
 declare var window: any;
@@ -19,6 +20,7 @@ export default class OpenSilexVuePlugin {
     private config: FrontConfigDTO;
     public $store: Store<any>;
     public $i18n: VueI18n;
+    public $moment: any;
     public $bvToast: any;
 
     constructor(baseApi: string, store: Store<any>, i18n: VueI18n) {
@@ -30,6 +32,7 @@ export default class OpenSilexVuePlugin {
         this.baseApi = baseApi;
         this.$store = store;
         this.$i18n = i18n;
+        this.$moment = moment;
         ApiServiceBinder.with(this.container);
     }
 

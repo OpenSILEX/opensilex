@@ -36,6 +36,16 @@ public abstract class SPARQLResourceModel implements SPARQLModel {
     public void setUri(URI uri) {
         this.uri = uri;
     }
+
+    public URI getType() {
+        return type;
+    }
+
+    public void setType(URI type) {
+        this.type = type;
+    }
+    
+    
     
     public List<SPARQLModelRelation> getRelations() {
         return relations;

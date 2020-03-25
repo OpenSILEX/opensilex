@@ -1,5 +1,58 @@
 {
     "component": {
+        "experiment": {
+            "uri" : "uri",
+            "uri-help" :"Identifiant unique de l'expérimentation",
+            "label" : "label",
+            "label-help" :"Nom utilisé pour identifier l'expérimentation",
+            "comment" : "Description",
+            "comment-help" :"Informations supplémentaires",
+            "common": {
+                "status": {
+                    "finished": "Terminé",
+                    "in-progress": "En cours",
+                    "public": "Public"
+                }
+            },
+            "search": {
+                "description": "Gérer et configurer les expérimentations",
+                "buttons": {
+                    "create-experiment": "Créer expérimentation",
+                    "create-experiment-help" : "Créer une expérimentation (informations expérimentales, variables/capteurs/facteurs associés)"
+                },
+                "column": {
+                    "alias": "Alias",
+                    "projects": "Projet(s)",
+                    "installations": "Installation(s)",
+                    "campaign": "Campagne",
+                    "places": "Lieux",
+                    "species": "Espèces",
+                    "startDate": "Date de début",
+                    "endDate": "Date de fin",
+                    "uri": "URI",
+                    "state": "Etat"
+                },
+                "filter": {
+                    "alias": "Filtrer par Alias",
+                    "campains": "Filtrer par Campagne(s)",
+                    "installations": "Filtrer par Installation(s)",
+                    "projects": "Filtrer par Projet(s)",
+                    "places": "Filtrer par Lieux",
+                    "species": "Filtrer par Espèce(s)",
+                    "startDate": "Filtrer par Date de début",
+                    "endDate": "Filtrer par Date de fin",
+                    "uri": "Filtrer par URI",
+                    "state": "Filtrer par état"
+                }
+            },
+            "form-wizard": {
+                "label" : "Assistant de création d'expérimentation",
+                "general-informations" : "Informations générales",
+                "variables" : "Variables mesurées",
+                "factors" : "Facteurs contrôlés ",
+                "sensors" : "Sensors utilisés"
+            }
+        },
         "factor": {
             "factor-uri": "URI du facteur",
             "factor-alias-placeholder": "Renseignez un alias de facteur",
@@ -30,7 +83,8 @@
             }
         },
         "common" : {
-            "actions" : "actions"
+            "actions" : "actions",
+            "form-step-errors" : "Certains champs sont requis"
         }
     },
     "credential-experimentalDesign": {

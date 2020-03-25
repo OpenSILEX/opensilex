@@ -8,12 +8,8 @@ package org.opensilex.dev;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import javax.mail.internet.InternetAddress;
 import org.opensilex.OpenSilex;
-import org.opensilex.rest.authentication.AuthenticationService;
-import org.opensilex.rest.user.dal.UserDAO;
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.service.SPARQLServiceFactory;
+import org.opensilex.rest.RestModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,24 +51,11 @@ public class Install {
         opensilex.install(deleteFirst);
 
         LOGGER.info("Create Super Admin");
-        createSuperAdmin();
+        RestModule.createDefaultSuperAdmin();
     }
 
     private static String getConfig(String baseDirectory) {
         return Paths.get(baseDirectory).resolve(DevModule.CONFIG_FILE_PATH).toFile().getAbsolutePath();
     }
 
-    private static void createSuperAdmin() throws Exception {
-        SPARQLService sparql = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
-        try {
-            AuthenticationService authentication = opensilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
-
-            UserDAO userDAO = new UserDAO(sparql);
-
-            InternetAddress email = new InternetAddress("admin@opensilex.org");
-            userDAO.create(null, email, "Admin", "OpenSilex", true, authentication.getPasswordHash("admin"), "en-US");
-        } finally {
-            sparql.shutdown();
-        }
-    }
 }

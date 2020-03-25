@@ -5,7 +5,14 @@ menu:
     route: 
       path: /users
       component: opensilex-UserView
-      credentials: []  
+      credentials: []
+  - id: infrastructures
+    label: component.menu.infrastructure
+    icon: ik-grid
+    route: 
+      path: /infrastructures
+      component: opensilex-core-InfrastructureView
+      credentials: []        
   - id: data
     label: component.menu.data.label
     icon: ik-trending-up
@@ -21,7 +28,7 @@ menu:
     icon: ik-layers
     route: 
       path: /experiments
-      component: opensilex-core-ExperimentList
+      component: opensilex-core-ExperimentView
       credentials: []
   - id: installations
     label: component.menu.installations
@@ -118,6 +125,12 @@ menu:
 
 
 routes:
+  - path: /experiments/create
+    component: opensilex-core-ExperimentCreate
+    credentials: []
+  - path: /experiments/details
+    component: opensilex-core-ExperimentDetails
+    credentials: []
 # Route item example:
 #  - path: /users/create
 #    component: opensilex-UserCreate

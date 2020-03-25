@@ -20,7 +20,7 @@ public class RDF4JConnectionTest extends SPARQLServiceTest {
 
     @BeforeClass
     public static void initialize() throws Exception {
-        sparql = new RDF4JInMemoryService().provide();
+        sparql = new RDF4JInMemoryServiceFactory().provide();
         SPARQLServiceTest.initialize(sparql);
     }
 }

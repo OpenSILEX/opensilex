@@ -15,9 +15,9 @@ import org.eclipse.rdf4j.sail.shacl.ShaclSail;
  *
  * @author vmigot
  */
-public class RDF4JInMemoryService extends RDF4JServiceFactory {
+public class RDF4JInMemoryServiceFactory extends RDF4JServiceFactory {
 
-    public RDF4JInMemoryService() throws URISyntaxException {
+    public RDF4JInMemoryServiceFactory() throws URISyntaxException {
         super(getInMemoryRepository());
     }
 
@@ -29,5 +29,5 @@ public class RDF4JInMemoryService extends RDF4JServiceFactory {
 
         return repository;
     }
-
+    
 }

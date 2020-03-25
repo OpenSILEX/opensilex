@@ -74,14 +74,15 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
 import { FactorCreationDTO } from "../../lib/model/factorCreationDTO";
 
 @Component
 export default class FactorForm extends Vue {
   $opensilex: any;
   $store: any;
-  $router: VueRouter;
+  $router: any;
+  $t: any;
+  $i18n: any;
 
   get user() {
     return this.$store.state.user;

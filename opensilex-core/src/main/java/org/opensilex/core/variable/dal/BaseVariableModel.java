@@ -22,8 +22,7 @@ public abstract class BaseVariableModel extends SPARQLResourceModel {
 
     @SPARQLProperty(
             ontology = RDFS.class,
-            property = "comment",
-            required = true
+            property = "comment"
     )
     private String comment;
     public static final String COMMENT_FIELD = "comment";

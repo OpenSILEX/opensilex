@@ -96,14 +96,20 @@ Vue.component('datePicker', Datepicker);
 console.debug("Initialize FontAwesomeIcon plugin...");
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faPowerOff, faTimes, faTrashAlt, faEdit } from '@fortawesome/free-solid-svg-icons'
-library.add(faPowerOff, faTimes, faTrashAlt, faEdit);
+import { faPowerOff, faTimes, faTrashAlt, faEdit, faQuestionCircle, faVials} from '@fortawesome/free-solid-svg-icons'
+library.add(faPowerOff, faTimes, faTrashAlt, faEdit, faQuestionCircle, faVials);
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 console.debug("FontAwesomeIcon plugin initialized !");
 
 // Initialize multiselect
 import Multiselect from "vue-multiselect";
 Vue.component('multiselect', Multiselect);
+
+// Initialize Vue wizard form
+import VueFormWizard from 'vue-form-wizard'
+import 'vue-form-wizard/dist/vue-form-wizard.min.css'
+Vue.use(VueFormWizard)
+console.debug("VueFormWizard plugin initialized !");
 
 // Initialize i18n
 import VueI18n from 'vue-i18n'
@@ -246,6 +252,11 @@ const manageError = function manageError(error) {
   console.error(error);
   document.getElementById('opensilex-error-loading').style.visibility = 'visible';
 }
+
+// Load tree component
+console.debug("Load tree component...");
+import SlVueTree from 'sl-vue-tree';
+Vue.component("sl-vue-tree", SlVueTree);
 
 // Load default components
 console.debug("Load default components...");

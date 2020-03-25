@@ -55,6 +55,8 @@ import java.util.function.Consumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.opensilex.service.ServiceDefaultDefinition;
+import org.opensilex.sparql.model.SPARQLTreeModel;
+import org.opensilex.sparql.tree.ResourceTree;
 
 /**
  * Implementation of SPARQLService
@@ -365,6 +367,20 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         return resultList;
     }
 
+    public <T extends SPARQLTreeModel> ResourceTree<T>  searchResourceTree(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+        List<T> list = search(objectClass, lang, filterHandler);
+
+        ResourceTree<T> tree = new ResourceTree<T>();
+
+        for (T item : list) {
+            tree.addTree(item);
+        }
+
+        return tree;
+    }
+
+   
+
     public <T extends SPARQLResourceModel> List<T> search(Class<T> objectClass, String lang) throws Exception {
         return search(objectClass, lang, null, null, null, null);
     }
@@ -454,12 +470,28 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> void create(T instance) throws Exception {
-        create(instance, true);
+        create(instance, true, null);
     }
 
-    private <T extends SPARQLResourceModel> void create(T instance, boolean checkUriExist) throws Exception {
+    public <T extends SPARQLResourceModel> void create(T instance, Resource rdfType) throws Exception {
+        create(instance, new URI(rdfType.getURI()));
+    }
+    
+        public <T extends SPARQLResourceModel> void create(T instance, URI rdfType) throws Exception {
+        create(instance, true, rdfType);
+    }
 
+    public <T extends SPARQLResourceModel> void create(T instance, boolean checkUriExist) throws Exception {
+        create(instance, checkUriExist, null);
+    }
+        
+    private <T extends SPARQLResourceModel> void create(T instance, boolean checkUriExist, URI rdfType) throws Exception {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(instance.getClass());
+        if (rdfType == null) {
+            instance.setType(new URI(sparqlObjectMapper.getRDFType().getURI()));
+        } else {
+            instance.setType(rdfType);
+        }
         generateUniqueUriIfNullOrValidateCurrent(sparqlObjectMapper, instance, checkUriExist);
 
         UpdateBuilder create = sparqlObjectMapper.getCreateBuilder(instance);
@@ -733,11 +765,6 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
 
     public Map<String, String> getTranslations(Node graph, URI resourceURI, Property labelProperty, boolean reverseRelation) throws Exception {
         return getOtherTranslations(graph, resourceURI, labelProperty, reverseRelation, null);
-    }
-
-    @Override
-    public URI getGraphSHACL() {
-        return connection.getGraphSHACL();
     }
 
     @Override

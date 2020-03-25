@@ -112,7 +112,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             throw new SPARQLMapperNotFoundException(concreteObjectClass);
         }
     }
-    
+
     public static synchronized Set<Class<?>> getResourceClasses() {
         return Collections.unmodifiableSet(SPARQL_CLASSES_MAPPER.keySet());
     }
@@ -168,6 +168,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     }
 
+    public boolean hasValidation() {
+        return classAnalizer.hasValidation();
+    }
+
     public Class<T> getObjectClass() {
         return objectClass;
     }
@@ -206,16 +210,14 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             lang = OpenSilex.getDefaultLanguage();
         }
 
-        String realType = result.getStringValue(getTypeFieldName());
-        if (!realType.equals(getRDFType().toString())) {
-            // TODO handle sub classes
-        }
-
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
         URI uri = uriDeserializer.fromString((result.getStringValue(classAnalizer.getURIFieldName())));
 
         T instance = createInstance(uri);
 
+        String realType = result.getStringValue(getTypeFieldName());
+        instance.setType(new URI(realType));
+        
         for (Field field : classAnalizer.getDataPropertyFields()) {
             Method setter = classAnalizer.getSetterFromField(field);
 
@@ -462,9 +464,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public String generateSHACL() {
-        return classQueryBuilder.generateSHACL();
+        if (hasValidation()) {
+            return classQueryBuilder.generateSHACL();
+        }
+
+        return null;
     }
-
-    
-
 }

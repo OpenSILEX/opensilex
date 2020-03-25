@@ -14,7 +14,8 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Variable",
-        graph = "variable"
+        graph = "variable",
+        ignoreValidation = true
 )
 public class VariableModel extends BaseVariableModel implements ClassURIGenerator<VariableModel> {
 

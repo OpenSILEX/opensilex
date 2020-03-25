@@ -7199,6 +7199,11 @@ simple-swizzle@^0.2.2:
   dependencies:
     is-arrayish "^0.3.1"
 
+sl-vue-tree@^1.8.4:
+  version "1.8.4"
+  resolved "https://registry.yarnpkg.com/sl-vue-tree/-/sl-vue-tree-1.8.4.tgz#51e875929041480022b21f241096819c4f436794"
+  integrity sha512-Pq3NvhtAUDdZu+4yFpg1XpHsn9R6Uh/+gy9Dzn3b4kEWsijyyzAKu6+CchEAGmbXFvteYfWjGCQDnIylW8MwSg==
+
 slash@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/slash/-/slash-1.0.0.tgz#c41f2f6c39fc16d1cd17ad4b5d896114ae470d55"
@@ -8137,6 +8142,11 @@ vue-eslint-parser@^7.0.0:
     espree "^6.1.2"
     esquery "^1.0.1"
     lodash "^4.17.15"
+
+vue-form-wizard@0.8.4:
+  version "0.8.4"
+  resolved "https://registry.yarnpkg.com/vue-form-wizard/-/vue-form-wizard-0.8.4.tgz#ddf864c9709b7ba2a6323f59e5d6d17536b7800e"
+  integrity sha512-/Zk1+B7bz7qHFJ16mwu021lpPXWf/9Tlr2mTNG3J7M0Hdy3rgA802lWsbKYySns0B0qtsD8BYGjQ2Wyxgg+4uw==
 
 vue-functional-data-merge@^3.1.0:
   version "3.1.0"

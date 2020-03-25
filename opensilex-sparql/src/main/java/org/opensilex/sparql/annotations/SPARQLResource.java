@@ -33,4 +33,6 @@ public @interface SPARQLResource {
     public String graph() default "";
 
     public String prefix() default "";
+
+    public boolean ignoreValidation() default false;
 }

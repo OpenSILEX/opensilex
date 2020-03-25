@@ -22,7 +22,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         ontology = FOAF.class,
         resource = "Agent",
         graph = "users",
-        prefix = "u"
+        prefix = "usr"
 )
 public class UserModel extends SPARQLResourceModel implements Principal, ClassURIGenerator<UserModel> {
 

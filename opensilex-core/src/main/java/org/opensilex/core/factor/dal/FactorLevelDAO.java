@@ -53,13 +53,13 @@ public class FactorLevelDAO {
         return sparql.getByURI(FactorLevelModel.class, instanceURI, null);
     }
 
-    public ListWithPagination<FactorLevelModel> search(FactorLevelSearchDTO factorLevelSearchDTO, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public ListWithPagination<FactorLevelModel> search(String alias, URI hasFactor, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         return sparql.searchWithPagination(
                 FactorLevelModel.class,
                 null,
                 (SelectBuilder select) -> {
                     // TODO implements filters
-                    appendFilters(factorLevelSearchDTO, select);
+                    appendFilters(alias, hasFactor, select);
                 },
                 orderByList,
                 page,
@@ -70,23 +70,25 @@ public class FactorLevelDAO {
      /**
      * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty simple attribute ( not a {@link List} from the {@link ExperimentSearchDTO}
      *
-     * @param searchDTO a search DTO which contains all attributes about an {@link FactorLevelModel} search
+     * @param alias search factor levels by alias
+     * @param hasFactor search factor levels by factors
      * @param select search query
      * @throws java.lang.Exception can throw an exception
      * @see SPARQLQueryHelper the utility class used to build Expr
      */
-    protected void appendFilters(FactorLevelSearchDTO searchDTO, SelectBuilder select) throws Exception {
+    protected void appendFilters(String alias, URI hasFactor, SelectBuilder select) throws Exception {
 
         List<Expr> exprList = new ArrayList<>();
 
-        // build equality filters
-        if (searchDTO.getHasFactor()!= null) {
-            exprList.add(SPARQLQueryHelper.eq(FactorLevelModel.HAS_FACTOR_FIELD, searchDTO.getUri()));
+       
+        // build regex filters
+        if (alias != null) {
+            exprList.add(SPARQLQueryHelper.regexFilter(FactorLevelModel.ALIAS_FIELD, alias));
         }
         
-        // build regex filters
-        if (searchDTO.getAlias()!= null) {
-            exprList.add(SPARQLQueryHelper.regexFilter(FactorLevelModel.ALIAS_FIELD, searchDTO.getAlias()));
+        // build equality filters
+        if (hasFactor!= null) {
+            exprList.add(SPARQLQueryHelper.eq(FactorLevelModel.HAS_FACTOR_FIELD, hasFactor));
         }
 
         for (Expr filterExpr : exprList) {

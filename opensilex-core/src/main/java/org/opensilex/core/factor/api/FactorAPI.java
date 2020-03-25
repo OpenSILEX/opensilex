@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -188,7 +189,7 @@ public class FactorAPI {
         // Search factors with Factor DAO
         FactorDAO dao = new FactorDAO(sparql);
         ListWithPagination<FactorModel> resultList = dao.search(
-                factorSearchDTO,
+                factorSearchDTO.getAlias(),
                 orderByList,
                 page,
                 pageSize
@@ -202,6 +203,46 @@ public class FactorAPI {
 
         // Return paginated list of factor DTO
         return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+    
+    /**
+     * getAll factors
+     *
+     * @see org.opensilex.core.factor.dal.FactorDAO 
+     * @return filtered, ordered and paginated list
+     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     */
+    @POST
+    @Path("getAll")
+    @ApiOperation("Get all factors")
+    @ApiProtected
+    @ApiCredential(
+        groupId = CREDENTIAL_FACTOR_GROUP_ID,
+        groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
+        credentialId = CREDENTIAL_FACTOR_READ_ID,
+        credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return factor list", response = FactorGetDTO.class, responseContainer = "List"),
+    })
+    public Response getAllFactors() throws Exception {
+         
+        // Search factors with Factor DAO
+        FactorDAO dao = new FactorDAO(sparql);
+        List<FactorModel> factorModelsList = dao.getAll();  
+        List<FactorGetDTO> getFactorDTOList = new ArrayList<>();
+        for (FactorModel factorModel : factorModelsList) {
+            FactorGetDTO factorGetDTO = new FactorGetDTO();
+            factorGetDTO.setUri(factorModel.getUri());
+            factorGetDTO.setAlias(factorModel.getAlias());
+            factorGetDTO.setComment(factorModel.getComment());
+            getFactorDTOList.add(factorGetDTO);
+        }
+
+        // Return paginated list of factor DTO
+        return new PaginatedListResponse<>(getFactorDTOList).getResponse();
     }
  
     /**

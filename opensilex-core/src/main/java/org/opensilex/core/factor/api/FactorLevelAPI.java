@@ -183,10 +183,12 @@ public class FactorLevelAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         
+        
         // Search factorLevels with FactorLevel DAO
         FactorLevelDAO dao = new FactorLevelDAO(sparql);
         ListWithPagination<FactorLevelModel> resultList = dao.search(
-                factorLevelSearchDTO,
+                factorLevelSearchDTO.getAlias(),
+                factorLevelSearchDTO.getHasFactor(),
                 orderByList,
                 page,
                 pageSize

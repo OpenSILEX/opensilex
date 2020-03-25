@@ -95,6 +95,11 @@
                 "users": "Utilisateurs",
                 "groups": "Groupes",
                 "profiles": "Profils"
+            },
+            "experimentalDesign" :{
+                "label" : "Plan d'expérience",
+                "factors" : "Facteurs",
+                "factorLevels" : "Niveaux de facteurs"
             }
         },
         "login": {

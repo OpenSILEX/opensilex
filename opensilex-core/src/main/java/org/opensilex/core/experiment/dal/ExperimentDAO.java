@@ -269,8 +269,12 @@ public class ExperimentDAO {
                 select.addFilter(exprFactory.or(noEndDateFilter,exprFactory.gt(endDateVar, currentDateNode)));
             }
         }
-        LocalDate startLocateDate = startDate != null ? LocalDate.parse(startDate) : null;
-        LocalDate endLocalDate = endDate != null ? LocalDate.parse(endDate) : null;
+        if(startDate == null && endDate == null){
+            return;
+        }
+
+        LocalDate startLocateDate = startDate == null ? null : LocalDate.parse(startDate);
+        LocalDate endLocalDate = endDate == null ? null : LocalDate.parse(endDate);
 
         Expr dateRangeExpr = SPARQLQueryHelper.dateRange(ExperimentModel.START_DATE_SPARQL_VAR,startLocateDate,ExperimentModel.END_DATE_SPARQL_VAR,endLocalDate);
         select.addFilter(dateRangeExpr);

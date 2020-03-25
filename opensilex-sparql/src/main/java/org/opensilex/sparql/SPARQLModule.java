@@ -69,25 +69,27 @@ public class SPARQLModule extends OpenSilexModule {
         SPARQLConfig cfg = OpenSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         SPARQLService.addPrefix(cfg.baseURIAlias(), cfg.baseURI());
 
-        SPARQLServiceFactory factory = sparqlConfig.sparql();
-        SPARQLService sparql = factory.provide();
-        try {
-            sparql.enableSHACL();
-        } catch (SPARQLValidationException ex) {
-            LOGGER.warn("Error while enable SHACL validation:");
-            Map<URI, Map<URI, List<URI>>> errors = ex.getValidationErrors();
-            errors.forEach((URI uri, Map<URI, List<URI>> error) -> {
-                LOGGER.warn( "--> " + uri + ":");
-                error.forEach((URI protpertyUri, List<URI> brokenConstraints) -> {
-                    LOGGER.warn( "    " + protpertyUri + ":");
-                    brokenConstraints.forEach(constraintURI -> {
-                        LOGGER.warn( "      " + constraintURI);
+        if (sparqlConfig.enableSHACL()) {
+            SPARQLServiceFactory factory = sparqlConfig.sparql();
+            SPARQLService sparql = factory.provide();
+            try {
+                sparql.enableSHACL();
+            } catch (SPARQLValidationException ex) {
+                LOGGER.warn("Error while enable SHACL validation:");
+                Map<URI, Map<URI, List<URI>>> errors = ex.getValidationErrors();
+                errors.forEach((URI uri, Map<URI, List<URI>> error) -> {
+                    LOGGER.warn("--> " + uri + ":");
+                    error.forEach((URI protpertyUri, List<URI> brokenConstraints) -> {
+                        LOGGER.warn("    " + protpertyUri + ":");
+                        brokenConstraints.forEach(constraintURI -> {
+                            LOGGER.warn("      " + constraintURI);
+                        });
                     });
                 });
-            });
-            sparql.disableSHACL();
+                sparql.disableSHACL();
+            }
+            factory.dispose(sparql);
         }
-        factory.dispose(sparql);
     }
 
     @Override

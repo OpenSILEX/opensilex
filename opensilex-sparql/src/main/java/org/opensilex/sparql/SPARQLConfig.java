@@ -37,4 +37,10 @@ public interface SPARQLConfig extends ModuleConfig {
             defaultBoolean = true
     )
     public boolean usePrefixes();
+
+    @ConfigDescription(
+            value = "Enable SHACL usage",
+            defaultBoolean = false
+    )
+    public boolean enableSHACL();
 }

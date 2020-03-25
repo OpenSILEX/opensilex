@@ -75,7 +75,7 @@ export default class App extends Vue {
 @import "../node_modules/sl-vue-tree/dist/sl-vue-tree-dark.css";
 
 .sl-vue-tree.sl-vue-tree-root {
-  border: 1px solid #545454;
+  border: 1px solid #dee2e6;
   background-color: white;
   color: #545454;
 }

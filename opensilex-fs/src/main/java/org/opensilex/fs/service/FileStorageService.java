@@ -26,6 +26,8 @@ public class FileStorageService implements Service, FileStorageConnection {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(FileStorageService.class);
 
+    public final static String DEFAULT_FS_SERVICE = "fs";
+        
     private final FileStorageConnection connection;
 
     public FileStorageService(FileStorageConnection connection) {

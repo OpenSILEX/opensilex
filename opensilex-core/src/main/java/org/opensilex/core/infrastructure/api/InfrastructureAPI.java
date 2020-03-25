@@ -167,7 +167,7 @@ public class InfrastructureAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchInfrastructuresTree(
-            @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") @NotEmpty String pattern,
+            @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
             @Context SecurityContext securityContext
     ) throws Exception {
         UserModel user = (UserModel) securityContext.getUserPrincipal();
@@ -179,6 +179,7 @@ public class InfrastructureAPI {
                 user.getLang()
         );
 
-        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree)).getResponse();
+        boolean enableSelection = (pattern != null && !pattern.isEmpty());
+        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree, enableSelection)).getResponse();
     }
 }

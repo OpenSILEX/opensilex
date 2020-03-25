@@ -241,7 +241,7 @@ class SPARQLClassQueryBuilder {
         }
     }
 
-    public UpdateBuilder getDeleteBuilder(Node graph, Object instance) throws Exception {
+    public <T extends SPARQLResourceModel> UpdateBuilder getDeleteBuilder(Node graph, T instance) throws Exception {
         UpdateBuilder delete = new UpdateBuilder();
         addDeleteBuilder(graph, instance, delete);
 
@@ -292,7 +292,7 @@ class SPARQLClassQueryBuilder {
         }, true);
     }
 
-    public void addDeleteBuilder(Node graph, Object instance, UpdateBuilder delete) throws Exception {
+    public <T extends SPARQLResourceModel> void addDeleteBuilder(Node graph, T instance, UpdateBuilder delete) throws Exception {
         executeOnInstanceTriples(instance, (Triple triple, Field field) -> {
             boolean isReverse = false;
             if (field != null) {
@@ -376,11 +376,11 @@ class SPARQLClassQueryBuilder {
         }
     }
 
-    private void executeOnInstanceTriples(Object instance, BiConsumer<Triple, Field> tripleHandler, boolean ignoreNullFields) throws Exception {
+    private <T extends SPARQLResourceModel> void executeOnInstanceTriples(T instance, BiConsumer<Triple, Field> tripleHandler, boolean ignoreNullFields) throws Exception {
         URI uri = analyzer.getURI(instance);
         Node uriNode = SPARQLDeserializers.nodeURI(uri);
 
-        tripleHandler.accept(new Triple(uriNode, RDF.type.asNode(), analyzer.getRDFType().asNode()), analyzer.getURIField());
+        tripleHandler.accept(new Triple(uriNode, RDF.type.asNode(), SPARQLDeserializers.nodeURI(instance.getType())), analyzer.getURIField());
 
         for (Field field : analyzer.getDataPropertyFields()) {
             Object fieldValue = analyzer.getFieldValue(field, instance);

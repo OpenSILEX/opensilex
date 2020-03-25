@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.fs.service.FileStorageConnection;
+import org.opensilex.fs.service.FileStorageService;
 
 /**
  * Local filesystem connection for file storage service
@@ -40,4 +41,11 @@ public class LocalFileSystemConnection implements FileStorageConnection {
         FileUtils.forceMkdir(directoryPath.toFile());
     }
 
+    
+    public static FileStorageService getService(Path storageBasePath) {
+        FileStorageService service = new FileStorageService(new LocalFileSystemConnection());
+        service.setStorageBasePath(storageBasePath);
+        
+        return service;
+    }
 }

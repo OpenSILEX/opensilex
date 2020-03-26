@@ -53,22 +53,25 @@
             }
         },
         "factor": {
-            "factor-uri": "Factor URI",
-            "factor-alias-placeholder": "Enter factor alias",
+            "uri": "Factor URI",
+            "uri-help": "Factor URI",
+            "alias-placeholder": "Enter factor alias",
             "filter-placeholder": "Use this field to filter factors",
             "factors": "factor",
             "add": "add factor",
             "update": "update factor",
             "alias": "alias",
+            "alias-help": "Name used to define this factor",
             "comment": "comment", 
+            "comment-help": "Description associated to this factors (protocole, amount of component)",
             "errors": {
                 "user-already-exists": "Factor already exists with this URI."
             }
         },
         "factorLevel": {
-            "factorLevel-uri": "Factor level URI",
-            "factorLevel-alias-placeholder": "Enter factor level alias",
-            "factorLevel-factor-selector-placeholder": "Please select a factor to filter factor levels",
+            "uri": "Factor level URI",
+            "alias-placeholder": "Enter factor level alias",
+            "selector-placeholder": "Please select a factor to filter factor levels",
             "filter-placeholder": "Use this field to filter factor levels",
             "factorLevel": "factor level",
             "add": "add factor level",

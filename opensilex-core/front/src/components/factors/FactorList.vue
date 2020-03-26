@@ -3,12 +3,12 @@
     <b-input-group class="mt-3 mb-3" size="sm">
       <b-input-group>
         <b-form-input
-          v-model="searchFrom"
+          v-model="filterByAlias"
           debounce="300"
           :placeholder="$t('component.factor.filter-placeholder')"
         ></b-form-input>
         <template v-slot:append>
-          <b-btn :disabled="!searchFrom.alias" variant="primary" @click="searchFrom.alias = ''">
+          <b-btn :disabled="!filterByAlias" variant="primary" @click="filterByAlias = ''">
             <font-awesome-icon icon="times" size="sm" />
           </b-btn>
         </template>
@@ -182,7 +182,7 @@ export default class FactorList extends Vue {
               pageSize: "" + this.pageSize
             }
           })
-          .catch(function() {});
+          .catch(err => {})
 
         return http.response.result;
       })

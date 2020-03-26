@@ -54,8 +54,8 @@
             }
         },
         "factor": {
-            "factor-uri": "URI du facteur",
-            "factor-alias-placeholder": "Renseignez un alias de facteur",
+            "uri": "URI du facteur",
+            "alias-placeholder": "Renseignez un alias de facteur",
             "filter-placeholder": "Utiliser ce filter pour filter les facteurs",
             "factors": "facteur",
             "add": "ajouter un facteur",
@@ -67,9 +67,9 @@
             }
         },
         "factorLevel": {
-            "factorLevel-uri": "URI du niveau de facteur",
-            "factorLevel-alias-placeholder": "Renseignez l'alias d'un niveau de facteur",
-            "factorLevel-factor-selector-placeholder": "Sélectionnez un alias de facteur",
+            "uri": "URI du niveau de facteur",
+            "alias-placeholder": "Renseignez l'alias d'un niveau de facteur",
+            "factor-selector-placeholder": "Sélectionnez un alias de facteur",
             "filter-placeholder": "Utilisez ce change pour filter vos niveau de facteur",
             "factorLevel": "niveau de facteur",
             "add": "ajouter un niveau de facteur",

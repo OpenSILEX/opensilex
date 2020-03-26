@@ -6,7 +6,11 @@
       @onCreate="callCreateFactorService"
       @onUpdate="callUpdateFactorService"
     ></opensilex-core-FactorForm>
-    <opensilex-core-FactorList ref="factorList" @onEdit="editFactor" @onDelete="deleteFactor"></opensilex-core-FactorList>
+    <opensilex-core-FactorList 
+      ref="factorList" 
+      @onEdit="editFactor"
+      @onDelete="deleteFactor">
+    </opensilex-core-FactorList>
   </div>
 </template>
 

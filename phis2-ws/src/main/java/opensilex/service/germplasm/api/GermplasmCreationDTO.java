@@ -64,12 +64,33 @@ class GermplasmCreationDTO extends GermplasmGetDTO{
     
     public GermplasmModel newModel() {
         GermplasmModel model = new GermplasmModel();
-        model.setUri(uri);
-        model.setLabel(label);
-        model.setType(rdfType);
-        model.setSpecies(fromSpecies);
-        model.setVariety(fromVariety);
-        model.setAccession(fromAccession);
+        
+        if (uri != null) {
+            model.setUri(uri);
+        }
+        if (label != null) {
+            model.setLabel(label);
+        }
+        if (rdfType != null) {
+            model.setType(rdfType);
+        }
+        
+        if (fromSpecies != null) {
+            GermplasmModel species = new GermplasmModel();
+            species.setUri(fromSpecies);
+            model.setSpecies(species);
+        }
+        if (fromVariety != null) {
+            GermplasmModel variety = new GermplasmModel();
+            variety.setUri(fromVariety);
+            model.setVariety(variety);
+        }
+        if (fromAccession != null) {
+            GermplasmModel accession = new GermplasmModel();
+            accession.setUri(fromAccession);
+            model.setAccession(accession);
+        }
+        
                 
         return model;
     }   

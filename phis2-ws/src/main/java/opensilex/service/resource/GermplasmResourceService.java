@@ -53,8 +53,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-@Api("/germplasm")
-@Path("germplasm")
+//@Api("/germplasm")
+//@Path("germplasm")
 public class GermplasmResourceService extends ResourceService {
 
     final static Logger LOGGER = LoggerFactory.getLogger(GermplasmResourceService.class);

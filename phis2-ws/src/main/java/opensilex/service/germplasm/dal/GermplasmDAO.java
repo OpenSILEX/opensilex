@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
@@ -26,8 +27,8 @@ import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
 /**
- *
- * @author boizetal
+ * Germplasm DAO
+ * @author Alice Boizet
  */
 public class GermplasmDAO {
     
@@ -65,17 +66,25 @@ public class GermplasmDAO {
         GermplasmModel germplasm = new GermplasmModel();
         germplasm.setUri(uri);
         germplasm.setLabel(label);
-        germplasm.setType(rdfType);
+        germplasm.setType(rdfType);        
         
         if (fromAccession != null) {
-            germplasm.setAccession(fromAccession);
+            GermplasmModel accession = new GermplasmModel();
+            accession.setUri(fromAccession);
+            germplasm.setAccession(accession);
         }
+
         if (fromVariety != null) {
-            germplasm.setVariety(fromVariety);
-        } 
-        if (fromSpecies != null) {
-            germplasm.setSpecies(fromSpecies);              
+            GermplasmModel variety = new GermplasmModel();
+            variety.setUri(fromVariety);        
+            germplasm.setVariety(variety);
         }
+        
+        if (fromSpecies != null) {
+            GermplasmModel species = new GermplasmModel();
+            species.setUri(fromSpecies);
+            germplasm.setSpecies(species);             
+        }           
       
         sparql.create(germplasm, rdfType);
         
@@ -135,19 +144,19 @@ public class GermplasmDAO {
 
     private void appendSpeciesFilter(SelectBuilder select, URI species) throws Exception {
         if (species != null) {
-            select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.SPECIES_URI_SPARQL_VAR, species));
+            select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.SPECIES_URI_SPARQL_VAR.toString(), NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(species.toString()))));
         }
     }
 
     private void appendVarietyFilter(SelectBuilder select, URI variety) throws Exception {
         if (variety != null) {
-            select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.VARIETY_URI_SPARQL_VAR, variety));
+            select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.VARIETY_URI_SPARQL_VAR, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(variety.toString()))));
         }
     }
 
     private void appendAccessionFilter(SelectBuilder select, URI accession) throws Exception {
         if (accession != null) {
-            select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.ACCESSION_URI_SPARQL_VAR, accession));
+            select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.ACCESSION_URI_SPARQL_VAR, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(accession.toString()))));
         }
     }
 

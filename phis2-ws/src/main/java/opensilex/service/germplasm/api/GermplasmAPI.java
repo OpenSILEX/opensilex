@@ -164,7 +164,7 @@ public class GermplasmAPI {
                 } else {
                     GermplasmDAO varietyDAO = new GermplasmDAO(sparql);
                     GermplasmModel variety = varietyDAO.get(germplasmDTO.getFromVariety());
-                    germplasmDTO.setFromSpecies(variety.getSpecies());
+                    germplasmDTO.setFromSpecies(variety.getSpecies().getUri());
                 }   
             }            
             
@@ -180,13 +180,13 @@ public class GermplasmAPI {
                 } else {
                     GermplasmDAO accessionDAO = new GermplasmDAO(sparql);
                     GermplasmModel accession = accessionDAO.get(germplasmDTO.getFromAccession());
-                    germplasmDTO.setFromVariety(accession.getVariety());
-                    germplasmDTO.setFromSpecies(accession.getSpecies());
+                    germplasmDTO.setFromVariety(accession.getVariety().getUri());
+                    germplasmDTO.setFromSpecies(accession.getSpecies().getUri());
                 }                
             }
             
         } else if (germplasmDTO.getRdfType().toString().equals(Oeso.Accession.getURI())) {
-            message = "fromVariety or fromSpecies";            
+            message = "fromVariety or fromSpecies";   
             if (germplasmDTO.getFromSpecies()!= null) {
                 missingLink = false;
                 if (!sparql.uriExists(new URI(Oeso.Species.getURI()), germplasmDTO.getFromSpecies())) {
@@ -210,7 +210,7 @@ public class GermplasmAPI {
                 } else {
                     GermplasmDAO varietyDAO = new GermplasmDAO(sparql);
                     GermplasmModel variety = varietyDAO.get(germplasmDTO.getFromVariety());
-                    germplasmDTO.setFromSpecies(variety.getSpecies());                
+                    germplasmDTO.setFromSpecies(variety.getSpecies().getUri());                
                 }   
             }
             
@@ -273,7 +273,7 @@ public class GermplasmAPI {
         @ApiResponse(code = 404, message = "Germplasm not found", response = ErrorDTO.class)
     })
     public Response getGermplasm(
-            @ApiParam(value = "User URI", example = "dev-users:Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "germplasm URI", example = "dev-users:Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         // Get germplasm from DAO by URI
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql);
@@ -346,8 +346,8 @@ public class GermplasmAPI {
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
     
-    @DELETE
-    @Path("delete/{uri}")
+    //@DELETE
+    //@Path("delete/{uri}")
     @ApiOperation("Delete a germplasm")
     @ApiProtected
     @ApiCredential(

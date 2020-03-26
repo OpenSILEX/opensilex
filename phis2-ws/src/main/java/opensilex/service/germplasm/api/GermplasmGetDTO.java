@@ -114,9 +114,15 @@ class GermplasmGetDTO {
         dto.setUri(model.getUri());
         dto.setRdfType(model.getType());
         dto.setLabel(model.getLabel());
-        dto.setFromSpecies(model.getSpecies());
-        dto.setFromVariety(model.getVariety());
-        dto.setFromAccession(model.getAccession());
+        if (model.getSpecies() != null) {
+            dto.setFromSpecies(model.getSpecies().getUri());
+        }
+        if (model.getVariety() != null) {
+            dto.setFromVariety(model.getVariety().getUri());
+        }
+        if (model.getAccession() != null) {
+            dto.setFromAccession(model.getAccession().getUri());
+        }  
 
         return dto;
     }

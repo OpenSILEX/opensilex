@@ -22,7 +22,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Germplasm",
-        graph = "opensilex/germplasm",
+        graph = "germplasm",
         prefix = "germplasm"
 )
 public class GermplasmModel extends SPARQLResourceModel implements ClassURIGenerator<GermplasmModel>{
@@ -47,44 +47,44 @@ public class GermplasmModel extends SPARQLResourceModel implements ClassURIGener
         ontology = Oeso.class,
         property = "fromSpecies"
     )
-    URI species;
+    GermplasmModel species;
     public static final String SPECIES_URI_SPARQL_VAR = "species";
     
     @SPARQLProperty(
         ontology = Oeso.class,
         property = "fromVariety"
     )
-    URI variety;
+    GermplasmModel variety;
     public static final String VARIETY_URI_SPARQL_VAR = "variety";
     
     @SPARQLProperty(
         ontology = Oeso.class,
         property = "fromAccession"
     )
-    URI accession;
+    GermplasmModel accession;
     public static final String ACCESSION_URI_SPARQL_VAR = "accession";    
 
-    public URI getSpecies() {
+    public GermplasmModel getSpecies() {
         return species;
     }
 
-    public void setSpecies(URI species) {
+    public void setSpecies(GermplasmModel species) {
         this.species = species;
     }
 
-    public URI getVariety() {
+    public GermplasmModel getVariety() {
         return variety;
     }
 
-    public void setVariety(URI variety) {
+    public void setVariety(GermplasmModel variety) {
         this.variety = variety;
     }
 
-    public URI getAccession() {
+    public GermplasmModel getAccession() {
         return accession;
     }
 
-    public void setAccession(URI accession) {
+    public void setAccession(GermplasmModel accession) {
         this.accession = accession;
     }
     
@@ -96,5 +96,7 @@ public class GermplasmModel extends SPARQLResourceModel implements ClassURIGener
                 germplasmType + "_" + instance.getLabel()
         };
     }
+    
+    
     
 }

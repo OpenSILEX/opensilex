@@ -20,17 +20,14 @@
       <opensilex-core-ExperimentForm ref="experimentForm"></opensilex-core-ExperimentForm>
     </tab-content>
     <tab-content
-      v-bind:title="$t('component.experiment.form-wizard.variables')"
+      v-bind:title="$t('component.experiment.form-wizard.users_groups_projects')"
     >Todo Add LinkExperimentVariable component</tab-content>
     <tab-content
-      v-bind:title="$t('component.experiment.form-wizard.factors')"
+      v-bind:title="$t('component.experiment.form-wizard.variables_sensors_factors')"
     >Todo Add LinkExperimentFactors component</tab-content>
-    <tab-content
+    <!-- <tab-content
       v-bind:title="$t('component.experiment.form-wizard.sensors')"
-    >Todo Add LinkExperimentSensors component</tab-content>
-    <tab-content
-      v-bind:title="$t('component.experiment.form-wizard.sensors')"
-    >Done recap ?</tab-content>
+    >Done recap ?</tab-content> -->
     <div v-if="this.errorMsg">
       <span class="error">{{ $t(getErrorMsg) }}</span>
     </div>

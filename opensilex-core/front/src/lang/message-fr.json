@@ -3,10 +3,18 @@
         "experiment": {
             "uri" : "uri",
             "uri-help" :"Identifiant unique de l'expérimentation",
-            "label" : "label",
+            "label" : "Label",
             "label-help" :"Nom utilisé pour identifier l'expérimentation",
+            "objective" : "Objectif",
             "comment" : "Description",
             "comment-help" :"Informations supplémentaires",
+            "startDate" : "Date de début",
+            "endDate" : "Date de fin",
+            "campaign" : "Campagne",
+            "species" : "Espèce",
+            "keywords" : "Mot clés",
+            "campaign-help" : "",
+            "campaign-placeholder" : "2020",
             "common": {
                 "status": {
                     "finished": "Terminé",
@@ -48,9 +56,8 @@
             "form-wizard": {
                 "label" : "Assistant de création d'expérimentation",
                 "general-informations" : "Informations générales",
-                "variables" : "Variables mesurées",
-                "factors" : "Facteurs contrôlés ",
-                "sensors" : "Sensors utilisés"
+                "users_groups_projects" : "Utilisateurs, groupes et projets",
+                "variables_sensors_factors" : "Variables, facteurs et capteurs"
             }
         },
         "factor": {

@@ -349,6 +349,8 @@
         $store: any;
         $router: VueRouter;
         $i18n: any;
+        $moment: any;
+
         projectsList = [];
         projectsByUri: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
         experiments: Array<ExperimentGetDTO> = new Array<ExperimentGetDTO>();
@@ -511,8 +513,7 @@
         }
 
         formatDate(value: any): String {
-            return value;
-            // return moment().year(value.year).month(value.month).date(value.day).format('DD/MM/YYYY');
+            return this.$moment().year(value.year).month(value.month).date(value.day).format('DD/MM/YYYY');
         }
 
         getProjectName(uri: String): String {

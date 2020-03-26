@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -55,19 +56,19 @@ import org.opensilex.utils.ListWithPagination;
 @Path("/core/factor")
 public class FactorAPI {
 
-    protected static final String FACTOR_EXAMPLE_URI = "http://opensilex/set/factors/ZA17";
+    public static final String FACTOR_EXAMPLE_URI = "http://opensilex/set/factors/ZA17";
     
     public static final String CREDENTIAL_FACTOR_GROUP_ID = "Factors";
     public static final String CREDENTIAL_FACTOR_GROUP_LABEL_KEY = "credential-groups.factors";
 
-    public static final String CREDENTIAL_FACTOR_MODIFICATION_ID = "factor-modification";
-    public static final String CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY = "credential.factor.modification";
+    public static final String CREDENTIAL_FACTOR_MODIFICATION_ID = "factors-modification";
+    public static final String CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY = "credential.factors.modification";
 
-    public static final String CREDENTIAL_FACTOR_READ_ID = "factor-read";
-    public static final String CREDENTIAL_FACTOR_READ_LABEL_KEY = "credential.factor.read";
+    public static final String CREDENTIAL_FACTOR_READ_ID = "factors-read";
+    public static final String CREDENTIAL_FACTOR_READ_LABEL_KEY = "credential.factors.read";
 
-    public static final String CREDENTIAL_FACTOR_DELETE_ID = "factor-delete";
-    public static final String CREDENTIAL_FACTOR_DELETE_LABEL_KEY = "credential.factor.delete";
+    public static final String CREDENTIAL_FACTOR_DELETE_ID = "factors-delete";
+    public static final String CREDENTIAL_FACTOR_DELETE_LABEL_KEY = "credential.factors.delete";
 
     
     @Inject
@@ -87,6 +88,12 @@ public class FactorAPI {
     @POST
     @ApiOperation("Create an factor")
     @ApiProtected
+    @ApiCredential(
+        groupId = CREDENTIAL_FACTOR_GROUP_ID,
+        groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
+        credentialId = CREDENTIAL_FACTOR_MODIFICATION_ID,
+        credentialLabelKey = CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createFactor(
@@ -117,6 +124,12 @@ public class FactorAPI {
     @Path("{uri}")
     @ApiOperation("Get an factor")
     @ApiProtected
+    @ApiCredential(
+        groupId = CREDENTIAL_FACTOR_GROUP_ID,
+        groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
+        credentialId = CREDENTIAL_FACTOR_READ_ID,
+        credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFactor(
@@ -141,8 +154,8 @@ public class FactorAPI {
     /**
      * Search factors
      *
-     * @see org.opensilex.core.factor.dal.FactorDAO
-     * @param alias Regex pattern for filtering list by alias
+     * @param factorSearchDTO
+     * @see org.opensilex.core.factor.dal.FactorDAO 
      * @param orderByList List of fields to sort as an array of
      * fieldName=asc|desc
      * @param page Page number
@@ -150,10 +163,16 @@ public class FactorAPI {
      * @return filtered, ordered and paginated list
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
-    @GET
+    @POST
     @Path("search")
     @ApiOperation("Search factors")
     @ApiProtected
+    @ApiCredential(
+        groupId = CREDENTIAL_FACTOR_GROUP_ID,
+        groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
+        credentialId = CREDENTIAL_FACTOR_READ_ID,
+        credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -161,18 +180,16 @@ public class FactorAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchFactors(
-            @ApiParam(value = "Regex pattern for filtering list by alias", example = "Irrigation") @QueryParam("alias") String alias,
+            @ApiParam("Factor search form") FactorSearchDTO factorSearchDTO,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "alias=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        
-        FactorSearchDTO factorSearchDTO = new FactorSearchDTO();
-        factorSearchDTO.setAlias(alias);
+         
         // Search factors with Factor DAO
         FactorDAO dao = new FactorDAO(sparql);
         ListWithPagination<FactorModel> resultList = dao.search(
-                factorSearchDTO,
+                factorSearchDTO.getAlias(),
                 orderByList,
                 page,
                 pageSize
@@ -186,6 +203,46 @@ public class FactorAPI {
 
         // Return paginated list of factor DTO
         return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+    
+    /**
+     * getAll factors
+     *
+     * @see org.opensilex.core.factor.dal.FactorDAO 
+     * @return filtered, ordered and paginated list
+     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     */
+    @POST
+    @Path("getAll")
+    @ApiOperation("Get all factors")
+    @ApiProtected
+    @ApiCredential(
+        groupId = CREDENTIAL_FACTOR_GROUP_ID,
+        groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
+        credentialId = CREDENTIAL_FACTOR_READ_ID,
+        credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return factor list", response = FactorGetDTO.class, responseContainer = "List"),
+    })
+    public Response getAllFactors() throws Exception {
+         
+        // Search factors with Factor DAO
+        FactorDAO dao = new FactorDAO(sparql);
+        List<FactorModel> factorModelsList = dao.getAll();  
+        List<FactorGetDTO> getFactorDTOList = new ArrayList<>();
+        for (FactorModel factorModel : factorModelsList) {
+            FactorGetDTO factorGetDTO = new FactorGetDTO();
+            factorGetDTO.setUri(factorModel.getUri());
+            factorGetDTO.setAlias(factorModel.getAlias());
+            factorGetDTO.setComment(factorModel.getComment());
+            getFactorDTOList.add(factorGetDTO);
+        }
+
+        // Return paginated list of factor DTO
+        return new PaginatedListResponse<>(getFactorDTOList).getResponse();
     }
  
     /**
@@ -203,8 +260,7 @@ public class FactorAPI {
             groupId = CREDENTIAL_FACTOR_GROUP_ID,
             groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_FACTOR_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_FACTOR_DELETE_LABEL_KEY,
-            hide = true
+            credentialLabelKey = CREDENTIAL_FACTOR_DELETE_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -244,7 +300,6 @@ public class FactorAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Experiment updated", response = ObjectUriResponse.class),
         @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),

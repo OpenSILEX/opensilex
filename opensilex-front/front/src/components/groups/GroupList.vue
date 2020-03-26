@@ -40,7 +40,7 @@
       </template>
 
       <template v-slot:cell(actions)="data">
-        <b-button-group>
+        <b-button-group size="sm">
           <b-button
             size="sm"
             v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"

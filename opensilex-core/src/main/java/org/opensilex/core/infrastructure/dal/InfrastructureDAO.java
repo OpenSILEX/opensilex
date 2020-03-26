@@ -100,4 +100,8 @@ public class InfrastructureDAO {
         return sparql.getByURI(InfrastructureModel.class, uri, null);
     }
 
+    public void delete(URI instanceURI) throws Exception {
+        sparql.delete(InfrastructureModel.class, instanceURI);
+    }
+
 }

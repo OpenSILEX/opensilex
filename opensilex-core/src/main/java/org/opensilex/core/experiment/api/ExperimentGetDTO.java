@@ -50,7 +50,8 @@ public class ExperimentGetDTO extends ExperimentDTO {
                 .setInstallations(model.getDevices())
                 .setIsPublic(model.getIsPublic())
                 .setSensors(model.getSensors())
-                .setVariables(model.getVariables());
+                .setVariables(model.getVariables())
+                .setFactors(model.getFactors());
 
         if (model.getEndDate() != null) {
             dto.setEndDate(model.getEndDate().toString());

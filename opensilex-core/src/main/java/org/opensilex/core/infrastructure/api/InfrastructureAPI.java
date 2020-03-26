@@ -13,9 +13,9 @@ import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import javax.inject.Inject;
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -32,7 +32,6 @@ import org.opensilex.core.infrastructure.dal.InfrastructureDAO;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.rest.authentication.ApiProtected;
-import org.opensilex.rest.group.api.GroupGetDTO;
 import org.opensilex.rest.sparql.dto.ResourceTreeDTO;
 import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.server.response.ErrorDTO;
@@ -40,6 +39,12 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.rest.sparql.response.ResourceTreeResponse;
+import static org.opensilex.rest.user.api.UserAPI.CREDENTIAL_GROUP_USER_ID;
+import static org.opensilex.rest.user.api.UserAPI.CREDENTIAL_GROUP_USER_LABEL_KEY;
+import static org.opensilex.rest.user.api.UserAPI.CREDENTIAL_USER_DELETE_ID;
+import static org.opensilex.rest.user.api.UserAPI.CREDENTIAL_USER_DELETE_LABEL_KEY;
+import org.opensilex.rest.user.dal.UserDAO;
+import org.opensilex.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.tree.ResourceTree;
@@ -142,13 +147,33 @@ public class InfrastructureAPI {
         }
     }
 
+    @DELETE
+    @Path("delete/{uri}")
+    @ApiOperation("Delete an infrastructure")
+    @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
+            groupLabelKey = CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY,
+            credentialId = CREDENTIAL_INFRASTRUCTURE_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_DELETE_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteInfrastructure(
+            @ApiParam(value = "Infrastructure URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+    ) throws Exception {
+        InfrastructureDAO dao = new InfrastructureDAO(sparql);
+        dao.delete(uri);
+        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+    }
+    
     /**
-     * Return a group by URI
+     * Search infrstructure tree
      *
-     * @see org.opensilex.rest.group.dal.InfrastructureDAO
-     * @param uri URI of the group
-     * @return Corresponding group
-     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     * @param pattern
+     * @param securityContext
+     * @return
+     * @throws Exception 
      */
     @GET
     @Path("search")
@@ -167,7 +192,7 @@ public class InfrastructureAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchInfrastructuresTree(
-            @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") @NotEmpty String pattern,
+            @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
             @Context SecurityContext securityContext
     ) throws Exception {
         UserModel user = (UserModel) securityContext.getUserPrincipal();
@@ -179,6 +204,7 @@ public class InfrastructureAPI {
                 user.getLang()
         );
 
-        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree)).getResponse();
+        boolean enableSelection = (pattern != null && !pattern.isEmpty());
+        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree, enableSelection)).getResponse();
     }
 }

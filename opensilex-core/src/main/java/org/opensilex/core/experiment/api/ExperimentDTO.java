@@ -58,6 +58,8 @@ public abstract class ExperimentDTO {
 
     protected List<URI> sensors = new LinkedList<>();
 
+    protected List<URI> factors = new LinkedList<>();
+
 
     public URI getUri() {
         return uri;
@@ -222,6 +224,15 @@ public abstract class ExperimentDTO {
 
     public ExperimentDTO setSensors(List<URI> sensors) {
         this.sensors = sensors;
+        return this;
+    }
+    
+    public List<URI> getFactors() {
+        return factors;
+    }
+
+    public ExperimentDTO setFactors(List<URI> factors) {
+        this.factors = factors;
         return this;
     }
 

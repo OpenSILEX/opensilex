@@ -25,6 +25,8 @@ public class ResourceTreeDTO {
     private String name;
 
     private URI parent;
+    
+    private boolean selected;
 
     private List<ResourceTreeDTO> children;
 
@@ -68,27 +70,36 @@ public class ResourceTreeDTO {
         this.children = children;
     }
 
-    public static <T extends SPARQLTreeModel> List<ResourceTreeDTO> fromResourceTree(ResourceTree<T> tree) {
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
+    public static <T extends SPARQLTreeModel> List<ResourceTreeDTO> fromResourceTree(ResourceTree<T> tree, boolean enableSelection) {
         List<ResourceTreeDTO> list = new ArrayList<>();
 
         tree.listRoots(root -> {
-            ResourceTreeDTO rootDto = fromResourceTreeRecursive(root, tree);
+            ResourceTreeDTO rootDto = fromResourceTreeRecursive(root, tree, enableSelection);
             list.add(rootDto);
         });
 
         return list;
     }
 
-    private static <T extends SPARQLTreeModel> ResourceTreeDTO fromResourceTreeRecursive(T model, ResourceTree<T> tree) {
+    private static <T extends SPARQLTreeModel> ResourceTreeDTO fromResourceTreeRecursive(T model, ResourceTree<T> tree, boolean enableSelection) {
         ResourceTreeDTO dto = new ResourceTreeDTO();
 
         dto.setUri(model.getUri());
         dto.setType(model.getType());
         dto.setName(model.getName());
-
+        dto.setSelected(enableSelection && tree.isSelected(model));
+        
         List<ResourceTreeDTO> childrenDTOs = new ArrayList<>();
         tree.listChildren(model, child -> {
-            ResourceTreeDTO childDTO = fromResourceTreeRecursive(child, tree);
+            ResourceTreeDTO childDTO = fromResourceTreeRecursive(child, tree, enableSelection);
             childDTO.setParent(model.getUri());
             childrenDTOs.add(childDTO);
         });

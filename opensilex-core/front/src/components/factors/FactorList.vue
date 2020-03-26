@@ -3,12 +3,12 @@
     <b-input-group class="mt-3 mb-3" size="sm">
       <b-input-group>
         <b-form-input
-          v-model="filterPattern"
+          v-model="filterByAlias"
           debounce="300"
           :placeholder="$t('component.factor.filter-placeholder')"
         ></b-form-input>
         <template v-slot:append>
-          <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
+          <b-btn :disabled="!filterByAlias" variant="primary" @click="filterByAlias = ''">
             <font-awesome-icon icon="times" size="sm" />
           </b-btn>
         </template>
@@ -29,7 +29,7 @@
       <template v-slot:head(comment)="data">{{$t(data.label)}}</template>
       <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
        <template v-slot:cell(actions)="data">
-        <b-button-group>
+        <b-button-group size="sm">
           <b-button
             size="sm"
             @click="$emit('onEdit', data.item)"
@@ -62,6 +62,7 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import { FactorsService } from "../../lib/api/factors.service";
 import { FactorGetDTO } from "../../lib/model/factorGetDTO";
+import { FactorSearchDTO } from "../../lib/model/factorSearchDTO";
 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
@@ -85,20 +86,26 @@ export default class FactorList extends Vue {
   sortBy = "alias";
   sortDesc = false;
 
-  private filterPatternValue: any = "";
-  set filterPattern(value: string) {
-    this.filterPatternValue = value;
+  private searchFrom: FactorSearchDTO = {
+    uri: "",
+    alias: "",
+    comment:"",
+     // lang: "en-US"
+  };
+
+  set filterByAlias(value: string) {
+    this.searchFrom.alias = value;
     this.refresh();
   }
 
-  get filterPattern() {
-    return this.filterPatternValue;
+  get filterByAlias() {
+    return this.searchFrom.alias;
   }
 
   created() {
     let query: any = this.$route.query;
-    if (query.filterPattern) {
-      this.filterPatternValue = decodeURI(query.filterPattern);
+    if (query.filterByAlias) {
+      this.searchFrom.alias = decodeURI(query.filterByAlias);
     }
     if (query.pageSize) {
       this.pageSize = parseInt(query.pageSize);
@@ -140,6 +147,7 @@ export default class FactorList extends Vue {
     let service: FactorsService = this.$opensilex.getService(
       "opensilex.FactorsService"
     );
+    let factorSearchDTO : FactorSearchDTO;
 
     let orderBy : string[] = [];
     if (this.sortBy) {
@@ -150,14 +158,13 @@ export default class FactorList extends Vue {
         orderBy.push(orderByText + "asc");
       }
     }
-
     return service
       .searchFactors(
         this.user.getAuthorizationHeader(),
-        this.filterPattern,
         orderBy,
         this.currentPage - 1,
-        this.pageSize
+        this.pageSize,
+        this.searchFrom
       )
       .then((http: HttpResponse<OpenSilexResponse<Array<FactorGetDTO>>>) => {
         this.totalRow = http.response.metadata.pagination.totalCount;
@@ -170,12 +177,12 @@ export default class FactorList extends Vue {
           .push({
             path: this.$route.fullPath,
             query: {
-              filterPattern: encodeURI(this.filterPattern),
+              filterByAlias: encodeURI(this.searchFrom.alias),
               currentPage: "" + this.currentPage,
               pageSize: "" + this.pageSize
             }
           })
-          .catch(function() {});
+          .catch(err => {})
 
         return http.response.result;
       })

@@ -60,7 +60,8 @@
                 "forbidden-error": "Vous n'avez pas l'autorisation d'accèder à cette fonctionnalité, merci de contacter votre administrateur local.",
                 "server-error": "Une erreur s'est produite au niveau du serveur, merci de contacter votre administrateur local.",
                 "unexpected-error": "Une erreur inattendue s'est produite, merci de contacter votre administrateur local.",
-                "unauthorized-error": "Votre session à expirée, merci de vous connecter à nouveau."
+                "unauthorized-error": "Votre session à expirée, merci de vous connecter à nouveau.",
+                "form-step-errors" : "Certains champs sont requis avant de passer à l'étape suivante"
             }
         },
         "header": {
@@ -95,6 +96,11 @@
                 "users": "Utilisateurs",
                 "groups": "Groupes",
                 "profiles": "Profils"
+            },
+            "experimentalDesign" :{
+                "label" : "Plan d'expérience",
+                "factors" : "Facteurs",
+                "factorLevels" : "Niveaux de facteurs"
             }
         },
         "login": {
@@ -175,7 +181,8 @@
         "profiles": "Profiles",
         "projects": "Projets",
         "users": "Utilisateurs",
-        "variables": "Variables"
+        "variables": "Variables",
+        "factors": "Facteurs"
     },
     "credential": {
         "experiment": {
@@ -207,6 +214,16 @@
             "modification": "Ajout / Modification des variables",
             "read": "Visualisation des variables",
             "delete": "Supression des variables"
+        },
+        "factors": {
+            "modification": "Create / Modification des facteurs",
+            "read": "Visualisation facteurs",
+            "delete": "Supression des facteurs"
+        },
+        "factorLevels": {
+            "modification": "Create / Modification des niveaux de facteurs",
+            "read": "Visualisation niveaux de facteurs",
+            "delete": "Supression des niveaux de facteurs"
         }
     },
     "validations": {

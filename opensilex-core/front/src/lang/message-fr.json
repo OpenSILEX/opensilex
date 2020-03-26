@@ -61,22 +61,27 @@
             }
         },
         "factor": {
-            "factor-uri": "URI du facteur",
-            "factor-alias-placeholder": "Renseignez un alias de facteur",
+            "uri": "URI du facteur",
+            "uri-help": "Identifiant unique du facteur",
+            "alias-placeholder": "Renseignez un alias de facteur",
             "filter-placeholder": "Utiliser ce filter pour filter les facteurs",
             "factors": "facteur",
             "add": "ajouter un facteur",
             "update": "mettre à jour un facteur",
             "alias": "alias",
-            "comment": "description", 
+            "alias-help": "alias",
+            "form-alias-placeholder" : "Irrigation, Ombrage, Variété, etc.",
+            "comment": "Description associée à ce facteur (protocole, apport de composé)",
+            "comment-help": "alias",
+            "form-comment-placeholder" : "Protocole n°1289 - Apport d'eau de 5 ml/jour.",
             "errors": {
                 "user-already-exists": "URI du facteur déjà existante."
             }
         },
         "factorLevel": {
-            "factorLevel-uri": "URI du niveau de facteur",
-            "factorLevel-alias-placeholder": "Renseignez l'alias d'un niveau de facteur",
-            "factorLevel-factor-selector-placeholder": "Sélectionnez un alias de facteur",
+            "uri": "URI du niveau de facteur",
+            "alias-placeholder": "Renseignez l'alias d'un niveau de facteur",
+            "factor-selector-placeholder": "Sélectionnez un alias de facteur",
             "filter-placeholder": "Utilisez ce change pour filter vos niveau de facteur",
             "factorLevel": "niveau de facteur",
             "add": "ajouter un niveau de facteur",
@@ -84,29 +89,10 @@
             "alias": "alias",
             "factor": "facteur",
             "comment": "description", 
+            "hasFactor": "est lié au facteur",
             "errors": {
                 "user-already-exists": "URI du niveau de facteur déjà existante."
             }
-        },
-        "common" : {
-            "actions" : "actions",
-            "form-step-errors" : "Certains champs sont requis"
-        }
-    },
-    "credential-experimentalDesign": {
-        "factors": "Facteurs",
-        "factorLevels": "Niveaux de facteurs"
-    },
-    "credential": {
-        "factors": {
-            "modification": "Créer / mettre à jour des facteurs",
-            "read": "Voir facteurs",
-            "delete": "Supprimer des facteurs"
-        },
-        "factorLevels": {
-            "modification": "Create / mettre à jour  niveau de facteur",
-            "read": "Voir des niveau de facteur",
-            "delete": "Supprimer des niveau de facteur"
         }
     }
 }

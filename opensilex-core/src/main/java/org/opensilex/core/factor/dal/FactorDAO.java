@@ -14,7 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
+import org.opensilex.core.factor.api.FactorGetDTO;
 import org.opensilex.core.factor.api.FactorSearchDTO;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OrderBy;
@@ -50,13 +52,13 @@ public class FactorDAO {
         return sparql.getByURI(FactorModel.class, instanceURI, null);
     }
 
-    public ListWithPagination<FactorModel> search(FactorSearchDTO factorSearchDTO, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public ListWithPagination<FactorModel> search(String alias, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         return sparql.searchWithPagination(
                 FactorModel.class,
                 null,
                 (SelectBuilder select) -> {
                     // TODO implements filters
-                    appendFilters(factorSearchDTO, select);
+                    appendFilters(alias, select);
                 },
                 orderByList,
                 page,
@@ -64,21 +66,25 @@ public class FactorDAO {
         );
     }
     
+    public List<FactorModel> getAll() throws Exception {
+       return  sparql.search(FactorModel.class, null); 
+    }
+    
     /**
      * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty simple attribute ( not a {@link List} from the {@link FactorSearchDTO}
      *
-     * @param searchDTO a search DTO which contains all attributes about an {@link FactorModel} search
+     * @param alias alias search attribute
      * @param select search query
      * @throws java.lang.Exception can throw an exception
      * @see SPARQLQueryHelper the utility class used to build Expr
      */
-    protected void appendFilters(FactorSearchDTO searchDTO, SelectBuilder select) throws Exception {
+    protected void appendFilters(String alias, SelectBuilder select) throws Exception {
 
         List<Expr> exprList = new ArrayList<>(); 
         
         // build regex filters
-        if (searchDTO.getAlias()!= null) {
-            exprList.add(SPARQLQueryHelper.regexFilter(FactorModel.ALIAS_FIELD, searchDTO.getAlias()));
+        if (alias != null) {
+            exprList.add(SPARQLQueryHelper.regexFilter(FactorModel.ALIAS_FIELD, alias));
         }
 
         for (Expr filterExpr : exprList) {

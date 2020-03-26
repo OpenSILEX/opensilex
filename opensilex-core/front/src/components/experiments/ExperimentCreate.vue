@@ -85,7 +85,7 @@ export default class ExperimentCreate extends Vue {
           if (isValid) {
             resolve(true);
           }else{
-            this.errorMsg ='component.common.form-step-errors'
+            this.errorMsg ='component.common.errors.form-step-errors'
             reject();
           }
         });

@@ -74,8 +74,16 @@ export default class App extends Vue {
 // @import "../node_modules/sl-vue-tree/dist/sl-vue-tree-minimal.css";
 @import "../node_modules/sl-vue-tree/dist/sl-vue-tree-dark.css";
 
+.tree-button-group {
+  float: right;
+}
+
+.sl-vue-tree-title {
+  width: 100%;
+}
+
 .sl-vue-tree.sl-vue-tree-root {
-  border: 1px solid #545454;
+  border: 1px solid #dee2e6;
   background-color: white;
   color: #545454;
 }

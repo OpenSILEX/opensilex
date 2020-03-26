@@ -103,6 +103,8 @@ public class Oeso {
     public static final Resource FactorLevel = Ontology.resource(NS, "FactorLevel");
     public static final Property hasFactorLevel = Ontology.property(NS, "hasFactorLevel");
     public static final Property hasFactor= Ontology.property(NS, "hasFactor");
+    // Link with experiment
+    public static final Property influencedBy= Ontology.property(NS, "influencedBy");
 
     public static final Resource SensingDevice = Ontology.resource(NS, "SensingDevice");
 

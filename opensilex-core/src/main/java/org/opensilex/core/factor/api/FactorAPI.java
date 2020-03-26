@@ -56,19 +56,19 @@ import org.opensilex.utils.ListWithPagination;
 @Path("/core/factor")
 public class FactorAPI {
 
-    protected static final String FACTOR_EXAMPLE_URI = "http://opensilex/set/factors/ZA17";
+    public static final String FACTOR_EXAMPLE_URI = "http://opensilex/set/factors/ZA17";
     
     public static final String CREDENTIAL_FACTOR_GROUP_ID = "Factors";
     public static final String CREDENTIAL_FACTOR_GROUP_LABEL_KEY = "credential-groups.factors";
 
-    public static final String CREDENTIAL_FACTOR_MODIFICATION_ID = "factor-modification";
-    public static final String CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY = "credential.factor.modification";
+    public static final String CREDENTIAL_FACTOR_MODIFICATION_ID = "factors-modification";
+    public static final String CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY = "credential.factors.modification";
 
-    public static final String CREDENTIAL_FACTOR_READ_ID = "factor-read";
-    public static final String CREDENTIAL_FACTOR_READ_LABEL_KEY = "credential.factor.read";
+    public static final String CREDENTIAL_FACTOR_READ_ID = "factors-read";
+    public static final String CREDENTIAL_FACTOR_READ_LABEL_KEY = "credential.factors.read";
 
-    public static final String CREDENTIAL_FACTOR_DELETE_ID = "factor-delete";
-    public static final String CREDENTIAL_FACTOR_DELETE_LABEL_KEY = "credential.factor.delete";
+    public static final String CREDENTIAL_FACTOR_DELETE_ID = "factors-delete";
+    public static final String CREDENTIAL_FACTOR_DELETE_LABEL_KEY = "credential.factors.delete";
 
     
     @Inject

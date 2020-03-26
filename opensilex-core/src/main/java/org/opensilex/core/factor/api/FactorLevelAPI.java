@@ -56,16 +56,16 @@ import org.opensilex.utils.ListWithPagination;
 @Path("/core/FactorLevels")
 public class FactorLevelAPI {
     
-    public static final String CREDENTIAL_FACTOR_LEVEL_GROUP_ID = "factor-levels";
-    public static final String CREDENTIAL_FACTOR_LEVEL_GROUP_LABEL_KEY = "credential.factorLevels";
+    public static final String CREDENTIAL_FACTOR_LEVEL_GROUP_ID = "Factors";
+    public static final String CREDENTIAL_FACTOR_LEVEL_GROUP_LABEL_KEY = "credential-groups.factors";
 
-    public static final String CREDENTIAL_FACTOR_LEVEL_MODIFICATION_ID = "factor-levels-modification";
+    public static final String CREDENTIAL_FACTOR_LEVEL_MODIFICATION_ID = "factorLevels-modification";
     public static final String CREDENTIAL_FACTOR_LEVEL_MODIFICATION_LABEL_KEY = "credential.factorLevels.modification";
 
-    public static final String CREDENTIAL_FACTOR_LEVEL_READ_ID = "factor-levels-read";
+    public static final String CREDENTIAL_FACTOR_LEVEL_READ_ID = "factorLevels-read";
     public static final String CREDENTIAL_FACTOR_LEVEL_READ_LABEL_KEY = "credential.factorLevels.read";
 
-    public static final String CREDENTIAL_FACTOR_LEVEL_DELETE_ID = "factor-levels-delete";
+    public static final String CREDENTIAL_FACTOR_LEVEL_DELETE_ID = "factorLevels-delete";
     public static final String CREDENTIAL_FACTOR_LEVEL_DELETE_LABEL_KEY = "credential.factorLevels.delete";
 
     @Inject

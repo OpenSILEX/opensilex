@@ -163,6 +163,14 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
     public static final String SENSORS_SPARQL_VAR = "sensors";
 
 
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "influencedBy",
+            inverse = true
+    )
+    List<URI> factors = new LinkedList<>();
+    public static final String FACTORS_SPARQL_VAR = "factors";
+    
     public String getLabel() {
         return label;
     }
@@ -291,6 +299,14 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
         this.sensors = sensors;
     }
 
+    public List<URI> getFactors() {
+        return factors;
+    }
+
+    public void setFactors(List<URI> factors) {
+        this.factors = factors;
+    }
+    
     public List<URI> getDevices() {
         return devices;
     }

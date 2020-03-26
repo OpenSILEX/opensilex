@@ -54,7 +54,7 @@
         },
         "factor": {
             "uri": "Factor URI",
-            "uri-help": "Factor URI",
+            "uri-help": "Unique factor identifier",
             "alias-placeholder": "Enter factor alias",
             "filter-placeholder": "Use this field to filter factors",
             "factors": "factor",
@@ -62,8 +62,10 @@
             "update": "update factor",
             "alias": "alias",
             "alias-help": "Name used to define this factor",
+            "form-alias-placeholder" : "Irrigation, Shading, Variety, etc.",
             "comment": "comment", 
-            "comment-help": "Description associated to this factors (protocole, amount of component)",
+            "comment-help": "Description associated to this factors (protocol, amount of component)",
+            "form-comment-placeholder" : "Protocol n°1289 - Amount of water 5 ml/Days.",
             "errors": {
                 "user-already-exists": "Factor already exists with this URI."
             }
@@ -83,26 +85,6 @@
             "errors": {
                 "user-already-exists": "Factor level already exists with this URI."
             }
-        },
-        "common" : {
-            "actions" : "actions",
-            "form-step-errors" : "Some field are required"
-        }
-    },
-    "credential-experimentalDesign": {
-        "factors": "Factors",
-        "factorLevels": "FactorLevels"
-    },
-    "credential": {
-        "factors": {
-            "modification": "Create / update factors",
-            "read": "View factors",
-            "delete": "Delete factors"
-        },
-        "factorLevels": {
-            "modification": "Create / update FactorLevels",
-            "read": "View FactorLevels",
-            "delete": "Delete FactorLevels"
         }
     }
 }

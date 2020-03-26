@@ -62,7 +62,8 @@
                 "forbidden-error": "You don't have the right do access this feature, please contact your local support.",
                 "server-error": "An error occured at server level, please contact your local support..",
                 "unexpected-error": "An unexpected error occured, please contact your local support.",
-                "unauthorized-error": "Your session expired, please login again."
+                "unauthorized-error": "Your session expired, please login again.",
+                "form-step-errors" : "Some field are required in order to go to the next step"
             }
         },
         "header": {
@@ -182,7 +183,8 @@
         "profiles": "Profiles",
         "projects": "Projects",
         "users": "Users",
-        "variables": "Variables"
+        "variables": "Variables",
+        "factors": "Factors"
     },
     "credential": {
         "experiment": {
@@ -214,6 +216,16 @@
             "modification": "Create / update variables",
             "read": "View variables",
             "delete": "Delete variables"
+        },
+        "factors": {
+            "modification": "Create / update factors",
+            "read": "View factors",
+            "delete": "Delete factors"
+        },
+        "factorLevels": {
+            "modification": "Create / update FactorLevels",
+            "read": "View factor levels",
+            "delete": "Delete factor levels"
         }
     },
     "validations": {

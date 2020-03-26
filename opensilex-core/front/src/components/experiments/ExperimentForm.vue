@@ -71,14 +71,12 @@
           </slot>
           <ValidationProvider
             :name="$t('component.experiment.comment')"
-            rules="required"
             v-slot="{ errors }"
           >
             <b-form-input
               id="comment"
               v-model="form.comment"
               type="text"
-              required
               :placeholder="$t('component.experiment.form-comment-placeholder')"
             ></b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>

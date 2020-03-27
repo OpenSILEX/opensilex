@@ -13,18 +13,20 @@
         {{ $t('component.experiment.form-wizard.label') }}
       </i>
     </h2>
+
     <tab-content
       v-bind:title="$t('component.experiment.form-wizard.general-informations')"
-      :before-change="checkBeforeVariablesStep"
-    >
-      <opensilex-core-ExperimentForm ref="experimentForm"></opensilex-core-ExperimentForm>
+      :before-change="checkBeforeVariablesStep">
+      <opensilex-core-ExperimentForm ref="experimentForm">
+      </opensilex-core-ExperimentForm>
     </tab-content>
+
     <tab-content
-      v-bind:title="$t('component.experiment.form-wizard.users_groups_projects')"
-    >Todo Add LinkExperimentVariable component</tab-content>
-    <tab-content
-      v-bind:title="$t('component.experiment.form-wizard.variables_sensors_factors')"
-    >Todo Add LinkExperimentFactors component</tab-content>
+      v-bind:title="$t('component.experiment.form-wizard.users-groups-projects')">
+      <opensilex-core-ExperimentFormUsersGroupsProjects ref="experimentFormUsersGroupsProjects">
+      </opensilex-core-ExperimentFormUsersGroupsProjects>
+    </tab-content>
+
     <!-- <tab-content
       v-bind:title="$t('component.experiment.form-wizard.sensors')"
     >Done recap ?</tab-content> -->

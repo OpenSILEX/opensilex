@@ -39,20 +39,22 @@
             </opensilex-FormInputMessageHelper>
           </slot>
           <ValidationProvider :name="$t('component.experiment.label')" rules="required" v-slot="{ errors }" >
-            <b-form-input id="label" v-model="form.label" type="text" required placeholder="ZA17"></b-form-input>
+            <b-form-input id="label" v-model="form.label" type="text" required 
+             :placeholder="$t('component.experiment.label-placeholder')" >
+            </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
 
         <!-- Objective -->
          <b-form-group  required  >
-         <slot name="label">
+         <slot name="objective">
             <opensilex-FormInputMessageHelper label=component.experiment.objective helpMessage="component.experiment.objective-help" >
             </opensilex-FormInputMessageHelper>
           </slot>
           <ValidationProvider :name="$t('component.experiment.objective')" v-slot="{ errors }">
             <b-form-input  id="objective"  v-model="form.objective"  type="text"
-              placeholder="Climate change Maize adaptation" >
+              :placeholder="$t('component.experiment.objective-placeholder')" >
             </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
@@ -60,13 +62,13 @@
 
         <!-- Comment -->
         <b-form-group  required  >
-         <slot name="label">
+         <slot name="comment">
             <opensilex-FormInputMessageHelper label=component.experiment.comment helpMessage="component.experiment.comment-help" >
             </opensilex-FormInputMessageHelper>
           </slot>
            <ValidationProvider :name="$t('component.experiment.comment')" v-slot="{ errors }">
             <b-form-input  id="comment"  v-model="form.comment"  type="text"
-              :placeholder="$t('component.experiment.form-comment-placeholder')" >
+              :placeholder="$t('component.experiment.comment-placeholder')" >
             </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
@@ -74,13 +76,13 @@
 
         <!-- Campaign -->
         <b-form-group  required  >
-         <slot name="label">
+         <slot name="campaign">
             <opensilex-FormInputMessageHelper label=component.experiment.campaign helpMessage="component.experiment.campaign-help" >
             </opensilex-FormInputMessageHelper>
           </slot>
            <ValidationProvider :name="$t('component.experiment.campaign')"  v-slot="{ errors }">
             <b-form-input  id="campaign"  v-model="form.campaign"  type="number "
-              :placeholder="$t('component.experiment.comment-placeholder')" >
+              :placeholder="$t('component.experiment.campaign-placeholder')" >
             </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
@@ -88,13 +90,12 @@
 
         <!-- StartDate -->
         <b-form-group  required  >
-         <slot name="label">
-            <opensilex-FormInputMessageHelper label=component.experiment.startDate helpMessage="component.experiment.startDate-help" >
+         <slot name="startDate">
+            <opensilex-FormInputMessageHelper label=component.experiment.startDate>
             </opensilex-FormInputMessageHelper>
           </slot>
-           <ValidationProvider :name="$t('component.experiment.startDate')" v-slot="{ errors }">
-            <b-form-input  id="startDate"  v-model="form.comment"  type="text"
-              :placeholder="$t('component.experiment.form-startDate-placeholder')" >
+           <ValidationProvider :name="$t('component.experiment.startDate')" rules="required" v-slot="{ errors }">
+            <b-form-input  id="startDate"  v-model="form.startDate"  type="date" value="2020-03-05" required>
             </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
@@ -103,13 +104,12 @@
 
        <!-- EndDate -->
         <b-form-group  required  >
-         <slot name="label">
-            <opensilex-FormInputMessageHelper label=component.experiment.endDate helpMessage="component.experiment.endDate-help" >
+         <slot name="endDate">
+            <opensilex-FormInputMessageHelper label=component.experiment.endDate>
             </opensilex-FormInputMessageHelper>
           </slot>
            <ValidationProvider :name="$t('component.experiment.endDate')" v-slot="{ errors }">
-            <b-form-input  id="endDate"  v-model="form.comment"  type="text"
-              :placeholder="$t('component.experiment.form-endDate-placeholder')" >
+            <b-form-input  id="endDate"  v-model="form.endDate"  type="date" value="2020-03-05">
             </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
@@ -117,13 +117,13 @@
 
       <!-- Species -->
         <b-form-group  required  >
-        <slot name="label">
+        <slot name="species">
             <opensilex-FormInputMessageHelper label=component.experiment.species helpMessage="component.experiment.species-help" >
             </opensilex-FormInputMessageHelper>
           </slot>
           <ValidationProvider :name="$t('component.experiment.species')" v-slot="{ errors }">
-            <b-form-input  id="species"  v-model="form.comment"  type="text"
-              :placeholder="$t('component.experiment.form-species-placeholder')" >
+            <b-form-input  id="species"  v-model="form.species"  type="text"
+              :placeholder="$t('component.experiment.species-placeholder')" >
             </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
@@ -132,13 +132,13 @@
 
          <!-- Keywords -->
         <b-form-group  required  >
-         <slot name="label">
+         <slot name="keywords">
             <opensilex-FormInputMessageHelper label=component.experiment.keywords helpMessage="component.experiment.keywords-help" >
             </opensilex-FormInputMessageHelper>
           </slot>
            <ValidationProvider :name="$t('component.experiment.keywords')" v-slot="{ errors }">
-            <b-form-input  id="keywords"  v-model="form.comment"  type="text"
-              :placeholder="$t('component.experiment.form-keywords-placeholder')" >
+            <b-form-input  id="keywords"  v-model="form.keywords"  type="text"
+              :placeholder="$t('component.experiment.keywords-placeholder')" >
             </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>

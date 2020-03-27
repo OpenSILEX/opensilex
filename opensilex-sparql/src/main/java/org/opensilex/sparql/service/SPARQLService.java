@@ -139,7 +139,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     public boolean executeAskQuery(AskBuilder ask) throws SPARQLException {
         addPrefixes(ask);
         if (LOGGER.isDebugEnabled()) {
-//            LOGGER.debug("SPARQL ASK\n" + ask.buildString());
+            LOGGER.debug("SPARQL ASK\n" + ask.buildString());
         }
         return connection.executeAskQuery(ask);
     }
@@ -183,7 +183,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     public List<SPARQLResult> executeSelectQuery(SelectBuilder select, Consumer<SPARQLResult> resultHandler) throws SPARQLException {
         addPrefixes(select);
         if (LOGGER.isDebugEnabled()) {
-//            LOGGER.debug("SPARQL SELECT\n" + select.buildString());
+            LOGGER.debug("SPARQL SELECT\n" + select.buildString());
         }
         return connection.executeSelectQuery(select, resultHandler);
     }

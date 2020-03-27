@@ -17,7 +17,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 
 /**
  *
- * @author boizetal
+* @author Alice Boizet
  */
 
 @SPARQLResource(

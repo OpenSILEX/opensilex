@@ -912,7 +912,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
      * @param variables
      * @return the check result.
      */
-    private POSTResultsReturn checkMeasuredVariables(String sensorUri, List<String> variables) {
+    private POSTResultsReturn checkMeasuredVariables(String sensorUri, List<String> variables) throws Exception {
         POSTResultsReturn checkResult;
         List<Status> checkStatus = new ArrayList<>();
         
@@ -1010,7 +1010,7 @@ public class SensorDAO extends Rdf4jDAO<Sensor> {
      * @param variables
      * @return the update result
      */
-    public POSTResultsReturn checkAndUpdateMeasuredVariables(String sensorUri, List<String> variables) {
+    public POSTResultsReturn checkAndUpdateMeasuredVariables(String sensorUri, List<String> variables) throws Exception {
         POSTResultsReturn checkResult = checkMeasuredVariables(sensorUri, variables);
         if (checkResult.getDataState()) {
              return updateMeasuredVariables(sensorUri, variables);

@@ -929,7 +929,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      * @param variables
      * @return the check result.
      */
-    private POSTResultsReturn checkMeasuredVariables(String actuatorUri, List<String> variables) {
+    private POSTResultsReturn checkMeasuredVariables(String actuatorUri, List<String> variables) throws Exception {
         POSTResultsReturn checkResult;
         List<Status> checkStatus = new ArrayList<>();
         
@@ -1027,7 +1027,7 @@ public class ActuatorDAO extends Rdf4jDAO<Actuator> {
      * @param variables
      * @return the update result
      */
-    public POSTResultsReturn checkAndUpdateMeasuredVariables(String actuatorUri, List<String> variables) {
+    public POSTResultsReturn checkAndUpdateMeasuredVariables(String actuatorUri, List<String> variables) throws Exception {
         POSTResultsReturn checkResult = checkMeasuredVariables(actuatorUri, variables);
         if (checkResult.getDataState()) {
              return updateMeasuredVariables(actuatorUri, variables);

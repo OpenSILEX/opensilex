@@ -125,7 +125,7 @@ public class DatasetResourceService extends ResourceService {
      * @param datasetDAO
      * @return the user answer with the results
      */
-    private Response getDatasetsData(DatasetDAO datasetDAO) {
+    private Response getDatasetsData(DatasetDAO datasetDAO) throws Exception {
         ArrayList<Dataset> datasets;
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<Dataset> getResponse;

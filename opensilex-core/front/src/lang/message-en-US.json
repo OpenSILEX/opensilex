@@ -4,16 +4,19 @@
             "uri" : "uri",
             "uri-help" :"Unique experiment identifier",
             "label" : "Label",
+            "label-placeholder" : "ZA17",
+            "label-help" :"Experiment name",
             "objective" : "Objective",
+            "objective-placeholder" : "",
             "comment" : "Comment",
-            "comment-help" : "",
+            "comment-placeholder" : "",
             "startDate" : "Start date",
             "endDate" : "End date",
             "campaign" : "Campaign",
-            "campaign-help" : "",
             "campaign-placeholder" : "2020",
             "species" : "Species",
             "keywords" : "Keywords",
+            "keywords-placeholder" : ["Opensilex", "ClimateChange", "Irrigation"],
             "common": {
                 "status": {
                     "finished": "Finished",
@@ -55,8 +58,8 @@
             "form-wizard": {
                 "label" : "Experiment creation wizard",
                 "general-informations" : "General informations",
-                "users_groups_projects" : "Users, groups and projects",
-                "variables_sensors_factors" : "Variables, factors and sensors"
+                "users-groups-projects" : "Users, groups and projects",
+                "variables-sensors-factors" : "Variables, factors and sensors"
             }
         },
         "factor": {

@@ -4,17 +4,19 @@
             "uri" : "uri",
             "uri-help" :"Identifiant unique de l'expérimentation",
             "label" : "Label",
+            "label-placeholder" : "ZA17",
             "label-help" :"Nom utilisé pour identifier l'expérimentation",
             "objective" : "Objectif",
+            "objective-placeholder" : "",
             "comment" : "Description",
-            "comment-help" :"Informations supplémentaires",
+            "comment-placeholder" : "",
             "startDate" : "Date de début",
             "endDate" : "Date de fin",
             "campaign" : "Campagne",
+            "campaign-placeholder" : "2020",
             "species" : "Espèce",
             "keywords" : "Mot clés",
-            "campaign-help" : "",
-            "campaign-placeholder" : "2020",
+            "keywords-placeholder" : ["Opensilex", "Changement climatique", "Irrigation"],
             "common": {
                 "status": {
                     "finished": "Terminé",
@@ -56,8 +58,8 @@
             "form-wizard": {
                 "label" : "Assistant de création d'expérimentation",
                 "general-informations" : "Informations générales",
-                "users_groups_projects" : "Utilisateurs, groupes et projets",
-                "variables_sensors_factors" : "Variables, facteurs et capteurs"
+                "users-groups-projects" : "Utilisateurs, groupes et projets",
+                "variables-sensors-factors" : "Variables, facteurs et capteurs"
             }
         },
         "factor": {

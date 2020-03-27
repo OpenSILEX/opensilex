@@ -103,7 +103,7 @@ public class ProjectDAO {
     }
 
     public void create(List<ProjectModel> instances) throws Exception {
-        sparql.create(SPARQLService.getDefaultGraph(ProjectModel.class), instances);
+        sparql.create(instances);
     }
 
     public ListWithPagination<ProjectModel> search(List<OrderBy> orderByList, int page, int pageSize) throws Exception {

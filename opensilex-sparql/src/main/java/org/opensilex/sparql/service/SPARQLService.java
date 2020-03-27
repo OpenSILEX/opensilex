@@ -60,6 +60,7 @@ import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 import org.opensilex.sparql.tree.ResourceTree;
+import org.opensilex.utils.ClassUtils;
 
 /**
  * Implementation of SPARQLService
@@ -605,6 +606,11 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
             rollbackTransaction(ex);
             throw ex;
         }
+    }
+
+    public <T extends SPARQLResourceModel> void create(List<T> instances) throws Exception {
+        Class<? extends SPARQLResourceModel> genericType = (Class<? extends SPARQLResourceModel>) ClassUtils.getGenericTypeFromClass(instances.getClass());
+        create(getDefaultGraph(genericType), instances);
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, List<T> instances) throws Exception {

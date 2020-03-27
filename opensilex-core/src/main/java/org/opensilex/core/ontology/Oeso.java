@@ -95,7 +95,7 @@ public class Oeso {
     public static final Property hasChild = Ontology.property(NS,"hasChild");
 
     // ---- SPECIES ----
-     public static final Resource Species = Ontology.resource(NS, "Species");
+    //public static final Resource Species = Ontology.resource(NS, "Species");
 
 
     // ---- FACTORS ----
@@ -103,8 +103,19 @@ public class Oeso {
     public static final Resource FactorLevel = Ontology.resource(NS, "FactorLevel");
     public static final Property hasFactorLevel = Ontology.property(NS, "hasFactorLevel");
     public static final Property hasFactor= Ontology.property(NS, "hasFactor");
+    // Link with experiment
+    public static final Property influencedBy= Ontology.property(NS, "influencedBy");
 
     public static final Resource SensingDevice = Ontology.resource(NS, "SensingDevice");
-
+    
+    // ---- GERMPLASM ----
+    public static final Resource Germplasm = Ontology.resource(NS, "Germplasm");
+    public static final Resource Species = Ontology.resource(NS, "Species");
+    public static final Resource Variety = Ontology.resource(NS, "Variety");
+    public static final Resource Accession = Ontology.resource(NS, "Accession");
+    public static final Resource PlantMaterialLot = Ontology.resource(NS, "PlantMaterialLot");
+    public static final Property fromSpecies = Ontology.property(NS, "fromSpecies");
+    public static final Property fromVariety = Ontology.property(NS, "fromVariety");
+    public static final Property fromAccession = Ontology.property(NS, "fromAccession");
 
 }

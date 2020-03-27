@@ -38,6 +38,10 @@ public class FactorLevelSearchDTO {
     }
 
     public String getAlias() {
+        if(alias != null
+            && (alias.isBlank() || alias.isEmpty())){
+            return null;
+        } 
         return alias;
     }
 

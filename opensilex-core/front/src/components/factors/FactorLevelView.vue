@@ -33,7 +33,7 @@ export default class FactorLevelView extends Vue {
   $opensilex: any;
   $store: any;
   service: FactorLevelsService;
-  factorList: Array<FactorGetDTO> = [];
+  factors: Array<FactorGetDTO> = [];
 
 
   get user() {
@@ -43,6 +43,7 @@ export default class FactorLevelView extends Vue {
   get credentials() {
     return this.$store.state.credentials;
   }
+
 
   // TODO :
   // add factors list in form selector
@@ -56,9 +57,24 @@ export default class FactorLevelView extends Vue {
   
   // }
 
-  created() {
+  async created() {
     console.debug("Loading form view...");
     this.service = this.$opensilex.getService("opensilex.FactorLevelsService");
+
+    console.debug("Loading factors list...");
+    let factorsService: FactorsService = await this.$opensilex.loadService(
+      "opensilex-rest.FactorsService"
+    );
+    let http: HttpResponse<OpenSilexResponse<
+      Array<FactorGetDTO>
+    >> = await factorsService.searchFactors(
+      this.$opensilex.getUser().getAuthorizationHeader(),
+      [],
+      200,
+      0
+    );
+    this.factors = http.response.result;
+    console.debug("Factors list loaded !", this.factors);
   }
 
   showCreateForm() {

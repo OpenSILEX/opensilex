@@ -59,7 +59,8 @@ public class ExperimentAPI {
     public static final String CREDENTIAL_EXPERIMENT_DELETE_ID = "experiment-delete";
     public static final String CREDENTIAL_EXPERIMENT_DELETE_LABEL_KEY = "credential.experiment.delete";
 
-    protected static final String EXPERIMENT_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
+    protected static final String EXPERIMENT_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17"; 
+
 
     @Inject
     public ExperimentAPI(SPARQLService sparql) {
@@ -303,6 +304,49 @@ public class ExperimentAPI {
             dao.delete(xpUri);
             return new ObjectUriResponse(xpUri).getResponse();
 
+        } catch (SPARQLInvalidURIException e) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Experiment URI", e.getMessage()).getResponse();
+        } catch (Exception e) {
+            return new ErrorResponse(e).getResponse();
+        }
+    }
+    
+    /**
+     * Updates the sensors linked to an experiment.
+     *
+     * @param xpUri
+     * @param factors
+     * @return the query result
+     * @example [ "http://www.phenome-fppn.fr/opensilex/2018/s18001" ]
+     * @example { "metadata": { "pagination": null, "status": [ { "message":
+     * "Resources updated", "exception": { "type": "Info", "href": null,
+     * "details": "The experiment http://www.opensilex.fr/platform/OSL2018-1 has
+     * now 1 linked sensors" } } ], "datafiles": [
+     * "http://www.opensilex.fr/platform/OSL2015-1" ] } }
+     */
+    @PUT
+    @Path("{uri}/factors")
+    @ApiOperation("Update the factors which participates in an experiment")
+    @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
+            groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_EXPERIMENT_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "The list of factors which participates in the experiment updated", response = ObjectUriResponse.class),
+            @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+    public Response putFactors(
+            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
+            @ApiParam(value = "List of factors uris") ArrayList<URI> factors) {
+        try {
+            ExperimentDAO xpDao = new ExperimentDAO(sparql);
+            xpDao.updateWithFactors(xpUri, factors);
+            return new ObjectUriResponse(Response.Status.OK, xpUri).getResponse();
         } catch (SPARQLInvalidURIException e) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Experiment URI", e.getMessage()).getResponse();
         } catch (Exception e) {

@@ -56,17 +56,17 @@ import org.opensilex.utils.ListWithPagination;
 @Path("/core/FactorLevels")
 public class FactorLevelAPI {
     
-    public static final String CREDENTIAL_FACTOR_LEVEL_GROUP_ID = "FactorLevels";
-    public static final String CREDENTIAL_FACTOR_LEVEL_GROUP_LABEL_KEY = "credential-groups.factorLevels";
+    public static final String CREDENTIAL_FACTOR_LEVEL_GROUP_ID = "Factors";
+    public static final String CREDENTIAL_FACTOR_LEVEL_GROUP_LABEL_KEY = "credential-groups.factors";
 
-    public static final String CREDENTIAL_FACTOR_LEVEL_MODIFICATION_ID = "factor-modification";
-    public static final String CREDENTIAL_FACTOR_LEVEL_MODIFICATION_LABEL_KEY = "credential.factorLevel.modification";
+    public static final String CREDENTIAL_FACTOR_LEVEL_MODIFICATION_ID = "factorLevels-modification";
+    public static final String CREDENTIAL_FACTOR_LEVEL_MODIFICATION_LABEL_KEY = "credential.factorLevels.modification";
 
-    public static final String CREDENTIAL_FACTOR_LEVEL_READ_ID = "factor-read";
-    public static final String CREDENTIAL_FACTOR_LEVEL_READ_LABEL_KEY = "credential.factorLevel.read";
+    public static final String CREDENTIAL_FACTOR_LEVEL_READ_ID = "factorLevels-read";
+    public static final String CREDENTIAL_FACTOR_LEVEL_READ_LABEL_KEY = "credential.factorLevels.read";
 
-    public static final String CREDENTIAL_FACTOR_LEVEL_DELETE_ID = "factor-delete";
-    public static final String CREDENTIAL_FACTOR_LEVEL_DELETE_LABEL_KEY = "credential.factorLevel.delete";
+    public static final String CREDENTIAL_FACTOR_LEVEL_DELETE_ID = "factorLevels-delete";
+    public static final String CREDENTIAL_FACTOR_LEVEL_DELETE_LABEL_KEY = "credential.factorLevels.delete";
 
     @Inject
     public FactorLevelAPI(SPARQLService sparql) {
@@ -83,12 +83,18 @@ public class FactorLevelAPI {
      * @throws Exception if creation failed
      */
     @POST
-    @ApiOperation("Create an factorLevel")
+    @ApiOperation("Create an factor level")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+        @ApiCredential(
+            groupId = CREDENTIAL_FACTOR_LEVEL_GROUP_ID,
+            groupLabelKey = CREDENTIAL_FACTOR_LEVEL_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_FACTOR_LEVEL_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_FACTOR_LEVEL_MODIFICATION_LABEL_KEY
+    )
     public Response createFactorLevel(
-            @ApiParam("FactorLevel description") @Valid FactorLevelCreationDTO dto
+            @ApiParam("Factor level description") @Valid FactorLevelCreationDTO dto
     ) throws Exception {
         FactorLevelDAO dao = new FactorLevelDAO(sparql);
         try {
@@ -113,8 +119,14 @@ public class FactorLevelAPI {
      */
     @GET
     @Path("{uri}")
-    @ApiOperation("Get an factorLevel")
+    @ApiOperation("Get an factor level")
     @ApiProtected
+        @ApiCredential(
+            groupId = CREDENTIAL_FACTOR_LEVEL_GROUP_ID,
+            groupLabelKey = CREDENTIAL_FACTOR_LEVEL_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_FACTOR_LEVEL_READ_ID,
+            credentialLabelKey = CREDENTIAL_FACTOR_LEVEL_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFactorLevel(
@@ -139,10 +151,8 @@ public class FactorLevelAPI {
     /**
      * Search factorLevels
      *
-
-     * @param hasFactor Factor URI used to filter list
+     * @param factorLevelSearchDTO FactorLevel search form
      * @see org.opensilex.core.factorLevel.dal.FactorLevelDAO
-     * @param hasAlias Regex pattern for filtering list by alias
      * @param orderByList List of fields to sort as an array of
      * fieldName=asc|desc
      * @param page Page number
@@ -150,10 +160,16 @@ public class FactorLevelAPI {
      * @return filtered, ordered and paginated list
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
-    @GET
+    @POST
     @Path("search")
-    @ApiOperation("Search factorLevels")
+    @ApiOperation("Search factor levels")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_FACTOR_LEVEL_GROUP_ID,
+            groupLabelKey = CREDENTIAL_FACTOR_LEVEL_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_FACTOR_LEVEL_READ_ID,
+            credentialLabelKey = CREDENTIAL_FACTOR_LEVEL_READ_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -161,20 +177,18 @@ public class FactorLevelAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchFactorLevels(
-            @ApiParam(value = "Regex pattern for filtering list by alias", example = "Well watered") @QueryParam("alias") String hasAlias,
-            @ApiParam(value = "Factor URI used to filter list", example = "Irrigation") @QueryParam("factor") URI hasFactor,
+            @ApiParam("FactorLevel search form") FactorLevelSearchDTO factorLevelSearchDTO,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "alias=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         
-        FactorLevelSearchDTO factorLevelSearchDTO = new FactorLevelSearchDTO();
-        factorLevelSearchDTO.setAlias(hasAlias);
-        factorLevelSearchDTO.setHasFactor(hasFactor);
+        
         // Search factorLevels with FactorLevel DAO
         FactorLevelDAO dao = new FactorLevelDAO(sparql);
         ListWithPagination<FactorLevelModel> resultList = dao.search(
-                factorLevelSearchDTO,
+                factorLevelSearchDTO.getAlias(),
+                factorLevelSearchDTO.getHasFactor(),
                 orderByList,
                 page,
                 pageSize
@@ -199,12 +213,18 @@ public class FactorLevelAPI {
      */
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a user")
+    @ApiOperation("Delete a factor level")
     @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_FACTOR_LEVEL_GROUP_ID,
+            groupLabelKey = CREDENTIAL_FACTOR_LEVEL_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_FACTOR_LEVEL_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_FACTOR_LEVEL_DELETE_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteFactorLevel(
-            @ApiParam(value = "FactorLevel URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+            @ApiParam(value = "Factor level URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         FactorLevelDAO dao = new FactorLevelDAO(sparql);
         dao.delete(uri);
@@ -228,7 +248,6 @@ public class FactorLevelAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "FactorLevel updated", response = ObjectUriResponse.class),
         @ApiResponse(code = 400, message = "Invalid or unknown FactorLevel URI", response = ErrorResponse.class),

@@ -114,14 +114,16 @@ menu:
         route: 
           path: /factors
           component: opensilex-core-FactorView
-          credentials: []
+          credentials: 
+            - factor-read
       - id: factor-levels
         label: component.menu.experimentalDesign.factorLevels
         icon: ik-cloud-rain
         route: 
           path: /factorLevels
           component: opensilex-core-FactorLevelView
-          credentials: []
+          credentials: 
+             - factorLevels-levels
 
 
 routes:

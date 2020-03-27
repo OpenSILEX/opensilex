@@ -117,15 +117,13 @@
 
       <!-- Species -->
         <b-form-group  required  >
-        <slot name="species">
-            <opensilex-FormInputMessageHelper label=component.experiment.species helpMessage="component.experiment.species-help" >
-            </opensilex-FormInputMessageHelper>
+          <slot name="species">
+              <opensilex-FormInputMessageHelper label=component.experiment.species helpMessage="component.experiment.species-help" >
+              </opensilex-FormInputMessageHelper>
           </slot>
           <ValidationProvider :name="$t('component.experiment.species')" v-slot="{ errors }">
-            <b-form-input  id="species"  v-model="form.species"  type="text"
-              :placeholder="$t('component.experiment.species-placeholder')" >
-            </b-form-input>
-            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+          <b-form-select id="speciesList" v-model="form.species" :options="speciesList" > </b-form-select>
+          <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
 
@@ -154,6 +152,9 @@ import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import { ExperimentCreationDTO } from "../../lib/model/experimentCreationDTO";
+import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
+import { SpeciesService } from "../../lib/api/species.service";
+import { SpeciesDTO } from "../../lib//model/speciesDTO";
 
 @Component
 export default class ExperimentForm extends Vue {
@@ -193,6 +194,8 @@ export default class ExperimentForm extends Vue {
 
   editMode = false;
 
+  speciesList: any = [];
+
   clearForm() {
     this.form = {
       uri: "",
@@ -214,6 +217,26 @@ export default class ExperimentForm extends Vue {
       sensors: []
       // lang: "en-US"
     };
+  }
+
+  created () {
+    this.loadSpecies();
+  }
+
+  loadSpecies(){
+    let service: SpeciesService = this.$opensilex.getService("opensilex.SpeciesService");
+            service.getAllSpecies("fr")
+            .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
+
+                for(let i=0; i<http.response.result.length; i++) {
+                  let speciesDto = http.response.result[i];
+                  this.speciesList.push({
+                      value: speciesDto.uri,
+                      text: speciesDto.label
+                  });
+                }
+
+            }).catch(this.$opensilex.errorHandler);
   }
 
   // showCreateForm() {

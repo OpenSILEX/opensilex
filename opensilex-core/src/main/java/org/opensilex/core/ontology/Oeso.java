@@ -40,6 +40,7 @@ public class Oeso {
     public static final Property startDate = Ontology.property(NS, "startDate");
     public static final Property endDate = Ontology.property(NS, "endDate");
     public static final Property hasKeyword = Ontology.property(NS, "hasKeyword");
+    public static final Property hasPart = Ontology.property(NS, "hasPart");
 
     // ---- VARIABLES ----
     public static final Resource Variable = Ontology.resource(NS, "Variable");
@@ -55,10 +56,8 @@ public class Oeso {
     public static final Property hasUnit = Ontology.property(NS, "hasUnit");
 
     // ----- USERS ------
-
-    public static final Resource ScientificSupervisor = Ontology.resource(NS,"ScientificSupervisor");
-    public static final Resource TechnicalSupervisor = Ontology.resource(NS,"TechnicalSupervisor");
-
+    public static final Resource ScientificSupervisor = Ontology.resource(NS, "ScientificSupervisor");
+    public static final Resource TechnicalSupervisor = Ontology.resource(NS, "TechnicalSupervisor");
 
     // ---- PROJECTS ----
     public static final Resource Project = Ontology.resource(NS, "Project");
@@ -71,43 +70,39 @@ public class Oeso {
     public static final Property hasScientificContact = Ontology.property(NS, "hasScientificContact");
 
     public static final Property hasRelatedProject = Ontology.property(NS, "hasRelatedProject");
-    
+
     // ---- EXPERIMENTS ----
     public static final Resource Experiment = Ontology.resource(NS, "Experiment");
 
-    public static final Property hasDevice = Ontology.property(NS,"hasDevice");
-    public static final Property hasInfrastructure = Ontology.property(NS,"hasInfrastructure");
+    public static final Property hasDevice = Ontology.property(NS, "hasDevice");
+    public static final Property hasInfrastructure = Ontology.property(NS, "hasInfrastructure");
     public static final Property hasProject = Ontology.property(NS, "hasProject");
     public static final Property hasScientificSupervisor = Ontology.property(NS, "hasScientificSupervisor");
     public static final Property hasTechnicalSupervisor = Ontology.property(NS, "hasTechnicalSupervisor");
     public static final Property hasGroup = Ontology.property(NS, "hasGroup");
-    public static final Property hasCampaign = Ontology.property(NS,"hasCampaign");
-    public static final Property hasSpecies = Ontology.property(NS,"hasSpecies");
-    public static final Property isPublic = Ontology.property(NS,"isPublic");
-    public static final Property measures = Ontology.property(NS,"measures");
-    public static final Property participatesIn = Ontology.property(NS,"participatesIn");
+    public static final Property hasCampaign = Ontology.property(NS, "hasCampaign");
+    public static final Property hasSpecies = Ontology.property(NS, "hasSpecies");
+    public static final Property isPublic = Ontology.property(NS, "isPublic");
+    public static final Property measures = Ontology.property(NS, "measures");
+    public static final Property participatesIn = Ontology.property(NS, "participatesIn");
 
     // ---- INFRASTRUCTURES AND INSTALLATION
-
     public static final Resource Infrastructure = Ontology.resource(NS, "Infrastructure");
     public static final Resource InfrastructureDevice = Ontology.resource(NS, "InfrastructureDevice");
     public static final Resource Installation = Ontology.resource(NS, "Installation");
-    public static final Property hasChild = Ontology.property(NS,"hasChild");
 
     // ---- SPECIES ----
     //public static final Resource Species = Ontology.resource(NS, "Species");
-
-
     // ---- FACTORS ----
     public static final Resource Factor = Ontology.resource(NS, "Factor");
     public static final Resource FactorLevel = Ontology.resource(NS, "FactorLevel");
     public static final Property hasFactorLevel = Ontology.property(NS, "hasFactorLevel");
-    public static final Property hasFactor= Ontology.property(NS, "hasFactor");
+    public static final Property hasFactor = Ontology.property(NS, "hasFactor");
     // Link with experiment
-    public static final Property influencedBy= Ontology.property(NS, "influencedBy");
+    public static final Property influencedBy = Ontology.property(NS, "influencedBy");
 
     public static final Resource SensingDevice = Ontology.resource(NS, "SensingDevice");
-    
+
     // ---- GERMPLASM ----
     public static final Resource Germplasm = Ontology.resource(NS, "Germplasm");
     public static final Resource Species = Ontology.resource(NS, "Species");

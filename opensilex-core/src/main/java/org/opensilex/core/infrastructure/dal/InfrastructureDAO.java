@@ -69,7 +69,7 @@ public class InfrastructureDAO {
 
     private void getAlldescendants(Set<URI> userInfras, List<URI> parentsInfra, String lang) throws Exception {
         List<URI> childrenInfras = sparql.searchURIs(InfrastructureModel.class, lang, (SelectBuilder select) -> {
-            SPARQLQueryHelper.inProperty(select, InfrastructureModel.PARENT_FIELD, Oeso.hasChild, InfrastructureModel.URI_FIELD, parentsInfra);
+            SPARQLQueryHelper.inProperty(select, InfrastructureModel.PARENT_FIELD, Oeso.hasPart, InfrastructureModel.URI_FIELD, parentsInfra);
         });
 
         userInfras.addAll(childrenInfras);
@@ -81,7 +81,7 @@ public class InfrastructureDAO {
 
     private void getAllParents(Set<URI> userInfras, List<URI> parentsInfra, String lang) throws Exception {
         List<URI> parentsInfras = sparql.searchURIs(InfrastructureModel.class, lang, (SelectBuilder select) -> {
-            SPARQLQueryHelper.inProperty(select, InfrastructureModel.URI_FIELD, Oeso.hasChild, InfrastructureModel.CHILDREN_FIELD, parentsInfra);
+            SPARQLQueryHelper.inProperty(select, InfrastructureModel.URI_FIELD, Oeso.hasPart, InfrastructureModel.CHILDREN_FIELD, parentsInfra);
         });
 
         userInfras.addAll(parentsInfras);

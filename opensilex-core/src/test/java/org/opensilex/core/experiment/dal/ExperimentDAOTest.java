@@ -14,10 +14,8 @@ import org.junit.Test;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory;
-import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -63,8 +61,8 @@ public class ExperimentDAOTest extends AbstractUnitTest{
         factory = new RDF4JInMemoryServiceFactory();
         sparql = factory.provide();
 
-        xpGraph = SPARQLClassObjectMapper.getForClass(ExperimentModel.class).getDefaultGraph().toString();
-        projectGraph = SPARQLClassObjectMapper.getForClass(ProjectModel.class).getDefaultGraph().toString();
+        xpGraph = SPARQLService.getDefaultGraph(ExperimentModel.class).toString();
+        projectGraph = SPARQLService.getDefaultGraph(ProjectModel.class).toString();
     }
 
     @Before

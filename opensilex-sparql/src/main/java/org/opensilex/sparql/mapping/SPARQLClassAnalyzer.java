@@ -231,8 +231,8 @@ class SPARQLClassAnalyzer {
         } catch (Exception ex) {
             throw new SPARQLInvalidClassDefinitionException(objectClass, "Property type " + sProperty.property() + " does not exists in ontology: " + sProperty.ontology().getName(), ex);
         }
-
         LOGGER.debug("Analyse field type for: " + field.getName());
+
         Type fieldType = field.getGenericType();
         if (ClassUtils.isGenericType(fieldType)) {
             ParameterizedType parameterizedType = (ParameterizedType) fieldType;
@@ -247,7 +247,11 @@ class SPARQLClassAnalyzer {
                 } else if (SPARQLClassObjectMapper.existsForClass((Class<? extends SPARQLResourceModel>) genericParameter)) {
                     LOGGER.debug("Field " + field.getName() + " is an object property list of: " + objectClass.getName());
                     objectPropertiesLists.put(field, property);
-                    addRelatedModelProperty(field, (Class<? extends SPARQLResourceModel>) genericParameter);
+                    Class<? extends SPARQLResourceModel> fieldClass = (Class<? extends SPARQLResourceModel>) genericParameter;
+                    addRelatedModelProperty(field, fieldClass);
+                    if (sProperty.cascadeDelete()) {
+                        cascadeDeleteClassesField.put(fieldClass, field);
+                    }
                 } else {
                     throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " as an unsupported type, List<" + genericParameter.getCanonicalName() + "> is not supported");
                 }
@@ -263,7 +267,11 @@ class SPARQLClassAnalyzer {
         } else if (SPARQLClassObjectMapper.existsForClass((Class<? extends SPARQLResourceModel>) fieldType)) {
             LOGGER.debug("Field " + field.getName() + " is an object property of: " + objectClass.getName());
             objectProperties.put(field, property);
-            addRelatedModelProperty(field, (Class<? extends SPARQLResourceModel>) fieldType);
+            Class<? extends SPARQLResourceModel> fieldClass = (Class<? extends SPARQLResourceModel>) fieldType;
+            addRelatedModelProperty(field, fieldClass);
+            if (sProperty.cascadeDelete()) {
+                cascadeDeleteClassesField.put(fieldClass, field);
+            }
         } else {
             throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " refer to an invalid SPARQL class model: " + fieldType.getTypeName());
         }

@@ -9,7 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;

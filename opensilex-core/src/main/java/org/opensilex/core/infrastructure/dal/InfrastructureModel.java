@@ -37,14 +37,14 @@ public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> im
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasChild"
+            property = "hasPart"
     )
     protected List<InfrastructureModel> children;
     public static final String CHILDREN_FIELD = "children";
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasChild",
+            property = "hasPart",
             inverse = true
     )
     protected InfrastructureModel parent;

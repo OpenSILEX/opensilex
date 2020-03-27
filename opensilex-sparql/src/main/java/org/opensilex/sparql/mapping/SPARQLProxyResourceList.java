@@ -28,7 +28,7 @@ class SPARQLProxyResourceList<T extends SPARQLResourceModel> extends SPARQLProxy
 
     @Override
     protected List<T> loadData() throws Exception {
-        return service.loadListByURIs(genericType, uris, lang);
+        return service.loadListByURIs(graph, genericType, uris, lang);
     }
 
     @Override

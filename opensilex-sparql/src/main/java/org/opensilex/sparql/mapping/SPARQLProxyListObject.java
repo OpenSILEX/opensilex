@@ -15,8 +15,6 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
-
-
 /**
  *
  * @author vincent
@@ -30,18 +28,17 @@ public class SPARQLProxyListObject<T extends SPARQLResourceModel> extends SPARQL
     @Override
     protected List<T> loadData() throws Exception {
         SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(genericType);
-        
+
         Node nodeURI = SPARQLDeserializers.nodeURI(uri);
-        List<T> list = service.search(graph,genericType, lang, (SelectBuilder select) -> {
+        List<T> list = service.search(genericType, lang, (SelectBuilder select) -> {
             if (isReverseRelation) {
                 select.addGraph(graph, makeVar(mapper.getURIFieldName()), property, nodeURI);
             } else {
                 select.addGraph(graph, nodeURI, property, makeVar(mapper.getURIFieldName()));
             }
         });
-        
+
         return list;
     }
-
 
 }

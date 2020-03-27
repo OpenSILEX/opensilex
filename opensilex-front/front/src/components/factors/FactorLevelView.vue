@@ -4,16 +4,16 @@
       @click="showCreateForm"
       variant="success"
     >{{$t('component.factorLevel.add')}}</b-button>
-    <opensilex-core-FactorLevelForm
+    <opensilex-FactorLevelForm
       ref="factorLevelForm"
       @onCreate="callCreateFactorLevelService"
       @onUpdate="callUpdateFactorLevelService"
-    ></opensilex-core-FactorLevelForm>
-    <opensilex-core-FactorLevelList
+    ></opensilex-FactorLevelForm>
+    <opensilex-FactorLevelList
       ref="factorLevelList"
       @onEdit="editFactorLevel"
       @onDelete="deleteFactorLevel"
-    ></opensilex-core-FactorLevelList>
+    ></opensilex-FactorLevelList>
   </div>
 </template>
 
@@ -21,12 +21,14 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { FactorLevelCreationDTO } from "../../lib/model/factorLevelCreationDTO";
-import { FactorLevelGetDTO } from "../../lib/model/factorLevelGetDTO";
-import { FactorGetDTO } from "../../lib/model/factorGetDTO";
-
-import { FactorLevelsService } from "../../lib/api/factorLevels.service";
-import { FactorsService } from "../../lib/api/factors.service";
+import { 
+  FactorLevelCreationDTO,
+  FactorLevelGetDTO,
+  FactorGetDTO,
+  FactorLevelsService,
+  FactorsService
+} 
+from "opensilex-core/index";
 
 @Component
 export default class FactorLevelView extends Vue {

@@ -1,16 +1,16 @@
 <template>
   <div>
     <b-button @click="showCreateForm" variant="success">{{$t('component.factor.add')}}</b-button>
-    <opensilex-core-FactorForm
+    <opensilex-FactorForm
       ref="factorForm"
       @onCreate="callCreateFactorService"
       @onUpdate="callUpdateFactorService"
-    ></opensilex-core-FactorForm>
-    <opensilex-core-FactorList 
+    ></opensilex-FactorForm>
+    <opensilex-FactorList 
       ref="factorList" 
       @onEdit="editFactor"
       @onDelete="deleteFactor">
-    </opensilex-core-FactorList>
+    </opensilex-FactorList>
   </div>
 </template>
 
@@ -18,9 +18,13 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { FactorCreationDTO } from "../../lib/model/factorCreationDTO";
-import { FactorGetDTO } from "../../lib/model/factorGetDTO";
-import { FactorsService } from "../../lib/api/factors.service";
+import { 
+  FactorCreationDTO,
+  FactorsService,
+  FactorGetDTO, 
+  FactorSearchDTO 
+} 
+from "opensilex-core/index";
 
 @Component
 export default class FactorView extends Vue {

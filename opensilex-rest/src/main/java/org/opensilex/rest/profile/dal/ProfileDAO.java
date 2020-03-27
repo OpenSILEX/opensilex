@@ -55,17 +55,7 @@ public class ProfileDAO {
     }
 
     public void delete(URI instanceURI) throws Exception {
-        try {
-            sparql.startTransaction();
-            // Delete existing user profile group relations
-            sparql.deleteByObjectRelation(GroupUserProfileModel.class, GroupUserProfileModel.PROFILE_FIELD, instanceURI);
-            // Delete user
-            sparql.delete(ProfileModel.class, instanceURI);
-            sparql.commitTransaction();
-        } catch (Exception ex) {
-            sparql.rollbackTransaction();
-            throw ex;
-        }
+        sparql.delete(ProfileModel.class, instanceURI);
     }
 
     public ProfileModel update(

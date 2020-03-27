@@ -59,7 +59,11 @@ public interface SPARQLConnection extends ServiceConnection {
 
     public void commitTransaction() throws SPARQLException;
 
-    public void rollbackTransaction() throws SPARQLException;
+    public default void rollbackTransaction(Exception ex) throws Exception {
+        if (ex != null) {
+            throw ex;
+        }
+    }
 
     public void disableSHACL() throws SPARQLException;
 

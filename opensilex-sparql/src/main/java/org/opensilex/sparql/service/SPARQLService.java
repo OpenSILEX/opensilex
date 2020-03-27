@@ -120,11 +120,12 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     private static void addPrefixes(UpdateBuilder builder) {
-        getPrefixes().forEach(builder::addPrefix);
+        builder.addPrefixes(getPrefixMapping());
+
     }
 
     private static void addPrefixes(AbstractQueryBuilder<?> builder) {
-        getPrefixes().forEach(builder::addPrefix);
+        builder.addPrefixes(getPrefixMapping());
     }
 
     public static void clearPrefixes() {
@@ -223,12 +224,16 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     @Override
-    public void rollbackTransaction() throws SPARQLException {
+    public void rollbackTransaction(Exception ex) throws Exception {
         if (transactionLevel != 0) {
-            LOGGER.debug("SPARQL TRANSACTION ROLLBACK");
-            connection.rollbackTransaction();
+            LOGGER.error("SPARQL TRANSACTION ROLLBACK: ", ex);
             transactionLevel = 0;
+            connection.rollbackTransaction(ex);
         }
+    }
+
+    public void rollbackTransaction() throws Exception {
+        rollbackTransaction(null);
     }
 
     @Override
@@ -367,7 +372,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         return resultList;
     }
 
-    public <T extends SPARQLTreeModel> ResourceTree<T>  searchResourceTree(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+    public <T extends SPARQLTreeModel> ResourceTree<T> searchResourceTree(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
         List<T> list = search(objectClass, lang, filterHandler);
 
         ResourceTree<T> tree = new ResourceTree<T>(list);
@@ -378,8 +383,6 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
 
         return tree;
     }
-
-   
 
     public <T extends SPARQLResourceModel> List<T> search(Class<T> objectClass, String lang) throws Exception {
         return search(objectClass, lang, null, null, null, null);
@@ -476,25 +479,26 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     public <T extends SPARQLResourceModel> void create(T instance, Resource rdfType) throws Exception {
         create(instance, new URI(rdfType.getURI()));
     }
-    
-        public <T extends SPARQLResourceModel> void create(T instance, URI rdfType) throws Exception {
+
+    public <T extends SPARQLResourceModel> void create(T instance, URI rdfType) throws Exception {
         create(instance, true, rdfType);
     }
 
     public <T extends SPARQLResourceModel> void create(T instance, boolean checkUriExist) throws Exception {
         create(instance, checkUriExist, null);
     }
-        
+
     private <T extends SPARQLResourceModel> void create(T instance, boolean checkUriExist, URI rdfType) throws Exception {
-        SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(instance.getClass());
+        SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(instance.getClass());
         if (rdfType == null) {
-            instance.setType(new URI(sparqlObjectMapper.getRDFType().getURI()));
+            instance.setType(new URI(mapper.getRDFType().getURI()));
         } else {
             instance.setType(rdfType);
         }
-        generateUniqueUriIfNullOrValidateCurrent(sparqlObjectMapper, instance, checkUriExist);
+        generateUniqueUriIfNullOrValidateCurrent(mapper, instance, checkUriExist);
 
-        UpdateBuilder create = sparqlObjectMapper.getCreateBuilder(instance);
+        create(mapper.getAllDependentResourcesToCreate(instance));
+        UpdateBuilder create = mapper.getCreateBuilder(instance);
         executeUpdateQuery(create);
     }
 
@@ -502,9 +506,10 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         if (instances.size() > 0) {
             UpdateBuilder create = new UpdateBuilder();
             for (T instance : instances) {
-                SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(instance.getClass());
-                generateUniqueUriIfNullOrValidateCurrent(sparqlObjectMapper, instance, true);
-                sparqlObjectMapper.addCreateBuilder(instance, create);
+                SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(instance.getClass());
+                create(mapper.getAllDependentResourcesToCreate(instance));
+                generateUniqueUriIfNullOrValidateCurrent(mapper, instance, true);
+                mapper.addCreateBuilder(instance, create);
             }
 
             executeUpdateQuery(create);
@@ -535,7 +540,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
 
         try {
-            this.startTransaction();
+            startTransaction();
 
             T oldInstance = loadByURI(objectClass, sparqlObjectMapper.getURI(instance), null);
             if (oldInstance == null) {
@@ -545,51 +550,103 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
             delete(oldInstance.getClass(), oldInstance.getUri());
             create(instance, false);
 
-            this.commitTransaction();
+            commitTransaction();
         } catch (Exception ex) {
-
-            this.rollbackTransaction();
+            rollbackTransaction(ex);
             throw ex;
         }
     }
 
     public <T extends SPARQLResourceModel> void update(List<T> instances) throws Exception {
-        if (instances.size() > 0) {
-            for (T instance : instances) {
-                update(instance);
+        try {
+            startTransaction();
+            if (instances.size() > 0) {
+                for (T instance : instances) {
+                    update(instance);
+                }
             }
+            commitTransaction();
+        } catch (Exception ex) {
+            rollbackTransaction(ex);
+            throw ex;
         }
     }
 
     public <T extends SPARQLResourceModel> void delete(Class<T> objectClass, URI uri) throws Exception {
+        try {
+            startTransaction();
+            if (!uriExists(uri)) {
+                throw new SPARQLInvalidURIException(uri);
+            }
+            SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
 
-        if (!uriExists(uri)) {
-            throw new SPARQLInvalidURIException(uri);
+            Map<Class<? extends SPARQLResourceModel>, Field> cascadeDeleteClassesProperties = mapper.getCascadeDeleteClassesField();
+            for (Map.Entry<Class<? extends SPARQLResourceModel>, Field> cascadeDeleteClassField : cascadeDeleteClassesProperties.entrySet()) {
+                deleteByObjectRelation(cascadeDeleteClassField.getKey(), cascadeDeleteClassField.getValue(), uri);
+            }
+            T instance = loadByURI(objectClass, uri, null);
+
+            UpdateBuilder delete = mapper.getDeleteBuilder(instance);
+
+            executeDeleteQuery(delete);
+
+            UpdateBuilder deleteRelations = mapper.getDeleteRelationsBuilder(uri);
+            if (deleteRelations != null) {
+                executeDeleteQuery(deleteRelations);
+            }
+            commitTransaction();
+        } catch (Exception ex) {
+            rollbackTransaction(ex);
+            throw ex;
         }
-
-        SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-        UpdateBuilder delete = sparqlObjectMapper.getDeleteBuilder(loadByURI(objectClass, uri, null));
-
-        executeDeleteQuery(delete);
     }
 
     public <T extends SPARQLResourceModel> void delete(Class<T> objectClass, List<URI> uris) throws Exception {
         if (uris.size() > 0) {
-            SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
+            try {
+                startTransaction();
+                SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
 
-            UpdateBuilder delete = new UpdateBuilder();
-            for (URI uri : uris) {
-                sparqlObjectMapper.addDeleteBuilder(loadByURI(objectClass, uri, null), delete);
+                Map<Class<? extends SPARQLResourceModel>, Field> cascadeDeleteClassesProperties = mapper.getCascadeDeleteClassesField();
+                for (Map.Entry<Class<? extends SPARQLResourceModel>, Field> cascadeDeleteClassField : cascadeDeleteClassesProperties.entrySet()) {
+                    deleteByObjectRelation(cascadeDeleteClassField.getKey(), cascadeDeleteClassField.getValue(), uris);
+                }
+
+                List<T> instances = loadListByURIs(objectClass, uris, null);
+                UpdateBuilder delete = new UpdateBuilder();
+                UpdateBuilder deleteRelations = new UpdateBuilder();
+                boolean hasRelations = false;
+                for (T instance : instances) {
+                    mapper.addDeleteBuilder(instance, delete);
+                    if (mapper.addDeleteRelationsBuilder(instance.getUri(), deleteRelations)) {
+                        hasRelations = true;
+                    }
+                }
+
+                executeDeleteQuery(delete);
+
+                if (hasRelations) {
+                    executeDeleteQuery(deleteRelations);
+                }
+            } catch (Exception ex) {
+                rollbackTransaction(ex);
+                throw ex;
             }
-
-            executeDeleteQuery(delete);
         }
     }
 
-    public <T extends SPARQLResourceModel> void deleteByObjectRelation(Class<T> objectClass, String relationField, URI objectURI) throws Exception {
+    protected <T extends SPARQLResourceModel> void deleteByObjectRelation(Class<T> objectClass, Field relationField, URI objectURI) throws Exception {
         List<URI> relatedObjectURIs = this.searchURIs(objectClass, null, (select) -> {
             SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-            select.addValueVar(sparqlObjectMapper.getFieldExprVar(relationField), SPARQLDeserializers.nodeURI(objectURI));
+            select.addValueVar(sparqlObjectMapper.getFieldExprVar(relationField.getName()), SPARQLDeserializers.nodeURI(objectURI));
+        });
+        this.delete(objectClass, relatedObjectURIs);
+    }
+
+    protected <T extends SPARQLResourceModel> void deleteByObjectRelation(Class<T> objectClass, Field relationField, List<URI> objectURIs) throws Exception {
+        List<URI> relatedObjectURIs = this.searchURIs(objectClass, null, (select) -> {
+            SPARQLClassObjectMapper<T> sparqlObjectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
+            select.addValueVar(sparqlObjectMapper.getFieldExprVar(relationField.getName()), SPARQLDeserializers.nodeListURI(objectURIs).toArray());
         });
         this.delete(objectClass, relatedObjectURIs);
     }
@@ -642,25 +699,6 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
 
         askQuery.addWhere(fieldType, Ontology.subClassAny, typeDef);
         return askQuery;
-    }
-
-    public void deleteObjectRelation(Node g, URI s, Property p, URI o) throws SPARQLException {
-        UpdateBuilder delete = new UpdateBuilder();
-        delete.addDelete(g, SPARQLDeserializers.nodeURI(s), p.asNode(), SPARQLDeserializers.nodeURI(o));
-
-        executeDeleteQuery(delete);
-    }
-
-    public void deleteObjectRelations(Node g, URI s, Property p, List<URI> uris) throws SPARQLException {
-        if (uris.size() > 0) {
-            UpdateBuilder delete = new UpdateBuilder();
-            for (URI uri : uris) {
-                delete.addDelete(g, SPARQLDeserializers.nodeURI(s), p.asNode(), SPARQLDeserializers.nodeURI(uri));
-            }
-            ;
-
-            executeDeleteQuery(delete);
-        }
     }
 
     /**

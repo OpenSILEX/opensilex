@@ -49,6 +49,15 @@
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
+        <!-- Parent -->
+        <b-form-group :label="$t('component.common.parent') + ':'" label-for="parent" required>
+          <treeselect
+            id="parent"
+            :options="parentOptions"
+            :placeholder="$t('component.infrastructure.form-parent-placeholder')"
+            v-model="form.parent"
+          />
+        </b-form-group>
       </b-form>
     </ValidationObserver>
   </b-modal>
@@ -58,7 +67,13 @@
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { InfrastructureCreationDTO } from "../../lib";
+import {
+  InfrastructureCreationDTO,
+  InfrastructureGetDTO,
+  ResourceTreeDTO,
+  InfrastructuresService
+} from "opensilex-core/index";
+import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
 export default class InfrastructureForm extends Vue {
@@ -67,6 +82,13 @@ export default class InfrastructureForm extends Vue {
   $router: VueRouter;
   $i18n: any;
   $t: any;
+  service: InfrastructuresService;
+
+  @Prop()
+  public defaultParent: InfrastructureGetDTO;
+
+  @Prop()
+  parentOptions: Array<any>;
 
   get user() {
     return this.$store.state.user;
@@ -75,11 +97,11 @@ export default class InfrastructureForm extends Vue {
   uriGenerated = true;
 
   form: InfrastructureCreationDTO = {
-      uri: "",
-      type: "",
-      name: "",
-      parent: null,
-      users: []
+    uri: "",
+    type: "",
+    name: "",
+    parent: null,
+    users: []
   };
 
   title = "";
@@ -87,17 +109,22 @@ export default class InfrastructureForm extends Vue {
   editMode = false;
 
   clearForm() {
+    let parentURI = null;
+    if (this.defaultParent) {
+      parentURI = this.defaultParent.uri;
+    }
     this.form = {
       uri: "",
       type: "",
       name: "",
-      parent: null,
+      parent: parentURI,
       users: []
     };
   }
 
-  showCreateForm() {
+  showCreateForm(parentURI) {
     this.clearForm();
+    this.form.parent = parentURI;
     this.editMode = false;
     this.title = this.$t("component.infrastructure.add").toString();
     this.uriGenerated = true;

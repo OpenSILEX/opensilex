@@ -51,8 +51,8 @@ public class NoSQLService implements NoSQLConnection, Service {
     }
 
     @Override
-    public void rollbackTransaction() throws NoSQLTransactionException {
-        connection.rollbackTransaction();
+    public void rollbackTransaction(Exception ex) throws Exception {
+        connection.rollbackTransaction(ex);
     }
 
     @Override

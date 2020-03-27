@@ -15,6 +15,9 @@ import GroupView from './groups/GroupView.vue';
 import GroupList from './groups/GroupList.vue';
 import FormInputMessageHelper from './common/FormInputMessageHelper.vue'
 import ToDoComponent from './layout/ToDoComponent.vue';
+import InfrastructureView from './infrastructures/InfrastructureView.vue';
+import InfrastructureTree from './infrastructures/InfrastructureTree.vue';
+import InfrastructureForm from './infrastructures/InfrastructureForm.vue';
 
 export default {
     'opensilex-DefaultFooterComponent': DefaultFooterComponent,
@@ -32,6 +35,11 @@ export default {
     'opensilex-GroupForm': GroupForm,
     'opensilex-GroupView': GroupView,
     'opensilex-GroupList': GroupList,
+
+    // infrastructures
+    "opensilex-InfrastructureView": InfrastructureView,
+    "opensilex-InfrastructureTree": InfrastructureTree,
+    "opensilex-InfrastructureForm": InfrastructureForm,
     'opensilex-FormInputMessageHelper': FormInputMessageHelper,
     'opensilex-ToDoComponent': ToDoComponent
 };

@@ -11,7 +11,7 @@ menu:
     icon: ik-grid
     route: 
       path: /infrastructures
-      component: opensilex-core-InfrastructureView
+      component: opensilex-InfrastructureView
       credentials: []        
   - id: data
     label: component.menu.data.label

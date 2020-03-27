@@ -38,65 +38,21 @@ public class GroupDAO {
     }
 
     public GroupModel create(GroupModel group) throws Exception {
-        sparql.startTransaction();
-        try {
-            sparql.create(group.getUserProfiles());
-            sparql.create(group);
-            sparql.commitTransaction();
-            return group;
-        } catch (Exception ex) {
-            sparql.rollbackTransaction();
-            throw ex;
-        }
-
+        sparql.create(group);
+        return group;
     }
 
     public GroupModel get(URI uri) throws Exception {
         return sparql.getByURI(GroupModel.class, uri, null);
     }
 
-    private List<URI> getGroupUserProfileURIsList(URI groupURI) throws Exception {
-        List<URI> userProfilesURIs = sparql.searchURIs(GroupUserProfileModel.class, null, (SelectBuilder select) -> {
-            WhereHandler whereHandler = new WhereHandler();
-            Node groupUriNode = SPARQLDeserializers.nodeURI(groupURI);
-            whereHandler.addWhere(select.makeTriplePath(groupUriNode, SecurityOntology.hasUserProfile, SPARQLClassObjectMapper.getForClass(GroupModel.class).getURIFieldVar()));
-            Node graph = SPARQLClassObjectMapper.getForClass(GroupModel.class).getDefaultGraph();
-            ElementNamedGraph elementNamedGraph = new ElementNamedGraph(graph, whereHandler.getElement());
-            select.getWhereHandler().getClause().addElement(elementNamedGraph);
-        });
-
-        return userProfilesURIs;
-    }
-
     public void delete(URI groupURI) throws Exception {
-        sparql.startTransaction();
-        try {
-            List<URI> userProfilesURIs = getGroupUserProfileURIsList(groupURI);
-            sparql.delete(GroupModel.class, groupURI);
-            sparql.delete(GroupUserProfileModel.class, userProfilesURIs);
-            sparql.commitTransaction();
-        } catch (Exception ex) {
-            sparql.rollbackTransaction();
-            throw ex;
-        }
+        sparql.delete(GroupModel.class, groupURI);
     }
 
     public GroupModel update(GroupModel group) throws Exception {
-        sparql.startTransaction();
-        try {
-            List<URI> userProfilesURIs = getGroupUserProfileURIsList(group.getUri());
-            sparql.delete(GroupUserProfileModel.class, userProfilesURIs);
-            Node graph = SPARQLClassObjectMapper.getForClass(GroupModel.class).getDefaultGraph();
-            sparql.deleteObjectRelations(graph, group.getUri(), SecurityOntology.hasUserProfile, userProfilesURIs);
-            sparql.create(group.getUserProfiles());
-            sparql.update(group);
-            sparql.commitTransaction();
-            return group;
-        } catch (Exception ex) {
-            sparql.rollbackTransaction();
-            throw ex;
-        }
-
+        sparql.update(group);
+        return group;
     }
 
     public List<URI> getGroupUriList(UserModel user) throws Exception {

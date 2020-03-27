@@ -3,11 +3,9 @@ package org.opensilex.rest.profile.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import static io.swagger.util.Yaml.mapper;
 import org.opensilex.integration.test.AbstractIntegrationTest;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import javax.ws.rs.client.WebTarget;
 

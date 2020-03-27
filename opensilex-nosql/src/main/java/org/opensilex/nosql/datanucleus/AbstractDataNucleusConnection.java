@@ -43,7 +43,9 @@ public abstract class AbstractDataNucleusConnection implements NoSQLConnection {
     }
 
     @Override
-    public void rollbackTransaction() throws NoSQLTransactionException {
-
+    public void rollbackTransaction(Exception ex) throws Exception {
+        if (ex != null) {
+            throw ex;
+        }
     }
 }

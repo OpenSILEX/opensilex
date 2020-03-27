@@ -70,7 +70,7 @@ public class ResourceTree<T extends SPARQLTreeModel> {
 
         }
     }
-    
+
     public boolean isSelected(T candidate) {
         return this.selectionList.contains(candidate.getUri());
     }

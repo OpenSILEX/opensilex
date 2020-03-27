@@ -52,7 +52,7 @@ public class StartServerWithFront {
             {
                 put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);
                 put(OpenSilex.CONFIG_FILE_ARG_KEY, configFile);
-                put(OpenSilex.DEBUG_ARG_KEY, "true");
+//                put(OpenSilex.DEBUG_ARG_KEY, "true");
             }
         });
 

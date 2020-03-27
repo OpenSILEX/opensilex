@@ -40,6 +40,6 @@ public interface NoSQLConnection extends ServiceConnection {
      *
      * @throws NoSQLTransactionException if transaction rollback failed
      */
-    public void rollbackTransaction() throws NoSQLTransactionException;
+    public void rollbackTransaction(Exception ex) throws Exception;
 
 }

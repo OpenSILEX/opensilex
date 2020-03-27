@@ -14,6 +14,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -69,25 +70,31 @@ class SPARQLClassAnalyzer {
 
     private final Map<Field, Property> labelProperties = new HashMap<>();
 
+    private final Map<Field, Property> propertiesByField = new HashMap<>();
+
     private final Map<String, Field> fieldsByName = new HashMap<>();
 
     private final Map<Property, Field> fieldsByUniqueProperty = new HashMap<>();
 
-    private final Set<String> managedProperties = new HashSet<>();
+    private final Set<Property> managedProperties = new HashSet<>();
 
     private final BiMap<Method, Field> fieldsByGetter;
 
     private final BiMap<Method, Field> fieldsBySetter;
+
+    private final Map<Class<? extends SPARQLResourceModel>, Set<Field>> relatedModelsFields;
 
     private final Map<Field, SPARQLProperty> annotationsByField = new HashMap<>();
     private final List<Field> optionalFields = new ArrayList<>();
 
     private final List<Field> reverseRelationFields = new ArrayList<>();
 
+    private final Map<Class<? extends SPARQLResourceModel>, Field> cascadeDeleteClassesField = new HashMap<>();
+
     private final URIGenerator<? extends SPARQLResourceModel> uriGenerator;
 
     private final boolean ignoreValidation;
-    
+
     @SuppressWarnings("unchecked")
     public SPARQLClassAnalyzer(Class<?> objectClass) throws SPARQLInvalidClassDefinitionException {
         LOGGER.debug("Start SPARQL model class analyze for: " + objectClass.getName());
@@ -100,7 +107,7 @@ class SPARQLClassAnalyzer {
         }
 
         ignoreValidation = resourceAnnotation.ignoreValidation();
-        
+
         try {
             if (URIGenerator.class.isAssignableFrom(objectClass)) {
                 uriGenerator = null;
@@ -137,6 +144,7 @@ class SPARQLClassAnalyzer {
         }
 
         LOGGER.debug("Process fields annotations");
+        relatedModelsFields = new HashMap<>();
         for (Field field : ClassUtils.getClassFieldsRecursivly(objectClass)) {
             field.setAccessible(true);
             SPARQLProperty sProperty = field.getAnnotation(SPARQLProperty.class);
@@ -187,6 +195,12 @@ class SPARQLClassAnalyzer {
             }
         }
 
+        propertiesByField.putAll(dataProperties);
+        propertiesByField.putAll(objectProperties);
+        propertiesByField.putAll(labelProperties);
+        propertiesByField.putAll(dataPropertiesLists);
+        propertiesByField.putAll(objectPropertiesLists);
+
         for (Field field : ClassUtils.getClassFieldsRecursivly(objectClass)) {
 
             SPARQLProperty sProperty = field.getAnnotation(SPARQLProperty.class);
@@ -195,11 +209,11 @@ class SPARQLClassAnalyzer {
             }
             Method getter = getGetterFromField(field);
             if (getter == null) {
-                throw new SPARQLInvalidClassDefinitionException(objectClass, "no getter found for the field :" + field.getName());
+                throw new SPARQLInvalidClassDefinitionException(objectClass, "no getter found for the field: " + field.getName());
             }
             Method setter = getSetterFromField(field);
             if (setter == null) {
-                throw new SPARQLInvalidClassDefinitionException(objectClass, "no setter found for the field :" + field.getName());
+                throw new SPARQLInvalidClassDefinitionException(objectClass, "no setter found for the field: " + field.getName());
             }
         }
     }
@@ -230,9 +244,12 @@ class SPARQLClassAnalyzer {
                 } else if (SPARQLDeserializers.existsForClass(genericParameter)) {
                     LOGGER.debug("Field " + field.getName() + " is a data property list of: " + objectClass.getName());
                     dataPropertiesLists.put(field, property);
-                } else {
+                } else if (SPARQLClassObjectMapper.existsForClass((Class<? extends SPARQLResourceModel>) genericParameter)) {
                     LOGGER.debug("Field " + field.getName() + " is an object property list of: " + objectClass.getName());
                     objectPropertiesLists.put(field, property);
+                    addRelatedModelProperty(field, (Class<? extends SPARQLResourceModel>) genericParameter);
+                } else {
+                    throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " as an unsupported type, List<" + genericParameter.getCanonicalName() + "> is not supported");
                 }
             } else {
                 throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " as an unsupported type, only List are allowed as generics");
@@ -243,9 +260,10 @@ class SPARQLClassAnalyzer {
         } else if (SPARQLDeserializers.existsForClass((Class<?>) fieldType)) {
             LOGGER.debug("Field " + field.getName() + " is a data property of: " + objectClass.getName());
             dataProperties.put(field, property);
-        } else if (SPARQLClassObjectMapper.existsForClass((Class<?>) fieldType)) {
+        } else if (SPARQLClassObjectMapper.existsForClass((Class<? extends SPARQLResourceModel>) fieldType)) {
             LOGGER.debug("Field " + field.getName() + " is an object property of: " + objectClass.getName());
             objectProperties.put(field, property);
+            addRelatedModelProperty(field, (Class<? extends SPARQLResourceModel>) fieldType);
         } else {
             throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " refer to an invalid SPARQL class model: " + fieldType.getTypeName());
         }
@@ -272,7 +290,15 @@ class SPARQLClassAnalyzer {
         LOGGER.debug("Store field " + field.getName() + " in global index by name");
         fieldsByName.put(field.getName(), field);
 
-        managedProperties.add(property.getURI());
+        managedProperties.add(property);
+    }
+
+    private void addRelatedModelProperty(Field field, Class<? extends SPARQLResourceModel> model) {
+        if (!relatedModelsFields.containsKey(field)) {
+            relatedModelsFields.put(model, new HashSet<>());
+        }
+
+        relatedModelsFields.get(model).add(field);
     }
 
     private void analyzeSPARQLResourceURIField(Field field) throws SPARQLInvalidClassDefinitionException {
@@ -342,7 +368,7 @@ class SPARQLClassAnalyzer {
             }
         }
 
-        if (candidateField != null && candidateField.getType().equals(getter.getReturnType())) {
+        if (candidateField != null && getter.getReturnType().isAssignableFrom(candidateField.getType())) {
             return candidateField;
         } else {
             return null;
@@ -363,7 +389,7 @@ class SPARQLClassAnalyzer {
             Field field = fieldsByName.get(fieldName);
             if (field != null
                     && setter.getParameterCount() == 1
-                    && field.getType().equals(setter.getParameters()[0].getType())) {
+                    && setter.getParameters()[0].getType().isAssignableFrom(field.getType())) {
                 return field;
             }
         }
@@ -415,8 +441,12 @@ class SPARQLClassAnalyzer {
         return fieldsByGetter.inverse().get(field);
     }
 
-    public Object getFieldValue(Field field, Object instance) throws Exception {
-        return instance.getClass().getMethod(fieldsByGetter.inverse().get(field).getName()).invoke(instance);
+    public Object getFieldValue(Field field, Object instance) {
+        try {
+            return instance.getClass().getMethod(fieldsByGetter.inverse().get(field).getName()).invoke(instance);
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     public Method getSetterFromField(Field field) {
@@ -533,8 +563,8 @@ class SPARQLClassAnalyzer {
         return uriGenerator;
     }
 
-    public Set<String> getManagedProperties() {
-        return managedProperties;
+    public Set<Property> getManagedProperties() {
+        return Collections.unmodifiableSet(managedProperties);
     }
 
     public String getResourceGraphPrefix() {
@@ -581,12 +611,33 @@ class SPARQLClassAnalyzer {
 
     protected XSDDatatype getFieldListDatatype(Field field) {
         try {
-            
+
             ParameterizedType genericReturnType = (ParameterizedType) getGetterFromField(field).getGenericReturnType();
             Type genericParameter = genericReturnType.getActualTypeArguments()[0];
             return SPARQLDeserializers.getForClass((Class<?>) genericParameter).getDataType();
         } catch (SPARQLDeserializerNotFoundException ex) {
             return null;
         }
+    }
+
+    public Set<Field> getFieldsRelatedTo(Class<? extends SPARQLResourceModel> model) {
+        Set<Field> relatedFields = new HashSet<>();
+        if (relatedModelsFields.containsKey(model)) {
+            relatedFields.addAll(relatedModelsFields.get(model));
+        }
+
+        return relatedFields;
+    }
+
+    public Property getFieldProperty(Field field) {
+        return propertiesByField.get(field);
+    }
+
+    public Set<Class<? extends SPARQLResourceModel>> getRelatedResources() {
+        return relatedModelsFields.keySet();
+    }
+
+    public Map<Class<? extends SPARQLResourceModel>, Field> getCascadeDeleteClassesField() {
+        return Collections.unmodifiableMap(cascadeDeleteClassesField);
     }
 }

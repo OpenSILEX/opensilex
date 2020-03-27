@@ -40,6 +40,7 @@ import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.sparql.core.Var;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.annotations.SPARQLManualLoading;
+import org.opensilex.utils.ThrowingBiConsumer;
 
 /**
  *
@@ -49,8 +50,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLClassObjectMapper.class);
     private static Set<Class<?>> SPARQL_CLASSES_LIST;
-    private static Map<Class<?>, SPARQLClassObjectMapper<?>> SPARQL_CLASSES_MAPPER = new HashMap<>();
-    private static Map<Resource, SPARQLClassObjectMapper<?>> SPARQL_RESOURCES_MAPPER = new HashMap<>();
+    private static Map<Class<?>, SPARQLClassObjectMapper<? extends SPARQLResourceModel>> SPARQL_CLASSES_MAPPER = new HashMap<>();
+    private static Map<Resource, SPARQLClassObjectMapper<? extends SPARQLResourceModel>> SPARQL_RESOURCES_MAPPER = new HashMap<>();
     private static List<Class<? extends SPARQLResourceModel>> SPARQL_RESOURCES_MANUAL_INCLUSION_LIST = new ArrayList<>();
 
     private static <T> Class<? super T> getConcreteClass(Class<T> objectClass) {
@@ -83,7 +84,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             SPARQL_CLASSES_LIST.addAll(SPARQL_RESOURCES_MANUAL_INCLUSION_LIST);
 
             for (Class<?> sparqlModelClass : SPARQL_CLASSES_LIST) {
-                SPARQLClassObjectMapper<?> sparqlObjectMapper = new SPARQLClassObjectMapper<>((Class<? extends SPARQLResourceModel>) sparqlModelClass);
+                Class<? extends SPARQLResourceModel> sparqlResourceModelClass = (Class<? extends SPARQLResourceModel>) sparqlModelClass;
+                SPARQLClassObjectMapper<?> sparqlObjectMapper = new SPARQLClassObjectMapper<>(sparqlResourceModelClass);
                 SPARQL_CLASSES_MAPPER.put(sparqlModelClass, sparqlObjectMapper);
                 SPARQL_RESOURCES_MAPPER.put(sparqlObjectMapper.getRDFType(), sparqlObjectMapper);
             }
@@ -217,7 +219,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
         String realType = result.getStringValue(getTypeFieldName());
         instance.setType(new URI(realType));
-        
+
         for (Field field : classAnalizer.getDataPropertyFields()) {
             Method setter = classAnalizer.getSetterFromField(field);
 
@@ -273,7 +275,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             setter.invoke(instance, proxy.getInstance());
         }
 
-        Set<String> properties = classAnalizer.getManagedProperties();
+        Set<Property> properties = classAnalizer.getManagedProperties();
         instance.setRelations(new SPARQLProxyRelationList(null, uri, properties, lang, service).getInstance());
         return instance;
     }
@@ -470,4 +472,80 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
         return null;
     }
+
+    public UpdateBuilder getDeleteRelationsBuilder(URI uri) throws Exception {
+        UpdateBuilder delete = new UpdateBuilder();
+        if (addDeleteRelationsBuilder(uri, delete)) {
+            return delete;
+        }
+
+        return null;
+    }
+
+    public <T extends SPARQLResourceModel> boolean addDeleteRelationsBuilder(URI uri, UpdateBuilder delete) throws Exception {
+        Set<Class<? extends SPARQLResourceModel>> relatedResources = classAnalizer.getRelatedResources();
+        if (relatedResources == null) {
+            return false;
+        }
+
+        int statementCount = 0;
+        Var uriVar = makeVar("uri");
+        Node uriNode = SPARQLDeserializers.nodeURI(uri);
+        for (Class<? extends SPARQLResourceModel> relatedModelClass : relatedResources) {
+            SPARQLClassObjectMapper<SPARQLResourceModel> relatedModelMapper = getForClass(relatedModelClass);
+            Set<Field> modelRelationFields = relatedModelMapper.classAnalizer.getFieldsRelatedTo(objectClass);
+            for (Field relationField : modelRelationFields) {
+                Property property = relatedModelMapper.classAnalizer.getFieldProperty(relationField);
+                statementCount++;
+                Var propertyVar = makeVar("_prop" + statementCount);
+                Var objectVar = makeVar("_obj" + statementCount);
+                if (relatedModelMapper.classAnalizer.isReverseRelation(relationField)) {
+                    delete.addDelete(relatedModelMapper.getDefaultGraph(), objectVar, propertyVar, uriVar);
+                    delete.addWhere(objectVar, propertyVar, uriVar);
+                    delete.addWhere(objectVar, property, uriNode);
+                } else {
+                    delete.addDelete(relatedModelMapper.getDefaultGraph(), uriVar, propertyVar, objectVar);
+                    delete.addWhere(uriVar, propertyVar, objectVar);
+                    delete.addWhere(uriNode, property, objectVar);
+                }
+            }
+        }
+
+        return statementCount > 0;
+    }
+
+    public Map<Class<? extends SPARQLResourceModel>, Field> getCascadeDeleteClassesField() {
+        return classAnalizer.getCascadeDeleteClassesField();
+    }
+
+    public List<SPARQLResourceModel> getAllDependentResourcesToCreate(T instance) {
+        ArrayList<SPARQLResourceModel> dependentResourcesToCreate = new ArrayList<>();
+
+        classAnalizer.forEachObjectProperty(ThrowingBiConsumer.wrap((field, property) -> {
+            SPARQLResourceModel value = (SPARQLResourceModel) classAnalizer.getFieldValue(field, instance);
+            if (value != null) {
+                SPARQLClassObjectMapper<SPARQLResourceModel> modelMapper = SPARQLClassObjectMapper.getForClass(value.getClass());
+                URI uri = modelMapper.getURI(value);
+                if (uri == null) {
+                    dependentResourcesToCreate.add(value);
+                }
+            }
+        }, Field.class, Property.class, Exception.class));
+
+        classAnalizer.forEachObjectPropertyList(ThrowingBiConsumer.wrap((field, property) -> {
+            List<? extends SPARQLResourceModel> values = (List<? extends SPARQLResourceModel>) classAnalizer.getFieldValue(field, instance);
+            if (values != null && !values.isEmpty()) {
+                for (SPARQLResourceModel value : values) {
+                    SPARQLClassObjectMapper<SPARQLResourceModel> modelMapper = SPARQLClassObjectMapper.getForClass(value.getClass());
+                    URI uri = modelMapper.getURI(value);
+                    if (uri == null) {
+                        dependentResourcesToCreate.add(value);
+                    }
+                }
+            }
+        }, Field.class, Property.class, Exception.class));
+
+        return dependentResourcesToCreate;
+    }
+
 }

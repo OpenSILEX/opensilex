@@ -166,14 +166,14 @@ public class InfrastructureAPI {
         dao.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
-    
+
     /**
      * Search infrstructure tree
      *
      * @param pattern
      * @param securityContext
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     @GET
     @Path("search")
@@ -207,4 +207,6 @@ public class InfrastructureAPI {
         boolean enableSelection = (pattern != null && !pattern.isEmpty());
         return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree, enableSelection)).getResponse();
     }
+    
+    // TODO Update
 }

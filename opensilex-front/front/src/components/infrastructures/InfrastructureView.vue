@@ -30,7 +30,8 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
   InfrastructuresService,
   ResourceTreeDTO,
-  InfrastructureGetDTO
+  InfrastructureGetDTO,
+  InfrastructureUpdateDTO
 } from "opensilex-core/index";
 
 @Component
@@ -110,7 +111,7 @@ export default class InfrastructureView extends Vue {
     );
   }
 
-  callUpdateInfrastructureService(form: InfrastructureGetDTO, done) {
+  callUpdateInfrastructureService(form: InfrastructureUpdateDTO, done) {
     done();
     this.service
       .updateInfrastructure(this.user.getAuthorizationHeader(), form)

@@ -8,7 +8,6 @@ package org.opensilex.sparql.mapping;
 import java.lang.reflect.Method;
 import java.net.URI;
 import org.apache.jena.graph.Node;
-import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
@@ -29,7 +28,7 @@ class SPARQLProxyResource<T extends SPARQLResourceModel> extends SPARQLProxy<T> 
 
     @Override
     protected T loadData() throws Exception {
-        return service.loadByURI(type, uri, lang);
+        return service.loadByURI(graph, type, uri, lang);
     }
 
     @Override

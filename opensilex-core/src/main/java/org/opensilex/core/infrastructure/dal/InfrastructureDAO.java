@@ -104,4 +104,8 @@ public class InfrastructureDAO {
         sparql.delete(InfrastructureModel.class, instanceURI);
     }
 
+    public InfrastructureModel update(InfrastructureModel instance) throws Exception {
+        sparql.update(instance);
+        return instance;
+    }
 }

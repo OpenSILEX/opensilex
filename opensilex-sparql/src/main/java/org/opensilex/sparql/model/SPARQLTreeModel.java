@@ -11,24 +11,13 @@ import java.util.List;
  *
  * @author vince
  */
-public abstract class SPARQLTreeModel<T extends SPARQLResourceModel> extends SPARQLResourceModel {
-
-    protected String name;
-    public static final String NAME_FIELD = "name";
+public abstract class SPARQLTreeModel<T extends SPARQLTreeModel<T>> extends SPARQLNamedResourceModel<T> {
 
     protected T parent;
     public static final String PARENT_FIELD = "parent";
 
     protected List<T> children;
     public static final String CHILDREN_FIELD = "children";
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public T getParent() {
         return parent;

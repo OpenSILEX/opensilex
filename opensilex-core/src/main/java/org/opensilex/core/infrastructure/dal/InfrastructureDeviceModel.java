@@ -5,37 +5,18 @@
  */
 package org.opensilex.core.infrastructure.dal;
 
-import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "InfrastructureDevice",
-        graph = "devices",
-        prefix = "dvc"
+        graph = "infrastructures",
+        prefix = "infra"
 )
-public class InfrastructureDeviceModel extends SPARQLResourceModel implements ClassURIGenerator<InfrastructureDeviceModel> {
+public class InfrastructureDeviceModel extends SPARQLNamedResourceModel<InfrastructureDeviceModel> {
 
-    @SPARQLProperty(
-            ontology = FOAF.class,
-            property = "name",
-            required = true
-    )
-    private String name;
-    public static final String NAME_FIELD = "name";
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-    
     @Override
     public String[] getUriSegments(InfrastructureDeviceModel instance) {
         return new String[]{

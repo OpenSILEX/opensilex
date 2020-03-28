@@ -184,7 +184,7 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return group", response = ResourceTreeDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Return list of infrastructure tree", response = ResourceTreeDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchInfrastructuresTree(

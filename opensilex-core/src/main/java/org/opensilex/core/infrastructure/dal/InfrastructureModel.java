@@ -25,14 +25,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         graph = "infrastructures",
         prefix = "infra"
 )
-public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> implements ClassURIGenerator<InfrastructureModel> {
-
-    @SPARQLProperty(
-            ontology = FOAF.class,
-            property = "name",
-            required = true
-    )
-    protected String name;
+public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> {
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -76,13 +69,6 @@ public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> im
 
     public void setDevices(List<InfrastructureDeviceModel> devices) {
         this.devices = devices;
-    }
-
-    @Override
-    public String[] getUriSegments(InfrastructureModel instance) {
-        return new String[]{
-            instance.getName()
-        };
     }
 
 }

@@ -12,23 +12,22 @@ import java.util.Objects;
 import org.opensilex.sparql.annotations.SPARQLResourceURI;
 import org.opensilex.sparql.annotations.SPARQLTypeRDF;
 
-
 /**
  *
  * @author vidalmor
  */
 public abstract class SPARQLResourceModel implements SPARQLModel {
-    
+
     @SPARQLResourceURI()
     private URI uri;
     public static final String URI_FIELD = "uri";
-    
+
     @SPARQLTypeRDF()
     private URI type;
     public static final String TYPE_FIELD = "type";
-    
+
     protected List<SPARQLModelRelation> relations = new ArrayList<>();
-        
+
     public URI getUri() {
         return uri;
     }
@@ -44,9 +43,7 @@ public abstract class SPARQLResourceModel implements SPARQLModel {
     public void setType(URI type) {
         this.type = type;
     }
-    
-    
-    
+
     public List<SPARQLModelRelation> getRelations() {
         return relations;
     }
@@ -76,6 +73,5 @@ public abstract class SPARQLResourceModel implements SPARQLModel {
         final SPARQLResourceModel other = (SPARQLResourceModel) obj;
         return Objects.equals(this.uri, other.uri);
     }
-    
-    
+
 }

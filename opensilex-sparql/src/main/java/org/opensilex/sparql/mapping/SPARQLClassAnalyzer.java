@@ -43,7 +43,7 @@ import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
  *
  * @author vincent
  */
-class SPARQLClassAnalyzer {
+final class SPARQLClassAnalyzer {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLClassAnalyzer.class);
 
@@ -60,36 +60,36 @@ class SPARQLClassAnalyzer {
     private Field fieldURI;
     private Field fieldType;
 
-    private final Map<Field, Property> dataProperties = new HashMap<>();
+    private final Map<String, Property> dataProperties = new HashMap<>();
 
-    private final Map<Field, Property> objectProperties = new HashMap<>();
+    private final Map<String, Property> objectProperties = new HashMap<>();
 
-    private final Map<Field, Property> dataPropertiesLists = new HashMap<>();
+    private final Map<String, Property> dataPropertiesLists = new HashMap<>();
 
-    private final Map<Field, Property> objectPropertiesLists = new HashMap<>();
+    private final Map<String, Property> objectPropertiesLists = new HashMap<>();
 
-    private final Map<Field, Property> labelProperties = new HashMap<>();
+    private final Map<String, Property> labelProperties = new HashMap<>();
 
-    private final Map<Field, Property> propertiesByField = new HashMap<>();
+    private final Map<String, Property> propertiesByField = new HashMap<>();
 
     private final Map<String, Field> fieldsByName = new HashMap<>();
 
-    private final Map<Property, Field> fieldsByUniqueProperty = new HashMap<>();
+    private final Map<Property, String> fieldsByUniqueProperty = new HashMap<>();
 
     private final Set<Property> managedProperties = new HashSet<>();
 
-    private final BiMap<Method, Field> fieldsByGetter;
+    private final BiMap<Method, String> fieldsByGetter;
 
-    private final BiMap<Method, Field> fieldsBySetter;
+    private final BiMap<Method, String> fieldsBySetter;
 
-    private final Map<Class<? extends SPARQLResourceModel>, Set<Field>> relatedModelsFields;
+    private final Map<Class<? extends SPARQLResourceModel>, Set<String>> relatedModelsFields;
 
-    private final Map<Field, SPARQLProperty> annotationsByField = new HashMap<>();
-    private final List<Field> optionalFields = new ArrayList<>();
+    private final Map<String, SPARQLProperty> annotationsByField = new HashMap<>();
+    private final List<String> optionalFields = new ArrayList<>();
 
-    private final List<Field> reverseRelationFields = new ArrayList<>();
+    private final List<String> reverseRelationFields = new ArrayList<>();
 
-    private final Map<Class<? extends SPARQLResourceModel>, Field> cascadeDeleteClassesField = new HashMap<>();
+    private final Map<Class<? extends SPARQLResourceModel>, String> cascadeDeleteClassesField = new HashMap<>();
 
     private final URIGenerator<? extends SPARQLResourceModel> uriGenerator;
 
@@ -185,12 +185,12 @@ class SPARQLClassAnalyzer {
             if (isGetter(method)) {
                 Field getter = findFieldByGetter(method);
                 if (getter != null) {
-                    fieldsByGetter.put(method, getter);
+                    fieldsByGetter.put(method, getter.getName());
                 }
             } else if (isSetter(method)) {
                 Field setter = findFieldBySetter(method);
                 if (setter != null) {
-                    fieldsBySetter.put(method, setter);
+                    fieldsBySetter.put(method, setter.getName());
                 }
             }
         }
@@ -233,9 +233,9 @@ class SPARQLClassAnalyzer {
         }
         LOGGER.debug("Analyse field type for: " + field.getName());
 
-        Type fieldType = field.getGenericType();
-        if (ClassUtils.isGenericType(fieldType)) {
-            ParameterizedType parameterizedType = (ParameterizedType) fieldType;
+        Type fType = field.getGenericType();
+        if (ClassUtils.isGenericType(fType)) {
+            ParameterizedType parameterizedType = (ParameterizedType) fType;
             if (ClassUtils.isGenericList(parameterizedType)) {
                 Class<?> genericParameter = (Class<?>) parameterizedType.getActualTypeArguments()[0];
                 LOGGER.debug("Field " + field.getName() + " is a list of: " + genericParameter.getName());
@@ -243,14 +243,14 @@ class SPARQLClassAnalyzer {
                     throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " as an unsupported type, List<SPARQLLabel> are not supported");
                 } else if (SPARQLDeserializers.existsForClass(genericParameter)) {
                     LOGGER.debug("Field " + field.getName() + " is a data property list of: " + objectClass.getName());
-                    dataPropertiesLists.put(field, property);
+                    dataPropertiesLists.put(field.getName(), property);
                 } else if (SPARQLClassObjectMapper.existsForClass((Class<? extends SPARQLResourceModel>) genericParameter)) {
                     LOGGER.debug("Field " + field.getName() + " is an object property list of: " + objectClass.getName());
-                    objectPropertiesLists.put(field, property);
+                    objectPropertiesLists.put(field.getName(), property);
                     Class<? extends SPARQLResourceModel> fieldClass = (Class<? extends SPARQLResourceModel>) genericParameter;
                     addRelatedModelProperty(field, fieldClass);
                     if (sProperty.cascadeDelete()) {
-                        cascadeDeleteClassesField.put(fieldClass, field);
+                        cascadeDeleteClassesField.put(fieldClass, field.getName());
                     }
                 } else {
                     throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " as an unsupported type, List<" + genericParameter.getCanonicalName() + "> is not supported");
@@ -258,42 +258,42 @@ class SPARQLClassAnalyzer {
             } else {
                 throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " as an unsupported type, only List are allowed as generics");
             }
-        } else if ((Class<?>) fieldType == SPARQLLabel.class) {
+        } else if ((Class<?>) fType == SPARQLLabel.class) {
             LOGGER.debug("Field " + field.getName() + " is a label of: " + objectClass.getName());
-            labelProperties.put(field, property);
-        } else if (SPARQLDeserializers.existsForClass((Class<?>) fieldType)) {
+            labelProperties.put(field.getName(), property);
+        } else if (SPARQLDeserializers.existsForClass((Class<?>) fType)) {
             LOGGER.debug("Field " + field.getName() + " is a data property of: " + objectClass.getName());
-            dataProperties.put(field, property);
-        } else if (SPARQLClassObjectMapper.existsForClass((Class<? extends SPARQLResourceModel>) fieldType)) {
+            dataProperties.put(field.getName(), property);
+        } else if (SPARQLClassObjectMapper.existsForClass((Class<? extends SPARQLResourceModel>) fType)) {
             LOGGER.debug("Field " + field.getName() + " is an object property of: " + objectClass.getName());
-            objectProperties.put(field, property);
-            Class<? extends SPARQLResourceModel> fieldClass = (Class<? extends SPARQLResourceModel>) fieldType;
+            objectProperties.put(field.getName(), property);
+            Class<? extends SPARQLResourceModel> fieldClass = (Class<? extends SPARQLResourceModel>) fType;
             addRelatedModelProperty(field, fieldClass);
             if (sProperty.cascadeDelete()) {
-                cascadeDeleteClassesField.put(fieldClass, field);
+                cascadeDeleteClassesField.put(fieldClass, field.getName());
             }
         } else {
-            throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " refer to an invalid SPARQL class model: " + fieldType.getTypeName());
+            throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " refer to an invalid SPARQL class model: " + fType.getTypeName());
         }
 
         LOGGER.debug("Determine if field " + field.getName() + " is a unique property (used only once for SPARQL property " + property.getLocalName() + ")");
         if (fieldsByUniqueProperty.containsKey(property)) {
             fieldsByUniqueProperty.remove(property);
         } else {
-            fieldsByUniqueProperty.put(property, field);
+            fieldsByUniqueProperty.put(property, field.getName());
         }
 
         LOGGER.debug("Determine if field " + field.getName() + " is required or optional");
         if (!sProperty.required()) {
-            optionalFields.add(field);
+            optionalFields.add(field.getName());
         }
 
         LOGGER.debug("Determine if field " + field.getName() + " is a reversed property or not");
         if (sProperty.inverse()) {
-            reverseRelationFields.add(field);
+            reverseRelationFields.add(field.getName());
         }
 
-        annotationsByField.put(field, sProperty);
+        annotationsByField.put(field.getName(), sProperty);
 
         LOGGER.debug("Store field " + field.getName() + " in global index by name");
         fieldsByName.put(field.getName(), field);
@@ -302,11 +302,11 @@ class SPARQLClassAnalyzer {
     }
 
     private void addRelatedModelProperty(Field field, Class<? extends SPARQLResourceModel> model) {
-        if (!relatedModelsFields.containsKey(field)) {
+        if (!relatedModelsFields.containsKey(model)) {
             relatedModelsFields.put(model, new HashSet<>());
         }
 
-        relatedModelsFields.get(model).add(field);
+        relatedModelsFields.get(model).add(field.getName());
     }
 
     private void analyzeSPARQLResourceURIField(Field field) throws SPARQLInvalidClassDefinitionException {
@@ -376,7 +376,7 @@ class SPARQLClassAnalyzer {
             }
         }
 
-        if (candidateField != null && getter.getReturnType().isAssignableFrom(candidateField.getType())) {
+        if (candidateField != null && (getter.getReturnType().equals(candidateField.getType()) || getter.getReturnType().isAssignableFrom(candidateField.getType()))) {
             return candidateField;
         } else {
             return null;
@@ -406,31 +406,41 @@ class SPARQLClassAnalyzer {
     }
 
     public boolean isOptional(Field field) {
-        return optionalFields.contains(field);
+        return optionalFields.contains(field.getName());
     }
 
     public boolean isReverseRelation(Field field) {
-        return reverseRelationFields.contains(field);
+        return reverseRelationFields.contains(field.getName());
     }
 
     public void forEachDataProperty(BiConsumer<Field, Property> lambda) {
-        dataProperties.forEach(lambda);
+        dataProperties.forEach((fieldName, property) -> {
+            lambda.accept(getFieldFromName(fieldName), property);
+        });
     }
 
     public void forEachObjectProperty(BiConsumer<Field, Property> lambda) {
-        objectProperties.forEach(lambda);
+        objectProperties.forEach((fieldName, property) -> {
+            lambda.accept(getFieldFromName(fieldName), property);
+        });
     }
 
     public void forEachDataPropertyList(BiConsumer<Field, Property> lambda) {
-        dataPropertiesLists.forEach(lambda);
+        dataPropertiesLists.forEach((fieldName, property) -> {
+            lambda.accept(getFieldFromName(fieldName), property);
+        });
     }
 
     public void forEachObjectPropertyList(BiConsumer<Field, Property> lambda) {
-        objectPropertiesLists.forEach(lambda);
+        objectPropertiesLists.forEach((fieldName, property) -> {
+            lambda.accept(getFieldFromName(fieldName), property);
+        });
     }
 
     public void forEachLabelProperty(BiConsumer<Field, Property> lambda) {
-        labelProperties.forEach(lambda);
+        labelProperties.forEach((fieldName, property) -> {
+            lambda.accept(getFieldFromName(fieldName), property);
+        });
     }
 
     public boolean hasLabelProperty() {
@@ -438,27 +448,27 @@ class SPARQLClassAnalyzer {
     }
 
     public Field getFieldFromGetter(Method method) {
-        return fieldsByGetter.get(method);
+        return fieldsByName.get(fieldsByGetter.get(method));
     }
 
     public Field getFieldFromSetter(Method method) {
-        return fieldsBySetter.get(method);
+        return fieldsByName.get(fieldsBySetter.get(method));
     }
 
     private Method getGetterFromField(Field field) {
-        return fieldsByGetter.inverse().get(field);
+        return fieldsByGetter.inverse().get(field.getName());
     }
 
     public Object getFieldValue(Field field, Object instance) {
         try {
-            return instance.getClass().getMethod(fieldsByGetter.inverse().get(field).getName()).invoke(instance);
+            return instance.getClass().getMethod(fieldsByGetter.inverse().get(field.getName()).getName()).invoke(instance);
         } catch (Exception ex) {
             return null;
         }
     }
 
     public Method getSetterFromField(Field field) {
-        return fieldsBySetter.inverse().get(field);
+        return fieldsBySetter.inverse().get(field.getName());
     }
 
     public String getURIFieldName() {
@@ -474,23 +484,23 @@ class SPARQLClassAnalyzer {
     }
 
     public boolean isDataPropertyField(Field f) {
-        return dataProperties.containsKey(f);
+        return dataProperties.containsKey(f.getName());
     }
 
     public boolean isObjectPropertyField(Field f) {
-        return objectProperties.containsKey(f);
+        return objectProperties.containsKey(f.getName());
     }
 
     public boolean isDataListField(Field f) {
-        return dataPropertiesLists.containsKey(f);
+        return dataPropertiesLists.containsKey(f.getName());
     }
 
     public boolean isObjectListField(Field f) {
-        return objectPropertiesLists.containsKey(f);
+        return objectPropertiesLists.containsKey(f.getName());
     }
 
     public boolean isLabelField(Field f) {
-        return labelProperties.containsKey(f);
+        return labelProperties.containsKey(f.getName());
     }
 
     public Resource getRDFType() {
@@ -506,47 +516,67 @@ class SPARQLClassAnalyzer {
     }
 
     public Field getFieldFromUniqueProperty(Property property) {
-        return fieldsByUniqueProperty.get(property);
+        return getFieldFromName(fieldsByUniqueProperty.get(property));
     }
 
     public Set<Field> getObjectPropertyFields() {
-        return objectProperties.keySet();
+        Set<Field> set = new HashSet<>();
+        objectProperties.keySet().stream().forEach(fieldName -> {
+            set.add(getFieldFromName(fieldName));
+        });
+        return set;
     }
 
     public Property getObjectPropertyByField(Field field) {
-        return objectProperties.get(field);
+        return objectProperties.get(field.getName());
     }
 
     public Set<Field> getDataPropertyFields() {
-        return dataProperties.keySet();
+        Set<Field> set = new HashSet<>();
+        dataProperties.keySet().stream().forEach(fieldName -> {
+            set.add(getFieldFromName(fieldName));
+        });
+        return set;
     }
 
     public Property getDataPropertyByField(Field field) {
-        return dataProperties.get(field);
+        return dataProperties.get(field.getName());
     }
 
     public Set<Field> getObjectListPropertyFields() {
-        return objectPropertiesLists.keySet();
+        Set<Field> set = new HashSet<>();
+        objectPropertiesLists.keySet().stream().forEach(fieldName -> {
+            set.add(getFieldFromName(fieldName));
+        });
+        return set;
     }
 
     public Property getObjectListPropertyByField(Field field) {
-        return objectPropertiesLists.get(field);
+        return objectPropertiesLists.get(field.getName());
     }
 
     public Set<Field> getDataListPropertyFields() {
-        return dataPropertiesLists.keySet();
+        Set<Field> set = new HashSet<>();
+        dataPropertiesLists.keySet().stream().forEach(fieldName -> {
+            set.add(getFieldFromName(fieldName));
+        });
+        return set;
     }
 
     public Property getDataListPropertyByField(Field field) {
-        return dataPropertiesLists.get(field);
+        return dataPropertiesLists.get(field.getName());
     }
 
     public Set<Field> getLabelPropertyFields() {
-        return labelProperties.keySet();
+        Set<Field> set = new HashSet<>();
+        labelProperties.keySet().stream().forEach(fieldName -> {
+            set.add(getFieldFromName(fieldName));
+        });
+        return set;
     }
 
     public Property getLabelPropertyByField(Field field) {
-        return labelProperties.get(field);
+        return labelProperties.get(field.getName());
     }
 
     public URI getURI(Object instance) {
@@ -580,7 +610,7 @@ class SPARQLClassAnalyzer {
     }
 
     public SPARQLProperty getFieldAnnotation(Field field) {
-        return annotationsByField.get(field);
+        return annotationsByField.get(field.getName());
     }
 
     public String getTypeFieldName() {
@@ -631,14 +661,16 @@ class SPARQLClassAnalyzer {
     public Set<Field> getFieldsRelatedTo(Class<? extends SPARQLResourceModel> model) {
         Set<Field> relatedFields = new HashSet<>();
         if (relatedModelsFields.containsKey(model)) {
-            relatedFields.addAll(relatedModelsFields.get(model));
+            relatedModelsFields.get(model).stream().forEach((fieldName) -> {
+                relatedFields.add(getFieldFromName(fieldName));
+            });
         }
 
         return relatedFields;
     }
 
     public Property getFieldProperty(Field field) {
-        return propertiesByField.get(field);
+        return propertiesByField.get(field.getName());
     }
 
     public Set<Class<? extends SPARQLResourceModel>> getRelatedResources() {
@@ -646,6 +678,11 @@ class SPARQLClassAnalyzer {
     }
 
     public Map<Class<? extends SPARQLResourceModel>, Field> getCascadeDeleteClassesField() {
-        return Collections.unmodifiableMap(cascadeDeleteClassesField);
+        Map<Class<? extends SPARQLResourceModel>, Field> map = new HashMap<>();
+        cascadeDeleteClassesField.keySet().stream().forEach((model) -> {
+            map.put(model, getFieldFromName(cascadeDeleteClassesField.get(model)));
+        });
+
+        return map;
     }
 }

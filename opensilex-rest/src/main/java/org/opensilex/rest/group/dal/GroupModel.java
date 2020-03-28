@@ -10,8 +10,7 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.rest.authentication.SecurityOntology;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
 /**
  *
@@ -23,15 +22,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         graph = "groups",
         prefix = "grp"
 )
-public class GroupModel extends SPARQLResourceModel implements ClassURIGenerator<GroupModel> {
-
-    @SPARQLProperty(
-            ontology = DCTerms.class,
-            property = "title",
-            required = true
-    )
-    private String name;
-    public static final String NAME_FIELD = "name";
+public class GroupModel extends SPARQLNamedResourceModel<GroupModel> {
 
     @SPARQLProperty(
             ontology = DCTerms.class,
@@ -48,14 +39,6 @@ public class GroupModel extends SPARQLResourceModel implements ClassURIGenerator
     )
     private List<GroupUserProfileModel> userProfiles;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -70,13 +53,6 @@ public class GroupModel extends SPARQLResourceModel implements ClassURIGenerator
 
     public void setUserProfiles(List<GroupUserProfileModel> userProfiles) {
         this.userProfiles = userProfiles;
-    }
-
-    @Override
-    public String[] getUriSegments(GroupModel instance) {
-        return new String[]{
-            instance.getName()
-        };
     }
 
 }

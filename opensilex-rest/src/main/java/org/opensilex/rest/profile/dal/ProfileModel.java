@@ -7,12 +7,10 @@ package org.opensilex.rest.profile.dal;
 
 import org.opensilex.rest.authentication.SecurityOntology;
 import java.util.List;
-import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.rest.group.dal.GroupUserProfileModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
 /**
  *
@@ -24,15 +22,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         graph = "profiles",
         prefix = "prf"
 )
-public class ProfileModel extends SPARQLResourceModel implements ClassURIGenerator<ProfileModel> {
-
-    @SPARQLProperty(
-            ontology = DCTerms.class,
-            property = "title",
-            required = true
-    )
-    private String name;
-    public static final String NAME_FIELD = "name";
+public class ProfileModel extends SPARQLNamedResourceModel<ProfileModel> {
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,
@@ -47,14 +37,6 @@ public class ProfileModel extends SPARQLResourceModel implements ClassURIGenerat
             cascadeDelete = true
     )
     private List<GroupUserProfileModel> userProfiles;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public List<String> getCredentials() {
         return credentials;
@@ -72,10 +54,4 @@ public class ProfileModel extends SPARQLResourceModel implements ClassURIGenerat
         this.userProfiles = userProfiles;
     }
 
-    @Override
-    public String[] getUriSegments(ProfileModel instance) {
-        return new String[]{
-            instance.getName()
-        };
-    }
 }

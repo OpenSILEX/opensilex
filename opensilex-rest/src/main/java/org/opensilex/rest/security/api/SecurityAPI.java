@@ -33,6 +33,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
+import org.opensilex.rest.RestModule;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -58,7 +59,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Vincent Migot
  */
-@Api("Security")
+@Api(RestModule.REST_SECURITY_API_ID)
 @Path("/security")
 public class SecurityAPI {
 

@@ -200,7 +200,7 @@ import VueRouter from "vue-router";
 import {
   UserCreationDTO,
   GroupUpdateDTO,
-  UsersService,
+  UsersGroupsProfilesService,
   UserGetDTO,
   ProfileGetDTO,
   GroupUserProfileModificationDTO
@@ -216,7 +216,7 @@ export default class GroupForm extends Vue {
   @Prop()
   profiles: Array<ProfileGetDTO>;
 
-  service: UsersService;
+  service: UsersGroupsProfilesService;
 
   get user() {
     return this.$store.state.user;
@@ -279,7 +279,7 @@ export default class GroupForm extends Vue {
   }
 
   created() {
-    this.service = this.$opensilex.getService("opensilex.UsersService");
+    this.service = this.$opensilex.getService("opensilex.UsersGroupsProfilesService");
   }
 
   loadData() {

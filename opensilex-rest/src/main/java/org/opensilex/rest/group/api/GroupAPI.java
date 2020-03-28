@@ -29,6 +29,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.opensilex.rest.RestModule;
 import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.group.dal.GroupDAO;
@@ -50,7 +51,7 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author vidalmor
  */
-@Api(GroupAPI.CREDENTIAL_GROUP_GROUP_ID)
+@Api(RestModule.REST_SECURITY_CONCEPTS_API_ID)
 @Path("/group")
 public class GroupAPI {
 

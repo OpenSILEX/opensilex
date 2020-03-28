@@ -45,8 +45,8 @@ import org.opensilex.server.response.SingleObjectResponse;
 /**
  * Service to produce angular application configuration
  */
-@Api("Front")
-@Path("/front")
+@Api("Vue.js")
+@Path("/vuejs")
 public class FrontAPI {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(FrontAPI.class);

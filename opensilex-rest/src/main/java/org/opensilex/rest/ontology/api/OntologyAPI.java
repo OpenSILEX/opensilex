@@ -24,6 +24,7 @@ import javax.ws.rs.core.SecurityContext;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.ontology.dal.ClassModel;
 import org.opensilex.rest.ontology.dal.OntologyDAO;
+import org.opensilex.rest.ontology.dal.PropertyModel;
 import org.opensilex.rest.sparql.dto.ResourceTreeDTO;
 import org.opensilex.rest.sparql.response.ResourceTreeResponse;
 import org.opensilex.rest.user.dal.UserModel;
@@ -52,7 +53,7 @@ public class OntologyAPI {
 
     @GET
     @Path("/subclass-of")
-    @ApiOperation("Search sub-classes tree of an RDF type")
+    @ApiOperation("Search sub-classes tree of an RDF class")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -69,6 +70,31 @@ public class OntologyAPI {
 
         ResourceTree<ClassModel> tree = dao.searchSubClasses(
                 parentClass,
+                user
+        );
+
+        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree)).getResponse();
+    }
+
+    @GET
+    @Path("/subproperties-of")
+    @ApiOperation("Search sub-properties tree of an RDF property")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return group", response = ResourceTreeDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response getSubPropertiesOf(
+            @ApiParam(value = "Parent RDF Property URI", example = "owl:DatatypeProperty") @QueryParam("parentProperty") @ValidURI URI parentProperty,
+            @Context SecurityContext securityContext
+    ) throws Exception {
+        UserModel user = (UserModel) securityContext.getUserPrincipal();
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        ResourceTree<PropertyModel> tree = dao.searchProperties(
+                parentProperty,
                 user
         );
 

@@ -74,7 +74,7 @@ import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
-import { GroupsService, GroupGetDTO } from "opensilex-rest/index";
+import { UsersGroupsProfilesService, GroupGetDTO } from "opensilex-rest/index";
 
 @Component
 export default class GroupList extends Vue {
@@ -152,8 +152,8 @@ export default class GroupList extends Vue {
   }
 
   loadData() {
-    let service: GroupsService = this.$opensilex.getService(
-      "opensilex.GroupsService"
+    let service: UsersGroupsProfilesService = this.$opensilex.getService(
+      "opensilex.UsersGroupsProfilesService"
     );
 
     let orderBy = [];

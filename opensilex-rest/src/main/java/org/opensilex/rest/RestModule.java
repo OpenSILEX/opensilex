@@ -40,6 +40,10 @@ import org.slf4j.LoggerFactory;
  */
 public class RestModule extends OpenSilexModule implements APIExtension {
 
+    public final static String REST_SECURITY_API_ID = "Security";
+
+    public final static String REST_SECURITY_CONCEPTS_API_ID = "Users, Groups & Profiles";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(RestModule.class);
 
     @Override
@@ -71,7 +75,7 @@ public class RestModule extends OpenSilexModule implements APIExtension {
             RestModule.createDefaultSuperAdmin();
         }
     }
-    
+
     @Override
     public void install(boolean reset) throws Exception {
         LOGGER.info("Create default profile");
@@ -124,7 +128,7 @@ public class RestModule extends OpenSilexModule implements APIExtension {
     public static void createDefaultSuperAdmin(SPARQLService sparql, AuthenticationService authentication) throws Exception {
         UserDAO userDAO = new UserDAO(sparql);
         InternetAddress email = new InternetAddress("admin@opensilex.org");
-        
+
         if (!userDAO.userEmailexists(email)) {
             userDAO.create(null, email, "Admin", "OpenSilex", true, authentication.getPasswordHash("admin"), "en-US");
         }

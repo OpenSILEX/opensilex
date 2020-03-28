@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,7 +39,7 @@ public class SwaggerAPIGenerator {
 
         return null;
     }
-    
+
     public static synchronized Swagger getModuleApi(Class<? extends OpenSilexModule> moduleClass) {
         Swagger swagger = null;
 
@@ -49,16 +48,16 @@ public class SwaggerAPIGenerator {
         swagger = ctx.getSwagger();
 
         Map<String, Class<?>> availableAPI = ClassUtils.getAnnotatedClassesMap(Api.class);
-        
+
         String moduleID = ClassUtils.getProjectIdFromClass(moduleClass);
 
         Set<Class<?>> classes = new HashSet<>(availableAPI.values());
-        
+
         Set<Class<?>> moduleClassesAPI = classes.stream().filter((Class<?> c) -> {
             String classModuleID = ClassUtils.getProjectIdFromClass(c);
             return moduleID.equals(classModuleID);
         }).collect(Collectors.toSet());
-        
+
         if (moduleClassesAPI.size() > 0) {
 
             Reader reader = new Reader(swagger);

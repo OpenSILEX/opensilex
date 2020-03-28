@@ -6,14 +6,13 @@
 package org.opensilex.core.infrastructure.dal;
 
 import java.util.List;
-import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.rest.authentication.SecurityOntology;
 import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
 
 /**
  *
@@ -28,10 +27,11 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> {
 
     @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasPart"
+            ontology = DCTerms.class,
+            property = "title",
+            required = true
     )
-    protected List<InfrastructureModel> children;
+    protected String name;
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -39,6 +39,12 @@ public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> {
             inverse = true
     )
     protected InfrastructureModel parent;
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasPart"
+    )
+    protected List<InfrastructureModel> children;
 
     @SPARQLProperty(
             ontology = Oeso.class,

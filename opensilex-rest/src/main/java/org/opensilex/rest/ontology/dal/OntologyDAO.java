@@ -36,4 +36,17 @@ public final class OntologyDAO {
                 }
         );
     }
+
+    public ResourceTree<PropertyModel> searchProperties(URI parent, UserModel user) throws Exception {
+        return sparql.searchResourceTree(
+                PropertyModel.class,
+                user.getLang(),
+                parent,
+                (SelectBuilder select) -> {
+                    if (parent != null) {
+                        select.addFilter(SPARQLQueryHelper.eq(PropertyModel.PARENT_FIELD, parent));
+                    }
+                }
+        );
+    }
 }

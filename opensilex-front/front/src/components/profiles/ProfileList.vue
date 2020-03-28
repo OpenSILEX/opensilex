@@ -79,7 +79,7 @@
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { ProfilesService, ProfileGetDTO } from "opensilex-rest/index";
+import { UsersGroupsProfilesService, ProfileGetDTO } from "opensilex-rest/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
 
 @Component
@@ -161,8 +161,8 @@ export default class ProfileList extends Vue {
   }
 
   loadData() {
-    let service: ProfilesService = this.$opensilex.getService(
-      "opensilex.ProfilesService"
+    let service: UsersGroupsProfilesService = this.$opensilex.getService(
+      "opensilex.UsersGroupsProfilesService"
     );
 
     let orderBy = [];

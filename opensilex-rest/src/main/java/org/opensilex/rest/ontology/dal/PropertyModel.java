@@ -19,9 +19,9 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
  */
 @SPARQLResource(
         ontology = OWL.class,
-        resource = "Class"
+        resource = "DatatypeProperty"
 )
-public class ClassModel extends SPARQLTreeModel<ClassModel> {
+public class PropertyModel extends SPARQLTreeModel<PropertyModel> {
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -37,16 +37,16 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
 
     @SPARQLProperty(
             ontology = RDFS.class,
-            property = "subClassOf",
+            property = "subPropertyOf",
             inverse = true
     )
-    protected List<ClassModel> children;
+    protected List<PropertyModel> children;
 
     @SPARQLProperty(
             ontology = RDFS.class,
-            property = "subClassOf"
+            property = "subPropertyOf"
     )
-    protected ClassModel parent;
+    protected PropertyModel parent;
 
     @Override
     public String getName() {

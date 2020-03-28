@@ -31,6 +31,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import static org.apache.jena.vocabulary.RDF.uri;
+import org.opensilex.rest.RestModule;
 import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -62,7 +63,7 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author Vincent Migot
  */
-@Api(ProfileAPI.CREDENTIAL_GROUP_PROFILE_ID)
+@Api(RestModule.REST_SECURITY_CONCEPTS_API_ID)
 @Path("/profile")
 public class ProfileAPI {
 

@@ -32,14 +32,14 @@ import org.slf4j.LoggerFactory;
  *
  * @author vincent
  */
-public class FrontTypeScriptGenerateAPI {
+public class RegenerateAPI {
 
     private static String nodeBin = "node";
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(FrontTypeScriptGenerateAPI.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(RegenerateAPI.class);
 
     public static void main(String[] args) throws Exception {
-        FrontTypeScriptGenerateAPI.generate(null);
+        RegenerateAPI.generate(null);
     }
 
     private static OpenSilex opensilex;

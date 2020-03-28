@@ -67,7 +67,7 @@ import store from './models/Store'
 // Local imports
 console.debug("Import local files...");
 import App from './App.vue'
-import { FrontConfigDTO, FrontService, ThemeConfigDTO, FontConfigDTO } from './lib'
+import { FrontConfigDTO, VueJsService, ThemeConfigDTO, FontConfigDTO } from './lib'
 import HttpResponse, { OpenSilexResponse } from './lib/HttpResponse'
 import { User } from './models/User'
 import { ModuleComponentDefinition } from './models/ModuleComponentDefinition'
@@ -270,7 +270,7 @@ for (let componentName in components) {
   Vue.component(componentName, components[componentName]);
 }
 
-function loadFonts(frontService: FrontService, fonts: Array<FontConfigDTO>) {
+function loadFonts(vueJsService: VueJsService, fonts: Array<FontConfigDTO>) {
 
   for (let i in fonts) {
     let font: FontConfigDTO = fonts[i];
@@ -312,16 +312,16 @@ function loadFonts(frontService: FrontService, fonts: Array<FontConfigDTO>) {
   }
 }
 
-function loadTheme(frontService: FrontService, config: FrontConfigDTO) {
+function loadTheme(vueJsService: VueJsService, config: FrontConfigDTO) {
   return new Promise((resolve, reject) => {
     if (config.themeModule && config.themeName) {
       console.debug("Load defined theme configuration...", config.themeModule, config.themeName);
-      frontService.getThemeConfig(config.themeModule, config.themeName)
+      vueJsService.getThemeConfig(config.themeModule, config.themeName)
         .then((http: HttpResponse<OpenSilexResponse<ThemeConfigDTO>>) => {
           console.debug("Theme configuration loaded !", config.themeModule, config.themeName);
           const themeConfig: ThemeConfigDTO = http.response.result;
 
-          loadFonts(frontService, themeConfig.fonts);
+          loadFonts(vueJsService, themeConfig.fonts);
 
           if (themeConfig.hasStyle) {
             console.debug("Load CSS theme style...");
@@ -358,13 +358,13 @@ $opensilex.loadModules([
 
       // Get OpenSilex configuration
       console.debug("Start loading configuration...");
-      const frontService = $opensilex.getService<FrontService>("FrontService");
-      frontService.getConfig()
+      const vueJsService = $opensilex.getService<VueJsService>("VueJsService");
+      vueJsService.getConfig()
         .then(function (configResponse) {
           const config: FrontConfigDTO = configResponse.response.result;
           $opensilex.setConfig(config);
 
-          let themePromise: Promise<any> = loadTheme(frontService, config);
+          let themePromise: Promise<any> = loadTheme(vueJsService, config);
 
           themePromise.then(() => {
             store.commit("setConfig", config);

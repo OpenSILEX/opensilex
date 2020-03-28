@@ -60,6 +60,8 @@ import java.util.Map;
  */
 public abstract class Rdf4jDAO<T> extends DAO<T> {
 
+    private final static int TIMEOUT = 20;
+
     final static Logger LOGGER = LoggerFactory.getLogger(Rdf4jDAO.class);
 
     final private String REPOSITORY_EXCEPTION_GENERIC_MESSAGE_FORMAT
@@ -583,19 +585,19 @@ public abstract class Rdf4jDAO<T> extends DAO<T> {
 
     public TupleQuery prepareRDF4JTupleQuery(Object query) {
         TupleQuery tupleQuery = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-        tupleQuery.setMaxExecutionTime(RDF4JConnection.TIMEOUT);
+        tupleQuery.setMaxExecutionTime(TIMEOUT);
         return tupleQuery;
     }
 
     public Update prepareRDF4JUpdateQuery(Object query) {
         Update update = getConnection().prepareUpdate(QueryLanguage.SPARQL, query.toString());
-        update.setMaxExecutionTime(RDF4JConnection.TIMEOUT);
+        update.setMaxExecutionTime(TIMEOUT);
         return update;
     }
 
     public BooleanQuery prepareRDF4JBooleanQuery(Object query) {
         BooleanQuery booleanQuery = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, query.toString());
-        booleanQuery.setMaxExecutionTime(RDF4JConnection.TIMEOUT);
+        booleanQuery.setMaxExecutionTime(TIMEOUT);
         return booleanQuery;
     }
 

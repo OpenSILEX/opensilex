@@ -94,11 +94,14 @@ public class FactorDAO implements OntologyReferenceRessourceDAO{
         }
     }
 
-    public void updateWithOntologiesReferences(URI instanceURI, List<OntologyReference> relations) throws Exception {
+  
+    @Override
+    public void updateInstanceOntologiesReferences(URI instanceURI, List<OntologyReference> relations) throws Exception {
         this.updateIndividualOntologiesReferences(sparql, FactorModel.class, instanceURI, relations);
     }
 
-    
-    
-    
+    @Override
+    public List<OntologyReference> getInstanceOntologiesReferences(URI instanceURI) throws Exception {
+        return this.getIndividualOntologiesReferences(sparql, FactorModel.class, instanceURI);
+    }
 }

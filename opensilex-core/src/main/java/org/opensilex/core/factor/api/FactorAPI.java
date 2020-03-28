@@ -36,7 +36,6 @@ import javax.ws.rs.core.Response;
 import org.opensilex.core.factor.dal.FactorDAO;
 import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.core.ontology.OntologyReference;
-import org.opensilex.core.ontology.extensions.OntologyReferenceRessourceAPI;
 import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.server.response.ErrorDTO;
@@ -56,7 +55,7 @@ import org.opensilex.utils.ListWithPagination;
  */
 @Api(value = "Factors")
 @Path("/core/factor")
-public class FactorAPI implements OntologyReferenceRessourceAPI{
+public class FactorAPI {
 
     public static final String FACTOR_EXAMPLE_URI = "http://opensilex/set/factors/ZA17";
     
@@ -130,10 +129,12 @@ public class FactorAPI implements OntologyReferenceRessourceAPI{
     ) throws Exception {
         FactorDAO dao = new FactorDAO(sparql);
         FactorModel model = dao.get(uri);
-
+        
         if (model != null) {
+            FactorGetDTO factorGetDTO = FactorGetDTO.fromModel(model);
+            factorGetDTO.setRelations(dao.getInstanceOntologiesReferences(uri));
             return new SingleObjectResponse<>(
-                    FactorGetDTO.fromModel(model)
+                    factorGetDTO
             ).getResponse();
         } else {
             return new ErrorResponse(
@@ -237,7 +238,7 @@ public class FactorAPI implements OntologyReferenceRessourceAPI{
     /**
      * Remove an factor
      *
-     * @param xpUri the factor URI
+     * @param factorUri the factor URI
      * @return a {@link Response} with a {@link ObjectUriResponse} containing
      * the deleted Factor {@link URI}
      */
@@ -256,12 +257,12 @@ public class FactorAPI implements OntologyReferenceRessourceAPI{
         @ApiResponse(code = 400, message = "Invalid or unknown Factor URI", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response deleteFactor(
-            @ApiParam(value = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+            @ApiParam(value = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI factorUri
     ) {
         try {
             FactorDAO dao = new FactorDAO(sparql);
-            dao.delete(xpUri);
-            return new ObjectUriResponse(xpUri).getResponse();
+            dao.delete(factorUri);
+            return new ObjectUriResponse(factorUri).getResponse();
 
         } catch (SPARQLInvalidURIException e) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Factor URI", e.getMessage()).getResponse();
@@ -306,24 +307,40 @@ public class FactorAPI implements OntologyReferenceRessourceAPI{
         }
     }
 
-    @Override
+    /**
+     * Updates the on linked to an experiment.
+     *
+     * @param factorUri
+     * @param ontologiesReferences
+     * @return the query result
+     */
+    @PUT
     @Path("{uri}/references")
+    @ApiOperation("Update a instance ontologies references")
     @ApiCredential(
             groupId = CREDENTIAL_FACTOR_GROUP_ID,
             groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_FACTOR_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY
     )
-    @ApiOperation("Update a instance ontologies references")
-    public Response putOntologiesReferences(URI InstanceUri, ArrayList<OntologyReference> ontologiesReferences) {
-        return OntologyReferenceRessourceAPI.super.putOntologiesReferences(InstanceUri, ontologiesReferences); //To change body of generated methods, choose Tools | Templates.
+    @ApiProtected
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "The list of ontologies references associated with this instance", response = ObjectUriResponse.class),
+        @ApiResponse(code = 400, message = "Invalid or unknown factor URI", response = ErrorResponse.class),
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+    
+    public Response putOntologiesReferences(     
+            @ApiParam(value = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI factorUri,
+            @ApiParam(value = "List of factors uris") ArrayList<OntologyReference> ontologiesReferences
+    ) { 
+        try {
+            FactorDAO factorDao = new FactorDAO(sparql);
+            factorDao.updateInstanceOntologiesReferences(factorUri, ontologiesReferences);
+            return new ObjectUriResponse(Response.Status.OK, factorUri).getResponse();
+        } catch (SPARQLInvalidURIException e) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown factor URI", e.getMessage()).getResponse();
+        } catch (Exception e) {
+            return new ErrorResponse(e).getResponse();
+        }
     }
-    
-    @Override
-    public void withOntologiesReferences(URI InstanceUri, List<OntologyReference> ontologiesReferences) throws Exception {
-        FactorDAO factorDao = new FactorDAO(sparql);
-        factorDao.updateWithOntologiesReferences(InstanceUri, ontologiesReferences);
-    }
-    
-    
 }

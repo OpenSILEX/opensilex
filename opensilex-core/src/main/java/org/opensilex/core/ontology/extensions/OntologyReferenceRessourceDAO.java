@@ -7,18 +7,20 @@ package org.opensilex.core.ontology.extensions;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.graph.Node;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.ontology.OntProperty;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.util.iterator.ExtendedIterator;
+import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.core.ontology.OntologyReference;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -33,32 +35,69 @@ import org.opensilex.sparql.utils.Ontology;
  */
 public interface OntologyReferenceRessourceDAO {
     
+    public static final List<URI> skosPropertyValues = Collections.unmodifiableList(
+    new ArrayList<URI>() {{
+        OntModel skosOntologyModel = SKOSOntology.MemModel;
+
+        for (Iterator<OntProperty> iterator = skosOntologyModel.listAllOntProperties(); iterator.hasNext(); ) {
+            OntProperty skosProperty = iterator.next(); 
+            add(URI.create(skosProperty.getURI()));
+            
+        }
+    }});
+       
+    
+    public void updateInstanceOntologiesReferences(URI instanceURI, List<OntologyReference> relations) throws Exception;
+    
     public default void updateIndividualOntologiesReferences(SPARQLService sparql, Class instanceClass, URI instanceURI, List<OntologyReference> relations) throws Exception {
         if (!sparql.uriExists(instanceClass, instanceURI)) {
             throw new IllegalArgumentException("Unknown "+ instanceClass.getName() +  "uri : " + instanceURI);
         }
        
         Map<URI,List<URI>> mapOntonologyReferences = new HashMap<>();
+        Map<URI,List<URI>> mapOntonologyReferencesSeeAlso = new HashMap<>();
         for (OntologyReference relation : relations) {
-            URI relationProperty = relation.getProperty();
-            // Create properties lists
-            if(!mapOntonologyReferences.containsKey(relationProperty)){
-                // Check or not relationProperty ?
-//                if (!sparql.uriExists(relationProperty)) {
-//                    throw new IllegalArgumentException("Unknown instanceURI :" + relationProperty);
-//                }
-                List<URI> propertyUriList = new ArrayList<>();
-                mapOntonologyReferences.put(relationProperty, propertyUriList);
-            } 
-            mapOntonologyReferences.get(relationProperty).add(relationProperty);
+            URI propertyURI = relation.getProperty();
+            URI objectURI = relation.getObject();
+            URI seeAlsoURI = relation.getSeeAlso();
+            if(objectURI != null && propertyURI != null){
+                // Check or not propertyURI ?
+                if(!skosPropertyValues.contains(propertyURI)){
+                    throw new IllegalArgumentException("Unknown instanceURI :" + propertyURI);
+                }
+                // Create properties lists
+                if(!mapOntonologyReferences.containsKey(propertyURI)){
+                    List<URI> propertyUriList = new ArrayList<>();
+                    mapOntonologyReferences.put(propertyURI, propertyUriList);
+                } 
+                mapOntonologyReferences.get(propertyURI).add(objectURI);
+                // See also
+                if(seeAlsoURI != null){
+                    if(!mapOntonologyReferencesSeeAlso.containsKey(objectURI)){
+                        List<URI> seeAlsoList = new ArrayList<>();
+                        mapOntonologyReferencesSeeAlso.put(objectURI, seeAlsoList);
+                    }
+                    mapOntonologyReferencesSeeAlso.get(objectURI).add(seeAlsoURI);
+
+                }
+            }
         }
         
         for (Map.Entry<URI, List<URI>> entry : mapOntonologyReferences.entrySet()) {
             URI relationProperty = entry.getKey();
-            List<URI> propertyUriList = entry.getValue();
-            sparql.updateSubjectRelations(SPARQLDeserializers.nodeURI(instanceURI), propertyUriList, Ontology.property(relationProperty.toString()), instanceURI);
+            List<URI> objectUriList = entry.getValue();
+            sparql.updateObjectRelations(SPARQLDeserializers.nodeURI(instanceURI), instanceURI, Ontology.property(relationProperty.toString()), objectUriList);
         }
+        for (Map.Entry<URI, List<URI>> entry : mapOntonologyReferencesSeeAlso.entrySet()) {
+            URI objectURI = entry.getKey();
+            List<URI> seeAlsoList = entry.getValue();
+            sparql.updateObjectRelations(SPARQLDeserializers.nodeURI(objectURI), objectURI, RDFS.seeAlso, seeAlsoList);
+        }
+
     }
+    
+    public List<OntologyReference> getInstanceOntologiesReferences(URI instanceURI) throws Exception;
+
     
 //    # https://jena.apache.org/documentation/ontology/
     public default List<OntologyReference>  getIndividualOntologiesReferences(SPARQLService sparql, Class instanceClass, URI instanceURI) throws Exception {
@@ -67,33 +106,37 @@ public interface OntologyReferenceRessourceDAO {
         if (!sparql.uriExists(instanceClass, instanceURI)) {
             throw new IllegalArgumentException("Unknown "+ instanceClass.getName() +  "uri : " + instanceURI);
         }
-        OntModel skosOntologyModel = ModelFactory.createOntologyModel( SKOS.getURI() );
         SelectBuilder select = new SelectBuilder();
         
+   
         
-        Var referenceUriVar = makeVar("referenceUri");
-        select.addVar(referenceUriVar);
+        Var propertyUriVar = makeVar("property");
+        select.addVar(propertyUriVar);
         
-        Var propertyVar = makeVar("property");
-        List<URI> propertyValues = new ArrayList<>();
-        Map<Var,List<URI>> propertyValuesVar = new HashMap<>();
-        for (Iterator<OntProperty> iterator = skosOntologyModel.listAllOntProperties(); iterator.hasNext(); ) {
-            OntProperty skosProperty = iterator.next(); 
-            propertyValues.add(URI.create(skosProperty.getURI()));
-        }
-        propertyValuesVar.put(propertyVar, propertyValues);
-        select.addValueVars(propertyValuesVar);
-
+        Var objectUriVar = makeVar("objectUri");
+        select.addVar(objectUriVar);
+        
+        Var seeAlsoVar = makeVar("seeAlso");
+        select.addVar(seeAlsoVar);
+        
+        SPARQLQueryHelper.addWhereValues(select,"property",skosPropertyValues);
+   
+        select.addWhere(SPARQLDeserializers.nodeURI(instanceURI), propertyUriVar, objectUriVar);
+        select.addOptional(objectUriVar, RDFS.seeAlso, seeAlsoVar);
         sparql.executeSelectQuery(select, (SPARQLResult result) -> {
-            String referenceUri = result.getStringValue("referenceUri");
+            String objectUri = result.getStringValue("objectUri");
             String property = result.getStringValue("property");
-            
+            String seeAlso = result.getStringValue("seeAlso");
+             
             OntologyReference ontologyReference = new OntologyReference();
-            ontologyReference.setObject(instanceURI);
+            ontologyReference.setObject(URI.create(objectUri));
             ontologyReference.setProperty(URI.create(property));
-            ontologyReference.setSeeAlso(URI.create(referenceUri));
+            if(seeAlso != null){
+                ontologyReference.setSeeAlso(URI.create(seeAlso));
+            }
             relations.add(ontologyReference);
         });
+        System.out.println("org.opensilex.core.ontology.extensions.OntologyReferenceRessourceDAO.getIndividualOntologiesReferences()" + relations.size());
         
         return relations;
     }

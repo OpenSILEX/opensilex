@@ -14,19 +14,24 @@ import GroupForm from './groups/GroupForm.vue';
 import GroupUserProfileForm from './groups/GroupUserProfileForm.vue';
 import GroupView from './groups/GroupView.vue';
 import GroupList from './groups/GroupList.vue';
-import FormInputMessageHelper from './common/FormInputMessageHelper.vue'
+
 import ToDoComponent from './layout/ToDoComponent.vue';
+// infrastructures
 import InfrastructureView from './infrastructures/InfrastructureView.vue';
 import InfrastructureTree from './infrastructures/InfrastructureTree.vue';
 import InfrastructureForm from './infrastructures/InfrastructureForm.vue';
-
+// factors levels
 import FactorView from './factors/FactorView.vue';
 import FactorList from './factors/FactorList.vue';
 import FactorForm from './factors/FactorForm.vue';
-
+// factors
 import FactorLevelView from './factors/FactorLevelView.vue';
 import FactorLevelList from './factors/FactorLevelList.vue';
 import FactorLevelForm from './factors/FactorLevelForm.vue';
+//common
+import FormInputMessageHelper from './common/FormInputMessageHelper.vue'
+import ExternalRessourceForm from './common/ExternalRessourceForm.vue'
+
 
 import ExperimentForm from './experiments/ExperimentForm.vue';
 import ExperimentForm2 from './experiments/ExperimentForm2.vue';
@@ -73,7 +78,6 @@ export default {
     "opensilex-InfrastructureView": InfrastructureView,
     "opensilex-InfrastructureTree": InfrastructureTree,
     "opensilex-InfrastructureForm": InfrastructureForm,
-    'opensilex-FormInputMessageHelper': FormInputMessageHelper,
     // factors
     "opensilex-FactorView": FactorView,
     "opensilex-FactorList": FactorList,
@@ -82,33 +86,9 @@ export default {
     "opensilex-FactorLevelView": FactorLevelView,
     "opensilex-FactorLevelList": FactorLevelList,
     "opensilex-FactorLevelForm": FactorLevelForm,
-
-    // experiments
-    "opensilex-core-ExperimentForm": ExperimentForm,
-    "opensilex-core-ExperimentForm2": ExperimentForm2,
-    "opensilex-core-ExperimentList": ExperimentList,
-    "opensilex-core-ExperimentCreate": ExperimentCreate,
-    "opensilex-core-ExperimentView": ExperimentView,
-
-    // germplasm
-    "opensilex-GermplasmView": GermplasmView,
-    "opensilex-GermplasmForm": GermplasmForm,
-    "opensilex-GermplasmList": GermplasmList,
-
-    'opensilex-ToDoComponent': ToDoComponent,
-
-    // PHIS Services related components
-    'phis2ws-ImageView': ImageView,
-    'phis2ws-ImageSearch': ImageSearch,
-    'phis2ws-ImageList': ImageList,
-    'phis2ws-ImageGrid': ImageGrid,
-    'phis2ws-ImageSingle': ImageSingle,
-    'phis2ws-ImageCarousel': ImageCarousel,
-    'phis2ws-SciObjectURISearch': SciObjectURISearch,
-    'phis2ws-SciObjectAliasSearch': SciObjectAliasSearch,
-    'phis2ws-ImageTypeSearch': ImageTypeSearch,
-    'phis2ws-ExperimentSearch': ExperimentSearch,
-    'phis2ws-SciObjectTypeSearch': SciObjectTypeSearch,
-    'phis2ws-TimeSearch': TimeSearch
+    //common
+    'opensilex-FormInputMessageHelper': FormInputMessageHelper,
+    'opensilex-ExternalRessourceForm': ExternalRessourceForm,
+    'opensilex-ToDoComponent': ToDoComponent
     
 };

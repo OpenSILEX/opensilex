@@ -14,19 +14,19 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
-import org.opensilex.core.factor.api.FactorGetDTO;
 import org.opensilex.core.factor.api.FactorSearchDTO;
-import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.core.ontology.OntologyReference;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.core.ontology.extensions.OntologyReferenceRessourceDAO;
 
 /**
  *
  * @author Arnaud Charleroy
  */
-public class FactorDAO {
+public class FactorDAO implements OntologyReferenceRessourceDAO{
 
     protected final SPARQLService sparql;
 
@@ -92,4 +92,11 @@ public class FactorDAO {
         }
     }
 
+    public void updateWithOntologiesReferences(URI instanceURI, List<OntologyReference> relations) throws Exception {
+        this.updateIndividualOntologiesReferences(sparql, FactorModel.class, instanceURI, relations);
+    }
+
+    
+    
+    
 }

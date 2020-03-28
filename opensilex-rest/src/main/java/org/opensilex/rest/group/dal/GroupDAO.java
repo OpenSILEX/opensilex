@@ -11,11 +11,8 @@ import java.util.List;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
-import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.rest.authentication.SecurityOntology;
 import org.opensilex.rest.user.dal.UserModel;
@@ -29,9 +26,9 @@ import org.opensilex.utils.ListWithPagination;
 /**
  * @author vidalmor
  */
-public class GroupDAO {
+public final class GroupDAO {
 
-    private SPARQLService sparql;
+    private final SPARQLService sparql;
 
     public GroupDAO(SPARQLService sparql) {
         this.sparql = sparql;

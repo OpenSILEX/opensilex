@@ -12,7 +12,6 @@ import javax.mail.internet.InternetAddress;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
-import org.opensilex.rest.group.dal.GroupUserProfileModel;
 import org.opensilex.rest.profile.dal.ProfileDAO;
 import org.opensilex.rest.profile.dal.ProfileModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -23,9 +22,9 @@ import org.opensilex.utils.ListWithPagination;
 /**
  * @author vincent
  */
-public class UserDAO {
+public final class UserDAO {
 
-    private SPARQLService sparql;
+    private final SPARQLService sparql;
 
     public UserDAO(SPARQLService sparql) {
         this.sparql = sparql;

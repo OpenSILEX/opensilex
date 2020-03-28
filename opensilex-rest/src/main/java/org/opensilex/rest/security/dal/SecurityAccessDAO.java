@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author vince
  */
-public class SecurityAccessDAO {
+public final class SecurityAccessDAO {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SecurityAccessDAO.class);
 
@@ -48,7 +48,7 @@ public class SecurityAccessDAO {
     private static TreeMap<String, Map<String, String>> credentialsGroups;
 
     private static Map<String, String> credentialsGroupLabels;
-    
+
     private static List<String> credentialsIdList;
 
     private void buildCredentials() {
@@ -80,7 +80,7 @@ public class SecurityAccessDAO {
         buildCredentials();
         return credentialsIdList;
     }
-    
+
     public Map<String, String> getCredentialsGroupLabels() {
         buildCredentials();
         return credentialsGroupLabels;

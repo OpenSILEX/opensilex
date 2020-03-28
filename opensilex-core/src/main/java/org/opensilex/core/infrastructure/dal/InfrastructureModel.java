@@ -33,14 +33,12 @@ public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> im
             required = true
     )
     protected String name;
-    public static final String NAME_FIELD = "name";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasPart"
     )
     protected List<InfrastructureModel> children;
-    public static final String CHILDREN_FIELD = "children";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -48,7 +46,6 @@ public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> im
             inverse = true
     )
     protected InfrastructureModel parent;
-    public static final String PARENT_FIELD = "parent";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -84,7 +81,6 @@ public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> im
     @Override
     public String[] getUriSegments(InfrastructureModel instance) {
         return new String[]{
-            "infrastructures",
             instance.getName()
         };
     }

@@ -23,15 +23,17 @@ public class ResourceTree<T extends SPARQLTreeModel> {
     private final HashMap<URI, Set<T>> map = new HashMap<URI, Set<T>>();
 
     private final List<URI> selectionList = new ArrayList<>();
+    private final URI root;
 
     public ResourceTree() {
-        this(new ArrayList<>());
+        this(new ArrayList<>(), null);
     }
 
-    public ResourceTree(List<T> selectionList) {
+    public ResourceTree(List<T> selectionList, URI root) {
         for (T instance : selectionList) {
             this.selectionList.add(instance.getUri());
         }
+        this.root = root;
     }
 
     public void listRoots(Consumer<T> handler) {
@@ -53,7 +55,7 @@ public class ResourceTree<T extends SPARQLTreeModel> {
 
             T parent = (T) candidate.getParent();
 
-            if (parent == null) {
+            if (parent == null || candidate.getUri().equals(root)) {
                 if (!map.containsKey(null)) {
                     map.put(null, new HashSet<T>());
                 }

@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.C;
@@ -46,7 +45,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
     public static void initialize(SPARQLService service) throws Exception {
         SPARQLServiceTest.service = service;
-        
+
         service.clear();
 
         InputStream ontology = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.FILE_PATH.toString());
@@ -234,7 +233,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         // the graph have changed so no B should be found from the old graph
         bList = service.search(B.class, null);
         assertTrue(bList.isEmpty());
-        
+
         // the graph have changed so B should be found in the new graph
         bList = service.search(SPARQLDeserializers.nodeURI(newGraphUri), B.class, null);
         assertFalse(bList.isEmpty());
@@ -276,7 +275,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
         list = service.search(C.class, "ru");
         assertFalse(list.isEmpty());
-        assertTrue(list.size() == 1);
+        assertTrue(list.size() == 2);
         assertEquals("ru", list.get(0).getLabel().getDefaultLang());
 
         list = service.search(C.class, null);

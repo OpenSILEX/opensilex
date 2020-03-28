@@ -84,6 +84,14 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
         this.config = null;
     }
 
+    private int getTimeout() {
+        if (config == null) {
+            return 0;
+        }
+
+        return config.timeout();
+    }
+
     private synchronized SPARQLService getNewService() throws Exception {
         RepositoryConnection connection = repository.getConnection();
         if (cm != null && LOGGER.isDebugEnabled()) {
@@ -96,7 +104,10 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
                     + "Max       -> " + stats.getMax() + "\n"
             );
         }
-        SPARQLService sparql = new SPARQLService(new RDF4JConnection(connection));
+
+        RDF4JConnection rdf4jConnection = new RDF4JConnection(connection);
+        rdf4jConnection.setTimeout(getTimeout());
+        SPARQLService sparql = new SPARQLService(rdf4jConnection);
         sparql.startup();
 
         return sparql;

@@ -196,8 +196,7 @@ public class InfrastructureAPI {
 
         ResourceTree<InfrastructureModel> tree = dao.searchTree(
                 pattern,
-                user,
-                user.getLang()
+                user
         );
 
         boolean enableSelection = (pattern != null && !pattern.isEmpty());

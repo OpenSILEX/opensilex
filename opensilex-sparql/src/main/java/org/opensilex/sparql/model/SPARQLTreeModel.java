@@ -14,10 +14,13 @@ import java.util.List;
 public abstract class SPARQLTreeModel<T extends SPARQLResourceModel> extends SPARQLResourceModel {
 
     protected String name;
+    public static final String NAME_FIELD = "name";
 
     protected T parent;
+    public static final String PARENT_FIELD = "parent";
 
     protected List<T> children;
+    public static final String CHILDREN_FIELD = "children";
 
     public String getName() {
         return name;

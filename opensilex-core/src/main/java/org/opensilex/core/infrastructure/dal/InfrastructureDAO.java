@@ -27,15 +27,15 @@ public class InfrastructureDAO {
         this.sparql = sparql;
     }
 
-    public ResourceTree<InfrastructureModel> searchTree(String pattern, UserModel user, String lang) throws Exception {
-        Set<URI> infras = getUserInfrastructures(user, lang);
+    public ResourceTree<InfrastructureModel> searchTree(String pattern, UserModel user) throws Exception {
+        Set<URI> infras = getUserInfrastructures(user);
         if (infras != null && infras.isEmpty()) {
             return new ResourceTree<>();
         }
 
         return sparql.searchResourceTree(
                 InfrastructureModel.class,
-                lang,
+                user.getLang(),
                 (SelectBuilder select) -> {
                     if (pattern != null && !pattern.isEmpty()) {
                         select.addFilter(SPARQLQueryHelper.regexFilter(InfrastructureModel.NAME_FIELD, pattern));
@@ -48,10 +48,12 @@ public class InfrastructureDAO {
         );
     }
 
-    private Set<URI> getUserInfrastructures(UserModel user, String lang) throws Exception {
+    private Set<URI> getUserInfrastructures(UserModel user) throws Exception {
         if (user == null || user.isAdmin()) {
             return null;
         }
+
+        String lang = user.getLang();
 
         Set<URI> userInfras = new HashSet<>();
         List<URI> infras = sparql.searchURIs(InfrastructureModel.class, lang, (SelectBuilder select) -> {

@@ -208,13 +208,9 @@ public class SPARQLQueryHelper {
             select.getWhereHandler().getClause().addElement(rootFilteringElem);
         }
     }
-    
-    public static Expr langFilter(String varName, String lang) {
 
-        return or(
-                exprFactory.langMatches(exprFactory.lang(NodeFactory.createVariable(varName)), lang),
-                exprFactory.eq(exprFactory.lang(NodeFactory.createVariable(varName)), "")
-        );
+    public static Expr langFilter(String varName, String lang) {
+        return exprFactory.langMatches(exprFactory.lang(NodeFactory.createVariable(varName)), lang);
     }
 
     /**

@@ -79,6 +79,7 @@ export default class InfrastructureView extends Vue {
       id: resourceTree.uri,
       label: resourceTree.name,
       isDefaultExpanded: true,
+      isDisabled: false,
       children: []
     };
 
@@ -118,12 +119,14 @@ export default class InfrastructureView extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("Infrastructure updated", uri);
-        let groupList: any = this.$refs.groupList;
-        groupList.refresh();
-      })
+        let infraTree: any = this.$refs.infrastructureTree;
+        infraTree.refresh();
+        this.refresh();
+      });
   }
 
   editInfrastructure(form: InfrastructureGetDTO) {
+    console.error(this.parentOptions);
     let infrastructureForm: any = this.$refs.infrastructureForm;
     infrastructureForm.showEditForm(form);
   }

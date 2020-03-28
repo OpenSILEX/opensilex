@@ -9,6 +9,7 @@ import java.io.StringWriter;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
@@ -31,14 +32,17 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
-import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Seq;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.utils.SHACL;
@@ -58,39 +62,57 @@ class SPARQLClassQueryBuilder {
 
     public SelectBuilder getSelectBuilder(Node graph, String lang) {
         SelectBuilder selectBuilder = new SelectBuilder();
-
         addSelectUriTypeVars(selectBuilder);
-        addSelectBuilderModelWhereProperties(selectBuilder, graph, lang, true);
+        analyzer.forEachDataProperty((Field field, Property property) -> {
+            selectBuilder.addVar(field.getName());
+        });
 
+        analyzer.forEachObjectProperty((Field field, Property property) -> {
+            selectBuilder.addVar(field.getName());
+        });
+
+        analyzer.forEachLabelProperty((Field field, Property property) -> {
+            selectBuilder.addVar(field.getName());
+        });
+        initializeQueryBuilder(selectBuilder, graph, lang);
         return selectBuilder;
     }
 
     public AskBuilder getAskBuilder(Node graph, String lang) {
         AskBuilder askBuilder = new AskBuilder();
+        initializeQueryBuilder(askBuilder, graph, lang);
+        return askBuilder;
+    }
 
-        if (graph != null) {
-            askBuilder.from(graph.toString());
-        }
+    public void initializeQueryBuilder(AbstractQueryBuilder<?> builder, Node graph, String lang) {
         String uriFieldName = analyzer.getURIFieldName();
         WhereHandler rootWhereHandler = new WhereHandler();
 
         addQueryBuilderModelWhereProperties(
-                askBuilder,
-                graph,
+                builder,
                 rootWhereHandler,
                 (field, property) -> {
-                    addAskProperty(askBuilder, uriFieldName, property, field, rootWhereHandler);
+                    addSelectProperty(builder, uriFieldName, property, field, rootWhereHandler, null);
                 },
                 (field, property) -> {
-                    addAskProperty(askBuilder, uriFieldName, property, field, rootWhereHandler);
+                    addSelectProperty(builder, uriFieldName, property, field, rootWhereHandler, null);
                 },
                 (field, property) -> {
-                    addAskProperty(askBuilder, uriFieldName, property, field, rootWhereHandler);
-                    addAskLangFilter(askBuilder, field.getName(), lang);
+                    addSelectProperty(builder, uriFieldName, property, field, rootWhereHandler, lang);
                 }
         );
 
-        return askBuilder;
+        ExprFactory exprFactory = new ExprFactory();
+        Expr noBlankNodeFilter = exprFactory.not(exprFactory.isBlank(makeVar(uriFieldName)));
+        rootWhereHandler.addFilter(noBlankNodeFilter);
+
+        // add the rootWhereHandler inside a GRAPH clause
+        if (graph != null) {
+            ElementNamedGraph elementNamedGraph = new ElementNamedGraph(graph, rootWhereHandler.getElement());
+            builder.getWhereHandler().getClause().addElement(elementNamedGraph);
+        } else {
+            builder.getHandlerBlock().addAll(rootWhereHandler);
+        }
     }
 
     public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang) {
@@ -105,7 +127,7 @@ class SPARQLClassQueryBuilder {
             LOGGER.error("Error while building count query (should never happend)", ex);
         }
 
-        addSelectBuilderModelWhereProperties(countBuilder, graph, lang, false);
+        initializeQueryBuilder(countBuilder, graph, lang);
 
         return countBuilder;
     }
@@ -118,39 +140,8 @@ class SPARQLClassQueryBuilder {
         select.addVar(typeFieldName);
     }
 
-    private void addSelectBuilderModelWhereProperties(SelectBuilder select, Node graph, String lang, boolean withVar) {
-        String uriFieldName = analyzer.getURIFieldName();
-        WhereHandler rootWhereHandler = new WhereHandler();
-
-        addQueryBuilderModelWhereProperties(
-                select,
-                graph,
-                rootWhereHandler,
-                (field, property) -> {
-                    if (withVar) {
-                        select.addVar(field.getName());
-                    }
-                    addSelectProperty(select, uriFieldName, property, field, rootWhereHandler);
-                },
-                (field, property) -> {
-                    if (withVar) {
-                        select.addVar(field.getName());
-                    }
-                    addSelectProperty(select, uriFieldName, property, field, rootWhereHandler);
-                },
-                (field, property) -> {
-                    if (withVar) {
-                        select.addVar(field.getName());
-                    }
-                    addSelectLangFilter(select, field.getName(), lang);
-                    addSelectProperty(select, uriFieldName, property, field, rootWhereHandler);
-                }
-        );
-    }
-
     private void addQueryBuilderModelWhereProperties(
             AbstractQueryBuilder<?> builder,
-            Node graph,
             WhereHandler rootWhereHandler,
             BiConsumer<Field, Property> dataPropertyHandler,
             BiConsumer<Field, Property> objectPropertyHandler,
@@ -182,13 +173,6 @@ class SPARQLClassQueryBuilder {
             }
         });
 
-        // add the rootWhereHandler inside a GRAPH clause
-        if (graph != null) {
-            ElementNamedGraph elementNamedGraph = new ElementNamedGraph(graph, rootWhereHandler.getElement());
-            builder.getWhereHandler().getClause().addElement(elementNamedGraph);
-        } else {
-            builder.getHandlerBlock().addAll(rootWhereHandler);
-        }
     }
 
     public <T extends SPARQLResourceModel> UpdateBuilder getCreateBuilder(Node graph, T instance) throws Exception {
@@ -330,50 +314,55 @@ class SPARQLClassQueryBuilder {
      * @see SelectBuilder#makeTriplePath(Object, Object, Object)
      */
     private void addSelectProperty(AbstractQueryBuilder<?> select, String uriFieldName, Property property, Field field,
-            WhereHandler handler) {
+            WhereHandler handler, String lang) {
 
         Var uriFieldVar = makeVar(uriFieldName);
         Var propertyFieldVar = makeVar(field.getName());
 
-        if (analyzer.isReverseRelation(field)) {
-            if (analyzer.isOptional(field)) {
-                handler.addOptional(select.makeTriplePath(propertyFieldVar, property, uriFieldVar));
-            } else {
-                handler.addWhere(select.makeTriplePath(propertyFieldVar, property, uriFieldVar));
-            }
+        boolean isOptional = analyzer.isOptional(field);
+        boolean isReverseRelation = analyzer.isReverseRelation(field);
+
+        TriplePath triple;
+        if (isReverseRelation) {
+            triple = select.makeTriplePath(propertyFieldVar, property, uriFieldVar);
+
         } else {
-            if (analyzer.isOptional(field)) {
-                handler.addOptional(select.makeTriplePath(uriFieldVar, property, propertyFieldVar));
-            } else {
-                handler.addWhere(select.makeTriplePath(uriFieldVar, property, propertyFieldVar));
+            triple = select.makeTriplePath(uriFieldVar, property, propertyFieldVar);
+        }
+
+        TriplePath rdtTypeTriple = null;
+        if (property.equals(RDFS.subClassOf)) {
+            rdtTypeTriple = select.makeTriplePath(propertyFieldVar, RDF.type, OWL.Class);
+        }
+
+        if (isOptional) {
+            WhereHandler optionalHandler = new WhereHandler();
+            optionalHandler.addWhere(triple);
+            if (lang != null) {
+                addLangFilter(field.getName(), lang, optionalHandler);
             }
+
+            if (rdtTypeTriple != null) {
+                optionalHandler.addWhere(rdtTypeTriple);
+            }
+
+            handler.addOptional(optionalHandler);
+        } else {
+            handler.addWhere(triple);
+            if (lang != null) {
+                addLangFilter(field.getName(), lang, handler);
+            }
+            if (rdtTypeTriple != null) {
+                handler.addWhere(rdtTypeTriple);
+            }
+
         }
     }
 
-    private void addSelectLangFilter(SelectBuilder select, String fieldName, String lang) {
-        Locale locale = Locale.forLanguageTag(lang);
-        select.addFilter(SPARQLQueryHelper.langFilter(fieldName, locale.getLanguage()));
-    }
-
-    private void addAskLangFilter(AskBuilder ask, String fieldName, String lang) {
-        Locale locale = Locale.forLanguageTag(lang);
-        ask.addFilter(SPARQLQueryHelper.langFilter(fieldName, locale.getLanguage()));
-    }
-
-    private void addAskProperty(AskBuilder ask, String uriFieldName, Property property, Field field,
+    private void addLangFilter(String fieldName, String lang,
             WhereHandler handler) {
-        Var uriFieldVar = makeVar(uriFieldName);
-        Var propertyFieldVar = makeVar(field.getName());
-
-        if (analyzer.isReverseRelation(field)) {
-            if (!analyzer.isOptional(field)) {
-                handler.addWhere(ask.makeTriplePath(propertyFieldVar, property, uriFieldVar));
-            }
-        } else {
-            if (!analyzer.isOptional(field)) {
-                handler.addWhere(ask.makeTriplePath(uriFieldVar, property, propertyFieldVar));
-            }
-        }
+        Locale locale = Locale.forLanguageTag(lang);
+        handler.addFilter(SPARQLQueryHelper.langFilter(fieldName, locale.getLanguage()));
     }
 
     private <T extends SPARQLResourceModel> void executeOnInstanceTriples(T instance, BiConsumer<Triple, Field> tripleHandler, boolean ignoreNullFields) throws Exception {

@@ -88,7 +88,7 @@ export default class InfrastructureForm extends Vue {
   public defaultParent: InfrastructureGetDTO;
 
   @Prop()
-  parentOptions: Array<any>;
+  public parentOptions: Array<any>;
 
   get user() {
     return this.$store.state.user;
@@ -128,6 +128,7 @@ export default class InfrastructureForm extends Vue {
     this.editMode = false;
     this.title = this.$t("component.infrastructure.add").toString();
     this.uriGenerated = true;
+    this.filterItemTree(this.parentOptions, this.form.uri);
     let modalRef: any = this.$refs.modalRef;
     modalRef.show();
   }
@@ -137,8 +138,26 @@ export default class InfrastructureForm extends Vue {
     this.editMode = true;
     this.title = this.$t("component.infrastructure.update").toString();
     this.uriGenerated = true;
+    this.filterItemTree(this.parentOptions, this.form.uri);
     let modalRef: any = this.$refs.modalRef;
     modalRef.show();
+  }
+
+  private filterItemTree(tree, id?, parent?) {
+    for (let i in tree) {
+      let item = tree[i];
+      item.isDisabled = false;
+
+      if (id != null) {
+        item.isDisabled = item.id == id;
+      }
+
+      if (parent != null) {
+        item.isDisabled = item.isDisabled || parent.isDisabled;
+      }
+
+      this.filterItemTree(item.children, id, item);
+    }
   }
 
   hideForm() {

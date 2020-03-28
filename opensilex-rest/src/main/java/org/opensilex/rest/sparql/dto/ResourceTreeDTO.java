@@ -25,7 +25,7 @@ public class ResourceTreeDTO {
     private String name;
 
     private URI parent;
-    
+
     private boolean selected;
 
     private List<ResourceTreeDTO> children;
@@ -78,6 +78,10 @@ public class ResourceTreeDTO {
         this.selected = selected;
     }
 
+    public static <T extends SPARQLTreeModel> List<ResourceTreeDTO> fromResourceTree(ResourceTree<T> tree) {
+        return fromResourceTree(tree, false);
+    }
+
     public static <T extends SPARQLTreeModel> List<ResourceTreeDTO> fromResourceTree(ResourceTree<T> tree, boolean enableSelection) {
         List<ResourceTreeDTO> list = new ArrayList<>();
 
@@ -96,7 +100,7 @@ public class ResourceTreeDTO {
         dto.setType(model.getType());
         dto.setName(model.getName());
         dto.setSelected(enableSelection && tree.isSelected(model));
-        
+
         List<ResourceTreeDTO> childrenDTOs = new ArrayList<>();
         tree.listChildren(model, child -> {
             ResourceTreeDTO childDTO = fromResourceTreeRecursive(child, tree, enableSelection);

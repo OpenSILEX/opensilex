@@ -384,7 +384,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> List<URI> searchURIs(Class<T> objectClass, String lang) throws Exception {
-        return searchURIs(getDefaultGraph(objectClass), objectClass, lang);
+        return searchURIs(getDefaultGraph(objectClass), objectClass, lang, null);
     }
 
     public <T extends SPARQLResourceModel> List<URI> searchURIs(Node graph, Class<T> objectClass, String lang) throws Exception {
@@ -413,13 +413,17 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLTreeModel> ResourceTree<T> searchResourceTree(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
-        return searchResourceTree(getDefaultGraph(objectClass), objectClass, lang, filterHandler);
+        return searchResourceTree(getDefaultGraph(objectClass), objectClass, lang, null, filterHandler);
     }
 
-    public <T extends SPARQLTreeModel> ResourceTree<T> searchResourceTree(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+    public <T extends SPARQLTreeModel> ResourceTree<T> searchResourceTree(Class<T> objectClass, String lang, URI root, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+        return searchResourceTree(getDefaultGraph(objectClass), objectClass, lang, root, filterHandler);
+    }
+
+    public <T extends SPARQLTreeModel> ResourceTree<T> searchResourceTree(Node graph, Class<T> objectClass, String lang, URI root, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
         List<T> list = search(graph, objectClass, lang, filterHandler);
 
-        ResourceTree<T> tree = new ResourceTree<T>(list);
+        ResourceTree<T> tree = new ResourceTree<T>(list, root);
 
         for (T item : list) {
             tree.addTree(item);

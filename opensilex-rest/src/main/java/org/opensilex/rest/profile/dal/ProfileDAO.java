@@ -27,9 +27,9 @@ import org.opensilex.utils.ListWithPagination;
 /**
  * @author vincent
  */
-public class ProfileDAO {
+public final class ProfileDAO {
 
-    private SPARQLService sparql;
+    private final SPARQLService sparql;
 
     public ProfileDAO(SPARQLService sparql) {
         this.sparql = sparql;

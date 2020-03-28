@@ -8,7 +8,6 @@ package org.opensilex.sparql.rdf4j;
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.service.ServiceConfig;
 
-
 /**
  * RDF4J configuration interface
  */
@@ -35,5 +34,11 @@ public interface RDF4JConfig extends ServiceConfig {
             defaultString = "opensilex"
     )
     String repository();
+
+    @ConfigDescription(
+            value = "RDF4J connectrion timeout",
+            defaultInt = 0
+    )
+    Integer timeout();
 
 }

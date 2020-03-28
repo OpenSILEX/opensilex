@@ -30,7 +30,7 @@ public class ExceptionJsonMapper implements ExceptionMapper<Throwable> {
 
     @Context
     UriInfo uriInfo;
-         
+
     /**
      * Converts the exception to JSON
      *
@@ -48,7 +48,7 @@ public class ExceptionJsonMapper implements ExceptionMapper<Throwable> {
                     exceptionResponse.getStatusInfo().getFamily().toString(),
                     exceptionResponse.getStatusInfo().getReasonPhrase()
             ).getResponse();
-        } else if (exception instanceof RuntimeException) {
+        } else if (exception instanceof RuntimeException && exception.getCause() != null) {
             response = new ErrorResponse(exception.getCause()).getResponse();
         } else {
             response = new ErrorResponse(exception).getResponse();

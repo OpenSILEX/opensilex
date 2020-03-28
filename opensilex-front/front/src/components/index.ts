@@ -29,8 +29,8 @@ import FactorLevelView from './factors/FactorLevelView.vue';
 import FactorLevelList from './factors/FactorLevelList.vue';
 import FactorLevelForm from './factors/FactorLevelForm.vue';
 //common
-import FormInputLabelHelper from './common/FormInputLabelHelper.vue'
-import ExternalReferencesForm from './common/ExternalReferencesForm.vue'
+import FormInputMessageHelper from './common/FormInputMessageHelper.vue'
+import ExternalRessourceForm from './common/ExternalRessourceForm.vue'
 
 
 import ExperimentForm from './experiments/ExperimentForm.vue';
@@ -87,8 +87,8 @@ export default {
     "opensilex-FactorLevelList": FactorLevelList,
     "opensilex-FactorLevelForm": FactorLevelForm,
     //common
-    'opensilex-FormInputLabelHelper': FormInputLabelHelper,
-    'opensilex-ExternalReferencesForm': ExternalReferencesForm,
+    'opensilex-FormInputMessageHelper': FormInputMessageHelper,
+    'opensilex-ExternalRessourceForm': ExternalRessourceForm,
     'opensilex-ToDoComponent': ToDoComponent
     
 };

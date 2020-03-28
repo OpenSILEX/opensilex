@@ -35,9 +35,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.factor.dal.FactorDAO;
 import org.opensilex.core.factor.dal.FactorModel;
-import org.opensilex.security.authentication.ApiCredential;
-import org.opensilex.security.authentication.ApiCredentialGroup;
-import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.core.ontology.OntologyReference;
+import org.opensilex.core.ontology.extensions.OntologyReferenceRessourceAPI;
+import org.opensilex.rest.authentication.ApiCredential;
+import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -55,11 +56,7 @@ import org.opensilex.utils.ListWithPagination;
  */
 @Api(FactorAPI.CREDENTIAL_FACTOR_GROUP_ID)
 @Path("/core/factor")
-@ApiCredentialGroup(
-        groupId = FactorAPI.CREDENTIAL_FACTOR_GROUP_ID,
-        groupLabelKey = FactorAPI.CREDENTIAL_FACTOR_GROUP_LABEL_KEY
-)
-public class FactorAPI {
+public class FactorAPI implements OntologyReferenceRessourceAPI{
 
     public static final String FACTOR_EXAMPLE_URI = "http://opensilex/set/factors/ZA17";
     
@@ -312,4 +309,25 @@ public class FactorAPI {
             return new ErrorResponse(e).getResponse();
         }
     }
+
+    @Override
+    @Path("{uri}/references")
+    @ApiCredential(
+            groupId = CREDENTIAL_FACTOR_GROUP_ID,
+            groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_FACTOR_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY
+    )
+    @ApiOperation("Update a instance ontologies references")
+    public Response putOntologiesReferences(URI InstanceUri, ArrayList<OntologyReference> ontologiesReferences) {
+        return OntologyReferenceRessourceAPI.super.putOntologiesReferences(InstanceUri, ontologiesReferences); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    @Override
+    public void withOntologiesReferences(URI InstanceUri, List<OntologyReference> ontologiesReferences) throws Exception {
+        FactorDAO factorDao = new FactorDAO(sparql);
+        factorDao.updateWithOntologiesReferences(InstanceUri, ontologiesReferences);
+    }
+    
+    
 }

@@ -6,6 +6,7 @@
 import { Component, Prop } from "vue-property-decorator";
 import Multiselect from 'vue-multiselect'
 
+import { OntologyReferenceDTO }  from "opensilex-core/index"; 
 import Vue from "vue";
 
 @Component
@@ -14,10 +15,10 @@ export default class ExternalRessourceForm extends Vue {
   $store: any;
 
   @Prop()
-  localUri: string;
+  instanceUri: string;
 
-  externalUris: any[];
- 
+  @Prop()
+  ontologyReferences :OntologyReferenceDTO[];
 }
 </script>
 

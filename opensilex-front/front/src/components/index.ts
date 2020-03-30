@@ -29,7 +29,7 @@ import FactorLevelView from './factors/FactorLevelView.vue';
 import FactorLevelList from './factors/FactorLevelList.vue';
 import FactorLevelForm from './factors/FactorLevelForm.vue';
 //common
-import FormInputMessageHelper from './common/FormInputMessageHelper.vue'
+import FormInputLabelHelper from './common/FormInputLabelHelper.vue'
 import ExternalRessourceForm from './common/ExternalRessourceForm.vue'
 
 
@@ -87,7 +87,7 @@ export default {
     "opensilex-FactorLevelList": FactorLevelList,
     "opensilex-FactorLevelForm": FactorLevelForm,
     //common
-    'opensilex-FormInputMessageHelper': FormInputMessageHelper,
+    'opensilex-FormInputLabelHelper': FormInputLabelHelper,
     'opensilex-ExternalRessourceForm': ExternalRessourceForm,
     'opensilex-ToDoComponent': ToDoComponent
     

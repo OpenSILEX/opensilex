@@ -51,40 +51,6 @@
                 "sensors" : "Sensors which participates in"
                
             }
-        },
-        "factor": {
-            "uri": "Factor URI",
-            "uri-help": "Unique factor identifier",
-            "alias-placeholder": "Enter factor alias",
-            "filter-placeholder": "Use this field to filter factors",
-            "factors": "factor",
-            "add": "add factor",
-            "update": "update factor",
-            "alias": "alias",
-            "alias-help": "Name used to define this factor",
-            "form-alias-placeholder" : "Irrigation, Shading, Variety, etc.",
-            "comment": "comment", 
-            "comment-help": "Description associated to this factors (protocol, amount of component)",
-            "form-comment-placeholder" : "Protocol n°1289 - Amount of water 5 ml/Days.",
-            "errors": {
-                "user-already-exists": "Factor already exists with this URI."
-            }
-        },
-        "factorLevel": {
-            "uri": "Factor level URI",
-            "alias-placeholder": "Enter factor level alias",
-            "selector-placeholder": "Please select a factor to filter factor levels",
-            "filter-placeholder": "Use this field to filter factor levels",
-            "factorLevel": "factor level",
-            "add": "add factor level",
-            "update": "update factor level",
-            "alias": "alias",
-            "factor": "factor",
-            "comment": "comment",
-            "hasFactor": "has factor",
-            "errors": {
-                "user-already-exists": "Factor level already exists with this URI."
-            }
         }
     }
 }

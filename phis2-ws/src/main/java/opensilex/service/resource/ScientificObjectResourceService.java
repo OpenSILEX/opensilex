@@ -258,7 +258,9 @@ public class ScientificObjectResourceService extends ResourceService {
             @ApiParam(value = "Search by experiment URI", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @QueryParam("experiment") @URL String experimentURI,
             @ApiParam(value = "Search by alias", example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_ALIAS) @QueryParam("alias") String alias,
             @ApiParam(value = "Search by rdfType", example = DocumentationAnnotation.EXAMPLE_SCIENTIFIC_OBJECT_TYPE) @QueryParam("rdfType") @URL String rdfType,
-            @ApiParam(value = "Retreive detailled properties", example = "true") @DefaultValue("true") @QueryParam("withProperties") Boolean withProperties
+            @ApiParam(value = "Search by germplasm URI", example = DocumentationAnnotation.EXAMPLE_GERMPLASM_URI) @QueryParam("germplasm URI") @URL String germplasmURI,
+            @ApiParam(value = "find also linked germplasm", example = "true") @QueryParam("withAllRelatedGermplasm") @DefaultValue("false")  Boolean withAllRelatedGermplasm,
+            @ApiParam(value = "Retrieve detailled properties", example = "true") @DefaultValue("true") @QueryParam("withProperties") Boolean withProperties
     ) throws Exception {
         ArrayList<ScientificObjectDTO> scientificObjectsToReturn = new ArrayList<>();
         ArrayList<ScientificObject> scientificObjects = new ArrayList<>();
@@ -272,13 +274,14 @@ public class ScientificObjectResourceService extends ResourceService {
         scientificObjectDaoSesame.setPageSize(pageSize);
 
         experimentURI = SPARQLDeserializers.getExpandedURI(experimentURI);
+        germplasmURI = SPARQLDeserializers.getExpandedURI(germplasmURI);
         //1. Get count
-        Integer totalCount = scientificObjectDaoSesame.count(uri, rdfType, experimentURI, alias);
+        Integer totalCount = scientificObjectDaoSesame.count(uri, rdfType, experimentURI, alias, germplasmURI, withAllRelatedGermplasm);
 
         // If scientific objects found
         if (totalCount > 0) {
             //2. Get list of scientific objects
-            scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias, withProperties);
+            scientificObjects = scientificObjectDaoSesame.find(page, pageSize, uri, rdfType, experimentURI, alias, withProperties, germplasmURI, withAllRelatedGermplasm);
         }
 
         if (scientificObjects == null) { //Request failure

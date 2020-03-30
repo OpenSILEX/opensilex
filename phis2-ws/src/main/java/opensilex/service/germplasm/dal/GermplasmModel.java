@@ -1,8 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                          GermplasmGetDTO.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package opensilex.service.germplasm.dal;
 
 import java.net.URI;
@@ -16,7 +17,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 
 /**
  *
- * @author boizetal
+* @author Alice Boizet
  */
 
 @SPARQLResource(

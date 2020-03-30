@@ -209,10 +209,10 @@ public class DatasetDAO extends MongoDAO<Dataset> {
      * Gets experiment's scientific objects and add them to the searched
      * scientific objects list.
      */
-    private void updateScientificObjectsWithExperimentsScientificObjects() {
+    private void updateScientificObjectsWithExperimentsScientificObjects() throws Exception {
         ScientificObjectRdf4jDAO agronomicalObjectDao = new ScientificObjectRdf4jDAO(sparql);
         
-        ArrayList<ScientificObject> scientificObjectsSearched = agronomicalObjectDao.find(null, null, null, null, experiment, null, true);
+        ArrayList<ScientificObject> scientificObjectsSearched = agronomicalObjectDao.find(null, null, null, null, experiment, null, true, null, null);
         
         scientificObjectsSearched.forEach((scientificObject) -> {
             this.scientificObjects.add(scientificObject.getUri());
@@ -224,7 +224,7 @@ public class DatasetDAO extends MongoDAO<Dataset> {
      * scientific objects, variable, date start, date end).
      * @return datasets list, empty if no search result.
      */
-    public ArrayList<Dataset> allPaginate() {
+    public ArrayList<Dataset> allPaginate() throws Exception {
         //If search by experiment, get experiment's scientific objects.
         if (experiment != null) {
             updateScientificObjectsWithExperimentsScientificObjects();

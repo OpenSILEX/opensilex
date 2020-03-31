@@ -17,6 +17,11 @@
             "species" : "Species",
             "keywords" : "Keywords",
             "keywords-placeholder" : ["Opensilex", "ClimateChange", "Irrigation"],
+            "groups" : "Groups",
+            "projects" : "Projects",
+            "technicalSupervisors" : "Technical Supervisors",
+            "scientificSupervisors" : "Scientific Supervisors",
+            "infrastructures" : "Infrastructures",
             "common": {
                 "status": {
                     "finished": "Finished",

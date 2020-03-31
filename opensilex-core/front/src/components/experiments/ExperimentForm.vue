@@ -60,6 +60,20 @@
           </ValidationProvider>
         </b-form-group>
 
+          <!-- Campaign -->
+        <b-form-group  required  >
+         <slot name="campaign">
+            <opensilex-FormInputMessageHelper label=component.experiment.campaign helpMessage="component.experiment.campaign-help" >
+            </opensilex-FormInputMessageHelper>
+          </slot>
+           <ValidationProvider :name="$t('component.experiment.campaign')"  v-slot="{ errors }">
+            <b-form-input  id="campaign"  v-model="form.campaign"  type="number "
+              :placeholder="$t('component.experiment.campaign-placeholder')" >
+            </b-form-input>
+            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+          </ValidationProvider>
+        </b-form-group>
+
         <!-- Comment -->
         <b-form-group  required  >
          <slot name="comment">
@@ -74,20 +88,7 @@
           </ValidationProvider>
         </b-form-group>
 
-        <!-- Campaign -->
-        <b-form-group  required  >
-         <slot name="campaign">
-            <opensilex-FormInputMessageHelper label=component.experiment.campaign helpMessage="component.experiment.campaign-help" >
-            </opensilex-FormInputMessageHelper>
-          </slot>
-           <ValidationProvider :name="$t('component.experiment.campaign')"  v-slot="{ errors }">
-            <b-form-input  id="campaign"  v-model="form.campaign"  type="number "
-              :placeholder="$t('component.experiment.campaign-placeholder')" >
-            </b-form-input>
-            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-          </ValidationProvider>
-        </b-form-group>
-
+       
         <!-- StartDate -->
         <b-form-group  required  >
          <slot name="startDate">

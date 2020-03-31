@@ -27,8 +27,8 @@
 
     <tab-content
       v-bind:title="$t('component.experiment.form-wizard.users-groups-projects')">
-      <opensilex-core-ExperimentFormUsersGroupsProjects ref="experimentFormUsersGroupsProjects">
-      </opensilex-core-ExperimentFormUsersGroupsProjects>
+      <opensilex-core-ExperimentForm2 ref="experimentForm2">
+      </opensilex-core-ExperimentForm2>
     </tab-content>
 
     <!-- <tab-content
@@ -136,7 +136,8 @@ export default class ExperimentCreate extends Vue {
 
   callCreateExperimentService(form: ExperimentCreationDTO) {
     console.log("callCreateExperimentService");
-
+    console.log("campaign : " +form.campaign);
+    
     // done(
       this.service
         .createExperiment(this.user.getAuthorizationHeader(), form)

@@ -17,6 +17,11 @@
             "species" : "Espèce",
             "keywords" : "Mot clés",
             "keywords-placeholder" : ["Opensilex", "Changement climatique", "Irrigation"],
+            "groups" : "Groupes",
+            "projects" : "Projets",
+            "technicalSupervisors" : "Responsables technique",
+            "scientificSupervisors" : "Responsables scientifique",
+            "infrastructures" : "Infrastructures",
             "common": {
                 "status": {
                     "finished": "Terminé",

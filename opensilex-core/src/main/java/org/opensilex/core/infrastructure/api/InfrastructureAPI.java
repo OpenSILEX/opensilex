@@ -19,6 +19,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -39,11 +40,6 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.rest.sparql.response.ResourceTreeResponse;
-import static org.opensilex.rest.user.api.UserAPI.CREDENTIAL_GROUP_USER_ID;
-import static org.opensilex.rest.user.api.UserAPI.CREDENTIAL_GROUP_USER_LABEL_KEY;
-import static org.opensilex.rest.user.api.UserAPI.CREDENTIAL_USER_DELETE_ID;
-import static org.opensilex.rest.user.api.UserAPI.CREDENTIAL_USER_DELETE_LABEL_KEY;
-import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLService;
@@ -166,14 +162,14 @@ public class InfrastructureAPI {
         dao.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
-    
+
     /**
      * Search infrstructure tree
      *
      * @param pattern
      * @param securityContext
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     @GET
     @Path("search")
@@ -206,5 +202,43 @@ public class InfrastructureAPI {
 
         boolean enableSelection = (pattern != null && !pattern.isEmpty());
         return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree, enableSelection)).getResponse();
+    }
+
+    @PUT
+    @Path("update")
+    @ApiOperation("Update an infrastructure")
+    @ApiProtected
+    @ApiCredential(
+            groupId = CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
+            groupLabelKey = CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY,
+            credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return updated infrastructure", response = String.class),
+        @ApiResponse(code = 400, message = "Invalid parameters")
+    })
+    public Response updateInfrastructure(
+            @ApiParam("Infrastructure description")
+            @Valid InfrastructureUpdateDTO dto
+    ) throws Exception {
+        InfrastructureDAO dao = new InfrastructureDAO(sparql);
+
+        Response response;
+        if (sparql.uriExists(InfrastructureModel.class, dto.getUri())) {
+            InfrastructureModel infrastructure = dao.update(dto.newModel());
+
+            response = new ObjectUriResponse(Response.Status.OK, infrastructure.getUri()).getResponse();
+        } else {
+            response = new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Infrastructure not found",
+                    "Unknown infrastructure URI: " + dto.getUri()
+            ).getResponse();
+        }
+
+        return response;
     }
 }

@@ -61,40 +61,6 @@
                 "users-groups-projects" : "Utilisateurs, groupes et projets",
                 "variables-sensors-factors" : "Variables, facteurs et capteurs"
             }
-        },
-        "factor": {
-            "uri": "URI du facteur",
-            "uri-help": "Identifiant unique du facteur",
-            "alias-placeholder": "Renseignez un alias de facteur",
-            "filter-placeholder": "Utiliser ce filter pour filter les facteurs",
-            "factors": "facteur",
-            "add": "ajouter un facteur",
-            "update": "mettre à jour un facteur",
-            "alias": "alias",
-            "alias-help": "alias",
-            "form-alias-placeholder" : "Irrigation, Ombrage, Variété, etc.",
-            "comment": "Description associée à ce facteur (protocole, apport de composé)",
-            "comment-help": "alias",
-            "form-comment-placeholder" : "Protocole n°1289 - Apport d'eau de 5 ml/jour.",
-            "errors": {
-                "user-already-exists": "URI du facteur déjà existante."
-            }
-        },
-        "factorLevel": {
-            "uri": "URI du niveau de facteur",
-            "alias-placeholder": "Renseignez l'alias d'un niveau de facteur",
-            "factor-selector-placeholder": "Sélectionnez un alias de facteur",
-            "filter-placeholder": "Utilisez ce change pour filter vos niveau de facteur",
-            "factorLevel": "niveau de facteur",
-            "add": "ajouter un niveau de facteur",
-            "update": "mettre à jour niveau de facteur",
-            "alias": "alias",
-            "factor": "facteur",
-            "comment": "description", 
-            "hasFactor": "est lié au facteur",
-            "errors": {
-                "user-already-exists": "URI du niveau de facteur déjà existante."
-            }
         }
     }
 }

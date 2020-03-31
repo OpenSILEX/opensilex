@@ -8,6 +8,7 @@ package org.opensilex.rest.profile.dal;
 import org.opensilex.rest.authentication.SecurityOntology;
 import java.util.List;
 import org.apache.jena.vocabulary.DCTerms;
+import org.opensilex.rest.group.dal.GroupUserProfileModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -39,6 +40,14 @@ public class ProfileModel extends SPARQLResourceModel implements ClassURIGenerat
     )
     private List<String> credentials;
 
+    @SPARQLProperty(
+            ontology = SecurityOntology.class,
+            property = "hasProfile",
+            inverse = true,
+            cascadeDelete = true
+    )
+    private List<GroupUserProfileModel> userProfiles;
+
     public String getName() {
         return name;
     }
@@ -53,6 +62,14 @@ public class ProfileModel extends SPARQLResourceModel implements ClassURIGenerat
 
     public void setCredentials(List<String> credentials) {
         this.credentials = credentials;
+    }
+
+    public List<GroupUserProfileModel> getUserProfiles() {
+        return userProfiles;
+    }
+
+    public void setUserProfiles(List<GroupUserProfileModel> userProfiles) {
+        this.userProfiles = userProfiles;
     }
 
     @Override

@@ -23,7 +23,7 @@
             <!--<debug>org.opensilex.server.Server</debug>--> 
             <!--<debug>org.opensilex.sparql.rdf4j.RDF4JConnection</debug>--> 
             <!--<debug>org.opensilex.sparql.rdf4j.RDF4JServiceFactory</debug>-->
-            <!--<debug>org.opensilex.sparql.service.SPARQLService</debug>-->
+            <debug>org.opensilex.sparql.service.SPARQLService</debug>
         </filter>
 	
         <encoder>

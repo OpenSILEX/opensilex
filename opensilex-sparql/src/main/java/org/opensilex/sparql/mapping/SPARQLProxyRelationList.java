@@ -9,7 +9,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.jena.graph.Node;
+import org.apache.jena.rdf.model.Property;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLStatement;
 import org.opensilex.sparql.model.SPARQLModelRelation;
@@ -26,10 +28,10 @@ class SPARQLProxyRelationList extends SPARQLProxy<List> {
     private final Set<String> propertiesToIgnore;
     private final URI uri;
 
-    public SPARQLProxyRelationList(Node graph, URI uri, Set<String> propertiesToIgnore, String lang, SPARQLService service) {
+    public SPARQLProxyRelationList(Node graph, URI uri, Set<Property> propertiesToIgnore, String lang, SPARQLService service) {
         super(graph, List.class, lang, service);
         this.uri = uri;
-        this.propertiesToIgnore = propertiesToIgnore;
+        this.propertiesToIgnore = propertiesToIgnore.stream().map(prop -> prop.getURI()).collect(Collectors.toSet());
     }
 
     @Override

@@ -383,7 +383,7 @@ class SPARQLClassQueryBuilder {
         if (instance.getType() == null) {
             instance.setType(new URI(analyzer.getRDFType().getURI()));
         }
-        
+
         tripleHandler.accept(new Triple(uriNode, RDF.type.asNode(), SPARQLDeserializers.nodeURI(instance.getType())), analyzer.getURIField());
 
         for (Field field : analyzer.getDataPropertyFields()) {

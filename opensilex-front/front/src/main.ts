@@ -96,8 +96,8 @@ Vue.component('datePicker', Datepicker);
 console.debug("Initialize FontAwesomeIcon plugin...");
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faPowerOff, faTimes, faTrashAlt, faEdit, faQuestionCircle, faVials} from '@fortawesome/free-solid-svg-icons'
-library.add(faPowerOff, faTimes, faTrashAlt, faEdit, faQuestionCircle, faVials);
+import { fas } from '@fortawesome/free-solid-svg-icons'
+library.add(fas);
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 console.debug("FontAwesomeIcon plugin initialized !");
 
@@ -110,6 +110,10 @@ import VueFormWizard from 'vue-form-wizard'
 import 'vue-form-wizard/dist/vue-form-wizard.min.css'
 Vue.use(VueFormWizard)
 console.debug("VueFormWizard plugin initialized !");
+
+// Initialize Tree selector
+import Treeselect from '@riophae/vue-treeselect'
+Vue.component("treeselect", Treeselect);
 
 // Initialize i18n
 import VueI18n from 'vue-i18n'
@@ -344,108 +348,113 @@ function loadTheme(frontService: FrontService, config: FrontConfigDTO) {
   })
 }
 
-$opensilex.initAsyncComponents(components)
-  .then(() => {
-    console.debug("Default components loaded !");
+$opensilex.loadModules([
+  "opensilex-rest",
+  "opensilex-core",
+]).then(() => {
+  $opensilex.initAsyncComponents(components)
+    .then(() => {
+      console.debug("Default components loaded !");
 
-    // Get OpenSilex configuration
-    console.debug("Start loading configuration...");
-    const frontService = $opensilex.getService<FrontService>("FrontService");
-    frontService.getConfig()
-      .then(function (configResponse) {
-        const config: FrontConfigDTO = configResponse.response.result;
-        $opensilex.setConfig(config);
+      // Get OpenSilex configuration
+      console.debug("Start loading configuration...");
+      const frontService = $opensilex.getService<FrontService>("FrontService");
+      frontService.getConfig()
+        .then(function (configResponse) {
+          const config: FrontConfigDTO = configResponse.response.result;
+          $opensilex.setConfig(config);
 
-        let themePromise: Promise<any> = loadTheme(frontService, config);
+          let themePromise: Promise<any> = loadTheme(frontService, config);
 
-        themePromise.then(() => {
-          store.commit("setConfig", config);
-          console.debug("Configuration loaded", config);
+          themePromise.then(() => {
+            store.commit("setConfig", config);
+            console.debug("Configuration loaded", config);
 
-          // Load only necessary component if application is embed in an iframe
-          let embed = urlParams.has('embed');
+            // Load only necessary component if application is embed in an iframe
+            let embed = urlParams.has('embed');
 
-          if (embed) {
-            console.debug("Application is embed");
-          } else {
-            console.debug("Application is not embed");
-          }
-
-          // Define user
-          console.debug("Define current user...");
-          let user: User | undefined = undefined;
-          if (urlParams.has("token")) {
-            let token = urlParams.get("token");
-            console.debug("Try to load user from URL token...");
-            if (token != null) {
-              user = User.fromToken(token);
-              $opensilex.setCookieValue(user);
-              console.debug("User sucessfully loaded from URL token !");
+            if (embed) {
+              console.debug("Application is embed");
+            } else {
+              console.debug("Application is not embed");
             }
-          }
 
-          if (user == undefined) {
-            console.debug("Try to load user from cookie...");
-            user = $opensilex.loadUserFromCookie();
-            console.debug("User sucessfully loaded from cookie !");
-          }
+            // Define user
+            console.debug("Define current user...");
+            let user: User | undefined = undefined;
+            if (urlParams.has("token")) {
+              let token = urlParams.get("token");
+              console.debug("Try to load user from URL token...");
+              if (token != null) {
+                user = User.fromToken(token);
+                $opensilex.setCookieValue(user);
+                console.debug("User sucessfully loaded from URL token !");
+              }
+            }
 
-          if (!user.isLoggedIn()) {
-            console.debug("User is ANONYMOUS !");
-          } else {
-            console.debug("User is:", user.getEmail());
-          }
-          // Init user
-          console.debug("Initialize global user");
-          store.commit("login", user);
+            if (user == undefined) {
+              console.debug("Try to load user from cookie...");
+              user = $opensilex.loadUserFromCookie();
+              console.debug("User sucessfully loaded from cookie !");
+            }
 
-          // Init routing
-          console.debug("Initialize routing");
-          let router = store.state.openSilexRouter.getRouter();
+            if (!user.isLoggedIn()) {
+              console.debug("User is ANONYMOUS !");
+            } else {
+              console.debug("User is:", user.getEmail());
+            }
+            // Init user
+            console.debug("Initialize global user");
+            store.commit("login", user);
 
-          // Initalise main layout components from configuration
-          console.debug("Define initial modules to load...");
-          let modulesToLoad: ModuleComponentDefinition[] = [
-            ModuleComponentDefinition.fromString(config.homeComponent),
-            ModuleComponentDefinition.fromString(config.notFoundComponent)
-          ];
+            // Init routing
+            console.debug("Initialize routing");
+            let router = store.state.openSilexRouter.getRouter();
 
-          if (!embed) {
-            console.debug("Application is not embed");
-            modulesToLoad = modulesToLoad.concat([
-              ModuleComponentDefinition.fromString(config.footerComponent),
-              ModuleComponentDefinition.fromString(config.headerComponent),
-              ModuleComponentDefinition.fromString(config.loginComponent),
-              ModuleComponentDefinition.fromString(config.menuComponent)
-            ]);
-          } else {
-            console.debug("Application is embed");
-          }
+            // Initalise main layout components from configuration
+            console.debug("Define initial modules to load...");
+            let modulesToLoad: ModuleComponentDefinition[] = [
+              ModuleComponentDefinition.fromString(config.homeComponent),
+              ModuleComponentDefinition.fromString(config.notFoundComponent)
+            ];
 
-          $opensilex.loadComponentModules(modulesToLoad)
-            .then(() => {
-              // Initialize main application rendering
-              console.debug("Initialize main application rendering");
-              new Vue({
-                router,
-                store,
-                render: h => h(App, {
-                  props: {
-                    embed: embed,
-                    footerComponent: config.footerComponent,
-                    headerComponent: config.headerComponent,
-                    loginComponent: config.loginComponent,
-                    menuComponent: config.menuComponent
-                  }
-                },
-                ),
-                i18n
-              }).$mount('#app').$nextTick(() => {
-                // Hide loader
-                console.debug("Hide application init loader");
-                document.getElementById('opensilex-loader').style.visibility = 'hidden';
-              });
-            })
+            if (!embed) {
+              console.debug("Application is not embed");
+              modulesToLoad = modulesToLoad.concat([
+                ModuleComponentDefinition.fromString(config.footerComponent),
+                ModuleComponentDefinition.fromString(config.headerComponent),
+                ModuleComponentDefinition.fromString(config.loginComponent),
+                ModuleComponentDefinition.fromString(config.menuComponent)
+              ]);
+            } else {
+              console.debug("Application is embed");
+            }
+
+            $opensilex.loadComponentModules(modulesToLoad)
+              .then(() => {
+                // Initialize main application rendering
+                console.debug("Initialize main application rendering");
+                new Vue({
+                  router,
+                  store,
+                  render: h => h(App, {
+                    props: {
+                      embed: embed,
+                      footerComponent: config.footerComponent,
+                      headerComponent: config.headerComponent,
+                      loginComponent: config.loginComponent,
+                      menuComponent: config.menuComponent
+                    }
+                  },
+                  ),
+                  i18n
+                }).$mount('#app').$nextTick(() => {
+                  // Hide loader
+                  console.debug("Hide application init loader");
+                  document.getElementById('opensilex-loader').style.visibility = 'hidden';
+                });
+              })
+          })
         })
-      })
-  })
+    })
+})

@@ -15,6 +15,17 @@ import GroupView from './groups/GroupView.vue';
 import GroupList from './groups/GroupList.vue';
 import FormInputMessageHelper from './common/FormInputMessageHelper.vue'
 import ToDoComponent from './layout/ToDoComponent.vue';
+import InfrastructureView from './infrastructures/InfrastructureView.vue';
+import InfrastructureTree from './infrastructures/InfrastructureTree.vue';
+import InfrastructureForm from './infrastructures/InfrastructureForm.vue';
+
+import FactorView from './factors/FactorView.vue';
+import FactorList from './factors/FactorList.vue';
+import FactorForm from './factors/FactorForm.vue';
+
+import FactorLevelView from './factors/FactorLevelView.vue';
+import FactorLevelList from './factors/FactorLevelList.vue';
+import FactorLevelForm from './factors/FactorLevelForm.vue';
 
 export default {
     'opensilex-DefaultFooterComponent': DefaultFooterComponent,
@@ -32,6 +43,21 @@ export default {
     'opensilex-GroupForm': GroupForm,
     'opensilex-GroupView': GroupView,
     'opensilex-GroupList': GroupList,
+
+    // infrastructures
+    "opensilex-InfrastructureView": InfrastructureView,
+    "opensilex-InfrastructureTree": InfrastructureTree,
+    "opensilex-InfrastructureForm": InfrastructureForm,
     'opensilex-FormInputMessageHelper': FormInputMessageHelper,
+    // factors
+    "opensilex-FactorView": FactorView,
+    "opensilex-FactorList": FactorList,
+    "opensilex-FactorForm": FactorForm,
+    // factors levels
+    "opensilex-FactorLevelView": FactorLevelView,
+    "opensilex-FactorLevelList": FactorLevelList,
+    "opensilex-FactorLevelForm": FactorLevelForm,
+
     'opensilex-ToDoComponent': ToDoComponent
+    
 };

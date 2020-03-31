@@ -43,7 +43,8 @@ public class GroupModel extends SPARQLResourceModel implements ClassURIGenerator
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,
-            property = "hasUserProfile"
+            property = "hasUserProfile",
+            cascadeDelete = true
     )
     private List<GroupUserProfileModel> userProfiles;
 

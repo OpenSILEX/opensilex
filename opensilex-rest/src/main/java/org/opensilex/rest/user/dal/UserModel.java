@@ -7,8 +7,10 @@ package org.opensilex.rest.user.dal;
 
 import org.opensilex.rest.authentication.SecurityOntology;
 import java.security.Principal;
+import java.util.List;
 import javax.mail.internet.InternetAddress;
 import org.apache.jena.sparql.vocabulary.FOAF;
+import org.opensilex.rest.group.dal.GroupUserProfileModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -68,6 +70,14 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
             property = "hasLang"
     )
     private String lang = "";
+
+    @SPARQLProperty(
+            ontology = SecurityOntology.class,
+            property = "hasUser",
+            inverse = true,
+            cascadeDelete = true
+    )
+    private List<GroupUserProfileModel> userProfiles;
 
     private String token;
 
@@ -130,6 +140,14 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
 
     public void setLang(String lang) {
         this.lang = lang;
+    }
+
+    public List<GroupUserProfileModel> getUserProfiles() {
+        return userProfiles;
+    }
+
+    public void setUserProfiles(List<GroupUserProfileModel> userProfiles) {
+        this.userProfiles = userProfiles;
     }
 
     @Override

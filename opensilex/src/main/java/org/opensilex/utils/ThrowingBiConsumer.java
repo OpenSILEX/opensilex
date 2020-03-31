@@ -16,7 +16,7 @@ public interface ThrowingBiConsumer<T, U, E extends Exception> {
 
     void accept(T t, U u) throws E;
 
-    static <T, U, E extends Exception> BiConsumer<T, U> wrap(ThrowingBiConsumer<T, U, E> throwingConsumer, Class<E> exceptionClass) {
+    static <T, U, E extends Exception> BiConsumer<T, U> wrap(ThrowingBiConsumer<T, U, E> throwingConsumer, Class<T> keyClass, Class<U> valueClass, Class<E> exceptionClass) {
 
         return (i, j) -> {
             try {

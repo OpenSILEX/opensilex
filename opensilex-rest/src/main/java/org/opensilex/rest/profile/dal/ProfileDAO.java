@@ -55,17 +55,7 @@ public class ProfileDAO {
     }
 
     public void delete(URI instanceURI) throws Exception {
-        try {
-            sparql.startTransaction();
-            // Delete existing user profile group relations
-            sparql.deleteByObjectRelation(GroupUserProfileModel.class, GroupUserProfileModel.PROFILE_FIELD, instanceURI);
-            // Delete user
-            sparql.delete(ProfileModel.class, instanceURI);
-            sparql.commitTransaction();
-        } catch (Exception ex) {
-            sparql.rollbackTransaction();
-            throw ex;
-        }
+        sparql.delete(ProfileModel.class, instanceURI);
     }
 
     public ProfileModel update(
@@ -121,8 +111,7 @@ public class ProfileDAO {
                     whereHandler.addWhere(select.makeTriplePath(groupURIVar, SecurityOntology.hasProfile, profileURIVar));
                     whereHandler.addWhere(select.makeTriplePath(groupURIVar, SecurityOntology.hasUser, SPARQLDeserializers.nodeURI(uri)));
 
-                    SPARQLClassObjectMapper<GroupUserProfileModel> groupUserProfileMapper = SPARQLClassObjectMapper.getForClass(GroupUserProfileModel.class);
-                    ElementNamedGraph elementNamedGraph = new ElementNamedGraph(groupUserProfileMapper.getDefaultGraph(), whereHandler.getElement());
+                    ElementNamedGraph elementNamedGraph = new ElementNamedGraph(SPARQLService.getDefaultGraph(GroupUserProfileModel.class), whereHandler.getElement());
                     select.getWhereHandler().getClause().addElement(elementNamedGraph);
                 }
         );

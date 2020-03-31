@@ -393,7 +393,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
 
     protected void printJsonNode(JsonNode node) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        Object json = mapper.readValue(node.toString(), Object.class);
+        String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node);
         System.out.println(json);
     }
 }

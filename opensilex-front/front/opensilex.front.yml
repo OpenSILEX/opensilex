@@ -11,7 +11,7 @@ menu:
     icon: ik-grid
     route: 
       path: /infrastructures
-      component: opensilex-core-InfrastructureView
+      component: opensilex-InfrastructureView
       credentials: []        
   - id: data
     label: component.menu.data.label
@@ -113,7 +113,7 @@ menu:
         icon: ik-cloud-rain
         route: 
           path: /factors
-          component: opensilex-core-FactorView
+          component: opensilex-FactorView
           credentials: 
             - factor-read
       - id: factor-levels
@@ -121,7 +121,7 @@ menu:
         icon: ik-cloud-rain
         route: 
           path: /factorLevels
-          component: opensilex-core-FactorLevelView
+          component: opensilex-FactorLevelView
           credentials: 
              - factorLevels-levels
 

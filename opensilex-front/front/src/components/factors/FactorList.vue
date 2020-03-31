@@ -5,21 +5,13 @@
         <b-form-input
           v-model="filterByAlias"
           debounce="300"
-          :placeholder="$t('component.factorLevel.filter-placeholder')"
+          :placeholder="$t('component.factor.filter-placeholder')"
         ></b-form-input>
         <template v-slot:append>
           <b-btn :disabled="!filterByAlias" variant="primary" @click="filterByAlias = ''">
             <font-awesome-icon icon="times" size="sm" />
           </b-btn>
         </template>
-      </b-input-group>
-      <b-input-group>
-          <b-form-select v-model="factors" :options="options" size="sm" class="mt-3">
-            <template v-slot:first>
-              <b-form-select-option value="" disabled>-- {{$t('component.factorLevel.factorLevel-factor-selector-placeholder')}} --</b-form-select-option>
-            </template>
-          </b-form-select>
-          <div class="mt-3">Selected: <strong>{{ selected }}</strong></div>
       </b-input-group>
     </b-input-group>
     <b-table
@@ -68,15 +60,17 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { FactorLevelsService } from "../../lib/api/factorLevels.service";
-import { FactorLevelGetDTO } from "../../lib/model/factorLevelGetDTO";
-import { FactorLevelSearchDTO } from "../../lib/model/factorLevelSearchDTO";
-
+import { 
+  FactorsService,
+  FactorGetDTO, 
+  FactorSearchDTO 
+} 
+from "opensilex-core/index";
 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
-export default class FactorLevelList extends Vue {
+export default class FactorList extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
@@ -95,13 +89,13 @@ export default class FactorLevelList extends Vue {
   sortBy = "alias";
   sortDesc = false;
 
-  private searchFrom: FactorLevelSearchDTO = {
+  private searchFrom: FactorSearchDTO = {
     uri: "",
     alias: "",
     comment:"",
      // lang: "en-US"
   };
-  
+
   set filterByAlias(value: string) {
     this.searchFrom.alias = value;
     this.refresh();
@@ -133,17 +127,12 @@ export default class FactorLevelList extends Vue {
   fields = [
     {
       key: "alias",
-      label: "component.factorLevel.alias",
+      label: "component.factor.alias",
       sortable: true
     },
     {
       key: "comment",
-      label: "component.factorLevel.comment",
-      sortable: false
-    },
-    {
-      key: "factor",
-      label: "component.factorLevel.factor",
+      label: "component.factor.comment",
       sortable: false
     },
     {
@@ -158,10 +147,11 @@ export default class FactorLevelList extends Vue {
   }
 
   loadData() {
-    let service: FactorLevelsService = this.$opensilex.getService(
-      "opensilex.FactorLevelsService"
+    let service: FactorsService = this.$opensilex.getService(
+      "opensilex.FactorsService"
     );
-  
+    let factorSearchDTO : FactorSearchDTO;
+
     let orderBy : string[] = [];
     if (this.sortBy) {
       let orderByText = this.sortBy + "=";
@@ -171,16 +161,15 @@ export default class FactorLevelList extends Vue {
         orderBy.push(orderByText + "asc");
       }
     }
-
     return service
-      .searchFactorLevels(
+      .searchFactors(
         this.user.getAuthorizationHeader(),
         orderBy,
         this.currentPage - 1,
         this.pageSize,
         this.searchFrom
       )
-      .then((http: HttpResponse<OpenSilexResponse<Array<FactorLevelGetDTO>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<FactorGetDTO>>>) => {
         this.totalRow = http.response.metadata.pagination.totalCount;
         this.pageSize = http.response.metadata.pagination.pageSize;
         setTimeout(() => {
@@ -196,7 +185,7 @@ export default class FactorLevelList extends Vue {
               pageSize: "" + this.pageSize
             }
           })
-          .catch(function() {});
+          .catch(err => {})
 
         return http.response.result;
       })

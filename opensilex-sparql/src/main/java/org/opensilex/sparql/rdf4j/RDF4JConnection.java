@@ -194,15 +194,15 @@ public class RDF4JConnection implements SPARQLConnection {
     }
 
     @Override
-    public void rollbackTransaction() throws SPARQLException {
+    public void rollbackTransaction(Exception ex) throws Exception {
         try {
             rdf4JConnection.rollback();
-        } catch (RepositoryException ex) {
-            Throwable cause = ex.getCause();
+        } catch (RepositoryException e) {
+            Throwable cause = e.getCause();
             if (cause instanceof ShaclSailValidationException) {
                 throw convertRDF4JSHACLException((ShaclSailValidationException) cause);
             } else {
-                throw new SPARQLException(ex.getMessage());
+                throw new SPARQLException(e.getMessage());
             }
         }
     }

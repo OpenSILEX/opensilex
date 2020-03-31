@@ -400,12 +400,23 @@ export default class OpenSilexVuePlugin {
         this.showToast(message, {
             variant: "danger",
             toaster: "b-toaster-bottom-full",
+            appendToast: true,
             solid: true,
             title: this.$i18n.t("component.common.errors.error-title")
         });
     }
 
     public showToast(message: string, options: any) {
-        this.$bvToast.toast(message, options);
+        let toastID = this.computeToastID(message, options);
+        options.id = toastID;
+        let toastElement = document.getElementById(toastID);
+
+        if (!toastElement) {
+            this.$bvToast.toast(message, options);
+        }
+    }
+
+    private computeToastID(message: string, options: any): string {
+        return "OPENSILEX-TOAST" + OpenSilexVuePlugin.hashCode(message + "|" + options.title + "|" + options.variant);
     }
 }

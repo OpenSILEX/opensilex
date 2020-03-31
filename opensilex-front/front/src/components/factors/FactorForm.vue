@@ -98,7 +98,7 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import { FactorCreationDTO } from "../../lib/model/factorCreationDTO";
+import { FactorCreationDTO } from "opensilex-core/index"; 
 
 @Component
 export default class FactorForm extends Vue {

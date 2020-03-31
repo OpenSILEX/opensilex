@@ -33,6 +33,14 @@
           </b-button>
           <b-button
             size="sm"
+            v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+            @click.prevent="$emit('onAddChild', node.data.uri)"
+            variant="outline-success"
+          >
+            <font-awesome-icon icon="plus" size="sm" />
+          </b-button>
+          <b-button
+            size="sm"
             v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID)"
             @click.prevent="$emit('onDelete', node.data.uri)"
             variant="danger"
@@ -66,11 +74,14 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { InfrastructuresService } from "../../lib/api/api";
-import { ResourceTreeDTO, InfrastructureGetDTO } from "../../lib";
+import {
+  InfrastructuresService,
+  ResourceTreeDTO,
+  InfrastructureGetDTO
+} from "opensilex-core/index";
 
 @Component
 export default class InfrastructureTree extends Vue {
@@ -98,16 +109,13 @@ export default class InfrastructureTree extends Vue {
 
   created() {
     this.service = this.$opensilex.getService(
-      "opensilex.InfrastructuresService"
+      "opensilex-core.InfrastructuresService"
     );
 
     this.refresh();
   }
 
   refresh() {
-    // let tableRef: any = this.$refs.tableRef;
-    // tableRef.refresh();
-
     this.service
       .searchInfrastructuresTree(
         this.user.getAuthorizationHeader(),
@@ -163,7 +171,8 @@ export default class InfrastructureTree extends Vue {
   }
 
   public nodes = [];
-  public selected: InfrastructureGetDTO = null;
+
+  private selected: InfrastructureGetDTO = null;
 
   public displayNodeDetail(node: any) {
     this.displayNodesDetail([node]);
@@ -177,6 +186,7 @@ export default class InfrastructureTree extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
           let detailDTO: InfrastructureGetDTO = http.response.result;
           this.selected = detailDTO;
+          this.$emit("onSelect", detailDTO);
         });
     }
   }

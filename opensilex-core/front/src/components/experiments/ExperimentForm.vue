@@ -128,20 +128,19 @@
           </ValidationProvider>
         </b-form-group>
 
-
-         <!-- Keywords -->
-        <!-- <b-form-group  required  >
+      <!-- Keywords -->
+         <b-form-group  required  >
          <slot name="keywords">
             <opensilex-FormInputMessageHelper label=component.experiment.keywords helpMessage="component.experiment.keywords-help" >
             </opensilex-FormInputMessageHelper>
           </slot>
            <ValidationProvider :name="$t('component.experiment.keywords')" v-slot="{ errors }">
-            <b-form-input  id="keywords"  v-model="form.keywords"  type="text"
+            <b-form-input  id="keywords"  v-model="keywords"  type="text"
               :placeholder="$t('component.experiment.keywords-placeholder')" >
             </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
-        </b-form-group> -->
+        </b-form-group>
 
       </b-form>
     </ValidationObserver>
@@ -182,6 +181,8 @@ export default class ExperimentForm extends Vue {
     // lang: "en-US"
   };
 
+  keywords: string;
+
   title = "";
 
   editMode = false;
@@ -206,13 +207,18 @@ export default class ExperimentForm extends Vue {
       species: null,
       isPublic: null,
       variables: [],
-      sensors: []
+      sensors: [],
       // lang: "en-US"
     };
+    this.keywords = null;
   }
 
   getForm() : ExperimentCreationDTO {
     return this.form; 
+  }
+
+  getKeywords() : string {
+    return this.keywords;
   }
 
   created () {

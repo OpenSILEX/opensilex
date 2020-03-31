@@ -16,7 +16,7 @@
             "campaign-placeholder" : "2020",
             "species" : "Species",
             "keywords" : "Keywords",
-            "keywords-placeholder" : ["Opensilex", "ClimateChange", "Irrigation"],
+            "keywords-placeholder" : "Opensilex Irrigation",
             "groups" : "Groups",
             "projects" : "Projects",
             "technicalSupervisors" : "Technical Supervisors",

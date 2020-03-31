@@ -121,7 +121,14 @@ export default class ExperimentCreate extends Vue {
   onComplete(){
 
     let experimentForm: any = this.$refs.experimentForm;
-    this.callCreateExperimentService(experimentForm.getForm());
+    let keywordsForm: string = experimentForm.getKeywords();
+
+    let form: ExperimentCreationDTO = experimentForm.getForm();
+    if(keywordsForm !== undefined && keywordsForm !== null){
+      form.keywords = keywordsForm.split(" ");
+      console.log("keywords : "+form.keywords);
+    }
+    this.callCreateExperimentService(form);
 
     // return new Promise((resolve, reject) => {
     //   return this.$emit("on-create", this.$refs.experimentForm, result => {
@@ -137,7 +144,7 @@ export default class ExperimentCreate extends Vue {
   callCreateExperimentService(form: ExperimentCreationDTO) {
     console.log("callCreateExperimentService");
     console.log("campaign : " +form.campaign);
-    
+
     // done(
       this.service
         .createExperiment(this.user.getAuthorizationHeader(), form)

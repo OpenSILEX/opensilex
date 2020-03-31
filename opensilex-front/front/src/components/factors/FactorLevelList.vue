@@ -14,12 +14,18 @@
         </template>
       </b-input-group>
       <b-input-group>
-          <b-form-select v-model="factors" :options="options" size="sm" class="mt-3">
-            <template v-slot:first>
-              <b-form-select-option value="" disabled>-- {{$t('component.factorLevel.factorLevel-factor-selector-placeholder')}} --</b-form-select-option>
-            </template>
-          </b-form-select>
-          <div class="mt-3">Selected: <strong>{{ selected }}</strong></div>
+        <b-form-select v-model="factors" :options="options" size="sm" class="mt-3">
+          <template v-slot:first>
+            <b-form-select-option
+              value
+              disabled
+            >-- {{$t('component.factorLevel.factorLevel-factor-selector-placeholder')}} --</b-form-select-option>
+          </template>
+        </b-form-select>
+        <div class="mt-3">
+          Selected:
+          <strong>{{ selected }}</strong>
+        </div>
       </b-input-group>
     </b-input-group>
     <b-table
@@ -36,20 +42,12 @@
       <template v-slot:head(alias)="data">{{$t(data.label)}}</template>
       <template v-slot:head(comment)="data">{{$t(data.label)}}</template>
       <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
-       <template v-slot:cell(actions)="data">
+      <template v-slot:cell(actions)="data">
         <b-button-group size="sm">
-          <b-button
-            size="sm"
-            @click="$emit('onEdit', data.item)"
-            variant="outline-primary"
-          >
+          <b-button size="sm" @click="$emit('onEdit', data.item)" variant="outline-primary">
             <font-awesome-icon icon="edit" size="sm" />
           </b-button>
-          <b-button
-            size="sm"
-            @click="$emit('onDelete', data.item.uri)"
-            variant="danger"
-          >
+          <b-button size="sm" @click="$emit('onDelete', data.item.uri)" variant="danger">
             <font-awesome-icon icon="trash-alt" size="sm" />
           </b-button>
         </b-button-group>
@@ -68,12 +66,11 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { 
+import {
   FactorLevelsService,
-  FactorLevelGetDTO, 
+  FactorLevelGetDTO,
   FactorLevelSearchDTO
-  } from "opensilex-core/index";
-
+} from "opensilex-core/index";
 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
@@ -97,26 +94,26 @@ export default class FactorLevelList extends Vue {
   sortBy = "alias";
   sortDesc = false;
 
-  private searchFrom: FactorLevelSearchDTO = {
+  private searchForm: FactorLevelSearchDTO = {
     uri: "",
     alias: "",
-    comment:"",
-     // lang: "en-US"
+    comment: ""
+    // lang: "en-US"
   };
-  
+
   set filterByAlias(value: string) {
-    this.searchFrom.alias = value;
+    this.searchForm.alias = value;
     this.refresh();
   }
 
   get filterByAlias() {
-    return this.searchFrom.alias;
+    return this.searchForm.alias;
   }
 
   created() {
     let query: any = this.$route.query;
     if (query.filterByAlias) {
-      this.searchFrom.alias = decodeURI(query.filterByAlias);
+      this.searchForm.alias = decodeURI(query.filterByAlias);
     }
     if (query.pageSize) {
       this.pageSize = parseInt(query.pageSize);
@@ -163,8 +160,8 @@ export default class FactorLevelList extends Vue {
     let service: FactorLevelsService = this.$opensilex.getService(
       "opensilex.FactorLevelsService"
     );
-  
-    let orderBy : string[] = [];
+
+    let orderBy: string[] = [];
     if (this.sortBy) {
       let orderByText = this.sortBy + "=";
       if (this.sortDesc) {
@@ -180,28 +177,31 @@ export default class FactorLevelList extends Vue {
         orderBy,
         this.currentPage - 1,
         this.pageSize,
-        this.searchFrom
+        this.searchForm
       )
-      .then((http: HttpResponse<OpenSilexResponse<Array<FactorLevelGetDTO>>>) => {
-        this.totalRow = http.response.metadata.pagination.totalCount;
-        this.pageSize = http.response.metadata.pagination.pageSize;
-        setTimeout(() => {
-          this.currentPage = http.response.metadata.pagination.currentPage + 1;
-        }, 0);
+      .then(
+        (http: HttpResponse<OpenSilexResponse<Array<FactorLevelGetDTO>>>) => {
+          this.totalRow = http.response.metadata.pagination.totalCount;
+          this.pageSize = http.response.metadata.pagination.pageSize;
+          setTimeout(() => {
+            this.currentPage =
+              http.response.metadata.pagination.currentPage + 1;
+          }, 0);
 
-        this.$router
-          .push({
-            path: this.$route.fullPath,
-            query: {
-              filterByAlias: encodeURI(this.searchFrom.alias),
-              currentPage: "" + this.currentPage,
-              pageSize: "" + this.pageSize
-            }
-          })
-          .catch(function() {});
+          this.$router
+            .push({
+              path: this.$route.fullPath,
+              query: {
+                filterByAlias: encodeURI(this.searchForm.alias),
+                currentPage: "" + this.currentPage,
+                pageSize: "" + this.pageSize
+              }
+            })
+            .catch(function() {});
 
-        return http.response.result;
-      })
+          return http.response.result;
+        }
+      )
       .catch(this.$opensilex.errorHandler);
   }
 }

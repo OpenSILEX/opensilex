@@ -65,6 +65,12 @@
                 "unexpected-error": "Une erreur inattendue s'est produite, merci de contacter votre administrateur local.",
                 "unauthorized-error": "Votre session à expirée, merci de vous connecter à nouveau.",
                 "form-step-errors" : "Certains champs sont requis avant de passer à l'étape suivante"
+            },
+            "form-wizard" :{
+                "external-ontologies" : "Ontologies de références",
+                "previous" : "Précédent",
+                "next" : "Suivant",
+                "done" : "Terminé"
             }
         },
         "header": {
@@ -205,8 +211,8 @@
             "alias-placeholder": "Renseignez un alias de facteur",
             "filter-placeholder": "Utiliser ce filter pour filter les facteurs",
             "factors": "facteur",
-            "add": "ajouter un facteur",
-            "update": "mettre à jour un facteur",
+            "add": "Ajouter un facteur",
+            "update": "Modifier un facteur",
             "alias": "alias",
             "alias-help": "alias",
             "form-alias-placeholder" : "Irrigation, Ombrage, Variété, etc.",
@@ -215,6 +221,9 @@
             "form-comment-placeholder" : "Protocole n°1289 - Apport d'eau de 5 ml/jour.",
             "errors": {
                 "user-already-exists": "URI du facteur déjà existante."
+            },
+            "form-wizard" :{
+                "general-informations" : "Factor "
             }
         },
         "factorLevel": {
@@ -223,8 +232,8 @@
             "factor-selector-placeholder": "Sélectionnez un alias de facteur",
             "filter-placeholder": "Utilisez ce change pour filter vos niveau de facteur",
             "factorLevel": "niveau de facteur",
-            "add": "ajouter un niveau de facteur",
-            "update": "mettre à jour niveau de facteur",
+            "add": "Ajouter un niveau de facteur",
+            "update": "Modifier un niveau de facteur",
             "alias": "alias",
             "factor": "facteur",
             "comment": "description", 
@@ -233,20 +242,18 @@
                 "user-already-exists": "URI du niveau de facteur déjà existante."
             }
         },
-        "germplasm": {
-            "uri": "URI du germplasm",
-            "uri-help": "Identifiant unique du germplasm",
-            "alias-placeholder": "Entrer le label du germplasm ",
-            "filter-placeholder": "Utiliser ce champ pour filtrer les germplasm",
-            "germplasm": "germplasm",
-            "add": "ajouter un germplasm",
-            "update": "meettre à jour un germplasm",
-            "alias": "alias",
-            "alias-help": "alias",
-            "form-alias-placeholder" : "Irrigation, Shading, Variety, etc.",
-            "errors": {
-                "germplasm-already-exists": "URI du germplasm déjà existant."
-            }
+        "skos" :{
+            "uri" : "URI de référence",
+            "uri-help" : "Identifiant du concept référencé",
+            "uri-placeholder" : "http://aims.fao.org/aos/agrovoc/c_8332",
+            "relation" : "Relation",
+            "relation-help" : "Relation entre l'individu décrit localement et le concept lié à cet identifiant",
+            "relation-placeholder" : "exactMatch",
+            "add" : "Créer une nouvelle relation",
+            "exactMatch" : "Equivalent",
+            "closeMatch" : "Similaire",
+            "broader" : "Plus général",
+            "narrower" : "Plus spécifique"
         }
     },
     "credential-groups": {

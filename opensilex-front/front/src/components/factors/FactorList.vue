@@ -28,7 +28,7 @@
       <template v-slot:head(alias)="data">{{$t(data.label)}}</template>
       <template v-slot:head(comment)="data">{{$t(data.label)}}</template>
       <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
-       <template v-slot:cell(actions)="data">
+      <template v-slot:cell(actions)="data">
         <b-button-group size="sm">
           <b-button
             size="sm"

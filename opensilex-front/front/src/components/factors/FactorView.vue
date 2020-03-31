@@ -59,6 +59,7 @@ export default class FactorView extends Vue {
           console.debug("factor created", uri);
           let factorList: any = this.$refs.factorList;
           factorList.refresh();
+          return uri;
         })
     );
   }

@@ -35,8 +35,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.factor.dal.FactorDAO;
 import org.opensilex.core.factor.dal.FactorModel;
-import org.opensilex.core.ontology.OntologyReference;
-import org.opensilex.core.ontology.api.OntologyReferenceDTO;
 import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.server.response.ErrorDTO;
@@ -187,9 +185,9 @@ public class FactorAPI {
         );
 
         // Convert paginated list to DTO
-        ListWithPagination<FactorGetDTO> resultDTOList = resultList.convert(
-                FactorGetDTO.class,
-                FactorGetDTO::fromModel
+        ListWithPagination<FactorDetailsGetDTO> resultDTOList = resultList.convert(
+                FactorDetailsGetDTO.class,
+                FactorDetailsGetDTO::fromModel
         );
 
         // Return paginated list of factor DTO

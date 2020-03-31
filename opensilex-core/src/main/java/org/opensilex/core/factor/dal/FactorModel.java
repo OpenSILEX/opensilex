@@ -4,16 +4,16 @@
  *  OpenSILEX
  *  Copyright © INRA 2019
  *  Creation date:  17 December, 2019
- *  Contact: arnaud.charleroy@inra.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ *  Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * ******************************************************************************
  */
 package org.opensilex.core.factor.dal;
 
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.SKOSReferencesModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
 /**
@@ -26,7 +26,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         graph = "set/factors",
         prefix = "factor"
 )
-public class FactorModel extends SPARQLResourceModel implements ClassURIGenerator<FactorModel> {
+public class FactorModel extends SKOSReferencesModel implements ClassURIGenerator<FactorModel> {
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -59,7 +59,7 @@ public class FactorModel extends SPARQLResourceModel implements ClassURIGenerato
     public void setComment(String comment) {
         this.comment = comment;
     }
-
+    
     @Override
     public String[] getUriSegments(FactorModel instance) {
         return new String[]{

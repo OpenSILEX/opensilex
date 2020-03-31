@@ -4,7 +4,7 @@
  *  OpenSILEX
  *  Copyright © INRAE 2020
  *  Creation date:  11 March, 2020
- *  Contact: arnaud.charleroy@inra.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ *  Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * ******************************************************************************
  */
 package org.opensilex.core.factor.api;

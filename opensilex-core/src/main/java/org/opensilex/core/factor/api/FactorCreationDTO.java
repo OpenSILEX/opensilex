@@ -4,27 +4,30 @@
  *  OpenSILEX
  *  Copyright © INRA 2019
  *  Creation date:  17 December, 2019
- *  Contact: arnaud.charleroy@inra.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ *  Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * ******************************************************************************
  */
 package org.opensilex.core.factor.api;
 
 import java.net.URI;
 import org.opensilex.core.factor.dal.FactorModel;
-import org.opensilex.server.rest.validation.Required;
+import org.opensilex.core.ontology.SKOSReferencesDTO;
+import org.opensilex.rest.validation.Required;
 
 /**
  * 
  * @author Arnaud Charleroy
  */
-public class FactorCreationDTO {
+public class FactorCreationDTO extends SKOSReferencesDTO {
 
     private URI uri;
 
     @Required
     private String alias;
 
+    @Required
     private String comment;
+ 
 
     public URI getUri() {
         return uri;
@@ -55,7 +58,7 @@ public class FactorCreationDTO {
         model.setUri(getUri());
         model.setAlias(getAlias());
         model.setComment(getComment());
-
+        model.setSkosReferencesNewModel(this);
         return model;
     }
 }

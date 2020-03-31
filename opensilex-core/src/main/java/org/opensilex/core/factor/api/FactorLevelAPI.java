@@ -4,7 +4,7 @@
  *  OpenSILEX
  *  Copyright © INRA 2019
  *  Creation date:  17 December, 2019
- *  Contact: arnaud.charleroy@inra.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ *  Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * ******************************************************************************
  */
 package org.opensilex.core.factor.api;

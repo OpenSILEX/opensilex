@@ -1,34 +1,31 @@
 /*
  * ******************************************************************************
- *                                     FactorLevelCreationDTO.java
+ *                                     FactorDetailsGetDTO.java
  *  OpenSILEX
  *  Copyright © INRAE 2020
- *  Creation date:  11 March, 2020
+ *  Creation date:  30 March, 2020
  *  Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * ******************************************************************************
  */
 package org.opensilex.core.factor.api;
 
 import java.net.URI;
-import org.opensilex.core.factor.dal.FactorLevelModel;
-import org.opensilex.server.rest.validation.Required;
+import org.opensilex.core.factor.dal.FactorModel;
+import org.opensilex.core.ontology.SKOSReferencesDTO;
 
 /**
  * 
  * @author Arnaud Charleroy
  */
-public class FactorLevelCreationDTO {
+public class FactorDetailsGetDTO extends SKOSReferencesDTO{
     
     private URI uri;
 
-    @Required
     private String alias;
 
-    @Required
-    private URI hasFactor;
-    
     private String comment;
-
+     
+    
     public URI getUri() {
         return uri;
     }
@@ -44,29 +41,23 @@ public class FactorLevelCreationDTO {
     public void setAlias(String alias) {
         this.alias = alias;
     }
-
+   
     public String getComment() {
         return comment;
     }
 
     public void setComment(String comment) {
         this.comment = comment;
-    }
+    }   
+ 
+    public static FactorDetailsGetDTO fromModel(FactorModel model) {
+        FactorDetailsGetDTO dto = new FactorDetailsGetDTO();
 
-    public URI getHasFactor() {
-        return hasFactor;
-    }
+        dto.setUri(model.getUri());
+        dto.setAlias(model.getAlias());
+        dto.setComment(model.getComment());
+        dto.setSkosReferencesFromModel(model);
 
-    public void setHasFactor(URI hasFactor) {
-        this.hasFactor = hasFactor;
-    }
-
-    public FactorLevelModel newModel() {
-        FactorLevelModel model = new FactorLevelModel();
-        model.setUri(getUri());
-        model.setAlias(getAlias());
-        model.setComment(getComment());
-        model.setHasFactor(getHasFactor());
-        return model;
+        return dto;
     }
 }

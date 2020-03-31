@@ -4,7 +4,7 @@
  *  OpenSILEX
  *  Copyright © INRA 2019
  *  Creation date:  17 December, 2019
- *  Contact: arnaud.charleroy@inra.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ *  Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * ******************************************************************************
  */
 package org.opensilex.core.factor.api;
@@ -132,10 +132,8 @@ public class FactorAPI {
         FactorModel model = dao.get(uri);
         
         if (model != null) {
-            FactorGetDTO factorGetDTO = FactorGetDTO.fromModel(model);
-            factorGetDTO.setRelations(dao.getInstanceOntologiesReferences(uri));
-            return new SingleObjectResponse<>(
-                    factorGetDTO
+             return new SingleObjectResponse<>(
+                    FactorDetailsGetDTO.fromModel(model)
             ).getResponse();
         } else {
             return new ErrorResponse(
@@ -308,44 +306,44 @@ public class FactorAPI {
         }
     }
 
-    /**
-     * Updates the on linked to an experiment.
-     *
-     * @param factorUri
-     * @param ontologiesReferencesDto
-     * @return the query result
-     */
-    @PUT
-    @Path("{uri}/references")
-    @ApiOperation("Update a instance ontologies references")
-    @ApiCredential(
-            groupId = CREDENTIAL_FACTOR_GROUP_ID,
-            groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
-            credentialId = CREDENTIAL_FACTOR_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY
-    )
-    @ApiProtected
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "The list of ontologies references associated with this instance", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown factor URI", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    
-    public Response putOntologiesReferences(     
-            @ApiParam(value = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI factorUri,
-            @ApiParam(value = "List of ontologies references associated") List<OntologyReferenceDTO> ontologiesReferencesDto
-    ) { 
-        try {
-            FactorDAO factorDao = new FactorDAO(sparql);
-             List<OntologyReference> ontologiesReferences = new ArrayList<>();
-            for (OntologyReferenceDTO ontologiesReferenceDTO : ontologiesReferencesDto) {
-                ontologiesReferences.add(OntologyReferenceDTO.toModel(ontologiesReferenceDTO));
-            }
-            factorDao.updateInstanceOntologiesReferences(factorUri, ontologiesReferences);
-            return new ObjectUriResponse(Response.Status.OK, factorUri).getResponse();
-        } catch (SPARQLInvalidURIException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown factor URI", e.getMessage()).getResponse();
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
-        }
-    }
+//    /**
+//     * Updates the on linked to an experiment.
+//     *
+//     * @param factorUri
+//     * @param ontologiesReferencesDto
+//     * @return the query result
+//     */
+//    @PUT
+//    @Path("{uri}/references")
+//    @ApiOperation("Update a instance ontologies references")
+//    @ApiCredential(
+//            groupId = CREDENTIAL_FACTOR_GROUP_ID,
+//            groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
+//            credentialId = CREDENTIAL_FACTOR_MODIFICATION_ID,
+//            credentialLabelKey = CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY
+//    )
+//    @ApiProtected
+//    @ApiResponses(value = {
+//        @ApiResponse(code = 200, message = "The list of ontologies references associated with this instance", response = ObjectUriResponse.class),
+//        @ApiResponse(code = 400, message = "Invalid or unknown factor URI", response = ErrorResponse.class),
+//        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+//    
+//    public Response putOntologiesReferences(     
+//            @ApiParam(value = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI factorUri,
+//            @ApiParam(value = "List of ontologies references associated") List<OntologyReferenceDTO> ontologiesReferencesDto
+//    ) { 
+//        try {
+//            FactorDAO factorDao = new FactorDAO(sparql);
+//            List<OntologyReference> ontologiesReferences = new ArrayList<>();
+//            for (OntologyReferenceDTO ontologiesReferenceDTO : ontologiesReferencesDto) {
+//                ontologiesReferences.add(OntologyReferenceDTO.toModel(ontologiesReferenceDTO));
+//            }
+//            factorDao.updateInstanceOntologiesReferences(factorUri, ontologiesReferences);
+//            return new ObjectUriResponse(Response.Status.OK, factorUri).getResponse();
+//        } catch (SPARQLInvalidURIException e) {
+//            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown factor URI", e.getMessage()).getResponse();
+//        } catch (Exception e) {
+//            return new ErrorResponse(e).getResponse();
+//        }
+//    }
 }

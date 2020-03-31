@@ -4,16 +4,13 @@
  *  OpenSILEX
  *  Copyright © INRA 2019
  *  Creation date:  17 December, 2019
- *  Contact: arnaud.charleroy@inra.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ *  Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * ******************************************************************************
  */
 package org.opensilex.core.factor.api;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import org.opensilex.core.factor.dal.FactorModel;
-import org.opensilex.core.ontology.OntologyReference;
 
 /**
  * 
@@ -27,8 +24,6 @@ public class FactorGetDTO{
 
     private String comment;
     
-    private List<OntologyReference> relations = new ArrayList<>();
-
     public URI getUri() {
         return uri;
     }
@@ -51,17 +46,7 @@ public class FactorGetDTO{
 
     public void setComment(String comment) {
         this.comment = comment;
-    }
-
-    public List<OntologyReference> getRelations() {
-        return relations;
-    }
-
-    public void setRelations(List<OntologyReference> relations) {
-        this.relations = relations;
-    }
-    
-    
+    }   
     
     public static FactorGetDTO fromModel(FactorModel model) {
         FactorGetDTO dto = new FactorGetDTO();

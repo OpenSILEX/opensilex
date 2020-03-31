@@ -129,7 +129,7 @@
 
 
          <!-- Keywords -->
-        <b-form-group  required  >
+        <!-- <b-form-group  required  >
          <slot name="keywords">
             <opensilex-FormInputMessageHelper label=component.experiment.keywords helpMessage="component.experiment.keywords-help" >
             </opensilex-FormInputMessageHelper>
@@ -140,7 +140,7 @@
             </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
-        </b-form-group>
+        </b-form-group> -->
 
       </b-form>
     </ValidationObserver>
@@ -170,21 +170,12 @@ export default class ExperimentForm extends Vue {
   uriGenerated = true;
 
   form: ExperimentCreationDTO = {
-    uri: "",
-    label: "",
-    projects: [],
-    startDate: "",
-    endDate: "",
-    objective: "",
-    comment: "",
     keywords: [],
     scientificSupervisors: [],
     technicalSupervisors: [],
     groups: [],
     infrastructures: [],
     installations: [],
-    species: "",
-    isPublic: true,
     variables: [],
     sensors: []
     // lang: "en-US"
@@ -198,25 +189,29 @@ export default class ExperimentForm extends Vue {
 
   clearForm() {
     this.form = {
-      uri: "",
-      label: "",
+      uri: null,
+      label: null,
       projects: [],
-      startDate: "",
-      endDate: "",
-      objective: "",
-      comment: "",
+      startDate: null,
+      endDate: null,
+      objective: null,
+      comment: null,
       keywords: [],
       scientificSupervisors: [],
       technicalSupervisors: [],
       groups: [],
       infrastructures: [],
       installations: [],
-      species: "",
-      isPublic: true,
+      species: null,
+      isPublic: null,
       variables: [],
       sensors: []
       // lang: "en-US"
     };
+  }
+
+  getForm() : ExperimentCreationDTO {
+    return this.form; 
   }
 
   created () {

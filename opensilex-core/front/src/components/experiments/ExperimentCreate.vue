@@ -2,7 +2,11 @@
   <form-wizard 
     @on-loading="setLoading"
     @on-validate="handleValidation"
+    @on-complete="onComplete"
     @on-error="handleErrorMessage"
+
+    @on-create="callCreateExperimentService"
+
     ref="experimentCreateFormWizard"
     shape="square" 
     color="#00a38d">
@@ -38,12 +42,15 @@
 </template>
 
 <script lang="ts">
+
+
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import { ExperimentCreationDTO } from "../../lib/model/experimentCreationDTO";
 import { ExperimentGetDTO } from "../../lib/model/experimentGetDTO";
 import { ExperimentsService } from "../../lib/api/experiments.service";
+
 
 @Component
 export default class ExperimentCreate extends Vue {
@@ -79,6 +86,8 @@ export default class ExperimentCreate extends Vue {
 
   async checkBeforeVariablesStep(){
     let experimentForm: any = this.$refs.experimentForm;
+    experimentForm.validateForm();
+    
     return new Promise((resolve, reject) => {
       setTimeout(() => {
        this.setLoading(true);
@@ -109,19 +118,35 @@ export default class ExperimentCreate extends Vue {
     this.errorMsg = errorMsg
   }
 
+  onComplete(){
 
-  // callCreateExperimentService(form: ExperimentCreationDTO, done) {
-  //   done(
-  //     this.service
-  //       .createExperiment(this.user.getAuthorizationHeader(), form)
-  //       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-  //         let uri = http.response.result;
-  //         console.debug("experiment created", uri);
-  //         let experimentList: any = this.$refs.experimentList;
-  //         experimentList.refresh();
-  //       })
-  //   );
-  // }
+    let experimentForm: any = this.$refs.experimentForm;
+    this.callCreateExperimentService(experimentForm.getForm());
+
+    // return new Promise((resolve, reject) => {
+    //   return this.$emit("on-create", this.$refs.experimentForm, result => {
+    //       if (result instanceof Promise) {
+    //         result.then(resolve).catch(reject);
+    //       } else {
+    //         resolve(result);
+    //       }
+    //     });
+    // }); 
+  }
+
+  callCreateExperimentService(form: ExperimentCreationDTO) {
+    console.log("callCreateExperimentService");
+
+    // done(
+      this.service
+        .createExperiment(this.user.getAuthorizationHeader(), form)
+        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+          let uri = http.response.result;
+          console.debug("experiment created", uri);
+          this.$router.push({ path: '/experiments' });
+        })
+    // );
+  }
 
   // callUpdateExperimentService(form: ExperimentCreationDTO, done) {
   //   done(

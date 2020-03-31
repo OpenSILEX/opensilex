@@ -69,11 +69,10 @@
                 "form-step-errors" : "Some field are required in order to go to the next step"
             },
             "form-wizard" :{
-                "external-ontologies" : "(Optional) External ontologies references",
+                "external-ontologies" : "External ontologies references",
                 "previous" : "Previous",
                 "next" : "Next",
-                "done" : "Done",
-                "cancel" : "Cancel"
+                "done" : "Done"
             }
         },
         "header": {
@@ -249,33 +248,10 @@
             "relation-help" : "relation associated between Reference URI and this local individual",
             "relation-placeholder" : "exactMatch",
             "add" : "add new relation",
-            "update" : "update relations",
             "exactMatch" : "exactmatch",
             "closeMatch" : "closematch",
             "broader" : "broader",
-            "narrower" : "narrower",
-            "no-relation" : "Please choose a relation type",
-            "ontologies-references-label" :"Ontologies References",
-            "link-external" :"Add external references to",
-            "link-external-button" :"Add external references"
-        },
-        "germplasm": {
-            "uri": "Germplasm URI",
-            "uri-help": "Unique germplasm identifier",
-            "alias-placeholder": "Enter germplasm label",
-            "filter-placeholder": "Use this field to filter germplasm",
-            "germplasm": "germplasm",
-            "add": "add germplasm",
-            "update": "update germplasm",
-            "alias": "label",
-            "alias-help": "Name used to define this germplasm",
-            "form-alias-placeholder": "Irrigation, Shading, Variety, etc.",
-            "rdfType": "rdfType",
-            "rdfType-help": "Germplasm Type",
-            "form-rdfType-placeholder": "Variety, Accession, SeedLot",
-            "errors": {
-                "germplasm-already-exists": "Germplasm already exists with this URI."
-            }
+            "narrower" : "narrower"
         }
     },
     "credential-groups": {

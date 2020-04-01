@@ -1,6 +1,6 @@
  
 ########################
-##  GLOBAL VARIABLES 
+##GLOBAL VARIABLES 
 ########################
 variables:
  GIT_DEPTH: 5
@@ -62,7 +62,7 @@ variables:
   except:
     - schedules
   artifacts:
-    expire_in: "3 week"  
+    expire_in: "3 week"
     
 # ########################
 # ##  DEFAULT BUILD CACHE 
@@ -78,7 +78,7 @@ opensilex:build:
       - $REVISION
   only:
     - master
-      
+    
 # Trigger pipeline for sixtine module deployment
 trigger:sixtine:build:
   stage: deploy
@@ -100,3 +100,185 @@ trigger:phis:deploy:test:
     - master    
   needs: 
     - job: "opensilex:build"
+
+
+# ##########################################
+# ##  BUILD & DEPLOY FOR MISTEA TEAM
+# ##########################################
+
+# #########
+# Alice
+# #########
+
+alice:build:
+  <<: *build_template_with_opensilex
+  script: 
+    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
+    - mv $BUILD_PATH/opensilex-release-$REVISION $REVISION
+  artifacts:
+    paths:
+      - $REVISION
+  only:
+    - alice
+
+trigger:alice:deploy:test:
+  stage: deploy
+  image: curlimages/curl
+  script:
+    - curl --request POST --form "variables[DEPLOY]=alice-test" --form "token=$CI_JOB_TOKEN" --form "ref=alice" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+  only:
+    - alice    
+  needs: 
+    - job: "alice:build"    
+    
+# #########
+# Anne
+# #########
+
+anne:build:
+  <<: *build_template_with_opensilex
+  script: 
+    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
+    - mv $BUILD_PATH/opensilex-release-$REVISION $REVISION
+  artifacts:
+    paths:
+      - $REVISION
+  only:
+    - anne
+    
+trigger:anne:deploy:test:
+  stage: deploy
+  image: curlimages/curl
+  script:
+    - curl --request POST --form "variables[DEPLOY]=anne-test" --form "token=$CI_JOB_TOKEN" --form "ref=anne" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+  only:
+    - anne    
+  needs: 
+    - job: "anne:build"    
+    
+    
+# #########
+# Arnaud
+# #########
+
+arnaud:build:
+  <<: *build_template_with_opensilex
+  script: 
+    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
+    - mv $BUILD_PATH/opensilex-release-$REVISION $REVISION
+  artifacts:
+    paths:
+      - $REVISION
+  only:
+    - arnaud
+    
+trigger:arnaud:deploy:test:
+  stage: deploy
+  image: curlimages/curl
+  script:
+    - curl --request POST --form "variables[DEPLOY]=arnaud-test" --form "token=$CI_JOB_TOKEN" --form "ref=arnaud" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+  only:
+    - arnaud
+  needs: 
+    - job: "arnaud:build"
+    
+# #########
+# Julien
+# #########
+    
+julien:build:
+  <<: *build_template_with_opensilex
+  script: 
+    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
+    - mv $BUILD_PATH/opensilex-release-$REVISION $REVISION
+  artifacts:
+    paths:
+      - $REVISION
+  only:
+    - julien
+    
+trigger:julien:deploy:test:
+  stage: deploy
+  image: curlimages/curl
+  script:
+    - curl --request POST --form "variables[DEPLOY]=julien-test" --form "token=$CI_JOB_TOKEN" --form "ref=julien" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+  only:
+    - julien
+  needs: 
+    - job: "julien:build"       
+
+# #########
+# Renaud
+# #########
+
+renaud:build:
+  <<: *build_template_with_opensilex
+  script: 
+    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
+    - mv $BUILD_PATH/opensilex-release-$REVISION $REVISION
+  artifacts:
+    paths:
+      - $REVISION
+  only:
+    - renaud
+    
+trigger:renaud:deploy:test:
+  stage: deploy
+  image: curlimages/curl
+  script:
+    - curl --request POST --form "variables[DEPLOY]=renaud-test" --form "token=$CI_JOB_TOKEN" --form "ref=renaud" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+  only:
+    - renaud
+  needs: 
+    - job: "renaud:build"   
+    
+# #########
+# Vincent
+# #########
+
+vincent:build:
+  <<: *build_template_with_opensilex
+  script: 
+    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
+    - mv $BUILD_PATH/opensilex-release-$REVISION $REVISION
+  artifacts:
+    paths:
+      - $REVISION
+  only:
+    - vincent
+
+trigger:vincent:deploy:test:
+  stage: deploy
+  image: curlimages/curl
+  script:
+    - curl --request POST --form "variables[DEPLOY]=vincent-test" --form "token=$CI_JOB_TOKEN" --form "ref=vincent" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+  only:
+    - vincent
+  needs: 
+    - job: "vincent:build"
+
+
+# #########
+# Ephesia
+# #########
+
+ephesia:build:
+  <<: *build_template_with_opensilex
+  script: 
+    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
+    - mv $BUILD_PATH/opensilex-release-$REVISION $REVISION
+  artifacts:
+    paths:
+      - $REVISION
+  only:
+    - ephesia
+
+trigger:ephesia:deploy:test:
+  stage: deploy
+  image: curlimages/curl
+  script:
+    - curl --request POST --form "variables[DEPLOY]=ephesia-test" --form "token=$CI_JOB_TOKEN" --form "ref=ephesia" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+  only:
+    - ephesia
+  needs: 
+    - job: "ephesia:build"    

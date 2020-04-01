@@ -103,7 +103,6 @@ public abstract class ExperimentDTO {
         return this;
     }
 
-    @Required
     @ApiModelProperty(example = "2020-02-20")
     @DateConstraint
     public String getEndDate() {

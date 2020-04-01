@@ -512,8 +512,9 @@
 
         }
 
-        formatDate(value: any): String {
-            return this.$moment().year(value.year).month(value.month).date(value.day).format('DD/MM/YYYY');
+        formatDate(date: any): String {
+            return date;
+            // return this.$moment().year(date.year).month(value.month).date(value.day).format('DD/MM/YYYY');
         }
 
         getProjectName(uri: String): String {

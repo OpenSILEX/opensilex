@@ -44,7 +44,7 @@
         <module>opensilex-front</module>
         
         <!-- Extension modules -->
-        <module>inrae-sixtine</module>
+        <!--<module>inrae-sixtine</module>-->
         <module>phis-ws/phis2-ws</module>
             
         <!-- Development module -->
@@ -117,11 +117,11 @@
             <artifactId>phis2ws</artifactId>
             <version>${revision}</version>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>inrae-sixtine</artifactId>
             <version>${revision}</version>
-        </dependency> 
+        </dependency> -->
     </dependencies>
       
     <build>

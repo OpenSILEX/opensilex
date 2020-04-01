@@ -128,8 +128,8 @@ variables:
   image: instrumentisto/rsync-ssh
   script:
     - apk add curl git
+    - rm -R $CI_PROJECT_DIR/opensilex-dev-tools.git
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr:OpenSILEX/opensilex-dev-tools.git
-
     # Create directories
     - ls $CI_PROJECT_DIR/$REVISION
     - echo "Create directory ${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}"

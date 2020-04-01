@@ -204,15 +204,18 @@
     import { Component } from "vue-property-decorator";
     import Vue from "vue";
     import VueConstructor from "vue";
-    import { ExperimentsService } from "../../lib/api/experiments.service";
-    import { ProjectsService } from "../../lib/api/projects.service";
-    import { SpeciesService } from "../../lib/api/species.service";
-    import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
-    import { ExperimentGetDTO } from "../../lib//model/experimentGetDTO";
-    import { ProjectCreationDTO } from "../../lib//model/projectCreationDTO";
-    import { SpeciesDTO } from "../../lib//model/speciesDTO";
+    // import { ExperimentsService } from "../../lib/api/experiments.service";
+    // import { ProjectsService } from "../../lib/api/projects.service";
+    // import { SpeciesService } from "../../lib/api/species.service";
+    // import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
+    // import { ExperimentGetDTO } from "../../lib//model/experimentGetDTO";
+    // import { ProjectCreationDTO } from "../../lib//model/projectCreationDTO";
+    // import { SpeciesDTO } from "../../lib//model/speciesDTO";
 
-    import VueRouter from "vue-router";
+import VueRouter from "vue-router";
+
+import { ProjectCreationDTO, SpeciesDTO, ExperimentGetDTO, ExperimentsService, ProjectsService, SpeciesService } from "opensilex-core/index";
+import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
     export class ExperimentState {
 
@@ -512,8 +515,9 @@
 
         }
 
-        formatDate(value: any): String {
-            return this.$moment().year(value.year).month(value.month).date(value.day).format('DD/MM/YYYY');
+        formatDate(date: any): String {
+            return date;
+            // return this.$moment().year(date.year).month(value.month).date(value.day).format('DD/MM/YYYY');
         }
 
         getProjectName(uri: String): String {

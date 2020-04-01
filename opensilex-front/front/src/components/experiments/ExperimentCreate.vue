@@ -2,7 +2,11 @@
   <form-wizard 
     @on-loading="setLoading"
     @on-validate="handleValidation"
+    @on-complete="onComplete"
     @on-error="handleErrorMessage"
+
+    @on-create="callCreateExperimentService"
+
     ref="experimentCreateFormWizard"
     shape="square" 
     color="#00a38d">
@@ -13,24 +17,23 @@
         {{ $t('component.experiment.form-wizard.label') }}
       </i>
     </h2>
+
     <tab-content
       v-bind:title="$t('component.experiment.form-wizard.general-informations')"
-      :before-change="checkBeforeVariablesStep"
-    >
-      <opensilex-core-ExperimentForm ref="experimentForm"></opensilex-core-ExperimentForm>
+      :before-change="checkBeforeVariablesStep">
+      <opensilex-core-ExperimentForm ref="experimentForm">
+      </opensilex-core-ExperimentForm>
     </tab-content>
+
     <tab-content
-      v-bind:title="$t('component.experiment.form-wizard.variables')"
-    >Todo Add LinkExperimentVariable component</tab-content>
-    <tab-content
-      v-bind:title="$t('component.experiment.form-wizard.factors')"
-    >Todo Add LinkExperimentFactors component</tab-content>
-    <tab-content
+      v-bind:title="$t('component.experiment.form-wizard.users-groups-projects')">
+      <opensilex-core-ExperimentForm2 ref="experimentForm2">
+      </opensilex-core-ExperimentForm2>
+    </tab-content>
+
+    <!-- <tab-content
       v-bind:title="$t('component.experiment.form-wizard.sensors')"
-    >Todo Add LinkExperimentSensors component</tab-content>
-    <tab-content
-      v-bind:title="$t('component.experiment.form-wizard.sensors')"
-    >Done recap ?</tab-content>
+    >Done recap ?</tab-content> -->
     <div v-if="this.errorMsg">
       <span class="error">{{ $t(getErrorMsg) }}</span>
     </div>
@@ -39,12 +42,15 @@
 </template>
 
 <script lang="ts">
+
+
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { ExperimentCreationDTO } from "../../lib/model/experimentCreationDTO";
-import { ExperimentGetDTO } from "../../lib/model/experimentGetDTO";
-import { ExperimentsService } from "../../lib/api/experiments.service";
+import { ExperimentCreationDTO, ExperimentGetDTO, ExperimentsService } from "opensilex-core/index";
+import ExperimentForm from "./ExperimentForm.vue";
+import ExperimentForm2 from "./ExperimentForm2.vue";
+
 
 @Component
 export default class ExperimentCreate extends Vue {
@@ -80,6 +86,8 @@ export default class ExperimentCreate extends Vue {
 
   async checkBeforeVariablesStep(){
     let experimentForm: any = this.$refs.experimentForm;
+    experimentForm.validateForm();
+    
     return new Promise((resolve, reject) => {
       setTimeout(() => {
        this.setLoading(true);
@@ -110,19 +118,56 @@ export default class ExperimentCreate extends Vue {
     this.errorMsg = errorMsg
   }
 
+  fillForm(formPart1 : ExperimentForm, formPart2: ExperimentForm2): ExperimentCreationDTO {
 
-  // callCreateExperimentService(form: ExperimentCreationDTO, done) {
-  //   done(
-  //     this.service
-  //       .createExperiment(this.user.getAuthorizationHeader(), form)
-  //       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-  //         let uri = http.response.result;
-  //         console.debug("experiment created", uri);
-  //         let experimentList: any = this.$refs.experimentList;
-  //         experimentList.refresh();
-  //       })
-  //   );
-  // }
+    let dto: ExperimentCreationDTO = formPart1.getForm();
+
+    let keywordsForm: string = formPart1.getKeywords();
+    if(keywordsForm !== undefined && keywordsForm !== null){
+      dto.keywords = keywordsForm.split(" ");
+    }
+
+    let dto2: ExperimentCreationDTO = formPart2.getForm();
+    dto.groups = dto2.groups;
+    dto.projects = dto2.projects;
+    dto.scientificSupervisors = dto2.scientificSupervisors;
+    dto.technicalSupervisors = dto2.technicalSupervisors;
+    dto.infrastructures = dto2.infrastructures;
+    return dto;
+  }
+
+  onComplete(){
+
+    let experimentForm: any = this.$refs.experimentForm;
+    let experimentForm2: any = this.$refs.experimentForm2;
+    let dto: ExperimentCreationDTO = this.fillForm(experimentForm,experimentForm2);
+
+    console.log(dto);
+    this.callCreateExperimentService(dto);
+
+    // return new Promise((resolve, reject) => {
+    //   return this.$emit("on-create", this.$refs.experimentForm, result => {
+    //       if (result instanceof Promise) {
+    //         result.then(resolve).catch(reject);
+    //       } else {
+    //         resolve(result);
+    //       }
+    //     });
+    // }); 
+  }
+
+  callCreateExperimentService(form: ExperimentCreationDTO) {
+
+    // done(
+      this.service
+        .createExperiment(this.user.getAuthorizationHeader(), form)
+        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+          let uri = http.response.result;
+          console.debug("experiment created", uri);
+          this.$router.push({ path: '/experiments' });
+        })
+    // );
+  }
 
   // callUpdateExperimentService(form: ExperimentCreationDTO, done) {
   //   done(

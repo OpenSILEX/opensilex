@@ -3,10 +3,25 @@
         "experiment": {
             "uri" : "uri",
             "uri-help" :"Identifiant unique de l'expérimentation",
-            "label" : "label",
+            "label" : "Label",
+            "label-placeholder" : "ZA17",
             "label-help" :"Nom utilisé pour identifier l'expérimentation",
+            "objective" : "Objectif",
+            "objective-placeholder" : "",
             "comment" : "Description",
-            "comment-help" :"Informations supplémentaires",
+            "comment-placeholder" : "",
+            "startDate" : "Date de début",
+            "endDate" : "Date de fin",
+            "campaign" : "Campagne",
+            "campaign-placeholder" : "2020",
+            "species" : "Espèce",
+            "keywords" : "Mot clés",
+            "keywords-placeholder" : "Opensilex Irrigation",
+            "groups" : "Groupes",
+            "projects" : "Projets",
+            "technicalSupervisors" : "Responsables technique",
+            "scientificSupervisors" : "Responsables scientifique",
+            "infrastructures" : "Infrastructures",
             "common": {
                 "status": {
                     "finished": "Terminé",
@@ -48,9 +63,8 @@
             "form-wizard": {
                 "label" : "Assistant de création d'expérimentation",
                 "general-informations" : "Informations générales",
-                "variables" : "Variables mesurées",
-                "factors" : "Facteurs contrôlés ",
-                "sensors" : "Sensors utilisés"
+                "users-groups-projects" : "Utilisateurs, groupes et projets",
+                "variables-sensors-factors" : "Variables, facteurs et capteurs"
             }
         }
     }

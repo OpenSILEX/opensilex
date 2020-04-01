@@ -12,9 +12,7 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { ExperimentCreationDTO } from "../../lib/model/experimentCreationDTO";
-import { ExperimentGetDTO } from "../../lib/model/experimentGetDTO";
-import { ExperimentsService } from "../../lib/api/experiments.service";
+import { ExperimentCreationDTO, ExperimentGetDTO, ExperimentsService } from "opensilex-core/index";
 
 /**
   * Manage interaction between webservice 

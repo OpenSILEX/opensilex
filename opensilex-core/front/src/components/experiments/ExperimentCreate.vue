@@ -50,6 +50,8 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import { ExperimentCreationDTO } from "../../lib/model/experimentCreationDTO";
 import { ExperimentGetDTO } from "../../lib/model/experimentGetDTO";
 import { ExperimentsService } from "../../lib/api/experiments.service";
+import ExperimentForm from "./ExperimentForm.vue";
+import ExperimentForm2 from "./ExperimentForm2.vue";
 
 
 @Component
@@ -118,17 +120,32 @@ export default class ExperimentCreate extends Vue {
     this.errorMsg = errorMsg
   }
 
+  fillForm(formPart1 : ExperimentForm, formPart2: ExperimentForm2): ExperimentCreationDTO {
+
+    let dto: ExperimentCreationDTO = formPart1.getForm();
+
+    let keywordsForm: string = formPart1.getKeywords();
+    if(keywordsForm !== undefined && keywordsForm !== null){
+      dto.keywords = keywordsForm.split(" ");
+    }
+
+    let dto2: ExperimentCreationDTO = formPart2.getForm();
+    dto.groups = dto2.groups;
+    dto.projects = dto2.projects;
+    dto.scientificSupervisors = dto2.scientificSupervisors;
+    dto.technicalSupervisors = dto2.technicalSupervisors;
+    dto.infrastructures = dto2.infrastructures;
+    return dto;
+  }
+
   onComplete(){
 
     let experimentForm: any = this.$refs.experimentForm;
-    let keywordsForm: string = experimentForm.getKeywords();
+    let experimentForm2: any = this.$refs.experimentForm2;
+    let dto: ExperimentCreationDTO = this.fillForm(experimentForm,experimentForm2);
 
-    let form: ExperimentCreationDTO = experimentForm.getForm();
-    if(keywordsForm !== undefined && keywordsForm !== null){
-      form.keywords = keywordsForm.split(" ");
-      console.log("keywords : "+form.keywords);
-    }
-    this.callCreateExperimentService(form);
+    console.log(dto);
+    this.callCreateExperimentService(dto);
 
     // return new Promise((resolve, reject) => {
     //   return this.$emit("on-create", this.$refs.experimentForm, result => {
@@ -142,8 +159,6 @@ export default class ExperimentCreate extends Vue {
   }
 
   callCreateExperimentService(form: ExperimentCreationDTO) {
-    console.log("callCreateExperimentService");
-    console.log("campaign : " +form.campaign);
 
     // done(
       this.service

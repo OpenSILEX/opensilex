@@ -104,7 +104,6 @@ export default class ExperimentForm2 extends ExperimentForm {
     this.loadInfrastructures();
   }
 
-
   loadProjects() {
     let service: ProjectsService = this.$opensilex.getService("opensilex.ProjectsService");
     service.searchProjects(
@@ -146,7 +145,6 @@ export default class ExperimentForm2 extends ExperimentForm {
           this.technicalSupervisors.push({ value: dto.uri, text: displayName});
           this.scientificSupervisors.push({ value: dto.uri, text: displayName});
        }
-
     }).catch(this.$opensilex.errorHandler);
   }
 
@@ -163,7 +161,6 @@ export default class ExperimentForm2 extends ExperimentForm {
     }).catch(this.$opensilex.errorHandler);
   }
 }
-
 
 </script>
 

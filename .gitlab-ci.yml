@@ -34,7 +34,34 @@ variables:
  YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/cache_yarn"
  NODE_CACHE: "$CI_PROJECT_DIR/opensilex-dev/.node"
  EMBDED_MONGO_CACHE: "/root/.embedmongo/"
- 
+
+
+########################
+##  BUILD TEMPLATE
+########################
+
+.build:instance: &build_template_with_opensilex
+  <<: *cache_dependencies
+  before_script: 
+    - |
+      if [ ! -z "$COMMIT_SHA_OPENSILEX_DEV" ]; then
+        git checkout $COMMIT_SHA_OPENSILEX_DEV
+      fi
+    - rm -r $CI_PROJECT_DIR/phis-ws
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/phis-ws.git --branch modularity
+    - |
+      if [ ! -z "$COMMIT_SHA_PHIS" ]; then
+        cd phis-ws
+        git checkout $COMMIT_SHA_PHIS
+        cd ..
+      fi    
+  stage: build
+  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
+  except:
+    - schedules
+  artifacts:
+    expire_in: "3 week"
+
 
 ########################
 ##  DEPLOY OPENSILEX TEST TEMPLATE

@@ -73,18 +73,14 @@
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { ExperimentCreationDTO } from "../../lib/model/experimentCreationDTO";
-import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
+
 import ExperimentForm from "./ExperimentForm.vue";
 
-import { ProjectsService } from "../../lib/api/projects.service";
-import { ProjectCreationDTO } from "../../lib//model/projectCreationDTO";
-import { InfrastructuresService } from "../../lib/api/infrastructures.service";
-import { InfrastructureGetDTO } from "../../lib/model/infrastructureGetDTO";
-import { UsersService } from "../../../../../opensilex-rest/front/src/lib/api/users.service";
-import { UserGetDTO } from "../../../../../opensilex-rest/front/src/lib/model/userGetDTO";
-import { GroupsService } from "../../../../../opensilex-rest/front/src/lib/api/groups.service";
-import { GroupGetDTO } from "../../../../../opensilex-rest/front/src/lib/model/groupGetDTO";
+import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+
+import { ProjectsService, ProjectCreationDTO} from "opensilex-core/index";
+import { InfrastructuresService, InfrastructureGetDTO} from "opensilex-core/index";
+import { UsersGroupsProfilesService, GroupGetDTO, UserGetDTO } from "opensilex-rest/index";
 
 @Component
 export default class ExperimentForm2 extends ExperimentForm {
@@ -119,7 +115,7 @@ export default class ExperimentForm2 extends ExperimentForm {
   }
 
   loadGroups(){
-    let service: GroupsService = this.$opensilex.getService("opensilex.GroupsService");
+    let service: UsersGroupsProfilesService = this.$opensilex.getService("opensilex.UsersGroupsProfilesService");
     service.searchGroups(
       this.user.getAuthorizationHeader(),undefined,null,0,100
     )
@@ -132,7 +128,7 @@ export default class ExperimentForm2 extends ExperimentForm {
   }
 
   loadUsers(){
-    let service: UsersService = this.$opensilex.getService("opensilex.UsersService");
+    let service: UsersGroupsProfilesService = this.$opensilex.getService("opensilex.UsersGroupsProfilesService");
     service.searchUsers(
       this.user.getAuthorizationHeader(),undefined,null,0,100
     )

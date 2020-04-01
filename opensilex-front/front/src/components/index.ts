@@ -27,6 +27,12 @@ import FactorLevelView from './factors/FactorLevelView.vue';
 import FactorLevelList from './factors/FactorLevelList.vue';
 import FactorLevelForm from './factors/FactorLevelForm.vue';
 
+import ExperimentForm from './experiments/ExperimentForm.vue';
+import ExperimentForm2 from './experiments/ExperimentForm2.vue';
+import ExperimentList from './experiments/ExperimentList.vue';
+import ExperimentCreate from './experiments/ExperimentCreate.vue';
+import ExperimentView from './experiments/ExperimentView.vue';
+
 export default {
     'opensilex-DefaultFooterComponent': DefaultFooterComponent,
     'opensilex-DefaultHeaderComponent': DefaultHeaderComponent,
@@ -57,6 +63,13 @@ export default {
     "opensilex-FactorLevelView": FactorLevelView,
     "opensilex-FactorLevelList": FactorLevelList,
     "opensilex-FactorLevelForm": FactorLevelForm,
+
+    // experiments
+    "opensilex-core-ExperimentForm": ExperimentForm,
+    "opensilex-core-ExperimentForm2": ExperimentForm2,
+    "opensilex-core-ExperimentList": ExperimentList,
+    "opensilex-core-ExperimentCreate": ExperimentCreate,
+    "opensilex-core-ExperimentView": ExperimentView,
 
     'opensilex-ToDoComponent': ToDoComponent
     

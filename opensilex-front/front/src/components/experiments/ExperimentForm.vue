@@ -151,10 +151,9 @@
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { ExperimentCreationDTO } from "../../lib/model/experimentCreationDTO";
-import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
-import { SpeciesService } from "../../lib/api/species.service";
-import { SpeciesDTO } from "../../lib//model/speciesDTO";
+
+import { ExperimentCreationDTO, SpeciesService, SpeciesDTO } from "opensilex-core/index";
+import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
 export default class ExperimentForm extends Vue {

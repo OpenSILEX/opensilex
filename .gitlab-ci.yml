@@ -112,6 +112,7 @@ variables:
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ${HOME}/.ssh/config
     - echo "$SSH_KEY" >> ${HOME}/.ssh/id_rsa
     - chmod 600 ${HOME}/.ssh/id_rsa
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr:OpenSILEX/opensilex-dev-tools.git
 
 ########################
 ##  DEPLOY OPENSILEX TEST TEMPLATE
@@ -127,7 +128,6 @@ variables:
     - apk add curl
     # Create directories
     - ls $CI_PROJECT_DIR/$REVISION
-    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr:OpenSILEX/opensilex-dev-tools.git
     - echo "Create directory ${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}"
     - echo "Create directory ${RSYNC_INSTANCES_DATA}/${RSYNC_DIR}"
     - echo "Create directory ${RSYNC_INSTANCES_LOGS}"

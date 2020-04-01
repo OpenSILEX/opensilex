@@ -8,7 +8,7 @@ variables:
  # As of Maven 3.3.0 instead of this you may define these options in `.mvn/maven.config` so the same config is used
  # when running from the command line.
  MAVEN_CLI_OPTS: "--batch-mode --show-version "
- BUILD_PATH: "$CI_PROJECT_DIR/opensilex-release/target"
+ BUILD_PATH: "opensilex-release/target/opensilex-release"
  # DEFAULT SERVER MAVEN VERSION
  MVN_VERSION: 3.6.3
  # DEFAULT SERVER JAVA VERSION
@@ -19,7 +19,7 @@ variables:
  RSYNC_INSTANCES_LOGS: "/home/phis/opensilex-instances/logs"
  RSYNC_INSTANCES_LOGS_ARCHIVED: "/home/phis/opensilex-instances/logs/old"
  REVISION: 'INSTANCE-SNAPSHOT'
- DEV_TOOLS_CONFIGURATION_FILES_PATH: "instances-configuration"
+ DEV_TOOLS_CONFIGURATION_FILES_PATH: "$CI_PROJECT_DIR/opensilex-dev-tools"
  STOP_SERVER_OPTS: "--adminPort=$ADMIN_PORT --host=$REMOTE_SERVER_IP --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
  START_SERVER_OPTS: "--adminPort=$ADMIN_PORT --host=$REMOTE_SERVER_IP --port=$PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
  # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
@@ -27,79 +27,9 @@ variables:
  MAVEN_CACHE_FOLDER: "$CI_PROJECT_DIR/.m2/repository"
  MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
  YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/cache_yarn"
- NODE_CACHE: "$CI_PROJECT_DIR/.node"
+ NODE_CACHE: "$CI_PROJECT_DIR/opensilex-dev/.node"
  EMBDED_MONGO_CACHE: "/root/.embedmongo/"
- GITLAB_HTTPS: "false"
-
-
-########################
-##  CACHE TEMPLATE
-########################
-
-# Cache downloaded dependencies and plugins between builds.
-# To keep cache across branches add 'key: "$CI_BUILD_JOB_NAME"'
-.cache_dependencies: &cache_dependencies
-  cache:
-    key: "${CI_JOB_NAME}"
-    paths:
-      - $YARN_CACHE_FOLDER
-      - $MAVEN_CACHE_FOLDER
-      - $NODE_CACHE
-      - $EMBDED_MONGO_CACHE
-
-
-########################
-##  BUILD TEMPLATE
-########################
-
-.build:instance: &build_template_with_opensilex
-  <<: *cache_dependencies
-  before_script: 
-  stage: build
-  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
-  except:
-    - schedules
-  artifacts:
-    expire_in: "3 week"
-
-########################
-##  DEPLOY SSH CONFIGURATION TEMPLATE
-########################
-.deploy_opensilex_before_script: &deploy_opensilex_before_script
-  before_script:
-    # test variables before deployement
-    -  if [ -z "$RSYNC_USER" ]; then echo "Missing RSYNC_USER variable"; exit 1; fi
-    -  if [ -z "$REMOTE_SERVER_IP" ]; then echo "Missing REMOTE_SERVER_IP variable"; exit 1; fi
-    -  if [ -z "$CONFIGURATION_FILES_PATH" ]; then echo "Missing CONFIGURATION_FILES_PATH variable"; exit 1; fi
-    -  if [ -z "$INSTANCE_CONFIGURATION_FILE_NAME" ]; then echo "Missing INSTANCE_CONFIGURATION_FILE_NAME variable"; exit 1; fi
-    -  if [ -z "$SSH_KEY" ]; then echo "Missing SSH_KEY variable"; exit 1; fi
-    -  if [ -z "$ADMIN_PORT" ]; then echo "Missing ADMIN_PORT variable"; exit 1; fi
-    -  if [ -z "$PORT" ]; then echo "Missing PORT variable"; exit 1; fi
-    ##
-    ## Create the SSH directory and give it the right permissions
-    ##
-    - mkdir -p ${HOME}/.ssh
-    - chmod 700 ${HOME}/.ssh
-    ##
-    ## Install ssh-agent if not already installed, it is required by Docker.
-    ## (change apt-get to yum if you use an RPM-based image)
-    ##
-    - 'which ssh-agent || ( apt-get update && apt-get install openssh-client -y )'
-    ##
-    ## Run ssh-agent (inside the build environment)
-    ##
-    - eval $(ssh-agent -s)
-    ##
-    ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
-    ## We're using tr to fix line endings which makes ed25519 keys work
-    ## without extra base64 encoding.
-    ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
-    ##
-    - mkdir -p ${HOME}/.ssh && touch ${HOME}/.ssh/known_hosts
-    - ssh-keyscan -H "$REMOTE_SERVER_IP" >> ${HOME}/.ssh/known_hosts
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ${HOME}/.ssh/config
-    - echo "$SSH_KEY" >> ${HOME}/.ssh/id_rsa
-    - chmod 600 ${HOME}/.ssh/id_rsa
+ 
 
 ########################
 ##  DEPLOY OPENSILEX TEST TEMPLATE
@@ -112,23 +42,19 @@ variables:
   environment:
     url: http://$REMOTE_SERVER_IP:$PORT
   script:
-    - apk add curl git
-    - rm -R $CI_PROJECT_DIR/opensilex-dev-tools
-    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-dev-tools.git --branch master $CI_PROJECT_DIR/opensilex-dev-tools
-    - ls $CI_PROJECT_DIR/opensilex-dev-tools
+    - apk add curl
     # Create directories
     - ls $CI_PROJECT_DIR/$REVISION
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr:OpenSILEX/opensilex-dev-tools.git
     - echo "Create directory ${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}"
     - echo "Create directory ${RSYNC_INSTANCES_DATA}/${RSYNC_DIR}"
     - echo "Create directory ${RSYNC_INSTANCES_LOGS}"
     - echo "Create directory ${RSYNC_INSTANCES_LOGS_ARCHIVED}"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $RSYNC_USER@$REMOTE_SERVER_IP "mkdir -p $RSYNC_INSTANCES_PATH/$RSYNC_DIR; mkdir -p $RSYNC_INSTANCES_LOGS; mkdir -p $RSYNC_INSTANCES_LOGS_ARCHIVED; mkdir -p $RSYNC_INSTANCES_DATA/$RSYNC_DIR;"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $RSYNC_USER@$REMOTE_SERVER_IP "mkdir -p ${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}; mkdir -p ${RSYNC_INSTANCES_LOGS}; mkdir -p ${RSYNC_INSTANCES_LOGS_ARCHIVED}; mkdir -p $RSYNC_INSTANCES_DATA/${RSYNC_DIR};"
     - echo "Upload files"
-    - rsync -arzv -e "ssh  -i ${HOME}/.ssh/id_rsa" $RSYNC_INSTANCES_OPTIONS  $CI_PROJECT_DIR/$REVISION/* $RSYNC_USER@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_PATH/$RSYNC_DIR
-    - echo "ls ${CONFIGURATION_FILES_PATH}"
-    - ls $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGURATION_FILES_PATH
-    - echo "scp -i ${HOME}/.ssh/id_rsa -o 'StrictHostKeyChecking no' $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGURATION_FILES_PATH/* ${RSYNC_USER}@${REMOTE_SERVER_IP}:${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}"
-    - scp -i ${HOME}/.ssh/id_rsa -o "StrictHostKeyChecking no" $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGURATION_FILES_PATH/* $RSYNC_USER@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_PATH/$RSYNC_DIR
+    - rsync -arzv -e "ssh  -i ${HOME}/.ssh/id_rsa" $RSYNC_INSTANCES_OPTIONS  $CI_PROJECT_DIR/$REVISION/* $RSYNC_USER@$REMOTE_SERVER_IP:${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}
+    - echo "scp -i ${HOME}/.ssh/id_rsa -o 'StrictHostKeyChecking no' ${CONFIGURATION_FILES_PATH}/* ${RSYNC_USER}@${REMOTE_SERVER_IP}:${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}"
+    - scp -i ${HOME}/.ssh/id_rsa -o "StrictHostKeyChecking no" $CONFIGURATION_FILES_PATH/* $RSYNC_USER@$REMOTE_SERVER_IP:${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}
     - echo "Remove dependencies list cache"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $RSYNC_USER@$REMOTE_SERVER_IP "rm -f ${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}/.opensilex.dependencies"
     - echo "Check files"
@@ -140,45 +66,44 @@ variables:
     - schedules    
     
 # #########
-# VINCENT
+# Arnaud
 # #########
 
-vincent:build:
+arnaud:build:
   <<: *build_template_with_opensilex
   script: 
     - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
-    - ls  $BUILD_PATH/
-    - ls  $BUILD_PATH/opensilex-release-$REVISION
     - mv $BUILD_PATH/opensilex-release-$REVISION $CI_PROJECT_DIR/$REVISION
   artifacts:
     paths:
       - $CI_PROJECT_DIR/$REVISION
   only:
-    - vincent
+    - arnaud
+    
     
 ###################################
-##  VINCENT-TEST-SNAPSHOT-DEPLOYMENT
+##  ARNAUD-TEST-SNAPSHOT-DEPLOYMENT
 ###################################
 
-test:vincent:deploy:
+test:arnaud:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   when: on_success  
   variables:
     RSYNC_USER: "phis"
     REMOTE_SERVER_IP: "138.102.159.37"
-    RSYNC_DIR: "mistea/vincent"
-    CONFIGURATION_FILES_PATH: "${DEV_TOOLS_CONFIGURATION_FILES_PATH}/mistea/vincent"
+    RSYNC_DIR: "mistea/arnaud"
+    CONFIGURATION_FILES_PATH: "$DEV_TOOLS_CONFIGURATION_FILES_PATH/mistea/arnaud"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-    ADMIN_PORT: 4089
-    PORT: 8089
+    ADMIN_PORT: 4086
+    PORT: 8086
     PROJECT_ID: 403
-    BRANCH: vincent
+    BRANCH: arnaud
   only:
-    - vincent
+    - arnaud
   environment:
-    name: vincent-test
+    name: arnaud-test
     url: http://138.102.159.37:8086
   needs:
-    - vincent:build
+    - arnaud:build

@@ -12,10 +12,12 @@ import java.net.URI;
  * @author vince
  */
 public class ResourceGetDTO {
-       
+
     protected URI uri;
-    
+
     protected URI type;
+
+    protected String typeLabel;
 
     public URI getUri() {
         return uri;
@@ -32,6 +34,13 @@ public class ResourceGetDTO {
     public void setType(URI type) {
         this.type = type;
     }
-    
-    
+
+    public String getTypeLabel() {
+        return typeLabel;
+    }
+
+    public void setTypeLabel(String typeLabel) {
+        this.typeLabel = typeLabel;
+    }
+
 }

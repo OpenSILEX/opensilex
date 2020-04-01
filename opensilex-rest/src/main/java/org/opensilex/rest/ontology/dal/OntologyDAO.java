@@ -24,11 +24,12 @@ public final class OntologyDAO {
         this.sparql = sparql;
     }
 
-    public ResourceTree<ClassModel> searchSubClasses(URI parent, UserModel user) throws Exception {
+    public ResourceTree<ClassModel> searchSubClasses(URI parent, UserModel user, boolean excludeRoot) throws Exception {
         return sparql.searchResourceTree(
                 ClassModel.class,
-                user.getLang(),
+                user.getLanguage(),
                 parent,
+                excludeRoot,
                 (SelectBuilder select) -> {
                     if (parent != null) {
                         select.addFilter(SPARQLQueryHelper.eq(ClassModel.PARENT_FIELD, parent));
@@ -37,11 +38,12 @@ public final class OntologyDAO {
         );
     }
 
-    public ResourceTree<PropertyModel> searchProperties(URI parent, UserModel user) throws Exception {
+    public ResourceTree<PropertyModel> searchProperties(URI parent, UserModel user, boolean excludeRoot) throws Exception {
         return sparql.searchResourceTree(
                 PropertyModel.class,
-                user.getLang(),
+                user.getLanguage(),
                 parent,
+                excludeRoot,
                 (SelectBuilder select) -> {
                     if (parent != null) {
                         select.addFilter(SPARQLQueryHelper.eq(PropertyModel.PARENT_FIELD, parent));

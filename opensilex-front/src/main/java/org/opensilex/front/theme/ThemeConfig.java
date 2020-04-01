@@ -8,10 +8,14 @@ package org.opensilex.front.theme;
 import java.util.List;
 
 public interface ThemeConfig {
-    
+
+    String extend();
+
+     List<String> excludes();
+
     String favicon();
-    
+
     List<String> stylesheets();
-    
+
     List<FontConfig> fonts();
 }

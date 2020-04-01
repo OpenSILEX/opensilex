@@ -8,8 +8,11 @@ package org.opensilex.rest.group.api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
+import org.opensilex.rest.group.dal.GroupModel;
+import org.opensilex.rest.group.dal.GroupUserProfileModel;
 import org.opensilex.rest.validation.Required;
 
 /**
@@ -18,8 +21,9 @@ import org.opensilex.rest.validation.Required;
  */
 @ApiModel
 public class GroupCreationDTO {
+
     protected URI uri;
-    
+
     protected String name;
 
     protected String description;
@@ -34,7 +38,7 @@ public class GroupCreationDTO {
     public void setUri(URI uri) {
         this.uri = uri;
     }
-    
+
     @ApiModelProperty(value = "Group name", example = "Experiment manager", required = true)
     @Required
     public String getName() {
@@ -65,4 +69,20 @@ public class GroupCreationDTO {
         this.userProfiles = userProfiles;
     }
 
+    public GroupModel newModel() throws Exception {
+        GroupModel group = new GroupModel();
+        group.setUri(getUri());
+        group.setName(getName());
+        group.setDescription(getDescription());
+
+        List<GroupUserProfileModel> userProfilesModel = new ArrayList<>();
+        for (GroupUserProfileModificationDTO userProfile : getUserProfiles()) {
+            GroupUserProfileModel userProfileModel = userProfile.newModel();
+            userProfilesModel.add(userProfileModel);
+        };
+
+        group.setUserProfiles(userProfilesModel);
+
+        return group;
+    }
 }

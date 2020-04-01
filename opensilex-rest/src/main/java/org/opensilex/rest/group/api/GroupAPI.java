@@ -11,7 +11,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -34,9 +33,6 @@ import org.opensilex.rest.authentication.ApiCredential;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.group.dal.GroupDAO;
 import org.opensilex.rest.group.dal.GroupModel;
-import org.opensilex.rest.group.dal.GroupUserProfileModel;
-import org.opensilex.rest.profile.dal.ProfileDAO;
-import org.opensilex.rest.user.dal.UserDAO;
 import org.opensilex.rest.validation.ValidURI;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
@@ -126,9 +122,9 @@ public class GroupAPI {
         }
 
         // create new group
-        GroupModel group = dao.create(getModel(dto));
+        GroupModel group = dao.create(dto.newModel());
 
-        // return user URI
+        // return group URI
         return new ObjectUriResponse(Response.Status.CREATED, group.getUri()).getResponse();
     }
 
@@ -158,8 +154,7 @@ public class GroupAPI {
 
         Response response;
         if (model != null) {
-            GroupModel group = getModel(dto);
-            group.setUri(dto.getUri());
+            GroupModel group = dto.newModel();
             group = dao.update(group);
 
             response = new ObjectUriResponse(Response.Status.OK, group.getUri()).getResponse();
@@ -197,26 +192,6 @@ public class GroupAPI {
         Response response = new ObjectUriResponse(Response.Status.OK, uri).getResponse();
 
         return response;
-    }
-
-    private GroupModel getModel(GroupCreationDTO dto) throws Exception {
-        GroupModel group = new GroupModel();
-        group.setName(dto.getName());
-        group.setDescription(dto.getDescription());
-
-        UserDAO userDAO = new UserDAO(sparql);
-        ProfileDAO profileDAO = new ProfileDAO(sparql);
-        List<GroupUserProfileModel> userProfilesModel = new ArrayList<>();
-        for (GroupUserProfileModificationDTO userProfile : dto.getUserProfiles()) {
-            GroupUserProfileModel userProfileModel = new GroupUserProfileModel();
-            userProfileModel.setProfile(profileDAO.get(userProfile.getProfileURI()));
-            userProfileModel.setUser(userDAO.get(userProfile.getUserURI()));
-            userProfilesModel.add(userProfileModel);
-        };
-
-        group.setUserProfiles(userProfilesModel);
-
-        return group;
     }
 
     /**

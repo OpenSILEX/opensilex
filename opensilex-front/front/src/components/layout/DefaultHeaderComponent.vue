@@ -66,6 +66,7 @@ export default class DefaultHeaderComponent extends Vue {
    */
   setLanguage(lang: string) {
     this.$i18n.locale = lang;
+    this.$store.commit("lang", lang);
   }
 
   /**

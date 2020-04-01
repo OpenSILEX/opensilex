@@ -8,6 +8,7 @@ package org.opensilex.rest.user.dal;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import javax.mail.internet.InternetAddress;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
@@ -53,8 +54,7 @@ public final class UserDAO {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setAdmin(admin);
-        user.setLang(lang);
-
+        user.setLocale(new Locale(lang));
         if (passwordHash != null) {
             user.setPasswordHash(passwordHash);
         }
@@ -99,7 +99,7 @@ public final class UserDAO {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setAdmin(admin);
-        user.setLang(lang);
+        user.setLocale(new Locale(lang));
 
         if (passwordHash != null) {
             user.setPasswordHash(passwordHash);

@@ -6,12 +6,13 @@
 package org.opensilex.sparql.model;
 
 import java.util.List;
+import org.opensilex.sparql.utils.ClassURIGenerator;
 
 /**
  *
  * @author vince
  */
-public abstract class SPARQLTreeModel<T extends SPARQLTreeModel<T>> extends SPARQLResourceModel {
+public abstract class SPARQLTreeModel<T extends SPARQLTreeModel<T>> extends SPARQLResourceModel implements ClassURIGenerator<T> {
 
     protected String name;
     public static final String NAME_FIELD = "name";
@@ -46,4 +47,10 @@ public abstract class SPARQLTreeModel<T extends SPARQLTreeModel<T>> extends SPAR
         this.name = name;
     }
 
+    @Override
+    public String[] getUriSegments(T instance) {
+        return new String[]{
+            instance.getName()
+        };
+    }
 }

@@ -1,22 +1,22 @@
 <?xml version="1.0"?>
 <rdf:RDF xmlns="http://www.opensilex.org/vocabulary/oeso#"
-     xml:base="http://www.opensilex.org/vocabulary/oeso"
-     xmlns:dc="http://purl.org/dc/elements/1.1/"
-     xmlns:owl="http://www.w3.org/2002/07/owl#"
-     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-     xmlns:xml="http://www.w3.org/XML/1998/namespace"
-     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     xmlns:skos="http://www.w3.org/2004/02/skos/core#"
-     xmlns:terms="http://purl.org/dc/terms/"
-     xmlns:object="http://www.mistea.supagro.inra.fr/object#"
-     xmlns:vocabulary="http://www.opensilex.org/vocabulary/oeso#">
+         xml:base="http://www.opensilex.org/vocabulary/oeso"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:xml="http://www.w3.org/XML/1998/namespace"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+         xmlns:terms="http://purl.org/dc/terms/"
+         xmlns:object="http://www.mistea.supagro.inra.fr/object#"
+         xmlns:vocabulary="http://www.opensilex.org/vocabulary/oeso#">
     <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeso">
         <owl:versionIRI rdf:resource="http://www.opensilex.org/vocabulary/oeso"/>
         <rdfs:comment>Authors : Anne TIREAU, Llorenç CABRERA-BOSQUET, Morgane VIDAL, Pascal NEVEU</rdfs:comment>
         <rdfs:comment>INRA MISTEA
-Copyright © - INRA - 2014 - 2019
-The Object Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by/4.0/legalcode)</rdfs:comment>
+            Copyright © - INRA - 2014 - 2019
+            The Object Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by/4.0/legalcode)</rdfs:comment>
         <rdfs:label>OpenSILEX - Ontology for Experimental Scientific Objects (OESO)</rdfs:label>
         <rdfs:seeAlso>http://www.phenome-fppn.fr/vocabulary/2018/oepo</rdfs:seeAlso>
         <owl:versionInfo>New version of 3.0.2 release  http://www.phenome-fppn.fr/vocabulary/2018/oepo</owl:versionInfo>
@@ -26,12 +26,12 @@ The Object Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/b
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Annotation properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Annotation properties
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -94,12 +94,12 @@ The Object Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/b
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Datatypes
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Datatypes
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -111,12 +111,12 @@ The Object Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/b
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Object Properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Object Properties
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -466,12 +466,12 @@ The Object Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/b
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Data properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Data properties
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -980,12 +980,12 @@ The Object Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/b
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Classes
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Classes
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -1045,7 +1045,7 @@ The Object Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/b
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Area">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
         <rdfs:comment xml:lang="fr">Zone au sens large.
-Peut définir une zone au sens physique ou théorique</rdfs:comment>
+            Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:label xml:lang="en">zone</rdfs:label>
         <rdfs:label xml:lang="fr">zone</rdfs:label>
     </owl:Class>
@@ -1228,15 +1228,6 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
     </owl:Class>
     
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#EuropeanInfrastructure -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#EuropeanInfrastructure">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Infrastructure"/>
-        <rdfs:comment xml:lang="en">The ESFRI listed project EMPHASIS aims at a synergistic development and long-term operation of plant phenotyping infrastructure in Europe (https://emphasis.plant-phenotyping.eu/) by developing tools and methods for multi-scale phenotyping, allowing one to analyze genotype performance and trait diversity in current and future European environmental conditions.</rdfs:comment>
-        <rdfs:label xml:lang="en">european infrastructure</rdfs:label>
-        <rdfs:label xml:lang="fr">infrastructure européenne</rdfs:label>
-    </owl:Class>
     
 
 
@@ -1590,15 +1581,6 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
     </owl:Class>
     
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#LocalInfrastructure -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#LocalInfrastructure">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Infrastructure"/>
-        <rdfs:comment xml:lang="en">A LOCAL INFRASTRUCTURE is a group of installations located in one site depending on one institution (or more), which share governance committees, a common (or at least highly interoperable) information system, common principles for cost calculation and pricing and a common tool for user access.</rdfs:comment>
-        <rdfs:label xml:lang="fr">infrastructure locale</rdfs:label>
-        <rdfs:label xml:lang="en">local infrastructure</rdfs:label>
-    </owl:Class>
     
 
 
@@ -1694,14 +1676,6 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#NationalInfrastructure -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#NationalInfrastructure">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Infrastructure"/>
-        <rdfs:comment xml:lang="en">A NATIONAL INFRASTRUCTURE is an organized group of local infrastructures with governance recognised by national authorities (e.g. respective ministry or national structures).</rdfs:comment>
-        <rdfs:label xml:lang="fr">infrastructure nationale</rdfs:label>
-        <rdfs:label xml:lang="en">national infrastructure</rdfs:label>
-    </owl:Class>
     
 
 
@@ -2068,15 +2042,15 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SpectralHemisphericDirectionalReflectanceFile">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
         <rdfs:comment xml:lang="fr">Fichier texte au format csv suivant :
-1 ligne d’en-tête : première colonne = « id » et colonnes suivantes les longueurs d’onde en nm que l’on peut rencontrer durant les traitements
-caractère de séparation : tabulation
-id : alias
-pourcentage de réflectance mesuré pour chaque longueur d’onde</rdfs:comment>
+            1 ligne d’en-tête : première colonne = « id » et colonnes suivantes les longueurs d’onde en nm que l’on peut rencontrer durant les traitements
+            caractère de séparation : tabulation
+            id : alias
+            pourcentage de réflectance mesuré pour chaque longueur d’onde</rdfs:comment>
         <rdfs:comment xml:lang="en">csv file with the following format:
-1 header line : first column = &quot;id&quot;. The following columns are the wavelength (nm) that could be founded during the treatments
-separator : tabular
-id : alias
-measured spectral hemispheric directional reflectance percent for each wavelength</rdfs:comment>
+            1 header line : first column = &quot;id&quot;. The following columns are the wavelength (nm) that could be founded during the treatments
+            separator : tabular
+            id : alias
+            measured spectral hemispheric directional reflectance percent for each wavelength</rdfs:comment>
         <rdfs:label xml:lang="fr">Fichier de réflectance directionnelle hémisphérique spectrale</rdfs:label>
         <rdfs:label xml:lang="en">Spectral Hemispheric Directional Reflectance file</rdfs:label>
     </owl:Class>
@@ -2433,12 +2407,12 @@ measured spectral hemispheric directional reflectance percent for each wavelengt
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Individuals
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Individuals
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -2492,12 +2466,12 @@ measured spectral hemispheric directional reflectance percent for each wavelengt
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Annotations
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Annotations
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/">
         <terms:publisher rdf:resource="http://purl.org/dc/aboutdcmi#DCMI"/>

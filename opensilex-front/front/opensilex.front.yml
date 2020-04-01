@@ -7,7 +7,7 @@ menu:
       component: opensilex-UserView
       credentials: []
   - id: infrastructures
-    label: component.menu.infrastructure
+    label: component.menu.infrastructures
     icon: ik-grid
     route: 
       path: /infrastructures

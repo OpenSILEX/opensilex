@@ -46,20 +46,6 @@ MONGO_DUMP_PATH=$BACKUP_DIRECTORY/mongo_backup
 ###############################################################################
 export PATH=$JAVA_PATH:$PATH
 
-function restorePgSQL() {
-    echo "[RESTORE] PostgreSQL"
-    export PGPASSWORD="$PG_PASS"
-    psql -h $PG_HOST -U $PG_USER -d postgres -c "
-        SELECT pg_terminate_backend(pg_stat_activity.pid)
-        FROM pg_stat_activity
-        WHERE pg_stat_activity.datname = '$PG_DB'
-        AND pid <> pg_backend_pid();"
-    psql -h $PG_HOST -U $PG_USER -d postgres -c "DROP DATABASE IF EXISTS $PG_DB;"
-    psql -h $PG_HOST -U $PG_USER -d postgres -c "CREATE DATABASE $PG_DB WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'fr_FR.UTF-8' LC_CTYPE = 'fr_FR.UTF-8';"
-    psql -h $PG_HOST -U $PG_USER -d postgres -c "ALTER DATABASE $PG_DB OWNER TO $PG_USER;"
-    psql -h $PG_HOST -U $PG_USER -d $PG_DB -f $SQL_DUMP_PATH
-}
-
 function restoreTriplestore() {
     echo "[RESTORE] RDF4J"
     echo -e "open $RDF4J_REPOSITORY
@@ -77,8 +63,6 @@ function restoreMongo() {
 
 if [ -d $BACKUP_DIRECTORY ]; then
     
-    restorePgSQL
-
     restoreTriplestore
 
     restoreMongo

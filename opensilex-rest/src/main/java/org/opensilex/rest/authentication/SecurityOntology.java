@@ -32,8 +32,9 @@ public class SecurityOntology {
     public static final Resource GroupUserProfile = Ontology.resource(NAMESPACE, "GroupUserProfile");
 
     public static final Property hasPasswordHash = Ontology.property(NAMESPACE, "hasPasswordHash");
-    public static final Property hasLang = Ontology.property(NAMESPACE, "hasLang");
+    public static final Property hasLanguage = Ontology.property(NAMESPACE, "hasLanguage");
     public static final Property hasUser = Ontology.property(NAMESPACE, "hasUser");
+    public static final Property hasGroup = Ontology.property(NAMESPACE, "hasGroup");
     public static final Property hasProfile = Ontology.property(NAMESPACE, "hasProfile");
     public static final Property hasUserProfile = Ontology.property(NAMESPACE, "hasUserProfile");
     public static final Property hasAccess = Ontology.property(NAMESPACE, "hasAccess");

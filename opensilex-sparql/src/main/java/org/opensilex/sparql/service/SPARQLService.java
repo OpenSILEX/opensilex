@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,6 +58,7 @@ import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
+import org.opensilex.OpenSilex;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 import org.opensilex.sparql.tree.ResourceTree;
@@ -80,6 +82,16 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
 
     public SPARQLService(SPARQLConnection connection) {
         this.connection = connection;
+    }
+
+    private String defaultLang = OpenSilex.getDefaultLanguage();
+
+    public void setDefaultLang(String lang) {
+        this.defaultLang = lang;
+    }
+
+    public String getDefaultLang() {
+        return this.defaultLang;
     }
 
     @Override
@@ -270,6 +282,9 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> T getByURI(Node graph, Class<T> objectClass, URI uri, String lang) throws Exception {
+        if (lang == null) {
+            lang = getDefaultLang();
+        }
         SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
         T instance = mapper.createInstance(graph, uri, lang, this);
         return instance;
@@ -280,6 +295,9 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> List<T> getListByURIs(Node graph, Class<T> objectClass, List<URI> uris, String lang) throws Exception {
+        if (lang == null) {
+            lang = getDefaultLang();
+        }
         List<T> instances;
         if (uris.size() > 0) {
             SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
@@ -295,6 +313,9 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> T loadByURI(Node graph, Class<T> objectClass, URI uri, String lang) throws Exception {
+        if (lang == null) {
+            lang = getDefaultLang();
+        }
         SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
         SelectBuilder select = mapper.getSelectBuilder(graph, lang);
 
@@ -316,6 +337,9 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> List<T> loadListByURIs(Node graph, Class<T> objectClass, List<URI> uris, String lang) throws Exception {
+        if (lang == null) {
+            lang = getDefaultLang();
+        }
         List<T> resultObjects = new ArrayList<>();
 
         if (uris.size() > 0) {
@@ -340,6 +364,9 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> T getByUniquePropertyValue(Node graph, Class<T> objectClass, String lang, Property property, Object propertyValue) throws Exception {
+        if (lang == null) {
+            lang = getDefaultLang();
+        }
         SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
         SelectBuilder select = mapper.getSelectBuilder(graph, lang);
         Field field = mapper.getFieldFromUniqueProperty(property);
@@ -374,6 +401,9 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         if (propertyValue == null) {
             return false;
         }
+        if (lang == null) {
+            lang = getDefaultLang();
+        }
         SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
         AskBuilder ask = mapper.getAskBuilder(graph, lang);
         Field field = mapper.getFieldFromUniqueProperty(property);
@@ -396,6 +426,9 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> List<URI> searchURIs(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+        if (lang == null) {
+            lang = getDefaultLang();
+        }
         SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
         SelectBuilder select = mapper.getSelectBuilder(graph, lang);
 
@@ -413,17 +446,20 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLTreeModel> ResourceTree<T> searchResourceTree(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
-        return searchResourceTree(getDefaultGraph(objectClass), objectClass, lang, null, filterHandler);
+        return searchResourceTree(getDefaultGraph(objectClass), objectClass, lang, null, false, filterHandler);
     }
 
-    public <T extends SPARQLTreeModel> ResourceTree<T> searchResourceTree(Class<T> objectClass, String lang, URI root, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
-        return searchResourceTree(getDefaultGraph(objectClass), objectClass, lang, root, filterHandler);
+    public <T extends SPARQLTreeModel> ResourceTree<T> searchResourceTree(Class<T> objectClass, String lang, URI root, boolean excludeRoot, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+        return searchResourceTree(getDefaultGraph(objectClass), objectClass, lang, root, excludeRoot, filterHandler);
     }
 
-    public <T extends SPARQLTreeModel> ResourceTree<T> searchResourceTree(Node graph, Class<T> objectClass, String lang, URI root, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+    public <T extends SPARQLTreeModel> ResourceTree<T> searchResourceTree(Node graph, Class<T> objectClass, String lang, URI root, boolean excludeRoot, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+        if (lang == null) {
+            lang = getDefaultLang();
+        }
         List<T> list = search(graph, objectClass, lang, filterHandler);
 
-        ResourceTree<T> tree = new ResourceTree<T>(list, root);
+        ResourceTree<T> tree = new ResourceTree<T>(list, root, excludeRoot);
 
         for (T item : list) {
             tree.addTree(item);
@@ -465,8 +501,15 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> List<T> search(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+        String language;
+        if (lang == null) {
+            language = getDefaultLang();
+        } else {
+            language = lang;
+        }
+
         SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
-        SelectBuilder select = mapper.getSelectBuilder(graph, lang);
+        SelectBuilder select = mapper.getSelectBuilder(graph, language);
 
         if (filterHandler != null) {
             filterHandler.accept(select);
@@ -490,7 +533,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
 
         List<T> resultList = new ArrayList<>();
         executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
-            resultList.add(mapper.createInstance(graph, result, lang, this));
+            resultList.add(mapper.createInstance(graph, result, language, this));
         }, Exception.class));
 
         return resultList;
@@ -509,6 +552,9 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> int count(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+        if (lang == null) {
+            lang = getDefaultLang();
+        }
         SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
         SelectBuilder selectCount = mapper.getCountBuilder(graph, "count", lang);
 
@@ -538,6 +584,9 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+        if (lang == null) {
+            lang = getDefaultLang();
+        }
         int total = count(graph, objectClass, lang, filterHandler);
 
         List<T> list;
@@ -557,23 +606,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, T instance) throws Exception {
-        create(graph, instance, true, null);
-    }
-
-    public <T extends SPARQLResourceModel> void create(T instance, Resource rdfType) throws Exception {
-        create(getDefaultGraph(instance.getClass()), instance, rdfType);
-    }
-
-    public <T extends SPARQLResourceModel> void create(Node graph, T instance, Resource rdfType) throws Exception {
-        create(graph, instance, new URI(rdfType.getURI()));
-    }
-
-    public <T extends SPARQLResourceModel> void create(T instance, URI rdfType) throws Exception {
-        create(getDefaultGraph(instance.getClass()), instance, rdfType);
-    }
-
-    public <T extends SPARQLResourceModel> void create(Node graph, T instance, URI rdfType) throws Exception {
-        create(graph, instance, true, rdfType);
+        create(graph, instance, true);
     }
 
     public <T extends SPARQLResourceModel> void create(T instance, boolean checkUriExist) throws Exception {
@@ -581,17 +614,10 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist) throws Exception {
-        create(graph, instance, checkUriExist, null);
-    }
-
-    public <T extends SPARQLResourceModel> void create(T instance, boolean checkUriExist, URI rdfType) throws Exception {
-        create(getDefaultGraph(instance.getClass()), instance, checkUriExist, rdfType);
-    }
-
-    public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist, URI rdfType) throws Exception {
         try {
             startTransaction();
             SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(instance.getClass());
+            URI rdfType = instance.getType();
             if (rdfType == null) {
                 instance.setType(new URI(mapper.getRDFType().getURI()));
             } else {
@@ -661,7 +687,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         try {
             startTransaction();
 
-            T oldInstance = loadByURI(graph, objectClass, mapper.getURI(instance), null);
+            T oldInstance = loadByURI(graph, objectClass, mapper.getURI(instance), getDefaultLang());
             if (oldInstance == null) {
                 throw new SPARQLInvalidURIException(instance.getUri());
             }
@@ -719,7 +745,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
                 List<URI> relations = getRelationsURI(graph, objectClass, cascadeDeleteClassField.getKey(), cascadeDeleteClassField.getValue(), uri);
                 relationsToDelete.put(cascadeDeleteClassField.getKey(), relations);
             }
-            T instance = loadByURI(graph, objectClass, uri, null);
+            T instance = loadByURI(graph, objectClass, uri, getDefaultLang());
 
             UpdateBuilder delete = mapper.getDeleteBuilder(graph, instance);
 
@@ -775,33 +801,6 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
             ElementNamedGraph elementNamedGraph = new ElementNamedGraph(graph, whereHandler.getElement());
             select.getWhereHandler().getClause().addElement(elementNamedGraph);
         });
-    }
-
-    private <T extends SPARQLResourceModel, U extends SPARQLResourceModel> void deleteByObjectRelation(Node graph, Class<T> objectClass, Class<U> relationClass, Field relationField, List<URI> objectURIs) throws Exception {
-        SPARQLClassObjectMapper<T> objectMapper = SPARQLClassObjectMapper.getForClass(objectClass);
-        SPARQLClassObjectMapper<T> relationMapper = SPARQLClassObjectMapper.getForClass(relationClass);
-        Node relationGraph = getDefaultGraph(relationClass);
-        List<URI> relatedObjectURIs = this.searchURIs(relationGraph, relationClass, null, (select) -> {
-            WhereHandler whereHandler = new WhereHandler();
-            String relationVarName = "__relation";
-            Var relationVar = makeVar(relationVarName);
-            if (objectMapper.isReverseRelation(relationField)) {
-                whereHandler.addWhere(select.makeTriplePath(relationMapper.getURIFieldVar(), objectMapper.getFieldProperty(relationField), relationVar));
-            } else {
-                whereHandler.addWhere(select.makeTriplePath(relationVar, objectMapper.getFieldProperty(relationField), relationMapper.getURIFieldVar()));
-            }
-
-            Expr resourceInUrisExpr = new ExprFactory().in(relationVar, objectURIs.stream()
-                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
-                    .toArray());
-
-            whereHandler.addFilter(resourceInUrisExpr);
-
-            ElementNamedGraph elementNamedGraph = new ElementNamedGraph(graph, whereHandler.getElement());
-            select.getWhereHandler().getClause().addElement(elementNamedGraph);
-        });
-
-        this.delete(relationGraph, relationClass, relatedObjectURIs);
     }
 
     public boolean uriExists(URI uri) throws SPARQLException {
@@ -926,7 +925,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         executeUpdateQuery(updateBuilder);
     }
 
-    public Map<String, String> getOtherTranslations(Node graph, URI resourceURI, Property labelProperty, boolean reverseRelation, String lang) throws Exception {
+    public Map<String, String> getTranslations(Node graph, URI resourceURI, Property labelProperty, boolean reverseRelation) throws Exception {
         Map<String, String> translations = new HashMap<>();
 
         SelectBuilder select = new SelectBuilder();
@@ -946,16 +945,10 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         executeSelectQuery(select, (SPARQLResult result) -> {
             String value = result.getStringValue("value");
             String resultLang = result.getStringValue("lang");
-            if (!resultLang.equals(lang)) {
-                translations.put(resultLang, value);
-            }
+            translations.put(resultLang, value);
         });
 
         return translations;
-    }
-
-    public Map<String, String> getTranslations(Node graph, URI resourceURI, Property labelProperty, boolean reverseRelation) throws Exception {
-        return getOtherTranslations(graph, resourceURI, labelProperty, reverseRelation, null);
     }
 
     @Override
@@ -978,6 +971,14 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     }
 
     public static Node getDefaultGraph(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {
-        return SPARQLClassObjectMapper.getForClass(modelClass).getDefaultGraph();
+        try {
+            return SPARQLClassObjectMapper.getForClass(modelClass).getDefaultGraph();
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    public Var getURIFieldVar(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {
+        return SPARQLClassObjectMapper.getForClass(modelClass).getURIFieldVar();
     }
 }

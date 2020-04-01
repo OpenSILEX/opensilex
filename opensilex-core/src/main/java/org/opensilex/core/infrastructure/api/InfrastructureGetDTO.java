@@ -8,6 +8,7 @@ package org.opensilex.core.infrastructure.api;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
+import org.opensilex.rest.group.api.GroupUserProfileDTO;
 import org.opensilex.rest.sparql.dto.NamedResourceGetDTO;
 import org.opensilex.rest.user.api.UserGetDTO;
 
@@ -16,29 +17,32 @@ import org.opensilex.rest.user.api.UserGetDTO;
  * @author vince
  */
 public class InfrastructureGetDTO extends NamedResourceGetDTO {
-    
-    List<UserGetDTO> users;
-    
-    public List<UserGetDTO> getUsers() {
-        return users;
+
+    protected List<GroupUserProfileDTO> userProfiles;
+
+    public List<GroupUserProfileDTO> getUserProfiles() {
+        return userProfiles;
     }
-    
-    public void setUsers(List<UserGetDTO> users) {
-        this.users = users;
+
+    public void setUserProfiles(List<GroupUserProfileDTO> userProfiles) {
+        this.userProfiles = userProfiles;
     }
-    
+
     public static InfrastructureGetDTO fromModel(InfrastructureModel model) {
         InfrastructureGetDTO dto = new InfrastructureGetDTO();
         dto.setUri(model.getUri());
         dto.setType(model.getType());
+        dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
         dto.setName(model.getName());
-        
-        List<UserGetDTO> users = new ArrayList<>();
-        model.getUsers().forEach(user -> {
-            users.add(UserGetDTO.fromModel(user));
-        });
-        dto.setUsers(users);
-        
+
+        List<GroupUserProfileDTO> userProfilesList = new ArrayList<>();
+        if (model.getGroup() != null) {
+            model.getGroup().getUserProfiles().forEach(userProfile -> {
+                userProfilesList.add(GroupUserProfileDTO.fromModel(userProfile));
+            });
+        }
+        dto.setUserProfiles(userProfilesList);
+
         return dto;
     }
 }

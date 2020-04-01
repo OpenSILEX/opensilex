@@ -29,11 +29,9 @@ import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 public class ProjectDAO {
 
     protected final SPARQLService sparql;
-    protected final String lang;
 
-    public ProjectDAO(SPARQLService sparql, String lang) {
+    public ProjectDAO(SPARQLService sparql) {
         this.sparql = sparql;
-        this.lang = lang;
     }
 
     public ProjectModel create(ProjectModel instance) throws Exception {
@@ -54,13 +52,13 @@ public class ProjectDAO {
         sparql.delete(ProjectModel.class, instanceURI);
     }
 
-    public ProjectModel get(URI instanceURI) throws Exception {
+    public ProjectModel get(URI instanceURI, String lang) throws Exception {
         return sparql.getByURI(ProjectModel.class, instanceURI, lang);
     }
 
     public ListWithPagination<ProjectModel> search(URI uri,
                                                    String name, String shortname, String description, String startDate, String endDate, URI homePage, String objective,
-                                                   List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+                                                   List<OrderBy> orderByList, Integer page, Integer pageSize, String lang) throws Exception {
 
         List<Expr> filterList = new ArrayList<>();
 
@@ -106,7 +104,7 @@ public class ProjectDAO {
         sparql.create(instances);
     }
 
-    public ListWithPagination<ProjectModel> search(List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+    public ListWithPagination<ProjectModel> search(List<OrderBy> orderByList, int page, int pageSize, String lang) throws Exception {
         return sparql.searchWithPagination(
                 ProjectModel.class,
                 lang,

@@ -85,8 +85,8 @@ public class UserUpdateDTO extends UserGetDTO {
 
     @NotNull
     @ApiModelProperty(value = "User language", example = OpenSilex.DEFAULT_LANGUAGE, required = true)
-    public String getLang() {
-        return super.getLang();
+    public String getLanguage() {
+        return super.getLanguage();
     }
 
 }

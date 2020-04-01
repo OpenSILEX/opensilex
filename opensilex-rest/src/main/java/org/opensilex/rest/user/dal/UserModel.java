@@ -8,6 +8,7 @@ package org.opensilex.rest.user.dal;
 import org.opensilex.rest.authentication.SecurityOntology;
 import java.security.Principal;
 import java.util.List;
+import java.util.Locale;
 import javax.mail.internet.InternetAddress;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.rest.group.dal.GroupUserProfileModel;
@@ -67,9 +68,9 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,
-            property = "hasLang"
+            property = "hasLanguage"
     )
-    private String lang = "";
+    private String language;
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,
@@ -134,20 +135,35 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
         return getFirstName() + " " + getLastName() + " <" + getEmail().toString() + ">";
     }
 
-    public String getLang() {
-        return lang;
-    }
-
-    public void setLang(String lang) {
-        this.lang = lang;
-    }
-
     public List<GroupUserProfileModel> getUserProfiles() {
         return userProfiles;
     }
 
     public void setUserProfiles(List<GroupUserProfileModel> userProfiles) {
         this.userProfiles = userProfiles;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public String getLanguageDefault(String overrideLanguage) {
+        if (overrideLanguage == null) {
+            return language;
+        }
+        return overrideLanguage;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public Locale getLocale() {
+        return new Locale(getLanguage());
+    }
+
+    public void setLocale(Locale locale) {
+        setLanguage(locale.getLanguage());
     }
 
     @Override

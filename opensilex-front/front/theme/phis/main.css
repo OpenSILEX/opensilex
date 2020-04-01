@@ -58,15 +58,10 @@ body {
     margin-bottom: 2px;
 }
 
-.error-message {
-    margin-top: 2px;
-    padding: 10px;
+footer {
+    display: none;
 }
 
-.error-message:empty
-{
-    display:none;
-}
 
 /*************************************
 * CARDS

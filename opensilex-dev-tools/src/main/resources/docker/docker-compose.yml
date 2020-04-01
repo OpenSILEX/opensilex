@@ -26,36 +26,9 @@ services:
       volumes:
          - mongodb_data:/data/db
          
-   psql:
-      container_name: opensilex-psql
-      image: 'mdillon/postgis:9.5-alpine'
-      networks:
-         - backend
-      ports:
-         - "8669:5432"
-      restart: always
-      environment:
-        POSTGRES_USER: opensilex
-        POSTGRES_PASSWORD: opensilex
-      volumes:
-         - psql_data:/var/lib/postgresql/data
-
-   pgadmin4:
-      container_name: pgadmin4
-      image: 'dpage/pgadmin4'
-      networks:
-         - backend
-      ports:
-         - "8670:80"
-      restart: always
-      environment:
-        PGADMIN_DEFAULT_EMAIL: admin@opensilex.org
-        PGADMIN_DEFAULT_PASSWORD: opensilex      
-    
 networks:
    backend:
 
 volumes:
    mongodb_data:
    rdf4j_data:
-   psql_data:

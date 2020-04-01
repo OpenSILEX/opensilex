@@ -56,6 +56,8 @@
             "actions": "actions",
             "uri": "URI",
             "logout": "Logout",
+            "parent": "parent",
+            "type": "type",
             "errors": {
                 "error-title": "Error",
                 "constraint-error": "A data validation error occured, please check the validity of the submited fields.",
@@ -103,7 +105,8 @@
                 "label" : "Experimental Design",
                 "factors" : "Factors",
                 "factorLevels" : "Factor levels"
-            }
+            },
+            "infrastructures": "Infrastructures"
         },
         "login": {
             "input": {
@@ -160,7 +163,7 @@
             "filter-placeholder": "Use this field to filter profiles",
             "credentials": "credentials",
             "errors": {
-                "profile-already-exists": "Group already exists with this URI or this name."
+                "profile-already-exists": "Profile already exists with this URI or this name."
             }
         },
         "group": {
@@ -173,7 +176,20 @@
             "update": "update group",
             "filter-placeholder": "Use this field to filter groups",
             "errors": {
-                "group-already-exists": "Un profil existe déjà avec cette URI ou ce nom."
+                "group-already-exists": "Group already exists with this URI or this name"
+            }
+        },
+        "infrastructure": {
+            "infrastructure-uri": "Infrastructure URI",
+            "form-name-placeholder": "Enter infrastructure name",
+            "form-type-placeholder": "Enter infrastructure type",
+            "form-parent-placeholder": "Enter parent infrastructure",
+            "filter-placeholder": "Use this field to filter infrastructures",
+            "add": "add infrastructure",
+            "update": "update infrastructure",
+            "detail": "Infrastructure details",
+            "errors": {
+                "infrastructure-already-exists": "Infrastructure already exists with this URI or this name"
             }
         },
         "factor": {

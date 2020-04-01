@@ -17,7 +17,6 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.rest.authentication.SecurityOntology;
 import org.opensilex.rest.group.dal.GroupUserProfileModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -104,8 +103,7 @@ public final class ProfileDAO {
                 ProfileModel.class,
                 null,
                 (SelectBuilder select) -> {
-                    SPARQLClassObjectMapper<SPARQLResourceModel> profileMapper = SPARQLClassObjectMapper.getForClass(ProfileModel.class);
-                    Var profileURIVar = profileMapper.getURIFieldVar();
+                    Var profileURIVar = sparql.getURIFieldVar(ProfileModel.class);
                     Var groupURIVar = makeVar("__userProfileURI");
                     WhereHandler whereHandler = new WhereHandler();
                     whereHandler.addWhere(select.makeTriplePath(groupURIVar, SecurityOntology.hasProfile, profileURIVar));

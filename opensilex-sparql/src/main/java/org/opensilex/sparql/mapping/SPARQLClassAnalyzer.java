@@ -36,6 +36,7 @@ import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.sparql.annotations.SPARQLTypeRDF;
+import org.opensilex.sparql.annotations.SPARQLTypeRDFLabel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 
@@ -59,6 +60,7 @@ final class SPARQLClassAnalyzer {
 
     private Field fieldURI;
     private Field fieldType;
+    private Field fieldTypeLabel;
 
     private final Map<String, Property> dataProperties = new HashMap<>();
 
@@ -162,6 +164,12 @@ final class SPARQLClassAnalyzer {
                     if (sType != null) {
                         LOGGER.debug("Analyse " + SPARQLTypeRDF.class.getCanonicalName() + " annotation for field: " + field.getName());
                         analyzeSPARQLTypeField(field);
+                    } else {
+                        SPARQLTypeRDFLabel sTypeLabel = field.getAnnotation(SPARQLTypeRDFLabel.class);
+                        if (sTypeLabel != null) {
+                            LOGGER.debug("Analyse " + SPARQLTypeRDFLabel.class.getCanonicalName() + " annotation for field: " + field.getName());
+                            analyzeSPARQLTypeLabelField(field);
+                        }
                     }
                 }
             }
@@ -175,6 +183,11 @@ final class SPARQLClassAnalyzer {
         LOGGER.debug("Check Type field is defined");
         if (fieldType == null) {
             throw new SPARQLInvalidClassDefinitionException(objectClass, SPARQLTypeRDF.class.getCanonicalName() + " annotation not found");
+        }
+
+        LOGGER.debug("Check Type label field is defined");
+        if (fieldTypeLabel == null) {
+            throw new SPARQLInvalidClassDefinitionException(objectClass, SPARQLTypeRDFLabel.class.getCanonicalName() + " annotation not found");
         }
 
         LOGGER.debug("Init fields accessor registry for: " + objectClass.getName());
@@ -320,6 +333,22 @@ final class SPARQLClassAnalyzer {
                     objectClass,
                     SPARQLResourceURI.class.getCanonicalName() + " annotation must be unique "
                     + "and is defined multiple times for field " + fieldURI.getName()
+                    + " and for field " + field.getName()
+            );
+        }
+    }
+
+    private void analyzeSPARQLTypeLabelField(Field field) throws SPARQLInvalidClassDefinitionException {
+        if (fieldTypeLabel == null) {
+            LOGGER.debug("Field " + field.getName() + " defined as type label field for: " + objectClass.getName());
+            fieldTypeLabel = field;
+            LOGGER.debug("Store field " + field.getName() + " in global index by name");
+            fieldsByName.put(field.getName(), field);
+        } else {
+            throw new SPARQLInvalidClassDefinitionException(
+                    objectClass,
+                    SPARQLTypeRDF.class.getCanonicalName() + " annotation must be unique "
+                    + "and is defined multiple times for field " + fieldTypeLabel.getName()
                     + " and for field " + field.getName()
             );
         }
@@ -617,43 +646,50 @@ final class SPARQLClassAnalyzer {
         return fieldType.getName();
     }
 
+    public String getTypeLabelFieldName() {
+        return fieldTypeLabel.getName();
+    }
+
     public Method getURIMethod() {
         return getGetterFromField(getURIField());
     }
 
     protected XSDDatatype getFieldDatatype(Field field) {
         try {
-            return SPARQLDeserializers.getForClass(getGetterFromField(field).getReturnType()).getDataType();
-        } catch (SPARQLDeserializerNotFoundException ex) {
+            return SPARQLDeserializers.getForClass(field.getType()).getDataType();
+        } catch (Exception ex) {
+            LOGGER.error("Error while getting datatype for field: " + field.getName(), ex);
             return null;
         }
     }
 
     protected Resource getFieldRDFType(Field field) {
         try {
-            return SPARQLClassObjectMapper.getForClass(getGetterFromField(field).getReturnType()).getRDFType();
-        } catch (SPARQLMapperNotFoundException | SPARQLInvalidClassDefinitionException ex) {
+            return SPARQLClassObjectMapper.getForClass(field.getType()).getRDFType();
+        } catch (Exception ex) {
+            LOGGER.error("Error while getting rdf type for field: " + field.getName(), ex);
             return null;
         }
     }
 
     protected Resource getFieldListRDFType(Field field) {
         try {
-            ParameterizedType genericReturnType = (ParameterizedType) getGetterFromField(field).getGenericReturnType();
+            ParameterizedType genericReturnType = (ParameterizedType) field.getGenericType();
             Type genericParameter = genericReturnType.getActualTypeArguments()[0];
             return SPARQLClassObjectMapper.getForClass((Class<?>) genericParameter).getRDFType();
-        } catch (SPARQLMapperNotFoundException | SPARQLInvalidClassDefinitionException ex) {
+        } catch (Exception ex) {
+            LOGGER.error("Error while getting rdf type for list field: " + field.getName(), ex);
             return null;
         }
     }
 
     protected XSDDatatype getFieldListDatatype(Field field) {
         try {
-
-            ParameterizedType genericReturnType = (ParameterizedType) getGetterFromField(field).getGenericReturnType();
+            ParameterizedType genericReturnType = (ParameterizedType) field.getGenericType();
             Type genericParameter = genericReturnType.getActualTypeArguments()[0];
             return SPARQLDeserializers.getForClass((Class<?>) genericParameter).getDataType();
-        } catch (SPARQLDeserializerNotFoundException ex) {
+        } catch (Exception ex) {
+            LOGGER.error("Error while getting datatype for list field: " + field.getName(), ex);
             return null;
         }
     }

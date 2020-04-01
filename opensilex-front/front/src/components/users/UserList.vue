@@ -38,7 +38,7 @@
 
       <template v-slot:cell(uri)="data">
         <a class="uri-info">
-          <small>{{ data.item.uri }}</small>
+          {{ data.item.uri }}
         </a>
       </template>
 
@@ -78,7 +78,7 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import { UsersGroupsProfilesService, UserGetDTO } from "opensilex-rest/index";
@@ -165,9 +165,10 @@ export default class UserList extends Vue {
     }
   ];
 
+  @Ref("tableRef") readonly tableRef!: any;
+
   refresh() {
-    let tableRef: any = this.$refs.tableRef;
-    tableRef.refresh();
+    this.tableRef.refresh();
   }
 
   loadData() {

@@ -10,7 +10,6 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
       @onCreate="callCreateGroupService"
       @onUpdate="callUpdateGroupService"
-      :profiles="profiles"
     ></opensilex-GroupForm>
     <opensilex-GroupList
       ref="groupList"
@@ -22,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
@@ -38,7 +37,6 @@ export default class GroupView extends Vue {
   $opensilex: any;
   $store: any;
   service: UsersGroupsProfilesService;
-  profiles: Array<ProfileGetDTO> = [];
 
   get user() {
     return this.$store.state.user;
@@ -52,19 +50,14 @@ export default class GroupView extends Vue {
     this.service = this.$opensilex.getService(
       "opensilex.UsersGroupsProfilesService"
     );
-    console.debug("Loading profiles list...");
-
-    let http: HttpResponse<OpenSilexResponse<
-      Array<ProfileGetDTO>
-    >> = await this.service.getAllProfiles(
-      this.$opensilex.getUser().getAuthorizationHeader()
-    );
-    this.profiles = http.response.result;
-    console.debug("Profiles list loaded !", this.profiles);
   }
 
+  @Ref("groupForm") readonly groupForm!: any;
+
+  @Ref("groupList") readonly groupList!: any;
+
   showCreateForm() {
-    let groupForm: any = this.$refs.groupForm;
+    let groupForm: any = this.groupForm;
     groupForm.showCreateForm();
   }
 
@@ -75,7 +68,7 @@ export default class GroupView extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Group created", uri);
-          let groupList: any = this.$refs.groupList;
+          let groupList: any = this.groupList;
           groupList.refresh();
         })
     );
@@ -88,14 +81,14 @@ export default class GroupView extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Group updated", uri);
-          let groupList: any = this.$refs.groupList;
+          let groupList: any = this.groupList;
           groupList.refresh();
         })
     );
   }
 
   editGroup(form: GroupGetDTO) {
-    let groupForm: any = this.$refs.groupForm;
+    let groupForm: any = this.groupForm;
     groupForm.showEditForm(form);
   }
 
@@ -103,7 +96,7 @@ export default class GroupView extends Vue {
     this.service
       .deleteGroup(this.user.getAuthorizationHeader(), uri)
       .then(() => {
-        let groupList: any = this.$refs.groupList;
+        let groupList: any = this.groupList;
         groupList.refresh();
       })
       .catch(this.$opensilex.errorHandler);

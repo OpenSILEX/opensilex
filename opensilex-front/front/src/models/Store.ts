@@ -22,7 +22,7 @@ let inactivityRenewTimeoutInMin = 1;
 let renewStarted = false;
 let currentUser = undefined;
 
-let getOpenSilexPlugin = function(): OpenSilexVuePlugin {
+let getOpenSilexPlugin = function (): OpenSilexVuePlugin {
   return Vue["$opensilex"];
 }
 
@@ -72,7 +72,7 @@ let defaultConfig: FrontConfigDTO = {
   routes: []
 };
 
-export default new Vuex.Store({
+let store = new Vuex.Store({
   state: {
     user: User.ANONYMOUS(),
     loaderVisible: false,
@@ -82,6 +82,7 @@ export default new Vuex.Store({
     menuVisible: true,
     disconnected: false,
     release: new Release(),
+    lang: "en",
     credentials: {
       CREDENTIAL_EXPERIMENT_MODIFICATION_ID: "experiment-modification",
       CREDENTIAL_EXPERIMENT_READ_ID: "experiment-read",
@@ -103,6 +104,11 @@ export default new Vuex.Store({
       CREDENTIAL_VARIABLE_MODIFICATION_ID: "variable-modification",
       CREDENTIAL_VARIABLE_DELETE_ID: "variable-delete",
       CREDENTIAL_VARIABLE_READ_ID: "variable-read",
+    }
+  },
+  getters: {
+    language: (state) => {
+      return state.lang;
     }
   },
   mutations: {
@@ -205,10 +211,17 @@ export default new Vuex.Store({
     },
     refresh(state) {
       state.openSilexRouter.refresh();
+    },
+    lang(state, lang) {
+      state.lang = lang;
     }
   },
   actions: {
+    
   },
   modules: {
   }
+
 });
+
+export default store;

@@ -6,10 +6,13 @@
 package org.opensilex.sparql.cli;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 import org.opensilex.OpenSilex;
 import org.opensilex.cli.OpenSilexCommand;
 import org.opensilex.cli.help.HelpOption;
 import org.opensilex.cli.help.HelpPrinterCommand;
+import org.opensilex.sparql.exceptions.SPARQLValidationException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import picocli.CommandLine;
@@ -39,5 +42,51 @@ public class SPARQLCommands extends HelpPrinterCommand implements OpenSilexComma
         SPARQLService sparql = factory.provide();
         sparql.renameGraph(oldGraphURI, newGraphURI);
         factory.dispose(sparql);
+    }
+
+    @CommandLine.Command(
+            name = "shacl-enable",
+            header = "Enable SHACL validation",
+            description = "Enable SHACL validation"
+    )
+    public void shaclEnable(
+            @CommandLine.Mixin HelpOption help
+    ) throws Exception {
+        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
+        try {
+            sparql.enableSHACL();
+        } catch (SPARQLValidationException ex) {
+            System.out.println("Error while enable SHACL validation:");
+            Map<URI, Map<URI, List<URI>>> errors = ex.getValidationErrors();
+            errors.forEach((URI uri, Map<URI, List<URI>> error) -> {
+                System.out.println("--> " + uri + ":");
+                error.forEach((URI protpertyUri, List<URI> brokenConstraints) -> {
+                    System.out.println("    " + protpertyUri + ":");
+                    brokenConstraints.forEach(constraintURI -> {
+                        System.out.println("      " + constraintURI);
+                    });
+                });
+            });
+            sparql.disableSHACL();
+        }
+        factory.dispose(sparql);
+    }
+
+    @CommandLine.Command(
+            name = "shacl-disable",
+            header = "Disable SHACL validation",
+            description = "Disable SHACL validation"
+    )
+    public void shaclDisable(
+            @CommandLine.Mixin HelpOption help
+    ) throws Exception {
+        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
+        try {
+            sparql.disableSHACL();
+        } finally {
+            factory.dispose(sparql);
+        }
     }
 }

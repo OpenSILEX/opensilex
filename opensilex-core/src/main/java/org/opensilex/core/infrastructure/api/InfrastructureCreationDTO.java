@@ -9,23 +9,25 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
-import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.rest.group.api.GroupUserProfileModificationDTO;
+import org.opensilex.rest.group.dal.GroupModel;
+import org.opensilex.rest.group.dal.GroupUserProfileModel;
 
 /**
  *
  * @author vince
  */
 class InfrastructureCreationDTO {
-    
-    private URI uri;
-    
-    private URI type;
 
-    private String name;
-    
-    private URI parent;
-    
-    private List<URI> users;
+    protected URI uri;
+
+    protected URI type;
+
+    protected String name;
+
+    protected URI parent;
+
+    protected List<GroupUserProfileModificationDTO> userProfiles;
 
     public URI getUri() {
         return uri;
@@ -59,14 +61,14 @@ class InfrastructureCreationDTO {
         this.parent = parent;
     }
 
-    public List<URI> getUsers() {
-        return users;
+    public List<GroupUserProfileModificationDTO> getUserProfiles() {
+        return userProfiles;
     }
 
-    public void setUsers(List<URI> users) {
-        this.users = users;
+    public void setUserProfiles(List<GroupUserProfileModificationDTO> userProfiles) {
+        this.userProfiles = userProfiles;
     }
-    
+
     public InfrastructureModel newModel() {
         InfrastructureModel model = new InfrastructureModel();
         model.setUri(getUri());
@@ -79,17 +81,19 @@ class InfrastructureCreationDTO {
             parentModel.setUri(getParent());
             model.setParent(parentModel);
         }
-        
-        if (getUsers() != null) {
-            List<UserModel> users = new ArrayList<>();
-            getUsers().forEach(userURI -> {
-                UserModel user = new UserModel();
-                user.setUri(userURI);
-                users.add(user);
+
+        GroupModel group = new GroupModel();
+        group.setName(getName() + " (auto)");
+        group.setDescription(group.getName());
+        List<GroupUserProfileModel> userProfiles = new ArrayList<>();
+        if (getUserProfiles() != null) {
+            getUserProfiles().forEach(userProfile -> {
+                userProfiles.add(userProfile.newModel());
             });
-            model.setUsers(users);
         }
-        
+        group.setUserProfiles(userProfiles);
+        model.setGroup(group);
+
         return model;
     }
 }

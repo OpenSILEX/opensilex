@@ -79,7 +79,7 @@ public class ProjectAPI {
             @Context SecurityContext securityContext
     ) throws Exception {
         UserModel user = (UserModel) securityContext.getUserPrincipal();
-        ProjectDAO dao = new ProjectDAO(sparql, user.getLang());
+        ProjectDAO dao = new ProjectDAO(sparql);
         try {
             ProjectModel model = dto.newModel();
             dao.create(model);
@@ -111,9 +111,9 @@ public class ProjectAPI {
             @Context SecurityContext securityContext
     ) throws Exception {
         UserModel user = (UserModel) securityContext.getUserPrincipal();
-        ProjectDAO dao = new ProjectDAO(sparql, user.getLang());
+        ProjectDAO dao = new ProjectDAO(sparql);
 
-        ProjectModel model = dao.get(uri);
+        ProjectModel model = dao.get(uri, user.getLanguage());
         if (model != null) {
             dao.update(dto.updateModel(model));
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
@@ -143,7 +143,7 @@ public class ProjectAPI {
             @Context SecurityContext securityContext
     ) throws Exception {
         UserModel user = (UserModel) securityContext.getUserPrincipal();
-        ProjectDAO dao = new ProjectDAO(sparql, user.getLang());
+        ProjectDAO dao = new ProjectDAO(sparql);
         dao.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
@@ -165,8 +165,8 @@ public class ProjectAPI {
             @Context SecurityContext securityContext
     ) throws Exception {
         UserModel user = (UserModel) securityContext.getUserPrincipal();
-        ProjectDAO dao = new ProjectDAO(sparql, user.getLang());
-        ProjectModel model = dao.get(uri);
+        ProjectDAO dao = new ProjectDAO(sparql);
+        ProjectModel model = dao.get(uri, user.getLanguage());
 
         if (model != null) {
             return new SingleObjectResponse<>(
@@ -200,11 +200,12 @@ public class ProjectAPI {
             @Context SecurityContext securityContext
     ) throws Exception {
         UserModel user = (UserModel) securityContext.getUserPrincipal();
-        ProjectDAO dao = new ProjectDAO(sparql, user.getLang());
+        ProjectDAO dao = new ProjectDAO(sparql);
         ListWithPagination<ProjectModel> resultList = dao.search(
                 orderByList,
                 page,
-                pageSize
+                pageSize,
+                user.getLanguage()
         );
         ListWithPagination<ProjectGetDTO> resultDTOList = resultList.convert(
                 ProjectGetDTO.class,

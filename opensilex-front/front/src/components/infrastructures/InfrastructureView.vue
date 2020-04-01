@@ -18,13 +18,13 @@
       @onEdit="editInfrastructure"
       @onDelete="deleteInfrastructure"
       @onAddChild="showCreateForm"
-      @onSelect="(v) => defaultParent = v"
+      @onSelect="getNodeDetails"
     ></opensilex-InfrastructureTree>
   </div>
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
@@ -39,8 +39,17 @@ export default class InfrastructureView extends Vue {
   $opensilex: any;
   $store: any;
   service: InfrastructuresService;
+  $i18n: any;
 
+  selected: InfrastructureGetDTO = null;
+  getNodeDetails(value) {
+    this.selected = value;
+  }
   parentOptions = [];
+
+  @Ref("infrastructureForm") readonly infrastructureForm!: any;
+
+  @Ref("infrastructureTree") readonly infrastructureTree!: any;
 
   get user() {
     return this.$store.state.user;
@@ -63,38 +72,15 @@ export default class InfrastructureView extends Vue {
       .searchInfrastructuresTree(this.user.getAuthorizationHeader())
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
         let infrastructures = http.response.result;
-
-        let options = [];
-        infrastructures.forEach((resourceTree: ResourceTreeDTO) => {
-          options.push(this.buildTreeOptions(resourceTree));
-        });
-
-        this.parentOptions = options;
+        this.parentOptions = this.$opensilex.buildTreeListOptions(
+          infrastructures
+        );
       })
       .catch(this.$opensilex.errorHandler);
   }
 
-  private buildTreeOptions(resourceTree: ResourceTreeDTO) {
-    let option = {
-      id: resourceTree.uri,
-      label: resourceTree.name,
-      isDefaultExpanded: true,
-      isDisabled: false,
-      children: []
-    };
-
-    resourceTree.children.forEach(child => {
-      option.children.push(this.buildTreeOptions(child));
-    });
-
-    if (option.children.length == 0) {
-      delete option.children;
-    }
-    return option;
-  }
-
   showCreateForm(parentURI) {
-    let infrastructureForm: any = this.$refs.infrastructureForm;
+    let infrastructureForm: any = this.infrastructureForm;
     infrastructureForm.showCreateForm(parentURI);
   }
 
@@ -105,7 +91,7 @@ export default class InfrastructureView extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Infrastructure created", uri);
-          let infraTree: any = this.$refs.infrastructureTree;
+          let infraTree: any = this.infrastructureTree;
           infraTree.refresh();
           this.refresh();
         })
@@ -119,24 +105,30 @@ export default class InfrastructureView extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("Infrastructure updated", uri);
-        let infraTree: any = this.$refs.infrastructureTree;
-        infraTree.refresh();
+        let infraTree: any = this.infrastructureTree;
+        infraTree.refresh(uri);
         this.refresh();
       });
   }
 
-  editInfrastructure(form: InfrastructureGetDTO) {
-    console.error(this.parentOptions);
-    let infrastructureForm: any = this.$refs.infrastructureForm;
-    infrastructureForm.showEditForm(form);
+  editInfrastructure(uri) {
+    this.service
+      .getInfrastructure(
+        this.user.getAuthorizationHeader(),
+        uri,
+        this.$i18n.locale
+      )
+      .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
+        let detailDTO: InfrastructureGetDTO = http.response.result;
+        this.infrastructureForm.showEditForm(detailDTO);
+      });
   }
 
   deleteInfrastructure(uri: string) {
     this.service
       .deleteInfrastructure(this.user.getAuthorizationHeader(), uri)
       .then(() => {
-        let infrastructureTree: any = this.$refs.infrastructureTree;
-        infrastructureTree.refresh();
+        this.infrastructureTree.refresh();
         this.refresh();
       })
       .catch(this.$opensilex.errorHandler);

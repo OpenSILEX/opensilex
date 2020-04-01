@@ -11,9 +11,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.rest.group.dal.GroupModel;
-import org.opensilex.rest.group.dal.GroupUserProfileModel;
-import org.opensilex.rest.profile.dal.ProfileModel;
-import org.opensilex.rest.user.dal.UserModel;
 
 /**
  *
@@ -23,13 +20,13 @@ import org.opensilex.rest.user.dal.UserModel;
 public class GroupGetDTO {
 
     protected URI uri;
-    
+
     protected String name;
-    
+
     protected String description;
-    
+
     protected List<GroupUserProfileDTO> userProfiles;
-    
+
     @ApiModelProperty(value = "Group URI", example = "http://opensilex.dev/groups#Experiment_manager")
     public URI getUri() {
         return uri;
@@ -65,25 +62,20 @@ public class GroupGetDTO {
     public void setUserProfiles(List<GroupUserProfileDTO> userProfiles) {
         this.userProfiles = userProfiles;
     }
-    
+
     public static GroupGetDTO fromModel(GroupModel group) {
         GroupGetDTO dto = new GroupGetDTO();
         dto.setUri(group.getUri());
         dto.setName(group.getName());
         dto.setDescription(group.getDescription());
-        
+
         List<GroupUserProfileDTO> userProfiles = new ArrayList<>();
         group.getUserProfiles().forEach((userProfile) -> {
-            GroupUserProfileDTO userProfileDTO = new GroupUserProfileDTO();
-            userProfileDTO.setProfileURI(userProfile.getProfile().getUri());
-            userProfileDTO.setProfileName(userProfile.getProfile().getName());
-            userProfileDTO.setUserURI(userProfile.getUser().getUri());
-            userProfileDTO.setUserName(userProfile.getUser().getName());
-            userProfileDTO.setUri(userProfile.getUri());
+            GroupUserProfileDTO userProfileDTO = GroupUserProfileDTO.fromModel(userProfile);
             userProfiles.add(userProfileDTO);
         });
         dto.setUserProfiles(userProfiles);
-        
+
         return dto;
     }
 }

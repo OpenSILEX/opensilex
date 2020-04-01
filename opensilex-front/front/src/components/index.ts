@@ -11,6 +11,7 @@ import ProfileForm from './profiles/ProfileForm.vue';
 import ProfileView from './profiles/ProfileView.vue';
 import ProfileList from './profiles/ProfileList.vue';
 import GroupForm from './groups/GroupForm.vue';
+import GroupUserProfileForm from './groups/GroupUserProfileForm.vue';
 import GroupView from './groups/GroupView.vue';
 import GroupList from './groups/GroupList.vue';
 import FormInputMessageHelper from './common/FormInputMessageHelper.vue'
@@ -41,6 +42,7 @@ export default {
     'opensilex-ProfileView': ProfileView,
     'opensilex-ProfileList': ProfileList,
     'opensilex-GroupForm': GroupForm,
+    'opensilex-GroupUserProfileForm': GroupUserProfileForm,
     'opensilex-GroupView': GroupView,
     'opensilex-GroupList': GroupList,
 

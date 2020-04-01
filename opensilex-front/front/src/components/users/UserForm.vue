@@ -120,7 +120,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import { UserCreationDTO } from "opensilex-rest/index";
@@ -131,20 +131,24 @@ export default class UserForm extends Vue {
   $store: any;
   $router: VueRouter;
 
+  @Ref("modalRef") readonly modalRef!: any;
+
+  @Ref("validatorRef") readonly validatorRef!: any;
+
   get user() {
     return this.$store.state.user;
   }
 
   uriGenerated = true;
 
-  form: UserCreationDTO = {
+  form: any = {
     uri: "",
     email: "",
     firstName: "",
     lastName: "",
     admin: false,
     password: "",
-    lang: "en-US"
+    language: "en"
   };
 
   title = "";
@@ -159,7 +163,7 @@ export default class UserForm extends Vue {
       lastName: "",
       admin: false,
       password: "",
-      lang: "en-US"
+      language: "en"
     };
   }
 
@@ -168,7 +172,7 @@ export default class UserForm extends Vue {
     this.editMode = false;
     this.title = this.$t("component.user.add").toString();
     this.uriGenerated = true;
-    let modalRef: any = this.$refs.modalRef;
+    let modalRef: any = this.modalRef;
     modalRef.show();
   }
 
@@ -177,12 +181,12 @@ export default class UserForm extends Vue {
     this.editMode = true;
     this.title = this.$t("component.user.update").toString();
     this.uriGenerated = true;
-    let modalRef: any = this.$refs.modalRef;
+    let modalRef: any = this.modalRef;
     modalRef.show();
   }
 
   hideForm() {
-    let modalRef: any = this.$refs.modalRef;
+    let modalRef: any = this.modalRef;
     modalRef.hide();
   }
 
@@ -209,7 +213,7 @@ export default class UserForm extends Vue {
   }
 
   validate() {
-    let validatorRef: any = this.$refs.validatorRef;
+    let validatorRef: any = this.validatorRef;
     validatorRef.validate().then(isValid => {
       if (isValid) {
         if (this.uriGenerated && !this.editMode) {
@@ -219,7 +223,7 @@ export default class UserForm extends Vue {
         this.onValidate()
           .then(() => {
             this.$nextTick(() => {
-              let modalRef: any = this.$refs.modalRef;
+              let modalRef: any = this.modalRef;
               modalRef.hide();
             });
           })

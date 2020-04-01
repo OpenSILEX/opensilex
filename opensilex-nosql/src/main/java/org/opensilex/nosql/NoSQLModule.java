@@ -38,7 +38,7 @@ public class NoSQLModule extends OpenSilexModule {
 
     @Override
     public void install(boolean reset) throws Exception {
-        initMongo(reset);
+//        initMongo(reset);
     }
 
     @Override

@@ -1,13 +1,19 @@
+phisws:
+    infrastructure: opensilex
+
+
 ontologies:
     baseURI: http://opensilex.dev/
     baseURIAlias: dev
+    enableSHACL: true
     sparql:
+#        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         rdf4j:
             serverURI: http://localhost:8667/rdf4j-server/
             repository: opensilex
 
-file-system:   
-    storageBasePath: <TO CONFIGURE>  
+file-system: 
+    storageBasePath: ../../opensilex-data
     
 big-data:   
     nosql:
@@ -24,7 +30,7 @@ front:
     menuComponent: inrae-sixtine-SixtineMenuComponent
     headerComponent: inrae-sixtine-SixtineHeaderComponent
     menuExclusions:
-        - factors
+        - experimentalDesign
         - radiometricTargets
         - vectors
         - actuators
@@ -37,13 +43,3 @@ front:
         - data
         - dashboard
     
-phisws:
-    postgreSQL:
-        host: localhost
-        port: 8669
-        database: opensilex
-        username: opensilex
-        password: opensilex
-        
-    vocabulary: http://www.phenome-fppn.fr/vocabulary/2017#
-    infrastructure: opensilex

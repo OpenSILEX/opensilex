@@ -79,24 +79,24 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
             throw new Exception(errorMsg);
         }
         
-        uri = new URI("http://www.opensilex.org/vocabulary/oeso");
-        results = sparql.getGraphStatement(uri);
-
-        if (results.size() == 0) {
-            String errorMsg = uri.toString() + " is missing data into your triple store, did you execute `opensilex system setup` command ?";
-            LOGGER.warn("/!\\ " + errorMsg);
-            throw new Exception(errorMsg);
-        }
-        
-        uri = new URI("http://www.opensilex.org/vocabulary/oeev");
-        results = sparql.getGraphStatement(uri);
-        factory.dispose(sparql);
-
-        if (results.size() == 0) {
-            String errorMsg = uri.toString() + " is missing data into your triple store, did you execute `opensilex system setup` command ?";
-            LOGGER.warn("/!\\ " + errorMsg);
-            throw new Exception(errorMsg);
-        }
+//        uri = new URI("http://www.opensilex.org/vocabulary/oeso");
+//        results = sparql.getGraphStatement(uri);
+//
+//        if (results.size() == 0) {
+//            String errorMsg = uri.toString() + " is missing data into your triple store, did you execute `opensilex system setup` command ?";
+//            LOGGER.warn("/!\\ " + errorMsg);
+//            throw new Exception(errorMsg);
+//        }
+//        
+//        uri = new URI("http://www.opensilex.org/vocabulary/oeev");
+//        results = sparql.getGraphStatement(uri);
+//        factory.dispose(sparql);
+//
+//        if (results.size() == 0) {
+//            String errorMsg = uri.toString() + " is missing data into your triple store, did you execute `opensilex system setup` command ?";
+//            LOGGER.warn("/!\\ " + errorMsg);
+//            throw new Exception(errorMsg);
+//        }
     }
 
     @Override

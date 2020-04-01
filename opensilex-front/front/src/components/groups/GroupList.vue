@@ -70,7 +70,7 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
@@ -146,9 +146,10 @@ export default class GroupList extends Vue {
     }
   ];
 
+  @Ref("tableRef") readonly tableRef!: any;
+
   refresh() {
-    let tableRef: any = this.$refs.tableRef;
-    tableRef.refresh();
+    this.tableRef.refresh();
   }
 
   loadData() {

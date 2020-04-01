@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -234,11 +235,13 @@ public class ModuleManager {
         if (modules == null) {
 
             modules = new ArrayList<>();
-            modules = ServiceLoader.load(OpenSilexModule.class, OpenSilex.getClassLoader())
+            Iterator<OpenSilexModule> i = ServiceLoader.load(OpenSilexModule.class, OpenSilex.getClassLoader()).iterator();
+            while(i.hasNext()) {
+                modules.add(i.next());
+            }
+            modules = modules
                     .stream()
-                    .sorted((mp1, mp2) -> {
-                        OpenSilexModule m1 = mp1.get();
-                        OpenSilexModule m2 = mp2.get();
+                    .sorted((m1, m2) -> {
                         String artifact1 = ClassUtils.getProjectIdFromClass(m1.getClass());
                         String artifact2 = ClassUtils.getProjectIdFromClass(m2.getClass());
 
@@ -259,7 +262,7 @@ public class ModuleManager {
 
                         return index1 - index2;
                     })
-                    .map(m -> m.get())
+                    .map(m -> m)
                     .collect(Collectors.toList());
         }
 

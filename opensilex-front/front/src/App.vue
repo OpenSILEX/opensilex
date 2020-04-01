@@ -11,15 +11,17 @@
     </header>
 
     <section id="content-wrapper" class="page-wrap" v-if="user.isLoggedIn() && !disconnected">
-      <component v-if="!embed" v-bind:is="menuComponent"></component>
+      <component id="menu-container" v-if="!embed" v-bind:is="menuComponent"></component>
+      
+      <div id="main-content">
+        <main class="main-content">
+          <router-view />
+        </main>
 
-      <main class="main-content">
-        <router-view />
-      </main>
-
-      <footer v-if="!embed">
-        <component v-bind:is="footerComponent"></component>
-      </footer>
+        <footer v-if="!embed">
+          <component v-bind:is="footerComponent"></component>
+        </footer>
+      </div>
     </section>
 
     <div id="loader" v-bind:class="{'visible':isLoaderVisible}">
@@ -152,7 +154,6 @@ main {
 }
 
 section#content-wrapper {
-  display: -webkit-flex;
   display: flex;
   margin: 0 auto;
   height: 100%;

@@ -93,7 +93,7 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { User } from "../../models/User";
@@ -131,9 +131,11 @@ export default class DefaultLoginComponent extends Vue {
     this.$router.push("/");
   }
 
+  @Ref("validatorRef") readonly validatorRef!: any;
+  
   forceRefresh = false;
   onLogin() {
-    let validatorRef: any = this.$refs.validatorRef;
+    let validatorRef: any = this.validatorRef;
     validatorRef.validate().then(isValid => {
       if (isValid) {
         this.$opensilex.showLoader();

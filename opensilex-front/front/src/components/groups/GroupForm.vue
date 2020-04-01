@@ -1,5 +1,5 @@
 <template>
-  <b-modal ref="modalRef" @ok.prevent="validate" size="xl">
+  <b-modal ref="modalRef" @ok.prevent="validate" size="xl" :static="true">
     <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
     <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
 
@@ -72,129 +72,14 @@
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
-        <b-input-group class="mt-3 mb-3" size="sm">
-          <b-input-group>
-            <b-form-input
-              v-model="filterPattern"
-              debounce="300"
-              :placeholder="$t('component.user.filter-placeholder')"
-            ></b-form-input>
-            <template v-slot:append>
-              <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
-                <font-awesome-icon icon="times" size="sm" />
-              </b-btn>
-            </template>
-          </b-input-group>
-        </b-input-group>
-        <div class="tables">
-          <div class="table-left">
-            <div>
-              <div class="table-title">{{$t('component.group.form-all-users-title')}}</div>
-              <b-table
-                ref="tableRef"
-                striped
-                hover
-                small
-                :items="loadData"
-                :fields="fields"
-                :sort-by.sync="sortBy"
-                :sort-desc.sync="sortDesc"
-                no-provider-paging
-              >
-                <template v-slot:head(firstName)="data">{{ $t(data.label) }}</template>
-
-                <template v-slot:cell(selected)="data">
-                  <b-form-checkbox
-                    v-model="selectedUsersId[data.item.uri]"
-                    @change="toggleUserSelection(data.item)"
-                  ></b-form-checkbox>
-                </template>
-
-                <template v-slot:cell(firstName)="data">
-                  {{data.item.firstName}} {{data.item.lastName}}
-                  <a
-                    :href="'mailto:' + data.item.email"
-                  >({{ data.item.email }})</a>
-                </template>
-              </b-table>
-            </div>
-            <b-pagination
-              class="bottom-pagination"
-              v-model="currentPage"
-              :total-rows="totalRow"
-              :per-page="pageSize"
-              @change="refresh()"
-            ></b-pagination>
-          </div>
-          <div class="table-right">
-            <div>
-              <div
-                class="table-title"
-              >{{$t('component.group.form-selected-users-title')}} ({{selectedUsers.length}})</div>
-              <b-table
-                id="user-selection-table"
-                striped
-                hover
-                small
-                :items="selectedUsers"
-                :fields="selectedFields"
-                :per-page="pageSize"
-                :current-page="currentSelectedPage"
-              >
-                <template v-slot:head(firstName)="data">{{ $t(data.label) }}</template>
-                <template v-slot:head(admin)="data">{{ $t(data.label) }}</template>
-
-                <template v-slot:cell(selected)="data">
-                  <b-form-checkbox
-                    v-model="selectedUsersId[data.item.uri]"
-                    :per-page="pageSize"
-                    :current-page="currentSelectedPage"
-                    @change="toggleUserSelection(data.item)"
-                  ></b-form-checkbox>
-                </template>
-
-                <template v-slot:cell(firstName)="data">
-                  {{data.item.firstName}} {{data.item.lastName}}
-                  <a
-                    :href="'mailto:' + data.item.email"
-                  >({{ data.item.email }})</a>
-                </template>
-
-                <template v-slot:cell(uri)="data">
-                  <a class="uri-info">
-                    <small>{{ data.item.uri }}</small>
-                  </a>
-                </template>
-
-                <template v-slot:cell(admin)="data">
-                  <b-form-select
-                    size="sm"
-                    value-field="uri"
-                    text-field="name"
-                    :options="profiles"
-                    v-model="data.item.profile"
-                    :required="true"
-                    class="profile-selector"
-                  ></b-form-select>
-                </template>
-              </b-table>
-            </div>
-            <b-pagination
-              class="bottom-pagination"
-              v-model="currentSelectedPage"
-              :total-rows="selectedUsers.length"
-              :per-page="pageSize"
-              aria-controls="user-selection-table"
-            ></b-pagination>
-          </div>
-        </div>
+        <opensilex-GroupUserProfileForm ref="userProfilesRef" :userProfiles="form.userProfiles"></opensilex-GroupUserProfileForm>
       </b-form>
     </ValidationObserver>
   </b-modal>
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import {
@@ -206,6 +91,8 @@ import {
   GroupUserProfileModificationDTO
 } from "opensilex-rest/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import GroupUserProfileForm from "./GroupUserProfileForm.vue";
+import { BvModal } from "bootstrap-vue";
 
 @Component
 export default class GroupForm extends Vue {
@@ -213,10 +100,13 @@ export default class GroupForm extends Vue {
   $store: any;
   $router: VueRouter;
 
-  @Prop()
-  profiles: Array<ProfileGetDTO>;
-
   service: UsersGroupsProfilesService;
+
+  @Ref("userProfilesRef") readonly userProfilesRef!: GroupUserProfileForm;
+
+  @Ref("modalRef") readonly modalRef!: any;
+
+  @Ref("validatorRef") readonly validatorRef!: any;
 
   get user() {
     return this.$store.state.user;
@@ -242,117 +132,13 @@ export default class GroupForm extends Vue {
       description: "",
       userProfiles: []
     };
-    this.currentSelectedPage = 1;
-    this.currentPage = 1;
-    this.pageSize = 5;
-    this.totalRow = 0;
-    this.sortBy = "firstName";
-    this.sortDesc = false;
-    this.selectedUsersId = {};
-    this.selectedUsers = [];
-    this.filterPatternValue = "";
-  }
-
-  refresh() {
-    let tableRef: any = this.$refs.tableRef;
-    tableRef.refresh();
-  }
-
-  currentPage: number = 1;
-  currentSelectedPage: number = 1;
-  pageSize = 5;
-  totalRow = 0;
-  sortBy = "firstName";
-  sortDesc = false;
-
-  selectedUsersId: any = {};
-  selectedUsers: any = [];
-
-  private filterPatternValue: any = "";
-  set filterPattern(value: string) {
-    this.filterPatternValue = value;
-    this.refresh();
-  }
-
-  get filterPattern() {
-    return this.filterPatternValue;
+    this.userProfilesRef.clearForm();
   }
 
   created() {
-    this.service = this.$opensilex.getService("opensilex.UsersGroupsProfilesService");
-  }
-
-  loadData() {
-    let orderBy = [];
-    if (this.sortBy) {
-      let orderByText = this.sortBy + "=";
-      if (this.sortDesc) {
-        orderBy.push(orderByText + "desc");
-      } else {
-        orderBy.push(orderByText + "asc");
-      }
-    }
-
-    return this.service
-      .searchUsers(
-        this.user.getAuthorizationHeader(),
-        this.filterPattern,
-        orderBy,
-        this.currentPage - 1,
-        this.pageSize
-      )
-      .then((http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) => {
-        this.totalRow = http.response.metadata.pagination.totalCount;
-        this.pageSize = http.response.metadata.pagination.pageSize;
-        setTimeout(() => {
-          this.currentPage = http.response.metadata.pagination.currentPage + 1;
-        }, 0);
-
-        return http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-
-  fields = [
-    {
-      key: "selected",
-      label: ""
-    },
-    {
-      key: "firstName",
-      label: "component.common.name",
-      sortable: true
-    }
-  ];
-
-  selectedFields = [
-    {
-      key: "selected",
-      label: ""
-    },
-    {
-      key: "firstName",
-      label: "component.common.name",
-      sortable: true
-    },
-    {
-      key: "admin",
-      label: "component.profile.label"
-    }
-  ];
-
-  toggleUserSelection(user) {
-    if (!this.selectedUsersId[user.uri]) {
-      if (this.profiles.length > 0) {
-        user.profile = this.profiles[0].uri;
-      }
-      this.selectedUsers.push(user);
-    } else {
-      this.selectedUsers = this.selectedUsers.filter(element => {
-        return element.uri != user.uri;
-      });
-      delete this.selectedUsersId[user.uri];
-    }
+    this.service = this.$opensilex.getService(
+      "opensilex.UsersGroupsProfilesService"
+    );
   }
 
   showCreateForm() {
@@ -360,45 +146,22 @@ export default class GroupForm extends Vue {
     this.editMode = false;
     this.title = this.$t("component.group.add").toString();
     this.uriGenerated = true;
-    this.selectedUsers = [];
-    this.selectedUsersId = {};
-    let modalRef: any = this.$refs.modalRef;
-    modalRef.show();
+    this.validatorRef.reset();
+    this.modalRef.show();
   }
 
   showEditForm(form: GroupUpdateDTO) {
     this.form = form;
+    this.userProfilesRef.initFormProfiles(form.userProfiles);
     this.editMode = true;
     this.title = this.$t("component.group.update").toString();
     this.uriGenerated = true;
-
-    this.selectedUsers = [];
-    this.selectedUsersId = {};
-
-    let userURIs = [];
-    let profileByUser = {};
-    form.userProfiles.forEach(groupUserProfile => {
-      userURIs.push(groupUserProfile.userURI);
-      profileByUser[groupUserProfile.userURI] = groupUserProfile.profileURI;
-    });
-    this.service
-      .getUsersByURI(this.user.getAuthorizationHeader(), userURIs)
-      .then((http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) => {
-        let users = http.response.result;
-        users.forEach((user: any) => {
-          this.selectedUsersId[user.uri] = true;
-          user.profile = profileByUser[user.uri];
-          this.selectedUsers.push(user);
-        });
-      })
-      .catch(this.$opensilex.errorHandler);
-    let modalRef: any = this.$refs.modalRef;
-    modalRef.show();
+    this.validatorRef.reset();
+    this.modalRef.show();
   }
 
   hideForm() {
-    let modalRef: any = this.$refs.modalRef;
-    modalRef.hide();
+    this.modalRef.hide();
   }
 
   onValidate() {
@@ -424,31 +187,16 @@ export default class GroupForm extends Vue {
   }
 
   validate() {
-    let validatorRef: any = this.$refs.validatorRef;
-    validatorRef.validate().then(isValid => {
+    this.validatorRef.validate().then(isValid => {
       if (isValid) {
         if (this.uriGenerated && !this.editMode) {
           this.form.uri = null;
         }
 
-        let userProfiles = [];
-        for (let i in this.selectedUsers) {
-          let userProfile = this.selectedUsers[i];
-          let userProfileDTO: GroupUserProfileModificationDTO = {
-            profileURI: userProfile.profile,
-            userURI: userProfile.uri
-          };
-
-          userProfiles.push(userProfileDTO);
-        }
-
-        this.form.userProfiles = userProfiles;
-
         this.onValidate()
           .then(() => {
             this.$nextTick(() => {
-              let modalRef: any = this.$refs.modalRef;
-              modalRef.hide();
+              this.modalRef.hide();
             });
           })
           .catch(error => {
@@ -469,42 +217,5 @@ export default class GroupForm extends Vue {
 </script>
 
 <style scoped lang="scss">
-.tables {
-  display: flex;
-}
-
-.table-left,
-.table-right {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.table-left > div:first-child,
-.table-right > div:first-child {
-  flex: 1;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-.table-left {
-  margin-right: 5px;
-}
-
-.table-right {
-  margin-left: 5px;
-}
-
-.profile-selector {
-  height: 20px;
-  line-height: 15px;
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-.table-title {
-  font-weight: bold;
-  text-align: center;
-}
 </style>
 

@@ -24,16 +24,18 @@ public class ResourceTree<T extends SPARQLTreeModel> {
 
     private final List<URI> selectionList = new ArrayList<>();
     private final URI root;
+    private final boolean excludeRoot;
 
     public ResourceTree() {
-        this(new ArrayList<>(), null);
+        this(new ArrayList<>(), null, false);
     }
 
-    public ResourceTree(List<T> selectionList, URI root) {
+    public ResourceTree(List<T> selectionList, URI root, boolean excludeRoot) {
         for (T instance : selectionList) {
             this.selectionList.add(instance.getUri());
         }
         this.root = root;
+        this.excludeRoot = excludeRoot;
     }
 
     public void listRoots(Consumer<T> handler) {
@@ -56,12 +58,17 @@ public class ResourceTree<T extends SPARQLTreeModel> {
             T parent = (T) candidate.getParent();
 
             if (parent == null || candidate.getUri().equals(root)) {
-                if (!map.containsKey(null)) {
-                    map.put(null, new HashSet<T>());
+                if (!excludeRoot) {
+                    if (!map.containsKey(null)) {
+                        map.put(null, new HashSet<T>());
+                    }
+                    map.get(null).add(candidate);
                 }
-                map.get(null).add(candidate);
             } else {
                 URI parentURI = parent.getUri();
+                if (parentURI.equals(root) && excludeRoot) {
+                    parentURI = null;
+                }
                 if (!map.containsKey(parentURI)) {
                     addTree(parent);
                     map.put(parentURI, new HashSet<T>());

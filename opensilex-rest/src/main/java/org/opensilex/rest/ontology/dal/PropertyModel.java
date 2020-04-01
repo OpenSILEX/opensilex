@@ -19,7 +19,8 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
  */
 @SPARQLResource(
         ontology = OWL.class,
-        resource = "DatatypeProperty"
+        resource = "DatatypeProperty",
+        ignoreValidation = true
 )
 public class PropertyModel extends SPARQLTreeModel<PropertyModel> {
 

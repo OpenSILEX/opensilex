@@ -8,7 +8,7 @@
  Opensilex Dev Tools pom.xml
  This module brings some tools and helpers for OpenSilex development purpose.
  - org.opensilex.dev.Install.java
-    Main class to setup RDF4J, MongoDB and Postgres databases.
+    Main class to setup RDF4J and MongoDB.
  - org.opensilex.dev.StartServer.java
     Main class to start OpenSilex in development mode without Front hot reload.
  - org.opensilex.dev.StartServerWithFront.java

@@ -54,6 +54,8 @@
             "actions": "actions",
             "uri": "URI",
             "logout": "Déconnexion",
+            "parent": "parent",
+            "type": "type",
             "errors": {
                 "error-title": "Erreur",
                 "constraint-error": "Une erreur de validation s'est produite, merci de vérifier les données saisies.",
@@ -101,7 +103,8 @@
                 "label" : "Plan d'expérience",
                 "factors" : "Facteurs",
                 "factorLevels" : "Niveaux de facteurs"
-            }
+            },
+            "infrastructures": "Infrastructures"
         },
         "login": {
             "input": {
@@ -172,6 +175,19 @@
             "filter-placeholder": "Utiliser ce champ pour filtrer les groupes",
             "errors": {
                 "group-already-exists": "Un groupe existe déjà avec cette URI ou ce nom."
+            }
+        },
+        "infrastructure": {
+            "infrastructure-uri": "URI de l'infrastructure",
+            "form-name-placeholder": "Saisir le nom de l'infrastructure",
+            "form-type-placeholder": "Saisir le type d'infrastructure",
+            "form-parent-placeholder": "Saisir l'infrastructure parente",
+            "filter-placeholder": "Utiliser ce champ pour filtrer les infrastructures",
+            "add": "Ajouter une infrastructure",
+            "update": "Modifier l'infrastructure",
+            "detail": "Détail de l'infrastructure",
+            "errors": {
+                "infrastructure-already-exists": "Une utilisateur existe déjà avec cette URI ou cette adresse email."
             }
         },
         "factor": {

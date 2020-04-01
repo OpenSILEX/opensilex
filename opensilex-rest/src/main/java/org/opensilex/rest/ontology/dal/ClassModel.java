@@ -19,7 +19,8 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
  */
 @SPARQLResource(
         ontology = OWL.class,
-        resource = "Class"
+        resource = "Class",
+        ignoreValidation = true
 )
 public class ClassModel extends SPARQLTreeModel<ClassModel> {
 

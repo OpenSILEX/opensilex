@@ -185,23 +185,6 @@ At first connection, you must configure RDF4J server URL with this value: `http:
 
 MongoDB is accessible on port 8668
 
-## PostGreSQL and PGAdmin
-
-- PostGreSQL is accessible on port 8669
-
-- PGAdmin is accessible by default at: [http://localhost:8670/](http://localhost:8670/)
-
-PGAdmin default user: admin@opensilex.org
-
-PGAdmin default password: opensilex
-
-You must configure a new server connection for PGAdmin with the following parameters:
-
-- host: opensilex-psql
-- port: 5432
-- user: opensilex
-- password opensilex
-
 # Generate documentation
 
 ```

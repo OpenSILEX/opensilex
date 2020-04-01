@@ -74,7 +74,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import {
@@ -98,6 +98,10 @@ export default class ProfileForm extends Vue {
   @Prop()
   credentialsGroups: any;
 
+  @Ref("modalRef") readonly modalRef!: any;
+
+  @Ref("validatorRef") readonly validatorRef!: any;
+  
   private _selectedCredentials = null;
 
   get selectedCredentials() {
@@ -164,7 +168,7 @@ export default class ProfileForm extends Vue {
     this.editMode = false;
     this.title = this.$t("component.profile.add").toString();
     this.uriGenerated = true;
-    let modalRef: any = this.$refs.modalRef;
+    let modalRef: any = this.modalRef;
     modalRef.show();
   }
 
@@ -173,12 +177,12 @@ export default class ProfileForm extends Vue {
     this.editMode = true;
     this.title = this.$t("component.profile.update").toString();
     this.uriGenerated = true;
-    let modalRef: any = this.$refs.modalRef;
+    let modalRef: any = this.modalRef;
     modalRef.show();
   }
 
   hideForm() {
-    let modalRef: any = this.$refs.modalRef;
+    let modalRef: any = this.modalRef;
     modalRef.hide();
   }
 
@@ -211,7 +215,7 @@ export default class ProfileForm extends Vue {
   }
 
   validate() {
-    let validatorRef: any = this.$refs.validatorRef;
+    let validatorRef: any = this.validatorRef;
     validatorRef.validate().then(isValid => {
       if (isValid) {
         if (this.uriGenerated && !this.editMode) {
@@ -221,7 +225,7 @@ export default class ProfileForm extends Vue {
         this.onValidate()
           .then(() => {
             this.$nextTick(() => {
-              let modalRef: any = this.$refs.modalRef;
+              let modalRef: any = this.modalRef;
               modalRef.hide();
             });
           })

@@ -8,6 +8,7 @@ package org.opensilex.rest.group.api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
+import org.opensilex.rest.group.dal.GroupUserProfileModel;
 import org.opensilex.rest.validation.ValidURI;
 
 /**
@@ -16,6 +17,16 @@ import org.opensilex.rest.validation.ValidURI;
  */
 @ApiModel
 public class GroupUserProfileDTO {
+
+    public static GroupUserProfileDTO fromModel(GroupUserProfileModel userProfile) {
+            GroupUserProfileDTO userProfileDTO = new GroupUserProfileDTO();
+            userProfileDTO.setProfileURI(userProfile.getProfile().getUri());
+            userProfileDTO.setProfileName(userProfile.getProfile().getName());
+            userProfileDTO.setUserURI(userProfile.getUser().getUri());
+            userProfileDTO.setUserName(userProfile.getUser().getName());
+            userProfileDTO.setUri(userProfile.getUri());
+            return userProfileDTO;
+    }
 
     protected URI uri;
     

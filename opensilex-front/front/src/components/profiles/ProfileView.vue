@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {
   UsersGroupsProfilesService,
@@ -42,6 +42,10 @@ export default class ProfileView extends Vue {
   $store: any;
   credentialsGroups: Array<CredentialsGroupDTO> = [];
   credentialsMapping: any = {};
+
+  @Ref("profileForm") readonly profileForm!: any;
+
+  @Ref("profileList") readonly profileList!: any;
 
   get user() {
     return this.$store.state.user;
@@ -76,7 +80,7 @@ export default class ProfileView extends Vue {
   }
 
   showCreateForm() {
-    let profileForm: any = this.$refs.profileForm;
+    let profileForm: any = this.profileForm;
     profileForm.showCreateForm();
   }
 
@@ -87,7 +91,7 @@ export default class ProfileView extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Profile created", uri);
-          let profileList: any = this.$refs.profileList;
+          let profileList: any = this.profileList;
           profileList.refresh();
         })
     );
@@ -100,14 +104,14 @@ export default class ProfileView extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Profile updated", uri);
-          let profileList: any = this.$refs.profileList;
+          let profileList: any = this.profileList;
           profileList.refresh();
         })
     );
   }
 
   editProfile(form: ProfileGetDTO) {
-    let profileForm: any = this.$refs.profileForm;
+    let profileForm: any = this.profileForm;
     profileForm.showEditForm(form);
   }
 
@@ -115,7 +119,7 @@ export default class ProfileView extends Vue {
     this.service
       .deleteProfile(this.user.getAuthorizationHeader(), uri)
       .then(() => {
-        let profileList: any = this.$refs.profileList;
+        let profileList: any = this.profileList;
         profileList.refresh();
       })
       .catch(this.$opensilex.errorHandler);

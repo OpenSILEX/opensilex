@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -128,10 +129,13 @@ public class InfrastructureAPI {
         @ApiResponse(code = 204, message = "No experiment found", response = ErrorResponse.class)
     })
     public Response getInfrastructure(
-            @ApiParam(value = "Infrastructure URI", example = "http://opensilex.dev/infrastructures/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Infrastructure URI", example = "http://opensilex.dev/infrastructures/phenoarch", required = true) @PathParam("uri") @NotNull URI uri,
+            @ApiParam(value = "language", example = "en") @DefaultValue("en") @QueryParam("language") @NotEmpty String language,
+            @Context SecurityContext securityContext
     ) throws Exception {
+        UserModel user = (UserModel) securityContext.getUserPrincipal();
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        InfrastructureModel model = dao.get(uri);
+        InfrastructureModel model = dao.get(uri, user.getLanguageDefault(language));
 
         if (model != null) {
             return new SingleObjectResponse<>(InfrastructureGetDTO.fromModel(model)).getResponse();

@@ -212,7 +212,7 @@ public class FrontAPI {
 
         if (config != null) {
 
-            ThemeBuilder themeBuilder = new ThemeBuilder(module, themeId, config);
+            ThemeBuilder themeBuilder = getThemeBuilder(module, themeId, config);
             String css = themeBuilder.buildCss();
 
             // Load file
@@ -226,6 +226,26 @@ public class FrontAPI {
                 .ok("", "text/css")
                 .header("Content-Disposition", "attachment; filename=\"" + "style.css" + "\"")
                 .build();
+    }
+
+    private ThemeBuilder getThemeBuilder(OpenSilexModule module, String themeId, ThemeConfig config) throws Exception {
+        ThemeBuilder parentThemeBuilder = null;
+        if (config.extend() != null && !config.extend().isEmpty()) {
+            String[] extendedTheme = config.extend().split("#");
+            if (extendedTheme.length != 2) {
+                LOGGER.error("Invalid extension theme ID: " + config.extend() + " for theme: " + themeId);
+            } else {
+                OpenSilexModule parentThemeModule = getModule(extendedTheme[0]);
+
+                ThemeConfig parentConfig = getThemeConfigOrNull(parentThemeModule, extendedTheme[1]);
+
+                parentThemeBuilder = getThemeBuilder(parentThemeModule, extendedTheme[1], parentConfig);
+            }
+        }
+
+        ThemeBuilder themeBuilder = new ThemeBuilder(module, themeId, config, parentThemeBuilder);
+
+        return themeBuilder;
     }
 
     @GET

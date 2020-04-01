@@ -91,6 +91,7 @@ class SPARQLClassQueryBuilder {
         addQueryBuilderModelWhereProperties(
                 builder,
                 rootWhereHandler,
+                lang,
                 (field, property) -> {
                     addSelectProperty(builder, uriFieldName, property, field, rootWhereHandler, null);
                 },
@@ -133,16 +134,15 @@ class SPARQLClassQueryBuilder {
     }
 
     private void addSelectUriTypeVars(SelectBuilder select) {
-        String uriFieldName = analyzer.getURIFieldName();
-        String typeFieldName = analyzer.getTypeFieldName();
-
-        select.addVar(uriFieldName);
-        select.addVar(typeFieldName);
+        select.addVar(analyzer.getURIFieldName());
+        select.addVar(analyzer.getTypeFieldName());
+        select.addVar(analyzer.getTypeLabelFieldName());
     }
 
     private void addQueryBuilderModelWhereProperties(
             AbstractQueryBuilder<?> builder,
             WhereHandler rootWhereHandler,
+            String lang,
             BiConsumer<Field, Property> dataPropertyHandler,
             BiConsumer<Field, Property> objectPropertyHandler,
             BiConsumer<Field, Property> labelPropertyHandler
@@ -151,9 +151,18 @@ class SPARQLClassQueryBuilder {
         String typeFieldName = analyzer.getTypeFieldName();
         Var typeFieldVar = makeVar(typeFieldName);
 
+        WhereHandler whereHandler = builder.getWhereHandler();
         // WhereHandler used for adding all WHERE clause
         rootWhereHandler.addWhere(builder.makeTriplePath(makeVar(uriFieldName), RDF.type, typeFieldVar));
-        builder.getWhereHandler().addWhere(builder.makeTriplePath(typeFieldVar, Ontology.subClassAny, analyzer.getRDFType()));
+        whereHandler.addWhere(builder.makeTriplePath(typeFieldVar, Ontology.subClassAny, analyzer.getRDFType()));
+
+        String typeLabelFieldName = analyzer.getTypeLabelFieldName();
+        Var typeLabelFieldVar = makeVar(typeLabelFieldName);
+
+        WhereHandler optionalTypeLabelHandler = new WhereHandler();
+        optionalTypeLabelHandler.addWhere(builder.makeTriplePath(typeFieldVar, RDFS.label, typeLabelFieldVar));
+        addLangFilter(typeLabelFieldName, lang, optionalTypeLabelHandler);
+        whereHandler.addOptional(optionalTypeLabelHandler);
 
         analyzer.forEachDataProperty((Field field, Property property) -> {
             if (dataPropertyHandler != null) {

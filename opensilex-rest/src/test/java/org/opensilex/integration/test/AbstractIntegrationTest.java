@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
 //@Category(IntegrationTestCategory.class)
 public abstract class AbstractIntegrationTest extends JerseyTest {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(AbstractIntegrationTest.class);
+    protected final static Logger LOGGER = LoggerFactory.getLogger(AbstractIntegrationTest.class);
 
     @Rule
     public TestRule watcher = new TestWatcher() {

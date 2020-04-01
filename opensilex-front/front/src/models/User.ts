@@ -83,7 +83,7 @@ export class User {
         this.email = this.getTokenData(User.CLAIM_EMAIL);
         this.admin = this.getTokenData(User.CLAIM_IS_ADMIN);
         this.credentials = this.getTokenData(User.CLAIM_CREDENTIALS_LIST);
-        console.debug ("User credentials:", this.credentials);
+        console.debug("User credentials:", this.credentials);
         this.loggedIn = true;
         this.expire = parseInt(this.getTokenData(User.CLAIM_EXPIRE));
     }
@@ -139,7 +139,6 @@ export class User {
 
         for (let i in credentials) {
             let credential = credentials[i];
-            console.log(credential, this.credentials.indexOf(credential) < 0)
             if (this.credentials.indexOf(credential) < 0) {
                 return false;
             }

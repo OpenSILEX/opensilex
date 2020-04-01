@@ -38,7 +38,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.sparql.core.Var;
-import org.opensilex.OpenSilex;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLManualLoading;
 import org.opensilex.utils.ThrowingBiConsumer;
 
@@ -87,8 +87,13 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                 Class<? extends SPARQLResourceModel> sparqlResourceModelClass = (Class<? extends SPARQLResourceModel>) sparqlModelClass;
                 SPARQLClassObjectMapper<?> mapper = new SPARQLClassObjectMapper<>(sparqlResourceModelClass);
                 SPARQL_CLASSES_MAPPER.put(sparqlModelClass, mapper);
-                SPARQL_RESOURCES_MAPPER.put(mapper.getRDFType(), mapper);
             }
+
+            for (SPARQLClassObjectMapper<? extends SPARQLResourceModel> mapperUninit : SPARQL_CLASSES_MAPPER.values()) {
+                mapperUninit.init();
+                SPARQL_RESOURCES_MAPPER.put(mapperUninit.getRDFType(), mapperUninit);
+            }
+
         }
     }
 
@@ -143,14 +148,16 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     private final Class<T> objectClass;
-    private final Constructor<T> constructor;
-    private final SPARQLClassQueryBuilder classQueryBuilder;
-    private final SPARQLClassAnalyzer classAnalizer;
+    private Constructor<T> constructor;
+    private SPARQLClassQueryBuilder classQueryBuilder;
+    private SPARQLClassAnalyzer classAnalizer;
 
-    private SPARQLClassObjectMapper(Class<T> objectClass) throws SPARQLInvalidClassDefinitionException {
+    private SPARQLClassObjectMapper(Class<T> objectClass) {
         LOGGER.debug("Initialize SPARQL ressource class object mapper for: " + objectClass.getName());
         this.objectClass = objectClass;
+    }
 
+    protected void init() throws SPARQLInvalidClassDefinitionException {
         LOGGER.debug("Look for object constructor with no arguments for class: " + objectClass.getName());
         try {
             constructor = objectClass.getConstructor();
@@ -204,17 +211,22 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     @SuppressWarnings("unchecked")
     public T createInstance(Node graph, SPARQLResult result, String lang, SPARQLService service) throws Exception {
-        if (lang == null) {
-            lang = OpenSilex.getDefaultLanguage();
-        }
 
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
         URI uri = uriDeserializer.fromString((result.getStringValue(classAnalizer.getURIFieldName())));
 
         T instance = createInstance(uri);
 
-        String realType = result.getStringValue(getTypeFieldName());
-        instance.setType(new URI(realType));
+        URI realType = new URI(result.getStringValue(getTypeFieldName()));
+        instance.setType(realType);
+
+        String typeLabelFieldName = getTypeLabelFieldName();
+        String realTypeLabel = result.getStringValue(typeLabelFieldName);
+        if (realTypeLabel == null) {
+            realTypeLabel = "";
+        }
+        SPARQLProxyLabel proxyLabel = new SPARQLProxyLabel(null, realTypeLabel, realType, RDFS.label, false, lang, service);
+        instance.setTypeLabel(proxyLabel.getInstance());
 
         for (Field field : classAnalizer.getDataPropertyFields()) {
             Method setter = classAnalizer.getSetterFromField(field);
@@ -317,9 +329,6 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public AskBuilder getAskBuilder(Node graph, String lang) {
-        if (lang == null) {
-            lang = OpenSilex.getDefaultLanguage();
-        }
         return classQueryBuilder.getAskBuilder(graph, lang);
     }
 
@@ -328,9 +337,6 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public SelectBuilder getSelectBuilder(Node graph, String lang) {
-        if (lang == null) {
-            lang = OpenSilex.getDefaultLanguage();
-        }
         return classQueryBuilder.getSelectBuilder(graph, lang);
     }
 
@@ -339,9 +345,6 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang) {
-        if (lang == null) {
-            lang = OpenSilex.getDefaultLanguage();
-        }
         return classQueryBuilder.getCountBuilder(graph, countFieldName, lang);
     }
 
@@ -412,6 +415,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     public String getTypeFieldName() {
         return classAnalizer.getTypeFieldName();
+    }
+
+    public String getTypeLabelFieldName() {
+        return classAnalizer.getTypeLabelFieldName();
     }
 
     public Var getTypeFieldVar() {

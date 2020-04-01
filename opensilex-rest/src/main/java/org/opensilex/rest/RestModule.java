@@ -74,6 +74,8 @@ public class RestModule extends OpenSilexModule implements APIExtension {
         if (factory instanceof RDF4JInMemoryServiceFactory) {
             RestModule.createDefaultSuperAdmin();
         }
+        
+//        org.apache.commons.jcs.JCS.setConfigProperties(configProps);
     }
 
     @Override
@@ -130,7 +132,7 @@ public class RestModule extends OpenSilexModule implements APIExtension {
         InternetAddress email = new InternetAddress("admin@opensilex.org");
 
         if (!userDAO.userEmailexists(email)) {
-            userDAO.create(null, email, "Admin", "OpenSilex", true, authentication.getPasswordHash("admin"), "en-US");
+            userDAO.create(null, email, "Admin", "OpenSilex", true, authentication.getPasswordHash("admin"), "en");
         }
     }
 }

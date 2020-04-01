@@ -4,8 +4,6 @@
 // Copyright © INRAE 2020
 // Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
-
-
 package org.opensilex.core.experiment.dal;
 
 import org.junit.Before;
@@ -41,9 +39,9 @@ import org.opensilex.unit.test.AbstractUnitTest;
  * @author Renaud COLIN
  * @author Vincent MIGOT
  */
-public class ExperimentDAOTest extends AbstractUnitTest{
+public class ExperimentDAOTest extends AbstractUnitTest {
 
-   private static RDF4JInMemoryServiceFactory factory;
+    private static RDF4JInMemoryServiceFactory factory;
 
     protected ExperimentDAO xpDao;
     protected static String xpGraph;
@@ -69,7 +67,7 @@ public class ExperimentDAOTest extends AbstractUnitTest{
     public void init() throws Exception {
         projectModel = new ProjectModel();
         projectModel.setName("TEST PROJECT");
-        projectDAO = new ProjectDAO(sparql, null);
+        projectDAO = new ProjectDAO(sparql);
         xpDao = new ExperimentDAO(sparql);
         projectDAO.create(projectModel);
     }
@@ -185,7 +183,6 @@ public class ExperimentDAOTest extends AbstractUnitTest{
 //        }
 //
 //    }
-
 //    @Test
 //    public void searchWithDataType() throws Exception {
 //
@@ -204,7 +201,6 @@ public class ExperimentDAOTest extends AbstractUnitTest{
 //
 //        testEquals(xpModel, xpModelResults.getList().get(0));
 //    }
-
 //    @Test
 //    public void searchWithDataTypeList() throws Exception {
 //
@@ -239,7 +235,6 @@ public class ExperimentDAOTest extends AbstractUnitTest{
 //        assertTrue(xpList.contains(model));
 //        assertTrue(xpList.contains(model2));
 //    }
-
 //    @Test
 //    public void searchWithObjectUriType() throws Exception {
 //
@@ -276,7 +271,6 @@ public class ExperimentDAOTest extends AbstractUnitTest{
 //        assertTrue(xpModelResults.contains(xpModel));
 //
 //    }
-
 //    @Test
 //    public void searchFail() throws Exception {
 //
@@ -307,7 +301,6 @@ public class ExperimentDAOTest extends AbstractUnitTest{
 //        testEquals(xpModel, xpModelResults.getList().get(0));
 //
 //    }
-
 //    @Test
 //    public void searchEnded() throws Exception {
 //
@@ -339,7 +332,6 @@ public class ExperimentDAOTest extends AbstractUnitTest{
 //        assertTrue(allXps.contains(unarchivedXp));
 //
 //    }
-
     @Test
     public void update() throws Exception {
 
@@ -427,6 +419,4 @@ public class ExperimentDAOTest extends AbstractUnitTest{
 //        xp.setSpecies(new URI("http://www.opensilex.org/id/species/zeamays"));
 //        xpDao.create(xp);
 //    }
-
-
 }

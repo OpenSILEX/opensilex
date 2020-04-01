@@ -167,7 +167,7 @@ public class UserAPI {
                 userDTO.getLastName(),
                 userDTO.isAdmin(),
                 authentication.getPasswordHash(userDTO.getPassword()),
-                userDTO.getLang()
+                userDTO.getLanguage()
         );
         // return user URI
         return new ObjectUriResponse(Response.Status.CREATED, user.getUri()).getResponse();
@@ -358,7 +358,7 @@ public class UserAPI {
                     dto.getLastName(),
                     dto.isAdmin(),
                     authentication.getPasswordHash(dto.getPassword()),
-                    dto.getLang()
+                    dto.getLanguage()
             );
 
             return new ObjectUriResponse(Response.Status.OK, user.getUri()).getResponse();

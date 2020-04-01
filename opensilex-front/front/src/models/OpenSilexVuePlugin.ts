@@ -1,14 +1,15 @@
-import { ApiServiceBinder, IAPIConfiguration, FrontConfigDTO } from '../lib';
 import { Container } from 'inversify';
-import IHttpClient from '../lib/IHttpClient';
-import HttpClient from '../lib/HttpClient';
-import { ModuleComponentDefinition } from './ModuleComponentDefinition';
-import Vue from 'vue';
-import { User } from './User';
-import { Store } from 'vuex';
-import { VueCookies } from 'vue-cookies'
-import VueI18n from 'vue-i18n';
 import moment from 'moment';
+import { ResourceTreeDTO } from 'opensilex-rest/index';
+import Vue from 'vue';
+import { VueCookies } from 'vue-cookies';
+import VueI18n from 'vue-i18n';
+import { Store } from 'vuex';
+import { ApiServiceBinder, FrontConfigDTO, IAPIConfiguration } from '../lib';
+import HttpClient from '../lib/HttpClient';
+import IHttpClient from '../lib/IHttpClient';
+import { ModuleComponentDefinition } from './ModuleComponentDefinition';
+import { User } from './User';
 declare var $cookies: VueCookies;
 
 declare var window: any;
@@ -46,7 +47,7 @@ export default class OpenSilexVuePlugin {
 
     getResourceURI(path: string): string {
         if (this.config.themeModule && this.config.themeName) {
-            let resourceURI = this.baseApi + "/front/theme/" + encodeURIComponent(this.config.themeModule) + "/" + encodeURIComponent(this.config.themeName) + "/resource";
+            let resourceURI = this.baseApi + "/vuejs/theme/" + encodeURIComponent(this.config.themeModule) + "/" + encodeURIComponent(this.config.themeName) + "/resource";
             return resourceURI + "?filePath=" + encodeURIComponent(path);
         } else {
             return "/app/" + path;
@@ -201,8 +202,8 @@ export default class OpenSilexVuePlugin {
 
         console.debug("Load module", name);
         this.showLoader();
-        let url = this.baseApi + "/front/extension/js/" + name + ".js";
-        let cssURI = this.baseApi + "/front/extension/css/" + name + ".css";
+        let url = this.baseApi + "/vuejs/extension/js/" + name + ".js";
+        let cssURI = this.baseApi + "/vuejs/extension/css/" + name + ".css";
         let self = this;
 
         var link = document.createElement('link');
@@ -272,6 +273,7 @@ export default class OpenSilexVuePlugin {
         });
 
     }
+
     public getServiceContainer() {
         return this.container;
     }
@@ -418,5 +420,66 @@ export default class OpenSilexVuePlugin {
 
     private computeToastID(message: string, options: any): string {
         return "OPENSILEX-TOAST" + OpenSilexVuePlugin.hashCode(message + "|" + options.title + "|" + options.variant);
+    }
+
+    public buildTreeListOptions(resourceTrees: Array<ResourceTreeDTO>) {
+    let options = [];
+    resourceTrees.forEach((resourceTree: ResourceTreeDTO) => {
+      options.push(this.buildTreeOptions(resourceTree));
+    });
+
+    return options;
+}
+
+    public buildTreeOptions(resourceTree: ResourceTreeDTO) {
+        let option = {
+            id: resourceTree.uri,
+            label: resourceTree.name,
+            isDefaultExpanded: true,
+            isDisabled: false,
+            children: []
+        };
+
+        resourceTree.children.forEach(child => {
+            option.children.push(this.buildTreeOptions(child));
+        });
+
+        if (option.children.length == 0) {
+            delete option.children;
+        }
+        return option;
+    }
+
+    public filterItemTree(tree, id?, parent?) {
+        for (let i in tree) {
+            let item = tree[i];
+            item.isDisabled = false;
+
+            if (id != null) {
+                item.isDisabled = item.id == id;
+            }
+
+            if (parent != null) {
+                item.isDisabled = item.isDisabled || parent.isDisabled;
+            }
+
+            this.filterItemTree(item.children, id, item);
+        }
+    }
+
+    private flatOntologies = {};
+    setOntologyClasses(result: ResourceTreeDTO[]) {
+        result.forEach(item => {
+            this.flatOntologies[item.uri] = item;
+            this.setOntologyClasses(item.children);
+        });
+    }
+
+    getOntologyLabel(uri) {
+        if(this.flatOntologies[uri]) {
+            return this.flatOntologies[uri].name;
+        } else {
+            return uri;
+        }
     }
 }

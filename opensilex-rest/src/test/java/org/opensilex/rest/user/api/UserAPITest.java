@@ -44,7 +44,7 @@ public class UserAPITest extends AbstractIntegrationTest {
         dto.setFirstName("user" + count + "");
         dto.setLastName("user" + count + " last name");
         dto.setPassword("1234");
-        dto.setLang(OpenSilex.DEFAULT_LANGUAGE);
+        dto.setLanguage(OpenSilex.DEFAULT_LANGUAGE);
         return dto;
     }
 
@@ -57,7 +57,7 @@ public class UserAPITest extends AbstractIntegrationTest {
         dto.setFirstName("user" + count + "");
         dto.setLastName("user" + count + " last name");
         dto.setPassword("6789");
-        dto.setLang(OpenSilex.DEFAULT_LANGUAGE);
+        dto.setLanguage(OpenSilex.DEFAULT_LANGUAGE);
         return dto;
     }
 
@@ -93,7 +93,7 @@ public class UserAPITest extends AbstractIntegrationTest {
         dto.setFirstName("a");
         dto.setLastName("b");
         dto.setAdmin(false);
-        dto.setLang("fr-FR");
+        dto.setLanguage("fr");
 
         final Response putResult = getJsonPutResponse(target(updatePath), dto);
         assertEquals(Response.Status.OK.getStatusCode(), putResult.getStatus());
@@ -104,6 +104,7 @@ public class UserAPITest extends AbstractIntegrationTest {
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
         ObjectMapper mapper = new ObjectMapper();
+        LOGGER.info(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node));
         SingleObjectResponse<UserGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<UserGetDTO>>() {
         });
         UserGetDTO dtoFromApi = getResponse.getResult();
@@ -212,7 +213,7 @@ public class UserAPITest extends AbstractIntegrationTest {
         assertEquals(expectedUserDTO.getFirstName(), actualUserDTO.getFirstName());
         assertEquals(expectedUserDTO.getLastName(), actualUserDTO.getLastName());
         assertEquals(expectedUserDTO.isAdmin(), actualUserDTO.isAdmin());
-        assertEquals(expectedUserDTO.getLang(), actualUserDTO.getLang());
+        assertEquals(expectedUserDTO.getLanguage(), actualUserDTO.getLanguage());
     }
 
     @Override

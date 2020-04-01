@@ -27,7 +27,8 @@ import org.opensilex.rest.user.dal.UserModel;
  * </pre>
  *
  * @see org.opensilex.rest.user.api.UserAPI#getUser(java.net.URI)
- * @see org.opensilex.rest.user.api.UserAPI#searchUsers(java.lang.String, java.util.List, int, int)
+ * @see org.opensilex.rest.user.api.UserAPI#searchUsers(java.lang.String,
+ * java.util.List, int, int)
  * @author Vincent Migot
  */
 @ApiModel
@@ -57,7 +58,7 @@ public class UserGetDTO {
      * Determine if user is admin or not
      */
     protected boolean admin;
-    
+
     /**
      * User language
      */
@@ -109,14 +110,14 @@ public class UserGetDTO {
     }
 
     @ApiModelProperty(value = "User language", example = OpenSilex.DEFAULT_LANGUAGE)
-    public String getLang() {
+    public String getLanguage() {
         return lang;
     }
 
-    public void setLang(String lang) {
+    public void setLanguage(String lang) {
         this.lang = lang;
     }
-    
+
     /**
      * Convert User Model into User DTO
      *
@@ -131,8 +132,8 @@ public class UserGetDTO {
         dto.setEmail(model.getEmail().toString());
         dto.setFirstName(model.getFirstName());
         dto.setLastName(model.getLastName());
-        dto.setLang(model.getLang());
-        
+        dto.setLanguage(model.getLanguage());
+
         return dto;
     }
 

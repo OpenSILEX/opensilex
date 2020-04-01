@@ -43,6 +43,7 @@ label::first-letter {
 .sl-vue-tree-node-item:hover,
 .sl-vue-tree-node-item.sl-vue-tree-cursor-hover {
   color: #545454;
+  cursor: pointer;
   background-color: #f3f3f3;
 }
 
@@ -77,3 +78,17 @@ label::first-letter {
 @import "../node_modules/bootstrap-vue/src/index.scss";
 @import "../node_modules/vue-multiselect/dist/vue-multiselect.min.css";
 @import "../node_modules/vue-airbnb-style-datepicker/dist/vue-airbnb-style-datepicker.min.css";
+
+.error-message {
+  margin-top: 2px;
+  padding: 10px;
+}
+
+.error-message:empty
+{
+  display:none;
+}
+
+#main-content {
+  width: 100%;
+}

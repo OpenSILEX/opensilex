@@ -9,7 +9,7 @@ import java.util.List;
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.rest.authentication.SecurityOntology;
-import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.rest.group.dal.GroupModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
@@ -56,17 +56,18 @@ public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> {
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,
-            property = "hasUser"
+            property = "hasGroup",
+            cascadeDelete = true
     )
-    private List<UserModel> users;
-    public static final String USERS_FIELD = "users";
+    private GroupModel group;
+    public static final String GROUP_FIELD = "group";
 
-    public List<UserModel> getUsers() {
-        return users;
+    public GroupModel getGroup() {
+        return group;
     }
 
-    public void setUsers(List<UserModel> users) {
-        this.users = users;
+    public void setGroup(GroupModel group) {
+        this.group = group;
     }
 
     public List<InfrastructureDeviceModel> getDevices() {

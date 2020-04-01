@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
@@ -36,7 +36,11 @@ export default class UserView extends Vue {
   $opensilex: any;
   $store: any;
   service: UsersGroupsProfilesService;
-  
+
+  @Ref("userForm") readonly userForm!: any;
+
+  @Ref("userList") readonly userList!: any;
+
   get user() {
     return this.$store.state.user;
   }
@@ -46,11 +50,13 @@ export default class UserView extends Vue {
   }
 
   created() {
-    this.service = this.$opensilex.getService("opensilex.UsersGroupsProfilesService");
+    this.service = this.$opensilex.getService(
+      "opensilex.UsersGroupsProfilesService"
+    );
   }
 
   showCreateForm() {
-    let userForm: any = this.$refs.userForm;
+    let userForm: any = this.userForm;
     userForm.showCreateForm();
   }
 
@@ -61,7 +67,7 @@ export default class UserView extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("User created", uri);
-          let userList: any = this.$refs.userList;
+          let userList: any = this.userList;
           userList.refresh();
         })
     );
@@ -74,14 +80,14 @@ export default class UserView extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("User updated", uri);
-          let userList: any = this.$refs.userList;
+          let userList: any = this.userList;
           userList.refresh();
         })
     );
   }
 
   editUser(form: UserGetDTO) {
-    let userForm: any = this.$refs.userForm;
+    let userForm: any = this.userForm;
     userForm.showEditForm(form);
   }
 
@@ -89,7 +95,7 @@ export default class UserView extends Vue {
     this.service
       .deleteUser(this.user.getAuthorizationHeader(), uri)
       .then(() => {
-        let userList: any = this.$refs.userList;
+        let userList: any = this.userList;
         userList.refresh();
       })
       .catch(this.$opensilex.errorHandler);

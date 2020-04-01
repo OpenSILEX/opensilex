@@ -15,6 +15,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Priority;
 import javax.inject.Inject;
@@ -23,10 +25,13 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.LocaleUtils;
+import org.opensilex.OpenSilex;
 import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.exceptions.UnauthorizedException;
 import org.opensilex.server.exceptions.UnexpectedErrorException;
@@ -79,6 +84,9 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     @Context
     ResourceInfo resourceInfo;
+
+    @Context
+    HttpHeaders headers;
 
     @Inject
     AuthenticationService authentication;
@@ -161,6 +169,18 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
                     // Define user to be accessed through SecurityContext
                     SecurityContext originalContext = requestContext.getSecurityContext();
+                    List<Locale> locales = headers.getAcceptableLanguages();
+
+                    Locale locale = null;
+                    for (Locale l : locales) {
+                        locale = l;
+                        break;
+                    }
+                    if (locale == null) {
+                        locale = LocaleUtils.toLocale(OpenSilex.getDefaultLanguage());
+                    }
+                    user.setLocale(locale);
+
                     SecurityContext newContext = new SecurityContextProxy(originalContext, user);
                     requestContext.setSecurityContext(newContext);
 

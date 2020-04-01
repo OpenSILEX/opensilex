@@ -397,7 +397,7 @@ public class RDF4JConnection implements SPARQLConnection {
                     LOGGER.debug("No SHACL Validation for: " + c.getCanonicalName() + "\n" + shaclTTL);
                 }
             } catch (Exception ex) {
-                LOGGER.warn("Error while loading SHACL", ex);
+                LOGGER.warn("Error while loading SHACL for: " + c.getCanonicalName(), ex);
             }
         }
 

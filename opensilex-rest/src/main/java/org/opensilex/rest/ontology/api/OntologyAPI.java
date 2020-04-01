@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -62,7 +63,8 @@ public class OntologyAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response getSubClassesOf(
-            @ApiParam(value = "Parent RDF class URI", example = "owl:Class") @QueryParam("parentClass") @ValidURI URI parentClass,
+            @ApiParam(value = "Parent RDF class URI") @QueryParam("parentClass") @ValidURI URI parentClass,
+            @ApiParam(value = "Flag to determine if only sub-classes must be include in result") @DefaultValue("false") @QueryParam("ignoreRootClasses") boolean ignoreRootClasses,
             @Context SecurityContext securityContext
     ) throws Exception {
         UserModel user = (UserModel) securityContext.getUserPrincipal();
@@ -70,7 +72,8 @@ public class OntologyAPI {
 
         ResourceTree<ClassModel> tree = dao.searchSubClasses(
                 parentClass,
-                user
+                user,
+                ignoreRootClasses
         );
 
         return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree)).getResponse();
@@ -88,6 +91,7 @@ public class OntologyAPI {
     })
     public Response getSubPropertiesOf(
             @ApiParam(value = "Parent RDF Property URI", example = "owl:DatatypeProperty") @QueryParam("parentProperty") @ValidURI URI parentProperty,
+            @ApiParam(value = "Flag to determine if only sub-properties must be include in result") @DefaultValue("false") @QueryParam("ignoreRootProperties") boolean ignoreRootProperties,
             @Context SecurityContext securityContext
     ) throws Exception {
         UserModel user = (UserModel) securityContext.getUserPrincipal();
@@ -95,7 +99,8 @@ public class OntologyAPI {
 
         ResourceTree<PropertyModel> tree = dao.searchProperties(
                 parentProperty,
-                user
+                user,
+                ignoreRootProperties
         );
 
         return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree)).getResponse();

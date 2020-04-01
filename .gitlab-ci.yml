@@ -35,6 +35,21 @@ variables:
  NODE_CACHE: "$CI_PROJECT_DIR/opensilex-dev/.node"
  EMBDED_MONGO_CACHE: "/root/.embedmongo/"
 
+########################
+##  CACHE TEMPLATE
+########################
+
+# Cache downloaded dependencies and plugins between builds.
+# To keep cache across branches add 'key: "$CI_BUILD_JOB_NAME"'
+.cache_dependencies: &cache_dependencies
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - $YARN_CACHE_FOLDER
+      - $MAVEN_CACHE_FOLDER
+      - $NODE_CACHE
+      - $EMBDED_MONGO_CACHE
+
 
 ########################
 ##  BUILD TEMPLATE

@@ -65,7 +65,7 @@ import org.opensilex.sparql.service.SPARQLService;
  * http://connect2id.com/products/nimbus-jose-jwt/examples/jwt-with-rsa-signature
  * @author Samuël Chérimont
  */
-@Api(value = "/brapi/v1/token")
+@Api(value = "BrAPI")
 @Path("brapi/v1/token")
 public class TokenResourceService implements BrapiCall {
 

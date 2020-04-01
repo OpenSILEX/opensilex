@@ -48,7 +48,7 @@ import org.opensilex.sparql.service.SPARQLService;
  * @update [Alice Boizet] 24 Sept. 2018: add Get Trait Details.
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-@Api("/brapi/v1/traits")
+@Api("BrAPI")
 @Path("/brapi/v1/traits")
 public class TraitsResourceService implements BrapiCall {
 

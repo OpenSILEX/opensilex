@@ -62,6 +62,7 @@ import java.util.List;
  */
 @Api("/experiments")
 @Path("experiments")
+@Deprecated
 public class ExperimentResourceService extends ResourceService {
 
     @Inject
@@ -238,7 +239,7 @@ public class ExperimentResourceService extends ResourceService {
             // use DAO(s) in order to validate URI(s) from ExperimentPostDTO
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
             SpeciesDAO speciesDAO = new SpeciesDAO(sparql);
-            ProjectDAO projectDAO = new ProjectDAO(sparql, null);
+            ProjectDAO projectDAO = new ProjectDAO(sparql);
             UserDAO userDAO = new UserDAO(sparql);
             GroupDAO groupDAO = new GroupDAO(sparql);
 
@@ -303,7 +304,7 @@ public class ExperimentResourceService extends ResourceService {
         try {
             // use DAO(s) in order to validate URI(s) from ExperimentPostDTO
             SpeciesDAO speciesDAO = new SpeciesDAO(sparql);
-            ProjectDAO projectDAO = new ProjectDAO(sparql, null);
+            ProjectDAO projectDAO = new ProjectDAO(sparql);
             UserDAO userDAO = new UserDAO(sparql);
             GroupDAO groupDAO = new GroupDAO(sparql);
 

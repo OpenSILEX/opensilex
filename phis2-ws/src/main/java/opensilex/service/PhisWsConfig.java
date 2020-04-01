@@ -14,8 +14,6 @@ import org.opensilex.module.ModuleConfig;
  */
 public interface PhisWsConfig extends ModuleConfig {
 
-    PhisPostgreSQLConfig postgreSQL();
-
     @ConfigDescription(
             value = "Infrastructure name used for URI generation"
     )

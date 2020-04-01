@@ -68,7 +68,7 @@ import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Api("/brapi/v1/studies")
+@Api("BrAPI")
 @Path("/brapi/v1/studies")
 /**
  * Study services :

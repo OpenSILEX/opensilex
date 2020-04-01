@@ -33,6 +33,7 @@ import java.util.HashMap;
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class Experiment {
+
     private String uri;
     private String startDate;
     private String endDate;
@@ -211,9 +212,8 @@ public class Experiment {
                 && this.cropSpecies.equals(experiment.cropSpecies);
     }
 
-
     public static ExperimentModel toExperimentModel(Experiment xp, ExperimentModel preloadedExperiment,
-                                                    SpeciesDAO speciesDAO, ProjectDAO projectDAO, UserDAO userDAO, GroupDAO groupDAO) throws Exception {
+            SpeciesDAO speciesDAO, ProjectDAO projectDAO, UserDAO userDAO, GroupDAO groupDAO) throws Exception {
 
         ExperimentModel xpModel = preloadedExperiment == null ? new ExperimentModel() : preloadedExperiment;
 
@@ -222,13 +222,13 @@ public class Experiment {
         }
         xpModel.setLabel(xp.getAlias());
 
-        if (! StringUtils.isEmpty(xp.getCampaign())) {
+        if (!StringUtils.isEmpty(xp.getCampaign())) {
             xpModel.setCampaign(Integer.parseInt(xp.getCampaign()));
         }
-        if (! StringUtils.isEmpty(xp.getObjective())) {
+        if (!StringUtils.isEmpty(xp.getObjective())) {
             xpModel.setObjective(xp.getObjective());
         }
-        if (! StringUtils.isEmpty(xp.getComment())) {
+        if (!StringUtils.isEmpty(xp.getComment())) {
             xpModel.setComment(xp.getObjective());
         }
         if (!StringUtils.isEmpty(xp.getKeywords())) {
@@ -243,7 +243,7 @@ public class Experiment {
             xpModel.setEndDate(LocalDate.parse(xp.getEndDate()));
         }
 
-        if (! StringUtils.isEmpty(xp.getCropSpecies())) {
+        if (!StringUtils.isEmpty(xp.getCropSpecies())) {
             try {
                 xpModel.setSpecies(new URI(xp.getCropSpecies()));
             } catch (URISyntaxException e) {
@@ -261,7 +261,7 @@ public class Experiment {
         if (xp.getProjects() != null) {
 
             for (Project project : xp.getProjects()) {
-                ProjectModel projectModel = projectDAO.get(new URI(project.getUri()));
+                ProjectModel projectModel = projectDAO.get(new URI(project.getUri()), "");
                 if (projectModel == null) {
                     throw new IllegalArgumentException("Unknown project URI :" + project.getUri());
                 }

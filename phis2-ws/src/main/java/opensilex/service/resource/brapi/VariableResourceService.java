@@ -56,7 +56,7 @@ import org.opensilex.sparql.service.SPARQLService;
  * @See https://brapi.docs.apiary.io/#reference/observation-variables
  * @author Alice Boizet <alice.boizet@inra.fr>
  */
-@Api("/brapi/v1/variables")
+@Api("BrAPI")
 @Path("/brapi/v1")
 public class VariableResourceService extends ResourceService implements BrapiCall {
 

@@ -29,21 +29,22 @@ import org.opensilex.utils.ListWithPagination;
 
 /**
  * Germplasm DAO
+ *
  * @author Alice Boizet
  */
 public class GermplasmDAO {
-    
+
     protected final SPARQLService sparql;
-    
+
     public GermplasmDAO(SPARQLService sparql) {
         this.sparql = sparql;
     }
-    
+
     public GermplasmModel create(GermplasmModel instance) throws Exception {
         sparql.create(instance);
         return instance;
     }
-    
+
     public void create(List<GermplasmModel> instances) throws Exception {
         sparql.create(instances);
     }
@@ -57,18 +58,18 @@ public class GermplasmDAO {
     }
 
     public GermplasmModel create(
-            URI uri, 
-            String label, 
-            URI rdfType, 
-            URI fromSpecies, 
-            URI fromVariety, 
+            URI uri,
+            String label,
+            URI rdfType,
+            URI fromSpecies,
+            URI fromVariety,
             URI fromAccession
     ) throws Exception {
         GermplasmModel germplasm = new GermplasmModel();
         germplasm.setUri(uri);
         germplasm.setLabel(label);
-        germplasm.setType(rdfType);        
-        
+        germplasm.setType(rdfType);
+
         if (fromAccession != null) {
             GermplasmModel accession = new GermplasmModel();
             accession.setUri(fromAccession);
@@ -77,34 +78,34 @@ public class GermplasmDAO {
 
         if (fromVariety != null) {
             GermplasmModel variety = new GermplasmModel();
-            variety.setUri(fromVariety);        
+            variety.setUri(fromVariety);
             germplasm.setVariety(variety);
         }
-        
+
         if (fromSpecies != null) {
             GermplasmModel species = new GermplasmModel();
             species.setUri(fromSpecies);
-            germplasm.setSpecies(species);             
-        }           
-      
-        sparql.create(germplasm, rdfType);
-        
+            germplasm.setSpecies(species);
+        }
+
+        sparql.create(germplasm);
+
         return germplasm;
-    }  
-    
+    }
+
     public GermplasmModel get(URI uri) throws Exception {
         return sparql.getByURI(GermplasmModel.class, uri, null);
     }
-    
+
     public ListWithPagination<GermplasmModel> search(
             URI uri,
             URI rdfType,
             String label,
             URI species,
             URI variety,
-            URI accession, 
-            List<OrderBy> orderByList, 
-            Integer page, 
+            URI accession,
+            List<OrderBy> orderByList,
+            Integer page,
             Integer pageSize) throws Exception {
 
         return sparql.searchWithPagination(
@@ -131,6 +132,7 @@ public class GermplasmDAO {
             select.addFilter(SPARQLQueryHelper.regexFilter(strUriExpr, uri.toString(), null));
         }
     }
+
     private void appendRdfTypeFilter(SelectBuilder select, URI rdfType) throws Exception {
         if (rdfType != null) {
             select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.TYPE_FIELD, rdfType));
@@ -166,7 +168,7 @@ public class GermplasmDAO {
                 .addWhere(SPARQLDeserializers.nodeURI(rdfType), Ontology.subClassAny, Oeso.Germplasm)
         );
     }
-    
+
     public boolean isPlantMaterialLot(URI rdfType) throws SPARQLException {
         return sparql.executeAskQuery(new AskBuilder()
                 .addWhere(SPARQLDeserializers.nodeURI(rdfType), Ontology.subClassAny, Oeso.PlantMaterialLot)

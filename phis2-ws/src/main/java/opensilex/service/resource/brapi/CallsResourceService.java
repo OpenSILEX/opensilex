@@ -30,7 +30,7 @@ import opensilex.service.model.Call;
 import java.util.ServiceLoader;
 
 
-@Api("/brapi/v1/calls")
+@Api("BrAPI")
 @Path("/brapi/v1/calls")
 /**
  * Calls resource service.

@@ -57,8 +57,6 @@ import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.user.dal.UserModel;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.sparql.utils.OrderBy;
@@ -120,11 +118,11 @@ public class ProjectResourceService extends ResourceService {
 
         if (projects != null && !projects.isEmpty()) {
             UserModel user = (UserModel) securityContext.getUserPrincipal();
-            ProjectDAO projectDAO = new ProjectDAO(sparql, user.getLang());
+            ProjectDAO projectDAO = new ProjectDAO(sparql);
 
             List<ProjectModel> projectModels = new ArrayList<>();
             for (ProjectPostDTO project : projects) {
-                projectModels.add(project.getProjectModel(sparql, user.getLang()));
+                projectModels.add(project.getProjectModel(sparql, user.getLanguage()));
             };
 
             projectDAO.create(projectModels);
@@ -178,29 +176,28 @@ public class ProjectResourceService extends ResourceService {
         AbstractResultForm putResponse = null;
 
         UserModel user = (UserModel) securityContext.getUserPrincipal();
-        ProjectDAO projectDAO = new ProjectDAO(sparql, user.getLang());
+        ProjectDAO projectDAO = new ProjectDAO(sparql);
 
         List<ProjectModel> projectModels = new ArrayList<>();
-        SPARQLClassObjectMapper<SPARQLResourceModel> projectMapper = SPARQLClassObjectMapper.getForClass(ProjectModel.class);
         for (ProjectPutDTO project : projects) {
-            ProjectModel projectModel = project.getProjectModel(sparql, user.getLang());
+            ProjectModel projectModel = project.getProjectModel(sparql, user.getLanguage());
             projectModels.add(projectModel);
 
             if (project.getFinancialReference() != null && !project.getFinancialReference().isEmpty()) {
                 sparql.updateObjectRelations(
-                        projectMapper.getDefaultGraph(),
+                        sparql.getDefaultGraph(ProjectModel.class),
                         projectModel.getUri(),
                         hasFinancialReference,
-                       Collections.singletonList(project.getFinancialReference())
+                        Collections.singletonList(project.getFinancialReference())
                 );
             }
 
             if (project.getFinancialFunding() != null && !project.getFinancialFunding().isEmpty()) {
                 sparql.updateObjectRelations(
-                        projectMapper.getDefaultGraph(),
+                        sparql.getDefaultGraph(ProjectModel.class),
                         projectModel.getUri(),
                         hasFinancialFunding,
-                        Collections.singletonList( new URI(project.getFinancialFunding()))
+                        Collections.singletonList(new URI(project.getFinancialFunding()))
                 );
             }
 
@@ -256,10 +253,10 @@ public class ProjectResourceService extends ResourceService {
 
         try {
             UserModel user = (UserModel) securityContext.getUserPrincipal();
-            ProjectDAO projectDAO = new ProjectDAO(sparql, user.getLang());
+            ProjectDAO projectDAO = new ProjectDAO(sparql);
 
-            ProjectModel project = projectDAO.get(new URI(uri));
-            ProjectDetailDTO projectDTO = new ProjectDetailDTO(project, sparql, user.getLang());
+            ProjectModel project = projectDAO.get(new URI(uri), user.getLanguage());
+            ProjectDetailDTO projectDTO = new ProjectDetailDTO(project, sparql, user.getLanguage());
             projects.add(projectDTO);
 
             getResponse = new ResultForm<>(pageSize, page, projects, true, 1);
@@ -335,14 +332,14 @@ public class ProjectResourceService extends ResourceService {
             @ApiParam(value = "Search by objective", example = DocumentationAnnotation.EXAMPLE_PROJECT_OBJECTIVE) @QueryParam("objective") String objective,
             @Context SecurityContext securityContext) throws Exception {
         UserModel user = (UserModel) securityContext.getUserPrincipal();
-        ProjectDAO projectDAO = new ProjectDAO(sparql, user.getLang());
+        ProjectDAO projectDAO = new ProjectDAO(sparql);
 
         if (StringUtils.isEmpty(financialFundingLang)) {
             financialFundingLang = DEFAULT_LANGUAGE;
         }
 
         //1. Get projects
-        ListWithPagination<ProjectModel> results = projectDAO.search(uri, name, shortname, description, startDate, endDate, homePage, objective, new ArrayList<OrderBy>(), page, pageSize);
+        ListWithPagination<ProjectModel> results = projectDAO.search(uri, name, shortname, description, startDate, endDate, homePage, objective, new ArrayList<OrderBy>(), page, pageSize, user.getLanguage());
 
         ArrayList<Status> statusList = new ArrayList<>();
         ResultForm<ProjectDTO> getResponse;
@@ -353,7 +350,7 @@ public class ProjectResourceService extends ResourceService {
 
             ArrayList<ProjectDTO> projectsToReturn = new ArrayList<ProjectDTO>();
             for (ProjectModel project : results.getList()) {
-                ProjectDTO projectDTO = new ProjectDTO(project, sparql, user.getLang());
+                ProjectDTO projectDTO = new ProjectDTO(project, sparql, user.getLanguage());
                 projectsToReturn.add(projectDTO);
             }
 

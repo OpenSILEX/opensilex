@@ -171,11 +171,6 @@ public class PropertiesFileManager {
     }
 
     /**
-     * Phis postGreSQL configuration
-     */
-    private static PhisPostgreSQLConfig pgConfig;
-    
-    /**
      * Phis service configuration
      */
     private static PhisWsConfig phisConfig;
@@ -201,7 +196,6 @@ public class PropertiesFileManager {
         PropertiesFileManager.rdf4jConfig = rdf4jConfig;
         PropertiesFileManager.sparqlConfig = sparqlConfig;
         PropertiesFileManager.mongoConfig = mongoConfig;
-        PropertiesFileManager.pgConfig = phisConfig.postgreSQL();
         PropertiesFileManager.storageBasePath = storageBasePath;
         PropertiesFileManager.publicURI = publicURI;
     }
@@ -221,10 +215,6 @@ public class PropertiesFileManager {
         switch (fileName) {
             case "service":
                 value = getServiceProperty(prop);
-                break;
-                
-            case "phis_sql_config":
-                value = getPgSQLProperty(prop);
                 break;
                 
             case "sesame_rdf_config":
@@ -281,82 +271,6 @@ public class PropertiesFileManager {
 
     public static String getPublicURI() {
         return publicURI;
-    }
-    
-    private static String getPgSQLProperty(String prop) {
-         String value = null;
-        
-        switch (prop) {
-            case "driver":
-                value = pgConfig.driver();
-                break;                 
-            case "url":
-                value = "jdbc:postgresql://" + pgConfig.host() 
-                        + ":" + pgConfig.port() 
-                        + "/" + pgConfig.database();
-                break;
-            case "username":
-                value = pgConfig.username();
-                break;                
-            case "password":
-                value = pgConfig.password();
-                break;
-            case "testWhileIdle":
-                value = "" + pgConfig.testWhileIdle();
-                break;
-            case "testOnBorrow":
-                value = "" + pgConfig.testOnBorrow();
-                break;
-            case "testOnReturn":
-                value = "" + pgConfig.testOnReturn();
-                break;                
-            case "validationQuery":
-                value = pgConfig.validationQuery();
-                break;
-            case "validationInterval":
-                value = "" + pgConfig.validationInterval();
-                break;
-            case "timeBetweenEvictionRunsMillis":
-                value = "" + pgConfig.timeBetweenEvictionRunsMillis();
-                break;
-            case "maxActive":
-                value = "" + pgConfig.maxActive();
-                break;
-            case "minIdle":
-                value = "" + pgConfig.minIdle();
-                break;
-            case "maxIdle":
-                value = "" + pgConfig.maxIdle();
-                break;
-            case "maxWait":
-                value = "" + pgConfig.maxWait();
-                break;
-            case "initialSize":
-                value = "" + pgConfig.initialSize();
-                break;
-            case "removeAbandoned":
-                value = "" + pgConfig.removeAbandoned();
-                break;
-            case "removeAbandonedTimeout":
-                value = "" + pgConfig.removeAbandonedTimeout();
-                break;
-            case "logAbandoned":
-                value = "" + pgConfig.logAbandoned();
-                break;
-            case "jmxEnabled":
-                value = "" + pgConfig.jmxEnabled();
-                break;
-            case "maxAge":
-                value = "" + pgConfig.maxAge();
-                break;
-            case "jdbcInterceptors":
-                value = pgConfig.jdbcInterceptors();
-                break;
-            default:
-                break;
-        }
-        
-        return value;
     }
 
     private static String getRDF4JProperty(String prop) {
@@ -424,30 +338,5 @@ public class PropertiesFileManager {
         }
         
         return value;
-    }
-    
-    /**
-     * Lit un fichier de configuration et retourne l'url pour une base de donnée
-     * SQL contenant le nom, l'utilisateur et le serveur
-     *
-     * @param fileName nom du fichier à lire
-     * @return null | Properties
-     */
-    public static String getSQLConnectionUrl(String fileName) {
-        try {
-            final StringBuilder strBuilder = new StringBuilder();
-            strBuilder.append(getPgSQLProperty("url"))
-                    .append("?")
-                    .append("user=").append(getPgSQLProperty("username"))
-                    .append("&")
-                    .append("password=").append(getPgSQLProperty("password"));
-            return strBuilder.toString();
-        } catch (Exception ex) {
-            LOGGER.error(ex.getMessage(), ex);
-            // Si les paramètres ne sont pas récupérés le web service propage une exception INTERNAL_SERVER_ERROR
-            throw new WebApplicationException(Response
-                    .status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Error : Cannot find " + fileName + " configuration file for the wanted database\n" + ex.getMessage()).build());
-        }
     }
 }

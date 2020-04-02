@@ -97,7 +97,8 @@
         </ValidationObserver>
       </tab-content>
       <tab-content v-bind:title="$t('component.common.form-wizard.external-ontologies')">
-        <opensilex-ExternalReferencesForm @onUpdateSkos="callUpdateSkosFactorService" :skosReferences="skosReferences"></opensilex-ExternalReferencesForm>
+        <opensilex-ExternalReferencesForm :skosReferences="form"></opensilex-ExternalReferencesForm>
+        <b-button @click="onValidateData" variant="success">{{$t('component.skos.update')}}</b-button>
       </tab-content>
       <template slot="footer" slot-scope="props">
         <div class="wizard-footer-left">
@@ -224,11 +225,6 @@ export default class FactorForm extends Vue {
     modalRef.hide();
   }
 
-  callUpdateSkosFactorService(skosReferences, done) {
-    this.form = { ...this.form, ...skosReferences };
-    return this.onValidateData();
-  }
-
   async onValidateData() {
     return new Promise((resolve, reject) => {
       if (this.editMode) {
@@ -276,16 +272,6 @@ export default class FactorForm extends Vue {
   }
 
   async checkBeforeSkosStep() {
-    if(this.editMode){
-      this.skosReferences = {
-        exactMatch : this.form.exactMatch,
-        broader : this.form.broader,
-        narrower : this.form.narrower,
-        closeMatch : this.form.closeMatch
-      }
-    }
-
-
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         this.setLoading(true);

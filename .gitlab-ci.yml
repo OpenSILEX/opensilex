@@ -56,10 +56,6 @@ variables:
 .build:instance: &build_template_with_opensilex
   <<: *cache_dependencies
   before_script: 
-    - |
-      if [ ! -z "$COMMIT_SHA_OPENSILEX_DEV" ]; then
-        git checkout $COMMIT_SHA_OPENSILEX_DEV
-      fi
     - rm -r $CI_PROJECT_DIR/phis-ws
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/phis-ws.git --branch modularity
     - |

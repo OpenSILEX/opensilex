@@ -20,9 +20,12 @@ import org.opensilex.sparql.service.SPARQLServiceFactory;
 import java.net.URI;
 import java.util.List;
 import org.apache.jena.riot.Lang;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.rest.RestModule;
+import org.opensilex.rest.authentication.SecurityOntology;
 import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory;
 import org.opensilex.sparql.service.SPARQLStatement;
 import org.opensilex.utils.ClassUtils;
@@ -133,6 +136,8 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
 
     @Override
     public void startup() throws Exception {
+        SPARQLService.addPrefix(Oeso.PREFIX, Oeso.NS);
+        URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping());
         SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         if (factory instanceof RDF4JInMemoryServiceFactory) {
             install(false);

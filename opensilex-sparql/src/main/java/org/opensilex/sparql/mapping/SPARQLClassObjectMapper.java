@@ -213,11 +213,11 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public T createInstance(Node graph, SPARQLResult result, String lang, SPARQLService service) throws Exception {
 
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
-        URI uri = uriDeserializer.fromString((result.getStringValue(classAnalizer.getURIFieldName())));
+        URI uri = uriDeserializer.fromString((result.getStringValue(classAnalizer.getURIFieldName()))); 
 
         T instance = createInstance(uri);
 
-        URI realType = new URI(result.getStringValue(getTypeFieldName()));
+        URI realType = uriDeserializer.fromString((result.getStringValue(classAnalizer.getTypeFieldName())));
         instance.setType(realType);
 
         String typeLabelFieldName = getTypeLabelFieldName();

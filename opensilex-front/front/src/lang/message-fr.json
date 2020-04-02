@@ -223,6 +223,21 @@
             "errors": {
                 "user-already-exists": "URI du niveau de facteur déjà existante."
             }
+        },
+        "germplasm": {
+            "uri": "URI du germplasm",
+            "uri-help": "Identifiant unique du germplasm",
+            "alias-placeholder": "Entrer le label du germplasm ",
+            "filter-placeholder": "Utiliser ce champ pour filtrer les germplasm",
+            "germplasm": "germplasm",
+            "add": "ajouter un germplasm",
+            "update": "meettre à jour un germplasm",
+            "alias": "alias",
+            "alias-help": "alias",
+            "form-alias-placeholder" : "Irrigation, Shading, Variety, etc.",
+            "errors": {
+                "germplasm-already-exists": "URI du germplasm déjà existant."
+            }
         }
     },
     "credential-groups": {

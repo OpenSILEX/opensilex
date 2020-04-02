@@ -42,7 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import opensilex.service.dao.manager.Rdf4jDAO;
 import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.germplasm.dal.GermplasmModel;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
 import opensilex.service.ontology.Contexts;
 import opensilex.service.ontology.GeoSPARQL;
 import opensilex.service.ontology.Rdf;
@@ -280,7 +280,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                 //Check if the given germplasm exists
                 if (property.getRelation().equals(Oeso.RELATION_HAS_GERMPLASM.toString())) {
                     if (property.getRdfType() != null) {
-                        opensilex.service.germplasm.dal.GermplasmDAO germplasmDAO = new opensilex.service.germplasm.dal.GermplasmDAO(sparql);
+                        org.opensilex.core.germplasm.dal.GermplasmDAO germplasmDAO = new org.opensilex.core.germplasm.dal.GermplasmDAO(sparql);
                         GermplasmModel germplasm = germplasmDAO.get(new URI(property.getValue()));
                         if (germplasm != null) {
                             if (!germplasm.getType().toString().equals(property.getRdfType())) {
@@ -748,7 +748,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         if (germplasmURI != null) {
             //filter also on the linked germplasm (if the germplasm is a species, then we find also varieties of this species)
             if (withAallRelatedGermplasm) {
-                opensilex.service.germplasm.dal.GermplasmDAO germplasmDAO = new opensilex.service.germplasm.dal.GermplasmDAO(sparql);
+                org.opensilex.core.germplasm.dal.GermplasmDAO germplasmDAO = new org.opensilex.core.germplasm.dal.GermplasmDAO(sparql);
                 GermplasmModel germplasm = germplasmDAO.get(new URI(germplasmURI));
                 URI germplasmType = germplasm.getType();
                 ListWithPagination<GermplasmModel> germplasmList = null;

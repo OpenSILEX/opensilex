@@ -15,7 +15,15 @@
                 label="component.skos.relation"
                 helpMessage="component.skos.relation-help"
               ></opensilex-FormInputLabelHelper>
-              <b-form-select
+              <ValidationProvider
+                :name="$t('component.skos.relation')"
+                :rules="{ 
+                  required: true
+                }" 
+                v-slot="{ errors }"
+              >
+              <b-form-select 
+                required
                 v-model="currentRelation"
                 :options="options"
                 :placeholder="$t('component.skos.relation-placeholder')"
@@ -24,6 +32,8 @@
                  current selected relation:
                 <strong>{{ (currentRelation == "") ? 'component.skos.no-relation-selected' : currentRelation}}</strong>
               </div>
+                <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+              </ValidationProvider>
             </b-form-group>
             <!-- URI -->
             <b-form-group label-align-sm="right">
@@ -60,11 +70,12 @@
       <b-table striped hover :items="relations" :fields="fields">
         <template v-slot:head(relation)="data">{{$t(data.label)}}</template>
         <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
+        <template v-slot:cell(uri)="data">{{$t(data.value)}}</template>
         <template v-slot:cell(actions)="data">
         <b-button-group size="sm">
           <b-button
             size="sm"
-            @click="removeRelationsToSkosReferences(data.item.relation,data.item.id)"
+            @click="removeRelationsToSkosReferences(data.item)"
             variant="danger"
           >
             <font-awesome-icon icon="trash-alt" size="sm" />
@@ -124,12 +135,13 @@ export default class ExternalReferencesForm extends Vue {
     }
   ];
 
-  relations() {
+  get relations() {
     this.relationsInternal = [];
     this.updateRelations("narrower", this.skosReferences.narrower);
     this.updateRelations("broader", this.skosReferences.broader);
     this.updateRelations("closeMatch", this.skosReferences.closeMatch);
     this.updateRelations("exactMatch", this.skosReferences.exactMatch);
+    console.log(this.relationsInternal)
     return this.relationsInternal;
   } 
 
@@ -141,10 +153,10 @@ export default class ExternalReferencesForm extends Vue {
   } 
 
   addRelation(currentRelation : string, currentExternalUri : string){ 
-    this.relationsInternal.push({
+    this.$set(this.relationsInternal,this.relationsInternal.length,{
       relation: currentRelation,
       relationURI: currentExternalUri
-    }); 
+    });
   }
 
   validateForm() {
@@ -162,15 +174,20 @@ export default class ExternalReferencesForm extends Vue {
   }
   addRelationToSkosReferences(currentRelation : string, currentExternalUri : string){
     console.log(this.skosReferences,this.skosReferences[currentRelation] )
-    if(!this.skosReferences[currentRelation].includes(currentExternalUri)){
+
+     this.$nextTick(function () {
+    console.log(this.skosReferences,this.skosReferences[currentRelation] )
+      if(!this.skosReferences[currentRelation].includes(currentExternalUri)){
       this.skosReferences[currentRelation].push(currentExternalUri);
     }
+     });
+
+  
   }
   
-  removeRelationsToSkosReferences(relation : string, externalUri : string){
-    console.log(this.skosReferences[relation] )
-    this.skosReferences[relation] = this.skosReferences[relation].
-      filter(function(value, index, arr){ return value != externalUri;});
+  removeRelationsToSkosReferences(row : any){
+    this.skosReferences[row.relation] = this.skosReferences[row.relation].
+      filter(function(value, index, arr){ return value != row.relationURI;});
   } 
 }
 </script>

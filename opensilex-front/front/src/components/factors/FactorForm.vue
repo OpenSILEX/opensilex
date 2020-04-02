@@ -117,6 +117,7 @@
           >{{$t( editMode ? 'component.factor.update' : 'component.factor.add')}}</wizard-button>
           <wizard-button
             v-else
+            @click.native="hideForm"
             class="wizard-footer-right finish-button"
             :style="props.fillButtonStyle"
           >{{props.isLastStep ? 'component.common.form-wizard.done' : 'component.common.form-wizard.next'}}</wizard-button>

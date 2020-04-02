@@ -249,11 +249,13 @@
             "relation" : "Relation",
             "relation-help" : "Relation entre l'individu décrit localement et le concept lié à cet identifiant",
             "relation-placeholder" : "exactMatch",
+            "update" : "Modifier les relations",
             "add" : "Créer une nouvelle relation",
             "exactMatch" : "Equivalent",
             "closeMatch" : "Similaire",
             "broader" : "Plus général",
-            "narrower" : "Plus spécifique"
+            "narrower" : "Plus spécifique",
+            "no-relation-selected" : "Sélectionner une relation"
         }
     },
     "credential-groups": {

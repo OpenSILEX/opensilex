@@ -184,8 +184,6 @@ alice:build:
   <<: *build_template_with_opensilex
   only:
     - arnaud
-  tags:
-    - arnaud  
     
 ###################################
 ##  ARNAUD-TEST-SNAPSHOT-DEPLOYMENT
@@ -213,5 +211,3 @@ test:arnaud:deploy:
     url: http://138.102.159.37:8086
   needs:
     - arnaud:build
-  tags:
-    - arnaud

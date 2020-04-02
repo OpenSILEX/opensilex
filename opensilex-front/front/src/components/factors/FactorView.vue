@@ -22,7 +22,8 @@ import {
   FactorCreationDTO,
   FactorsService,
   FactorGetDTO, 
-  FactorSearchDTO 
+  FactorDetailsGetDTO,
+  FactorSearchDTO
 } 
 from "opensilex-core/index";
 
@@ -77,10 +78,17 @@ export default class FactorView extends Vue {
     );
   }
 
-  editFactor(form: FactorGetDTO) {
-    console.debug("editFactor" + form.uri);
-    let factorForm: any = this.$refs.factorForm;
-    factorForm.showEditForm(form);
+  editFactor(uri: string) {
+    console.debug("editFactor" + uri);
+    this.service
+      .getFactor(this.user.getAuthorizationHeader(), uri)
+      .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
+        let factorForm: any = this.$refs.factorForm;
+        console.log(http.response.result)
+        factorForm.showEditForm(http.response.result);
+      })
+      .catch(this.$opensilex.errorHandler);
+   
   }
 
   deleteFactor(uri: string) {

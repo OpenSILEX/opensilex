@@ -32,7 +32,7 @@
         <b-button-group size="sm">
           <b-button
             size="sm"
-            @click="$emit('onEdit', data.item)"
+            @click="$emit('onEdit', data.item.uri)"
             variant="outline-primary"
           >
             <font-awesome-icon icon="edit" size="sm" />
@@ -74,7 +74,8 @@ export default class FactorList extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
-
+  service : FactorsService;
+ 
   get user() {
     return this.$store.state.user;
   }
@@ -106,6 +107,9 @@ export default class FactorList extends Vue {
   }
 
   created() {
+    this.service = this.$opensilex.getService(
+      "opensilex.FactorsService"
+    );
     let query: any = this.$route.query;
     if (query.filterByAlias) {
       this.searchFrom.alias = decodeURI(query.filterByAlias);
@@ -147,11 +151,6 @@ export default class FactorList extends Vue {
   }
 
   loadData() {
-    let service: FactorsService = this.$opensilex.getService(
-      "opensilex.FactorsService"
-    );
-    let factorSearchDTO : FactorSearchDTO;
-
     let orderBy : string[] = [];
     if (this.sortBy) {
       let orderByText = this.sortBy + "=";
@@ -161,7 +160,7 @@ export default class FactorList extends Vue {
         orderBy.push(orderByText + "asc");
       }
     }
-    return service
+    return this.service
       .searchFactors(
         this.user.getAuthorizationHeader(),
         orderBy,
@@ -186,7 +185,6 @@ export default class FactorList extends Vue {
             }
           })
           .catch(err => {})
-
         return http.response.result;
       })
       .catch(this.$opensilex.errorHandler);

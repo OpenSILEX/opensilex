@@ -30,7 +30,7 @@ variables:
  NODE_CACHE: "$CI_PROJECT_DIR/opensilex-dev/.node"
  EMBDED_MONGO_CACHE: "/root/.embedmongo/"
  GITLAB_HTTPS: "false"
-
+ COMMIT_SHA_PHIS: "56f5526847154a30a848e627bfe2a15723c551b7"
 
 
 ########################
@@ -131,13 +131,13 @@ variables:
     - echo "Create directory ${RSYNC_INSTANCES_DATA}/${RSYNC_DIR}"
     - echo "Create directory ${RSYNC_INSTANCES_LOGS}"
     - echo "Create directory ${RSYNC_INSTANCES_LOGS_ARCHIVED}"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $RSYNC_USER@$REMOTE_SERVER_IP "mkdir -p ${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}; mkdir -p ${RSYNC_INSTANCES_LOGS}; mkdir -p ${RSYNC_INSTANCES_LOGS_ARCHIVED}; mkdir -p $RSYNC_INSTANCES_DATA/${RSYNC_DIR};"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $RSYNC_USER@$REMOTE_SERVER_IP "mkdir -p $RSYNC_INSTANCES_PATH/$RSYNC_DIR; mkdir -p $RSYNC_INSTANCES_LOGS; mkdir -p $RSYNC_INSTANCES_LOGS_ARCHIVED; mkdir -p $RSYNC_INSTANCES_DATA/$RSYNC_DIR;"
     - echo "Upload files"
-    - rsync -arzv -e "ssh  -i ${HOME}/.ssh/id_rsa" $RSYNC_INSTANCES_OPTIONS  $CI_PROJECT_DIR/$REVISION/* $RSYNC_USER@$REMOTE_SERVER_IP:${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}
+    - rsync -arzv -e "ssh  -i ${HOME}/.ssh/id_rsa" $RSYNC_INSTANCES_OPTIONS  $CI_PROJECT_DIR/$REVISION/* $RSYNC_USER@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_PATH/$RSYNC_DIR
     - echo "ls ${CONFIGURATION_FILES_PATH}"
-    - ls ${CONFIGURATION_FILES_PATH}
-    - echo "scp -i ${HOME}/.ssh/id_rsa -o 'StrictHostKeyChecking no' ${CONFIGURATION_FILES_PATH}/* ${RSYNC_USER}@${REMOTE_SERVER_IP}:${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}"
-    - scp -i ${HOME}/.ssh/id_rsa -o "StrictHostKeyChecking no" ${CONFIGURATION_FILES_PATH}/* $RSYNC_USER@$REMOTE_SERVER_IP:${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}
+    - ls $CONFIGURATION_FILES_PATH
+    - echo "scp -i ${HOME}/.ssh/id_rsa -o 'StrictHostKeyChecking no' $CONFIGURATION_FILES_PATH/* ${RSYNC_USER}@${REMOTE_SERVER_IP}:${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}"
+    - scp -i ${HOME}/.ssh/id_rsa -o "StrictHostKeyChecking no" $CONFIGURATION_FILES_PATH/* $RSYNC_USER@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_PATH/$RSYNC_DIR
     - echo "Remove dependencies list cache"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $RSYNC_USER@$REMOTE_SERVER_IP "rm -f ${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}/.opensilex.dependencies"
     - echo "Check files"

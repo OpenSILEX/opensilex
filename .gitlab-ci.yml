@@ -25,7 +25,7 @@ variables:
  RSYNC_INSTANCES_LOGS: "/home/phis/opensilex-instances/logs"
  RSYNC_INSTANCES_LOGS_ARCHIVED: "/home/phis/opensilex-instances/logs/old"
  REVISION: 'INSTANCE-SNAPSHOT'
- DEV_TOOLS_CONFIGURATION_FILES_PATH: "${CI_PROJECT_DIR}/opensilex-dev-tools/instances-configuration"
+ DEV_TOOLS_CONFIGURATION_FILES_PATH: "instances-configuration"
  STOP_SERVER_OPTS: "--adminPort=$ADMIN_PORT --host=$REMOTE_SERVER_IP --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
  START_SERVER_OPTS: "--adminPort=$ADMIN_PORT --host=$REMOTE_SERVER_IP --port=$PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
  # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
@@ -138,9 +138,9 @@ variables:
     - echo "Upload files"
     - rsync -arzv -e "ssh  -i ${HOME}/.ssh/id_rsa" $RSYNC_INSTANCES_OPTIONS  $CI_PROJECT_DIR/$REVISION/* $RSYNC_USER@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_PATH/$RSYNC_DIR
     - echo "ls ${CONFIGURATION_FILES_PATH}"
-    - ls $CONFIGURATION_FILES_PATH
-    - echo "scp -i ${HOME}/.ssh/id_rsa -o 'StrictHostKeyChecking no' $CONFIGURATION_FILES_PATH/* ${RSYNC_USER}@${REMOTE_SERVER_IP}:${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}"
-    - scp -i ${HOME}/.ssh/id_rsa -o "StrictHostKeyChecking no" $CONFIGURATION_FILES_PATH/* $RSYNC_USER@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_PATH/$RSYNC_DIR
+    - ls $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGURATION_FILES_PATH
+    - echo "scp -i ${HOME}/.ssh/id_rsa -o 'StrictHostKeyChecking no' $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGURATION_FILES_PATH/* ${RSYNC_USER}@${REMOTE_SERVER_IP}:${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}"
+    - scp -i ${HOME}/.ssh/id_rsa -o "StrictHostKeyChecking no" $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGURATION_FILES_PATH/* $RSYNC_USER@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_PATH/$RSYNC_DIR
     - echo "Remove dependencies list cache"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "rm -f ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/.opensilex.dependencies"
     - echo "Check files"

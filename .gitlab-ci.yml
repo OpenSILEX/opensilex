@@ -22,7 +22,8 @@ variables:
  YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/cache_yarn"
  NODE_CACHE: "$CI_PROJECT_DIR/.node"
  EMBDED_MONGO_CACHE: "/root/.embedmongo/"
-
+ COMMIT_SHA_PHIS: "56f5526847154a30a848e627bfe2a15723c551b7"
+ 
 ########################
 ##  CACHE TEMPLATE
 ########################

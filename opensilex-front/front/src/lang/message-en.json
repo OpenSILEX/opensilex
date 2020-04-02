@@ -248,10 +248,12 @@
             "relation-help" : "relation associated between Reference URI and this local individual",
             "relation-placeholder" : "exactMatch",
             "add" : "add new relation",
+            "update" : "update relations",
             "exactMatch" : "exactmatch",
             "closeMatch" : "closematch",
             "broader" : "broader",
-            "narrower" : "narrower"
+            "narrower" : "narrower",
+            "no-relation-selected" : "Please choose a relation type"
         }
     },
     "credential-groups": {

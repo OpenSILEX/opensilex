@@ -35,7 +35,6 @@ variables:
  NODE_CACHE: "$CI_PROJECT_DIR/opensilex-dev/.node"
  EMBDED_MONGO_CACHE: "/root/.embedmongo/"
  GITLAB_HTTPS: "false"
- COMMIT_SHA_PHIS: "56f5526847154a30a848e627bfe2a15723c551b7"
 
 
 ########################

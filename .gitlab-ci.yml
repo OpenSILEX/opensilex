@@ -19,7 +19,7 @@ variables:
  RSYNC_INSTANCES_LOGS: "/home/phis/opensilex-instances/logs"
  RSYNC_INSTANCES_LOGS_ARCHIVED: "/home/phis/opensilex-instances/logs/old"
  REVISION: 'INSTANCE-SNAPSHOT'
- DEV_TOOLS_CONFIGURATION_FILES_PATH: "$CI_PROJECT_DIR/opensilex-dev-tools/instances-configuration"
+ DEV_TOOLS_CONFIGURATION_FILES_PATH: "${CI_PROJECT_DIR}/opensilex-dev-tools/instances-configuration"
  STOP_SERVER_OPTS: "--adminPort=$ADMIN_PORT --host=$REMOTE_SERVER_IP --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
  START_SERVER_OPTS: "--adminPort=$ADMIN_PORT --host=$REMOTE_SERVER_IP --port=$PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
  # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.

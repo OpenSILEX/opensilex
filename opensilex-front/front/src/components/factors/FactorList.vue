@@ -30,11 +30,7 @@
       <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
       <template v-slot:cell(actions)="data">
         <b-button-group size="sm">
-          <b-button
-            size="sm"
-            @click="$emit('onEdit', data.item.uri)"
-            variant="outline-primary"
-          >
+          <b-button size="sm" @click="$emit('onEdit', data.item.uri)" variant="outline-primary">
             <font-awesome-icon icon="edit" size="sm" />
           </b-button>
           <b-button size="sm" @click="$emit('onDelete', data.item.uri)" variant="danger">
@@ -69,8 +65,8 @@ export default class FactorList extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
-  service : FactorsService;
- 
+  service: FactorsService;
+
   get user() {
     return this.$store.state.user;
   }
@@ -102,9 +98,7 @@ export default class FactorList extends Vue {
   }
 
   created() {
-    this.service = this.$opensilex.getService(
-      "opensilex.FactorsService"
-    );
+    this.service = this.$opensilex.getService("opensilex.FactorsService");
     let query: any = this.$route.query;
     if (query.filterByAlias) {
       this.searchFrom.alias = decodeURI(query.filterByAlias);
@@ -146,7 +140,7 @@ export default class FactorList extends Vue {
   }
 
   loadData() {
-    let orderBy : string[] = [];
+    let orderBy: string[] = [];
     if (this.sortBy) {
       let orderByText = this.sortBy + "=";
       if (this.sortDesc) {
@@ -179,7 +173,7 @@ export default class FactorList extends Vue {
               pageSize: "" + this.pageSize
             }
           })
-          .catch(err => {})
+          .catch(err => {});
         return http.response.result;
       })
       .catch(this.$opensilex.errorHandler);

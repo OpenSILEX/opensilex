@@ -17,11 +17,10 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
   FactorCreationDTO,
   FactorsService,
-  FactorGetDTO, 
+  FactorGetDTO,
   FactorDetailsGetDTO,
   FactorSearchDTO
-} 
-from "opensilex-core/index";
+} from "opensilex-core/index";
 
 @Component
 export default class FactorView extends Vue {
@@ -80,11 +79,9 @@ export default class FactorView extends Vue {
       .getFactor(this.user.getAuthorizationHeader(), uri)
       .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
         let factorForm: any = this.$refs.factorForm;
-        console.log(http.response.result)
         factorForm.showEditForm(http.response.result);
       })
       .catch(this.$opensilex.errorHandler);
-   
   }
 
   deleteFactor(uri: string) {

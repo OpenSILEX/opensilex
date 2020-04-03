@@ -6,11 +6,7 @@
       @onCreate="callCreateFactorService"
       @onUpdate="callUpdateFactorService"
     ></opensilex-FactorForm>
-    <opensilex-FactorList 
-      ref="factorList" 
-      @onEdit="editFactor"
-      @onDelete="deleteFactor">
-    </opensilex-FactorList>
+    <opensilex-FactorList ref="factorList" @onEdit="editFactor" @onDelete="deleteFactor"></opensilex-FactorList>
   </div>
 </template>
 
@@ -18,14 +14,13 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { 
+import {
   FactorCreationDTO,
   FactorsService,
-  FactorGetDTO, 
+  FactorGetDTO,
   FactorDetailsGetDTO,
   FactorSearchDTO
-} 
-from "opensilex-core/index";
+} from "opensilex-core/index";
 
 @Component
 export default class FactorView extends Vue {
@@ -42,7 +37,7 @@ export default class FactorView extends Vue {
   }
 
   created() {
-    console.debug("Loading form view...");
+    console.debug("Loading FactorView view...");
     this.service = this.$opensilex.getService("opensilex.FactorsService");
   }
 
@@ -84,11 +79,9 @@ export default class FactorView extends Vue {
       .getFactor(this.user.getAuthorizationHeader(), uri)
       .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
         let factorForm: any = this.$refs.factorForm;
-        console.log(http.response.result)
         factorForm.showEditForm(http.response.result);
       })
       .catch(this.$opensilex.errorHandler);
-   
   }
 
   deleteFactor(uri: string) {

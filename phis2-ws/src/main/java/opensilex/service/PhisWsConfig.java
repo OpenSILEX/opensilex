@@ -6,13 +6,12 @@
 package opensilex.service;
 
 import org.opensilex.config.ConfigDescription;
-import org.opensilex.module.ModuleConfig;
 
 /**
  *
  * @author vincent
  */
-public interface PhisWsConfig extends ModuleConfig {
+public interface PhisWsConfig {
 
     @ConfigDescription(
             value = "Infrastructure name used for URI generation"

@@ -7,25 +7,15 @@
 //******************************************************************************
 package opensilex.service;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
-import com.auth0.jwt.JWTCreator;
 import org.opensilex.OpenSilex;
-import org.opensilex.rest.extensions.LoginExtension;
-import org.opensilex.rest.group.dal.GroupDAO;
-import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.module.ModuleConfig;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.rest.extensions.APIExtension;
 import org.opensilex.sparql.SPARQLConfig;
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.service.SPARQLServiceFactory;
-
-import static org.opensilex.core.CoreModule.TOKEN_USER_GROUP_URIS;
 
 /**
  * Phis opensilex module implementation
@@ -33,7 +23,7 @@ import static org.opensilex.core.CoreModule.TOKEN_USER_GROUP_URIS;
 public class PhisWsModule extends OpenSilexModule implements APIExtension {
 
     @Override
-    public Class<? extends ModuleConfig> getConfigClass() {
+    public Class<?> getConfigClass() {
         return PhisWsConfig.class;
     }
 

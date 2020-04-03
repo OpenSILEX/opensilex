@@ -253,7 +253,8 @@
             "closeMatch" : "closematch",
             "broader" : "broader",
             "narrower" : "narrower",
-            "no-relation-selected" : "Please choose a relation type"
+            "norelation" : "Please choose a relation type",
+            "ontologies-references-label" :"Ontologies References"
         }
     },
     "credential-groups": {

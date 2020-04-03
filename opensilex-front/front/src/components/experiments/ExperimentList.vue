@@ -91,9 +91,9 @@
                             <td width="200">
                                 <multiselect
                                         :limit="1"
-                                        :placeholder="$t('component.experiment.search.filter.campains')"
+                                        :placeholder="$t('component.experiment.search.filter.campain')"
                                         :closeOnSelect="false"
-                                        v-model="filter.campains"
+                                        v-model="filter.campaign"
                                         :options="campains"
                                         selectLabel=""
                                         selectedLabel="X"
@@ -273,7 +273,6 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
         set startDate(value) {
             this._startDate = value;
-            console.log("new startDate = " + this._startDate);
         }
 
         get startDate() {
@@ -282,8 +281,6 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
         set endDate(value) {
             this._endDate = value;
-            console.log("new endDate = " + this._endDate);
-
         }
 
         get endDate() {
@@ -430,40 +427,36 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
                 endDate = this.filter.endDate;
             }
 
-            console.log("FILTER start :"+startDate);
-            console.log("FILTER end :"+endDate);
-
-                service.searchExperiments(
-                  this.user.getAuthorizationHeader(),
-                  this.filter.uri,
-                  startDate,
-                  endDate,
-                  this.filter.campaign,
-                  this.filter.alias,
-                  speciesUri,
-                  projects,
-                  isPublic,
-                  isEnded,
-                  this.orderBy,
-                  this.currentPage - 1,
-                  this.pageSize
-                )
-                .then((http: HttpResponse<OpenSilexResponse<Array<ExperimentGetDTO>>>) => {
-                  this.totalRow = http.response.metadata.pagination.totalCount;
-                  this.experiments = http.response.result;
-                  if(this.campains.length == 0) {
-                    let allCampaigns = this.experiments.map(experiment => experiment.campaign);
-                    this.campains = allCampaigns.filter((campaign, index) => {
-                      return allCampaigns.indexOf(campaign) === index;
-                    });
-                  }
-                })
-                .catch(this.resetExperiments);
+            service.searchExperiments(
+                this.user.getAuthorizationHeader(),
+                this.filter.uri,
+                startDate,
+                endDate,
+                this.filter.campaign,
+                this.filter.alias,
+                speciesUri,
+                projects,
+                isPublic,
+                isEnded,
+                this.orderBy,
+                this.currentPage - 1,
+                this.pageSize
+            )
+            .then((http: HttpResponse<OpenSilexResponse<Array<ExperimentGetDTO>>>) => {
+                this.totalRow = http.response.metadata.pagination.totalCount;
+                this.experiments = http.response.result;
+                if(this.campains.length == 0) {
+                let allCampaigns = this.experiments.map(experiment => experiment.campaign);
+                this.campains = allCampaigns.filter((campaign, index) => {
+                    return allCampaigns.indexOf(campaign) === index;
+                });
+                }
+            })
+            .catch(this.resetExperiments);
 
         }
 
         resetExperiments(error) {
-            console.log(error);
             this.totalRow = 0;
             this.experiments = new Array<ExperimentGetDTO>();
         }

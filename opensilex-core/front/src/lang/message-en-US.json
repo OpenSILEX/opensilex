@@ -49,7 +49,7 @@
                 },
                 "filter": {
                     "alias": "Filter by Alias",
-                    "campains": "Filter by Campain(s)",
+                    "campain": "Filter by Campain(s)",
                     "installations": "Filter by Installation(s)",
                     "projects": "Filter by Project(s)",
                     "places": "Filter by Place(s)",

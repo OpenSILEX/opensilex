@@ -27,7 +27,6 @@ import javax.ws.rs.core.Response;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DELETE_ID;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DELETE_LABEL_KEY;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID;
-import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_GROUP_LABEL_KEY;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_ID;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_READ_ID;
@@ -35,6 +34,7 @@ import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_RE
 import org.opensilex.core.variable.dal.EntityDAO;
 import org.opensilex.core.variable.dal.EntityModel;
 import org.opensilex.rest.authentication.ApiCredential;
+import org.opensilex.rest.authentication.ApiCredentialGroup;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -45,8 +45,12 @@ import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
-//@Api(CREDENTIAL_VARIABLE_GROUP_ID)
-//@Path("/core/variable/entity")
+@Api(CREDENTIAL_VARIABLE_GROUP_ID)
+@Path("/core/variable/entity")
+@ApiCredentialGroup(
+        groupId = VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID,
+        groupLabelKey = VariableAPI.CREDENTIAL_VARIABLE_GROUP_LABEL_KEY
+)
 public class EntityAPI {
 
     @Inject
@@ -60,8 +64,6 @@ public class EntityAPI {
     @ApiOperation("Create an entity")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
-            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
@@ -89,8 +91,6 @@ public class EntityAPI {
     @ApiOperation("Update an entity")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
-            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
@@ -120,8 +120,6 @@ public class EntityAPI {
     @ApiOperation("Delete an entity")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
-            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
@@ -140,8 +138,6 @@ public class EntityAPI {
     @ApiOperation("Get an entity")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
-            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_VARIABLE_READ_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
     )
@@ -171,8 +167,6 @@ public class EntityAPI {
     @ApiOperation("Search entities corresponding to given criteria")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
-            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_VARIABLE_READ_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
     )

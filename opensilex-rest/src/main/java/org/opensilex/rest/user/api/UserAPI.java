@@ -37,6 +37,7 @@ import javax.ws.rs.core.SecurityContext;
 import static org.apache.jena.vocabulary.RDF.uri;
 import org.opensilex.rest.RestModule;
 import org.opensilex.rest.authentication.ApiCredential;
+import org.opensilex.rest.authentication.ApiCredentialGroup;
 import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
@@ -67,6 +68,10 @@ import org.opensilex.utils.ListWithPagination;
  */
 @Api(RestModule.REST_SECURITY_CONCEPTS_API_ID)
 @Path("/user")
+@ApiCredentialGroup(
+        groupId = UserAPI.CREDENTIAL_GROUP_USER_ID,
+        groupLabelKey = UserAPI.CREDENTIAL_GROUP_USER_LABEL_KEY
+)
 public class UserAPI {
 
     public static final String CREDENTIAL_GROUP_USER_ID = "Users";
@@ -111,8 +116,6 @@ public class UserAPI {
     @ApiOperation("Create a user and return it's URI")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_USER_ID,
-            groupLabelKey = CREDENTIAL_GROUP_USER_LABEL_KEY,
             credentialId = CREDENTIAL_USER_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_USER_MODIFICATION_LABEL_KEY
     )
@@ -186,8 +189,6 @@ public class UserAPI {
     @ApiOperation("Get a user by it's URI")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_USER_ID,
-            groupLabelKey = CREDENTIAL_GROUP_USER_LABEL_KEY,
             credentialId = CREDENTIAL_USER_READ_ID,
             credentialLabelKey = CREDENTIAL_USER_READ_LABEL_KEY
     )
@@ -234,8 +235,6 @@ public class UserAPI {
     @ApiOperation("Get a list of users by their URIs")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_USER_ID,
-            groupLabelKey = CREDENTIAL_GROUP_USER_LABEL_KEY,
             credentialId = CREDENTIAL_USER_READ_ID,
             credentialLabelKey = CREDENTIAL_USER_READ_LABEL_KEY
     )
@@ -289,8 +288,6 @@ public class UserAPI {
     @ApiOperation("Search users")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_USER_ID,
-            groupLabelKey = CREDENTIAL_GROUP_USER_LABEL_KEY,
             credentialId = CREDENTIAL_USER_READ_ID,
             credentialLabelKey = CREDENTIAL_USER_READ_LABEL_KEY
     )
@@ -330,8 +327,6 @@ public class UserAPI {
     @ApiOperation("Update a user")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_USER_ID,
-            groupLabelKey = CREDENTIAL_GROUP_USER_LABEL_KEY,
             credentialId = CREDENTIAL_USER_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_USER_MODIFICATION_LABEL_KEY
     )
@@ -376,8 +371,6 @@ public class UserAPI {
     @ApiOperation("Delete a user")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_USER_ID,
-            groupLabelKey = CREDENTIAL_GROUP_USER_LABEL_KEY,
             credentialId = CREDENTIAL_USER_DELETE_ID,
             credentialLabelKey = CREDENTIAL_USER_DELETE_LABEL_KEY
     )

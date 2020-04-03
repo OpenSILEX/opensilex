@@ -7,7 +7,6 @@
 package org.opensilex.rest;
 
 import org.opensilex.config.ConfigDescription;
-import org.opensilex.module.ModuleConfig;
 import org.opensilex.rest.authentication.AuthenticationService;
 
 /**
@@ -15,11 +14,16 @@ import org.opensilex.rest.authentication.AuthenticationService;
  *
  * @author Vincent Migot
  */
-public interface RestConfig extends ModuleConfig {
+public interface RestConfig {
 
     @ConfigDescription(
             value = "Authentication service"
     )
     public AuthenticationService authentication();
 
+    @ConfigDescription(
+            value = "Option to allow multiple connection with the same account (NOT RECOMMENDED IN PRODUCTION)",
+            defaultBoolean = false
+    )
+    public boolean allowMultiConnection();
 }

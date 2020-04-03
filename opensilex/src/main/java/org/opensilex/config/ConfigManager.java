@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
@@ -29,8 +30,8 @@ import org.opensilex.OpenSilex;
 import static org.opensilex.OpenSilex.PROD_PROFILE_ID;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.config.ConfigProxyHandler.ServiceConstructorArguments;
-import org.opensilex.module.ModuleConfig;
 import org.opensilex.service.Service;
+import org.opensilex.service.ServiceConfig;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,11 +197,11 @@ public class ConfigManager {
 
         for (OpenSilexModule module : modules) {
             String configId = module.getConfigId();
-            Class<? extends ModuleConfig> configClass = module.getConfigClass();
+            Class<?> configClass = module.getConfigClass();
             if (configId != null && configClass != null && !configId.isEmpty()) {
-                yml.append("\n# " + StringUtils.repeat("-", 78) +"\n");
-                yml.append("# Configuration for module: " + module.getClass().getCanonicalName() +"\n");
-                ModuleConfig config = module.getConfig();
+                yml.append("\n# " + StringUtils.repeat("-", 78) + "\n");
+                yml.append("# Configuration for module: " + module.getClass().getSimpleName() + " (" + configClass.getSimpleName() + ")\n");
+                Object config = module.getConfig();
                 addConfigInterface(yml, configId, config, configClass, 0);
             }
         };
@@ -211,21 +212,23 @@ public class ConfigManager {
     private final static String YAML_SEPARATOR = "  ";
 
     private void addConfigInterface(StringBuilder yml, String key, Object value, Class<?> objectClass, int depth) throws Exception {
-        if (key != null) {
+        int elementDepth = depth;
+        if (key != null && !key.isEmpty()) {
             yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + key + ":\n");
+            elementDepth = depth + 1;
         }
         for (Method method : objectClass.getMethods()) {
             ConfigDescription cfgDescription = method.getAnnotation(ConfigDescription.class);
             if (cfgDescription != null) {
                 Object itemValue = method.invoke(value);
-                addConfigPropertyValue(yml, method.getName(), itemValue, method.getGenericReturnType(), cfgDescription, depth + 1);
+                addConfigPropertyValue(yml, method.getName(), itemValue, method.getGenericReturnType(), cfgDescription, elementDepth);
             }
         }
     }
 
     private void addConfigPropertyValue(StringBuilder yml, String key, Object value, Type returnType, ConfigDescription cfgDescription, int depth) throws Exception {
         if (cfgDescription != null) {
-            yml.append("\n" + StringUtils.repeat(YAML_SEPARATOR, depth) + "# " + cfgDescription.value() + "\n");
+            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "# " + cfgDescription.value() + " (" + getShortType(returnType) + ")\n");
         }
 
         if (ClassUtils.isGenericType(returnType)) {
@@ -268,7 +271,7 @@ public class ConfigManager {
                 if (key != null) {
                     yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + key + ":\n");
                 }
-                addConfigService(yml, (Service) value, depth + 1);
+                addConfigService(yml, key, (Service) value, returnType, depth + 1);
             } else if (ClassUtils.isInterface(returnTypeClass)) {
                 addConfigInterface(yml, key, value, returnTypeClass, depth);
             } else {
@@ -282,20 +285,37 @@ public class ConfigManager {
         addConfigPropertyValue(yml, null, value, type, null, depth + 1);
     }
 
-    private void addConfigService(StringBuilder yml, Service service, int depth) throws Exception {
+    private void addConfigService(StringBuilder yml, String name, Service service, Type serviceBaseType, int depth) throws Exception {
         ServiceConstructorArguments serviceConfig = ConfigProxyHandler.getServiceConstructorArguments(service);
+        yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "# Service implementation class for: " + name + " (" + getShortType(serviceBaseType) + ")\n");
         yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "implementation: " + serviceConfig.implementation().getCanonicalName() + "\n");
         if (serviceConfig.configID() != null && serviceConfig.configClass() != null) {
-            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "configID: " + serviceConfig.configID() + "\n");
+            Constructor<?> constructor = ClassUtils.getConstructorWithParameterImplementing(serviceConfig.implementation(), ServiceConfig.class);
+            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "# Configuration class used as constructor parameter for: " + name + " (" + getShortType(constructor.getParameters()[0].getType()) + ")\n");
             yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "configClass: " + serviceConfig.configClass().getCanonicalName() + "\n");
+            if (!serviceConfig.configID().isEmpty()) {
+                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "# Configuration identifier used as constructor parameter for: " + name + "\n");
+                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "configID: " + serviceConfig.configID() + "\n");
+            }
             addConfigInterface(yml, serviceConfig.configID(), serviceConfig.getConfig(), serviceConfig.configClass(), depth);
-        } else if (serviceConfig.connection() != null) {
-            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "connection: " + serviceConfig.connection().getCanonicalName() + "\n");
-            if (serviceConfig.connectionConfigID() != null && serviceConfig.connectionConfigClass() != null) {
-                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "connectionConfigID: " + serviceConfig.connectionConfigID() + "\n");
-                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "connectionConfig: " + serviceConfig.connectionConfigClass().getCanonicalName() + "\n");
-                addConfigInterface(yml, serviceConfig.connectionConfigID(), serviceConfig.getConnectionConfig(), serviceConfig.connectionConfigClass(), depth);
+
+        } else if (serviceConfig.getService() != null) {
+            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "# Service class used as constructor parameter for: " + name + "\n");
+            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "serviceClass: " + serviceConfig.serviceClass().getCanonicalName() + "\n");
+
+            String serviceID = serviceConfig.serviceID();
+            if (serviceID != null && !serviceID.isEmpty()) {
+                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "# Service identifier used as constructor parameter for: " + name + "\n");
+                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "serviceID: " + serviceID + "\n");
+                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + serviceID + ":\n");
+
+                Constructor<? extends Service> constructor = ClassUtils.getConstructorWithParameterImplementing(serviceConfig.implementation(), Service.class);
+                addConfigService(yml, serviceID, serviceConfig.getService(), constructor.getParameters()[0].getType(), depth + 1);
             }
         }
+    }
+
+    private static String getShortType(Type returnType) {
+        return returnType.getTypeName().replaceAll("([^.<]+\\.)+", "");
     }
 }

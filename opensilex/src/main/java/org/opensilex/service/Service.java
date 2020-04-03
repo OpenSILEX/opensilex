@@ -23,7 +23,7 @@ public interface Service {
     public default void shutdown() throws Exception {
 
     }
-    
+
     public static boolean hasEmptyConstructor(Class<? extends Service> serviceClass) {
         try {
             return (serviceClass.getConstructor() != null);
@@ -37,7 +37,7 @@ public interface Service {
     }
 
     public static boolean isConnectable(Class<? extends Service> serviceClass) {
-        return ClassUtils.getConstructorWithParameterImplementing(serviceClass, ServiceConnection.class) != null;
+        return ClassUtils.getConstructorWithParameterImplementing(serviceClass, Service.class) != null;
     }
 
     public static ServiceDefinition getDefaultServiceDefinition(Class<? extends Service> serviceClass) {
@@ -62,35 +62,27 @@ public interface Service {
             }
 
             @Override
-            public Class<?> connectionConfigClass() {
-                if (defaultConfigAnnotation == null) {
-                    return Class.class;
-                }
-                return defaultConfigAnnotation.connectionConfig();
-            }
-
-            @Override
-            public String connectionConfigID() {
-                if (defaultConfigAnnotation == null) {
-                    return "";
-                }
-                return defaultConfigAnnotation.connectionConfigID();
-            }
-
-            @Override
-            public Class<? extends ServiceConnection> connection() {
-                if (defaultConfigAnnotation == null) {
-                    return ServiceConnection.class;
-                }
-                return defaultConfigAnnotation.connection();
-            }
-
-            @Override
             public Class<? extends Service> implementation() {
                 if (defaultConfigAnnotation == null) {
                     return Service.class;
                 }
                 return defaultConfigAnnotation.implementation();
+            }
+
+            @Override
+            public String serviceID() {
+                if (defaultConfigAnnotation == null) {
+                    return "";
+                }
+                return defaultConfigAnnotation.serviceID();
+            }
+
+            @Override
+            public Class<? extends Service> serviceClass() {
+                if (defaultConfigAnnotation == null) {
+                    return Service.class;
+                }
+                return defaultConfigAnnotation.serviceClass();
             }
         };
     }

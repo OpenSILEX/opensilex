@@ -486,7 +486,14 @@ class SPARQLClassQueryBuilder {
         analyzer.forEachDataProperty((field, property) -> {
             Seq seq = model.createSeq();
 
-            seq.addProperty(SHACL.path, property);
+            if (analyzer.isReverseRelation(field)) {
+                Seq pathSeq = model.createSeq();
+                pathSeq.addProperty(SHACL.inversePath, property);
+                seq.addProperty(SHACL.path, pathSeq);
+            } else {
+                seq.addProperty(SHACL.path, property);
+            }
+
             XSDDatatype dataType = analyzer.getFieldDatatype(field);
             if (dataType.equals(XSDDatatype.XSDanyURI)) {
                 seq.addProperty(SHACL.nodeKind, SHACL.IRI);
@@ -506,8 +513,14 @@ class SPARQLClassQueryBuilder {
 
         analyzer.forEachObjectProperty((field, property) -> {
             Seq seq = model.createSeq();
-            seq.addProperty(SHACL.path, property);
 
+            if (analyzer.isReverseRelation(field)) {
+                Seq pathSeq = model.createSeq();
+                pathSeq.addProperty(SHACL.inversePath, property);
+                seq.addProperty(SHACL.path, pathSeq);
+            } else {
+                seq.addProperty(SHACL.path, property);
+            }
             seq.addProperty(SHACL.classProperty, analyzer.getFieldRDFType(field));
             seq.addProperty(SHACL.maxCount, "1", XSDDatatype.XSDinteger);
 
@@ -521,10 +534,15 @@ class SPARQLClassQueryBuilder {
         });
 
         analyzer.forEachLabelProperty((field, property) -> {
-
             Seq seq = model.createSeq();
-            seq.addProperty(SHACL.path, property);
 
+            if (analyzer.isReverseRelation(field)) {
+                Seq pathSeq = model.createSeq();
+                pathSeq.addProperty(SHACL.inversePath, property);
+                seq.addProperty(SHACL.path, pathSeq);
+            } else {
+                seq.addProperty(SHACL.path, property);
+            }
             seq.addProperty(SHACL.uniqueLang, "true", XSDDatatype.XSDboolean);
 
             if (analyzer.isOptional(field)) {
@@ -538,7 +556,14 @@ class SPARQLClassQueryBuilder {
 
         analyzer.forEachDataPropertyList((field, property) -> {
             Seq seq = model.createSeq();
-            seq.addProperty(SHACL.path, property);
+
+            if (analyzer.isReverseRelation(field)) {
+                Seq pathSeq = model.createSeq();
+                pathSeq.addProperty(SHACL.inversePath, property);
+                seq.addProperty(SHACL.path, pathSeq);
+            } else {
+                seq.addProperty(SHACL.path, property);
+            }
 
             XSDDatatype dataType = analyzer.getFieldListDatatype(field);
             if (dataType.equals(XSDDatatype.XSDanyURI)) {
@@ -558,7 +583,14 @@ class SPARQLClassQueryBuilder {
 
         analyzer.forEachObjectPropertyList((field, property) -> {
             Seq seq = model.createSeq();
-            seq.addProperty(SHACL.path, property);
+
+            if (analyzer.isReverseRelation(field)) {
+                Seq pathSeq = model.createSeq();
+                pathSeq.addProperty(SHACL.inversePath, property);
+                seq.addProperty(SHACL.path, pathSeq);
+            } else {
+                seq.addProperty(SHACL.path, property);
+            }
 
             seq.addProperty(SHACL.classProperty, analyzer.getFieldListRDFType(field));
 

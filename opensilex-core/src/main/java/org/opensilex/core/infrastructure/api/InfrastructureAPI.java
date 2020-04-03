@@ -32,7 +32,9 @@ import javax.ws.rs.core.SecurityContext;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.infrastructure.dal.InfrastructureDAO;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
+import org.opensilex.core.project.api.ProjectAPI;
 import org.opensilex.rest.authentication.ApiCredential;
+import org.opensilex.rest.authentication.ApiCredentialGroup;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.sparql.dto.ResourceTreeDTO;
 import org.opensilex.rest.user.dal.UserModel;
@@ -52,6 +54,10 @@ import org.opensilex.sparql.tree.ResourceTree;
  */
 @Api(InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID)
 @Path("/core/infrastructure")
+@ApiCredentialGroup(
+        groupId = InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
+        groupLabelKey = InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY
+)
 public class InfrastructureAPI {
 
     public static final String CREDENTIAL_GROUP_INFRASTRUCTURE_ID = "Infrastructures";
@@ -81,8 +87,6 @@ public class InfrastructureAPI {
     @ApiOperation("Create an infrastructure")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
-            groupLabelKey = CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY,
             credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
     )
@@ -116,8 +120,6 @@ public class InfrastructureAPI {
     @ApiOperation("Get an experiment by URI")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
-            groupLabelKey = CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY,
             credentialId = CREDENTIAL_INFRASTRUCTURE_READ_ID,
             credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_READ_LABEL_KEY
     )
@@ -152,8 +154,6 @@ public class InfrastructureAPI {
     @ApiOperation("Delete an infrastructure")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
-            groupLabelKey = CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY,
             credentialId = CREDENTIAL_INFRASTRUCTURE_DELETE_ID,
             credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_DELETE_LABEL_KEY
     )
@@ -180,8 +180,6 @@ public class InfrastructureAPI {
     @ApiOperation("Search infrastructures tree")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
-            groupLabelKey = CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY,
             credentialId = CREDENTIAL_INFRASTRUCTURE_READ_ID,
             credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_READ_LABEL_KEY
     )
@@ -212,8 +210,6 @@ public class InfrastructureAPI {
     @ApiOperation("Update an infrastructure")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
-            groupLabelKey = CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY,
             credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
     )

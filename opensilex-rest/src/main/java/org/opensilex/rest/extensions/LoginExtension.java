@@ -7,7 +7,6 @@
 package org.opensilex.rest.extensions;
 
 import com.auth0.jwt.JWTCreator;
-import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

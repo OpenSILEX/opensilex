@@ -35,6 +35,7 @@ import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_RE
 import org.opensilex.core.variable.dal.QualityDAO;
 import org.opensilex.core.variable.dal.QualityModel;
 import org.opensilex.rest.authentication.ApiCredential;
+import org.opensilex.rest.authentication.ApiCredentialGroup;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -45,8 +46,12 @@ import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
-//@Api(CREDENTIAL_VARIABLE_GROUP_ID)
-//@Path("/core/variable/quality")
+@Api(CREDENTIAL_VARIABLE_GROUP_ID)
+@Path("/core/variable/quality")
+@ApiCredentialGroup(
+        groupId = VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID,
+        groupLabelKey = VariableAPI.CREDENTIAL_VARIABLE_GROUP_LABEL_KEY
+)
 public class QualityAPI {
 
     @Inject
@@ -60,8 +65,6 @@ public class QualityAPI {
     @ApiOperation("Create a quality")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
-            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
@@ -89,8 +92,6 @@ public class QualityAPI {
     @ApiOperation("Update a quality")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
-            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
@@ -120,8 +121,6 @@ public class QualityAPI {
     @ApiOperation("Delete a quality")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
-            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
@@ -140,8 +139,6 @@ public class QualityAPI {
     @ApiOperation("Get a quality")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
-            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_VARIABLE_READ_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
     )
@@ -171,8 +168,6 @@ public class QualityAPI {
     @ApiOperation("Search entities corresponding to given criteria")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
-            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_VARIABLE_READ_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
     )

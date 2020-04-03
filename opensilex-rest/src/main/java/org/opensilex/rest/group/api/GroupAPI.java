@@ -30,6 +30,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.rest.RestModule;
 import org.opensilex.rest.authentication.ApiCredential;
+import org.opensilex.rest.authentication.ApiCredentialGroup;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.group.dal.GroupDAO;
 import org.opensilex.rest.group.dal.GroupModel;
@@ -49,6 +50,10 @@ import org.opensilex.utils.ListWithPagination;
  */
 @Api(RestModule.REST_SECURITY_CONCEPTS_API_ID)
 @Path("/group")
+@ApiCredentialGroup(
+        groupId = GroupAPI.CREDENTIAL_GROUP_GROUP_ID,
+        groupLabelKey = GroupAPI.CREDENTIAL_GROUP_GROUP_LABEL_KEY
+)
 public class GroupAPI {
 
     public static final String CREDENTIAL_GROUP_GROUP_ID = "Groups";
@@ -89,8 +94,6 @@ public class GroupAPI {
     })
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_GROUP_ID,
-            groupLabelKey = CREDENTIAL_GROUP_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_GROUP_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY
     )
@@ -133,8 +136,6 @@ public class GroupAPI {
     @ApiOperation("Update a group")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_GROUP_ID,
-            groupLabelKey = CREDENTIAL_GROUP_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_GROUP_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY
     )
@@ -174,8 +175,6 @@ public class GroupAPI {
     @ApiOperation("Delete a group")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_GROUP_ID,
-            groupLabelKey = CREDENTIAL_GROUP_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_GROUP_DELETE_ID,
             credentialLabelKey = CREDENTIAL_GROUP_DELETE_LABEL_KEY
     )
@@ -207,8 +206,6 @@ public class GroupAPI {
     @ApiOperation("Get a group by it's URI")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_GROUP_ID,
-            groupLabelKey = CREDENTIAL_GROUP_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_GROUP_READ_ID,
             credentialLabelKey = CREDENTIAL_GROUP_READ_LABEL_KEY
     )
@@ -260,8 +257,6 @@ public class GroupAPI {
     @ApiOperation("Search groups")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_GROUP_ID,
-            groupLabelKey = CREDENTIAL_GROUP_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_GROUP_READ_ID,
             credentialLabelKey = CREDENTIAL_GROUP_READ_LABEL_KEY
     )

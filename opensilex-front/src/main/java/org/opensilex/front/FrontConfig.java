@@ -7,13 +7,12 @@ package org.opensilex.front;
 
 import java.util.List;
 import org.opensilex.config.ConfigDescription;
-import org.opensilex.module.ModuleConfig;
 
 /**
  *
  * @author vincent
  */
-public interface FrontConfig extends ModuleConfig {
+public interface FrontConfig   {
 
     @ConfigDescription(
             value = "Front login component definition",

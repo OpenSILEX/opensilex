@@ -28,7 +28,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.rest.authentication.ApiCredential;
+import org.opensilex.rest.authentication.ApiCredentialGroup;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -42,6 +44,10 @@ import org.opensilex.utils.ListWithPagination;
 
 @Api(ProjectAPI.CREDENTIAL_PROJECT_GROUP_ID)
 @Path("/core/project")
+@ApiCredentialGroup(
+        groupId = ProjectAPI.CREDENTIAL_PROJECT_GROUP_ID,
+        groupLabelKey = ProjectAPI.CREDENTIAL_PROJECT_GROUP_LABEL_KEY
+)
 public class ProjectAPI {
 
     public static final String CREDENTIAL_PROJECT_GROUP_ID = "Projects";
@@ -67,8 +73,6 @@ public class ProjectAPI {
     @ApiOperation("Create a project")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_PROJECT_GROUP_ID,
-            groupLabelKey = CREDENTIAL_PROJECT_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_PROJECT_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_PROJECT_MODIFICATION_LABEL_KEY
     )
@@ -98,8 +102,6 @@ public class ProjectAPI {
     @ApiOperation("Update a project")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_PROJECT_GROUP_ID,
-            groupLabelKey = CREDENTIAL_PROJECT_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_PROJECT_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_PROJECT_MODIFICATION_LABEL_KEY
     )
@@ -131,8 +133,6 @@ public class ProjectAPI {
     @ApiOperation("Delete a project")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_PROJECT_GROUP_ID,
-            groupLabelKey = CREDENTIAL_PROJECT_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_PROJECT_DELETE_ID,
             credentialLabelKey = CREDENTIAL_PROJECT_DELETE_LABEL_KEY
     )
@@ -153,8 +153,6 @@ public class ProjectAPI {
     @ApiOperation("Get a project")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_PROJECT_GROUP_ID,
-            groupLabelKey = CREDENTIAL_PROJECT_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_PROJECT_READ_ID,
             credentialLabelKey = CREDENTIAL_PROJECT_READ_LABEL_KEY
     )
@@ -186,8 +184,6 @@ public class ProjectAPI {
     @ApiOperation("Search entities corresponding to given criteria")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_PROJECT_GROUP_ID,
-            groupLabelKey = CREDENTIAL_PROJECT_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_PROJECT_READ_ID,
             credentialLabelKey = CREDENTIAL_PROJECT_READ_LABEL_KEY
     )

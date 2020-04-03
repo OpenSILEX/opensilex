@@ -33,8 +33,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.infrastructure.api.InfrastructureAPI;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.rest.authentication.ApiCredential;
+import org.opensilex.rest.authentication.ApiCredentialGroup;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.validation.ValidURI;
 import org.opensilex.server.response.ErrorDTO;
@@ -52,6 +54,10 @@ import org.opensilex.utils.ListWithPagination;
  */
 @Api(GermplasmAPI.CREDENTIAL_GERMPLASM_GROUP_ID)
 @Path("/phis/germplasm")
+@ApiCredentialGroup(
+        groupId = GermplasmAPI.CREDENTIAL_GERMPLASM_GROUP_ID,
+        groupLabelKey = GermplasmAPI.CREDENTIAL_GERMPLASM_GROUP_LABEL_KEY
+)
 public class GermplasmAPI {
     
     public static final String CREDENTIAL_GERMPLASM_GROUP_ID = "Germplasm";
@@ -90,8 +96,6 @@ public class GermplasmAPI {
     @ApiOperation("Create a germplasm")
     @ApiProtected
     @ApiCredential(
-        groupId = CREDENTIAL_GERMPLASM_GROUP_ID,
-        groupLabelKey = CREDENTIAL_GERMPLASM_GROUP_LABEL_KEY,
         credentialId = CREDENTIAL_GERMPLASM_MODIFICATION_ID,
         credentialLabelKey = CREDENTIAL_GERMPLASM_MODIFICATION_LABEL_KEY
     )
@@ -272,8 +276,6 @@ public class GermplasmAPI {
     @ApiOperation("Get a germplasm by its URI")
     @ApiProtected
     @ApiCredential(
-        groupId = CREDENTIAL_GERMPLASM_GROUP_ID,
-        groupLabelKey = CREDENTIAL_GERMPLASM_GROUP_LABEL_KEY,
         credentialId = CREDENTIAL_GERMPLASM_READ_ID,
         credentialLabelKey = CREDENTIAL_GERMPLASM_READ_LABEL_KEY
     )
@@ -326,8 +328,6 @@ public class GermplasmAPI {
     @ApiOperation("Search germplasm")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GERMPLASM_GROUP_ID,
-            groupLabelKey = CREDENTIAL_GERMPLASM_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_GERMPLASM_READ_ID,
             credentialLabelKey = CREDENTIAL_GERMPLASM_READ_LABEL_KEY
     )
@@ -386,8 +386,6 @@ public class GermplasmAPI {
     @ApiOperation("Search factors")
     @ApiProtected
     @ApiCredential(
-        groupId = CREDENTIAL_GERMPLASM_GROUP_ID,
-        groupLabelKey = CREDENTIAL_GERMPLASM_GROUP_LABEL_KEY,
         credentialId = CREDENTIAL_GERMPLASM_READ_ID,
         credentialLabelKey = CREDENTIAL_GERMPLASM_READ_LABEL_KEY
     )
@@ -433,8 +431,6 @@ public class GermplasmAPI {
     @ApiOperation("Delete a germplasm")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GERMPLASM_GROUP_ID,
-            groupLabelKey = CREDENTIAL_GERMPLASM_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_GERMPLASM_DELETE_ID,
             credentialLabelKey = CREDENTIAL_GERMPLASM_DELETE_LABEL_KEY
     )

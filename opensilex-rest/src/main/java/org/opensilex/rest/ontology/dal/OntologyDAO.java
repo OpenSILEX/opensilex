@@ -6,11 +6,16 @@
 package org.opensilex.rest.ontology.dal;
 
 import java.net.URI;
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.tree.ResourceTree;
+import org.opensilex.sparql.utils.Ontology;
 
 /**
  *
@@ -32,7 +37,9 @@ public final class OntologyDAO {
                 excludeRoot,
                 (SelectBuilder select) -> {
                     if (parent != null) {
-                        select.addFilter(SPARQLQueryHelper.eq(ClassModel.PARENT_FIELD, parent));
+                        Var parentVar = makeVar(ClassModel.PARENT_FIELD);
+                        select.addWhere(parentVar, Ontology.subClassAny, SPARQLDeserializers.nodeURI(parent));
+                        select.addWhere(makeVar(ClassModel.URI_FIELD), RDFS.subClassOf, parentVar);
                     }
                 }
         );
@@ -46,7 +53,9 @@ public final class OntologyDAO {
                 excludeRoot,
                 (SelectBuilder select) -> {
                     if (parent != null) {
-                        select.addFilter(SPARQLQueryHelper.eq(PropertyModel.PARENT_FIELD, parent));
+                        Var parentVar = makeVar(PropertyModel.PARENT_FIELD);
+                        select.addWhere(parentVar, Ontology.subClassAny, SPARQLDeserializers.nodeURI(parent));
+                        select.addWhere(makeVar(PropertyModel.URI_FIELD), RDFS.subClassOf, parentVar);
                     }
                 }
         );

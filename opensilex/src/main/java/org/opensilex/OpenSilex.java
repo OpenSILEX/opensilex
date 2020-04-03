@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.config.ConfigManager;
-import org.opensilex.module.ModuleConfig;
 import org.opensilex.module.ModuleManager;
 import org.opensilex.module.ModuleNotFoundException;
 import org.opensilex.dependencies.DependencyManager;
@@ -460,7 +459,7 @@ public class OpenSilex {
         Runtime.getRuntime().addShutdownHook(SHUTDOWN_HOOK);
 
         moduleManager.addOptionalModulesOrder(getModuleConfig(ServerModule.class, ServerConfig.class).modulesOrder());
-        
+
         LOGGER.debug("Current expanded configuration:" + getExpandedYAMLConfig());
 
         LOGGER.debug("Startup modules");
@@ -663,9 +662,8 @@ public class OpenSilex {
     public Path getBaseDirectory() {
         return this.baseDirectory;
     }
-
-    public static <T extends ModuleConfig> T getModuleConfig(Class<? extends OpenSilexModule> moduleClass, Class<T> configClass) throws ModuleNotFoundException {
-        return getInstance().getModuleByClass(moduleClass).getConfig(configClass);
+    public <T> T getModuleConfig(Class<? extends OpenSilexModule> moduleClass, Class<T> configClass) throws ModuleNotFoundException {
+        return getModuleByClass(moduleClass).getConfig(configClass);
     }
 
     public static ClassLoader getClassLoader() {

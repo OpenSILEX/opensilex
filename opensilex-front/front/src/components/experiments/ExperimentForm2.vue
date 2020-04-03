@@ -80,7 +80,7 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 import { ProjectsService, ProjectCreationDTO} from "opensilex-core/index";
 import { InfrastructuresService, InfrastructureGetDTO} from "opensilex-core/index";
-import { UsersGroupsProfilesService, GroupGetDTO, UserGetDTO } from "opensilex-rest/index";
+import { UsersGroupsProfilesService, GroupGetDTO, UserGetDTO, ResourceTreeDTO } from "opensilex-rest/index";
 
 @Component
 export default class ExperimentForm2 extends ExperimentForm {
@@ -149,7 +149,7 @@ export default class ExperimentForm2 extends ExperimentForm {
     service.searchInfrastructuresTree(
       this.user.getAuthorizationHeader(),undefined
     )
-    .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureGetDTO>>>) => {
+    .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
       for(let i=0; i<http.response.result.length; i++) {
         let dto = http.response.result[i];
         this.infrastructureList.push({ value: dto.uri, text: dto.name});

@@ -27,6 +27,8 @@ class InfrastructureCreationDTO {
 
     protected URI parent;
 
+    protected List<URI> children;
+
     protected List<GroupUserProfileModificationDTO> userProfiles;
 
     public URI getUri() {
@@ -61,6 +63,14 @@ class InfrastructureCreationDTO {
         this.parent = parent;
     }
 
+    public List<URI> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<URI> children) {
+        this.children = children;
+    }
+
     public List<GroupUserProfileModificationDTO> getUserProfiles() {
         return userProfiles;
     }
@@ -81,6 +91,16 @@ class InfrastructureCreationDTO {
             parentModel.setUri(getParent());
             model.setParent(parentModel);
         }
+
+        List<InfrastructureModel> children = new ArrayList<>();
+        if (getChildren() != null) {
+            getChildren().forEach(child -> {
+                InfrastructureModel childModel = new InfrastructureModel();
+                childModel.setUri(child);
+                children.add(childModel);
+            });
+        }
+        model.setChildren(children);
 
         GroupModel group = new GroupModel();
         group.setName(getName() + " (auto)");

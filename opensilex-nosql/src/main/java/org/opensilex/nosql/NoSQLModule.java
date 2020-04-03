@@ -13,7 +13,6 @@ import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.module.ModuleConfig;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +24,9 @@ import org.slf4j.LoggerFactory;
 public class NoSQLModule extends OpenSilexModule {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(NoSQLModule.class);
-    
+
     @Override
-    public Class<? extends ModuleConfig> getConfigClass() {
+    public Class<?> getConfigClass() {
         return NoSQLConfig.class;
     }
 
@@ -46,22 +45,22 @@ public class NoSQLModule extends OpenSilexModule {
         MongoDBConfig config = OpenSilex.getInstance().loadConfigPath("big-data.nosql.mongodb", MongoDBConfig.class);
         MongoClient mongo = getMongoClient(config);
         MongoDatabase db = mongo.getDatabase(config.database());
-        
+
         MongoCollection<Document> c = db.getCollection("test");
-        
+
         c.insertOne(new Document("test", "1234"));
-        
+
         long result = c.countDocuments(new BasicDBObject("test", "1234"));
-        
+
         if (result != 1) {
             LOGGER.error("There is a problem in your mongo configuration");
             throw new Exception("There is a problem in your mongo configuration");
         }
-        
+
         c.drop();
-        
+
         result = c.countDocuments(new BasicDBObject("test", "1234"));
-        
+
         if (result != 0) {
             LOGGER.error("There is a problem in your mongo configuration");
             throw new Exception("There is a problem in your mongo configuration");

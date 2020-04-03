@@ -236,7 +236,7 @@ public class ModuleManager {
 
             modules = new ArrayList<>();
             Iterator<OpenSilexModule> i = ServiceLoader.load(OpenSilexModule.class, OpenSilex.getClassLoader()).iterator();
-            while(i.hasNext()) {
+            while (i.hasNext()) {
                 modules.add(i.next());
             }
             modules = modules
@@ -351,7 +351,7 @@ public class ModuleManager {
         // Iterate over modules
         for (OpenSilexModule module : getModules()) {
 
-            ModuleConfig moduleConfig = module.getConfig();
+            Object moduleConfig = module.getConfig();
             // If module has configuration
             if (moduleConfig != null) {
                 // Iterate of module configuration interface methods
@@ -445,12 +445,12 @@ public class ModuleManager {
         for (OpenSilexModule module : getModules()) {
             // Get module configuration identifier and class
             String configId = module.getConfigId();
-            Class<? extends ModuleConfig> configClass = module.getConfigClass();
+            Class<?> configClass = module.getConfigClass();
 
             // If module is configurable
             if (configId != null && configClass != null) {
                 // Load configuration with manager
-                ModuleConfig config = configManager.loadConfig(configId, configClass);
+                Object config = configManager.loadConfig(configId, configClass);
                 // Affect loaded configuration to module
                 module.setConfig(config);
             }

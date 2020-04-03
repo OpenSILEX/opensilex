@@ -7,13 +7,13 @@ package org.opensilex.fs.service;
 
 import java.io.File;
 import java.nio.file.Path;
-import org.opensilex.service.ServiceConnection;
+import org.opensilex.service.Service;
 
 /**
  *
  * @author vmigot
  */
-public interface FileStorageConnection extends ServiceConnection {
+public interface FileStorageConnection extends Service {
 
     public String readFile(Path filePath) throws Exception;
     

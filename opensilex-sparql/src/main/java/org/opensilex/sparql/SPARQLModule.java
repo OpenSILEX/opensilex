@@ -5,6 +5,8 @@
  */
 package org.opensilex.sparql;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -12,14 +14,17 @@ import java.util.List;
 import java.util.Map;
 import org.apache.jena.rdf.model.Resource;
 import org.opensilex.OpenSilex;
-import org.opensilex.module.ModuleConfig;
 import org.opensilex.module.ModuleNotFoundException;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLValidationException;
+import org.opensilex.sparql.extensions.OntologyFileDefinition;
+import org.opensilex.sparql.extensions.SPARQLExtension;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
+import org.opensilex.sparql.service.SPARQLStatement;
+import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +39,7 @@ public class SPARQLModule extends OpenSilexModule {
     public final static String ONTOLOGY_BASE_DOMAIN = "http://www.opensilex.org/";
 
     @Override
-    public Class<? extends ModuleConfig> getConfigClass() {
+    public Class<?> getConfigClass() {
         return SPARQLConfig.class;
     }
 
@@ -61,19 +66,47 @@ public class SPARQLModule extends OpenSilexModule {
                     SPARQLService.addPrefix(basePrefix + mapper.getResourceGraphPrefix(), resourceNamespace + "#");
                 }
             });
+
+            SPARQLConfig cfg = this.getConfig(SPARQLConfig.class);
+            SPARQLService.addPrefix(cfg.baseURIAlias(), cfg.baseURI());
+
+            for (SPARQLExtension module : OpenSilex.getInstance().getModulesImplementingInterface(SPARQLExtension.class)) {
+                for (OntologyFileDefinition ontologyDef : module.getOntologiesFiles()) {
+                    SPARQLService.addPrefix(ontologyDef.getPrefix(), ontologyDef.getPrefixUri().toString());
+                }
+            }
+
         } else {
             SPARQLService.clearPrefixes();
         }
-        URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping());
 
-        SPARQLConfig cfg = OpenSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
-        SPARQLService.addPrefix(cfg.baseURIAlias(), cfg.baseURI());
+        URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), sparqlConfig.usePrefixes());
+    }
+
+    public static void installOntologies(SPARQLService sparql, boolean reset) throws Exception {
+        try {
+            sparql.startTransaction();
+            // Allow any module implementing SPARQLExtension to add custom ontologies
+            for (SPARQLExtension module : OpenSilex.getInstance().getModulesImplementingInterface(SPARQLExtension.class)) {
+                for (OntologyFileDefinition ontologyDef : module.getOntologiesFiles()) {
+                    if (reset) {
+                        sparql.clearGraph(ontologyDef.getUri());
+                    }
+                    InputStream ontologyStream = new FileInputStream(ClassUtils.getFileFromClassArtifact(module.getClass(), ontologyDef.getFilePath()));
+                    sparql.loadOntology(ontologyDef.getUri(), ontologyStream, ontologyDef.getFileType());
+                    ontologyStream.close();
+                }
+            }
+            sparql.commitTransaction();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction();
+            throw ex;
+        }
     }
 
     @Override
     public void shutdown() {
         SPARQLService.clearPrefixes();
-        URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping());
         SPARQLClassObjectMapper.reset();
     }
 
@@ -122,6 +155,8 @@ public class SPARQLModule extends OpenSilexModule {
         SPARQLService sparqlService = sparql.provide();
 
         try {
+            installOntologies(sparqlService, reset);
+
             if (cfg.enableSHACL()) {
                 try {
                     sparqlService.enableSHACL();
@@ -142,18 +177,30 @@ public class SPARQLModule extends OpenSilexModule {
                 sparqlService.disableSHACL();
             }
         } catch (Exception ex) {
-            sparql.dispose(sparqlService);
+
             LOGGER.error("Error while initializing SHACL", ex);
+        } finally {
+            sparql.dispose(sparqlService);
         }
 
     }
 
     @Override
     public void check() throws Exception {
-        LOGGER.info("Check RDF4J connnection");
+        LOGGER.info("Check SPARQL required ontologies");
         SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
-        sparql.getGraphStatement(new URI("http://www.opensilex.org/vocabulary/oeso"));
+        for (SPARQLExtension module : OpenSilex.getInstance().getModulesImplementingInterface(SPARQLExtension.class)) {
+            for (OntologyFileDefinition ontologyDef : module.getOntologiesFiles()) {
+                List<SPARQLStatement> results = sparql.getGraphStatement(ontologyDef.getUri());
+
+                if (results.size() == 0) {
+                    String errorMsg = ontologyDef.getUri().toString() + " is missing data into your triple store, did you execute `opensilex system setup` command ?";
+                    LOGGER.warn("/!\\ " + errorMsg);
+                    throw new Exception(errorMsg);
+                }
+            }
+        }
         factory.dispose(sparql);
     }
 }

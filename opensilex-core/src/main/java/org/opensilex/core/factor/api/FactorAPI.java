@@ -33,9 +33,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.factor.dal.FactorDAO;
 import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.rest.authentication.ApiCredential;
+import org.opensilex.rest.authentication.ApiCredentialGroup;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
@@ -54,6 +56,10 @@ import org.opensilex.utils.ListWithPagination;
  */
 @Api(value = "Factors")
 @Path("/core/factor")
+@ApiCredentialGroup(
+        groupId = FactorAPI.CREDENTIAL_FACTOR_GROUP_ID,
+        groupLabelKey = FactorAPI.CREDENTIAL_FACTOR_GROUP_LABEL_KEY
+)
 public class FactorAPI {
 
     public static final String FACTOR_EXAMPLE_URI = "http://opensilex/set/factors/ZA17";
@@ -89,8 +95,6 @@ public class FactorAPI {
     @ApiOperation("Create an factor")
     @ApiProtected
     @ApiCredential(
-        groupId = CREDENTIAL_FACTOR_GROUP_ID,
-        groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
         credentialId = CREDENTIAL_FACTOR_MODIFICATION_ID,
         credentialLabelKey = CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY
     )
@@ -125,8 +129,6 @@ public class FactorAPI {
     @ApiOperation("Get an factor")
     @ApiProtected
     @ApiCredential(
-        groupId = CREDENTIAL_FACTOR_GROUP_ID,
-        groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
         credentialId = CREDENTIAL_FACTOR_READ_ID,
         credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY
     )
@@ -168,8 +170,6 @@ public class FactorAPI {
     @ApiOperation("Search factors")
     @ApiProtected
     @ApiCredential(
-        groupId = CREDENTIAL_FACTOR_GROUP_ID,
-        groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
         credentialId = CREDENTIAL_FACTOR_READ_ID,
         credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY
     )
@@ -217,8 +217,6 @@ public class FactorAPI {
     @ApiOperation("Get all factors")
     @ApiProtected
     @ApiCredential(
-        groupId = CREDENTIAL_FACTOR_GROUP_ID,
-        groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
         credentialId = CREDENTIAL_FACTOR_READ_ID,
         credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY
     )
@@ -257,8 +255,6 @@ public class FactorAPI {
     @ApiOperation("Delete an factor")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_FACTOR_GROUP_ID,
-            groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_FACTOR_DELETE_ID,
             credentialLabelKey = CREDENTIAL_FACTOR_DELETE_LABEL_KEY
     )
@@ -293,8 +289,6 @@ public class FactorAPI {
     @ApiOperation("Update a factor")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_FACTOR_GROUP_ID,
-            groupLabelKey = CREDENTIAL_FACTOR_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_FACTOR_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY
     )

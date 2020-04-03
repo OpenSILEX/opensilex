@@ -38,6 +38,7 @@ import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import org.opensilex.rest.authentication.ApiCredentialGroup;
 
 /**
  * @author Vincent MIGOT
@@ -45,6 +46,10 @@ import java.util.List;
  */
 @Api(ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_ID)
 @Path("/core/experiment")
+@ApiCredentialGroup(
+        groupId = ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_ID,
+        groupLabelKey = ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY
+)
 public class ExperimentAPI {
 
     public static final String CREDENTIAL_EXPERIMENT_GROUP_ID = "Experiments";
@@ -84,8 +89,6 @@ public class ExperimentAPI {
     @ApiOperation("Create an experiment")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
-            groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_EXPERIMENT_MODIFICATION_LABEL_KEY
     )
@@ -121,8 +124,6 @@ public class ExperimentAPI {
     @ApiOperation("Update an experiment")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
-            groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_EXPERIMENT_MODIFICATION_LABEL_KEY
     )
@@ -160,8 +161,6 @@ public class ExperimentAPI {
     @ApiOperation("Get an experiment by URI")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
-            groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_EXPERIMENT_READ_ID,
             credentialLabelKey = CREDENTIAL_EXPERIMENT_READ_LABEL_KEY
     )
@@ -203,8 +202,6 @@ public class ExperimentAPI {
     @ApiOperation("Search Experiments")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
-            groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_EXPERIMENT_READ_ID,
             credentialLabelKey = CREDENTIAL_EXPERIMENT_READ_LABEL_KEY
     )
@@ -284,8 +281,6 @@ public class ExperimentAPI {
     @ApiOperation("Delete an experiment")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
-            groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_EXPERIMENT_DELETE_ID,
             credentialLabelKey = CREDENTIAL_EXPERIMENT_DELETE_LABEL_KEY
     )
@@ -329,8 +324,6 @@ public class ExperimentAPI {
     @ApiOperation("Update the factors which participates in an experiment")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_EXPERIMENT_GROUP_ID,
-            groupLabelKey = CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_EXPERIMENT_MODIFICATION_LABEL_KEY
     )

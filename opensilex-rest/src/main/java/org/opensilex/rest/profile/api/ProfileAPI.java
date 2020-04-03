@@ -33,15 +33,12 @@ import javax.ws.rs.core.Response;
 import static org.apache.jena.vocabulary.RDF.uri;
 import org.opensilex.rest.RestModule;
 import org.opensilex.rest.authentication.ApiCredential;
+import org.opensilex.rest.authentication.ApiCredentialGroup;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.profile.dal.ProfileDAO;
 import org.opensilex.rest.profile.dal.ProfileModel;
-import static org.opensilex.rest.user.api.UserAPI.CREDENTIAL_GROUP_USER_ID;
-import static org.opensilex.rest.user.api.UserAPI.CREDENTIAL_GROUP_USER_LABEL_KEY;
-import static org.opensilex.rest.user.api.UserAPI.CREDENTIAL_USER_READ_ID;
-import static org.opensilex.rest.user.api.UserAPI.CREDENTIAL_USER_READ_LABEL_KEY;
 import org.opensilex.rest.validation.ValidURI;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -65,6 +62,10 @@ import org.opensilex.utils.ListWithPagination;
  */
 @Api(RestModule.REST_SECURITY_CONCEPTS_API_ID)
 @Path("/profile")
+@ApiCredentialGroup(
+        groupId = ProfileAPI.CREDENTIAL_GROUP_PROFILE_ID,
+        groupLabelKey = ProfileAPI.CREDENTIAL_GROUP_PROFILE_LABEL_KEY
+)
 public class ProfileAPI {
 
     public static final String CREDENTIAL_GROUP_PROFILE_ID = "Profiles";
@@ -99,8 +100,6 @@ public class ProfileAPI {
     })
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_PROFILE_ID,
-            groupLabelKey = CREDENTIAL_GROUP_PROFILE_LABEL_KEY,
             credentialId = CREDENTIAL_PROFILE_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_PROFILE_MODIFICATION_LABEL_KEY
     )
@@ -147,8 +146,6 @@ public class ProfileAPI {
     @ApiOperation("Update a profile")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_PROFILE_ID,
-            groupLabelKey = CREDENTIAL_GROUP_PROFILE_LABEL_KEY,
             credentialId = CREDENTIAL_PROFILE_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_PROFILE_MODIFICATION_LABEL_KEY
     )
@@ -196,10 +193,8 @@ public class ProfileAPI {
     @ApiOperation("Get a profile by it's URI")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_USER_ID,
-            groupLabelKey = CREDENTIAL_GROUP_USER_LABEL_KEY,
-            credentialId = CREDENTIAL_USER_READ_ID,
-            credentialLabelKey = CREDENTIAL_USER_READ_LABEL_KEY
+            credentialId = CREDENTIAL_PROFILE_READ_ID,
+            credentialLabelKey = CREDENTIAL_PROFILE_READ_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -236,8 +231,6 @@ public class ProfileAPI {
     @ApiOperation("Delete a profile")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_PROFILE_ID,
-            groupLabelKey = CREDENTIAL_GROUP_PROFILE_LABEL_KEY,
             credentialId = CREDENTIAL_PROFILE_DELETE_ID,
             credentialLabelKey = CREDENTIAL_PROFILE_DELETE_LABEL_KEY
     )
@@ -256,8 +249,6 @@ public class ProfileAPI {
     @ApiOperation("Search profiles")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_PROFILE_ID,
-            groupLabelKey = CREDENTIAL_GROUP_PROFILE_LABEL_KEY,
             credentialId = CREDENTIAL_PROFILE_READ_ID,
             credentialLabelKey = CREDENTIAL_PROFILE_READ_LABEL_KEY
     )
@@ -297,8 +288,6 @@ public class ProfileAPI {
     @ApiOperation("Get all profiles")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_PROFILE_ID,
-            groupLabelKey = CREDENTIAL_GROUP_PROFILE_LABEL_KEY,
             credentialId = CREDENTIAL_PROFILE_READ_ID,
             credentialLabelKey = CREDENTIAL_PROFILE_READ_LABEL_KEY
     )

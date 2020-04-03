@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * @author Vincent Migot
  */
 @ServiceDefaultDefinition(
-        connection = LocalFileSystemConnection.class
+        serviceClass = LocalFileSystemConnection.class
 )
 public class FileStorageService implements Service, FileStorageConnection {
 

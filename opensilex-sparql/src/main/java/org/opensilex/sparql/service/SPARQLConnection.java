@@ -22,14 +22,14 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.Lang;
-import org.opensilex.service.ServiceConnection;
+import org.opensilex.service.Service;
 import org.opensilex.sparql.exceptions.SPARQLException;
 
 /**
  *
  * @author Vincent Migot
  */
-public interface SPARQLConnection extends ServiceConnection {
+public interface SPARQLConnection extends Service {
 
     public boolean executeAskQuery(AskBuilder ask) throws SPARQLException;
 

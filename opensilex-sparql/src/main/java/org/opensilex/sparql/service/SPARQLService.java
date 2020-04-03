@@ -21,7 +21,6 @@ import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.DCTerms;
-import org.apache.jena.vocabulary.OA;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
@@ -45,19 +44,20 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.function.Consumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
+import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.opensilex.OpenSilex;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.model.SPARQLTreeModel;
@@ -68,9 +68,8 @@ import org.opensilex.utils.ClassUtils;
  * Implementation of SPARQLService
  */
 @ServiceDefaultDefinition(
-        connection = RDF4JConnection.class,
-        connectionConfig = RDF4JConfig.class,
-        connectionConfigID = "rdf4j"
+        serviceClass = RDF4JConnection.class,
+        serviceID = "rdf4j"
 )
 public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
 
@@ -115,7 +114,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
                 put(RDFS.PREFIX, RDFS.NAMESPACE);
                 put(FOAF.PREFIX, FOAF.NAMESPACE);
                 put("dc", DCTerms.NS);
-                put("oa", OA.NS);
+                put(OWL.PREFIX, OWL.NAMESPACE);
                 put(XMLSchema.PREFIX, XMLSchema.NAMESPACE);
             }
         };
@@ -459,7 +458,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         }
         List<T> list = search(graph, objectClass, lang, filterHandler);
 
-        ResourceTree<T> tree = new ResourceTree<T>(list, root, excludeRoot);
+        ResourceTree<T> tree = new ResourceTree<T>(list, SPARQLDeserializers.formatURI(root), excludeRoot);
 
         for (T item : list) {
             tree.addTree(item);
@@ -625,6 +624,8 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
             }
             generateUniqueUriIfNullOrValidateCurrent(mapper, instance, checkUriExist);
 
+            validateReverseRelations(instance);
+
             for (SPARQLResourceModel subInstance : mapper.getAllDependentResourcesToCreate(instance)) {
                 create(subInstance);
             }
@@ -646,6 +647,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
     public <T extends SPARQLResourceModel> void create(Node graph, List<T> instances) throws Exception {
         if (instances.size() > 0) {
             UpdateBuilder create = new UpdateBuilder();
+            validateReverseRelations(instances);
             for (T instance : instances) {
                 SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(instance.getClass());
                 create(graph, mapper.getAllDependentResourcesToCreate(instance));
@@ -684,6 +686,8 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         Class<T> objectClass = (Class<T>) instance.getClass();
         SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
 
+        validateReverseRelations(instance);
+
         try {
             startTransaction();
 
@@ -711,6 +715,9 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
             startTransaction();
 
             if (instances.size() > 0) {
+
+                validateReverseRelations(instances);
+
                 for (T instance : instances) {
                     Node instanceGraph = graph;
                     if (graph == null) {
@@ -824,6 +831,13 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         return executeAskQuery(getUriExistsQuery(objectClass, uri));
     }
 
+    public <T extends SPARQLResourceModel> boolean uriListExists(Class<T> objectClass, Collection<URI> uris) throws Exception {
+        if (uris == null || uris.isEmpty()) {
+            return false;
+        }
+        return executeAskQuery(getUriListExistsQuery(objectClass, uris));
+    }
+
     /**
      * @param rdfType the {@link RDF#type} to check
      * @param uri the {@link URI} to check
@@ -847,6 +861,19 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         Var fieldType = mapper.getTypeFieldVar();
         askQuery.addWhere(nodeUri, RDF.type, fieldType);
 
+        Resource typeDef = mapper.getRDFType();
+
+        askQuery.addWhere(fieldType, Ontology.subClassAny, typeDef);
+        return askQuery;
+    }
+
+    public <T extends SPARQLResourceModel> AskBuilder getUriListExistsQuery(Class<T> objectClass, Collection<URI> uris) throws SPARQLException {
+        SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
+
+        AskBuilder askQuery = new AskBuilder();
+
+        Var fieldType = mapper.getTypeFieldVar();
+        SPARQLQueryHelper.inURI(askQuery, mapper.getURIFieldName(), uris);
         Resource typeDef = mapper.getRDFType();
 
         askQuery.addWhere(fieldType, Ontology.subClassAny, typeDef);
@@ -980,5 +1007,37 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
 
     public Var getURIFieldVar(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {
         return SPARQLClassObjectMapper.getForClass(modelClass).getURIFieldVar();
+    }
+
+    public <T extends SPARQLResourceModel> void validateReverseRelations(T instance) throws Exception {
+        SPARQLClassObjectMapper<SPARQLResourceModel> mapper = SPARQLClassObjectMapper.getForClass(instance.getClass());
+        Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMappers = mapper.getReverseRelationsUrisByMapper(instance);
+        for (Map.Entry<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMapper : urisByMappers.entrySet()) {
+            SPARQLClassObjectMapper<SPARQLResourceModel> modelMapper = urisByMapper.getKey();
+            Set<URI> uris = urisByMapper.getValue();
+
+            if (uriListExists(modelMapper.getObjectClass(), uris)) {
+                // TODO: better exception
+                throw new Exception("Invalid URI list !!");
+            }
+        }
+    }
+
+    public <T extends SPARQLResourceModel> void validateReverseRelations(List<T> instances) throws Exception {
+        Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMappers = new HashMap<>();
+        for (T instance : instances) {
+            SPARQLClassObjectMapper<SPARQLResourceModel> mapper = SPARQLClassObjectMapper.getForClass(instance.getClass());
+            mapper.getReverseRelationsUrisByMapper(instance, urisByMappers);
+        }
+
+        for (Map.Entry<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMapper : urisByMappers.entrySet()) {
+            SPARQLClassObjectMapper<SPARQLResourceModel> modelMapper = urisByMapper.getKey();
+            Set<URI> uris = urisByMapper.getValue();
+
+            if (uriListExists(modelMapper.getObjectClass(), uris)) {
+                // TODO: better exception
+                throw new Exception("Invalid URI list !!");
+            }
+        }
     }
 }

@@ -27,10 +27,6 @@ import java.lang.annotation.Target;
 @Documented
 public @interface ApiCredential {
 
-    public String groupId();
-    
-    public String groupLabelKey();
-    
     public String credentialId();
     
     public String credentialLabelKey();

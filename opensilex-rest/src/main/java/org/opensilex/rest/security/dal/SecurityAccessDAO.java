@@ -18,6 +18,7 @@ import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
 import org.opensilex.rest.authentication.ApiCredential;
+import org.opensilex.rest.authentication.ApiCredentialGroup;
 import org.opensilex.rest.authentication.SecurityOntology;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -59,11 +60,12 @@ public final class SecurityAccessDAO {
             Set<Method> methods = ClassUtils.getAnnotatedMethods(ApiCredential.class);
             methods.forEach((method) -> {
                 ApiCredential apiCredential = method.getAnnotation(ApiCredential.class);
-                if (apiCredential != null && !apiCredential.hide()) {
-                    String groupId = apiCredential.groupId();
+                ApiCredentialGroup apiCredentialGroup = method.getDeclaringClass().getAnnotation(ApiCredentialGroup.class);
+                if (apiCredentialGroup != null && apiCredential != null && !apiCredential.hide()) {
+                    String groupId = apiCredentialGroup.groupId();
                     if (!credentialsGroups.containsKey(groupId)) {
                         credentialsGroups.put(groupId, new HashMap<>());
-                        credentialsGroupLabels.put(groupId, apiCredential.groupLabelKey());
+                        credentialsGroupLabels.put(groupId, apiCredentialGroup.groupLabelKey());
                     }
 
                     Map<String, String> groupMap = credentialsGroups.get(groupId);

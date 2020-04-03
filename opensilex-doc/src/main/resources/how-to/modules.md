@@ -1,3 +1,5 @@
+Modules How-to
+==============
 
 # Create a new module for opensilex 
 

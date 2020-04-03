@@ -9,7 +9,6 @@ import java.nio.file.Paths;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.fs.service.FileStorageService;
-import org.opensilex.module.ModuleConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +19,9 @@ import org.slf4j.LoggerFactory;
 public class FileStorageModule extends OpenSilexModule {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(FileStorageModule.class);
-    
+
     @Override
-    public Class<? extends ModuleConfig> getConfigClass() {
+    public Class<?> getConfigClass() {
         return FileStorageConfig.class;
     }
 

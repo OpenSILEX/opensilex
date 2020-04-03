@@ -35,6 +35,7 @@ import javax.ws.rs.core.Response;
 import org.opensilex.core.factor.dal.FactorLevelDAO;
 import org.opensilex.core.factor.dal.FactorLevelModel;
 import org.opensilex.rest.authentication.ApiCredential;
+import org.opensilex.rest.authentication.ApiCredentialGroup;
 import org.opensilex.rest.authentication.ApiProtected;
 import org.opensilex.rest.validation.ValidURI;
 import org.opensilex.server.response.ErrorDTO;
@@ -54,6 +55,10 @@ import org.opensilex.utils.ListWithPagination;
  */
 @Api("FactorLevels")
 @Path("/core/FactorLevels")
+@ApiCredentialGroup(
+        groupId = FactorLevelAPI.CREDENTIAL_FACTOR_LEVEL_GROUP_ID,
+        groupLabelKey = FactorLevelAPI.CREDENTIAL_FACTOR_LEVEL_GROUP_LABEL_KEY
+)
 public class FactorLevelAPI {
     
     public static final String CREDENTIAL_FACTOR_LEVEL_GROUP_ID = "Factors";
@@ -88,8 +93,6 @@ public class FactorLevelAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
         @ApiCredential(
-            groupId = CREDENTIAL_FACTOR_LEVEL_GROUP_ID,
-            groupLabelKey = CREDENTIAL_FACTOR_LEVEL_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_FACTOR_LEVEL_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_FACTOR_LEVEL_MODIFICATION_LABEL_KEY
     )
@@ -122,8 +125,6 @@ public class FactorLevelAPI {
     @ApiOperation("Get an factor level")
     @ApiProtected
         @ApiCredential(
-            groupId = CREDENTIAL_FACTOR_LEVEL_GROUP_ID,
-            groupLabelKey = CREDENTIAL_FACTOR_LEVEL_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_FACTOR_LEVEL_READ_ID,
             credentialLabelKey = CREDENTIAL_FACTOR_LEVEL_READ_LABEL_KEY
     )
@@ -165,8 +166,6 @@ public class FactorLevelAPI {
     @ApiOperation("Search factor levels")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_FACTOR_LEVEL_GROUP_ID,
-            groupLabelKey = CREDENTIAL_FACTOR_LEVEL_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_FACTOR_LEVEL_READ_ID,
             credentialLabelKey = CREDENTIAL_FACTOR_LEVEL_READ_LABEL_KEY
     )
@@ -216,8 +215,6 @@ public class FactorLevelAPI {
     @ApiOperation("Delete a factor level")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_FACTOR_LEVEL_GROUP_ID,
-            groupLabelKey = CREDENTIAL_FACTOR_LEVEL_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_FACTOR_LEVEL_DELETE_ID,
             credentialLabelKey = CREDENTIAL_FACTOR_LEVEL_DELETE_LABEL_KEY
     )
@@ -241,8 +238,6 @@ public class FactorLevelAPI {
     @ApiOperation("Update a factor level")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_FACTOR_LEVEL_GROUP_ID,
-            groupLabelKey = CREDENTIAL_FACTOR_LEVEL_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_FACTOR_LEVEL_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_FACTOR_LEVEL_MODIFICATION_LABEL_KEY
     )

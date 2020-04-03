@@ -22,7 +22,6 @@ public class DisplayConfig {
     }
 
     public static void start(Path baseDirectory) throws Exception {
-
         String configFile = baseDirectory.resolve(DevModule.CONFIG_FILE_PATH).toFile().getCanonicalPath();
         OpenSilex.setup(new HashMap<String, String>() {
             {
@@ -32,10 +31,8 @@ public class DisplayConfig {
         });
 
         MainCommand.run(new String[]{
-            //            "system",
-            //            "full-config"
-            "sparql",
-            "shacl-enable"
+            "system",
+            "full-config"
         });
 
     }

@@ -6,19 +6,10 @@
 //******************************************************************************
 package org.opensilex.server;
 
-import org.opensilex.module.ModuleConfig;
 import org.opensilex.OpenSilexModule;
 
 /**
- * <pre>
- * Base module implementation for OpenSilex.
- * - Enable Swagger
- * - Enable Security web services
- * - Enable SPARQL service through configuration
- * - Enable Big Data service through configuration
- * - Enable File System service through configuration
- * - Enable Authentication service through configuration
- * </pre>
+ * Tomcat Server integration module for OpenSilex.
  *
  * @see org.opensilex.server.ServerConfig
  * @author Vincent Migot
@@ -26,7 +17,7 @@ import org.opensilex.OpenSilexModule;
 public class ServerModule extends OpenSilexModule {
 
     @Override
-    public Class<? extends ModuleConfig> getConfigClass() {
+    public Class<?> getConfigClass() {
         return ServerConfig.class;
     }
 

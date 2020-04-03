@@ -39,6 +39,7 @@ import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.opensilex.OpenSilex;
+import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.utils.ClassUtils;
@@ -49,6 +50,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author vince
  */
+@ServiceDefaultDefinition(
+        configClass = RDF4JConfig.class,
+        configID = "rdf4j"
+)
 public class RDF4JServiceFactory extends SPARQLServiceFactory {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(RDF4JServiceFactory.class);

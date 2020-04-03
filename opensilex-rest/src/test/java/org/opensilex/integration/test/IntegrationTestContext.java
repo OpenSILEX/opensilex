@@ -20,7 +20,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.opensilex.rest.RestModule;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 
 /**

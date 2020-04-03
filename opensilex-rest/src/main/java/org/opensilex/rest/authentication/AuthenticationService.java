@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.ws.rs.core.SecurityContext;
 import org.opensilex.OpenSilex;
+import org.opensilex.rest.RestConfig;
+import org.opensilex.rest.RestModule;
 import org.opensilex.service.Service;
 import org.opensilex.rest.user.dal.UserModel;
 import org.slf4j.Logger;
@@ -290,10 +292,10 @@ public class AuthenticationService implements Service {
             // Set new signed token to user
             user.setToken(tokenBuilder.sign(algoRSA));
             addUser(user, getExpireInMs());
-            
+
             return true;
         }
-        
+
         return false;
     }
 
@@ -332,7 +334,7 @@ public class AuthenticationService implements Service {
         return jwt.getClaim(CLAIM_CREDENTIALS_LIST).asArray(String.class);
     }
 
-    public String[] decodeStringArrayClaim(String token, String key){
+    public String[] decodeStringArrayClaim(String token, String key) {
 
         return JWT.require(algoRSA)
                 .withIssuer(TOKEN_ISSUER)
@@ -434,15 +436,16 @@ public class AuthenticationService implements Service {
      * @return removed user or null if not found
      */
     public synchronized UserModel removeUserByURI(URI userURI) throws Exception {
-        if (hasUserURI(userURI)) {
+        boolean allowMultiConnection = OpenSilex.getInstance().getModuleConfig(RestModule.class, RestConfig.class).allowMultiConnection();
+        if (!allowMultiConnection && hasUserURI(userURI)) {
             LOGGER.debug("Unregister user: " + userURI);
             schedulerRegistry.get(userURI).interrupt();
             schedulerRegistry.remove(userURI);
 
             UserModel user = userRegistry.remove(userURI);
-            
+
             // Allow any module implementing LoginExtension to do something on logout
-            for (LoginExtension module : OpenSilex.getInstance().getModulesImplementingInterface(LoginExtension.class)){
+            for (LoginExtension module : OpenSilex.getInstance().getModulesImplementingInterface(LoginExtension.class)) {
                 module.logout(user);
             }
 
@@ -471,7 +474,7 @@ public class AuthenticationService implements Service {
     public synchronized UserModel getUserByUri(URI userURI) {
         return userRegistry.get(userURI);
     }
-    
+
     public boolean authenticate(UserModel user, String password, List<String> accessList) throws Exception {
         if ((user != null && checkPassword(password, user.getPasswordHash()))) {
             generateToken(user, accessList);

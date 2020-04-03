@@ -89,16 +89,11 @@
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import {
-  InfrastructureCreationDTO,
-  InfrastructureGetDTO,
-  ResourceTreeDTO,
-  InfrastructuresService
-} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import Oeso from "../../ontologies/Oeso";
-import { OntologyService } from "opensilex-rest/index";
+import { OntologyService, ResourceTreeDTO } from "opensilex-rest/index";
 import GroupUserProfileForm from "../groups/GroupUserProfileForm.vue";
+import { InfrastructureGetDTO, InfrastructureCreationDTO } from "opensilex-core/index";
 
 @Component
 export default class InfrastructureForm extends Vue {

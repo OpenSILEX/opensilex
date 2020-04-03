@@ -12,7 +12,6 @@ import org.opensilex.rest.extensions.APIExtension;
 import java.util.*;
 import javax.mail.internet.InternetAddress;
 import org.opensilex.OpenSilex;
-import org.opensilex.module.ModuleConfig;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.rest.authentication.AuthenticationService;
 import org.opensilex.rest.profile.dal.ProfileModel;
@@ -24,20 +23,6 @@ import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * <pre>
- * Base module implementation for OpenSilex.
- * - Enable Swagger
- * - Enable Security web services
- * - Enable SPARQL service through configuration
- * - Enable Big Data service through configuration
- * - Enable File System service through configuration
- * - Enable Authentication service through configuration
- * </pre>
- *
- * @see org.opensilex.server.ServerConfig
- * @author Vincent Migot
- */
 public class RestModule extends OpenSilexModule implements APIExtension {
 
     public final static String REST_SECURITY_API_ID = "Security";
@@ -47,7 +32,7 @@ public class RestModule extends OpenSilexModule implements APIExtension {
     private static final Logger LOGGER = LoggerFactory.getLogger(RestModule.class);
 
     @Override
-    public Class<? extends ModuleConfig> getConfigClass() {
+    public Class<?> getConfigClass() {
         return RestConfig.class;
     }
 
@@ -74,7 +59,7 @@ public class RestModule extends OpenSilexModule implements APIExtension {
         if (factory instanceof RDF4JInMemoryServiceFactory) {
             RestModule.createDefaultSuperAdmin();
         }
-        
+
 //        org.apache.commons.jcs.JCS.setConfigProperties(configProps);
     }
 

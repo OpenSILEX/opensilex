@@ -5,7 +5,6 @@
 //******************************************************************************
 package org.opensilex.core.variable.api;
 
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import java.net.URI;
@@ -27,6 +26,7 @@ import javax.ws.rs.core.Response;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.rest.authentication.ApiCredential;
+import org.opensilex.rest.authentication.ApiCredentialGroup;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -39,6 +39,10 @@ import org.opensilex.utils.ListWithPagination;
 
 //@Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
 @Path("/core/variable")
+@ApiCredentialGroup(
+        groupId = VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID,
+        groupLabelKey = VariableAPI.CREDENTIAL_VARIABLE_GROUP_LABEL_KEY
+)
 public class VariableAPI {
 
     public static final String CREDENTIAL_VARIABLE_GROUP_ID = "Variables";
@@ -64,8 +68,6 @@ public class VariableAPI {
     @ApiOperation("Create a variable")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
-            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
@@ -93,8 +95,6 @@ public class VariableAPI {
     @ApiOperation("Update a variable")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
-            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
@@ -124,8 +124,6 @@ public class VariableAPI {
     @ApiOperation("Delete a variable")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
-            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
@@ -144,8 +142,6 @@ public class VariableAPI {
     @ApiOperation("Get a variable")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
-            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_VARIABLE_READ_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
     )
@@ -175,8 +171,6 @@ public class VariableAPI {
     @ApiOperation("Search variables corresponding to given criteria")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_VARIABLE_GROUP_ID,
-            groupLabelKey = CREDENTIAL_VARIABLE_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_VARIABLE_READ_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
     )

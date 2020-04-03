@@ -74,7 +74,7 @@
             <tr>
               <td class="capitalize-first-letter">{{$t("component.common.type")}}</td>
               <td v-if="selected != null">
-                <span class="capitalize-first-letter">{{selected.typeLabel}}</span>
+                <span class="capitalize-first-letter">{{selected.typeLabel}} <small>({{selected.type}})</small></span>
               </td>
             </tr>
             <tr>

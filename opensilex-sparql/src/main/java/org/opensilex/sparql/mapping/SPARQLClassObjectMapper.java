@@ -37,6 +37,7 @@ import java.net.URI;
 import java.util.*;
 import java.util.function.BiConsumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLManualLoading;
@@ -213,12 +214,12 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public T createInstance(Node graph, SPARQLResult result, String lang, SPARQLService service) throws Exception {
 
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
-        URI uri = uriDeserializer.fromString((result.getStringValue(classAnalizer.getURIFieldName()))); 
+        URI uri = uriDeserializer.fromString((result.getStringValue(classAnalizer.getURIFieldName())));
 
         T instance = createInstance(uri);
 
-        URI realType = uriDeserializer.fromString((result.getStringValue(classAnalizer.getTypeFieldName())));
-        instance.setType(realType);
+        URI realType = new URI(result.getStringValue(getTypeFieldName()));
+        instance.setType(SPARQLDeserializers.formatURI(realType));
 
         String typeLabelFieldName = getTypeLabelFieldName();
         String realTypeLabel = result.getStringValue(typeLabelFieldName);
@@ -571,4 +572,47 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classAnalizer.isReverseRelation(relationField);
     }
 
+    public Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getReverseRelationsUrisByMapper(T instance) throws Exception {
+        return getReverseRelationsUrisByMapper(instance, new HashMap<>());
+
+    }
+
+    public Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getReverseRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap) throws Exception {
+        classAnalizer.forEachObjectProperty(ThrowingBiConsumer.wrap((field, property) -> {
+            if (classAnalizer.isReverseRelation(field)) {
+                Object fieldValue = classAnalizer.getFieldValue(field, instance);
+
+                if (fieldValue != null) {
+                    SPARQLClassObjectMapper<SPARQLResourceModel> mapper = SPARQLClassObjectMapper.getForClass(fieldValue.getClass());
+                    URI propertyFieldURI = mapper.getURI(fieldValue);
+
+                    if (propertyFieldURI != null) {
+                        if (!existingMap.containsKey(mapper)) {
+                            existingMap.put(mapper, new HashSet());
+                        }
+                        existingMap.get(mapper).add(propertyFieldURI);
+                    }
+                }
+            }
+        }, Field.class, Property.class, Exception.class));
+
+        classAnalizer.forEachObjectPropertyList(ThrowingBiConsumer.wrap((field, property) -> {
+            List<? extends SPARQLResourceModel> values = (List<? extends SPARQLResourceModel>) classAnalizer.getFieldValue(field, instance);
+            if (values != null && !values.isEmpty()) {
+                for (SPARQLResourceModel value : values) {
+                    SPARQLClassObjectMapper<SPARQLResourceModel> mapper = SPARQLClassObjectMapper.getForClass(value.getClass());
+                    URI propertyFieldURI = mapper.getURI(value);
+
+                    if (propertyFieldURI != null) {
+                        if (!existingMap.containsKey(mapper)) {
+                            existingMap.put(mapper, new HashSet());
+                        }
+                        existingMap.get(mapper).add(propertyFieldURI);
+                    }
+                }
+            }
+        }, Field.class, Property.class, Exception.class));
+
+        return existingMap;
+    }
 }

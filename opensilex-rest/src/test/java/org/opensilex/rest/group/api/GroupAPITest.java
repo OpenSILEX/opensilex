@@ -32,7 +32,6 @@ public class GroupAPITest extends AbstractIntegrationTest {
 //    protected boolean isDebug() {
 //        return true;
 //    }
-    
     protected String path = "/group";
     protected String createPath = path + "/create";
     protected String updatePath = path + "/update";

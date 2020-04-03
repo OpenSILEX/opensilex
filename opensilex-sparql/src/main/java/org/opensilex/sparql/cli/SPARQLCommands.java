@@ -12,6 +12,8 @@ import org.opensilex.OpenSilex;
 import org.opensilex.cli.OpenSilexCommand;
 import org.opensilex.cli.help.HelpOption;
 import org.opensilex.cli.help.HelpPrinterCommand;
+import org.opensilex.sparql.SPARQLModule;
+import static org.opensilex.sparql.SPARQLModule.installOntologies;
 import org.opensilex.sparql.exceptions.SPARQLValidationException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
@@ -27,6 +29,24 @@ import picocli.CommandLine.Command;
         header = "Subcommand to group OpenSILEX sparql operations"
 )
 public class SPARQLCommands extends HelpPrinterCommand implements OpenSilexCommand {
+
+    @CommandLine.Command(
+            name = "reset-ontologies",
+            header = "Reset configred ontologies graph",
+            description = "Reset configred ontologies graph defined in each modules"
+    )
+    public void resetOntologies(
+            @CommandLine.Mixin HelpOption help
+    ) throws Exception {
+        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
+        try {
+            SPARQLModule.installOntologies(sparql, true);
+        } finally {
+            factory.dispose(sparql);
+        }
+        factory.dispose(sparql);
+    }
 
     @CommandLine.Command(
             name = "rename-graph",

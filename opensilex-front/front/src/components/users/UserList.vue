@@ -37,9 +37,7 @@
       </template>
 
       <template v-slot:cell(uri)="data">
-        <a class="uri-info">
-          {{ data.item.uri }}
-        </a>
+        <a class="uri-info">{{ data.item.uri }}</a>
       </template>
 
       <template v-slot:cell(admin)="data">
@@ -47,8 +45,17 @@
         <span class="capitalize-first-letter" v-if="!data.item.admin">{{$t("component.common.no")}}</span>
       </template>
 
+      <template v-slot:row-details="data">
+        <strong class="capitalize-first-letter">{{$t("component.user.users")}}:</strong>
+        {{data}}
+      </template>
+
       <template v-slot:cell(actions)="data">
         <b-button-group size="sm">
+          <b-button size="sm" @click="loadUserDetail(data)" variant="outline-success">
+            <font-awesome-icon v-if="!data.detailsShowing" icon="eye" size="sm" />
+            <font-awesome-icon v-if="data.detailsShowing" icon="eye-slash" size="sm" />
+          </b-button>
           <b-button
             size="sm"
             v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
@@ -81,8 +88,8 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { UsersGroupsProfilesService, UserGetDTO } from "opensilex-rest/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
+import { SecurityService, UserGetDTO } from "opensilex-security/index";
+import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 
 @Component
 export default class UserList extends Vue {
@@ -172,8 +179,8 @@ export default class UserList extends Vue {
   }
 
   loadData() {
-    let service: UsersGroupsProfilesService = this.$opensilex.getService(
-      "opensilex.UsersGroupsProfilesService"
+    let service: SecurityService = this.$opensilex.getService(
+      "opensilex.SecurityService"
     );
 
     let orderBy = [];
@@ -217,6 +224,10 @@ export default class UserList extends Vue {
         return http.response.result;
       })
       .catch(this.$opensilex.errorHandler);
+  }
+
+  loadUserDetail(data) {
+    data.toggleDetails();
   }
 }
 </script>

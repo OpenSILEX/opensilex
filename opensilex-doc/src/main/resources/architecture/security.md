@@ -44,6 +44,5 @@ See: `org.opensilex.rest.authentication.AuthenticationService`
 
 # Credentials organisation
 
-
-
+// TODO: Users, Groups and Profiles
 

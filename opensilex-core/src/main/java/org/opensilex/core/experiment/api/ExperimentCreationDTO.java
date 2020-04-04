@@ -8,13 +8,13 @@ package org.opensilex.core.experiment.api;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.rest.group.dal.GroupModel;
-import org.opensilex.rest.user.dal.UserModel;
 
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.user.dal.UserModel;
 
 /**
  * @author Vincent MIGOT

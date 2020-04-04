@@ -6,7 +6,9 @@
 //******************************************************************************
 package org.opensilex.server;
 
+import java.util.List;
 import org.opensilex.OpenSilexModule;
+import org.opensilex.server.extensions.APIExtension;
 
 /**
  * Tomcat Server integration module for OpenSilex.
@@ -14,7 +16,7 @@ import org.opensilex.OpenSilexModule;
  * @see org.opensilex.server.ServerConfig
  * @author Vincent Migot
  */
-public class ServerModule extends OpenSilexModule {
+public class ServerModule extends OpenSilexModule implements APIExtension{
 
     @Override
     public Class<?> getConfigClass() {
@@ -24,6 +26,14 @@ public class ServerModule extends OpenSilexModule {
     @Override
     public String getConfigId() {
         return "server";
+    }
+
+        @Override
+    public List<String> getPackagesToScan() {
+        List<String> list = APIExtension.super.getPackagesToScan();
+        list.add("org.opensilex.server.rest.validation");
+
+        return list;
     }
 
 }

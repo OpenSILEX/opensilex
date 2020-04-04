@@ -9,8 +9,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
-import org.opensilex.rest.group.api.GroupUserProfileDTO;
-import org.opensilex.rest.sparql.dto.NamedResourceGetDTO;
+import org.opensilex.security.group.api.GroupUserProfileDTO;
+import org.opensilex.sparql.response.NamedResourceGetDTO;
 
 /**
  *

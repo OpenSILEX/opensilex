@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
 
 import org.opensilex.OpenSilex;
 import org.opensilex.core.CoreModule;
-import org.opensilex.rest.RestModule;
+import org.opensilex.security.SecurityModule;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.unit.test.AbstractUnitTest;
@@ -54,7 +54,7 @@ public class ExperimentDAOTest extends AbstractUnitTest {
 
     @BeforeClass
     public static void setup() throws Exception {
-        OpenSilex.registerModule(RestModule.class);
+        OpenSilex.registerModule(SecurityModule.class);
         OpenSilex.registerModule(CoreModule.class);
         factory = new RDF4JInMemoryServiceFactory();
         sparql = factory.provide();

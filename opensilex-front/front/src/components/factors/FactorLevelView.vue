@@ -65,7 +65,7 @@ export default class FactorLevelView extends Vue {
 
     console.debug("Loading factors list...");
     let factorsService: FactorsService = await this.$opensilex.loadService(
-      "opensilex-rest.FactorsService"
+      "opensilex.FactorsService"
     );
     let http: HttpResponse<OpenSilexResponse<
       Array<FactorGetDTO>

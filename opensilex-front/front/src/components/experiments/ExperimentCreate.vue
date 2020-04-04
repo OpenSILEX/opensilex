@@ -47,9 +47,9 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { ExperimentCreationDTO, ExperimentGetDTO, ExperimentsService } from "opensilex-core/index";
 import ExperimentForm from "./ExperimentForm.vue";
 import ExperimentForm2 from "./ExperimentForm2.vue";
+import { ExperimentsService, ExperimentCreationDTO } from "opensilex-core/index";
 
 
 @Component

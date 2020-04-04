@@ -124,13 +124,15 @@ public class Server extends Tomcat {
         // Load Swagger root application
         Context appContext = initApp("", "/", "/webapp", getClass());
         appContext.getPipeline().addValve(new RewriteValve());
-        
-        // Prevent any thread to be stuck to long
-        StuckThreadDetectionValve threadTimeoutValve = new StuckThreadDetectionValve();
-        threadTimeoutValve.setThreshold(120);
-        threadTimeoutValve.setInterruptThreadThreshold(30);
-        appContext.getPipeline().addValve(threadTimeoutValve);
 
+        if (this.config.enableAntiThreadLock()) {
+            // Prevent any thread to be stuck to long
+            StuckThreadDetectionValve threadTimeoutValve = new StuckThreadDetectionValve();
+            threadTimeoutValve.setThreshold(120);
+            threadTimeoutValve.setInterruptThreadThreshold(30);
+            appContext.getPipeline().addValve(threadTimeoutValve);
+        }
+        
         try {
             ClassUtils.listFilesByExtension(instance.getBaseDirectory() + "/webapps", "war", (File warfile) -> {
                 String filename = warfile.getName();
@@ -153,7 +155,7 @@ public class Server extends Tomcat {
         });
 
         Connector connector = getConnector();
-        
+
         // Enable GZIP compression
         enableGzip(connector);
 

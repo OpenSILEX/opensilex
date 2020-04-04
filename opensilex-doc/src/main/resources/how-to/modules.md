@@ -18,7 +18,7 @@ opensilex-dev
 ├── opensilex-nosql
 ├── opensilex-parent
 ├── opensilex-release
-├── opensilex-rest
+├── opensilex-security
 ├── opensilex-sparql
 ├── opensilex-swagger-codegen-maven-plugin
 ```
@@ -99,7 +99,7 @@ You need to the new module to the full build stage you need to add it to the glo
         <module>opensilex-sparql</module>
         <module>opensilex-nosql</module>
         <module>opensilex-fs</module>
-        <module>opensilex-rest</module>
+        <module>opensilex-security</module>
         <module>opensilex-module</module>
         <module>opensilex-core</module>
         <module>opensilex-front</module>
@@ -155,7 +155,7 @@ You need to the new module to the full build stage you need to add it to the glo
         
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-rest</artifactId>
+            <artifactId>opensilex-security</artifactId>
             <version>${revision}</version>
         </dependency>
         

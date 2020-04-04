@@ -21,7 +21,7 @@ export default {
     // },
     lang: {
         "fr": require("./lang/message-fr.json"),
-        "en-US": require("./lang/message-en-US.json"),
+        "en": require("./lang/message-en.json"),
     }
 
 };

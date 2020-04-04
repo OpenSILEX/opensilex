@@ -45,4 +45,11 @@ public interface ServerConfig {
             value = "Tomcat system properties"
     )
     public Map<String, String> tomcatSystemProperties();
+
+    @ConfigDescription(
+            value = "Enable Tomcat anti-thread lock mechanism with StuckThreadDetectionValve",
+            defaultBoolean = true
+    )
+    public boolean enableAntiThreadLock();
+
 }

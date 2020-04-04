@@ -24,6 +24,7 @@ import java.util.function.BiConsumer;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.annotations.SPARQLResourceURI;
@@ -37,8 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.sparql.annotations.SPARQLTypeRDF;
 import org.opensilex.sparql.annotations.SPARQLTypeRDFLabel;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
-import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 
 /**
  *
@@ -149,6 +148,13 @@ final class SPARQLClassAnalyzer {
         relatedModelsFields = new HashMap<>();
         for (Field field : ClassUtils.getClassFieldsRecursivly(objectClass)) {
             field.setAccessible(true);
+
+            SPARQLIgnore ignoreProperty = field.getAnnotation(SPARQLIgnore.class);
+            if (ignoreProperty != null) {
+                LOGGER.debug("Ignore field: " + field.getName());
+                continue;
+            }
+
             SPARQLProperty sProperty = field.getAnnotation(SPARQLProperty.class);
 
             if (sProperty != null) {

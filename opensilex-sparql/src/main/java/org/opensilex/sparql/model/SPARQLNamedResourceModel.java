@@ -13,7 +13,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
  *
  * @author vidalmor
  */
-public abstract class SPARQLNamedResourceModel<T extends SPARQLNamedResourceModel<T>> extends SPARQLResourceModel implements ClassURIGenerator<T> {
+public abstract class SPARQLNamedResourceModel<T extends SPARQLNamedResourceModel> extends SPARQLResourceModel implements ClassURIGenerator<T> {
 
     @SPARQLProperty(
             ontology = DCTerms.class,

@@ -32,10 +32,9 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.*;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.utils.Ontology;
-import org.opensilex.sparql.utils.OrderBy;
+import org.opensilex.utils.OrderBy;
 import org.opensilex.sparql.utils.URIGenerator;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.ThrowingConsumer;
@@ -60,8 +59,8 @@ import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.opensilex.OpenSilex;
 import org.opensilex.service.ServiceDefaultDefinition;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
-import org.opensilex.sparql.tree.ResourceTree;
 import org.opensilex.utils.ClassUtils;
 
 /**
@@ -444,21 +443,21 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         return resultList;
     }
 
-    public <T extends SPARQLTreeModel> ResourceTree<T> searchResourceTree(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+    public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchResourceTree(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
         return searchResourceTree(getDefaultGraph(objectClass), objectClass, lang, null, false, filterHandler);
     }
 
-    public <T extends SPARQLTreeModel> ResourceTree<T> searchResourceTree(Class<T> objectClass, String lang, URI root, boolean excludeRoot, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+    public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchResourceTree(Class<T> objectClass, String lang, URI root, boolean excludeRoot, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
         return searchResourceTree(getDefaultGraph(objectClass), objectClass, lang, root, excludeRoot, filterHandler);
     }
 
-    public <T extends SPARQLTreeModel> ResourceTree<T> searchResourceTree(Node graph, Class<T> objectClass, String lang, URI root, boolean excludeRoot, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+    public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchResourceTree(Node graph, Class<T> objectClass, String lang, URI root, boolean excludeRoot, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
         if (lang == null) {
             lang = getDefaultLang();
         }
         List<T> list = search(graph, objectClass, lang, filterHandler);
 
-        ResourceTree<T> tree = new ResourceTree<T>(list, SPARQLDeserializers.formatURI(root), excludeRoot);
+        SPARQLTreeListModel<T> tree = new SPARQLTreeListModel<T>(list, SPARQLDeserializers.formatURI(root), excludeRoot);
 
         for (T item : list) {
             tree.addTree(item);

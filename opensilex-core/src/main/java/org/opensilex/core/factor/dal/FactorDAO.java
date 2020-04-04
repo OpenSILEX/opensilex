@@ -19,7 +19,7 @@ import org.opensilex.core.factor.api.FactorSearchDTO;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.utils.OrderBy;
+import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
 /**

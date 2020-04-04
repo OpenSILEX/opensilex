@@ -1,4 +1,4 @@
-/// <reference path="../../../opensilex-rest/front/types/opensilex-rest.d.ts" />
+/// <reference path="../../../opensilex-security/front/types/opensilex-security.d.ts" />
 /// <reference path="../../../opensilex-core/front/types/opensilex-core.d.ts" />
 /**
  * CHANGE THIS VARIABLE IF NEEDED TO CHANGE API ENDPOINT
@@ -117,11 +117,11 @@ Vue.component("treeselect", Treeselect);
 
 // Initialize i18n
 import VueI18n from 'vue-i18n'
-import en from './lang/message-en-US.json';
+import en from './lang/message-en.json';
 import fr from './lang/message-fr.json';
 
 export const languages = {
-  "en-US": en,
+  "en": en,
   "fr": fr
 };
 
@@ -136,7 +136,7 @@ if (urlParams.has('lang')) {
 console.debug("Detected language", lang);
 
 const i18n = new VueI18n({
-  fallbackLocale: 'en-US',
+  fallbackLocale: 'en',
   locale: lang,
   messages
 });
@@ -182,7 +182,7 @@ let validationTranslations = {
   "validations": validationMessagesEN.messages
 }
 
-i18n.mergeLocaleMessage("en-US", validationTranslations);
+i18n.mergeLocaleMessage("en", validationTranslations);
 
 validationTranslations = {
   "validations": validationMessagesFR.messages
@@ -265,7 +265,6 @@ Vue.component("sl-vue-tree", SlVueTree);
 // Load default components
 console.debug("Load default components...");
 import components from './components';
-import { OntologyService, ResourceTreeDTO } from 'opensilex-rest/index';
 for (let componentName in components) {
   console.debug("Load default component", componentName);
   Vue.component(componentName, components[componentName]);
@@ -322,6 +321,7 @@ function loadTheme(vueJsService: VueJsService, config: FrontConfigDTO) {
           console.debug("Theme configuration loaded !", config.themeModule, config.themeName);
           const themeConfig: ThemeConfigDTO = http.response.result;
 
+          $opensilex.setThemeConfig(themeConfig);
           loadFonts(vueJsService, themeConfig.fonts);
 
           if (themeConfig.hasStyle) {
@@ -350,7 +350,7 @@ function loadTheme(vueJsService: VueJsService, config: FrontConfigDTO) {
 }
 
 $opensilex.loadModules([
-  "opensilex-rest",
+  "opensilex-security",
   "opensilex-core",
 ]).then(() => {
   $opensilex.initAsyncComponents(components).then(() => {
@@ -402,6 +402,7 @@ $opensilex.loadModules([
             console.debug("User is ANONYMOUS !");
           } else {
             console.debug("User is:", user.getEmail());
+            i18n.locale = user.getLocale();
           }
           // Init user
           console.debug("Initialize global user");

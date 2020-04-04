@@ -38,7 +38,7 @@
         <module>opensilex-sparql</module>
         <module>opensilex-nosql</module>
         <module>opensilex-fs</module>
-        <module>opensilex-rest</module>
+        <module>opensilex-security</module>
         <module>opensilex-module</module>
         <module>opensilex-core</module>
         <module>opensilex-front</module>
@@ -95,7 +95,7 @@
         
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-rest</artifactId>
+            <artifactId>opensilex-security</artifactId>
             <version>${revision}</version>
         </dependency>
         

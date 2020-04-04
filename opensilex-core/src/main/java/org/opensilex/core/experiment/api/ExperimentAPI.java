@@ -11,11 +11,6 @@ import io.swagger.annotations.*;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.rest.authentication.ApiCredential;
-import org.opensilex.rest.authentication.ApiProtected;
-import org.opensilex.rest.authentication.AuthenticationService;
-import org.opensilex.rest.user.dal.UserModel;
-import org.opensilex.rest.validation.date.DateConstraint;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -23,7 +18,7 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.utils.OrderBy;
+import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
 import javax.inject.Inject;
@@ -38,7 +33,12 @@ import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import org.opensilex.rest.authentication.ApiCredentialGroup;
+import org.opensilex.security.authentication.ApiCredential;
+import org.opensilex.security.authentication.ApiCredentialGroup;
+import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.AuthenticationService;
+import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.rest.validation.DateConstraint;
 
 /**
  * @author Vincent MIGOT

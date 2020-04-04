@@ -27,23 +27,22 @@ import javax.ws.rs.core.Response;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DELETE_ID;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DELETE_LABEL_KEY;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID;
-import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_GROUP_LABEL_KEY;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_ID;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_READ_ID;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_READ_LABEL_KEY;
 import org.opensilex.core.variable.dal.MethodDAO;
 import org.opensilex.core.variable.dal.MethodModel;
-import org.opensilex.rest.authentication.ApiCredential;
-import org.opensilex.rest.authentication.ApiCredentialGroup;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.security.authentication.ApiCredential;
+import org.opensilex.security.authentication.ApiCredentialGroup;
+import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
-import org.opensilex.sparql.utils.OrderBy;
+import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
 @Api(CREDENTIAL_VARIABLE_GROUP_ID)

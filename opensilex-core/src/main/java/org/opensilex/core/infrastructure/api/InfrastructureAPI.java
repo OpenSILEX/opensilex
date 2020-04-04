@@ -32,21 +32,20 @@ import javax.ws.rs.core.SecurityContext;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.infrastructure.dal.InfrastructureDAO;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
-import org.opensilex.core.project.api.ProjectAPI;
-import org.opensilex.rest.authentication.ApiCredential;
-import org.opensilex.rest.authentication.ApiCredentialGroup;
-import org.opensilex.rest.authentication.ApiProtected;
-import org.opensilex.rest.sparql.dto.ResourceTreeDTO;
-import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.rest.sparql.response.ResourceTreeResponse;
-import org.opensilex.rest.validation.ValidURI;
+import org.opensilex.security.authentication.ApiCredential;
+import org.opensilex.security.authentication.ApiCredentialGroup;
+import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.tree.ResourceTree;
+import org.opensilex.sparql.response.ResourceTreeDTO;
+import org.opensilex.sparql.response.ResourceTreeResponse;
 
 /**
  *
@@ -196,13 +195,24 @@ public class InfrastructureAPI {
         UserModel user = (UserModel) securityContext.getUserPrincipal();
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
 
-        ResourceTree<InfrastructureModel> tree = dao.searchTree(
+        SPARQLTreeListModel<InfrastructureModel> tree = dao.searchTree(
                 pattern,
                 user
         );
 
         boolean enableSelection = (pattern != null && !pattern.isEmpty());
-        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree, enableSelection)).getResponse();
+        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree, enableSelection, (model, dto) -> {
+            model.getDevices().forEach((device) -> {
+                ResourceTreeDTO deviceDTO = new ResourceTreeDTO();
+
+                deviceDTO.setUri(device.getUri());
+                deviceDTO.setType(device.getType());
+                deviceDTO.setName(device.getName());
+                deviceDTO.setParent(model.getUri());
+
+                dto.getChildren().add(deviceDTO);
+            });
+        })).getResponse();
     }
 
     @PUT

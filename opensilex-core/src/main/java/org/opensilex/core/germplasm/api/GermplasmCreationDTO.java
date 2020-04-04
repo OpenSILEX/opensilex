@@ -11,8 +11,8 @@ import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
-import org.opensilex.rest.validation.Required;
-import org.opensilex.rest.validation.ValidURI;
+import org.opensilex.server.rest.validation.Required;
+import org.opensilex.server.rest.validation.ValidURI;
 
 /**
  * DTO representing JSON for posting germplasm

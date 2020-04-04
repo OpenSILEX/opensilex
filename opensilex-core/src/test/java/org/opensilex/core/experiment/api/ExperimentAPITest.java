@@ -10,7 +10,6 @@ package org.opensilex.core.experiment.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.opensilex.integration.test.AbstractIntegrationTest;
 import org.junit.Test;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -26,12 +25,13 @@ import java.util.*;
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 
 /**
  * @author Vincent MIGOT
  * @author Renaud COLIN
  */
-public class ExperimentAPITest extends AbstractIntegrationTest {
+public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
 
     protected String path = "/core/experiment";
 

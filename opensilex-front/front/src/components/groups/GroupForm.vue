@@ -85,11 +85,11 @@ import VueRouter from "vue-router";
 import {
   UserCreationDTO,
   GroupUpdateDTO,
-  UsersGroupsProfilesService,
+  SecurityService,
   UserGetDTO,
   ProfileGetDTO,
   GroupUserProfileModificationDTO
-} from "opensilex-rest/index";
+} from "opensilex-security/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import GroupUserProfileForm from "./GroupUserProfileForm.vue";
 import { BvModal } from "bootstrap-vue";
@@ -100,7 +100,7 @@ export default class GroupForm extends Vue {
   $store: any;
   $router: VueRouter;
 
-  service: UsersGroupsProfilesService;
+  service: SecurityService;
 
   @Ref("userProfilesRef") readonly userProfilesRef!: GroupUserProfileForm;
 
@@ -137,7 +137,7 @@ export default class GroupForm extends Vue {
 
   created() {
     this.service = this.$opensilex.getService(
-      "opensilex.UsersGroupsProfilesService"
+      "opensilex.SecurityService"
     );
   }
 

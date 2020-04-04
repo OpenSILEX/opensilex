@@ -54,7 +54,7 @@ public class ModuleManager {
             add("opensilex-fs");
             add("opensilex-nosql");
             add("opensilex-sparql");
-            add("opensilex-rest");
+            add("opensilex-security");
             add("opensilex-core");
             add("opensilex-front");
         }

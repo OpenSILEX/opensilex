@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import org.opensilex.OpenSilex;
-import org.opensilex.rest.RestModule;
+import org.opensilex.security.SecurityModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +51,7 @@ public class Install {
         opensilex.install(deleteFirst);
 
         LOGGER.info("Create Super Admin");
-        RestModule.createDefaultSuperAdmin();
+        SecurityModule.createDefaultSuperAdmin();
     }
 
     private static String getConfig(String baseDirectory) {

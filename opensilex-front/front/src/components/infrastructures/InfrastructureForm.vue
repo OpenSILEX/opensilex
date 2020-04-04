@@ -91,9 +91,13 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import Oeso from "../../ontologies/Oeso";
-import { OntologyService, ResourceTreeDTO } from "opensilex-rest/index";
 import GroupUserProfileForm from "../groups/GroupUserProfileForm.vue";
-import { InfrastructureGetDTO, InfrastructureCreationDTO } from "opensilex-core/index";
+import {
+  InfrastructureGetDTO,
+  InfrastructureCreationDTO,
+  ResourceTreeDTO,
+  OntologyService
+} from "opensilex-core/index";
 
 @Component
 export default class InfrastructureForm extends Vue {
@@ -137,7 +141,9 @@ export default class InfrastructureForm extends Vue {
   editMode = false;
 
   created() {
-    this.service = this.$opensilex.getService("opensilex-rest.OntologyService");
+    this.service = this.$opensilex.getService(
+      "opensilex-security.OntologyService"
+    );
   }
 
   loadInfraTypes({ action, parentNode, callback }) {

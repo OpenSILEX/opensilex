@@ -6,10 +6,9 @@
 package org.opensilex.core.infrastructure.dal;
 
 import java.util.List;
-import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.rest.authentication.SecurityOntology;
-import org.opensilex.rest.group.dal.GroupModel;
+import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
@@ -25,13 +24,6 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
         prefix = "infra"
 )
 public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> {
-
-    @SPARQLProperty(
-            ontology = DCTerms.class,
-            property = "title",
-            required = true
-    )
-    protected String name;
 
     @SPARQLProperty(
             ontology = Oeso.class,

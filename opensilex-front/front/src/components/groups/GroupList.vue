@@ -31,6 +31,11 @@
       <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
 
       <template v-slot:cell(userProfiles)="data">
+        <div>{{$tc("component.user.label", data.item.userProfiles.length, {count: data.item.userProfiles.length})}}</div>
+      </template>
+
+      <template v-slot:row-details="data">
+        <strong class="capitalize-first-letter">{{$t("component.user.users")}}:</strong>
         <ul>
           <li
             v-for="userProfile in data.item.userProfiles"
@@ -41,6 +46,10 @@
 
       <template v-slot:cell(actions)="data">
         <b-button-group size="sm">
+          <b-button size="sm" @click="data.toggleDetails" variant="outline-success">
+            <font-awesome-icon v-if="!data.detailsShowing" icon="eye" size="sm" />
+            <font-awesome-icon v-if="data.detailsShowing" icon="eye-slash" size="sm" />
+          </b-button>
           <b-button
             size="sm"
             v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
@@ -73,8 +82,8 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
-import { UsersGroupsProfilesService, GroupGetDTO } from "opensilex-rest/index";
+import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
+import { SecurityService, GroupGetDTO } from "opensilex-security/index";
 
 @Component
 export default class GroupList extends Vue {
@@ -153,8 +162,8 @@ export default class GroupList extends Vue {
   }
 
   loadData() {
-    let service: UsersGroupsProfilesService = this.$opensilex.getService(
-      "opensilex.UsersGroupsProfilesService"
+    let service: SecurityService = this.$opensilex.getService(
+      "opensilex.SecurityService"
     );
 
     let orderBy = [];

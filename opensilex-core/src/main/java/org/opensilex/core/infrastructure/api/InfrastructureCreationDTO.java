@@ -9,9 +9,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
-import org.opensilex.rest.group.api.GroupUserProfileModificationDTO;
-import org.opensilex.rest.group.dal.GroupModel;
-import org.opensilex.rest.group.dal.GroupUserProfileModel;
+import org.opensilex.security.group.api.GroupUserProfileModificationDTO;
+import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.group.dal.GroupUserProfileModel;
 
 /**
  *
@@ -103,7 +103,7 @@ class InfrastructureCreationDTO {
         model.setChildren(children);
 
         GroupModel group = new GroupModel();
-        group.setName(getName() + " (auto)");
+        group.setName(getName());
         group.setDescription(group.getName());
         List<GroupUserProfileModel> userProfiles = new ArrayList<>();
         if (getUserProfiles() != null) {

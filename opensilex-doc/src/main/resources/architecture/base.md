@@ -59,7 +59,7 @@ opensilex-dev --> POM - Main module aggregating all others
 |
 +-- opensilex-parent --> POM - Define application dependencies and default build configuration
 |
-+-- opensilex-rest --> JAR - Define REST API default mechanism and implement security API
++-- opensilex-security --> JAR - Define REST API default mechanism and implement security API
 |
 +-- opensilex-sparql --> JAR - Add service to access SPARQL triple stores like RDF4J with an ORM-like implementation
 |
@@ -105,7 +105,7 @@ You can read it both ways like by example:
           ↑                 ↑                   ↑
           +-----------------+-------------------+
                             |
-                     opensilex-rest
+                   opensilex-security
                             ↑
                      opensilex-core
                             ↑
@@ -152,7 +152,7 @@ See below hierarchy of built-in OpenSilex module classes by Maven modules:
           ↑                 ↑                   ↑
           +-----------------+-------------------+
                             |
-                     opensilex-rest
+                   opensilex-security
                        RestModule
                             ↑
                      opensilex-core
@@ -371,7 +371,7 @@ ontologies: SPARQLConfig   file-system: FileStorageConfig   big-data: NoSQLConfi
           ↑                               ↑                           ↑
           +-------------------------------+---------------------------+
                                           |
-                                   opensilex-rest
+                                 opensilex-security
                                      RestModule
                                   rest: RestConfig
                                           ↑
@@ -834,6 +834,5 @@ Once Tomcat server is started, Jersey scan automatically loaded classes and init
 - for each `OpenSilexModule` implementing `APIExtension` call `initAPI` method to allow post API initialization extension for `RestApplication`
 
 See: `org.opensilex.rest.RestApplication` for more informations
-
 
 

@@ -37,7 +37,6 @@ import java.net.URI;
 import java.util.*;
 import java.util.function.BiConsumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLManualLoading;

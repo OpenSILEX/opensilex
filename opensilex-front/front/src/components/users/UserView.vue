@@ -27,15 +27,15 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
   UserCreationDTO,
   UserUpdateDTO,
-  UsersGroupsProfilesService,
+  SecurityService,
   UserGetDTO
-} from "opensilex-rest/index";
+} from "opensilex-security/index";
 
 @Component
 export default class UserView extends Vue {
   $opensilex: any;
   $store: any;
-  service: UsersGroupsProfilesService;
+  service: SecurityService;
 
   @Ref("userForm") readonly userForm!: any;
 
@@ -51,7 +51,7 @@ export default class UserView extends Vue {
 
   created() {
     this.service = this.$opensilex.getService(
-      "opensilex.UsersGroupsProfilesService"
+      "opensilex.SecurityService"
     );
   }
 
@@ -61,6 +61,7 @@ export default class UserView extends Vue {
   }
 
   callCreateUserService(form: UserCreationDTO, done) {
+    console.log(form);
     done(
       this.service
         .createUser(this.user.getAuthorizationHeader(), form)

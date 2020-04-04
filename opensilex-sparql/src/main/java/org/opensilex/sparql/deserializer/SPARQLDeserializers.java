@@ -100,11 +100,11 @@ public class SPARQLDeserializers {
         return parameterizedClass(object.getClass(), target, paramIndex);
     }
 
-    public static Node nodeURI(URI uri) throws SPARQLInvalidURIException {
+    public static Node nodeURI(URI uri){
         try {
             return SPARQLDeserializers.getForClass(URI.class).getNodeFromString(uri.toString());
         } catch (Exception ex) {
-            throw new SPARQLInvalidURIException(uri);
+            return null;
         }
     }
 

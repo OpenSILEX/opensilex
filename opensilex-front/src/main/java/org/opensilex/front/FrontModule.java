@@ -18,7 +18,7 @@ import org.opensilex.front.api.FrontConfigDTO;
 import org.opensilex.front.api.MenuItemDTO;
 import org.opensilex.front.api.RouteDTO;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.rest.extensions.APIExtension;
+import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.extensions.ServerExtension;
 import org.opensilex.server.scanner.IgnoreJarScanner;
 import org.slf4j.LoggerFactory;

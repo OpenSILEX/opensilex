@@ -6,7 +6,7 @@ import { FrontConfigDTO } from '../lib';
 import { Menu } from '../models/Menu';
 import { OpenSilexRouter } from './OpenSilexRouter';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
-import { SecurityService } from 'opensilex-rest/index';
+import { SecurityService } from 'opensilex-security/index';
 import { Release } from './Release';
 
 Vue.use(Vuex)
@@ -51,7 +51,7 @@ let renewTokenOnEvent = function (event) {
 
   let $opensilex: OpenSilexVuePlugin = getOpenSilexPlugin();
 
-  $opensilex.getService<SecurityService>("opensilex-rest.SecurityService")
+  $opensilex.getService<SecurityService>("opensilex-security.SecurityService")
     .renewToken(currentUser.getAuthorizationHeader())
     .then((http) => {
       console.debug("Token renewed", http.response.result.token);

@@ -121,12 +121,12 @@ import VueRouter from "vue-router";
 import {
   UserCreationDTO,
   GroupUpdateDTO,
-  UsersGroupsProfilesService,
+  SecurityService,
   UserGetDTO,
   ProfileGetDTO,
   GroupUserProfileModificationDTO,
   GroupUserProfileDTO
-} from "opensilex-rest/index";
+} from "opensilex-security/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
@@ -142,7 +142,7 @@ export default class GroupUserProfileForm extends Vue {
   @Prop()
   userProfiles;
 
-  service: UsersGroupsProfilesService;
+  service: SecurityService;
 
   get user() {
     return this.$store.state.user;
@@ -194,7 +194,7 @@ export default class GroupUserProfileForm extends Vue {
 
   async created() {
     this.service = this.$opensilex.getService(
-      "opensilex.UsersGroupsProfilesService"
+      "opensilex.SecurityService"
     );
 
     let http: HttpResponse<OpenSilexResponse<

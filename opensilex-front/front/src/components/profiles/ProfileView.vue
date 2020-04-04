@@ -15,7 +15,7 @@
     <opensilex-ProfileList
       ref="profileList"
       v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_READ_ID)"
-      v-bind:credentialsMapping="credentialsMapping"
+      v-bind:credentialsGroups="credentialsGroups"
       @onEdit="editProfile"
       @onDelete="deleteProfile"
     ></opensilex-ProfileList>
@@ -26,19 +26,18 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {
-  UsersGroupsProfilesService,
   ProfileCreationDTO,
   ProfileUpdateDTO,
   ProfileGetDTO,
   SecurityService,
   CredentialsGroupDTO
-} from "opensilex-rest/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
+} from "opensilex-security/index";
+import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 
 @Component
 export default class ProfileView extends Vue {
   $opensilex: any;
-  service: UsersGroupsProfilesService;
+  service: SecurityService;
   $store: any;
   credentialsGroups: Array<CredentialsGroupDTO> = [];
   credentialsMapping: any = {};
@@ -59,7 +58,7 @@ export default class ProfileView extends Vue {
   static async asyncInit($opensilex) {
     console.debug("Loading credentials list...");
     let security: SecurityService = await $opensilex.loadService(
-      "opensilex-rest.SecurityService"
+      "opensilex-security.SecurityService"
     );
     let http: HttpResponse<OpenSilexResponse<
       Array<CredentialsGroupDTO>
@@ -76,7 +75,7 @@ export default class ProfileView extends Vue {
         this.credentialsMapping[credential.id] = credential.label;
       }
     }
-    this.service = this.$opensilex.getService("opensilex.UsersGroupsProfilesService");
+    this.service = this.$opensilex.getService("opensilex.SecurityService");
   }
 
   showCreateForm() {

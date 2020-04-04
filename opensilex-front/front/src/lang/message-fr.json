@@ -69,7 +69,7 @@
         "header": {
             "language": {
                 "fr": "Français",
-                "en-US": "Anglais"
+                "en": "Anglais"
             },
             "user": {
                 "admin": "Admin",
@@ -140,6 +140,7 @@
             "form-admin-option-label": "Activer cette option pour créer un super-administrateur",
             "filter-placeholder": "Utiliser ce champ pour filtrer les utilisateurs",
             "users": "utilisateurs",
+            "label": "aucun utilisateur | 1 utilisateur | {count} utilisateurs",
             "add": "Ajouter un utilisateur",
             "update": "Modifier l'utilisateur",
             "password": "mot de passe",
@@ -160,6 +161,7 @@
             "update": "Modifier le profil",
             "filter-placeholder": "Utiliser ce champ pour filtrer les profils",
             "credentials": "Droits",
+            "credential": "aucun droit | 1 droit | {count} droits",
             "errors": {
                 "profile-already-exists": "Un profil existe déjà avec cette URI ou ce nom."
             }
@@ -186,6 +188,10 @@
             "add": "Ajouter une infrastructure",
             "update": "Modifier l'infrastructure",
             "detail": "Détail de l'infrastructure",
+            "devices": "Dispositifs",
+            "device": {
+                "add": "Ajouter un dispositif"
+            },
             "errors": {
                 "infrastructure-already-exists": "Une utilisateur existe déjà avec cette URI ou cette adresse email."
             }

@@ -73,7 +73,7 @@ import opensilex.service.model.Document;
 import opensilex.service.resource.validation.interfaces.SortingValue;
 import opensilex.service.result.ResultForm;
 import opensilex.service.shinyProxy.ShinyProxyService;
-import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**

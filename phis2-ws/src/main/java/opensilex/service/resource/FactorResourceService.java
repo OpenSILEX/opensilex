@@ -40,7 +40,7 @@ import opensilex.service.model.Factor;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
-import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**

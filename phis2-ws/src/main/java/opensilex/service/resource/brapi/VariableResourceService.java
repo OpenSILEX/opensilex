@@ -47,7 +47,7 @@ import opensilex.service.model.ScientificObject;
 import opensilex.service.model.Variable;
 import opensilex.service.resource.ResourceService;
 import opensilex.service.resource.dto.data.BrapiObservationDTO;
-import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**

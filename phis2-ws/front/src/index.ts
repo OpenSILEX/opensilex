@@ -12,9 +12,6 @@ import ExperimentSearch from './components/images/searchComponents/ExperimentSea
 import SciObjectTypeSearch from './components/images/searchComponents/SciObjectTypeSearch.vue';
 import TimeSearch from './components/images/searchComponents/TimeSearch.vue';
 
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { faSlidersH, faSearch, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons'
-library.add(faSlidersH,faSearch,faChevronDown,faChevronUp);
 export default {
     install(Vue, options) {
         ApiServiceBinder.with(Vue.$opensilex.getServiceContainer());

@@ -38,7 +38,7 @@ import opensilex.service.resource.dto.trait.BrapiTraitDTO;
 import opensilex.service.view.brapi.form.BrapiSingleResponseForm;
 import opensilex.service.model.Call;
 import opensilex.service.model.Trait;
-import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**

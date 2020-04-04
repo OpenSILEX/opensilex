@@ -27,9 +27,9 @@ import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.Required;
 import opensilex.service.resource.validation.interfaces.URL;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.rest.authentication.AuthenticationService;
-import org.opensilex.rest.user.dal.UserDAO;
-import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.security.authentication.AuthenticationService;
+import org.opensilex.security.user.dal.UserDAO;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.service.SPARQLService;
 

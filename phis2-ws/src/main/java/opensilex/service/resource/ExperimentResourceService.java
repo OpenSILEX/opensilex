@@ -29,11 +29,11 @@ import org.opensilex.core.CoreModule;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.project.dal.ProjectDAO;
-import org.opensilex.rest.authentication.ApiProtected;
-import org.opensilex.rest.authentication.AuthenticationService;
-import org.opensilex.rest.group.dal.GroupDAO;
-import org.opensilex.rest.user.dal.UserDAO;
-import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.AuthenticationService;
+import org.opensilex.security.group.dal.GroupDAO;
+import org.opensilex.security.user.dal.UserDAO;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 

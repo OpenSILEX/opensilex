@@ -32,8 +32,8 @@ import org.slf4j.LoggerFactory;
 import opensilex.service.dao.DataQueryLogDAO;
 import opensilex.service.resource.DataResourceService;
 import opensilex.service.resource.EnvironmentResourceService;
-import org.opensilex.rest.authentication.AuthenticationService;
-import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.security.authentication.AuthenticationService;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**

@@ -53,7 +53,7 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.model.Event;
 import opensilex.service.resource.dto.event.EventPutDTO;
 import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
-import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**

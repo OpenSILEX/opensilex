@@ -14,7 +14,7 @@ import org.opensilex.OpenSilex;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
-import org.opensilex.rest.extensions.APIExtension;
+import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.sparql.SPARQLConfig;
 
 /**

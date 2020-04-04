@@ -58,8 +58,8 @@ import opensilex.service.utils.JsonConverter;
 import opensilex.service.utils.UriGenerator;
 import opensilex.service.utils.date.Dates;
 import opensilex.service.model.Annotation;
-import org.opensilex.rest.user.dal.UserDAO;
-import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.security.user.dal.UserDAO;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**

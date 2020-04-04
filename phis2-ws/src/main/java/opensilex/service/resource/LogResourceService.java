@@ -37,8 +37,8 @@ import opensilex.service.resource.validation.interfaces.Date;
 import opensilex.service.resource.validation.interfaces.URL;
 import opensilex.service.result.ResultForm;
 import opensilex.service.view.brapi.Status;
-import org.opensilex.rest.authentication.ApiProtected;
-import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**

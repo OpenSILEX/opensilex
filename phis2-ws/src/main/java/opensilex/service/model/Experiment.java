@@ -13,10 +13,10 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.rest.group.dal.GroupDAO;
-import org.opensilex.rest.group.dal.GroupModel;
-import org.opensilex.rest.user.dal.UserDAO;
-import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.security.group.dal.GroupDAO;
+import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.user.dal.UserDAO;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.mail.internet.InternetAddress;

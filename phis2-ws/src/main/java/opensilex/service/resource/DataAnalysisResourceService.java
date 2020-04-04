@@ -40,7 +40,7 @@ import opensilex.service.resource.dto.ScientificAppDTO;
 import opensilex.service.shinyProxy.ShinyProxyService;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
-import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**

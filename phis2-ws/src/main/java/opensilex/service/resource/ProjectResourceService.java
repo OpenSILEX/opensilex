@@ -54,12 +54,12 @@ import org.apache.jena.rdf.model.Resource;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.rest.authentication.ApiProtected;
-import org.opensilex.rest.authentication.AuthenticationService;
-import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.AuthenticationService;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
-import org.opensilex.sparql.utils.OrderBy;
+import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
 /**

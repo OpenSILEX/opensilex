@@ -36,7 +36,7 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.model.Namespace;
 import opensilex.service.model.Property;
 import static opensilex.service.resource.DocumentResourceService.LOGGER;
-import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**

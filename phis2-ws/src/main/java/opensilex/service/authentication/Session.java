@@ -20,5 +20,5 @@ public interface Session {
     
     public User getUser();
     
-    public org.opensilex.rest.user.dal.UserModel getOpenSilexUser();
+    public org.opensilex.security.user.dal.UserModel getOpenSilexUser();
 }

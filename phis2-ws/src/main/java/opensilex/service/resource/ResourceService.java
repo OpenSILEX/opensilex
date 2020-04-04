@@ -31,7 +31,7 @@ import opensilex.service.result.ResultForm;
 import opensilex.service.utils.POSTResultsReturn;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
-import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.security.user.dal.UserModel;
 
 /**
  * Resource service mother class.

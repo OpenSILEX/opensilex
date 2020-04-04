@@ -71,7 +71,7 @@ import opensilex.service.ontology.Oeso;
 import opensilex.service.resource.dto.data.DataSearchDTO;
 import opensilex.service.resource.dto.data.FileDescriptionWebPathPostDTO;
 import org.opensilex.fs.service.FileStorageService;
-import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**

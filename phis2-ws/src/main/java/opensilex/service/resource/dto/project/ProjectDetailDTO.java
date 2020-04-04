@@ -22,8 +22,8 @@ import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
 import opensilex.service.resource.dto.provenance.ContactDTO;
 import opensilex.service.resource.dto.rdfResourceDefinition.RdfResourceDTO;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.rest.user.dal.UserDAO;
-import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.security.user.dal.UserDAO;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.service.SPARQLService;
 

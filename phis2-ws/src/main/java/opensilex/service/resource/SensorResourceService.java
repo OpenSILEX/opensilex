@@ -61,7 +61,7 @@ import opensilex.service.resource.dto.sensor.SensorDetailDTO;
 import opensilex.service.resource.dto.sensor.SensorPostDTO;
 import opensilex.service.resource.dto.sensor.SensorProfileDTO;
 import opensilex.service.view.model.provenance.Provenance;
-import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**

@@ -12,8 +12,8 @@ import opensilex.service.model.*;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.rest.group.dal.GroupModel;
-import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.user.dal.UserModel;
 
 import java.net.URI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;

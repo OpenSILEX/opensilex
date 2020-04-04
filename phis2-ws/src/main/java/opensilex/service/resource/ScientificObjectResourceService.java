@@ -49,7 +49,7 @@ import opensilex.service.resource.dto.scientificObject.ScientificObjectDTO;
 import opensilex.service.resource.dto.scientificObject.ScientificObjectPostDTO;
 import opensilex.service.resource.dto.scientificObject.ScientificObjectPutDTO;
 import opensilex.service.resource.validation.interfaces.Required;
-import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 

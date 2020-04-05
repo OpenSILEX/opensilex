@@ -34,6 +34,7 @@ import org.opensilex.rest.RestModule;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.unit.test.AbstractUnitTest;
+import org.opensilex.utils.ListWithPagination;
 
 /**
  * @author Renaud COLIN
@@ -166,172 +167,211 @@ public class ExperimentDAOTest extends AbstractUnitTest {
         testEquals(xpModel, daoXpModel);
     }
 
-//    @Test
-//    public void getAllXp() throws Exception {
+    @Test
+    public void getAllXp() throws Exception {
+
+        int n = 10;
+        for (int i = 0; i < n; i++) {
+            xpDao.create(getModel(i));
+        }
+
+        int pageSize = 10;
+        int nbPage = n / pageSize;
+        for (int i = 0; i < nbPage; i++) {
+            ListWithPagination<ExperimentModel> xpModelResults = xpDao.search(
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    true,
+                    null,
+                    i,
+                    pageSize
+            );
+            List<ExperimentModel> xpsFromDao = xpModelResults.getList();
+            assertEquals(pageSize, xpsFromDao.size());
+        }
+    }
 //
-//        int n = 10;
-//        for (int i = 0; i < n; i++) {
-//            xpDao.create(getModel(i));
-//        }
-//
-//        int pageSize = 10;
-//        int nbPage = n / pageSize;
-//        for (int i = 0; i < nbPage; i++) {
-//            ListWithPagination<ExperimentModel> xpModelResults = xpDao.getAllXp(null, i, pageSize);
-//            List<ExperimentModel> xpsFromDao = xpModelResults.getList();
-//            assertEquals(pageSize, xpsFromDao.size());
-//        }
-//
-//    }
-//    @Test
-//    public void searchWithDataType() throws Exception {
-//
-//        ExperimentModel xpModel = getModel(0);
-//        xpDao.create(xpModel);
-//
-//        ExperimentSearch searchDTO = new ExperimentSearch();
-//        searchDTO.setLabel(xpModel.getLabel())
-//                .setCampaign(xpModel.getCampaign())
-//                .setStartDate(xpModel.getStartDate().toString())
-//                .setIsPublic(true);
-//
-//        ListWithPagination<ExperimentModel> xpModelResults = xpDao.search(searchDTO, null, 0, 10);
-//        assertNotNull("one experiment should be fetched from db", xpModelResults);
-//        assertEquals("one experiment should be fetched from db", 1, xpModelResults.getList().size());
-//
-//        testEquals(xpModel, xpModelResults.getList().get(0));
-//    }
-//    @Test
-//    public void searchWithDataTypeList() throws Exception {
-//
-//        ExperimentModel model = getModel(0);
-//        ExperimentModel model2 = getModel(1);
-//
-//        URI varUri = new URI(Oeso.Variable.getURI() + "/var1");
-//        URI var2Uri = new URI(Oeso.Variable.getURI() + "/var2");
-//        model.getVariables().addAll(Arrays.asList(varUri, var2Uri));
-//        model2.getVariables().add(varUri);
-//
-//        xpDao.create(model);
-//        xpDao.create(model2);
-//
-//        ExperimentSearchDTO searchDTO = new ExperimentSearchDTO();
-//        searchDTO.getVariables().add(var2Uri);
-//
-//        // search all xp with the two variable URI
-//        ListWithPagination<ExperimentModel> searchXps = xpDao.search(searchDTO, Collections.emptyList(), 0, 20);
-//        List<ExperimentModel> xpList = searchXps.getList();
-//
-//        assertEquals(1, xpList.size());
-//        assertTrue(xpList.contains(model));
-//
-//        // search all xp with only one variable URI
-//        searchDTO = new ExperimentSearchDTO();
-//        searchDTO.getVariables().add(varUri);
-//        searchXps = xpDao.search(searchDTO, Collections.emptyList(), 0, 20);
-//        xpList = searchXps.getList();
-//
-//        assertEquals(2, xpList.size());
-//        assertTrue(xpList.contains(model));
-//        assertTrue(xpList.contains(model2));
-//    }
-//    @Test
-//    public void searchWithObjectUriType() throws Exception {
-//
-//        // create two projects
-//        List<ProjectModel> projects = new ArrayList<>();
-//        projects.add(projectModel);
-//
-//        ProjectModel project2 = new ProjectModel();
-//        project2.setName("TEST PROJECT");
-//        projects.add(projectDAO.create(project2));
-//
-//        ExperimentModel xpModel = getModel(0);
-//        xpModel.setProjects(projects);
-//        xpDao.create(xpModel);
-//
-//        ExperimentSearch searchDTO = new ExperimentSearch();
-//        searchDTO.setProjects(Arrays.asList(projectModel.getUri(), project2.getUri()));
-//
-//        List<ExperimentModel> xpModelResults = xpDao.search(searchDTO, null, 0, 10).getList();
-//
-//        assertNotNull("no experiment found from db", xpModelResults);
-//        assertEquals("the experiment uri should be contained into the result list", xpModelResults.get(0).getUri(), xpModel.getUri());
-//        testEquals(xpModel, xpModelResults.get(0));
-//
-//        // create a 2nd xp with a shared project with the 1th xp
-//        ExperimentModel xpModel2 = getModel(1);
-//        xpModel2.setProjects(Collections.singletonList(project2));
-//        xpDao.create(xpModel2);
-//
-//        xpModelResults = xpDao.search(searchDTO, null, 0, 10).getList();
-//        assertNotNull("no experiment found from db", xpModelResults);
-//
-//        assertTrue(xpModelResults.contains(xpModel2));
-//        assertTrue(xpModelResults.contains(xpModel));
-//
-//    }
-//    @Test
-//    public void searchFail() throws Exception {
-//
-//        ExperimentModel xpModel = getModel(0);
-//        xpDao.create(xpModel);
-//
-//        ExperimentSearch getDTO = new ExperimentSearch();
-//
-//        // set a bad label in order to check if the result set from dao is empty
-//        getDTO.setLabel(xpModel.getLabel() + "str");
-//
-//        getDTO.setProjects(xpModel.getProjects()
-//                .stream()
-//                .map(SPARQLResourceModel::getUri)
-//                .collect(Collectors.toList()));
-//
-//        ListWithPagination<ExperimentModel> xpModelResults = xpDao.search(getDTO, null, 0, 10);
-//        assertNotNull("empty results object", xpModelResults);
-//        assertTrue("no experiment should be found from db according getDTO", xpModelResults.getList().isEmpty());
-//
-//        // reset the label by setting it to null, then a result must exists
-//        getDTO.setLabel(null);
-//        getDTO.setCampaign(xpModel.getCampaign());
-//
-//        xpModelResults = xpDao.search(getDTO, null, 0, 10);
-//        assertNotNull("no experiment found from db", xpModelResults);
-//        assertEquals("the experiment uri should be contained into the result list", xpModelResults.getList().get(0).getUri(), xpModel.getUri());
-//        testEquals(xpModel, xpModelResults.getList().get(0));
-//
-//    }
-//    @Test
-//    public void searchEnded() throws Exception {
-//
-//        // create an archived and an unarchived xp
-//        LocalDate currentDate = LocalDate.now();
-//        ExperimentModel archivedXp = getModel(0);
-//        archivedXp.setStartDate(currentDate.minusDays(3));
-//        archivedXp.setEndDate(currentDate.minusDays(1));
-//        xpDao.create(archivedXp);
-//
-//        ExperimentModel unarchivedXp = getModel(1);
-//        unarchivedXp.setStartDate(currentDate.minusDays(3));
-//        unarchivedXp.setEndDate(currentDate.plusDays(3));
-//        xpDao.create(unarchivedXp);
-//
-//        // try to retrieve xps from dao
-//        List<ExperimentModel> archivedXps = xpDao.search(new ExperimentSearch().setEnded(true), null, 0, 10).getList();
-//        assertEquals(1, archivedXps.size());
-//        assertTrue(archivedXps.contains(archivedXp));
-//
-//        List<ExperimentModel> unarchivedXps = xpDao.search(new ExperimentSearch().setEnded(false), null, 0, 10).getList();
-//        assertEquals(1, unarchivedXps.size());
-//        assertTrue(unarchivedXps.contains(unarchivedXp));
-//
-//        // search all archived projects
-//        List<ExperimentModel> allXps = xpDao.search(new ExperimentSearch(), null, 0, 10).getList();
-//        assertEquals(2, allXps.size());
-//        assertTrue(allXps.contains(archivedXp));
-//        assertTrue(allXps.contains(unarchivedXp));
-//
-//    }
+
+
+    @Test
+    public void searchWithDataType() throws Exception {
+
+        ExperimentModel model = getModel(0);
+        xpDao.create(model);
+
+        ListWithPagination<ExperimentModel> xpModelResults = xpDao.search(
+                null,
+                model.getCampaign(),
+                model.getLabel(),
+                null,
+                model.getStartDate().toString(),
+                null,
+                null,
+                null,
+                true,
+                null,
+                true,
+                null,
+                0,
+                10
+        );
+        assertNotNull("one experiment should be fetched from db", xpModelResults);
+        assertEquals("one experiment should be fetched from db", 1, xpModelResults.getList().size());
+
+        testEquals(model, xpModelResults.getList().get(0));
+    }
+
+
+    @Test
+    public void searchWithObjectUriType() throws Exception {
+
+        // create two projects
+        List<ProjectModel> projects = new ArrayList<>();
+        projects.add(projectModel);
+
+        ProjectModel project2 = new ProjectModel();
+        project2.setName("TEST PROJECT");
+        projects.add(projectDAO.create(project2));
+
+        ExperimentModel xpModel = getModel(0);
+        xpModel.setProjects(projects);
+        xpDao.create(xpModel);
+
+        List<ExperimentModel> xpModelResults = xpDao.search(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                Arrays.asList(projectModel.getUri(), project2.getUri()),
+                null,
+                null,
+                true,
+                null,
+                0,
+                10
+        ).getList();
+
+        assertNotNull("no experiment found from db", xpModelResults);
+        assertEquals("the experiment uri should be contained into the result list", xpModelResults.get(0).getUri(), xpModel.getUri());
+        testEquals(xpModel, xpModelResults.get(0));
+
+        // create a 2nd xp with a shared project with the 1th xp
+        ExperimentModel xpModel2 = getModel(1);
+        xpModel2.setProjects(Collections.singletonList(project2));
+        xpDao.create(xpModel2);
+
+        xpModelResults = xpDao.search(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                Collections.singletonList(project2.getUri()),
+                null,
+                null,
+                true,
+                null,
+                0,
+                10
+        ).getList();
+
+        assertNotNull("no experiment found from db", xpModelResults);
+        assertTrue(xpModelResults.contains(xpModel2));
+        assertTrue(xpModelResults.contains(xpModel));
+
+    }
+
+    @Test
+    public void searchEnded() throws Exception {
+
+        // create an archived and an unarchived xp
+        LocalDate currentDate = LocalDate.now();
+        ExperimentModel archivedXp = getModel(0);
+        archivedXp.setStartDate(currentDate.minusDays(3));
+        archivedXp.setEndDate(currentDate.minusDays(1));
+        xpDao.create(archivedXp);
+
+        ExperimentModel unarchivedXp = getModel(1);
+        unarchivedXp.setStartDate(currentDate.minusDays(3));
+        unarchivedXp.setEndDate(currentDate.plusDays(3));
+        xpDao.create(unarchivedXp);
+
+        // try to retrieve xps from dao
+        List<ExperimentModel> archivedXps = xpDao.search(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                true,
+                null,
+                null,
+                null,
+                true,
+                null,
+                0,
+                10
+        ).getList();
+        assertEquals(1, archivedXps.size());
+        assertTrue(archivedXps.contains(archivedXp));
+
+        List<ExperimentModel> unarchivedXps = xpDao.search(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                null,
+                null,
+                null,
+                true,
+                null,
+                0,
+                10
+        ).getList();
+        assertEquals(1, unarchivedXps.size());
+        assertTrue(unarchivedXps.contains(unarchivedXp));
+
+        // search all archived projects
+        List<ExperimentModel> allXps = xpDao.search(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                true,
+                null,
+                0,
+                10
+        ).getList();
+        assertEquals(2, allXps.size());
+        assertTrue(allXps.contains(archivedXp));
+        assertTrue(allXps.contains(unarchivedXp));
+
+    }
+
+
     @Test
     public void update() throws Exception {
 

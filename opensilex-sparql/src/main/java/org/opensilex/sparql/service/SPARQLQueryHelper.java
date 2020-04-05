@@ -20,10 +20,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.E_GreaterThanOrEqual;
 import org.apache.jena.sparql.expr.E_LessThanOrEqual;
-import org.opensilex.sparql.deserializer.DateDeserializer;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.*;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
@@ -237,10 +234,11 @@ public class SPARQLQueryHelper {
         Object[] nodes = new Node[values.size()];
         int i = 0;
         for (Object object : values) {
-            nodes[i++] = SPARQLDeserializers.getForClass(object.getClass()).getNode(object);
+            nodes[i++] = SPARQLDeserializers.getForClass(object.getClass()).getNodeFromString(object.toString());
         }
         where.addWhereValueVar(varName, nodes);
     }
+
 
     /**
      * Update the given {@link SelectBuilder} by adding a list of FILTER clause

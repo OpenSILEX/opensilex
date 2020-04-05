@@ -65,11 +65,15 @@ import org.slf4j.LoggerFactory;
 public class AnnotationResourceService extends ResourceService {
 
     @Inject
+    private SPARQLService sparql;
+
+    public AnnotationResourceService() {
+
+    }
+
     public AnnotationResourceService(SPARQLService sparql) {
         this.sparql = sparql;
     }
-
-    private final SPARQLService sparql;
 
     final static Logger LOGGER = LoggerFactory.getLogger(SensorResourceService.class);
 

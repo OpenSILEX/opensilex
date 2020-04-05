@@ -69,11 +69,7 @@ public class UserResourceService extends ResourceService {
     private final static Logger LOGGER = LoggerFactory.getLogger(UserResourceService.class);
 
     @Inject
-    public UserResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Inject Authentication service

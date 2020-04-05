@@ -76,11 +76,7 @@ public class ProjectResourceService extends ResourceService {
     public static final Resource FinancialFunding = Ontology.resource(Oeso.NS, "FinancialFunding");
 
     @Inject
-    public ProjectResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     @Inject
     private AuthenticationService authentication;

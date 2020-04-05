@@ -55,11 +55,7 @@ public class TraitsResourceService implements BrapiCall {
     final static Logger LOGGER = LoggerFactory.getLogger(TraitsResourceService.class);
 
     @Inject
-    public TraitsResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Overriding BrapiCall method

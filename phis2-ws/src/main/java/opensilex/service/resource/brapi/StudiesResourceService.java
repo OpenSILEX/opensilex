@@ -81,11 +81,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
     final static Logger LOGGER = LoggerFactory.getLogger(StudiesResourceService.class);
 
     @Inject
-    public StudiesResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Overriding BrapiCall method

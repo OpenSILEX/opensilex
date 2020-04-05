@@ -57,11 +57,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class TraitResourceService extends ResourceService {
 
     @Inject
-    public TraitResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Trait POST service.

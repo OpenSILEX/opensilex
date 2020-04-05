@@ -60,11 +60,7 @@ public class GermplasmResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(GermplasmResourceService.class);
 
     @Inject
-    public GermplasmResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Inserts germplasm in the storage.

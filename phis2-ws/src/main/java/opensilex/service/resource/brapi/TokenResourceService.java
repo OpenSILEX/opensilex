@@ -74,11 +74,7 @@ public class TokenResourceService implements BrapiCall {
     static final List<String> GRANTTYPE_AUTHORIZED = Collections.unmodifiableList(Arrays.asList("jwt", "password"));
 
     @Inject
-    public TokenResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     @Inject
     private AuthenticationService authentication;
@@ -130,81 +126,81 @@ public class TokenResourceService implements BrapiCall {
         @ApiResponse(code = 400, message = "Bad informations send by user"),
         @ApiResponse(code = 200, message = "Access token already exist and send again to user")})
     public Response getToken(@ApiParam(value = "JSON object needed to login") @Valid TokenDTO jsonToken, @Context UriInfo ui) throws Exception {
-            ArrayList<Status> statusList = new ArrayList<>();
+        ArrayList<Status> statusList = new ArrayList<>();
 
-            // Check grant type
-            String grantType = jsonToken.getGrant_type();
-            if (grantType == null || grantType.isEmpty() || !GRANTTYPE_AUTHORIZED.contains(grantType)) {
-                statusList.add(new Status("Wrong grant type", StatusCodeMsg.ERR, "Authorized grant type : " + GRANTTYPE_AUTHORIZED.toString()));
-                return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST(statusList)).build();
-            }
-            // Initialize variables
-            Boolean isJWT = false;
-            String username = jsonToken.getUsername();
-            String password = null;
+        // Check grant type
+        String grantType = jsonToken.getGrant_type();
+        if (grantType == null || grantType.isEmpty() || !GRANTTYPE_AUTHORIZED.contains(grantType)) {
+            statusList.add(new Status("Wrong grant type", StatusCodeMsg.ERR, "Authorized grant type : " + GRANTTYPE_AUTHORIZED.toString()));
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST(statusList)).build();
+        }
+        // Initialize variables
+        Boolean isJWT = false;
+        String username = jsonToken.getUsername();
+        String password = null;
 
-            boolean validJWTToken = false;
+        boolean validJWTToken = false;
 
-            // JWT case
-            if (grantType.equals("jwt") && jsonToken.getClient_id() != null) {
-                isJWT = true;
-                validJWTToken = validJWTToken(jsonToken, statusList);
-            } else if (password == null) {
-                // cas unsername /password
-                password = jsonToken.getPassword();
-            }
-            if ((password != null && username != null) || (isJWT && validJWTToken && username != null)) {
-                // Is user authorized ?
-                // UserModel user = new UserModel(username, password);
-                //SILEX:info
-                // if we have a jwt the password is not verified because it means that the
-                // user is already logged
-                // we trust the client
-                //\SILEX:info
-                org.opensilex.security.user.dal.UserDAO userDAO = new org.opensilex.security.user.dal.UserDAO(sparql);
-                org.opensilex.security.user.dal.UserModel user;
-                try {
-                    user = userDAO.getByEmail(new InternetAddress(username));
+        // JWT case
+        if (grantType.equals("jwt") && jsonToken.getClient_id() != null) {
+            isJWT = true;
+            validJWTToken = validJWTToken(jsonToken, statusList);
+        } else if (password == null) {
+            // cas unsername /password
+            password = jsonToken.getPassword();
+        }
+        if ((password != null && username != null) || (isJWT && validJWTToken && username != null)) {
+            // Is user authorized ?
+            // UserModel user = new UserModel(username, password);
+            //SILEX:info
+            // if we have a jwt the password is not verified because it means that the
+            // user is already logged
+            // we trust the client
+            //\SILEX:info
+            org.opensilex.security.user.dal.UserDAO userDAO = new org.opensilex.security.user.dal.UserDAO(sparql);
+            org.opensilex.security.user.dal.UserModel user;
+            try {
+                user = userDAO.getByEmail(new InternetAddress(username));
 
-                    if (!isJWT) {
-                        if (!authentication.authenticate(user, password, userDAO.getAccessList(user.getUri()))) {
-                            user = null;
-                        }
-                    }
-                } catch (Exception ex) {
-                    LOGGER.warn("Exception while authenticating user: " + username, ex);
-                    user = null;
-                }
-
-                // No user found
-                if (user == null) {
-                    statusList.add(new Status("User/password doesn't exist", StatusCodeMsg.ERR, null));
-                } else {
-                    try {
-                        authentication.authenticate(user, userDAO.getAccessList(user.getUri()));
-                        Response.Status reponseStatus = Response.Status.OK;
-                        String expires_in = "" + authentication.getExpiresInSec();
-                        TokenResponseStructure res = new TokenResponseStructure(user.getToken(), user.getFirstName() + " " + user.getLastName(), expires_in);
-                        final URI uri = new URI(ui.getPath());
-                        return Response.status(reponseStatus).location(uri).entity(res).build();
-                    } catch (Exception ex) {
-                        LOGGER.error(ex.getMessage(), ex);
-                        statusList.add(new Status("Error while authenticating user " + StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.getMessage()));
-                        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormPOST(statusList)).build();
+                if (!isJWT) {
+                    if (!authentication.authenticate(user, password, userDAO.getAccessList(user.getUri()))) {
+                        user = null;
                     }
                 }
+            } catch (Exception ex) {
+                LOGGER.warn("Exception while authenticating user: " + username, ex);
+                user = null;
+            }
 
+            // No user found
+            if (user == null) {
+                statusList.add(new Status("User/password doesn't exist", StatusCodeMsg.ERR, null));
             } else {
-                // if an error occurred
-                if (!isJWT && password == null) {
-                    statusList.add(new Status("Empty password", StatusCodeMsg.ERR, null));
+                try {
+                    authentication.authenticate(user, userDAO.getAccessList(user.getUri()));
+                    Response.Status reponseStatus = Response.Status.OK;
+                    String expires_in = "" + authentication.getExpiresInSec();
+                    TokenResponseStructure res = new TokenResponseStructure(user.getToken(), user.getFirstName() + " " + user.getLastName(), expires_in);
+                    final URI uri = new URI(ui.getPath());
+                    return Response.status(reponseStatus).location(uri).entity(res).build();
+                } catch (Exception ex) {
+                    LOGGER.error(ex.getMessage(), ex);
+                    statusList.add(new Status("Error while authenticating user " + StatusCodeMsg.ERR, StatusCodeMsg.ERR, ex.getMessage()));
+                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ResponseFormPOST(statusList)).build();
                 }
-                if (!isJWT && username == null) {
-                    statusList.add(new Status("Empty username", StatusCodeMsg.ERR, null));
-                }
-                return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST(statusList)).build();
+            }
+
+        } else {
+            // if an error occurred
+            if (!isJWT && password == null) {
+                statusList.add(new Status("Empty password", StatusCodeMsg.ERR, null));
+            }
+            if (!isJWT && username == null) {
+                statusList.add(new Status("Empty username", StatusCodeMsg.ERR, null));
             }
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST(statusList)).build();
+        }
+        return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseFormPOST(statusList)).build();
     }
 
     /**

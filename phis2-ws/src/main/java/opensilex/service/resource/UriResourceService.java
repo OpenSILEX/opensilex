@@ -46,11 +46,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class UriResourceService extends ResourceService {
 
     @Inject
-    public UriResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Searches if a URI exists.

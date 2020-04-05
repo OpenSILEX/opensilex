@@ -78,11 +78,7 @@ public class SensorResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(SensorResourceService.class);
 
     @Inject
-    public SensorResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Searches sensors profile corresponding to the given sensor URI.

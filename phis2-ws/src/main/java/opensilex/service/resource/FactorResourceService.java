@@ -53,11 +53,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class FactorResourceService extends ResourceService {
 
     @Inject
-    public FactorResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Generates a factorDTO list from a given list of factor.

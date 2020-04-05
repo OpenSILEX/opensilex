@@ -66,14 +66,10 @@ import java.util.List;
 public class ExperimentResourceService extends ResourceService {
 
     @Inject
-    public ExperimentResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
+    private SPARQLService sparql;
+    
     @Inject
     private AuthenticationService authentication;
-
-    private final SPARQLService sparql;
 
     /**
      * @return found experiments

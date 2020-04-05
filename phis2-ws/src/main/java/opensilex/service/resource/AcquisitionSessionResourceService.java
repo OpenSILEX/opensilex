@@ -45,11 +45,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class AcquisitionSessionResourceService extends ResourceService {
 
     @Inject
-    public AcquisitionSessionResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Searches acquisition session metadata file metadata corresponding to the

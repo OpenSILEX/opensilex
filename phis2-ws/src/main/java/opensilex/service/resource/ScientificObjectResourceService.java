@@ -65,11 +65,7 @@ public class ScientificObjectResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectResourceService.class);
 
     @Inject
-    public ScientificObjectResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Transform ScientificObjectPostDTO to ScientificObject

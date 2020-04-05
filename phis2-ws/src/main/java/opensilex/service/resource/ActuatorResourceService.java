@@ -62,11 +62,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class ActuatorResourceService extends ResourceService {
 
     @Inject
-    public ActuatorResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Generates a Actuator list from a given list of ActuatorPostDTO.

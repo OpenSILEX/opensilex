@@ -48,11 +48,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class LayerResourceService extends ResourceService {
 
     @Inject
-    public LayerResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     @Inject
     FileStorageService fs;

@@ -47,11 +47,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class TripletsResourceService extends ResourceService {
 
     @Inject
-    public TripletsResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Inserts triplets.

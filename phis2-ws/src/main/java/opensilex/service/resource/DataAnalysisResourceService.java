@@ -53,11 +53,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class DataAnalysisResourceService extends ResourceService {
 
     @Inject
-    public DataAnalysisResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Call R function via OpenCPU Server

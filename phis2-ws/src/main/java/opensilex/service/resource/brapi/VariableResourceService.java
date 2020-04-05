@@ -63,11 +63,7 @@ public class VariableResourceService extends ResourceService implements BrapiCal
     final static Logger LOGGER = LoggerFactory.getLogger(BrapiVariable.class);
 
     @Inject
-    public VariableResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Overriding BrapiCall method.

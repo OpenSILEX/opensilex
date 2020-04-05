@@ -66,11 +66,7 @@ public class RadiometricTargetResourceService extends ResourceService {
     final static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(RadiometricTargetResourceService.class);
 
     @Inject
-    public RadiometricTargetResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Generates a RadiometricTarget list from a given list of

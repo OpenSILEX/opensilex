@@ -71,11 +71,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class EventResourceService extends ResourceService {
 
     @Inject
-    public EventResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     final static Logger LOGGER = LoggerFactory.getLogger(EventResourceService.class);
 

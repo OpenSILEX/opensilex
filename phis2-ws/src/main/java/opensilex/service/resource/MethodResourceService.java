@@ -56,11 +56,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class MethodResourceService extends ResourceService {
 
     @Inject
-    public MethodResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Method POST service.

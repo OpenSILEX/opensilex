@@ -96,11 +96,7 @@ public class DocumentResourceService extends ResourceService {
     UriInfo uri;
 
     @Inject
-    public DocumentResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     final static Logger LOGGER = LoggerFactory.getLogger(DocumentResourceService.class);
 

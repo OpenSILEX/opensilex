@@ -88,11 +88,7 @@ public class ImageResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(ImageResourceService.class);
 
     @Inject
-    public ImageResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     @Context
     UriInfo uri;

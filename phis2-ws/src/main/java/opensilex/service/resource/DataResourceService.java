@@ -87,11 +87,7 @@ public class DataResourceService extends ResourceService {
     private FileStorageService fs;
 
     @Inject
-    public DataResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Service to insert data.

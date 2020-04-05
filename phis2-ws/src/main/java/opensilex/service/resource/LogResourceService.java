@@ -51,11 +51,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class LogResourceService extends ResourceService {
 
     @Inject
-    public LogResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Returns the logs create by the search of data from environment services

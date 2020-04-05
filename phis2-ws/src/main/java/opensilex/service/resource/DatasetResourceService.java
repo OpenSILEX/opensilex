@@ -54,11 +54,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class DatasetResourceService extends ResourceService {
 
     @Inject
-    public DatasetResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * @param datasets dataset to save. If in the provance there is only the uri

@@ -59,11 +59,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class EnvironmentResourceService extends ResourceService {
 
     @Inject
-    public EnvironmentResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     private final Status deprecatedStatus = new Status(StatusCodeMsg.WARNING, StatusCodeMsg.WARNING, StatusCodeMsg.API_DEPRECATED_INFO_MESSAGE);
 

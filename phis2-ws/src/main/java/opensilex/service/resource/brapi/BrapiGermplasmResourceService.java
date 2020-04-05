@@ -48,11 +48,7 @@ public class BrapiGermplasmResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(BrapiGermplasmResourceService.class);
 
     @Inject
-    public BrapiGermplasmResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     @GET
     @ApiOperation(value = "Get all germplasm corresponding to the search params given",

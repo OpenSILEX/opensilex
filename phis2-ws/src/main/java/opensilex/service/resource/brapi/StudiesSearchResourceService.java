@@ -62,11 +62,7 @@ import org.slf4j.LoggerFactory;
 public class StudiesSearchResourceService extends ResourceService implements BrapiCall {
 
     @Inject
-    public StudiesSearchResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     final static Logger LOGGER = LoggerFactory.getLogger(StudiesSearchResourceService.class);
 

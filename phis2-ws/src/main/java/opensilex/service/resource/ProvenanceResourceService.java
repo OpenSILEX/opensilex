@@ -56,11 +56,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class ProvenanceResourceService extends ResourceService {
 
     @Inject
-    public ProvenanceResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Generates a Provenance list from a given list of ProvenancePostDTO.

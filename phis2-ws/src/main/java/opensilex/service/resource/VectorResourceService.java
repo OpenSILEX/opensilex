@@ -59,11 +59,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class VectorResourceService extends ResourceService {
 
     @Inject
-    public VectorResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Search vectors corresponding to search parameters given.

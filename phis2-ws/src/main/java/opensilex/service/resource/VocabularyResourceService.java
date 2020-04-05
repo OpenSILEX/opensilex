@@ -49,11 +49,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class VocabularyResourceService extends ResourceService {
 
     @Inject
-    public VocabularyResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Gets the list of RDFs properties that can be used.

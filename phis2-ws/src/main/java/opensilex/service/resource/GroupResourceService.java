@@ -72,11 +72,7 @@ public class GroupResourceService extends ResourceService {
     private final static Logger LOGGER = LoggerFactory.getLogger(GroupResourceService.class);
 
     @Inject
-    public GroupResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * @param limit

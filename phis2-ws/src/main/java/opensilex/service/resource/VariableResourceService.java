@@ -56,11 +56,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class VariableResourceService extends ResourceService {
 
     @Inject
-    public VariableResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Variable POST service.

@@ -44,11 +44,7 @@ import org.opensilex.sparql.service.SPARQLService;
 public class SpeciesResourceService extends ResourceService {
 
     @Inject
-    public SpeciesResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Generates a speciesDTO list from a given list of species.

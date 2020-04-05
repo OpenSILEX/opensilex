@@ -53,11 +53,7 @@ public class InfrastructureResourceService extends ResourceService {
     final static Logger LOGGER = LoggerFactory.getLogger(InfrastructureResourceService.class);
 
     @Inject
-    public InfrastructureResourceService(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Searches infrastructures by URI, rdfType.

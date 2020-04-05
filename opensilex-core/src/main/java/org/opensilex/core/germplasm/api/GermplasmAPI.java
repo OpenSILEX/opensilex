@@ -77,11 +77,7 @@ public class GermplasmAPI {
     protected static final String GERMPLASM_EXAMPLE_ACCESSION = "";
 
     @Inject
-    public GermplasmAPI(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      *

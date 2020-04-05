@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
-import org.junit.AfterClass;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 
@@ -23,13 +22,22 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.test.TestProperties;
+import org.junit.AfterClass;
 
 import org.junit.Rule;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+import org.mockito.Mockito;
+import org.opensilex.OpenSilex;
+import org.opensilex.server.rest.RestApplication;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,9 +46,9 @@ import org.slf4j.LoggerFactory;
  * @author Renaud COLIN
  * @author Vincent MIGOT
  *
- * Abstract class used for DAO testing
+ * Abstract class used for API testing
  */
-//@Category(IntegrationTestCategory.class)
+@Category(IntegrationTestCategory.class)
 public abstract class AbstractIntegrationTest extends JerseyTest {
 
     protected final static Logger LOGGER = LoggerFactory.getLogger(AbstractIntegrationTest.class);
@@ -56,30 +64,46 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return false;
     }
 
-    protected static IntegrationTestContext context;
+    protected static ResourceConfig resourceConfig;
 
     @Override
     protected ResourceConfig configure() {
-        if (context == null) {
+        enable(TestProperties.LOG_TRAFFIC);
+//        enable(TestProperties.DUMP_ENTITY);
+
+        if (resourceConfig == null) {
             try {
-                // init the OpenSilex instance to use during the API test(s)
-                context = new IntegrationTestContext(isDebug());
-                initContext();
+                Map<String, String> args = new HashMap<>();
+                args.put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.TEST_PROFILE_ID);
+
+                if (isDebug()) {
+                    args.put(OpenSilex.DEBUG_ARG_KEY, "true");
+                }
+
+                // initialize application
+                OpenSilex.setup(args);
+
+                resourceConfig = new RestApplication(OpenSilex.getInstance());
+
+                // create a mock for HttpServletRequest which is not available with grizzly
+                final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+                resourceConfig.register(new AbstractBinder() {
+                    @Override
+                    protected void configure() {
+                        bind(request).to(HttpServletRequest.class);
+                    }
+                });
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
 
-        return context.getResourceConfig();
+        return resourceConfig;
     }
 
     @AfterClass
     public static void shutdown() throws Exception {
-        context.shutdown();
-    }
-
-    protected void initContext() throws Exception {
-
+        OpenSilex.getInstance().shutdown();
     }
 
     /**

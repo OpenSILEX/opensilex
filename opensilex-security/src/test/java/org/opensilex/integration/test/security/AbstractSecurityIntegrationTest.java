@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.OpenSilex;
 import org.opensilex.integration.test.AbstractIntegrationTest;
-import org.opensilex.integration.test.IntegrationTestContext;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.api.AuthenticationDTO;
@@ -51,7 +50,13 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     @After
     public void clearGraph() throws Exception {
         clearGraphs(getGraphsToCleanNames());
+        this.afterEach();
+        
     }
+    
+     public void afterEach() throws Exception  {
+         
+     }
 
     public SPARQLService getSparqlService() {
         return OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();

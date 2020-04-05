@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.ws.rs.Path;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.opensilex.server.rest.RestApplication;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
@@ -24,7 +25,7 @@ import org.slf4j.LoggerFactory;
 public interface APIExtension {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(APIExtension.class);
-    
+
     /**
      * This method is called during application initialization to get all
      * packages to scan for components like request filters or response mapper
@@ -55,6 +56,10 @@ public interface APIExtension {
         return packageSet;
     }
 
+    public default void bindServices(AbstractBinder binder) {
+        LOGGER.debug("No service to bind for module: " + this.getClass().getCanonicalName());
+    }
+
     /**
      * This entry point allow module to initialize anything in application after
      * all configuration is loaded at the end of application loading
@@ -62,7 +67,8 @@ public interface APIExtension {
      * @param resourceConfig API main entry point instance extending Jersey
      * {@code org.glassfish.jersey.server.ResourceConfig}
      */
-    public default void initAPI(RestApplication resourceConfig) {
+    public default void initRestApplication(RestApplication resourceConfig) {
         LOGGER.debug("Init API for module: " + this.getClass().getCanonicalName());
     }
+
 }

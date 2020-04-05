@@ -77,7 +77,7 @@ public class ExperimentDAO {
         }
         sparql.updateSubjectRelations(SPARQLDeserializers.nodeURI(xpUri), sensorsUris, Oeso.participatesIn, xpUri);
     }
-    
+
     public void updateWithFactors(URI xpUri, List<URI> factorsUris) throws Exception {
         if (!sparql.uriExists(ExperimentModel.class, xpUri)) {
             throw new IllegalArgumentException("Unknown experiment " + xpUri);
@@ -200,15 +200,15 @@ public class ExperimentDAO {
     }
 
     public ListWithPagination<ExperimentModel> search(URI uri,
-                                                      Integer campaign,
-                                                      String label,
-                                                      URI species,
-                                                      String startDate, String endDate,
-                                                      Boolean isEnded,
-                                                      List<URI> projects,
-                                                      Boolean isPublic,
-                                                      List<URI> groups, boolean admin,
-                                                      List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+            Integer campaign,
+            String label,
+            URI species,
+            String startDate, String endDate,
+            Boolean isEnded,
+            List<URI> projects,
+            Boolean isPublic,
+            List<URI> groups, boolean admin,
+            List<OrderBy> orderByList, int page, int pageSize) throws Exception {
 
         ListWithPagination<ExperimentModel> xps = sparql.searchWithPagination(
                 ExperimentModel.class,
@@ -330,7 +330,7 @@ public class ExperimentDAO {
         }
     }
 
-        protected void appendVariablesListFilter(SelectBuilder select, List<URI> variables) throws Exception {
+    protected void appendVariablesListFilter(SelectBuilder select, List<URI> variables) throws Exception {
         if (variables != null && !variables.isEmpty()) {
             addWhere(select, ExperimentModel.URI_FIELD, Oeso.measures, ExperimentModel.VARIABLES_SPARQL_VAR);
             SPARQLQueryHelper.addWhereValues(select, ExperimentModel.VARIABLES_SPARQL_VAR, variables);

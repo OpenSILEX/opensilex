@@ -54,11 +54,7 @@ import org.opensilex.utils.ListWithPagination;
 public class MethodAPI {
 
     @Inject
-    public MethodAPI(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     @POST
     @ApiOperation("Create a method")

@@ -15,13 +15,13 @@
                 "checkOut": "",
                 "monthNames": {
                     "january": "January",
-                    "february": "February",         
-                    "march": "March",   
+                    "february": "February",
+                    "march": "March",
                     "april": "April",
                     "may": "May",
                     "june": "June",
                     "july": "July",
-                    "august": "August",  
+                    "august": "August",
                     "september": "September",
                     "october": "October",
                     "november": "November",
@@ -58,6 +58,7 @@
             "logout": "Logout",
             "parent": "parent",
             "type": "type",
+            "select-lang": "Choose a language",
             "errors": {
                 "error-title": "Error",
                 "constraint-error": "A data validation error occured, please check the validity of the submited fields.",
@@ -65,7 +66,7 @@
                 "server-error": "An error occured at server level, please contact your local support..",
                 "unexpected-error": "An unexpected error occured, please contact your local support.",
                 "unauthorized-error": "Your session expired, please login again.",
-                "form-step-errors" : "Some field are required in order to go to the next step"
+                "form-step-errors": "Some field are required in order to go to the next step"
             }
         },
         "header": {
@@ -80,9 +81,9 @@
         },
         "menu": {
             "dashboard": "Dashboard",
-            "data":{
-                "label":"Data",
-                "images":"Images"
+            "data": {
+                "label": "Data",
+                "images": "Images"
             },
             "experiments": "Experiments",
             "installations": "Installations",
@@ -101,10 +102,10 @@
                 "groups": "Groups",
                 "profiles": "Profiles"
             },
-            "experimentalDesign" :{
-                "label" : "Experimental Design",
-                "factors" : "Factors",
-                "factorLevels" : "Factor levels"
+            "experimentalDesign": {
+                "label": "Experimental Design",
+                "factors": "Factors",
+                "factorLevels": "Factor levels"
             },
             "infrastructures": "Infrastructures"
         },
@@ -204,10 +205,10 @@
             "update": "update factor",
             "alias": "alias",
             "alias-help": "Name used to define this factor",
-            "form-alias-placeholder" : "Irrigation, Shading, Variety, etc.",
-            "comment": "comment", 
+            "form-alias-placeholder": "Irrigation, Shading, Variety, etc.",
+            "comment": "comment",
             "comment-help": "Description associated to this factors (protocol, amount of component)",
-            "form-comment-placeholder" : "Protocol n°1289 - Amount of water 5 ml/Days.",
+            "form-comment-placeholder": "Protocol n°1289 - Amount of water 5 ml/Days.",
             "errors": {
                 "user-already-exists": "Factor already exists with this URI."
             }
@@ -238,10 +239,10 @@
             "update": "update germplasm",
             "alias": "label",
             "alias-help": "Name used to define this germplasm",
-            "form-alias-placeholder" : "Irrigation, Shading, Variety, etc.",
+            "form-alias-placeholder": "Irrigation, Shading, Variety, etc.",
             "rdfType": "rdfType",
             "rdfType-help": "Germplasm Type",
-            "form-rdfType-placeholder" : "Variety, Accession, SeedLot",
+            "form-rdfType-placeholder": "Variety, Accession, SeedLot",
             "errors": {
                 "germplasm-already-exists": "Germplasm already exists with this URI."
             }

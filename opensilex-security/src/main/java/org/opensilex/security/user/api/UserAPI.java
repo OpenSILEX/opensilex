@@ -29,11 +29,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
 import static org.apache.jena.vocabulary.RDF.uri;
 import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.response.ErrorDTO;
@@ -49,6 +47,7 @@ import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.AuthenticationService;
+import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
@@ -86,15 +85,11 @@ public class UserAPI {
     public static final String CREDENTIAL_USER_READ_ID = "user-read";
     public static final String CREDENTIAL_USER_READ_LABEL_KEY = "credential.user.read";
 
-    private final SPARQLService sparql;
+    @CurrentUser
+    UserModel currentUser;
 
-    /**
-     * Inject SPARQL service
-     */
     @Inject
-    public UserAPI(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
+    private SPARQLService sparql;
 
     /**
      * Inject Authentication service
@@ -127,12 +122,8 @@ public class UserAPI {
         @ApiResponse(code = 409, message = "User already exists (duplicate email)")
     })
     public Response createUser(
-            @ApiParam("User creation informations") @Valid UserCreationDTO userDTO,
-            @Context SecurityContext securityContext
+            @ApiParam("User creation informations") @Valid UserCreationDTO userDTO
     ) throws Exception {
-        // Get current user
-        UserModel currentUser = authentication.getCurrentUser(securityContext);
-
         // Check if user is admin to create a new admin user
         if (userDTO.isAdmin() && (currentUser == null || !currentUser.isAdmin())) {
             throw new ForbiddenException("You must be an admin to create other admin users");

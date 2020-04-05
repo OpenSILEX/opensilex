@@ -356,6 +356,12 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classQueryBuilder.getCreateBuilder(graph, instance);
     }
 
+    public UpdateBuilder getUpdateBuilder(T oldInstance, T newInstance) throws Exception {
+        UpdateBuilder builder = new UpdateBuilder();
+        addUpdateBuilder(oldInstance, newInstance, builder);
+        return builder;
+    }
+
     public void addUpdateBuilder(T oldInstance, T newInstance, UpdateBuilder update) throws Exception {
         addUpdateBuilder(getDefaultGraph(), oldInstance, newInstance, update);
     }
@@ -614,4 +620,5 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
         return existingMap;
     }
+
 }

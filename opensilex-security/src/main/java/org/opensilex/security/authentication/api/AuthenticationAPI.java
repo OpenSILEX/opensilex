@@ -28,11 +28,9 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -41,6 +39,7 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.authentication.dal.SecurityAccessDAO;
+import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.security.user.dal.UserDAO;
 import org.opensilex.security.user.dal.UserModel;
@@ -65,10 +64,8 @@ public class AuthenticationAPI {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(AuthenticationAPI.class);
 
-    /**
-     * SPARQL service
-     */
-    private final SPARQLService sparql;
+    @CurrentUser
+    UserModel currentUser;
 
     /**
      * Inject Authentication service
@@ -80,9 +77,7 @@ public class AuthenticationAPI {
      * Inject SPARQL service
      */
     @Inject
-    public AuthenticationAPI(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
+    private SPARQLService sparql;
 
     /**
      * Authenticate a user with it's identifier (email or URI) and password
@@ -152,13 +147,10 @@ public class AuthenticationAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response renewToken(
-            @ApiParam(hidden = true) @HeaderParam(ApiProtected.HEADER_NAME) String userToken,
-            @Context SecurityContext securityContext
+            @ApiParam(hidden = true) @HeaderParam(ApiProtected.HEADER_NAME) String userToken
     ) throws Exception {
-        UserModel user = authentication.getCurrentUser(securityContext);
-        authentication.renewToken(user);
-
-        return new SingleObjectResponse<TokenGetDTO>(new TokenGetDTO(user.getToken())).getResponse();
+        authentication.renewToken(currentUser);
+        return new SingleObjectResponse<TokenGetDTO>(new TokenGetDTO(currentUser.getToken())).getResponse();
     }
 
     /**
@@ -174,10 +166,8 @@ public class AuthenticationAPI {
     @ApiProtected
     @ApiResponses({
         @ApiResponse(code = 200, message = "User sucessfully logout")})
-    public Response logout(
-            @Context SecurityContext securityContext
-    ) throws Exception {
-        authentication.logout(authentication.getCurrentUser(securityContext));
+    public Response logout() throws Exception {
+        authentication.logout(currentUser);
         return Response.ok().build();
     }
 
@@ -212,8 +202,8 @@ public class AuthenticationAPI {
     })
     public Response getCredentialsGroups() throws Exception {
         if (credentialsGroupList == null) {
-            SecurityAccessDAO securityDAO = new SecurityAccessDAO(sparql);
             credentialsGroupList = new ArrayList<>();
+            SecurityAccessDAO securityDAO = new SecurityAccessDAO(sparql);
             Map<String, String> groupLabels = securityDAO.getCredentialsGroupLabels();
             securityDAO.getCredentialsGroups().forEach((String groupId, Map<String, String> credentialMap) -> {
                 CredentialsGroupDTO credentialsGroup = new CredentialsGroupDTO();

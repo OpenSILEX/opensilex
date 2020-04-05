@@ -357,12 +357,12 @@ public class ExperimentDAOTest extends AbstractUnitTest {
     @Test(expected = SPARQLInvalidURIException.class)
     public void updateWithUnknownURI() throws Exception {
 
-        ExperimentModel xpModel = getModel(0);
-        xpDao.create(xpModel);
+            ExperimentModel xpModel = getModel(0);
+            xpDao.create(xpModel);
 
-        xpModel.setLabel("updateWithUnknownUri");
-        xpModel.setUri(new URI(xpModel.getUri().toString() + "_suffix"));
-        xpDao.update(xpModel);
+            xpModel.setLabel("updateWithUnknownUri");
+            xpModel.setUri(new URI(xpModel.getUri().toString() + "_suffix"));
+            xpDao.update(xpModel);
     }
 
     @Test
@@ -384,9 +384,9 @@ public class ExperimentDAOTest extends AbstractUnitTest {
     @Test(expected = SPARQLInvalidURIException.class)
     public void deleteWithUnknownURI() throws Exception {
 
-        ExperimentModel xpModel = getModel(0);
-        xpDao.create(xpModel);
-        xpDao.delete(new URI(xpModel.getUri().toString() + "_suffix"));
+            ExperimentModel xpModel = getModel(0);
+            xpDao.create(xpModel);
+            xpDao.delete(new URI(xpModel.getUri().toString() + "_suffix"));
     }
 
     @Test

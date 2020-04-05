@@ -20,7 +20,7 @@ import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
 /**
- * 
+ *
  * @author Arnaud Charleroy
  */
 public class FactorLevelDAO {
@@ -62,8 +62,8 @@ public class FactorLevelDAO {
                 pageSize
         );
     }
-    
-     /**
+
+    /**
      * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty simple attribute ( not a {@link List} from the {@link ExperimentSearchDTO}
      *
      * @param alias search factor levels by alias
@@ -81,7 +81,7 @@ public class FactorLevelDAO {
         if (alias != null) {
             exprList.add(SPARQLQueryHelper.regexFilter(FactorLevelModel.ALIAS_FIELD, alias));
         }
-        
+
         // build equality filters
         if (hasFactor!= null) {
             exprList.add(SPARQLQueryHelper.eq(FactorLevelModel.HAS_FACTOR_FIELD, hasFactor));

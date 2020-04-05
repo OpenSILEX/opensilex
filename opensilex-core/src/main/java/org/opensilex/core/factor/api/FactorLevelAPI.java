@@ -74,11 +74,7 @@ public class FactorLevelAPI {
     public static final String CREDENTIAL_FACTOR_LEVEL_DELETE_LABEL_KEY = "credential.factorLevels.delete";
 
     @Inject
-    public FactorLevelAPI(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     /**
      * Create a factor Level model from a FactorLevelCreationDTO object

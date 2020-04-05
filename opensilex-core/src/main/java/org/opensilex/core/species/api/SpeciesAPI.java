@@ -31,13 +31,9 @@ public class SpeciesAPI {
 
     public static final String CREDENTIAL_SPECIES_GROUP_ID = "Species";
 
-    private final SPARQLService sparql;
-
     @Inject
-    public SpeciesAPI(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
+    private SPARQLService sparql;
+    
     @GET
     @Path("getAll")
     @ApiOperation("get all species")

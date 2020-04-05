@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -615,26 +616,29 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
         try {
             startTransaction();
             SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(instance.getClass());
-            URI rdfType = instance.getType();
-            if (rdfType == null) {
-                instance.setType(new URI(mapper.getRDFType().getURI()));
-            } else {
-                instance.setType(rdfType);
-            }
-            generateUniqueUriIfNullOrValidateCurrent(mapper, instance, checkUriExist);
-
-            validateReverseRelations(instance);
-
-            for (SPARQLResourceModel subInstance : mapper.getAllDependentResourcesToCreate(instance)) {
-                create(subInstance);
-            }
-
+            prepareInstanceCreation(instance, mapper, checkUriExist);
             UpdateBuilder create = mapper.getCreateBuilder(graph, instance);
             executeUpdateQuery(create);
             commitTransaction();
         } catch (Exception ex) {
             rollbackTransaction(ex);
             throw ex;
+        }
+    }
+
+    private <T extends SPARQLResourceModel> void prepareInstanceCreation(T instance, SPARQLClassObjectMapper<T> mapper, boolean checkUriExist) throws Exception {
+        URI rdfType = instance.getType();
+        if (rdfType == null) {
+            instance.setType(new URI(mapper.getRDFType().getURI()));
+        } else {
+            instance.setType(rdfType);
+        }
+        generateUniqueUriIfNullOrValidateCurrent(mapper, instance, checkUriExist);
+
+        validateReverseRelations(instance);
+
+        for (SPARQLResourceModel subInstance : mapper.getAllDependentResourcesToCreate(instance)) {
+            create(subInstance);
         }
     }
 
@@ -649,8 +653,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
             validateReverseRelations(instances);
             for (T instance : instances) {
                 SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(instance.getClass());
-                create(graph, mapper.getAllDependentResourcesToCreate(instance));
-                generateUniqueUriIfNullOrValidateCurrent(mapper, instance, true);
+                prepareInstanceCreation(instance, mapper, true);
                 mapper.addCreateBuilder(graph, instance, create);
             }
 
@@ -695,8 +698,10 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
                 throw new SPARQLInvalidURIException(instance.getUri());
             }
 
-            delete(graph, oldInstance.getClass(), oldInstance.getUri());
-            create(graph, instance, false);
+            prepareInstanceCreation(instance, mapper, false);
+
+            UpdateBuilder update = mapper.getUpdateBuilder(oldInstance, instance);
+            executeUpdateQuery(update);
 
             commitTransaction();
         } catch (Exception ex) {
@@ -723,7 +728,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
                         instanceGraph = getDefaultGraph(instance.getClass());
                     }
 
-                    update(graph, instance);
+                    update(instanceGraph, instance);
                 }
             }
             commitTransaction();

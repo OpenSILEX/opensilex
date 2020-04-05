@@ -163,11 +163,10 @@ public class ClassUtils {
         return getPomFile(getJarFile(clazz), groupId, artifactId);
     }
 
-    
     public static File getFileFromClassArtifact(Class<?> clazz, String filePath) throws IOException {
         return getFileFromJar(getJarFile(clazz), filePath);
     }
-    
+
     public static File getFileFromJar(File jarFile, String filePath) throws IOException {
         if (jarFile.isFile()) {
             ZipFile zipFile = new ZipFile(jarFile);
@@ -335,6 +334,10 @@ public class ClassUtils {
         }
 
         return reflections;
+    }
+
+    public static <T extends Object> Set<Class<? extends T>> getSubTypesOf(Class<T> superType) {
+        return getReflectionInstance().getSubTypesOf(superType);
     }
 
     public static Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> annotation) {

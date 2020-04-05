@@ -244,8 +244,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
     }
 
     @Override
-    public void clearGraph() throws Exception {
-        super.clearGraph();
+    public void afterEach() throws Exception {
         SecurityModule.createDefaultSuperAdmin();
     }
 }

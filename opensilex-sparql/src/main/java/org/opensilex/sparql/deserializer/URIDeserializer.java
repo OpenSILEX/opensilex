@@ -37,7 +37,7 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
 
     public static URI formatURI(URI uri) {
         if (uri == null || prefixes == null) {
-            return null;
+            return uri;
         }
         try {
             if (usePrefixes) {

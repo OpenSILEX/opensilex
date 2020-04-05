@@ -15,7 +15,7 @@ import org.opensilex.unit.test.AbstractUnitTest;
 public class SPARQLClassAnalyzerTest extends AbstractUnitTest  {
 
     private static SPARQLService sparql;
-    
+
     @BeforeClass
     public static void initialize() throws Exception {
 
@@ -37,14 +37,14 @@ public class SPARQLClassAnalyzerTest extends AbstractUnitTest  {
 
     @Test(expected = SPARQLInvalidClassDefinitionException.class)
     public void testNoGetterClass() throws SPARQLInvalidClassDefinitionException {
-        NoGetterClass c = new NoGetterClass();
-        new SPARQLClassAnalyzer(c.getClass());
+            NoGetterClass c = new NoGetterClass();
+            new SPARQLClassAnalyzer(c.getClass());
     }
 
     @Test(expected = SPARQLInvalidClassDefinitionException.class)
     public void testNoSetterClass() throws SPARQLInvalidClassDefinitionException {
-        NoSetterClass c = new NoSetterClass();
-        new SPARQLClassAnalyzer(c.getClass());
+            NoSetterClass c = new NoSetterClass();
+            new SPARQLClassAnalyzer(c.getClass());
     }
 
 }

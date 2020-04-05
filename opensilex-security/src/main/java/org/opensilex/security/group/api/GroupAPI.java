@@ -68,15 +68,8 @@ public class GroupAPI {
     public static final String CREDENTIAL_GROUP_READ_ID = "group-read";
     public static final String CREDENTIAL_GROUP_READ_LABEL_KEY = "credential.group.read";
 
-    private final SPARQLService sparql;
-
-    /**
-     * Inject SPARQL service
-     */
     @Inject
-    public GroupAPI(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
+    private SPARQLService sparql;
 
     /**
      * Create a group and return it's URI

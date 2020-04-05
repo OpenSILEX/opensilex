@@ -119,7 +119,7 @@
               :options="languages"
               :show-labels="false"
               :allow-empty="false"
-              placeholder="Pick a value"
+              :placeholder="$t('component.common.select-lang') + ':'"
             />
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
@@ -239,6 +239,9 @@ export default class UserForm extends Vue {
   onValidate() {
     return new Promise((resolve, reject) => {
       this.form.language = this.selectedLang.id;
+      if (this.form.password == "") {
+        this.form.password = null;
+      }
       if (this.editMode) {
         this.$emit("onUpdate", this.form, result => {
           if (result instanceof Promise) {

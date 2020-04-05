@@ -54,11 +54,7 @@ import org.opensilex.utils.ListWithPagination;
 public class EntityAPI {
 
     @Inject
-    public EntityAPI(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     @POST
     @ApiOperation("Create an entity")

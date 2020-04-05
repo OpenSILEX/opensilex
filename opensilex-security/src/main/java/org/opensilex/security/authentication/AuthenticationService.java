@@ -51,7 +51,7 @@ import org.opensilex.security.extensions.LoginExtension;
  *
  * Logged in users are registred in a concurrent map with their token
  * and automatically unregistred after token expiration.
- * 
+ *
  * For existing claim ids, see: https://www.iana.org/assignments/jwt/jwt.xhtml#claims
  * </pre>
  *
@@ -141,6 +141,7 @@ public class AuthenticationService implements Service {
             put(CLAIM_LAST_NAME, String.class);
             put(CLAIM_EMAIL, String.class);
             put(CLAIM_FULL_NAME, String.class);
+            put(CLAIM_LOCALE, String.class);
             put(CLAIM_IS_ADMIN, Boolean.class);
             put(CLAIM_CREDENTIALS_LIST, List.class);
         }

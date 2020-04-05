@@ -31,6 +31,7 @@ import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.ontology.dal.PropertyModel;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.response.ResourceTreeResponse;
 
@@ -42,15 +43,11 @@ import org.opensilex.sparql.response.ResourceTreeResponse;
 @Path("/ontology")
 public class OntologyAPI {
 
-    private final SPARQLService sparql;
+    @CurrentUser
+    UserModel currentUser;
 
-    /**
-     * Inject SPARQL service
-     */
     @Inject
-    public OntologyAPI(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
+    private SPARQLService sparql;
 
     @GET
     @Path("/subclass-of")
@@ -64,15 +61,13 @@ public class OntologyAPI {
     })
     public Response getSubClassesOf(
             @ApiParam(value = "Parent RDF class URI") @QueryParam("parentClass") @ValidURI URI parentClass,
-            @ApiParam(value = "Flag to determine if only sub-classes must be include in result") @DefaultValue("false") @QueryParam("ignoreRootClasses") boolean ignoreRootClasses,
-            @Context SecurityContext securityContext
+            @ApiParam(value = "Flag to determine if only sub-classes must be include in result") @DefaultValue("false") @QueryParam("ignoreRootClasses") boolean ignoreRootClasses
     ) throws Exception {
-        UserModel user = (UserModel) securityContext.getUserPrincipal();
         OntologyDAO dao = new OntologyDAO(sparql);
 
         SPARQLTreeListModel<ClassModel> tree = dao.searchSubClasses(
                 parentClass,
-                user,
+                currentUser,
                 ignoreRootClasses
         );
 
@@ -91,15 +86,13 @@ public class OntologyAPI {
     })
     public Response getSubPropertiesOf(
             @ApiParam(value = "Parent RDF Property URI", example = "owl:DatatypeProperty") @QueryParam("parentProperty") @ValidURI URI parentProperty,
-            @ApiParam(value = "Flag to determine if only sub-properties must be include in result") @DefaultValue("false") @QueryParam("ignoreRootProperties") boolean ignoreRootProperties,
-            @Context SecurityContext securityContext
+            @ApiParam(value = "Flag to determine if only sub-properties must be include in result") @DefaultValue("false") @QueryParam("ignoreRootProperties") boolean ignoreRootProperties
     ) throws Exception {
-        UserModel user = (UserModel) securityContext.getUserPrincipal();
         OntologyDAO dao = new OntologyDAO(sparql);
 
         SPARQLTreeListModel<PropertyModel> tree = dao.searchProperties(
                 parentProperty,
-                user,
+                currentUser,
                 ignoreRootProperties
         );
 

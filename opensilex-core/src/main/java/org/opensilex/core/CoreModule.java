@@ -70,27 +70,21 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
         list.add(new OntologyFileDefinition(
                 OA.NS,
-                "install/oa.rdf",
+                "ontologies/oa.rdf",
                 Lang.RDFXML,
                 "oa"
         ));
         list.add(new OntologyFileDefinition(
                 "http://www.opensilex.org/vocabulary/oeso#",
-                "install/oeso.owl",
+                "ontologies/oeso-core.owl",
                 Lang.RDFXML,
                 "oeso"
         ));
         list.add(new OntologyFileDefinition(
                 "http://www.opensilex.org/vocabulary/oeev#",
-                "install/oeev.owl",
+                "ontologies/oeev.owl",
                 Lang.RDFXML,
                 "oeev"
-        ));
-        list.add(new OntologyFileDefinition(
-                sparqlConfig.baseURI() + "species",
-                "install/species.ttl",
-                Lang.TTL,
-                sparqlConfig.baseURIAlias() + "-species"
         ));
         return list;
     }

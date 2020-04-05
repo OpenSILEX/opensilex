@@ -11,11 +11,9 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,7 +22,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ResourceInfo;
+import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -38,7 +36,6 @@ import org.opensilex.server.exceptions.UnauthorizedException;
 import org.opensilex.server.exceptions.UnexpectedErrorException;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.SecurityContextProxy;
-import org.opensilex.security.authentication.dal.SecurityAccessDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,13 +77,11 @@ import org.slf4j.LoggerFactory;
  * @author Vincent Migot
  */
 @Provider
+@PreMatching
 @Priority(Priorities.AUTHENTICATION)
 public class AuthenticationFilter implements ContainerRequestFilter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationFilter.class);
-
-    @Context
-    ResourceInfo resourceInfo;
 
     @Context
     HttpHeaders headers;
@@ -96,7 +91,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        Method apiMethod = resourceInfo.getResourceMethod();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Incoming request URI: " + requestContext.getUriInfo().getRequestUri());
             LOGGER.debug("Incoming request method: " + requestContext.getMethod());
@@ -119,82 +113,49 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                 LOGGER.debug("Error while reading request body: ", ex);
             }
         }
+        // get user header token
+        String tokenValue = requestContext.getHeaderString(ApiProtected.HEADER_NAME);
 
-        if (apiMethod != null) {
-            // Get method ApiProtected annotation
-            ApiProtected securityAnnotation = apiMethod.getAnnotation(ApiProtected.class);
+        // Ignore user definition if no token
+        if (tokenValue != null) {
 
-            if (securityAnnotation != null) {
-                // If annotation is present, get user header token
-                String tokenValue = requestContext.getHeaderString(ApiProtected.HEADER_NAME);
+            try {
+                // Decode token
+                String token = tokenValue.replace(ApiProtected.TOKEN_PARAMETER_PREFIX, "");
+                URI userURI = authentication.decodeTokenUserURI(token);
 
-                // Throw exception if no token
-                if (tokenValue == null) {
-                    throw new UnauthorizedException();
+                // Get corresponding user
+                UserModel user;
+                if (authentication.hasUserURI(userURI)) {
+                    user = authentication.getUserByUri(userURI);
+                } else {
+                    throw new ForbiddenException("User not found with URI: " + userURI);
                 }
 
-                try {
-                    // Decode token
-                    String token = tokenValue.replace(ApiProtected.TOKEN_PARAMETER_PREFIX, "");
-                    URI userURI = authentication.decodeTokenUserURI(token);
+                // Define user to be accessed through SecurityContext
+                SecurityContext originalContext = requestContext.getSecurityContext();
+                List<Locale> locales = headers.getAcceptableLanguages();
 
-                    // Get corresponding user
-                    UserModel user;
-                    if (authentication.hasUserURI(userURI)) {
-                        user = authentication.getUserByUri(userURI);
-                    } else {
-                        throw new ForbiddenException("User not found with URI: " + userURI);
-                    }
-
-                    boolean hasCredential = false;
-                    if (user.isAdmin()) {
-                        hasCredential = true;
-                    } else {
-                        // If user is not an admin check credentials if needed
-                        String credentialId = SecurityAccessDAO.getCredentialIdFromMethod(apiMethod);
-                        if (credentialId != null) {
-                            // Get current API service credential
-
-                            // Get user credentials from token
-                            String[] accessList = authentication.decodeTokenCredentialsList(user.getToken());
-
-                            // Check user credential existence
-                            hasCredential = Arrays.stream(accessList).anyMatch(credentialId::equals);
-                        } else {
-                            // If no specific credential, user logged in is sufficient
-                            hasCredential = true;
-                        }
-                    }
-
-                    if (!hasCredential) {
-                        throw new ForbiddenException("You don't have credentials to access this API");
-                    }
-
-                    // Define user to be accessed through SecurityContext
-                    SecurityContext originalContext = requestContext.getSecurityContext();
-                    List<Locale> locales = headers.getAcceptableLanguages();
-
-                    Locale locale = null;
-                    for (Locale l : locales) {
-                        locale = l;
-                        break;
-                    }
-                    if (locale == null) {
-                        locale = LocaleUtils.toLocale(OpenSilex.getDefaultLanguage());
-                    }
-                    user.setLocale(locale);
-
-                    SecurityContext newContext = new SecurityContextProxy(originalContext, user);
-                    requestContext.setSecurityContext(newContext);
-
-                } catch (JWTVerificationException | URISyntaxException ex) {
-                    LOGGER.debug("Error while decoding and verifying token: " + ex.getMessage());
-                    throw new UnauthorizedException();
-                } catch (ForbiddenException ex) {
-                    throw ex;
-                } catch (Throwable ex) {
-                    throw new UnexpectedErrorException(ex);
+                Locale locale = null;
+                for (Locale l : locales) {
+                    locale = l;
+                    break;
                 }
+                if (locale == null) {
+                    locale = LocaleUtils.toLocale(OpenSilex.getDefaultLanguage());
+                }
+                user.setLocale(locale);
+
+                SecurityContext newContext = new SecurityContextProxy(originalContext, user);
+                requestContext.setSecurityContext(newContext);
+
+            } catch (JWTVerificationException | URISyntaxException ex) {
+                LOGGER.debug("Error while decoding and verifying token: " + ex.getMessage());
+                throw new UnauthorizedException();
+            } catch (ForbiddenException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new UnexpectedErrorException(ex);
             }
         }
     }

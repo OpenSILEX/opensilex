@@ -8,14 +8,23 @@ package org.opensilex.security;
 
 import java.net.URI;
 import java.util.*;
+import javax.inject.Singleton;
 import javax.mail.internet.InternetAddress;
+import org.glassfish.hk2.api.InjectionResolver;
+import org.glassfish.hk2.api.TypeLiteral;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.process.internal.RequestScoped;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.authentication.dal.SecurityAccessDAO;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.authentication.injection.CurrentUserFactory;
+import org.opensilex.security.authentication.injection.CurrentUserResolver;
 import org.opensilex.security.user.dal.UserDAO;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory;
 import org.opensilex.sparql.service.SPARQLService;
@@ -45,6 +54,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension {
         list.add("io.swagger.jaxrs.listing");
         list.add("org.opensilex.security.authentication");
         list.add("org.opensilex.security.authentication.filters");
+        list.add("org.opensilex.security.authentication.injection");
 
         return list;
     }
@@ -114,5 +124,14 @@ public class SecurityModule extends OpenSilexModule implements APIExtension {
         if (!userDAO.userEmailexists(email)) {
             userDAO.create(null, email, "Admin", "OpenSilex", true, authentication.getPasswordHash("admin"), "en");
         }
+    }
+
+    @Override
+    public void bindServices(AbstractBinder binder) {
+        binder.bindFactory(CurrentUserFactory.class).to(UserModel.class)
+                .proxy(true).proxyForSameScope(false).in(RequestScoped.class);
+
+        binder.bind(CurrentUserResolver.class).to(new TypeLiteral<InjectionResolver<CurrentUser>>() {
+        }).in(Singleton.class);
     }
 }

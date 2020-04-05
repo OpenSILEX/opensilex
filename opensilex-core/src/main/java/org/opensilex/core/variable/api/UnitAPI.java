@@ -54,11 +54,7 @@ import org.opensilex.utils.ListWithPagination;
 public class UnitAPI {
 
     @Inject
-    public UnitAPI(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
+    private SPARQLService sparql;
 
     @POST
     @ApiOperation("Create a unit")

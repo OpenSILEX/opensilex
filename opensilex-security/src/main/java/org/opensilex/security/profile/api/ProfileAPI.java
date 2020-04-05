@@ -80,15 +80,8 @@ public class ProfileAPI {
     public static final String CREDENTIAL_PROFILE_READ_ID = "profile-read";
     public static final String CREDENTIAL_PROFILE_READ_LABEL_KEY = "credential.profile.read";
 
-    private final SPARQLService sparql;
-
-    /**
-     * Inject SPARQL service
-     */
     @Inject
-    public ProfileAPI(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
+    private SPARQLService sparql;
 
     @POST
     @Path("create")

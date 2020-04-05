@@ -75,14 +75,9 @@ public class FactorAPI {
     public static final String CREDENTIAL_FACTOR_DELETE_ID = "factors-delete";
     public static final String CREDENTIAL_FACTOR_DELETE_LABEL_KEY = "credential.factors.delete";
 
-    
     @Inject
-    public FactorAPI(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
-
-    private final SPARQLService sparql;
-
+    private SPARQLService sparql;
+    
     /**
      * Create a factor model from a FactorCreationDTO object
      *

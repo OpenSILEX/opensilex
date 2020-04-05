@@ -60,7 +60,7 @@ public class RestApplication extends ResourceConfig {
      */
     private OpenSilex app;
 
-    public RestApplication(@Context ServletContext ctx) throws ModuleNotFoundException {
+    public RestApplication(@Context ServletContext ctx) {
         this((OpenSilex) ctx.getAttribute("opensilex"));
     }
 
@@ -72,12 +72,12 @@ public class RestApplication extends ResourceConfig {
      * - initialize swagger
      * - register services for injection
      * - register modules classes for injection
-     * - call all modules initAPI method
+     * - call all modules initRestApplication method
      * </pre>
      *
      * @param app OpenSilex instance
      */
-    public RestApplication(OpenSilex app) throws ModuleNotFoundException {
+    public RestApplication(OpenSilex app) {
         this.app = app;
 
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
@@ -130,7 +130,7 @@ public class RestApplication extends ResourceConfig {
      * Initialize swagger UI registering every packages to scan for services
      * defined in modules
      */
-    private void initSwagger() throws ModuleNotFoundException {
+    private void initSwagger() {
         // Load all packages to scan from modules implementing APIExtension
         ArrayList<String> packageList = new ArrayList<>();
 
@@ -141,7 +141,11 @@ public class RestApplication extends ResourceConfig {
         // Init swagger UI
         BeanConfig beanConfig = new BeanConfig();
         ;
-        beanConfig.setVersion(app.getModuleByClass(ServerModule.class).getOpenSilexVersion());
+        try {
+            beanConfig.setVersion(app.getModuleByClass(ServerModule.class).getOpenSilexVersion());
+        } catch (ModuleNotFoundException ex) {
+            LOGGER.warn("Errro while getting API version", ex);
+        }
         beanConfig.setResourcePackage(String.join(",", packageList));
         beanConfig.setTitle("OpenSilex API");
         beanConfig.setExpandSuperTypes(false);
@@ -162,7 +166,7 @@ public class RestApplication extends ResourceConfig {
      */
     private void initModules() {
         getAPIExtensionModules().forEach((APIExtension api) -> {
-            api.initAPI(this);
+            api.initRestApplication(this);
         });
     }
 
@@ -192,6 +196,10 @@ public class RestApplication extends ResourceConfig {
                             bind(implementation).named(name).to((Class<? super Service>) serviceClass);
                         }
                     });
+                });
+
+                getAPIExtensionModules().forEach((APIExtension api) -> {
+                    api.bindServices(this);
                 });
             }
         });

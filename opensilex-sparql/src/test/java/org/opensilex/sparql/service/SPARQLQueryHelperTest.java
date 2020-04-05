@@ -3,13 +3,11 @@
 // Copyright © INRAE 2020
 // Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
-
 package org.opensilex.sparql.service;
 
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.query.Query;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.E_GreaterThanOrEqual;
 import org.apache.jena.sparql.expr.E_LessThanOrEqual;
@@ -31,7 +29,6 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
 
 import static org.junit.Assert.*;
 import org.opensilex.unit.test.AbstractUnitTest;
@@ -85,7 +82,7 @@ public class SPARQLQueryHelperTest extends AbstractUnitTest  {
         assertEquals(dateRange.toString(), "(&& (>= ?start \"2020-01-06\"^^<http://www.w3.org/2001/XMLSchema#date>) (<= ?end \"2020-02-05\"^^<http://www.w3.org/2001/XMLSchema#date>))");
 
         E_LogicalAnd and = (E_LogicalAnd) dateRange;
-        
+
         Expr startDatePart = and.getArg1();
         Expr endDatePart = and.getArg2();
         assertTrue(startDatePart instanceof E_GreaterThanOrEqual);
@@ -129,11 +126,11 @@ public class SPARQLQueryHelperTest extends AbstractUnitTest  {
 
         SelectBuilder select = new SelectBuilder();
 
-        Map<String,List<?>> valuesMap = new HashMap<>();
-        valuesMap.put("var",Arrays.asList("v1","v2"));
+        Map<String, List<?>> valuesMap = new HashMap<>();
+        valuesMap.put("var", Arrays.asList("v1", "v2"));
         valuesMap.put("var2", Collections.singletonList("v3"));
 
-        SPARQLQueryHelper.addWhereValues(select,valuesMap);
+        SPARQLQueryHelper.addWhereValues(select, valuesMap);
         select.buildString();
     }
 
@@ -141,10 +138,10 @@ public class SPARQLQueryHelperTest extends AbstractUnitTest  {
     public void testWhereValuesWithURI() throws Exception {
 
         List<URI> uris = Arrays.asList(
-            new URI("http://opensilex.org/set/experiments/xp"),
-            new URI("http://opensilex.org/set/experiments/xp1"),
-            new URI("rdf:type"),
-            new URI("rdfs:class")
+                new URI("http://opensilex.org/set/experiments/xp"),
+                new URI("http://opensilex.org/set/experiments/xp1"),
+                new URI("rdf:type"),
+                new URI("rdfs:class")
         );
         testWhereValues(new SelectBuilder(), NodeFactory.createVariable("experiment"), uris);
     }
@@ -180,9 +177,9 @@ public class SPARQLQueryHelperTest extends AbstractUnitTest  {
         testWhereValues(new SelectBuilder(), NodeFactory.createVariable("hasFloat"), floats);
 
         List<BigInteger> bigIntegers = Arrays.asList(
-            new BigInteger("49888881998416616565888888888448748751114797"),
-            new BigInteger("2434718947848647864635429020081766404878459000"),
-            new BigInteger("2434718947848647864635429020081766404878459000").multiply(new BigInteger("78948647446"))
+                new BigInteger("49888881998416616565888888888448748751114797"),
+                new BigInteger("2434718947848647864635429020081766404878459000"),
+                new BigInteger("2434718947848647864635429020081766404878459000").multiply(new BigInteger("78948647446"))
         );
         testWhereValues(new SelectBuilder(), NodeFactory.createVariable("hasBigInt"), bigIntegers);
 
@@ -192,7 +189,7 @@ public class SPARQLQueryHelperTest extends AbstractUnitTest  {
     public void testWhereValuesWithEmail() throws Exception {
 
         List<InternetAddress> addresses = Arrays.asList(
-            InternetAddress.parse("abc@abc.com, admin@opensilex.org, opensilex@inrae.fr")
+                InternetAddress.parse("abc@abc.com, admin@opensilex.org, opensilex@inrae.fr")
         );
         testWhereValues(new SelectBuilder(), NodeFactory.createVariable("hasMail"), addresses);
     }
@@ -205,8 +202,9 @@ public class SPARQLQueryHelperTest extends AbstractUnitTest  {
 
         String str = "some str which will be converted to byte[] 4 44978df";
         List<Byte> byteListFromStr = new ArrayList<>(str.length());
-        for (byte b : str.getBytes())
+        for (byte b : str.getBytes()) {
             byteListFromStr.add(b);
+        }
         testWhereValues(new SelectBuilder(), NodeFactory.createVariable("hasByte"), byteListFromStr);
     }
 
@@ -215,26 +213,26 @@ public class SPARQLQueryHelperTest extends AbstractUnitTest  {
 
         String str = "some str which will be converted to byte[] 4 44978df";
         List<Character> chars = new ArrayList<>(str.length());
-        for (int i = 0; i < str.length(); i++)
+        for (int i = 0; i < str.length(); i++) {
             chars.add(str.charAt(i));
+        }
         testWhereValues(new SelectBuilder(), NodeFactory.createVariable("hasChar"), chars);
     }
-
 
     @Test
     public void testWhereValuesWithDateTypes() throws Exception {
 
         List<LocalDate> dates = Arrays.asList(
-            LocalDate.now(),
-            LocalDate.now().plusDays(50),
-            LocalDate.now().minusMonths(4)
+                LocalDate.now(),
+                LocalDate.now().plusDays(50),
+                LocalDate.now().minusMonths(4)
         );
         testWhereValues(new SelectBuilder(), NodeFactory.createVariable("hasDate"), dates);
 
         List<OffsetDateTime> dataTimes = Arrays.asList(
-            OffsetDateTime.parse("2011-12-03T10:15:30+01:00"),
-            OffsetDateTime.now(),
-            OffsetDateTime.of(2020, 4, 28, 14, 32, 58, 0, ZoneOffset.ofHours(1))
+                OffsetDateTime.parse("2011-12-03T10:15:30+01:00"),
+                OffsetDateTime.now(),
+                OffsetDateTime.of(2020, 4, 28, 14, 32, 58, 0, ZoneOffset.ofHours(1))
         );
         testWhereValues(new SelectBuilder(), NodeFactory.createVariable("hasDateTime"), dataTimes);
     }
@@ -242,10 +240,10 @@ public class SPARQLQueryHelperTest extends AbstractUnitTest  {
     @Test(expected = SPARQLDeserializerNotFoundException.class)
     public void testWhereValueWithUnknownType() throws Exception {
 
-        List<Set<String>> setList = new ArrayList<>();
-        setList.add(new HashSet<>());
-        setList.get(0).addAll(Arrays.asList("str1", "str2"));
+            List<Set<String>> setList = new ArrayList<>();
+            setList.add(new HashSet<>());
+            setList.get(0).addAll(Arrays.asList("str1", "str2"));
 
-        testWhereValues(new SelectBuilder(), NodeFactory.createVariable("hasSet"), setList);
+            testWhereValues(new SelectBuilder(), NodeFactory.createVariable("hasSet"), setList);
     }
 }

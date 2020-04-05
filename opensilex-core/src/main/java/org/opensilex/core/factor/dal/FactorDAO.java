@@ -23,7 +23,7 @@ import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
 /**
- * 
+ *
  * @author Arnaud Charleroy
  */
 public class FactorDAO {
@@ -65,11 +65,11 @@ public class FactorDAO {
                 pageSize
         );
     }
-    
+
     public List<FactorModel> getAll() throws Exception {
        return  sparql.search(FactorModel.class, null); 
     }
-    
+
     /**
      * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty simple attribute ( not a {@link List} from the {@link FactorSearchDTO}
      *
@@ -80,8 +80,8 @@ public class FactorDAO {
      */
     protected void appendFilters(String alias, SelectBuilder select) throws Exception {
 
-        List<Expr> exprList = new ArrayList<>(); 
-        
+        List<Expr> exprList = new ArrayList<>();
+
         // build regex filters
         if (alias != null) {
             exprList.add(SPARQLQueryHelper.regexFilter(FactorModel.ALIAS_FIELD, alias));
@@ -91,5 +91,5 @@ public class FactorDAO {
             select.addFilter(filterExpr);
         }
     }
-    
+
 }

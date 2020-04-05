@@ -104,7 +104,6 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
         ObjectMapper mapper = new ObjectMapper();
-        LOGGER.info(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node));
         SingleObjectResponse<UserGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<UserGetDTO>>() {
         });
         UserGetDTO dtoFromApi = getResponse.getResult();
@@ -226,8 +225,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
     }
 
     @Override
-    public void clearGraph() throws Exception {
-        super.clearGraph();
+    public void afterEach() throws Exception {
         SecurityModule.createDefaultSuperAdmin();
     }
 }

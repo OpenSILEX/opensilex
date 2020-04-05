@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import opensilex.service.PhisWsModule;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
@@ -76,7 +75,7 @@ public class RegenerateAPI {
                     moduleAPI.setHost("localhost");
                     File targetDirectory = ClassUtils.getJarFile(module.getClass());
                     Path modulePath = Paths.get(targetDirectory.getAbsolutePath()).resolve("../..");
-                    if (module.getClass().equals(PhisWsModule.class)) {
+                    if (module.getClass().getCanonicalName().equals("opensilex.service.PhisWsModule")) {
                         modulePath = modulePath.resolve("../");
                     }
                     Path swaggerJsonLibPath = modulePath.resolve("front/src/lib/");

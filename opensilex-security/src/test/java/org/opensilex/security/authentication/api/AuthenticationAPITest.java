@@ -1,4 +1,4 @@
-package org.opensilex.security.api;
+package org.opensilex.security.authentication.api;
 
 import org.opensilex.security.authentication.api.TokenGetDTO;
 import org.opensilex.security.authentication.api.CredentialsGroupDTO;

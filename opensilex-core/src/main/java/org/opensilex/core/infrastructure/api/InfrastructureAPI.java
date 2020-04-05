@@ -25,10 +25,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.infrastructure.dal.InfrastructureDAO;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
@@ -39,6 +37,7 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
@@ -71,16 +70,12 @@ public class InfrastructureAPI {
     public static final String CREDENTIAL_INFRASTRUCTURE_READ_ID = "infrastructure-read";
     public static final String CREDENTIAL_INFRASTRUCTURE_READ_LABEL_KEY = "credential.infrastructure.read";
 
-    private final SPARQLService sparql;
-
-    /**
-     * Inject SPARQL service
-     */
     @Inject
-    public InfrastructureAPI(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
+    private SPARQLService sparql;
 
+    @CurrentUser
+    UserModel user;
+    
     @POST
     @Path("create")
     @ApiOperation("Create an infrastructure")
@@ -131,10 +126,8 @@ public class InfrastructureAPI {
     })
     public Response getInfrastructure(
             @ApiParam(value = "Infrastructure URI", example = "http://opensilex.dev/infrastructures/phenoarch", required = true) @PathParam("uri") @NotNull URI uri,
-            @ApiParam(value = "language", example = "en") @DefaultValue("en") @QueryParam("language") @NotEmpty String language,
-            @Context SecurityContext securityContext
+            @ApiParam(value = "language", example = "en") @DefaultValue("en") @QueryParam("language") @NotEmpty String language
     ) throws Exception {
-        UserModel user = (UserModel) securityContext.getUserPrincipal();
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
         InfrastructureModel model = dao.get(uri, user.getLanguageDefault(language));
 
@@ -189,10 +182,8 @@ public class InfrastructureAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchInfrastructuresTree(
-            @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
-            @Context SecurityContext securityContext
+            @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern
     ) throws Exception {
-        UserModel user = (UserModel) securityContext.getUserPrincipal();
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
 
         SPARQLTreeListModel<InfrastructureModel> tree = dao.searchTree(

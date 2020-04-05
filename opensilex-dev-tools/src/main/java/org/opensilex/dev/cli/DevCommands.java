@@ -35,7 +35,7 @@ public class DevCommands extends HelpPrinterCommand implements OpenSilexCommand 
             @CommandLine.Mixin HelpOption help
     ) throws Exception {
         Path baseDirectory = Paths.get(System.getProperty("user.dir")).resolve("../../../opensilex-dev-tools/");
-        Install.install(reset, baseDirectory.toAbsolutePath().toString());
+        Install.install(reset, baseDirectory);
     }
 
     @CommandLine.Command(

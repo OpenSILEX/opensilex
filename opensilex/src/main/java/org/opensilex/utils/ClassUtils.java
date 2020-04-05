@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -252,6 +253,24 @@ public class ClassUtils {
 
     }
 
+    public static void executeOnClassFieldsRecursivly(Class<?> type, BiConsumer<Class<?>, Field> handler, Class<?> rootClass) {
+        if (type.getSuperclass() != null && !type.equals(rootClass) && !type.getSuperclass().equals(Object.class)) {
+            executeOnClassFieldsRecursivly(type.getSuperclass(), handler, rootClass);
+        }
+
+        for (Field f : type.getDeclaredFields()) {
+            handler.accept(type, f);
+        }
+    }
+
+    private static void getAllFields(List<Field> fields, Class<?> type) {
+        fields.addAll(Arrays.asList(type.getDeclaredFields()));
+
+        if (type.getSuperclass() != null) {
+            getAllFields(fields, type.getSuperclass());
+        }
+    }
+
     /**
      * Convert a JAR url to a file
      *
@@ -267,14 +286,6 @@ public class ClassUtils {
         }
 
         return jarFile;
-    }
-
-    private static void getAllFields(List<Field> fields, Class<?> type) {
-        fields.addAll(Arrays.asList(type.getDeclaredFields()));
-
-        if (type.getSuperclass() != null) {
-            getAllFields(fields, type.getSuperclass());
-        }
     }
 
     public static String getProjectIdFromClass(Class<?> classFromProject) {

@@ -136,9 +136,7 @@ export default class GroupForm extends Vue {
   }
 
   created() {
-    this.service = this.$opensilex.getService(
-      "opensilex.SecurityService"
-    );
+    this.service = this.$opensilex.getService("opensilex.SecurityService");
   }
 
   showCreateForm() {
@@ -151,7 +149,10 @@ export default class GroupForm extends Vue {
   }
 
   showEditForm(form: GroupUpdateDTO) {
-    this.form = form;
+    this.clearForm();
+    Object.keys(this.form).forEach(v => {
+      this.form[v] = form[v];
+    });
     this.userProfilesRef.initFormProfiles(form.userProfiles);
     this.editMode = true;
     this.title = this.$t("component.group.update").toString();

@@ -28,6 +28,7 @@ import java.util.Map;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.opensilex.OpenSilex;
 import static org.opensilex.OpenSilex.PROD_PROFILE_ID;
+import org.opensilex.OpenSilexConfig;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.config.ConfigProxyHandler.ServiceConstructorArguments;
 import org.opensilex.service.Service;
@@ -128,7 +129,24 @@ public class ConfigManager {
         yamlFactory.createGenerator(os).writeObject(root);
     }
 
-    public void build(Path baseDirectory, Iterable<OpenSilexModule> modules, String id, File baseConfigFile) {
+    public OpenSilexConfig buildSystemConfig(File baseConfigFile) throws IOException {
+        ObjectMapper systemMapper = new ObjectMapper(yamlFactory);
+        ObjectNode systemRoot = systemMapper.createObjectNode();
+
+        if (baseConfigFile != null) {
+            if (baseConfigFile.exists() && baseConfigFile.isFile()) {
+                systemRoot = systemMapper.updateValue(systemRoot, systemMapper.readTree(baseConfigFile));
+            }
+        }
+
+        return (OpenSilexConfig) Proxy.newProxyInstance(
+                OpenSilex.getClassLoader(),
+                new Class<?>[]{OpenSilexConfig.class},
+                new ConfigProxyHandler(OpenSilexConfig.YAML_KEY, systemRoot.deepCopy(), systemMapper)
+        );
+    }
+
+    public void build(Path baseDirectory, Iterable<OpenSilexModule> modules, String id, File baseConfigFile, OpenSilexConfig systemConfig) throws IOException {
         try {
             String extensionId = id;
             boolean buildExtension = false;
@@ -145,7 +163,12 @@ public class ConfigManager {
                 }
             }
 
+            Map<String, String> ignoredModules = systemConfig.ignoredModules();
             for (OpenSilexModule module : modules) {
+                if (ignoredModules.containsValue(module.getClass().getCanonicalName())) {
+                    continue;
+                }
+
                 InputStream prodFile = module.getConfigFile(OpenSilex.PROD_PROFILE_ID);
                 if (prodFile != null) {
                     addSource(prodFile);
@@ -187,13 +210,20 @@ public class ConfigManager {
                 LOGGER.debug("Loaded configuration");
                 LOGGER.debug(yaml);
             }
+
         } catch (IOException ex) {
             LOGGER.warn("Error while loading configuration", ex);
+            throw ex;
         }
+
     }
 
     public String getExpandedYAMLConfig(Iterable<OpenSilexModule> modules) throws Exception {
         StringBuilder yml = new StringBuilder();
+
+        yml.append("\n# " + StringUtils.repeat("-", 78) + "\n");
+        yml.append("# Base system configuration " + OpenSilex.class.getSimpleName() + " (" + OpenSilexConfig.class.getSimpleName() + ")\n");
+        addConfigInterface(yml, "system", OpenSilex.getSystemConfig(), OpenSilexConfig.class, 0);
 
         for (OpenSilexModule module : modules) {
             String configId = module.getConfigId();

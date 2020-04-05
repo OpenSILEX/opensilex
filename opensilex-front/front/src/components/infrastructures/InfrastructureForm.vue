@@ -92,12 +92,7 @@ import VueRouter from "vue-router";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import Oeso from "../../ontologies/Oeso";
 import GroupUserProfileForm from "../groups/GroupUserProfileForm.vue";
-import {
-  InfrastructureGetDTO,
-  InfrastructureCreationDTO,
-  ResourceTreeDTO,
-  OntologyService
-} from "opensilex-core/index";
+import { OntologyService, InfrastructureGetDTO, InfrastructureCreationDTO, ResourceTreeDTO } from "opensilex-core/index";
 
 @Component
 export default class InfrastructureForm extends Vue {
@@ -189,7 +184,9 @@ export default class InfrastructureForm extends Vue {
   }
 
   showEditForm(form: InfrastructureCreationDTO) {
-    this.form = form;
+    Object.keys(this.form).forEach(v => {
+      this.form[v] = form[v];
+    });
     this.userProfilesRef.initFormProfiles(form.userProfiles);
     this.editMode = true;
     this.title = this.$t("component.infrastructure.update").toString();

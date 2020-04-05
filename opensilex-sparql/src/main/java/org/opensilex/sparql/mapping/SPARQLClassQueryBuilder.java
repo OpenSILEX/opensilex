@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -242,22 +243,26 @@ class SPARQLClassQueryBuilder {
     }
 
     public <T extends SPARQLResourceModel> void addUpdateBuilder(Node graph, T oldInstance, T newInstance, UpdateBuilder update) throws Exception {
+
         final AtomicInteger i = new AtomicInteger(0);
+
         executeOnInstanceTriples(oldInstance, (Triple triple, Field field) -> {
             boolean isReverse = false;
-            boolean ignoreUpdateIfNull = false;
+            boolean ignoreUpdate = false;
+
+            List<URI> fieldRelationsToDelete = null;
             if (field != null) {
                 isReverse = analyzer.isReverseRelation(field);
                 try {
                     Object newFieldValue = analyzer.getFieldValue(field, newInstance);
-                    ignoreUpdateIfNull = newFieldValue == null && analyzer.getFieldAnnotation(field).ignoreUpdateIfNull();
+                    ignoreUpdate = newFieldValue == null && analyzer.getFieldAnnotation(field).ignoreUpdateIfNull();
                 } catch (Exception ex) {
                     LOGGER.warn("Unexpected error (should never happend) while reading field: " + field.getName(), ex);
                 }
 
             }
 
-            if (!ignoreUpdateIfNull) {
+            if (!ignoreUpdate) {
                 String var = "?x" + i.addAndGet(1);
 
                 if (graph != null) {
@@ -277,6 +282,30 @@ class SPARQLClassQueryBuilder {
                         update.addWhere(triple.getSubject(), triple.getPredicate(), var);
                     }
                 }
+            }
+
+            if (fieldRelationsToDelete != null) {
+                for (URI uri : fieldRelationsToDelete) {
+                    String var = "?x" + i.addAndGet(1);
+
+                    if (graph != null) {
+                        if (isReverse) {
+                            update.addDelete(graph, var, triple.getPredicate(), triple.getSubject());
+                            update.addWhere(var, triple.getPredicate(), triple.getSubject());
+                        } else {
+                            update.addDelete(graph, triple.getSubject(), triple.getPredicate(), var);
+                            update.addWhere(triple.getSubject(), triple.getPredicate(), var);
+                        }
+                    } else {
+                        if (isReverse) {
+                            update.addDelete(var, triple.getPredicate(), triple.getSubject());
+                            update.addWhere(var, triple.getPredicate(), triple.getSubject());
+                        } else {
+                            update.addDelete(triple.getSubject(), triple.getPredicate(), var);
+                            update.addWhere(triple.getSubject(), triple.getPredicate(), var);
+                        }
+                    }
+                };
             }
         }, true);
 

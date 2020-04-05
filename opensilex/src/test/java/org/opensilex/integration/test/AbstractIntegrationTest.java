@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
  *
  * Abstract class used for API testing
  */
-@Category(IntegrationTestCategory.class)
+//@Category(IntegrationTestCategory.class)
 public abstract class AbstractIntegrationTest extends JerseyTest {
 
     protected final static Logger LOGGER = LoggerFactory.getLogger(AbstractIntegrationTest.class);

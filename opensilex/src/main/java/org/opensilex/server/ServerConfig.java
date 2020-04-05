@@ -25,21 +25,10 @@ public interface ServerConfig {
     public String publicURI();
 
     @ConfigDescription(
-            value = "Default application language",
-            defaultString = OpenSilex.DEFAULT_LANGUAGE
-    )
-    public String defaultLanguage();
-
-    @ConfigDescription(
             value = "Available application language list",
             defaultList = {OpenSilex.DEFAULT_LANGUAGE, "fr"}
     )
     public List<String> availableLanguages();
-
-    @ConfigDescription(
-            value = "Modules loading order list"
-    )
-    public List<String> modulesOrder();
 
     @ConfigDescription(
             value = "Tomcat system properties"

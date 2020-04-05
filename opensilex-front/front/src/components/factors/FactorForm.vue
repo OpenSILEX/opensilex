@@ -148,7 +148,9 @@ export default class FactorForm extends Vue {
   }
 
   showEditForm(form: FactorCreationDTO) {
-    this.form = form;
+    Object.keys(this.form).forEach(v => {
+      this.form[v] = form[v];
+    });
     this.editMode = true;
     this.title = this.$t("component.factor.update").toString();
     this.uriGenerated = true;

@@ -173,7 +173,9 @@ export default class ProfileForm extends Vue {
   }
 
   showEditForm(form: ProfileGetDTO) {
-    this.form = form;
+    Object.keys(this.form).forEach(v => {
+      this.form[v] = form[v];
+    });
     this.editMode = true;
     this.title = this.$t("component.profile.update").toString();
     this.uriGenerated = true;

@@ -146,7 +146,24 @@ final class SPARQLClassAnalyzer {
 
         LOGGER.debug("Process fields annotations");
         relatedModelsFields = new HashMap<>();
-        for (Field field : ClassUtils.getClassFieldsRecursivly(objectClass)) {
+
+        Map<String, Field> fieldMapping = new HashMap<>();
+        ClassUtils.executeOnClassFieldsRecursivly(objectClass, (parentClass, field) -> {
+            SPARQLIgnore ignoreProperty = field.getDeclaredAnnotation(SPARQLIgnore.class);
+            if (ignoreProperty != null) {
+                LOGGER.debug("Ignore field: " + field.getName());
+                fieldMapping.remove(field.getName());
+            } else {
+                if (field.getAnnotation(SPARQLProperty.class) != null
+                        || field.getAnnotation(SPARQLResourceURI.class) != null
+                        || field.getAnnotation(SPARQLTypeRDF.class) != null
+                        || field.getAnnotation(SPARQLTypeRDFLabel.class) != null) {
+                    fieldMapping.put(field.getName(), field);
+                }
+            }
+        }, SPARQLResourceModel.class);
+
+        for (Field field : fieldMapping.values()) {
             field.setAccessible(true);
 
             SPARQLIgnore ignoreProperty = field.getAnnotation(SPARQLIgnore.class);
@@ -220,7 +237,7 @@ final class SPARQLClassAnalyzer {
         propertiesByField.putAll(dataPropertiesLists);
         propertiesByField.putAll(objectPropertiesLists);
 
-        for (Field field : ClassUtils.getClassFieldsRecursivly(objectClass)) {
+        for (Field field : fieldMapping.values()) {
 
             SPARQLProperty sProperty = field.getAnnotation(SPARQLProperty.class);
             if (sProperty == null) {
@@ -502,6 +519,13 @@ final class SPARQLClassAnalyzer {
         }
     }
 
+    public void setFieldValue(Field field, Object instance, Object value) {
+        try {
+            instance.getClass().getMethod(fieldsBySetter.inverse().get(field.getName()).getName()).invoke(instance, value);
+        } catch (Exception ex) {
+        }
+    }
+
     public Method getSetterFromField(Field field) {
         return fieldsBySetter.inverse().get(field.getName());
     }
@@ -536,6 +560,10 @@ final class SPARQLClassAnalyzer {
 
     public boolean isLabelField(Field f) {
         return labelProperties.containsKey(f.getName());
+    }
+
+    public boolean isNullIgnorableUpdateField(Field f) {
+        return getFieldAnnotation(f).ignoreUpdateIfNull();
     }
 
     public Resource getRDFType() {

@@ -20,15 +20,15 @@ import org.opensilex.sparql.annotations.SPARQLTypeRDFLabel;
 public abstract class SPARQLResourceModel implements SPARQLModel {
 
     @SPARQLResourceURI()
-    private URI uri;
+    protected URI uri;
     public static final String URI_FIELD = "uri";
 
     @SPARQLTypeRDF()
-    private URI type;
+    protected URI type;
     public static final String TYPE_FIELD = "type";
     
     @SPARQLTypeRDFLabel()
-    private SPARQLLabel typeLabel;
+    protected SPARQLLabel typeLabel;
 
     protected List<SPARQLModelRelation> relations = new ArrayList<>();
 

@@ -9,13 +9,12 @@ package org.opensilex.dev;
  *
  * @author vince
  */
-public class DisplayConfig {
+public class ResetOntologies {
 
     public static void main(String[] args) throws Exception {
         DevModule.runCommand(new String[]{
-            "system",
-            "full-config"
+            "sparql",
+            "reset-ontologies"
         });
     }
-
 }

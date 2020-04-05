@@ -15,13 +15,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
-import static org.opensilex.dev.StartServerWithFront.isWindows;
 import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.SwaggerAPIGenerator;
 import org.slf4j.Logger;
@@ -31,39 +28,23 @@ import org.slf4j.LoggerFactory;
  *
  * @author vincent
  */
-public class RegenerateAPI {
+public class ResetTypeScriptLib {
 
     private static String nodeBin = "node";
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(RegenerateAPI.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(ResetTypeScriptLib.class);
 
     public static void main(String[] args) throws Exception {
-        RegenerateAPI.generate(null);
+        ResetTypeScriptLib.generate(null);
     }
 
     private static OpenSilex opensilex;
 
-    public static void generate(String baseDirectory) throws Exception {
+    public static void generate(Path baseDirectory) throws Exception {
 
-        Map<String, String> args = new HashMap<String, String>() {
-            {
-                put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);
-//                put(OpenSilex.DEBUG_ARG_KEY, "true");
-            }
-        };
+        opensilex = DevModule.getOpenSilexDev(baseDirectory);
 
-        if (baseDirectory != null) {
-            args.put(OpenSilex.BASE_DIR_ARG_KEY, baseDirectory);
-            args.put(OpenSilex.CONFIG_FILE_ARG_KEY, getConfig(baseDirectory));
-        } else {
-            args.put(OpenSilex.CONFIG_FILE_ARG_KEY, getConfig(System.getProperty("user.dir")));
-        }
-
-        OpenSilex.setup(args);
-
-        opensilex = OpenSilex.getInstance();
-
-        if (isWindows()) {
+        if (DevModule.isWindows()) {
             nodeBin += ".exe";
         }
 

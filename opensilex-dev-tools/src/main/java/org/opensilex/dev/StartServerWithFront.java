@@ -41,24 +41,17 @@ public class StartServerWithFront {
 
     public static void start(Path baseDirectory) throws Exception {
 
-        if (isWindows()) {
+        if (DevModule.isWindows()) {
             nodeBin += ".exe";
         }
 
         StartServerWithFront.baseDirectory = baseDirectory;
 
-        String configFile = baseDirectory.resolve(DevModule.CONFIG_FILE_PATH).toFile().getCanonicalPath();
-        OpenSilex.setup(new HashMap<String, String>() {
-            {
-                put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);
-                put(OpenSilex.CONFIG_FILE_ARG_KEY, configFile);
-//                put(OpenSilex.DEBUG_ARG_KEY, "true");
-            }
-        });
+        OpenSilex opensilex = DevModule.getOpenSilexDev(baseDirectory);
 
         Map<String, Process> moduleProcesses = new HashMap<>();
         Set<String> moduleToBuild = new HashSet<>();
-        OpenSilex opensilex = OpenSilex.getInstance();
+
         for (OpenSilexModule module : opensilex.getModules()) {
             String projectId = ClassUtils.getProjectIdFromClass(module.getClass());
             if (module.fileExists(FrontAPI.getModuleFrontLibFilePath(projectId))) {
@@ -322,9 +315,5 @@ public class StartServerWithFront {
         } finally {
             prw.close();
         }
-    }
-
-    public static boolean isWindows() {
-        return System.getProperty("os.name").startsWith("Windows");
     }
 }

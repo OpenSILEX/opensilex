@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.sparql.response;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.server.response.JsonResponse;
 
@@ -20,6 +21,10 @@ import org.opensilex.server.response.JsonResponse;
  * @author Vincent Migot
  */
 public class ResourceTreeResponse extends JsonResponse<List<ResourceTreeDTO>> {
+
+    public ResourceTreeResponse() {
+        this(new ArrayList<>());
+    }
 
     public ResourceTreeResponse(List<ResourceTreeDTO> result) {
         super();

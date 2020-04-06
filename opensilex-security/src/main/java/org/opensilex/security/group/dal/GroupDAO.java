@@ -17,6 +17,7 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.OrderBy;
@@ -77,6 +78,20 @@ public final class GroupDAO {
                 orderByList,
                 page,
                 pageSize
+        );
+    }
+
+    public List<GroupModel> getUserGroups(URI userURI) throws Exception {
+
+        Var userProfilesVar = makeVar(GroupModel.USER_PROFILES_FIELD);
+        SPARQLClassObjectMapper<GroupModel> mapper = SPARQLClassObjectMapper.getForClass(GroupModel.class);
+        return sparql.search(
+                GroupModel.class,
+                null,
+                (SelectBuilder select) -> {
+                    select.addWhere(mapper.getURIFieldVar(), SecurityOntology.hasUserProfile, userProfilesVar);
+                    select.addWhere(userProfilesVar, SecurityOntology.hasUser, SPARQLDeserializers.nodeURI(userURI));
+                }
         );
     }
 

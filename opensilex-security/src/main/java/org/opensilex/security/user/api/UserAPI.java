@@ -48,7 +48,11 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.group.dal.GroupDAO;
+import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.response.NamedResourceDTO;
+import org.opensilex.sparql.response.NamedResourcePaginatedListResponse;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
@@ -373,6 +377,30 @@ public class UserAPI {
         UserDAO dao = new UserDAO(sparql);
         dao.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+    }
+
+    @GET
+    @Path("get-groups/{uri}")
+    @ApiOperation("Get groups associated to a user")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_USER_READ_ID,
+            credentialLabelKey = CREDENTIAL_USER_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return user group list", response = NamedResourceDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response getUserGroups(
+            @ApiParam(value = "User URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri) throws Exception {
+        // Search users with User DAO
+        GroupDAO dao = new GroupDAO(sparql);
+        List<GroupModel> resultList = dao.getUserGroups(uri);
+
+        // Return paginated list of user DTO
+        return new NamedResourcePaginatedListResponse<GroupModel>(resultList).getResponse();
     }
 
 }

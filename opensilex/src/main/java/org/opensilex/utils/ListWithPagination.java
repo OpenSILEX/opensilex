@@ -12,17 +12,21 @@ import java.util.function.Function;
 public class ListWithPagination<T> {
 
     private final List<T> list;
-    
+
     private final Integer total;
-    
+
     private final Integer page;
-    
+
     private final Integer pageSize;
+
+    public ListWithPagination(List<T> list) {
+        this(list, 0, 0, list.size());
+    }
     
     public ListWithPagination(List<T> list, Integer page, Integer pageSize, Integer total) {
         this.list = list;
         this.total = total;
-        
+
         if (page == null || page < 0) {
             this.page = 0;
         } else {
@@ -51,15 +55,15 @@ public class ListWithPagination<T> {
     public int getPageSize() {
         return pageSize;
     }
-    
+
     public <U> ListWithPagination<U> convert(Class<U> resultClass, Function<T, U> converter) {
         List<U> resultList = new ArrayList<>();
-        
+
         this.list.forEach((T element) -> {
             resultList.add(converter.apply(element));
         });
-        
+
         return new ListWithPagination<U>(resultList, this.page, this.pageSize, this.total);
     }
-    
+
 }

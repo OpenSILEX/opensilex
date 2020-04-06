@@ -11,7 +11,7 @@ import java.net.URI;
  *
  * @author vince
  */
-public class ResourceGetDTO {
+public class ResourceDTO {
 
     protected URI uri;
 

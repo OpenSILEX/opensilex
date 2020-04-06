@@ -10,13 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.security.group.api.GroupUserProfileDTO;
-import org.opensilex.sparql.response.NamedResourceGetDTO;
+import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  *
  * @author vince
  */
-public class InfrastructureGetDTO extends NamedResourceGetDTO {
+public class InfrastructureGetDTO extends NamedResourceDTO {
 
     protected URI parent;
 

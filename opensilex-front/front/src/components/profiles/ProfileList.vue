@@ -136,7 +136,7 @@ export default class ProfileList extends Vue {
 
       for (let j in credentialsGroup.credentials) {
         let credential = credentialsGroup.credentials[j];
-        if (credentialsFiltered.indexOf(credential.id) > 0) {
+        if (credentialsFiltered.indexOf(credential.id) >= 0) {
           credentialsDetailGroup.credentials.push({
             text: this.$t(credential.label),
             value: credential.id
@@ -148,7 +148,6 @@ export default class ProfileList extends Vue {
         credentialsDetails.push(credentialsDetailGroup);
       }
     }
-
     return credentialsDetails;
   }
 

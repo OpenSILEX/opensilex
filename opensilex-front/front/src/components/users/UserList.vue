@@ -45,9 +45,11 @@
         <span class="capitalize-first-letter" v-if="!data.item.admin">{{$t("component.common.no")}}</span>
       </template>
 
-      <template v-slot:row-details="data">
-        <strong class="capitalize-first-letter">{{$t("component.user.users")}}:</strong>
-        {{data}}
+      <template v-slot:row-details>
+        <strong class="capitalize-first-letter">{{$t("component.user.user-groups")}}:</strong>
+        <ul>
+          <li v-for="groupDetail in groupDetails" v-bind:key="groupDetail.uri">{{groupDetail.name}}</li>
+        </ul>
       </template>
 
       <template v-slot:cell(actions)="data">
@@ -88,14 +90,22 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { SecurityService, UserGetDTO } from "opensilex-security/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
+import {
+  SecurityService,
+  UserGetDTO,
+  GroupGetDTO,
+  NamedResourceDTO
+} from "opensilex-security/index";
+import HttpResponse, {
+  OpenSilexResponse
+} from "opensilex-security/HttpResponse";
 
 @Component
 export default class UserList extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
+  service: SecurityService;
 
   get user() {
     return this.$store.state.user;
@@ -138,6 +148,8 @@ export default class UserList extends Vue {
     if (query.sortDesc) {
       this.sortDesc = query.sortDesc == "true";
     }
+
+    this.service = this.$opensilex.getService("opensilex.SecurityService");
   }
 
   fields = [
@@ -179,10 +191,6 @@ export default class UserList extends Vue {
   }
 
   loadData() {
-    let service: SecurityService = this.$opensilex.getService(
-      "opensilex.SecurityService"
-    );
-
     let orderBy = [];
     if (this.sortBy) {
       let orderByText = this.sortBy + "=";
@@ -193,7 +201,7 @@ export default class UserList extends Vue {
       }
     }
 
-    return service
+    return this.service
       .searchUsers(
         this.user.getAuthorizationHeader(),
         this.filterPattern,
@@ -226,8 +234,23 @@ export default class UserList extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
+  groupDetails = [];
+
   loadUserDetail(data) {
-    data.toggleDetails();
+    if (!data.detailsShowing) {
+      this.groupDetails = [];
+      this.service
+        .getUserGroups(this.user.getAuthorizationHeader(), data.item.uri)
+        .then(
+          (http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
+            this.groupDetails = http.response.result;
+            data.toggleDetails();
+          }
+        )
+        .catch(this.$opensilex.errorHandler);
+    } else {
+       data.toggleDetails();
+    }
   }
 }
 </script>

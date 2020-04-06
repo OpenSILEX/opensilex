@@ -151,6 +151,7 @@
             "email": "email",
             "admin": "administrateur",
             "default-lang": "Langue par défaut",
+            "user-groups": "groupes de l'utilisateur",
             "errors": {
                 "user-already-exists": "Un utilisateur existe déjà avec cette URI ou cette adresse email."
             }

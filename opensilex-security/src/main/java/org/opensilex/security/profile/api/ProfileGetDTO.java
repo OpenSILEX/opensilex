@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.opensilex.security.profile.dal.ProfileModel;
 
 /**
@@ -80,12 +81,19 @@ public class ProfileGetDTO {
      * @param model User Model to convert
      * @return Corresponding user DTO
      */
-    public static ProfileGetDTO fromModel(ProfileModel model) {
+    public static ProfileGetDTO fromModel(ProfileModel model, List<String> credentialsRef) {
         ProfileGetDTO dto = new ProfileGetDTO();
 
         dto.setUri(model.getUri());
         dto.setName(model.getName());
-        dto.setCredentials(model.getCredentials());
+        dto.setCredentials(
+                model.getCredentials()
+                        .stream()
+                        .filter((credentialId) -> {
+                            return !credentialsRef.contains(credentialId);
+                        })
+                        .collect(Collectors.toList())
+        );
 
         return dto;
     }

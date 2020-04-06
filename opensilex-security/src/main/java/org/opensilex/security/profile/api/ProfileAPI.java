@@ -37,6 +37,7 @@ import org.opensilex.security.SecurityModule;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.dal.AuthenticationDAO;
 import org.opensilex.security.profile.dal.ProfileDAO;
 import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.server.response.ErrorDTO;
@@ -206,8 +207,10 @@ public class ProfileAPI {
         // Check if user is found
         if (model != null) {
             // Return user converted in UserGetDTO
+            AuthenticationDAO authent = new AuthenticationDAO(sparql);
+            List<String> credentials = authent.getCredentialsIdList();
             return new SingleObjectResponse<>(
-                    ProfileGetDTO.fromModel(model)
+                    ProfileGetDTO.fromModel(model, credentials)
             ).getResponse();
         } else {
             // Otherwise return a 404 - NOT_FOUND error response
@@ -267,9 +270,13 @@ public class ProfileAPI {
         );
 
         // Convert paginated list to DTO
+        AuthenticationDAO authent = new AuthenticationDAO(sparql);
+        List<String> credentials = authent.getCredentialsIdList();
         ListWithPagination<ProfileGetDTO> resultDTOList = resultList.convert(
                 ProfileGetDTO.class,
-                ProfileGetDTO::fromModel
+                (result) -> {
+                    return ProfileGetDTO.fromModel(result, credentials);
+                }
         );
 
         // Return paginated list of profiles DTO
@@ -298,8 +305,11 @@ public class ProfileAPI {
         List<ProfileModel> resultList = dao.getAll(orderByList);
         // Convert list to DTO
         List<ProfileGetDTO> resultDTOList = new ArrayList<>();
+
+        AuthenticationDAO authent = new AuthenticationDAO(sparql);
+        List<String> credentials = authent.getCredentialsIdList();
         resultList.forEach(result -> {
-            resultDTOList.add(ProfileGetDTO.fromModel(result));
+            resultDTOList.add(ProfileGetDTO.fromModel(result, credentials));
         });
 
         // Return list of profiles DTO

@@ -17,7 +17,7 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
  *
  * @author vince
  */
-public class ResourceTreeDTO extends NamedResourceGetDTO {
+public class ResourceTreeDTO extends NamedResourceDTO {
 
     private URI parent;
 

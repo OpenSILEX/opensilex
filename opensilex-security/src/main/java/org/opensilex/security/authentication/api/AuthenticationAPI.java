@@ -38,7 +38,7 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.SecurityModule;
-import org.opensilex.security.authentication.dal.SecurityAccessDAO;
+import org.opensilex.security.authentication.dal.AuthenticationDAO;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.security.user.dal.UserDAO;
@@ -203,7 +203,7 @@ public class AuthenticationAPI {
     public Response getCredentialsGroups() throws Exception {
         if (credentialsGroupList == null) {
             credentialsGroupList = new ArrayList<>();
-            SecurityAccessDAO securityDAO = new SecurityAccessDAO(sparql);
+            AuthenticationDAO securityDAO = new AuthenticationDAO(sparql);
             Map<String, String> groupLabels = securityDAO.getCredentialsGroupLabels();
             securityDAO.getCredentialsGroups().forEach((String groupId, Map<String, String> credentialMap) -> {
                 CredentialsGroupDTO credentialsGroup = new CredentialsGroupDTO();

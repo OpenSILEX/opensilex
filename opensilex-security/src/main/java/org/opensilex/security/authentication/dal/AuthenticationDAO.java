@@ -31,13 +31,13 @@ import org.slf4j.LoggerFactory;
  *
  * @author vince
  */
-public final class SecurityAccessDAO {
+public final class AuthenticationDAO {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(SecurityAccessDAO.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(AuthenticationDAO.class);
 
     private final SPARQLService sparql;
 
-    public SecurityAccessDAO(SPARQLService sparql) {
+    public AuthenticationDAO(SPARQLService sparql) {
         this.sparql = sparql;
     }
 

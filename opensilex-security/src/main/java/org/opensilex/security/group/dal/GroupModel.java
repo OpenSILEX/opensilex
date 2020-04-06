@@ -38,6 +38,7 @@ public class GroupModel extends SPARQLNamedResourceModel<GroupModel> {
             cascadeDelete = true
     )
     private List<GroupUserProfileModel> userProfiles;
+    public static final String USER_PROFILES_FIELD = "userProfiles";
 
     public String getDescription() {
         return description;

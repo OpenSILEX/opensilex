@@ -19,7 +19,7 @@ import org.opensilex.OpenSilexModule;
 import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.SecurityOntology;
-import org.opensilex.security.authentication.dal.SecurityAccessDAO;
+import org.opensilex.security.authentication.dal.AuthenticationDAO;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.authentication.injection.CurrentUserFactory;
 import org.opensilex.security.authentication.injection.CurrentUserResolver;
@@ -84,7 +84,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension {
         SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
 
-        SecurityAccessDAO securityDAO = new SecurityAccessDAO(sparql);
+        AuthenticationDAO securityDAO = new AuthenticationDAO(sparql);
 
         ProfileModel profile = new ProfileModel();
         profile.setUri(new URI(DEFAULT_PROFILE_URI));

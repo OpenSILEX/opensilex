@@ -21,7 +21,7 @@ import javax.ws.rs.ext.Provider;
 import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.exceptions.UnauthorizedException;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.dal.SecurityAccessDAO;
+import org.opensilex.security.authentication.dal.AuthenticationDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +95,7 @@ public class CredentialFilter implements ContainerRequestFilter {
                     hasCredential = true;
                 } else {
                     // If user is not an admin check credentials if needed
-                    String credentialId = SecurityAccessDAO.getCredentialIdFromMethod(apiMethod);
+                    String credentialId = AuthenticationDAO.getCredentialIdFromMethod(apiMethod);
                     if (credentialId != null) {
                         // Get current API service credential
 

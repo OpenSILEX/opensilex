@@ -7,11 +7,7 @@
 package org.opensilex.sparql.response;
 
 import java.util.List;
-import javax.ws.rs.core.Response.Status;
-import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.server.response.JsonResponse;
-import org.opensilex.server.response.MetadataDTO;
-import org.opensilex.server.response.PaginationDTO;
 
 /**
  * <pre>
@@ -26,13 +22,8 @@ import org.opensilex.server.response.PaginationDTO;
 public class ResourceTreeResponse extends JsonResponse<List<ResourceTreeDTO>> {
 
     public ResourceTreeResponse(List<ResourceTreeDTO> result) {
-        this();
+        super();
         this.result = result;
-    }
-
-    public ResourceTreeResponse(){
-        super(Status.OK);
-        this.metadata = new MetadataDTO(new PaginationDTO());
     }
 
 }

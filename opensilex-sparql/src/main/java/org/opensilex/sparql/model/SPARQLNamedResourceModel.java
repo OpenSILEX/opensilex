@@ -7,6 +7,7 @@ package org.opensilex.sparql.model;
 
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.sparql.annotations.SPARQLProperty;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
 /**
@@ -37,5 +38,4 @@ public abstract class SPARQLNamedResourceModel<T extends SPARQLNamedResourceMode
             instance.getName()
         };
     }
-
 }

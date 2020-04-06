@@ -153,9 +153,7 @@ export default class FactorLevelForm extends Vue {
   }
 
   showEditForm(form: FactorLevelCreationDTO) {
-    Object.keys(this.form).forEach(v => {
-      this.form[v] = form[v];
-    });
+    this.form = form;
     this.editMode = true;
     this.title = this.$t("component.factorLevel.update").toString();
     this.uriGenerated = true;

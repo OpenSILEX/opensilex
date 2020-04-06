@@ -150,6 +150,7 @@
             "email-address": "adresse email",
             "email": "email",
             "admin": "administrateur",
+            "default-lang": "Langue par défaut",
             "errors": {
                 "user-already-exists": "Un utilisateur existe déjà avec cette URI ou cette adresse email."
             }

@@ -150,9 +150,7 @@ export default class GroupForm extends Vue {
 
   showEditForm(form: GroupUpdateDTO) {
     this.clearForm();
-    Object.keys(this.form).forEach(v => {
-      this.form[v] = form[v];
-    });
+    this.form = form;
     this.userProfilesRef.initFormProfiles(form.userProfiles);
     this.editMode = true;
     this.title = this.$t("component.group.update").toString();

@@ -31,6 +31,7 @@ public class ServerModule extends OpenSilexModule implements APIExtension{
         @Override
     public List<String> getPackagesToScan() {
         List<String> list = APIExtension.super.getPackagesToScan();
+        list.add("org.opensilex.server.rest.serialization");
         list.add("org.opensilex.server.rest.validation");
 
         return list;

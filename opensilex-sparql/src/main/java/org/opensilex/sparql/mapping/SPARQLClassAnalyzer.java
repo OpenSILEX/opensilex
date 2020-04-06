@@ -519,13 +519,6 @@ final class SPARQLClassAnalyzer {
         }
     }
 
-    public void setFieldValue(Field field, Object instance, Object value) {
-        try {
-            instance.getClass().getMethod(fieldsBySetter.inverse().get(field.getName()).getName()).invoke(instance, value);
-        } catch (Exception ex) {
-        }
-    }
-
     public Method getSetterFromField(Field field) {
         return fieldsBySetter.inverse().get(field.getName());
     }

@@ -97,7 +97,7 @@ import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { User } from "../../models/User";
-import { SecurityService, TokenGetDTO } from "opensilex-security/index";
+import { SecurityService, TokenGetDTO, AuthenticationService } from "opensilex-security/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 
 @Component
@@ -123,7 +123,7 @@ export default class DefaultLoginComponent extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
   static async asyncInit($opensilex: OpenSilexVuePlugin) {
-    await $opensilex.loadService("opensilex-security.SecurityService");
+    await $opensilex.loadService("opensilex-security.AuthenticationService");
   }
 
   logout() {
@@ -140,7 +140,7 @@ export default class DefaultLoginComponent extends Vue {
       if (isValid) {
         this.$opensilex.showLoader();
         this.$opensilex
-          .getService<SecurityService>("opensilex-security.SecurityService")
+          .getService<AuthenticationService>("opensilex-security.AuthenticationService")
           .authenticate({
             identifier: this.form.email,
             password: this.form.password

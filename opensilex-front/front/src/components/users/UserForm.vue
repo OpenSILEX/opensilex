@@ -219,9 +219,7 @@ export default class UserForm extends Vue {
   }
 
   showEditForm(form: UserCreationDTO) {
-    Object.keys(this.form).forEach(v => {
-      this.form[v] = form[v];
-    });
+    this.form = form;
     this.selectedLang = {
       id: form.language,
       label: this.$i18n.t("component.header.language." + form.language)

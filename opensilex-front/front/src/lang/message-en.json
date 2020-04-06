@@ -152,6 +152,7 @@
             "email-address": "email address",
             "email": "email",
             "admin": "administrator",
+            "default-lang": "Default languages",
             "errors": {
                 "user-already-exists": "User already exists with this URI or email address."
             }

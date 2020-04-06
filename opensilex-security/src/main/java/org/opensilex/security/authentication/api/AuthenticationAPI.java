@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Vincent Migot
  */
-@Api(SecurityModule.REST_SECURITY_API_ID)
+@Api(SecurityModule.REST_AUTHENTICATION_API_ID)
 @Path("/security")
 public class AuthenticationAPI {
 

@@ -251,9 +251,7 @@ export default class ExperimentForm extends Vue {
   // }
 
   // showEditForm(form: ExperimentCreationDTO) {
-  //   Object.keys(this.form).forEach(v => {
-  //     this.form[v] = form[v];
-  //   });
+  //   this.form = form;
   //   this.editMode = true;
   //   this.title = this.$t("component.experiment.update").toString();
   //   this.uriGenerated = true;

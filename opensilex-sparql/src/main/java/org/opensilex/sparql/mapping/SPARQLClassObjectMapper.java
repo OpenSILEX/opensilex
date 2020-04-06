@@ -660,7 +660,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return statementCount > 0;
     }
 
-    public void updateInstance(T oldInstance, T newInstance) {
+    public void updateInstance(T oldInstance, T newInstance) throws Exception {
         URI uri = classAnalizer.getURI(oldInstance);
 
         for (Field field : classAnalizer.getDataPropertyFields()) {
@@ -668,7 +668,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             Object newFieldValue = classAnalizer.getFieldValue(field, newInstance);
 
             if (newFieldValue == null && classAnalizer.isNullIgnorableUpdateField(field)) {
-                classAnalizer.setFieldValue(field, newInstance, oldFieldValue);
+                classAnalizer.getSetterFromField(field).invoke(newInstance, oldFieldValue);
             }
         }
 
@@ -677,7 +677,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             Object newFieldValue = classAnalizer.getFieldValue(field, newInstance);
 
             if (newFieldValue == null && classAnalizer.isNullIgnorableUpdateField(field)) {
-                classAnalizer.setFieldValue(field, newInstance, oldFieldValue);
+                classAnalizer.getSetterFromField(field).invoke(newInstance, oldFieldValue);
             }
         }
 
@@ -686,7 +686,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             Object newFieldValue = classAnalizer.getFieldValue(field, newInstance);
 
             if (newFieldValue == null && classAnalizer.isNullIgnorableUpdateField(field)) {
-                classAnalizer.setFieldValue(field, newInstance, oldFieldValue);
+                classAnalizer.getSetterFromField(field).invoke(newInstance, oldFieldValue);
             }
         }
 
@@ -695,7 +695,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             Object newFieldValue = classAnalizer.getFieldValue(field, newInstance);
 
             if (newFieldValue == null && classAnalizer.isNullIgnorableUpdateField(field)) {
-                classAnalizer.setFieldValue(field, newInstance, oldFieldValue);
+                classAnalizer.getSetterFromField(field).invoke(newInstance, oldFieldValue);
             }
         }
 
@@ -704,7 +704,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             Object newFieldValue = classAnalizer.getFieldValue(field, newInstance);
 
             if (newFieldValue == null && classAnalizer.isNullIgnorableUpdateField(field)) {
-                classAnalizer.setFieldValue(field, newInstance, oldFieldValue);
+                classAnalizer.getSetterFromField(field).invoke(newInstance, oldFieldValue);
             }
         }
     }

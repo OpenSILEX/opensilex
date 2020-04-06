@@ -154,9 +154,7 @@ export default class GermplasmForm extends Vue {
   }
 
   showEditForm(form: GermplasmCreationDTO) {
-    Object.keys(this.form).forEach(v => {
-      this.form[v] = form[v];
-    });
+    this.form = form;
     this.editMode = true;
     this.title = this.$t("component.germplasm.update").toString();
     this.uriGenerated = true;

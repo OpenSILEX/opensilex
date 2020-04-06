@@ -30,7 +30,8 @@ import {
   ProfileUpdateDTO,
   ProfileGetDTO,
   SecurityService,
-  CredentialsGroupDTO
+  CredentialsGroupDTO,
+  AuthenticationService
 } from "opensilex-security/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 
@@ -57,8 +58,8 @@ export default class ProfileView extends Vue {
   static credentialsGroups = [];
   static async asyncInit($opensilex) {
     console.debug("Loading credentials list...");
-    let security: SecurityService = await $opensilex.loadService(
-      "opensilex-security.SecurityService"
+    let security: AuthenticationService = await $opensilex.loadService(
+      "opensilex-security.AuthenticationService"
     );
     let http: HttpResponse<OpenSilexResponse<
       Array<CredentialsGroupDTO>

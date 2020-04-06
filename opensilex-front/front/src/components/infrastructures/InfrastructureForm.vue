@@ -184,9 +184,7 @@ export default class InfrastructureForm extends Vue {
   }
 
   showEditForm(form: InfrastructureCreationDTO) {
-    Object.keys(this.form).forEach(v => {
-      this.form[v] = form[v];
-    });
+    this.form = form;
     this.userProfilesRef.initFormProfiles(form.userProfiles);
     this.editMode = true;
     this.title = this.$t("component.infrastructure.update").toString();

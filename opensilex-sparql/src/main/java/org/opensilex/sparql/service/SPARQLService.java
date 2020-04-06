@@ -698,7 +698,7 @@ public class SPARQLService implements SPARQLConnection, Service, AutoCloseable {
             if (oldInstance == null) {
                 throw new SPARQLInvalidURIException(instance.getUri());
             }
-            
+
             mapper.updateInstance(oldInstance, instance);
             
             delete(graph, objectClass, uri, false);

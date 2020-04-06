@@ -35,7 +35,10 @@ import org.slf4j.LoggerFactory;
 public class SecurityModule extends OpenSilexModule implements APIExtension {
 
     public final static String REST_SECURITY_API_ID = "Security";
+    
+    public final static String REST_AUTHENTICATION_API_ID = "Authentication";
 
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(SecurityModule.class);
 
     @Override

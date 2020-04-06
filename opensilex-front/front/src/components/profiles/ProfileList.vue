@@ -39,13 +39,13 @@
         <b-card-group columns>
           <b-card
             v-for="credentialGroup in filterCredentialGroups(data.item.credentials)"
-            v-bind:key="credentialGroup"
+            v-bind:key="credentialGroup.groupId"
           >
             <strong>{{$t(credentialGroup.groupKeyLabel)}}</strong>
             <ul>
               <li
                 v-for="credential in credentialGroup.credentials"
-                v-bind:key="credential"
+                v-bind:key="credential.value"
               >{{credential.text}}</li>
             </ul>
           </b-card>

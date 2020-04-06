@@ -51,7 +51,7 @@ import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.security.profile.dal.ProfileDAO;
 import org.opensilex.security.profile.dal.ProfileModel;
-import org.opensilex.security.authentication.dal.SecurityAccessDAO;
+import org.opensilex.security.authentication.dal.AuthenticationDAO;
 import org.opensilex.security.user.dal.UserDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -317,7 +317,7 @@ public class GroupResourceService extends ResourceService {
             profile = new ProfileModel();
             profile.setUri(profileURI);
             profile.setName("Default profile");
-            SecurityAccessDAO securityDAO = new SecurityAccessDAO(sparql);
+            AuthenticationDAO securityDAO = new AuthenticationDAO(sparql);
             profile.setCredentials(securityDAO.getCredentialsIdList());
         }
 

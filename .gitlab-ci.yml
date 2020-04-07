@@ -3,7 +3,7 @@
 ##GLOBAL VARIABLES 
 ########################
 variables:
- ###### COMMON CONFIGS ####
+ ###### COMMON CONFIGS ######
  # GIT CONFIG
  GIT_DEPTH: 5
  GIT_OPTIONS: "--allow-unrelated-histories"
@@ -25,15 +25,20 @@ variables:
  RSYNC_INSTANCES_DATA_PATH: "~/opensilex-instances/data"
  RSYNC_INSTANCES_LOGS_PATH: "~/opensilex-instances/logs"
  RSYNC_INSTANCES_LOGS_ARCHIVED: "~/opensilex-instances/logs/old"
- 
+ ###### OPENSILEX ######
+ #APP BUILD CONFIG
+ OPENSILEX_APP_REVISION: 'INSTANCE-SNAPSHOT'
+ #APP DEPLOY CONFIG
  DEV_TOOLS_REPO_CONF_FILES_PATH: "instances-configuration"
- STOP_SERVER_OPTS: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
- START_SERVER_OPTS: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --port=$OPENSILEX_JAR_PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
+ OPENSILEX_STOP_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
+ OPENSILEX_START_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --port=$OPENSILEX_JAR_PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
  # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
  # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
+ #CACHE
  YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/cache_yarn"
  NODE_CACHE: "$CI_PROJECT_DIR/opensilex-dev/.node"
  EMBDED_MONGO_CACHE: "/root/.embedmongo/"
+ # Prevent gitlab clone issues
  GITLAB_HTTPS: "false"
 
 
@@ -133,14 +138,14 @@ variables:
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-dev-tools.git --branch $DEV_BRANCH $CI_PROJECT_DIR/opensilex-dev-tools
     - ls $CI_PROJECT_DIR/opensilex-dev-tools
     # Directory details
-    - ls $CI_PROJECT_DIR/$REVISION
+    - ls $CI_PROJECT_DIR/$OPENSILEX_APP_REVISION
     - echo "Create directory ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
     - echo "Create directory ${RSYNC_INSTANCES_DATA_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
     - echo "Create directory ${RSYNC_INSTANCES_LOGS_PATH}"
     - echo "Create directory ${RSYNC_INSTANCES_LOGS_ARCHIVED}"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "mkdir -p $RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR; mkdir -p $RSYNC_INSTANCES_LOGS_PATH; mkdir -p $RSYNC_INSTANCES_LOGS_ARCHIVED; mkdir -p $RSYNC_INSTANCES_DATA_PATH/$REMOTE_SERVER_RSYNC_DIR;"
     - echo "Upload files"
-    - rsync -arzv -e "ssh  -i ${HOME}/.ssh/id_rsa" $RSYNC_INSTANCES_OPTIONS  $CI_PROJECT_DIR/$REVISION/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR
+    - rsync -arzv -e "ssh  -i ${HOME}/.ssh/id_rsa" $RSYNC_INSTANCES_OPTIONS  $CI_PROJECT_DIR/$OPENSILEX_APP_REVISION/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR
     - echo "ls ${INTERNAL_CONFIGURATION_FILES_PATH}"
     - ls $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH
     - echo "scp -i ${HOME}/.ssh/id_rsa -o 'StrictHostKeyChecking no' $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH/* ${REMOTE_SERVER_RSYNC_ACCOUNT}@${REMOTE_SERVER_IP}:${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
@@ -149,9 +154,9 @@ variables:
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "rm -f ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/.opensilex.dependencies"
     - echo "Check files"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "ls ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR};"
-    - echo "Restarting server with options ${START_SERVER_OPTS}"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop $STOP_SERVER_OPTS"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start $START_SERVER_OPTS"
+    - echo "Restarting server with options ${OPENSILEX_START_SERVER_CMD}"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop $OPENSILEX_STOP_SERVER_CMD"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start $OPENSILEX_START_SERVER_CMD"
   except:
     - schedules    
   environment:
@@ -165,13 +170,13 @@ variables:
 arnaud:build:
   <<: *build_template_with_opensilex
   script: 
-    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
+    - mvn install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls  $BUILD_PATH/
-    - ls  $BUILD_PATH/opensilex-release-$REVISION
-    - mv $BUILD_PATH/opensilex-release-$REVISION $CI_PROJECT_DIR/$REVISION
+    - ls  $BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
+    - mv $BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $CI_PROJECT_DIR/$OPENSILEX_APP_REVISION
   artifacts:
     paths:
-      - $CI_PROJECT_DIR/$REVISION
+      - $CI_PROJECT_DIR/$OPENSILEX_APP_REVISION
   only:
     - arnaud
     

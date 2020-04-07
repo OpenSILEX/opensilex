@@ -12,7 +12,7 @@ package org.opensilex.core.factor.api;
 import java.net.URI;
 import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
-import org.opensilex.rest.validation.Required;
+import org.opensilex.server.rest.validation.Required;
 
 /**
  * 

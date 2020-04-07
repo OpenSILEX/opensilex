@@ -41,7 +41,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
     public void login(UserModel user, JWTCreator.Builder tokenBuilder) throws Exception {
 
         // TODO add experiments, projects, infrastructures related to the user as token claims...
-        SPARQLServiceFactory sparqlServiceFactory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLServiceFactory sparqlServiceFactory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = sparqlServiceFactory.provide();
         try {
             GroupDAO groupDAO = new GroupDAO(sparql);
@@ -66,7 +66,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
 
     @Override
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
-        SPARQLConfig sparqlConfig = this.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
+        SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
         list.add(new OntologyFileDefinition(
                 OA.NS,
@@ -91,7 +91,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
 
     @Override
     public void startup() throws Exception {
-        SPARQLConfig sparqlConfig = getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
+        SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         SPARQLServiceFactory factory = sparqlConfig.sparql();
         if (factory instanceof RDF4JInMemoryServiceFactory) {
             install(false);

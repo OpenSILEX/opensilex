@@ -18,7 +18,7 @@ public class StartServer {
     }
 
     public static void start(Path baseDirectory) throws Exception {
-        DevModule.runCommand(baseDirectory, new String[]{
+        DevModule.run(baseDirectory, new String[]{
             "server",
             "start"
         });

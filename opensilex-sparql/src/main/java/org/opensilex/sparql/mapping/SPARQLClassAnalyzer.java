@@ -53,6 +53,8 @@ final class SPARQLClassAnalyzer {
 
     private final Class<?> objectClass;
 
+    private final SPARQLClassObjectMapperIndex mapperIndex;
+
     private final Resource resource;
     private final String graphSuffix;
     private final String graphPrefix;
@@ -97,9 +99,10 @@ final class SPARQLClassAnalyzer {
     private final boolean ignoreValidation;
 
     @SuppressWarnings("unchecked")
-    public SPARQLClassAnalyzer(Class<?> objectClass) throws SPARQLInvalidClassDefinitionException {
+    public SPARQLClassAnalyzer(SPARQLClassObjectMapperIndex mapperIndex, Class<?> objectClass) throws SPARQLInvalidClassDefinitionException {
         LOGGER.debug("Start SPARQL model class analyze for: " + objectClass.getName());
         this.objectClass = objectClass;
+        this.mapperIndex = mapperIndex;
 
         LOGGER.debug("Determine RDF Type for class: " + objectClass.getName());
         SPARQLResource resourceAnnotation = ClassUtils.findClassAnnotationRecursivly(objectClass, SPARQLResource.class);
@@ -280,7 +283,7 @@ final class SPARQLClassAnalyzer {
                 } else if (SPARQLDeserializers.existsForClass(genericParameter)) {
                     LOGGER.debug("Field " + field.getName() + " is a data property list of: " + objectClass.getName());
                     dataPropertiesLists.put(field.getName(), property);
-                } else if (SPARQLClassObjectMapper.existsForClass((Class<? extends SPARQLResourceModel>) genericParameter)) {
+                } else if (mapperIndex.existsForClass((Class<? extends SPARQLResourceModel>) genericParameter)) {
                     LOGGER.debug("Field " + field.getName() + " is an object property list of: " + objectClass.getName());
                     objectPropertiesLists.put(field.getName(), property);
                     Class<? extends SPARQLResourceModel> fieldClass = (Class<? extends SPARQLResourceModel>) genericParameter;
@@ -300,7 +303,7 @@ final class SPARQLClassAnalyzer {
         } else if (SPARQLDeserializers.existsForClass((Class<?>) fType)) {
             LOGGER.debug("Field " + field.getName() + " is a data property of: " + objectClass.getName());
             dataProperties.put(field.getName(), property);
-        } else if (SPARQLClassObjectMapper.existsForClass((Class<? extends SPARQLResourceModel>) fType)) {
+        } else if (mapperIndex.existsForClass((Class<? extends SPARQLResourceModel>) fType)) {
             LOGGER.debug("Field " + field.getName() + " is an object property of: " + objectClass.getName());
             objectProperties.put(field.getName(), property);
             Class<? extends SPARQLResourceModel> fieldClass = (Class<? extends SPARQLResourceModel>) fType;
@@ -692,7 +695,7 @@ final class SPARQLClassAnalyzer {
 
     protected Resource getFieldRDFType(Field field) {
         try {
-            return SPARQLClassObjectMapper.getForClass(field.getType()).getRDFType();
+            return mapperIndex.getForClass(field.getType()).getRDFType();
         } catch (Exception ex) {
             LOGGER.error("Error while getting rdf type for field: " + field.getName(), ex);
             return null;
@@ -703,7 +706,7 @@ final class SPARQLClassAnalyzer {
         try {
             ParameterizedType genericReturnType = (ParameterizedType) field.getGenericType();
             Type genericParameter = genericReturnType.getActualTypeArguments()[0];
-            return SPARQLClassObjectMapper.getForClass((Class<?>) genericParameter).getRDFType();
+            return mapperIndex.getForClass((Class<?>) genericParameter).getRDFType();
         } catch (Exception ex) {
             LOGGER.error("Error while getting rdf type for list field: " + field.getName(), ex);
             return null;

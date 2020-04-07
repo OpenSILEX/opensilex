@@ -17,8 +17,8 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
  */
 class SPARQLProxyResourceList<T extends SPARQLResourceModel> extends SPARQLProxy<List> {
 
-    SPARQLProxyResourceList(Node graph, List<URI> uris, Class<T> genericType, String lang, SPARQLService service) {
-        super(graph, List.class, lang, service);
+    SPARQLProxyResourceList(SPARQLClassObjectMapperIndex repository, Node graph, List<URI> uris, Class<T> genericType, String lang, SPARQLService service) {
+        super(repository,graph, List.class, lang, service);
         this.uris = uris;
         this.genericType = genericType;
     }

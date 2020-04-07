@@ -19,7 +19,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
-import org.opensilex.OpenSilex;
 import org.opensilex.integration.test.AbstractIntegrationTest;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.AuthenticationService;
@@ -51,19 +50,19 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     public void clearGraph() throws Exception {
         clearGraphs(getGraphsToCleanNames());
         this.afterEach();
-        
+
     }
-    
-     public void afterEach() throws Exception  {
-         
-     }
+
+    public void afterEach() throws Exception {
+
+    }
 
     public SPARQLService getSparqlService() {
-        return OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
+        return getOpensilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
     }
 
     public AuthenticationService getAuthenticationService() {
-        return OpenSilex.getInstance().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
+        return getOpensilex().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
     }
 
     /**
@@ -74,7 +73,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      */
     public void clearGraphs(List<String> graphsToClear) throws Exception {
         try (SPARQLService sparqlService = getSparqlService()) {
-            SPARQLModule.clearPlatformGraphs(sparqlService, graphsToClear);
+            getOpensilex().getModuleByClass(SPARQLModule.class).clearPlatformGraphs(sparqlService, graphsToClear);
         }
     }
 

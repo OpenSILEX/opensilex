@@ -31,7 +31,7 @@ public class Install {
         opensilex.install(deleteFirst);
 
         LOGGER.info("Create Super Admin");
-        SecurityModule.createDefaultSuperAdmin();
+        opensilex.getModuleByClass(SecurityModule.class).createDefaultSuperAdmin();
     }
 
 }

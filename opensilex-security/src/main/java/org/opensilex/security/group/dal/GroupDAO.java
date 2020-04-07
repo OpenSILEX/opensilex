@@ -84,7 +84,7 @@ public final class GroupDAO {
     public List<GroupModel> getUserGroups(URI userURI) throws Exception {
 
         Var userProfilesVar = makeVar(GroupModel.USER_PROFILES_FIELD);
-        SPARQLClassObjectMapper<GroupModel> mapper = SPARQLClassObjectMapper.getForClass(GroupModel.class);
+        SPARQLClassObjectMapper<GroupModel> mapper = sparql.getForClass(GroupModel.class);
         return sparql.search(
                 GroupModel.class,
                 null,

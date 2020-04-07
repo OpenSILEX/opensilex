@@ -245,6 +245,6 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
 
     @Override
     public void afterEach() throws Exception {
-        SecurityModule.createDefaultSuperAdmin();
+        getOpensilex().getModuleByClass(SecurityModule.class).createDefaultSuperAdmin();
     }
 }

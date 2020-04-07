@@ -6,7 +6,6 @@
 package org.opensilex.sparql.rdf4j;
 
 import org.junit.BeforeClass;
-import org.opensilex.sparql.SPARQLServiceTest;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.SHACLTest;
 

@@ -29,5 +29,5 @@ public class RDF4JInMemoryServiceFactory extends RDF4JServiceFactory {
 
         return repository;
     }
-    
+
 }

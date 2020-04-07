@@ -13,6 +13,7 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -40,6 +41,8 @@ import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.opensilex.OpenSilex;
 import org.opensilex.service.ServiceDefaultDefinition;
+import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.utils.ClassUtils;
@@ -113,6 +116,9 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
         RDF4JConnection rdf4jConnection = new RDF4JConnection(connection);
         rdf4jConnection.setTimeout(getTimeout());
         SPARQLService sparql = new SPARQLService(rdf4jConnection);
+        sparql.setOpenSilex(getOpenSilex());
+        sparql.setMapperIndex(getMapperIndex());
+        sparql.setDefaultLang(getDefaultLanguage());
         sparql.startup();
 
         return sparql;
@@ -125,9 +131,10 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
     @Override
     public SPARQLService provide() {
         try {
-            return getNewService();
+            SPARQLService service = getNewService();
+            return service;
         } catch (Exception ex) {
-            LOGGER.error("Error while opening RDF4J service connectioninstance", ex);
+            LOGGER.error("Error while opening RDF4J service connection instance", ex);
             return null;
         }
     }
@@ -211,4 +218,5 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
             repositoryManager.shutDown();
         }
     }
+
 }

@@ -57,8 +57,11 @@ class SPARQLClassQueryBuilder {
 
     private final SPARQLClassAnalyzer analyzer;
 
-    public SPARQLClassQueryBuilder(SPARQLClassAnalyzer analyzer) {
+    private final SPARQLClassObjectMapperIndex mapperIndex;
+
+    public SPARQLClassQueryBuilder(SPARQLClassObjectMapperIndex mapperIndex, SPARQLClassAnalyzer analyzer) {
         this.analyzer = analyzer;
+        this.mapperIndex = mapperIndex;
     }
 
     public SelectBuilder getSelectBuilder(Node graph, String lang) {
@@ -437,7 +440,7 @@ class SPARQLClassQueryBuilder {
                     throw new Exception("Field value can't be null: " + field.getName());
                 }
             } else {
-                URI propertyFieldURI = SPARQLClassObjectMapper.getForClass(fieldValue.getClass()).getURI(fieldValue);
+                URI propertyFieldURI = mapperIndex.getForClass(fieldValue.getClass()).getURI(fieldValue);
                 if (!ignoreNullFields && propertyFieldURI == null) {
                     // TODO change exception type
                     throw new Exception("Object URI value can't be null: " + field.getName());
@@ -489,7 +492,7 @@ class SPARQLClassQueryBuilder {
                             throw new Exception("Field value can't be null");
                         }
                     } else {
-                        URI propertyFieldURI = SPARQLClassObjectMapper.getForClass(listValue.getClass()).getURI(listValue);
+                        URI propertyFieldURI = mapperIndex.getForClass(listValue.getClass()).getURI(listValue);
                         if (!ignoreNullFields && propertyFieldURI == null) {
                             // TODO change exception type
                             throw new Exception("Object URI value can't be null");

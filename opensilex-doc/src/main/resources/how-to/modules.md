@@ -3,12 +3,12 @@ Modules How-to
 
 # Create a new module for opensilex 
 
-1. Create a directory in ``opensilex-dev`` directory with the name of the module, here {module_name}.
+1. Create a directory in ``opensilex`` directory with the name of the module, here {module_name}.
 
 ```
-opensilex-dev
+opensilex
 ├── {module_name}
-├── opensilex
+├── opensilex-main
 ├── opensilex-core
 ├── opensilex-dev-tools
 ├── opensilex-doc
@@ -23,7 +23,7 @@ opensilex-dev
 ├── opensilex-swagger-codegen-maven-plugin
 ```
 
-2. Add a pom file to configure the maven project **pom.xml** in module directory ``opensilex-dev/{module_name}``
+2. Add a pom file to configure the maven project **pom.xml** in module directory ``opensilex/{module_name}``
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -95,7 +95,7 @@ You need to the new module to the full build stage you need to add it to the glo
     <modules>
         <!-- Main OpenSilex modules -->
         <module>opensilex-parent</module>
-        <module>opensilex</module>
+        <module>opensilex-main</module>
         <module>opensilex-sparql</module>
         <module>opensilex-nosql</module>
         <module>opensilex-fs</module>
@@ -131,7 +131,7 @@ You need to the new module to the full build stage you need to add it to the glo
         <!-- OpenSilex build-in modules dependencies-->
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex</artifactId>
+            <artifactId><artifactId>opensilex-main</artifactId></artifactId>
             <version>${revision}</version>
         </dependency>
         

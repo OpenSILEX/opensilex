@@ -42,23 +42,23 @@ import org.opensilex.unit.test.AbstractUnitTest;
 public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
     protected static SPARQLService service;
+    protected static SPARQLModule sparqlModule;
 
     public static void initialize(SPARQLService service) throws Exception {
         SPARQLServiceTest.service = service;
-
-        service.clear();
+        SPARQLServiceTest.sparqlModule = new SPARQLModule();
 
         InputStream ontology = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.FILE_PATH.toString());
-        service.loadOntology(SPARQLModule.getPlatformURI(), ontology, TEST_ONTOLOGY.FILE_FORMAT);
+        service.loadOntology(sparqlModule.getPlatformURI(), ontology, TEST_ONTOLOGY.FILE_FORMAT);
 
         InputStream ontologyData = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.DATA_FILE_PATH.toString());
-        service.loadOntology(SPARQLModule.getPlatformDomainGraphURI("data"), ontologyData, TEST_ONTOLOGY.DATA_FILE_FORMAT);
+        service.loadOntology(sparqlModule.getPlatformDomainGraphURI("data"), ontologyData, TEST_ONTOLOGY.DATA_FILE_FORMAT);
     }
 
     @AfterClass
     public static void destroy() throws Exception {
-        service.clearGraph(SPARQLModule.getPlatformURI());
-        service.clearGraph(SPARQLModule.getPlatformDomainGraphURI("data"));
+        service.clearGraph(sparqlModule.getPlatformURI());
+        service.clearGraph(sparqlModule.getPlatformDomainGraphURI("data"));
         service.shutdown();
     }
 
@@ -226,7 +226,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
         List<B> bList = service.search(B.class, null);
         assertFalse(bList.isEmpty());
-        Node oldGraphNode = SPARQLService.getDefaultGraph(B.class);
+        Node oldGraphNode = service.getDefaultGraph(B.class);
         URI newGraphUri = new URI(oldGraphNode.getURI() + "new_suffix");
         service.renameGraph(new URI(oldGraphNode.getURI()), newGraphUri);
 
@@ -281,7 +281,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         list = service.search(C.class, null);
         assertFalse(list.isEmpty());
         assertTrue(list.size() == 2);
-        assertEquals(OpenSilex.getDefaultLanguage(), list.get(0).getLabel().getDefaultLang());
+        assertEquals(OpenSilex.DEFAULT_LANGUAGE, list.get(0).getLabel().getDefaultLang());
 
         // TODO test delete
         // TODO test update

@@ -27,19 +27,19 @@ import org.opensilex.sparql.service.SPARQLService;
 public abstract class SHACLTest extends AbstractUnitTest {
 
     private static SPARQLService service;
+    private static SPARQLModule sparqlModule;
 
     public static void initialize(SPARQLService service) throws Exception {
         SHACLTest.service = service;
-
-        service.clear();
+        SHACLTest.sparqlModule = new SPARQLModule();
 
         InputStream ontology = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.FILE_PATH.toString());
-        service.loadOntology(SPARQLModule.getPlatformURI(), ontology, TEST_ONTOLOGY.FILE_FORMAT);
+        service.loadOntology(sparqlModule.getPlatformURI(), ontology, TEST_ONTOLOGY.FILE_FORMAT);
     }
 
     @AfterClass
     public static void destroy() throws Exception {
-        service.clearGraph(SPARQLModule.getPlatformURI());
+        service.clearGraph(sparqlModule.getPlatformURI());
         service.shutdown();
     }
 
@@ -48,11 +48,11 @@ public abstract class SHACLTest extends AbstractUnitTest {
         service.enableSHACL();
 
         InputStream ontologyData = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.DATA_FILE_PATH.toString());
-        service.loadOntology(SPARQLModule.getPlatformDomainGraphURI("data"), ontologyData, TEST_ONTOLOGY.DATA_FILE_FORMAT);
+        service.loadOntology(sparqlModule.getPlatformDomainGraphURI("data"), ontologyData, TEST_ONTOLOGY.DATA_FILE_FORMAT);
 
         ontologyData = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.SHACL_FAIL_FILE_PATH.toString());
         try {
-            service.loadOntology(SPARQLModule.getPlatformDomainGraphURI("data"), ontologyData, TEST_ONTOLOGY.SHACL_FAIL_FILE_FORMAT);
+            service.loadOntology(sparqlModule.getPlatformDomainGraphURI("data"), ontologyData, TEST_ONTOLOGY.SHACL_FAIL_FILE_FORMAT);
             throw new Exception("This ontology should fail to validate with SHACL");
         } catch (SPARQLValidationException ex) {
             Map<URI, Map<URI, List<URI>>> errors = ex.getValidationErrors();

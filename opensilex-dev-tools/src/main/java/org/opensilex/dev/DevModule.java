@@ -20,11 +20,11 @@ public class DevModule extends OpenSilexModule {
 
     private static OpenSilex devInstance = null;
 
-    public static OpenSilex getOpenSilexDev() throws IOException {
-        return getOpenSilexDev(Paths.get(System.getProperty("user.dir")));
+    public static OpenSilex getOpenSilexDev() throws Exception {
+        return getOpenSilexDev(OpenSilex.getDefaultBaseDirectory());
     }
 
-    public static OpenSilex getOpenSilexDev(Path baseDirectory) throws IOException {
+    public static OpenSilex getOpenSilexDev(Path baseDirectory) throws Exception {
         if (devInstance == null) {
             Map<String, String> args = new HashMap<String, String>() {
                 {
@@ -34,26 +34,24 @@ public class DevModule extends OpenSilexModule {
             };
 
             if (baseDirectory == null) {
-                baseDirectory = Paths.get(System.getProperty("user.dir"));
+                baseDirectory = OpenSilex.getDefaultBaseDirectory();
             }
 
             args.put(OpenSilex.BASE_DIR_ARG_KEY, baseDirectory.toFile().getCanonicalPath());
             args.put(OpenSilex.CONFIG_FILE_ARG_KEY, getConfig(baseDirectory));
 
-            OpenSilex.setup(args);
-
-            devInstance = OpenSilex.getInstance();
+            devInstance = OpenSilex.createInstance(args);
         }
         return devInstance;
     }
 
-    public static void runCommand(String[] args) throws IOException {
-        runCommand(null, args);
+    public static void run(String[] args) throws Exception {
+        run(null, args);
     }
 
-    public static void runCommand(Path baseDirectory, String[] args) throws IOException {
-        getOpenSilexDev(baseDirectory);
-        MainCommand.run(args);
+    public static void run(Path baseDirectory, String[] args) throws Exception {
+        OpenSilex instance = getOpenSilexDev(baseDirectory);
+        MainCommand.run(args, instance);
     }
 
     private static String getConfig(Path baseDirectory) {

@@ -14,13 +14,7 @@ import org.apache.jena.sparql.expr.E_LessThanOrEqual;
 import org.apache.jena.sparql.expr.E_LogicalAnd;
 import org.apache.jena.sparql.expr.Expr;
 import org.junit.Test;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
-import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.model.A;
-import org.opensilex.sparql.model.B;
 
 import javax.mail.internet.InternetAddress;
 import java.math.BigInteger;
@@ -31,22 +25,13 @@ import java.time.ZoneOffset;
 import java.util.*;
 
 import static org.junit.Assert.*;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.unit.test.AbstractUnitTest;
 
 /**
  * @author Renaud COLIN
  */
-public class SPARQLQueryHelperTest extends AbstractUnitTest  {
-
-    @Test
-    public void testGetURIField() throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
-
-        Var aUriVar = SPARQLQueryHelper.getUriFieldVar(A.class);
-        assertEquals(aUriVar.getName(), SPARQLResourceModel.URI_FIELD);
-
-        Var bUriVar = SPARQLQueryHelper.getUriFieldVar(B.class);
-        assertEquals(bUriVar.getName(), SPARQLResourceModel.URI_FIELD);
-    }
+public class SPARQLQueryHelperTest extends AbstractUnitTest {
 
     @Test
     public void testDateRange() throws Exception {
@@ -140,8 +125,7 @@ public class SPARQLQueryHelperTest extends AbstractUnitTest  {
         List<URI> uris = Arrays.asList(
                 new URI("http://opensilex.org/set/experiments/xp"),
                 new URI("http://opensilex.org/set/experiments/xp1"),
-                new URI("rdf:type"),
-                new URI("rdfs:class")
+                new URI("rdf:type")
         );
         testWhereValues(new SelectBuilder(), NodeFactory.createVariable("experiment"), uris);
     }
@@ -235,15 +219,5 @@ public class SPARQLQueryHelperTest extends AbstractUnitTest  {
                 OffsetDateTime.of(2020, 4, 28, 14, 32, 58, 0, ZoneOffset.ofHours(1))
         );
         testWhereValues(new SelectBuilder(), NodeFactory.createVariable("hasDateTime"), dataTimes);
-    }
-
-    @Test(expected = SPARQLDeserializerNotFoundException.class)
-    public void testWhereValueWithUnknownType() throws Exception {
-
-            List<Set<String>> setList = new ArrayList<>();
-            setList.add(new HashSet<>());
-            setList.get(0).addAll(Arrays.asList("str1", "str2"));
-
-            testWhereValues(new SelectBuilder(), NodeFactory.createVariable("hasSet"), setList);
     }
 }

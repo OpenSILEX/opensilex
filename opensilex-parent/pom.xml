@@ -639,7 +639,7 @@
                             </goals>
                             <configuration>
                                 <inputSpec>${project.basedir}/front/src/lib/swagger.json</inputSpec>
-                                <templateDirectory>${project.basedir}/../opensilex/src/main/resources/swagger/templates/typescript-inversify</templateDirectory>
+                                <templateDirectory>${project.basedir}/../opensilex-main/src/main/resources/swagger/templates/typescript-inversify</templateDirectory>
                                 <language>typescript-inversify</language>
                                 <output>${project.basedir}/front/src/lib/</output>
                                 <configOptions>

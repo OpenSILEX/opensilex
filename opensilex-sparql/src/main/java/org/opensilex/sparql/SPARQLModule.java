@@ -13,8 +13,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import org.apache.jena.rdf.model.Resource;
-import org.opensilex.OpenSilex;
-import org.opensilex.module.ModuleNotFoundException;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -58,8 +56,11 @@ public class SPARQLModule extends OpenSilexModule {
             basePrefix = "";
         }
 
+        platformURI = new URI(sparqlConfig.baseURI());
+
         if (sparqlConfig.usePrefixes()) {
-            SPARQLClassObjectMapper.forEach((Resource resource, SPARQLClassObjectMapper<?> mapper) -> {
+            SPARQLServiceFactory sparqlFactory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+            sparqlFactory.getMapperIndex().forEach((Resource resource, SPARQLClassObjectMapper<?> mapper) -> {
                 String resourceNamespace = mapper.getResourceGraphNamespace();
                 String resourcePrefix = mapper.getResourceGraphPrefix();
                 if (resourceNamespace != null && resourcePrefix != null && !resourcePrefix.isEmpty()) {
@@ -70,7 +71,7 @@ public class SPARQLModule extends OpenSilexModule {
             SPARQLConfig cfg = this.getConfig(SPARQLConfig.class);
             SPARQLService.addPrefix(cfg.baseURIAlias(), cfg.baseURI());
 
-            for (SPARQLExtension module : OpenSilex.getInstance().getModulesImplementingInterface(SPARQLExtension.class)) {
+            for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
                 for (OntologyFileDefinition ontologyDef : module.getOntologiesFiles()) {
                     SPARQLService.addPrefix(ontologyDef.getPrefix(), ontologyDef.getPrefixUri().toString());
                 }
@@ -83,11 +84,11 @@ public class SPARQLModule extends OpenSilexModule {
         URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), sparqlConfig.usePrefixes());
     }
 
-    public static void installOntologies(SPARQLService sparql, boolean reset) throws Exception {
+    public void installOntologies(SPARQLService sparql, boolean reset) throws Exception {
         try {
             sparql.startTransaction();
             // Allow any module implementing SPARQLExtension to add custom ontologies
-            for (SPARQLExtension module : OpenSilex.getInstance().getModulesImplementingInterface(SPARQLExtension.class)) {
+            for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
                 for (OntologyFileDefinition ontologyDef : module.getOntologiesFiles()) {
                     if (reset) {
                         sparql.clearGraph(ontologyDef.getUri());
@@ -107,39 +108,41 @@ public class SPARQLModule extends OpenSilexModule {
     @Override
     public void shutdown() {
         SPARQLService.clearPrefixes();
-        SPARQLClassObjectMapper.reset();
     }
+
+    private URI platformURI;
 
     /**
      * Return configured platform base URI
      *
      * @return plateform URI
      */
-    public static URI getPlatformURI() {
-        try {
-            if (OpenSilex.getInstance() == null) {
-                return new URI("http://test.opensilex.org/");
-            } else {
-                return new URI(OpenSilex.getInstance().getModuleByClass(SPARQLModule.class).getConfig(SPARQLConfig.class).baseURI());
-            }
-        } catch (ModuleNotFoundException ex) {
-            LOGGER.error("Base module not found, can't really happend because it's in the same package", ex);
-            return null;
-        } catch (URISyntaxException ex) {
-            LOGGER.error("Invalid Base URI", ex);
-            return null;
+    public URI getPlatformURI() {
+        if (platformURI == null) {
+            platformURI = getDefaultPlatformURI();
         }
+
+        return platformURI;
     }
 
-    public static URI getPlatformDomainGraphURI(String graphSuffix) {
+    public static URI getDefaultPlatformURI() {
+        try {
+            return new URI("http://test.opensilex.org/");
+        } catch (URISyntaxException ex) {
+            // Silently ignore never happending error
+        }
+        return null;
+    }
+
+    public URI getPlatformDomainGraphURI(String graphSuffix) {
         return getPlatformURI().resolve(graphSuffix);
     }
 
-    public static void clearPlatformGraphs(SPARQLService sparql, List<String> graphsSuffixToClear) throws SPARQLException {
+    public void clearPlatformGraphs(SPARQLService sparql, List<String> graphsSuffixToClear) throws SPARQLException {
         for (String graphName : graphsSuffixToClear) {
-            sparql.clearGraph(SPARQLModule.getPlatformDomainGraphURI(graphName));
+            sparql.clearGraph(getPlatformDomainGraphURI(graphName));
         }
-        sparql.clearGraph(SPARQLModule.getPlatformURI());
+        sparql.clearGraph(getPlatformURI());
     }
 
     @Override
@@ -150,7 +153,8 @@ public class SPARQLModule extends OpenSilexModule {
             sparql.deleteRepository();
         }
         sparql.createRepository();
-        OpenSilex.getInstance().restart();
+        getOpenSilex().shutdown();
+        getOpenSilex().startup();
 
         SPARQLService sparqlService = sparql.provide();
 
@@ -188,9 +192,9 @@ public class SPARQLModule extends OpenSilexModule {
     @Override
     public void check() throws Exception {
         LOGGER.info("Check SPARQL required ontologies");
-        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
-        for (SPARQLExtension module : OpenSilex.getInstance().getModulesImplementingInterface(SPARQLExtension.class)) {
+        for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
             for (OntologyFileDefinition ontologyDef : module.getOntologiesFiles()) {
                 List<SPARQLStatement> results = sparql.getGraphStatement(ontologyDef.getUri());
 

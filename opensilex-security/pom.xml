@@ -27,13 +27,13 @@
         <!-- OpenSilex Base -->
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex</artifactId>
+            <artifactId>opensilex-main</artifactId>
             <version>${revision}</version>
         </dependency>
         <!-- OpenSilex Base test -->
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex</artifactId>
+            <artifactId>opensilex-main</artifactId>
             <version>${revision}</version>
             <scope>test</scope>
             <classifier>tests</classifier>

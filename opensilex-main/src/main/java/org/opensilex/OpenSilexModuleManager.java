@@ -137,6 +137,8 @@ public class OpenSilexModuleManager {
             registerDependencies(readDependencies);
         }
 
+        registerDependencies(urls);
+
         addOptionalModulesOrder(systemConfig.modulesOrder());
 
         setIgnoredModules(systemConfig.ignoredModules());
@@ -596,7 +598,8 @@ public class OpenSilexModuleManager {
      * @param <T> Module class parameter
      * @param moduleClass Module class
      * @return Module instance
-     * @throws OpenSilexModuleNotFoundException Throw exception if module is not found
+     * @throws OpenSilexModuleNotFoundException Throw exception if module is not
+     * found
      */
     @SuppressWarnings("unchecked")
     public <T extends OpenSilexModule> T getModuleByClass(Class<T> moduleClass) throws OpenSilexModuleNotFoundException {

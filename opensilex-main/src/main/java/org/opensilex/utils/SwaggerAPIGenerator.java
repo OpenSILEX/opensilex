@@ -150,7 +150,7 @@ public class SwaggerAPIGenerator {
         Map<String, String> args = new HashMap<String, String>() {
             {
                 put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);
-                put(OpenSilex.DEBUG_ARG_KEY, "true");
+//                put(OpenSilex.DEBUG_ARG_KEY, "true");
             }
         };
 

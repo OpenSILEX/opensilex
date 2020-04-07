@@ -202,7 +202,7 @@ public final class DocumentationAnnotation {
     public static final String EXAMPLE_GROUP_AVAILABLE = "true";
 
     public static final String EXAMPLE_USER_EMAIL = "admin@opensilex.org";
-    public static final String EXAMPLE_USER_PASSWORD = "21232f297a57a5a743894a0e4a801fc3";
+    public static final String EXAMPLE_USER_PASSWORD = "admin";
     public static final String EXAMPLE_USER_FIRST_NAME = "Marie";
     public static final String EXAMPLE_USER_LASTNAME = "Dupont";
     public static final String EXAMPLE_USER_ADDRESS = "2 place Pierre Viala, Montpellier";

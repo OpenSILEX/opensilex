@@ -18,7 +18,7 @@ public class DevModule extends OpenSilexModule {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DevModule.class);
 
-    public final static String CONFIG_FILE_PATH = "./src/main/resources/config/sixtine.yml";
+    public final static String CONFIG_FILE_PATH = "./src/main/resources/config/opensilex.yml";
 
     private static OpenSilex devInstance = null;
 

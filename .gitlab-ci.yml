@@ -27,7 +27,7 @@ variables:
  MAVEN_CACHE_FOLDER: "$CI_PROJECT_DIR/.m2/repository"
  MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
  YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/cache_yarn"
- NODE_CACHE: "$CI_PROJECT_DIR/opensilex-dev/.node"
+ NODE_CACHE: "$CI_PROJECT_DIR/.node"
  EMBDED_MONGO_CACHE: "/root/.embedmongo/"
  GITLAB_HTTPS: "false"
 

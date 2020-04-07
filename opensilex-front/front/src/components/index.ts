@@ -14,7 +14,7 @@ import GroupForm from './groups/GroupForm.vue';
 import GroupUserProfileForm from './groups/GroupUserProfileForm.vue';
 import GroupView from './groups/GroupView.vue';
 import GroupList from './groups/GroupList.vue';
-import FormInputMessageHelper from './common/FormInputMessageHelper.vue'
+import FormInputLabelHelper from './common/FormInputLabelHelper.vue'
 import ToDoComponent from './layout/ToDoComponent.vue';
 import InfrastructureView from './infrastructures/InfrastructureView.vue';
 import InfrastructureTree from './infrastructures/InfrastructureTree.vue';
@@ -56,7 +56,7 @@ export default {
     "opensilex-InfrastructureView": InfrastructureView,
     "opensilex-InfrastructureTree": InfrastructureTree,
     "opensilex-InfrastructureForm": InfrastructureForm,
-    'opensilex-FormInputMessageHelper': FormInputMessageHelper,
+    'opensilex-FormInputLabelHelper': FormInputLabelHelper,
     // factors
     "opensilex-FactorView": FactorView,
     "opensilex-FactorList": FactorList,
@@ -72,7 +72,5 @@ export default {
     "opensilex-core-ExperimentList": ExperimentList,
     "opensilex-core-ExperimentCreate": ExperimentCreate,
     "opensilex-core-ExperimentView": ExperimentView,
-
     'opensilex-ToDoComponent': ToDoComponent
-    
 };

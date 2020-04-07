@@ -31,8 +31,8 @@ variables:
  OPENSILEX_BUILD_PATH: "opensilex-release/target"
  #APP DEPLOY CONFIG
  DEV_TOOLS_REPO_CONF_FILES_PATH: "instances-configuration"
- OPENSILEX_STOP_SERVER_OPTS: "--CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
- OPENSILEX_START_SERVER_OPTS: "--port=$OPENSILEX_JAR_PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
+ OPENSILEX_STOP_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
+ OPENSILEX_START_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --port=$OPENSILEX_JAR_PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
  # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
  # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
  #CACHE
@@ -101,9 +101,8 @@ variables:
   before_script:
     # test variables before deployement
     -  if [ -z "$REMOTE_SERVER_RSYNC_ACCOUNT" ]; then echo "Missing REMOTE_SERVER_RSYNC_ACCOUNT variable"; exit 1; fi
-    -  if [ -z "$REMOTE_SERVER_RSYNC_DIR" ]; then echo "Missing REMOTE_SERVER_RSYNC_DIR variable"; exit 1; fi 
     -  if [ -z "$REMOTE_SERVER_IP" ]; then echo "Missing REMOTE_SERVER_IP variable"; exit 1; fi
-    -  if [ -z "$CONFIGS_FILES_DIR_PATH" ]; then echo "Missing CONFIGS_FILES_DIR_PATH variable"; exit 1; fi
+    -  if [ -z "$INTERNAL_CONFIGURATION_FILES_PATH" ]; then echo "Missing INTERNAL_CONFIGURATION_FILES_PATH variable"; exit 1; fi
     -  if [ -z "$INSTANCE_CONFIGURATION_FILE_NAME" ]; then echo "Missing INSTANCE_CONFIGURATION_FILE_NAME variable"; exit 1; fi
     -  if [ -z "$REMOTE_SERVER_SSH_KEY" ]; then echo "Missing REMOTE_SERVER_SSH_KEY variable"; exit 1; fi
     -  if [ -z "$OPENSILEX_JAR_ADMIN_PORT" ]; then echo "Missing OPENSILEX_JAR_ADMIN_PORT variable"; exit 1; fi
@@ -111,7 +110,6 @@ variables:
     ##
     ## Create the SSH directory and give it the right permissions
     ##
-    - echo "$REMOTE_SERVER_IP"
     - mkdir -p ${HOME}/.ssh
     - chmod 700 ${HOME}/.ssh
     ##
@@ -157,24 +155,22 @@ variables:
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "mkdir -p $RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR; mkdir -p $RSYNC_INSTANCES_LOGS_PATH; mkdir -p $RSYNC_INSTANCES_LOGS_ARCHIVED; mkdir -p $RSYNC_INSTANCES_DATA_PATH/$REMOTE_SERVER_RSYNC_DIR;"
     - echo "Upload files"
     - rsync -arzv -e "ssh  -i ${HOME}/.ssh/id_rsa" $RSYNC_INSTANCES_OPTIONS  $CI_PROJECT_DIR/$OPENSILEX_APP_REVISION/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR
-    - ls $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGS_FILES_DIR_PATH
-    - echo "scp -i ${HOME}/.ssh/id_rsa -o 'StrictHostKeyChecking no' $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGS_FILES_DIR_PATH/* ${REMOTE_SERVER_RSYNC_ACCOUNT}@${REMOTE_SERVER_IP}:${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
-    - scp -i ${HOME}/.ssh/id_rsa -o "StrictHostKeyChecking no" $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGS_FILES_DIR_PATH/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR
+    - echo "ls ${INTERNAL_CONFIGURATION_FILES_PATH}"
+    - ls $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH
+    - echo "scp -i ${HOME}/.ssh/id_rsa -o 'StrictHostKeyChecking no' $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH/* ${REMOTE_SERVER_RSYNC_ACCOUNT}@${REMOTE_SERVER_IP}:${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
+    - scp -i ${HOME}/.ssh/id_rsa -o "StrictHostKeyChecking no" $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR
     - echo "Remove dependencies list cache"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "rm -f ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/.opensilex.dependencies"
     - echo "Check files"
-    - echo ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "ls ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR};"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "ls ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR};"
-    - echo "Restart server java -jar ${RSYNC_INSTANCES_BIN_PATH}/$REMOTE_SERVER_RSYNC_DIR/opensilex.jar"
-    - echo "Stop with options --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_STOP_SERVER_OPTS}"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_STOP_SERVER_OPTS}"
-    - echo "Start with options --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
+    - echo "Restarting server with options ${OPENSILEX_START_SERVER_CMD}"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop $OPENSILEX_STOP_SERVER_CMD"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start $OPENSILEX_START_SERVER_CMD"
   except:
-    - schedules
+    - schedules    
   environment:
-    name: "$CI_COMMIT_REF_NAME-test"
-    url: http://$$REMOTE_SERVER_IP:$$OPENSILEX_JAR_PORT
+    name: $CI_JOB_NAME
+    url: http://$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT
 
 
 # ########################
@@ -245,20 +241,21 @@ alice:build:
 test:alice:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
-  when: on_success
+  when: on_success  
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/alice"
+    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/alice"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4084
     OPENSILEX_JAR_PORT: 8084
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: $REMOTE_TEST_SERVER_IP
+    REMOTE_SERVER_RSYNC_ACCOUNT: "phis"
+    REMOTE_SERVER_IP: "138.102.159.37"
     REMOTE_SERVER_RSYNC_DIR: "mistea/alice"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   only:
     - alice
   needs:
     - alice:build
+
 
 ###################################
 ##  ANNE-TEST-SNAPSHOT-DEPLOYMENT
@@ -274,12 +271,12 @@ anne:alice:deploy:
   <<: *deploy_opensilex_template
   when: on_success  
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/anne"
+    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/anne"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4085
     OPENSILEX_JAR_PORT: 8085
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_RSYNC_ACCOUNT: "phis"
+    REMOTE_SERVER_IP: "138.102.159.37"
     REMOTE_SERVER_RSYNC_DIR: "mistea/anne"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   only:
@@ -301,12 +298,12 @@ test:arnaud:deploy:
   <<: *deploy_opensilex_template
   when: on_success  
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/arnaud"
+    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/arnaud"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4086
     OPENSILEX_JAR_PORT: 8086
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_RSYNC_ACCOUNT: "phis"
+    REMOTE_SERVER_IP: "138.102.159.37"
     REMOTE_SERVER_RSYNC_DIR: "mistea/arnaud"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   only:
@@ -315,7 +312,7 @@ test:arnaud:deploy:
     - arnaud:build
 
 ###################################
-##  JULIEN-TEST-BUILD-DEPLOYMENT
+##  ARNAUD-TEST-BUILD-DEPLOYMENT
 ###################################
 
 julien:build:
@@ -328,12 +325,12 @@ test:julien:deploy:
   <<: *deploy_opensilex_template
   when: on_success  
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/julien"
+    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/julien"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4087
     OPENSILEX_JAR_PORT: 8087
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_RSYNC_ACCOUNT: "phis"
+    REMOTE_SERVER_IP: "138.102.159.37"
     REMOTE_SERVER_RSYNC_DIR: "mistea/julien"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   only:
@@ -356,12 +353,12 @@ test:renaud:deploy:
   <<: *deploy_opensilex_template
   when: on_success  
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/renaud"
+    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/renaud"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4088
     OPENSILEX_JAR_PORT: 8088
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_RSYNC_ACCOUNT: "phis"
+    REMOTE_SERVER_IP: "138.102.159.37"
     REMOTE_SERVER_RSYNC_DIR: "mistea/renaud"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   only:
@@ -383,23 +380,18 @@ test:vincent:deploy:
   <<: *deploy_opensilex_template
   when: on_success  
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/vincent"
+    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/vincent"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4089
     OPENSILEX_JAR_PORT: 8089
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_RSYNC_ACCOUNT: "phis"
+    REMOTE_SERVER_IP: "138.102.159.37"
     REMOTE_SERVER_RSYNC_DIR: "mistea/vincent"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   only:
     - vincent
   needs:
     - vincent:build
-
-
-# ##########################################
-# ##  BUILD & DEPLOY FOR PARTNERS TEAMS
-# ##########################################
 
 ###################################
 ##  EPHESIA-TEST-BUILD-DEPLOYMENT
@@ -415,12 +407,12 @@ test:ephesia:deploy:
   <<: *deploy_opensilex_template
   when: on_success  
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/ephesia"
+    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/ephesia"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4090
     OPENSILEX_JAR_PORT: 8090
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_RSYNC_ACCOUNT: "phis"
+    REMOTE_SERVER_IP: "138.102.159.37"
     REMOTE_SERVER_RSYNC_DIR: "mistea/ephesia"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   only:

@@ -309,8 +309,8 @@ test:arnaud:deploy:
   needs:
     - arnaud:build
   environment:
-    name: "$CI_JOB_NAME"
-    url: "http://$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT"
+    name: $ARNAUD_DEV_ENV_NAME
+    url: ARNAUD_DEV_ENV_URL
 
 ###################################
 ##  JULIEN-TEST-BUILD-DEPLOYMENT

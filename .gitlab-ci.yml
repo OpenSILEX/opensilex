@@ -3,26 +3,46 @@
 ##GLOBAL VARIABLES 
 ########################
 variables:
+ ###### COMMON CONFIGS ######
+ # GIT CONFIG
  GIT_DEPTH: 5
  GIT_OPTIONS: "--allow-unrelated-histories"
- # GLOBAL
+ ## BUILD CONFIGS ##
+ # MAVEN CONFIG
  # As of Maven 3.3.0 instead of this you may define these options in `.mvn/maven.config` so the same config is used
  # when running from the command line.
  MAVEN_CLI_OPTS: "--batch-mode --show-version "
- BUILD_PATH: "opensilex-release/target"
+ MAVEN_CACHE_FOLDER: "$CI_PROJECT_DIR/.m2/repository"
+ MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
  # DEFAULT SERVER MAVEN VERSION
  MVN_VERSION: 3.6.3
  # DEFAULT SERVER JAVA VERSION
  JAVA_VERSION: 11
- REVISION: 'INSTANCE-SNAPSHOT'
+ ## DEPLOY CONFIGS ##
+ # REMOTE SERVER CONFIG
+ RSYNC_INSTANCES_OPTIONS: "--progress --delete"
+ RSYNC_INSTANCES_BIN_PATH: "~/opensilex-instances/bin"
+ RSYNC_INSTANCES_DATA_PATH: "~/opensilex-instances/data"
+ RSYNC_INSTANCES_LOGS_PATH: "~/opensilex-instances/logs"
+ RSYNC_INSTANCES_LOGS_ARCHIVED: "~/opensilex-instances/logs/old"
+ ###### OPENSILEX ######
+ #APP BUILD CONFIG
+ OPENSILEX_APP_REVISION: "INSTANCE-SNAPSHOT"
+ OPENSILEX_BUILD_PATH: "opensilex-release/target"
+ #APP DEPLOY CONFIG
+ DEV_TOOLS_REPO_CONF_FILES_PATH: "instances-configuration"
+ OPENSILEX_STOP_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
+ OPENSILEX_START_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --port=$OPENSILEX_JAR_PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
  # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
  # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
- MAVEN_CACHE_FOLDER: "$CI_PROJECT_DIR/.m2/repository"
- MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+ #CACHE
  YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/cache_yarn"
  NODE_CACHE: "$CI_PROJECT_DIR/.node"
  EMBDED_MONGO_CACHE: "/root/.embedmongo/"
- 
+ # Prevent gitlab clone issues
+ GITLAB_HTTPS: "false"
+
+
 ########################
 ##  CACHE TEMPLATE
 ########################
@@ -38,6 +58,7 @@ variables:
       - $NODE_CACHE
       - $EMBDED_MONGO_CACHE
 
+
 ########################
 ##  BUILD TEMPLATE
 ########################
@@ -45,6 +66,8 @@ variables:
 .build:instance: &build_template_with_opensilex
   <<: *cache_dependencies
   before_script: 
+    -  if [ -z "$OPENSILEX_BUILD_PATH" ]; then echo "Missing OPENSILEX_BUILD_PATH variable"; exit 1; fi
+    -  if [ -z "$OPENSILEX_APP_REVISION" ]; then echo "Missing OPENSILEX_APP_REVISION variable"; exit 1; fi
     - |
       if [ ! -z "$COMMIT_SHA_OPENSILEX_DEV" ]; then
         git checkout $COMMIT_SHA_OPENSILEX_DEV
@@ -61,24 +84,103 @@ variables:
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   except:
     - schedules
+  script:
+    - mvn install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
+    - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
+    - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $OPENSILEX_APP_REVISION
   artifacts:
+    paths:
+      - $OPENSILEX_APP_REVISION
     expire_in: "3 week"
-    
+
+########################
+##  DEPLOY SSH CONFIGURATION TEMPLATE
+########################
+.deploy_opensilex_before_script: &deploy_opensilex_before_script
+  before_script:
+    # test variables before deployement
+    -  if [ -z "$REMOTE_SERVER_RSYNC_ACCOUNT" ]; then echo "Missing REMOTE_SERVER_RSYNC_ACCOUNT variable"; exit 1; fi
+    -  if [ -z "$REMOTE_SERVER_IP" ]; then echo "Missing REMOTE_SERVER_IP variable"; exit 1; fi
+    -  if [ -z "$INTERNAL_CONFIGURATION_FILES_PATH" ]; then echo "Missing INTERNAL_CONFIGURATION_FILES_PATH variable"; exit 1; fi
+    -  if [ -z "$INSTANCE_CONFIGURATION_FILE_NAME" ]; then echo "Missing INSTANCE_CONFIGURATION_FILE_NAME variable"; exit 1; fi
+    -  if [ -z "$REMOTE_SERVER_SSH_KEY" ]; then echo "Missing REMOTE_SERVER_SSH_KEY variable"; exit 1; fi
+    -  if [ -z "$OPENSILEX_JAR_ADMIN_PORT" ]; then echo "Missing OPENSILEX_JAR_ADMIN_PORT variable"; exit 1; fi
+    -  if [ -z "$OPENSILEX_JAR_PORT" ]; then echo "Missing OPENSILEX_JAR_PORT variable"; exit 1; fi
+    ##
+    ## Create the SSH directory and give it the right permissions
+    ##
+    - mkdir -p ${HOME}/.ssh
+    - chmod 700 ${HOME}/.ssh
+    ##
+    ## Install ssh-agent if not already installed, it is required by Docker.
+    ## (change apt-get to yum if you use an RPM-based image)
+    ##
+    - 'which ssh-agent || ( apt-get update && apt-get install openssh-client -y )'
+    ##
+    ## Run ssh-agent (inside the build environment)
+    ##
+    - eval $(ssh-agent -s)
+    ##
+    ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+    ## We're using tr to fix line endings which makes ed25519 keys work
+    ## without extra base64 encoding.
+    ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+    ##
+    - mkdir -p ${HOME}/.ssh && touch ${HOME}/.ssh/known_hosts
+    - ssh-keyscan -H "$REMOTE_SERVER_IP" >> ${HOME}/.ssh/known_hosts
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ${HOME}/.ssh/config
+    - echo "$REMOTE_SERVER_SSH_KEY" >> ${HOME}/.ssh/id_rsa
+    - chmod 600 ${HOME}/.ssh/id_rsa
+
+########################
+##  DEPLOY OPENSILEX TEST TEMPLATE
+########################
+
+.deploy:opensilex:instance: &deploy_opensilex_template
+  stage: deploy
+  when: manual
+  image: instrumentisto/rsync-ssh
+  script:
+    - apk add curl git
+    - rm -R $CI_PROJECT_DIR/opensilex-dev-tools
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-dev-tools.git --branch master $CI_PROJECT_DIR/opensilex-dev-tools
+    - ls $CI_PROJECT_DIR/opensilex-dev-tools
+    # Directory details
+    - ls $CI_PROJECT_DIR/$OPENSILEX_APP_REVISION
+    - echo "Create directory ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
+    - echo "Create directory ${RSYNC_INSTANCES_DATA_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
+    - echo "Create directory ${RSYNC_INSTANCES_LOGS_PATH}"
+    - echo "Create directory ${RSYNC_INSTANCES_LOGS_ARCHIVED}"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "mkdir -p $RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR; mkdir -p $RSYNC_INSTANCES_LOGS_PATH; mkdir -p $RSYNC_INSTANCES_LOGS_ARCHIVED; mkdir -p $RSYNC_INSTANCES_DATA_PATH/$REMOTE_SERVER_RSYNC_DIR;"
+    - echo "Upload files"
+    - rsync -arzv -e "ssh  -i ${HOME}/.ssh/id_rsa" $RSYNC_INSTANCES_OPTIONS  $CI_PROJECT_DIR/$OPENSILEX_APP_REVISION/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR
+    - echo "ls ${INTERNAL_CONFIGURATION_FILES_PATH}"
+    - ls $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH
+    - echo "scp -i ${HOME}/.ssh/id_rsa -o 'StrictHostKeyChecking no' $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH/* ${REMOTE_SERVER_RSYNC_ACCOUNT}@${REMOTE_SERVER_IP}:${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
+    - scp -i ${HOME}/.ssh/id_rsa -o "StrictHostKeyChecking no" $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR
+    - echo "Remove dependencies list cache"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "rm -f ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/.opensilex.dependencies"
+    - echo "Check files"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "ls ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR};"
+    - echo "Restarting server with options ${OPENSILEX_START_SERVER_CMD}"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop $OPENSILEX_STOP_SERVER_CMD"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start $OPENSILEX_START_SERVER_CMD"
+  except:
+    - schedules    
+  environment:
+    name: $CI_JOB_NAME
+    url: http://$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT
+
+
 # ########################
-# ##  DEFAULT BUILD CACHE 
+# ##  DEFAULT BUILD 
 # ########################
 
 opensilex:build:
   <<: *build_template_with_opensilex
-  script: 
-    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
-    - mv $BUILD_PATH/opensilex-release-$REVISION $REVISION
-  artifacts:
-    paths:
-      - $REVISION
   only:
     - master
-    
+
 # Trigger pipeline for sixtine module deployment
 trigger:sixtine:build:
   stage: deploy
@@ -90,7 +192,7 @@ trigger:sixtine:build:
   needs: 
     - job: "opensilex:build"
 
-      
+# Trigger pipeline for phis module deployment
 trigger:phis:deploy:test:
   stage: deploy
   image: curlimages/curl
@@ -105,180 +207,194 @@ trigger:phis:deploy:test:
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM
 # ##########################################
-
-# #########
-# Alice
-# #########
+ 
+###################################
+##  ALICE-TEST-SNAPSHOT-DEPLOYMENT
+###################################
 
 alice:build:
   <<: *build_template_with_opensilex
-  script: 
-    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
-    - mv $BUILD_PATH/opensilex-release-$REVISION $REVISION
-  artifacts:
-    paths:
-      - $REVISION
   only:
     - alice
 
-trigger:alice:deploy:test:
-  stage: deploy
-  image: curlimages/curl
-  script:
-    - curl --request POST --form "variables[DEPLOY]=alice-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+test:alice:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  when: on_success  
+  variables:
+    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/alice"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4084
+    OPENSILEX_JAR_PORT: 8084
+    REMOTE_SERVER_RSYNC_ACCOUNT: "phis"
+    REMOTE_SERVER_IP: "138.102.159.37"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/alice"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   only:
-    - alice    
-  needs: 
-    - job: "alice:build"    
-    
-# #########
-# Anne
-# #########
+    - alice
+  needs:
+    - alice:build
+
+
+###################################
+##  ANNE-TEST-SNAPSHOT-DEPLOYMENT
+###################################
 
 anne:build:
   <<: *build_template_with_opensilex
-  script: 
-    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
-    - mv $BUILD_PATH/opensilex-release-$REVISION $REVISION
-  artifacts:
-    paths:
-      - $REVISION
   only:
     - anne
-    
-trigger:anne:deploy:test:
-  stage: deploy
-  image: curlimages/curl
-  script:
-    - curl --request POST --form "variables[DEPLOY]=anne-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+
+anne:alice:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  when: on_success  
+  variables:
+    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/anne"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4085
+    OPENSILEX_JAR_PORT: 8085
+    REMOTE_SERVER_RSYNC_ACCOUNT: "phis"
+    REMOTE_SERVER_IP: "138.102.159.37"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/anne"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   only:
-    - anne    
-  needs: 
-    - job: "anne:build"    
-    
-    
-# #########
-# Arnaud
-# #########
+    - anne
+  needs:
+    - anne:build
+
+###################################
+##  ARNAUD-TEST-BUILD-DEPLOYMENT
+###################################
 
 arnaud:build:
   <<: *build_template_with_opensilex
-  script: 
-    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
-    - mv $BUILD_PATH/opensilex-release-$REVISION $REVISION
-  artifacts:
-    paths:
-      - $REVISION
   only:
     - arnaud
-    
-trigger:arnaud:deploy:test:
-  stage: deploy
-  image: curlimages/curl
-  script:
-    - curl --request POST --form "variables[DEPLOY]=arnaud-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+
+test:arnaud:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  when: on_success  
+  variables:
+    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/arnaud"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4086
+    OPENSILEX_JAR_PORT: 8086
+    REMOTE_SERVER_RSYNC_ACCOUNT: "phis"
+    REMOTE_SERVER_IP: "138.102.159.37"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/arnaud"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   only:
     - arnaud
-  needs: 
-    - job: "arnaud:build"
-    
-# #########
-# Julien
-# #########
-    
+  needs:
+    - arnaud:build
+
+###################################
+##  ARNAUD-TEST-BUILD-DEPLOYMENT
+###################################
+
 julien:build:
   <<: *build_template_with_opensilex
-  script: 
-    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
-    - mv $BUILD_PATH/opensilex-release-$REVISION $REVISION
-  artifacts:
-    paths:
-      - $REVISION
   only:
     - julien
-    
-trigger:julien:deploy:test:
-  stage: deploy
-  image: curlimages/curl
-  script:
-    - curl --request POST --form "variables[DEPLOY]=julien-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
-  only:
-    - julien
-  needs: 
-    - job: "julien:build"       
 
-# #########
-# Renaud
-# #########
+test:julien:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  when: on_success  
+  variables:
+    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/julien"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4087
+    OPENSILEX_JAR_PORT: 8087
+    REMOTE_SERVER_RSYNC_ACCOUNT: "phis"
+    REMOTE_SERVER_IP: "138.102.159.37"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/julien"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+  only:
+    - julien
+  needs:
+    - julien:build
+
+
+###################################
+##  RENAUD-TEST-BUILD-DEPLOYMENT
+###################################
 
 renaud:build:
   <<: *build_template_with_opensilex
-  script: 
-    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
-    - mv $BUILD_PATH/opensilex-release-$REVISION $REVISION
-  artifacts:
-    paths:
-      - $REVISION
   only:
     - renaud
-    
-trigger:renaud:deploy:test:
-  stage: deploy
-  image: curlimages/curl
-  script:
-    - curl --request POST --form "variables[DEPLOY]=renaud-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+
+test:renaud:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  when: on_success  
+  variables:
+    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/renaud"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4088
+    OPENSILEX_JAR_PORT: 8088
+    REMOTE_SERVER_RSYNC_ACCOUNT: "phis"
+    REMOTE_SERVER_IP: "138.102.159.37"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/renaud"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   only:
     - renaud
-  needs: 
-    - job: "renaud:build"   
-    
-# #########
-# Vincent
-# #########
+  needs:
+    - renaud:build
+
+###################################
+##  VINCENT-TEST-BUILD-DEPLOYMENT
+###################################
 
 vincent:build:
   <<: *build_template_with_opensilex
-  script: 
-    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
-    - mv $BUILD_PATH/opensilex-release-$REVISION $REVISION
-  artifacts:
-    paths:
-      - $REVISION
   only:
     - vincent
 
-trigger:vincent:deploy:test:
-  stage: deploy
-  image: curlimages/curl
-  script:
-    - curl --request POST --form "variables[DEPLOY]=vincent-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+test:vincent:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  when: on_success  
+  variables:
+    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/vincent"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4089
+    OPENSILEX_JAR_PORT: 8089
+    REMOTE_SERVER_RSYNC_ACCOUNT: "phis"
+    REMOTE_SERVER_IP: "138.102.159.37"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/vincent"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   only:
     - vincent
-  needs: 
-    - job: "vincent:build"
+  needs:
+    - vincent:build
 
-
-# #########
-# Ephesia
-# #########
+###################################
+##  EPHESIA-TEST-BUILD-DEPLOYMENT
+###################################
 
 ephesia:build:
   <<: *build_template_with_opensilex
-  script: 
-    - mvn install $MAVEN_CLI_OPTS -Drevision=$REVISION
-    - mv $BUILD_PATH/opensilex-release-$REVISION $REVISION
-  artifacts:
-    paths:
-      - $REVISION
   only:
     - ephesia
 
-trigger:ephesia:deploy:test:
-  stage: deploy
-  image: curlimages/curl
-  script:
-    - curl --request POST --form "variables[DEPLOY]=ephesia-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+test:ephesia:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  when: on_success  
+  variables:
+    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/ephesia"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4090
+    OPENSILEX_JAR_PORT: 8090
+    REMOTE_SERVER_RSYNC_ACCOUNT: "phis"
+    REMOTE_SERVER_IP: "138.102.159.37"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/ephesia"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   only:
     - ephesia
-  needs: 
-    - job: "ephesia:build"    
+  needs:
+    - ephesia:build

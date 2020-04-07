@@ -31,8 +31,8 @@ variables:
  OPENSILEX_BUILD_PATH: "opensilex-release/target"
  #APP DEPLOY CONFIG
  DEV_TOOLS_REPO_CONF_FILES_PATH: "instances-configuration"
- OPENSILEX_STOP_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
- OPENSILEX_START_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --port=$OPENSILEX_JAR_PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
+ OPENSILEX_STOP_SERVER_OPTS: "--CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
+ OPENSILEX_START_SERVER_OPTS: "--port=$OPENSILEX_JAR_PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
  # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
  # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
  #CACHE
@@ -165,12 +165,10 @@ variables:
     - echo ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "ls ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR};"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "ls ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR};"
     - echo "Restart server java -jar ${RSYNC_INSTANCES_BIN_PATH}/$REMOTE_SERVER_RSYNC_DIR/opensilex.jar"
-    - echo "Stop with options ${OPENSILEX_STOP_SERVER_CMD}"
-    - STOP_CMD="$OPENSILEX_STOP_SERVER_CMD"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop ${STOP_CMD}"
-    - START_CMD="$OPENSILEX_START_SERVER_CMD"
-    - echo "Start with options ${OPENSILEX_START_SERVER_CMD}"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start ${START_CMD}"
+    - echo "Stop with options --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_STOP_SERVER_OPTS}"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_STOP_SERVER_OPTS}"
+    - echo "Start with options --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
     - export
   except:
     - schedules    
@@ -219,13 +217,15 @@ pages:
     - mvn install $MAVEN_CLI_OPTS
     - cd $CI_PROJECT_DIR
     - mvn install site $MAVEN_CLI_OPTS -Pwith-test-report -Pwith-security-check -DskipFrontBuild
-    - mkdir ../public
+    - mkdir public
     - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* public
   artifacts:
     paths:
       - public
   only:
     refs:
+      - master
+      - arnaud
       - schedules
     variables:
       - $DEPLOY == "maven-doc"

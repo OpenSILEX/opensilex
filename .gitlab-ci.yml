@@ -226,12 +226,7 @@ pages:
     paths:
       - public
   only:
-    refs:
-      - master
-      - arnaud
-      - schedules
-    variables:
-      - $DEPLOY == "maven-doc"
+    - schedules
 
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM

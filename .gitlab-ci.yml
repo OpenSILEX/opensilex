@@ -154,7 +154,10 @@ variables:
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start $START_SERVER_OPTS"
   except:
     - schedules    
-    
+  environment:
+    name: $CI_JOB_NAME
+    url: http://$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT
+
 # #########
 # Arnaud
 # #########
@@ -203,8 +206,5 @@ test:arnaud:deploy:
     DEV_BRANCH: arnaud
   only:
     - arnaud
-  environment:
-    name: arnaud-test
-    url: http://138.102.159.37:8086
   needs:
     - arnaud:build

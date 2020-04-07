@@ -148,11 +148,16 @@ export default class ExperimentForm extends Vue {
   $router: VueRouter;
   $i18n: any;
 
+  title = "";
+  editMode = false;
+  uriGenerated = true;
+
+  keywords: string;
+  speciesList: any = [];
+
   get user() {
     return this.$store.state.user;
   }
-
-  uriGenerated = true;
 
   form: ExperimentCreationDTO = {
     keywords: [],
@@ -165,14 +170,6 @@ export default class ExperimentForm extends Vue {
     sensors: []
     // lang: "en-US"
   };
-
-  keywords: string;
-
-  title = "";
-
-  editMode = false;
-
-  speciesList: any = [];
 
   clearForm() {
     this.form = {
@@ -208,25 +205,12 @@ export default class ExperimentForm extends Vue {
 
   created () {
     this.loadSpecies();
-    console.log("experimentForm edit "+this.$store.editXp);
 
     if(this.$store.editXp !== undefined){
         this.editMode = this.$store.editXp;
-
         if(this.editMode && this.$store.xpToUpdate != undefined){
-
           let dto = this.$store.xpToUpdate;
-          let creationDto : ExperimentCreationDTO = {
-            uri: dto.uri,
-            label: dto.label,
-            projects: dto.projects,
-            startDate: dto.startDate,
-            endDate: dto.endDate,
-            objective: dto.objective,
-            comment: dto.comment,
-            keywords: dto.keywords
-        }
-        this.form = dto;
+          this.form = dto;
       }
     }
   }
@@ -246,30 +230,6 @@ export default class ExperimentForm extends Vue {
 
     }).catch(this.$opensilex.errorHandler);
   }
-
-  // showCreateForm() {
-  //   this.clearForm();
-  //   console.log(this.$refs);
-  //   this.editMode = false;
-  //   this.title = this.$t("component.experiment.add").toString();
-  //   this.uriGenerated = true;
-  //   let modalRef: any = this.$refs.modalRef;
-  //   modalRef.show();
-  // }
-
-  // showEditForm(form: ExperimentCreationDTO) {
-  //   this.form = form;
-  //   this.editMode = true;
-  //   this.title = this.$t("component.experiment.update").toString();
-  //   this.uriGenerated = true;
-  //   let modalRef: any = this.$refs.modalRef;
-  //   modalRef.show();
-  // }
-
-  // hideForm() {
-  //   let modalRef: any = this.$refs.modalRef;
-  //   modalRef.hide();
-  // }
 
   validateForm() {
     let validatorRef: any = this.$refs.validatorRef;

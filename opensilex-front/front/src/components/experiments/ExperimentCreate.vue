@@ -76,8 +76,6 @@ export default class ExperimentCreate extends Vue {
     if(this.$store.editXp !== undefined){
       this.editMode = this.$store.editXp;
     }
-    // this.$form1 = this.$refs.experimentForm;
-    // this.$form2 = this.$refs.experimentForm2;
   }
 
   getLoadingWizard(){
@@ -156,48 +154,28 @@ export default class ExperimentCreate extends Vue {
 
   callCreateExperimentService(form: ExperimentCreationDTO) {
 
-    // done(
-      this.service
-        .createExperiment(this.user.getAuthorizationHeader(), form)
-        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-          let uri = http.response.result;
-          console.debug("experiment created", uri);
-          this.$router.push({ path: '/experiments' });
-        }).catch(this.$opensilex.errorHandler);
-    // );
+    this.service
+      .createExperiment(this.user.getAuthorizationHeader(), form)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        let uri = http.response.result;
+        console.debug("experiment created", uri);
+        this.$router.push({ path: '/experiments' });
+    }).catch(this.$opensilex.errorHandler);
   }
 
   callUpdateExperimentService(form: ExperimentCreationDTO) {
-    // done(
-      this.service
-        .updateExperiment(this.user.getAuthorizationHeader(), form)
-        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-          let uri = http.response.result;
-          console.debug("experiment updated", uri);
-          this.$router.push({ path: '/experiments' });
-          // let experimentList: any = this.$refs.experimentList;
-          // experimentList.refresh();
+    this.service
+      .updateExperiment(this.user.getAuthorizationHeader(), form)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        let uri = http.response.result;
+        console.debug("experiment updated", uri);
+        this.$router.push({ path: '/experiments' });
+        // let experimentList: any = this.$refs.experimentList;
+        // experimentList.refresh();
 
-        }).catch(this.$opensilex.errorHandler);
-    // );
+      }).catch(this.$opensilex.errorHandler);
   }
 
-  // editExperiment(form: ExperimentGetDTO) {
-  //   console.debug("editExperiment" + form.uri)
-  //   let experimentForm: any = this.$refs.experimentForm;
-  //   experimentForm.showEditForm(form);
-  // }
-
-  // deleteExperiment(uri: string) {
-  //    console.debug("deleteExperiment " + uri)
-  //   this.service
-  //     .deleteExperiment(this.user.getAuthorizationHeader(), uri)
-  //     .then(() => {
-  //       let experimentList: any = this.$refs.experimentList;
-  //       experimentList.refresh();
-  //     })
-  //     .catch(this.$opensilex.errorHandler);
-  // }
 }
 </script>
 

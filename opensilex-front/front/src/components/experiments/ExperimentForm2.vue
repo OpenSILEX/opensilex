@@ -92,8 +92,6 @@ export default class ExperimentForm2 extends ExperimentForm {
   technicalSupervisors: any = [];
   scientificSupervisors: any = [];
 
-  // form2: ExperimentCreationDTO;
-
   created(){
     this.loadProjects();
     this.loadGroups();

@@ -315,7 +315,7 @@ test:arnaud:deploy:
   needs:
     - arnaud:build
   environment:
-    name: $ARNAUD_DEV_ENV_NAME
+    name: "arnaudTest3"
     url: http://$$REMOTE_SERVER_IP:$$OPENSILEX_JAR_PORT
 
 ###################################

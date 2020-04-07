@@ -72,6 +72,7 @@ variables:
       if [ ! -z "$COMMIT_SHA_OPENSILEX_DEV" ]; then
         git checkout $COMMIT_SHA_OPENSILEX_DEV
       fi
+    # remove end of before script key
     - rm -r $CI_PROJECT_DIR/phis-ws
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/phis-ws.git --branch modularity
     - |
@@ -79,7 +80,7 @@ variables:
         cd phis-ws
         git checkout $COMMIT_SHA_PHIS
         cd ..
-      fi    
+      fi
   stage: build
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   except:
@@ -226,7 +227,7 @@ pages:
     paths:
       - public
   only:
-    - schedules
+    - arnaud
 
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM

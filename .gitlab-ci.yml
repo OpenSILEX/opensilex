@@ -110,6 +110,7 @@ variables:
     ##
     ## Create the SSH directory and give it the right permissions
     ##
+    - echo "$REMOTE_TEST_SERVER_IP"
     - mkdir -p ${HOME}/.ssh
     - chmod 700 ${HOME}/.ssh
     ##

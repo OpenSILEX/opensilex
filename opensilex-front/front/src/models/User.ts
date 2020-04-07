@@ -5,6 +5,8 @@ export class User {
     private lastName: string = "Dupont";
     private email: string = "jean.dupont@opensilex.org";
     private admin: boolean = false;
+    private locale: string = "en"
+
     private credentials: Array<string> = [];
 
     private expire: number = 0;
@@ -30,6 +32,7 @@ export class User {
     public static CLAIM_LAST_NAME = "family_name";
     public static CLAIM_EMAIL = "email";
     public static CLAIM_FULL_NAME = "name";
+    public static CLAIM_LOCALE = "locale";
     public static CLAIM_IS_ADMIN = "is_admin";
     public static CLAIM_CREDENTIALS_LIST = "credentials_list";
 
@@ -82,6 +85,7 @@ export class User {
         this.lastName = this.getTokenData(User.CLAIM_LAST_NAME);
         this.email = this.getTokenData(User.CLAIM_EMAIL);
         this.admin = this.getTokenData(User.CLAIM_IS_ADMIN);
+        this.locale = this.getTokenData(User.CLAIM_LOCALE);
         this.credentials = this.getTokenData(User.CLAIM_CREDENTIALS_LIST);
         console.debug("User credentials:", this.credentials);
         this.loggedIn = true;
@@ -110,6 +114,14 @@ export class User {
 
     public setEmail(email: string) {
         this.email = email;
+    }
+
+    public getLocale() {
+        return this.locale;
+    }
+
+    public setLocale(locale: string) {
+        this.locale = locale;
     }
 
     public isAdmin() {

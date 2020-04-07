@@ -5,20 +5,40 @@
  */
 package org.opensilex.core.infrastructure.api;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
-import org.opensilex.rest.group.api.GroupUserProfileDTO;
-import org.opensilex.rest.sparql.dto.NamedResourceGetDTO;
-import org.opensilex.rest.user.api.UserGetDTO;
+import org.opensilex.security.group.api.GroupUserProfileDTO;
+import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  *
  * @author vince
  */
-public class InfrastructureGetDTO extends NamedResourceGetDTO {
+public class InfrastructureGetDTO extends NamedResourceDTO {
+
+    protected URI parent;
+
+    protected List<URI> children;
 
     protected List<GroupUserProfileDTO> userProfiles;
+
+    public URI getParent() {
+        return parent;
+    }
+
+    public void setParent(URI parent) {
+        this.parent = parent;
+    }
+
+    public List<URI> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<URI> children) {
+        this.children = children;
+    }
 
     public List<GroupUserProfileDTO> getUserProfiles() {
         return userProfiles;
@@ -34,6 +54,19 @@ public class InfrastructureGetDTO extends NamedResourceGetDTO {
         dto.setType(model.getType());
         dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
         dto.setName(model.getName());
+
+        if (model.getParent() != null) {
+            URI parentURI = model.getParent().getUri();
+            dto.setParent(parentURI);
+        }
+
+        List<URI> children = new ArrayList<>();
+        if (model.getChildren() != null) {
+            model.getChildren().forEach(child -> {
+                children.add(child.getUri());
+            });
+        }
+        dto.setChildren(children);
 
         List<GroupUserProfileDTO> userProfilesList = new ArrayList<>();
         if (model.getGroup() != null) {

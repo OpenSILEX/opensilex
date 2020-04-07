@@ -42,7 +42,7 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import { Menu } from "../../models/Menu";
-import { UserGetDTO } from 'opensilex-rest/index';
+import { UserGetDTO } from 'opensilex-security/index';
 import VueI18n from 'vue-i18n'
 import { MenuItemDTO } from '../../lib';
 

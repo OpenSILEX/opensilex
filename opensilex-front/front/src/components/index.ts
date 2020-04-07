@@ -34,6 +34,11 @@ import ExperimentList from './experiments/ExperimentList.vue';
 import ExperimentCreate from './experiments/ExperimentCreate.vue';
 import ExperimentView from './experiments/ExperimentView.vue';
 
+import GermplasmView from './germplasm/GermplasmView.vue';
+import GermplasmForm from './germplasm/GermplasmForm.vue';
+import GermplasmList from './germplasm/GermplasmList.vue';
+
+
 export default {
     'opensilex-DefaultFooterComponent': DefaultFooterComponent,
     'opensilex-DefaultHeaderComponent': DefaultHeaderComponent,
@@ -72,5 +77,12 @@ export default {
     "opensilex-core-ExperimentList": ExperimentList,
     "opensilex-core-ExperimentCreate": ExperimentCreate,
     "opensilex-core-ExperimentView": ExperimentView,
+
+    // germplasm
+    "opensilex-GermplasmView": GermplasmView,
+    "opensilex-GermplasmForm": GermplasmForm,
+    "opensilex-GermplasmList": GermplasmList,
+
     'opensilex-ToDoComponent': ToDoComponent
+    
 };

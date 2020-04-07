@@ -30,18 +30,13 @@ public interface ServiceDefinition {
     public String configID();
 
     @ConfigDescription(
-            value = "Service connection configuration class"
+            value = "Service connection id"
     )
-    public Class<?> connectionConfigClass();
-
-    @ConfigDescription(
-            value = "Service connection configuration id"
-    )
-    public String connectionConfigID();
+    public String serviceID();
 
     @ConfigDescription(
             value = "Service connection class",
-            defaultClass = ServiceConnection.class
+            defaultClass = Service.class
     )
-    public Class<? extends ServiceConnection> connection();
+    public Class<? extends Service> serviceClass();
 }

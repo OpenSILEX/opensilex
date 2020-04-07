@@ -1,4 +1,4 @@
-Install OpenSilex fro Development
+Install OpenSilex for Development
 =================================
 
 # Introduction

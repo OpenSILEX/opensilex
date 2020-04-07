@@ -28,7 +28,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.Tika;
-import org.opensilex.module.ModuleConfig;
+import org.opensilex.module.ModuleNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -276,14 +276,14 @@ public abstract class OpenSilexModule {
     /**
      * Module configuration interface
      */
-    private ModuleConfig config;
+    private Object config;
 
     /**
      * Setter for module configuration
      *
      * @param config Module configuration instance
      */
-    public void setConfig(ModuleConfig config) {
+    public void setConfig(Object config) {
         this.config = config;
     }
 
@@ -292,7 +292,7 @@ public abstract class OpenSilexModule {
      *
      * @return Module configuration instance
      */
-    public ModuleConfig getConfig() {
+    public Object getConfig() {
         return config;
     }
 
@@ -305,7 +305,7 @@ public abstract class OpenSilexModule {
      * @return Module configuration instance converted in T
      */
     @SuppressWarnings("unchecked")
-    public <T extends ModuleConfig> T getConfig(Class<T> configClass) {
+    public <T> T getConfig(Class<T> configClass) {
         return (T) getConfig();
     }
 
@@ -323,7 +323,7 @@ public abstract class OpenSilexModule {
      *
      * @return Module configuration class
      */
-    public Class<? extends ModuleConfig> getConfigClass() {
+    public Class<?> getConfigClass() {
         return null;
     }
 
@@ -337,10 +337,10 @@ public abstract class OpenSilexModule {
     public void install(boolean reset) throws Exception {
         LOGGER.debug("Nothing to install for module class: " + getClass().getCanonicalName());
     }
-    
-/**
-     * Default method for module configuration check, to be implemented by module
-     * implementations for validation logic
+
+    /**
+     * Default method for module configuration check, to be implemented by
+     * module implementations for validation logic
      *
      * @throws Exception Can throw anything
      */
@@ -366,4 +366,7 @@ public abstract class OpenSilexModule {
         LOGGER.debug("Nothing to shutdown for module class: " + getClass().getCanonicalName());
     }
 
+    public static <T> T getModuleConfig(Class<? extends OpenSilexModule> moduleClass, Class<T> configClass) throws ModuleNotFoundException {
+        return OpenSilex.getInstance().getModuleConfig(moduleClass, configClass);
+    }
 }

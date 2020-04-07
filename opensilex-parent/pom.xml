@@ -60,7 +60,7 @@
         <hibernate.validator.version>6.1.2.Final</hibernate.validator.version>
         <jackson.version>2.10.3</jackson.version>
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
-        <swagger.jersey2.jaxrs.version>1.6.0</swagger.jersey2.jaxrs.version>
+        <swagger.jersey2.jaxrs.version>1.6.1</swagger.jersey2.jaxrs.version>
         <maven.resolver.version>1.4.1</maven.resolver.version>
         <maven.resolver.provider.version>3.6.3</maven.resolver.provider.version>
         <rdf4j.version>3.1.2</rdf4j.version>
@@ -70,8 +70,8 @@
         <data.nucleus.jdo.version>3.2.0-m12</data.nucleus.jdo.version>
         <data.nucleus.jta.version>5.10.4.Final</data.nucleus.jta.version>
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
-        <bytebuddy.version>1.10.8</bytebuddy.version>
-        <java.jwt.version>3.10.1</java.jwt.version>
+        <bytebuddy.version>1.10.9</bytebuddy.version>
+        <java.jwt.version>3.10.2</java.jwt.version>
         <picocli.version>4.2.0</picocli.version>
         <bcript.version>0.9.0</bcript.version>
         <commons.io.version>2.6</commons.io.version>

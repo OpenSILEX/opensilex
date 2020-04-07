@@ -22,9 +22,8 @@ import org.opensilex.service.ServiceDefaultDefinition;
  * @author Vincent Migot
  */
 @ServiceDefaultDefinition(
-        connection = MongoDBConnection.class,
-        connectionConfig = MongoDBConfig.class,
-        connectionConfigID = "mongodb"
+        serviceClass = MongoDBConnection.class,
+        serviceID = "mongodb"
 )
 public class NoSQLService implements NoSQLConnection, Service {
 

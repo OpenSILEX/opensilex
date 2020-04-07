@@ -11,7 +11,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-
 /**
  *
  * @author Vincent Migot
@@ -24,13 +23,11 @@ public @interface ServiceDefaultDefinition {
     public Class<? extends Service> implementation() default Service.class;
 
     public Class<?> configClass() default Class.class;
-    
+
     public String configID() default "";
-    
-    public Class<?> connectionConfig() default Class.class;
 
-    public String connectionConfigID() default "";
+    public String serviceID() default "";
 
-    public Class<? extends ServiceConnection> connection() default ServiceConnection.class;
+    public Class<? extends Service> serviceClass() default Service.class;
 
 }

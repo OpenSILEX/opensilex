@@ -1,7 +1,7 @@
-phisws:
-    infrastructure: opensilex
-
-
+system:
+    ignoredModules:
+        phis2ws: opensilex.service.PhisWsModule
+    
 ontologies:
     baseURI: http://opensilex.dev/
     baseURIAlias: dev

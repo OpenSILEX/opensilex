@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
-import org.opensilex.integration.test.AbstractIntegrationTest;
 import java.util.*;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -18,14 +17,15 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import org.junit.Test;
-import org.opensilex.rest.sparql.dto.ResourceTreeDTO;
-import org.opensilex.rest.sparql.response.ResourceTreeResponse;
+import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.sparql.response.ResourceTreeDTO;
+import org.opensilex.sparql.response.ResourceTreeResponse;
 
 /**
  * @author Vincent MIGOT
  * @author Renaud COLIN
  */
-public class InfrastructureAPITest extends AbstractIntegrationTest {
+public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
 
     protected String path = "/core/infrastructure";
 

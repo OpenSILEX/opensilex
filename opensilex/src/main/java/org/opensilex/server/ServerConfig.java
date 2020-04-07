@@ -7,16 +7,16 @@
 package org.opensilex.server;
 
 import java.util.List;
+import java.util.Map;
 import org.opensilex.OpenSilex;
 import org.opensilex.config.ConfigDescription;
-import org.opensilex.module.ModuleConfig;
 
 /**
  * Default configuration for OpenSilex base module
  *
  * @author Vincent Migot
  */
-public interface ServerConfig extends ModuleConfig {
+public interface ServerConfig {
 
     @ConfigDescription(
             value = "Server public URI",
@@ -25,19 +25,20 @@ public interface ServerConfig extends ModuleConfig {
     public String publicURI();
 
     @ConfigDescription(
-            value = "Default application language",
-            defaultString = OpenSilex.DEFAULT_LANGUAGE
-    )
-    public String defaultLanguage();
-
-    @ConfigDescription(
             value = "Available application language list",
             defaultList = {OpenSilex.DEFAULT_LANGUAGE, "fr"}
     )
     public List<String> availableLanguages();
 
     @ConfigDescription(
-            value = "Modules loading order list"
+            value = "Tomcat system properties"
     )
-    public List<String> modulesOrder();
+    public Map<String, String> tomcatSystemProperties();
+
+    @ConfigDescription(
+            value = "Enable Tomcat anti-thread lock mechanism with StuckThreadDetectionValve",
+            defaultBoolean = true
+    )
+    public boolean enableAntiThreadLock();
+
 }

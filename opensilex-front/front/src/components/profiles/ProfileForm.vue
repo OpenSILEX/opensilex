@@ -81,7 +81,7 @@ import {
   ProfileGetDTO,
   CredentialsGroupDTO,
   ProfileCreationDTO
-} from "opensilex-rest/index";
+} from "opensilex-security/index";
 
 @Component
 export default class ProfileForm extends Vue {

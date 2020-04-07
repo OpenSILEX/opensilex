@@ -28,13 +28,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.opensilex.OpenSilex;
-import org.opensilex.OpenSilexModule;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.SubTypesScanner;
@@ -164,11 +164,10 @@ public class ClassUtils {
         return getPomFile(getJarFile(clazz), groupId, artifactId);
     }
 
-    
     public static File getFileFromClassArtifact(Class<?> clazz, String filePath) throws IOException {
         return getFileFromJar(getJarFile(clazz), filePath);
     }
-    
+
     public static File getFileFromJar(File jarFile, String filePath) throws IOException {
         if (jarFile.isFile()) {
             ZipFile zipFile = new ZipFile(jarFile);
@@ -254,6 +253,24 @@ public class ClassUtils {
 
     }
 
+    public static void executeOnClassFieldsRecursivly(Class<?> type, BiConsumer<Class<?>, Field> handler, Class<?> rootClass) {
+        if (type.getSuperclass() != null && !type.equals(rootClass) && !type.getSuperclass().equals(Object.class)) {
+            executeOnClassFieldsRecursivly(type.getSuperclass(), handler, rootClass);
+        }
+
+        for (Field f : type.getDeclaredFields()) {
+            handler.accept(type, f);
+        }
+    }
+
+    private static void getAllFields(List<Field> fields, Class<?> type) {
+        fields.addAll(Arrays.asList(type.getDeclaredFields()));
+
+        if (type.getSuperclass() != null) {
+            getAllFields(fields, type.getSuperclass());
+        }
+    }
+
     /**
      * Convert a JAR url to a file
      *
@@ -269,14 +286,6 @@ public class ClassUtils {
         }
 
         return jarFile;
-    }
-
-    private static void getAllFields(List<Field> fields, Class<?> type) {
-        fields.addAll(Arrays.asList(type.getDeclaredFields()));
-
-        if (type.getSuperclass() != null) {
-            getAllFields(fields, type.getSuperclass());
-        }
     }
 
     public static String getProjectIdFromClass(Class<?> classFromProject) {
@@ -336,6 +345,10 @@ public class ClassUtils {
         }
 
         return reflections;
+    }
+
+    public static <T extends Object> Set<Class<? extends T>> getSubTypesOf(Class<T> superType) {
+        return getReflectionInstance().getSubTypesOf(superType);
     }
 
     public static Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> annotation) {

@@ -31,22 +31,37 @@
       <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
 
       <template v-slot:cell(credentials)="data">
-        <ul>
-          <li
-            v-for="credential in data.item.credentials"
-            v-bind:key="credential"
-          >{{$t(credentialsMapping[credential])}}</li>
-        </ul>
+        <div>{{$tc("component.profile.credential", data.item.credentials.length, {count: data.item.credentials.length})}}</div>
+      </template>
+
+      <template v-slot:row-details="data">
+        <strong class="capitalize-first-letter">{{$t("component.profile.credentials")}}:</strong>
+        <b-card-group columns>
+          <b-card
+            v-for="credentialGroup in filterCredentialGroups(data.item.credentials)"
+            v-bind:key="credentialGroup.groupId"
+          >
+            <strong>{{$t(credentialGroup.groupKeyLabel)}}</strong>
+            <ul>
+              <li
+                v-for="credential in credentialGroup.credentials"
+                v-bind:key="credential.value"
+              >{{credential.text}}</li>
+            </ul>
+          </b-card>
+        </b-card-group>
       </template>
 
       <template v-slot:cell(uri)="data">
-        <a class="uri-info">
-          {{ data.item.uri }}
-        </a>
+        <a class="uri-info">{{ data.item.uri }}</a>
       </template>
 
       <template v-slot:cell(actions)="data">
         <b-button-group size="sm">
+          <b-button size="sm" @click="data.toggleDetails" variant="outline-success">
+            <font-awesome-icon v-if="!data.detailsShowing" icon="eye" size="sm" />
+            <font-awesome-icon v-if="data.detailsShowing" icon="eye-slash" size="sm" />
+          </b-button>
           <b-button
             size="sm"
             v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
@@ -80,10 +95,10 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import {
-  UsersGroupsProfilesService,
+  SecurityService,
   ProfileGetDTO
-} from "opensilex-rest/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
+} from "opensilex-security/index";
+import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 
 @Component
 export default class ProfileList extends Vue {
@@ -106,7 +121,35 @@ export default class ProfileList extends Vue {
   sortDesc = false;
 
   @Prop()
-  credentialsMapping: any;
+  credentialsGroups: any;
+
+  filterCredentialGroups(credentialsFiltered) {
+    let credentialsDetails = [];
+    for (let i in this.credentialsGroups) {
+      let credentialsGroup = this.credentialsGroups[i];
+
+      let credentialsDetailGroup = {
+        groupId: credentialsGroup.groupId,
+        groupKeyLabel: credentialsGroup.groupKeyLabel,
+        credentials: []
+      };
+
+      for (let j in credentialsGroup.credentials) {
+        let credential = credentialsGroup.credentials[j];
+        if (credentialsFiltered.indexOf(credential.id) >= 0) {
+          credentialsDetailGroup.credentials.push({
+            text: this.$t(credential.label),
+            value: credential.id
+          });
+        }
+      }
+
+      if (credentialsDetailGroup.credentials.length > 0) {
+        credentialsDetails.push(credentialsDetailGroup);
+      }
+    }
+    return credentialsDetails;
+  }
 
   private filterPatternValue: any = "";
   set filterPattern(value: string) {
@@ -165,8 +208,8 @@ export default class ProfileList extends Vue {
   }
 
   loadData() {
-    let service: UsersGroupsProfilesService = this.$opensilex.getService(
-      "opensilex.UsersGroupsProfilesService"
+    let service: SecurityService = this.$opensilex.getService(
+      "opensilex.SecurityService"
     );
 
     let orderBy = [];

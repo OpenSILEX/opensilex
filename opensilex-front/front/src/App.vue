@@ -12,7 +12,7 @@
 
     <section id="content-wrapper" class="page-wrap" v-if="user.isLoggedIn() && !disconnected">
       <component id="menu-container" v-if="!embed" v-bind:is="menuComponent"></component>
-      
+
       <div id="main-content">
         <main class="main-content">
           <router-view />
@@ -75,7 +75,9 @@ export default class App extends Vue {
 @import "./styles/common.scss";
 
 #loader {
-  display: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0.2s linear, opacity 0.5s linear;
   position: absolute;
   top: 0;
   bottom: 0;
@@ -125,7 +127,8 @@ export default class App extends Vue {
 }
 
 #loader.visible {
-  display: block;
+  visibility: visible;
+  opacity: 1;
 }
 
 header {

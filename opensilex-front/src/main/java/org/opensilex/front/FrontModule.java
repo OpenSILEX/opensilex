@@ -17,9 +17,8 @@ import org.opensilex.config.ConfigManager;
 import org.opensilex.front.api.FrontConfigDTO;
 import org.opensilex.front.api.MenuItemDTO;
 import org.opensilex.front.api.RouteDTO;
-import org.opensilex.module.ModuleConfig;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.rest.extensions.APIExtension;
+import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.extensions.ServerExtension;
 import org.opensilex.server.scanner.IgnoreJarScanner;
 import org.slf4j.LoggerFactory;
@@ -33,7 +32,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
     private final static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(FrontModule.class);
 
     @Override
-    public Class<? extends ModuleConfig> getConfigClass() {
+    public Class<?> getConfigClass() {
         return FrontConfig.class;
     }
 
@@ -46,10 +45,10 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
     public void initServer(org.opensilex.server.Server server) throws Exception {
         // Register front application
         Context appContext = server.initApp("/app", "/", "/front", FrontModule.class);
-        
+
         // Disable JAR scanner for front application because it's not required
         appContext.setJarScanner(new IgnoreJarScanner());
-        
+
         // Add rewrite rules for application
         appContext.getPipeline().addValve(new RewriteValve());
     }
@@ -83,12 +82,12 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                 config.setThemeModule(themeId[0]);
                 config.setThemeName(themeId[1]);
             }
-            
+
             List<MenuItemDTO> globalMenu = new ArrayList<>();
             List<RouteDTO> globalRoutes = new ArrayList<>();
 
             List<String> menuExclusions = frontConfig.menuExclusions();
-            
+
             for (OpenSilexModule m : OpenSilex.getInstance().getModules()) {
                 try {
                     if (m.fileExists(FRONT_CONFIG_PATH)) {

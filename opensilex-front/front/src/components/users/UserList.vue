@@ -37,9 +37,7 @@
       </template>
 
       <template v-slot:cell(uri)="data">
-        <a class="uri-info">
-          {{ data.item.uri }}
-        </a>
+        <a class="uri-info">{{ data.item.uri }}</a>
       </template>
 
       <template v-slot:cell(admin)="data">
@@ -47,8 +45,19 @@
         <span class="capitalize-first-letter" v-if="!data.item.admin">{{$t("component.common.no")}}</span>
       </template>
 
+      <template v-slot:row-details>
+        <strong class="capitalize-first-letter">{{$t("component.user.user-groups")}}:</strong>
+        <ul>
+          <li v-for="groupDetail in groupDetails" v-bind:key="groupDetail.uri">{{groupDetail.name}}</li>
+        </ul>
+      </template>
+
       <template v-slot:cell(actions)="data">
         <b-button-group size="sm">
+          <b-button size="sm" @click="loadUserDetail(data)" variant="outline-success">
+            <font-awesome-icon v-if="!data.detailsShowing" icon="eye" size="sm" />
+            <font-awesome-icon v-if="data.detailsShowing" icon="eye-slash" size="sm" />
+          </b-button>
           <b-button
             size="sm"
             v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
@@ -81,14 +90,22 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { UsersGroupsProfilesService, UserGetDTO } from "opensilex-rest/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-rest/HttpResponse";
+import {
+  SecurityService,
+  UserGetDTO,
+  GroupGetDTO,
+  NamedResourceDTO
+} from "opensilex-security/index";
+import HttpResponse, {
+  OpenSilexResponse
+} from "opensilex-security/HttpResponse";
 
 @Component
 export default class UserList extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
+  service: SecurityService;
 
   get user() {
     return this.$store.state.user;
@@ -131,6 +148,8 @@ export default class UserList extends Vue {
     if (query.sortDesc) {
       this.sortDesc = query.sortDesc == "true";
     }
+
+    this.service = this.$opensilex.getService("opensilex.SecurityService");
   }
 
   fields = [
@@ -172,10 +191,6 @@ export default class UserList extends Vue {
   }
 
   loadData() {
-    let service: UsersGroupsProfilesService = this.$opensilex.getService(
-      "opensilex.UsersGroupsProfilesService"
-    );
-
     let orderBy = [];
     if (this.sortBy) {
       let orderByText = this.sortBy + "=";
@@ -186,7 +201,7 @@ export default class UserList extends Vue {
       }
     }
 
-    return service
+    return this.service
       .searchUsers(
         this.user.getAuthorizationHeader(),
         this.filterPattern,
@@ -217,6 +232,25 @@ export default class UserList extends Vue {
         return http.response.result;
       })
       .catch(this.$opensilex.errorHandler);
+  }
+
+  groupDetails = [];
+
+  loadUserDetail(data) {
+    if (!data.detailsShowing) {
+      this.groupDetails = [];
+      this.service
+        .getUserGroups(this.user.getAuthorizationHeader(), data.item.uri)
+        .then(
+          (http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
+            this.groupDetails = http.response.result;
+            data.toggleDetails();
+          }
+        )
+        .catch(this.$opensilex.errorHandler);
+    } else {
+       data.toggleDetails();
+    }
   }
 }
 </script>

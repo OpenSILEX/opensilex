@@ -7,18 +7,16 @@ package org.opensilex.fs;
 
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.config.ConfigDescription;
-import org.opensilex.module.ModuleConfig;
 
-public interface FileStorageConfig extends ModuleConfig {
+public interface FileStorageConfig {
 
     @ConfigDescription(
             value = "File storage access"
     )
     public FileStorageService fs();
-    
 
     @ConfigDescription(
-        value = "Base path for file storage"
+            value = "Base path for file storage"
     )
     public String storageBasePath();
 

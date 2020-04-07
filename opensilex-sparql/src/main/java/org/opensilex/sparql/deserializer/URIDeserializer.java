@@ -6,7 +6,7 @@
 package org.opensilex.sparql.deserializer;
 
 import java.net.URI;
-import java.util.Map;
+import java.net.URISyntaxException;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -20,11 +20,11 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
 
     @Override
     public URI fromString(String value) throws Exception {
-        if (prefixes == null) {
+        if (prefixes == null || !usePrefixes) {
             return new URI(value);
         }
 
-        return new URI(prefixes.shortForm(value));
+        return formatURI(new URI(value));
     }
 
     @Override
@@ -32,31 +32,49 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
         if (prefixes == null) {
             return getNode(new URI(value));
         }
+        return getNode(getExpandedURI(value));
+    }
 
-        return getNode(new URI(prefixes.expandPrefix(value)));
+    public static URI formatURI(URI uri) {
+        if (uri == null || prefixes == null) {
+            return uri;
+        }
+        try {
+            if (usePrefixes) {
+                return new URI(prefixes.shortForm(uri.toString()));
+            } else {
+                return new URI(prefixes.expandPrefix(uri.toString()));
+            }
+        } catch (URISyntaxException ex) {
+            // TODO log error
+        }
+
+        return null;
     }
 
     public static String getExpandedURI(String value) {
-         if (prefixes == null || value == null) {
+        if (prefixes == null || value == null) {
             return value;
         }
         return prefixes.expandPrefix(value);
     }
-    
+
     @Override
     public Node getNode(Object value) throws Exception {
         return NodeFactory.createURI(value.toString());
     }
 
     private static PrefixMapping prefixes = null;
+    private static boolean usePrefixes = false;
 
-    public static void setPrefixes(PrefixMapping prefixesMap) {
-        prefixes = prefixesMap;
+    public static void setPrefixes(PrefixMapping prefixesMap, boolean usePrefixes) {
+        URIDeserializer.prefixes = prefixesMap;
+        URIDeserializer.usePrefixes = usePrefixes;
     }
 
     @Override
     public XSDDatatype getDataType() {
-       return XSDDatatype.XSDanyURI;
+        return XSDDatatype.XSDanyURI;
     }
 
 }

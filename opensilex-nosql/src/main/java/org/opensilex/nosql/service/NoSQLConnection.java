@@ -7,7 +7,7 @@
 package org.opensilex.nosql.service;
 
 import org.opensilex.nosql.exceptions.NoSQLTransactionException;
-import org.opensilex.service.ServiceConnection;
+import org.opensilex.service.Service;
 
 /**
  * Interface to describe big data connection required features.
@@ -19,7 +19,7 @@ import org.opensilex.service.ServiceConnection;
  * @see org.opensilex.nosql.service.NoSQLService
  * @author Vincent Migot
  */
-public interface NoSQLConnection extends ServiceConnection {
+public interface NoSQLConnection extends Service {
 
     /**
      * Start a transaction

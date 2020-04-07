@@ -28,6 +28,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 
 import java.time.LocalDate;
 import java.util.*;
+import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
@@ -151,7 +152,7 @@ public class SPARQLQueryHelper {
 
             Expr boundExpr = exprFactory.not(exprFactory.bound(var));
             Expr groupInUrisExpr = exprFactory.in(var, uris.stream()
-                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
+                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.formatURI(uri).toString()))
                     .toArray());
 
             rootFilteringElem.addElement(new ElementOptional(optionals));
@@ -177,7 +178,7 @@ public class SPARQLQueryHelper {
             elementGroup.addTriplePattern(relationTriple);
 
             Expr resourceInUrisExpr = exprFactory.in(var, uris.stream()
-                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
+                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.formatURI(uri).toString()))
                     .toArray());
 
             rootFilteringElem.addElement(elementGroup);
@@ -187,7 +188,7 @@ public class SPARQLQueryHelper {
         }
     }
 
-    public static void inURI(SelectBuilder select, String uriField, Collection<URI> uris) {
+    public static void inURI(AbstractQueryBuilder<?> select, String uriField, Collection<URI> uris) {
         if (uris != null && !uris.isEmpty()) {
             ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
 
@@ -196,7 +197,9 @@ public class SPARQLQueryHelper {
             ElementGroup elementGroup = new ElementGroup();
 
             Expr resourceInUrisExpr = exprFactory.in(makeVar(uriField), uris.stream()
-                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
+                    .map(uri -> {
+                        return NodeFactory.createURI(SPARQLDeserializers.formatURI(uri).toString());
+                    })
                     .toArray());
 
             rootFilteringElem.addElement(elementGroup);

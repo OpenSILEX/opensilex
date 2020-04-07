@@ -15,6 +15,8 @@ import org.opensilex.sparql.utils.Ontology;
 public class Oeso {
 
     public static final String DOMAIN = "http://www.opensilex.org/vocabulary/oeso";
+    
+    public static final String PREFIX = "vocabulary";
 
     /**
      * The namespace of the vocabulary as a string

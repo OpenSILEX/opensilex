@@ -156,7 +156,7 @@ You should get the following directory structure:
             +-- opensilex-front.jar
             +-- opensilex-fs.jar
             +-- opensilex-nosql.jar
-            +-- opensilex-rest.jar
+            +-- opensilex-security.jar
             +-- opensilex-sparql.jar
             +-- phis2ws.jar
 +-- config/

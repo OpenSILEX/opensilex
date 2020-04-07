@@ -9,8 +9,6 @@ package org.opensilex.core.experiment.dal;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.rest.group.dal.GroupModel;
-import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -20,6 +18,8 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
+import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.user.dal.UserModel;
 
 /**
  * @author Vincent MIGOT

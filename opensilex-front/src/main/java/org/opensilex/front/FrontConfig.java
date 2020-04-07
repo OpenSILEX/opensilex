@@ -6,14 +6,14 @@
 package org.opensilex.front;
 
 import java.util.List;
+import java.util.Map;
 import org.opensilex.config.ConfigDescription;
-import org.opensilex.module.ModuleConfig;
 
 /**
  *
  * @author vincent
  */
-public interface FrontConfig extends ModuleConfig {
+public interface FrontConfig   {
 
     @ConfigDescription(
             value = "Front login component definition",
@@ -61,4 +61,5 @@ public interface FrontConfig extends ModuleConfig {
             value = "List of menu identifiers to exclude"
     )
     List<String> menuExclusions();
+
 }

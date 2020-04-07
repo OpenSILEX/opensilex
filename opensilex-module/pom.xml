@@ -116,16 +116,16 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
-        <!-- OpenSilex REST -->
+        <!-- OpenSilex security -->
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-rest</artifactId>
+            <artifactId>opensilex-security</artifactId>
             <version>${revision}</version>
         </dependency>
-        <!-- OpenSilex REST test -->
+        <!-- OpenSilex security test -->
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-rest</artifactId>
+            <artifactId>opensilex-security</artifactId>
             <version>${revision}</version>
             <scope>test</scope>
             <classifier>tests</classifier>

@@ -56,6 +56,7 @@
             "logout": "Déconnexion",
             "parent": "parent",
             "type": "type",
+            "select-lang": "Choisissez une langue",
             "errors": {
                 "error-title": "Erreur",
                 "constraint-error": "Une erreur de validation s'est produite, merci de vérifier les données saisies.",
@@ -69,7 +70,7 @@
         "header": {
             "language": {
                 "fr": "Français",
-                "en-US": "Anglais"
+                "en": "Anglais"
             },
             "user": {
                 "admin": "Admin",
@@ -140,6 +141,7 @@
             "form-admin-option-label": "Activer cette option pour créer un super-administrateur",
             "filter-placeholder": "Utiliser ce champ pour filtrer les utilisateurs",
             "users": "utilisateurs",
+            "label": "aucun utilisateur | 1 utilisateur | {count} utilisateurs",
             "add": "Ajouter un utilisateur",
             "update": "Modifier l'utilisateur",
             "password": "mot de passe",
@@ -148,6 +150,8 @@
             "email-address": "adresse email",
             "email": "email",
             "admin": "administrateur",
+            "default-lang": "Langue par défaut",
+            "user-groups": "groupes de l'utilisateur",
             "errors": {
                 "user-already-exists": "Un utilisateur existe déjà avec cette URI ou cette adresse email."
             }
@@ -160,6 +164,7 @@
             "update": "Modifier le profil",
             "filter-placeholder": "Utiliser ce champ pour filtrer les profils",
             "credentials": "Droits",
+            "credential": "aucun droit | 1 droit | {count} droits",
             "errors": {
                 "profile-already-exists": "Un profil existe déjà avec cette URI ou ce nom."
             }
@@ -186,6 +191,10 @@
             "add": "Ajouter une infrastructure",
             "update": "Modifier l'infrastructure",
             "detail": "Détail de l'infrastructure",
+            "devices": "Dispositifs",
+            "device": {
+                "add": "Ajouter un dispositif"
+            },
             "errors": {
                 "infrastructure-already-exists": "Une utilisateur existe déjà avec cette URI ou cette adresse email."
             }
@@ -222,6 +231,21 @@
             "hasFactor": "est lié au facteur",
             "errors": {
                 "user-already-exists": "URI du niveau de facteur déjà existante."
+            }
+        },
+        "germplasm": {
+            "uri": "URI du germplasm",
+            "uri-help": "Identifiant unique du germplasm",
+            "alias-placeholder": "Entrer le label du germplasm ",
+            "filter-placeholder": "Utiliser ce champ pour filtrer les germplasm",
+            "germplasm": "germplasm",
+            "add": "ajouter un germplasm",
+            "update": "meettre à jour un germplasm",
+            "alias": "alias",
+            "alias-help": "alias",
+            "form-alias-placeholder" : "Irrigation, Shading, Variety, etc.",
+            "errors": {
+                "germplasm-already-exists": "URI du germplasm déjà existant."
             }
         }
     },

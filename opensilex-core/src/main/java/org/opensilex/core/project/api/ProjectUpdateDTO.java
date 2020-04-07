@@ -8,7 +8,7 @@ package org.opensilex.core.project.api;
 import java.util.List;
 import org.opensilex.core.ontology.OntologyReference;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.rest.validation.Required;
+import org.opensilex.server.rest.validation.Required;
 
 
 public class ProjectUpdateDTO {

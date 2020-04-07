@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
 
 import org.opensilex.OpenSilex;
 import org.opensilex.core.CoreModule;
-import org.opensilex.rest.RestModule;
+import org.opensilex.security.SecurityModule;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.unit.test.AbstractUnitTest;
@@ -55,7 +55,7 @@ public class ExperimentDAOTest extends AbstractUnitTest {
 
     @BeforeClass
     public static void setup() throws Exception {
-        OpenSilex.registerModule(RestModule.class);
+        OpenSilex.registerModule(SecurityModule.class);
         OpenSilex.registerModule(CoreModule.class);
         factory = new RDF4JInMemoryServiceFactory();
         sparql = factory.provide();
@@ -397,12 +397,12 @@ public class ExperimentDAOTest extends AbstractUnitTest {
     @Test(expected = SPARQLInvalidURIException.class)
     public void updateWithUnknownURI() throws Exception {
 
-        ExperimentModel xpModel = getModel(0);
-        xpDao.create(xpModel);
+            ExperimentModel xpModel = getModel(0);
+            xpDao.create(xpModel);
 
-        xpModel.setLabel("updateWithUnknownUri");
-        xpModel.setUri(new URI(xpModel.getUri().toString() + "_suffix"));
-        xpDao.update(xpModel);
+            xpModel.setLabel("updateWithUnknownUri");
+            xpModel.setUri(new URI(xpModel.getUri().toString() + "_suffix"));
+            xpDao.update(xpModel);
     }
 
     @Test
@@ -424,9 +424,9 @@ public class ExperimentDAOTest extends AbstractUnitTest {
     @Test(expected = SPARQLInvalidURIException.class)
     public void deleteWithUnknownURI() throws Exception {
 
-        ExperimentModel xpModel = getModel(0);
-        xpDao.create(xpModel);
-        xpDao.delete(new URI(xpModel.getUri().toString() + "_suffix"));
+            ExperimentModel xpModel = getModel(0);
+            xpDao.create(xpModel);
+            xpDao.delete(new URI(xpModel.getUri().toString() + "_suffix"));
     }
 
     @Test

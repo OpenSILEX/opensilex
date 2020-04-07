@@ -8,7 +8,8 @@ package org.opensilex.nosql.mongodb;
 
 import java.util.HashMap;
 import org.opensilex.nosql.datanucleus.AbstractDataNucleusConnection;
-import org.opensilex.service.ServiceConnection;
+import org.opensilex.service.Service;
+import org.opensilex.service.ServiceDefaultDefinition;
 
 /**
  * MongoDB connection for DataNucleus.
@@ -19,7 +20,10 @@ import org.opensilex.service.ServiceConnection;
  * @see org.opensilex.nosql.datanucleus.AbstractDataNucleusConnection
  * @author Vincent Migot
  */
-public class MongoDBConnection extends AbstractDataNucleusConnection implements ServiceConnection {
+@ServiceDefaultDefinition(
+        configClass = MongoDBConfig.class
+)
+public class MongoDBConnection extends AbstractDataNucleusConnection implements Service {
 
     /**
      * Constructor for MongoDB connection

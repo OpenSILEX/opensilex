@@ -21,12 +21,9 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.config.ConfigManager;
-import org.opensilex.module.ModuleConfig;
 import org.opensilex.module.ModuleManager;
 import org.opensilex.module.ModuleNotFoundException;
 import org.opensilex.dependencies.DependencyManager;
-import org.opensilex.server.ServerConfig;
-import org.opensilex.server.ServerModule;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
 import org.opensilex.utils.ClassUtils;
@@ -383,6 +380,8 @@ public class OpenSilex {
      */
     private final boolean debug;
 
+    private OpenSilexConfig systemConfig;
+
     /**
      * Constructor for OpenSilex application
      *
@@ -424,18 +423,21 @@ public class OpenSilex {
      * </pre>
      */
     private void init() throws Exception {
+        LOGGER.debug("Load system configuration");
+        systemConfig = configManager.buildSystemConfig(configFile);
+
         LOGGER.debug("Load modules with dependencies");
         DependencyManager dependencyManager = new DependencyManager(
                 ClassUtils.getPomFile(OpenSilex.class, "org.opensilex", "opensilex")
         );
-        moduleManager.loadModulesWithDependencies(dependencyManager, baseDirectory);
+        moduleManager.loadModulesWithDependencies(dependencyManager, baseDirectory, systemConfig);
 
         moduleManager.getModules().forEach(module -> {
             OpenSilex.registerModule(module.getClass());
         });
 
         LOGGER.debug("Build global configuration");
-        configManager.build(baseDirectory, moduleManager.getModules(), profileId, configFile);
+        configManager.build(baseDirectory, moduleManager.getModules(), profileId, configFile, systemConfig);
 
         LOGGER.debug("Load modules configuration");
         moduleManager.loadConfigs(configManager);
@@ -459,8 +461,6 @@ public class OpenSilex {
         };
         Runtime.getRuntime().addShutdownHook(SHUTDOWN_HOOK);
 
-        moduleManager.addOptionalModulesOrder(getModuleConfig(ServerModule.class, ServerConfig.class).modulesOrder());
-        
         LOGGER.debug("Current expanded configuration:" + getExpandedYAMLConfig());
 
         LOGGER.debug("Startup modules");
@@ -664,8 +664,8 @@ public class OpenSilex {
         return this.baseDirectory;
     }
 
-    public static <T extends ModuleConfig> T getModuleConfig(Class<? extends OpenSilexModule> moduleClass, Class<T> configClass) throws ModuleNotFoundException {
-        return getInstance().getModuleByClass(moduleClass).getConfig(configClass);
+    public <T> T getModuleConfig(Class<? extends OpenSilexModule> moduleClass, Class<T> configClass) throws ModuleNotFoundException {
+        return getModuleByClass(moduleClass).getConfig(configClass);
     }
 
     public static ClassLoader getClassLoader() {
@@ -694,15 +694,20 @@ public class OpenSilex {
 
         OpenSilex opensilex = OpenSilex.getInstance();
         if (opensilex != null) {
-            try {
-                ServerConfig cfg = (ServerConfig) opensilex.getModuleByClass(ServerModule.class).getConfig();
-                lang = cfg.defaultLanguage();
-            } catch (Exception ex) {
-                LOGGER.warn("Error while retriving default configured language", ex);
-            }
+            lang = opensilex.systemConfig.defaultLanguage();
         }
 
         return lang;
+    }
+
+    public static OpenSilexConfig getSystemConfig() {
+        OpenSilex opensilex = OpenSilex.getInstance();
+        if (opensilex != null) {
+            return opensilex.systemConfig;
+
+        }
+
+        return null;
     }
 
     public String getExpandedYAMLConfig() throws Exception {

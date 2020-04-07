@@ -11,7 +11,7 @@ package org.opensilex.core.factor.api;
 
 import java.net.URI;
 import org.opensilex.core.factor.dal.FactorLevelModel;
-import org.opensilex.rest.validation.Required;
+import org.opensilex.server.rest.validation.Required;
 
 /**
  * 

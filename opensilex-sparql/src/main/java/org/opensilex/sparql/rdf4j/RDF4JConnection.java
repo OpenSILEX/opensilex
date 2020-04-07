@@ -26,6 +26,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.sail.shacl.ShaclSailValidationException;
+import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLConnection;
 import org.opensilex.sparql.service.SPARQLResult;
@@ -40,6 +41,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author vincent
  */
+@ServiceDefaultDefinition(
+        configClass = RDF4JConfig.class,
+        configID = "rdf4j"
+)
 public class RDF4JConnection implements SPARQLConnection {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(RDF4JConnection.class);

@@ -15,10 +15,10 @@ import javax.ws.rs.core.Response.Status;
  * <pre>
  * This class represent the common base for web services JSON responses with status.
  * All web services response classes should extends this class.
- * See Brapi for details: 
+ * See Brapi for details:
  * https://brapi.docs.apiary.io/#introduction/structure-of-the-response-object:/the-metadata-key
  * https://brapi.docs.apiary.io/#introduction/structure-of-the-response-object:/payload
- * 
+ *
  * Produced JSON:
  * {
  *      metadata: {
@@ -69,6 +69,11 @@ public abstract class JsonResponse<T> {
      */
     public JsonResponse(Status status) {
         this.status = status;
+    }
+
+    public JsonResponse() {
+        this(Status.OK);
+        this.metadata = new MetadataDTO(new PaginationDTO());
     }
 
     /**

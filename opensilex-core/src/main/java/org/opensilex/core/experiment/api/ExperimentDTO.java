@@ -9,12 +9,12 @@ package org.opensilex.core.experiment.api;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.rest.validation.Required;
-import org.opensilex.rest.validation.date.DateConstraint;
 
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
+import org.opensilex.server.rest.validation.Required;
+import org.opensilex.server.rest.validation.DateConstraint;
 
 /**
  * @author Renaud COLIN

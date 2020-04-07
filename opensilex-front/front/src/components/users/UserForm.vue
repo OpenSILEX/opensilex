@@ -101,6 +101,29 @@
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
+        <!-- Default language -->
+        <b-form-group
+          :label="$t('component.user.default-lang') + ':'"
+          label-for="language"
+          required
+        >
+          <ValidationProvider
+            :name="$t('component.user.default-lang')"
+            rules="required"
+            v-slot="{ errors }"
+          >
+            <multiselect
+              v-model="selectedLang"
+              track-by="id"
+              label="label"
+              :options="languages"
+              :show-labels="false"
+              :allow-empty="false"
+              :placeholder="$t('component.common.select-lang') + ':'"
+            />
+            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+          </ValidationProvider>
+        </b-form-group>
         <!-- Admin flag -->
         <b-form-group
           v-if="user.admin"
@@ -123,13 +146,27 @@
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { UserCreationDTO } from "opensilex-rest/index";
+import { UserCreationDTO } from "opensilex-security/index";
 
 @Component
 export default class UserForm extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
+  $i18n: any;
+
+  selectedLang: any = {};
+
+  get languages() {
+    let langs = [];
+    Object.keys(this.$i18n.messages).forEach(key => {
+      langs.push({
+        id: key,
+        label: this.$i18n.t("component.header.language." + key)
+      });
+    });
+    return langs;
+  }
 
   @Ref("modalRef") readonly modalRef!: any;
 
@@ -165,6 +202,11 @@ export default class UserForm extends Vue {
       password: "",
       language: "en"
     };
+
+    this.selectedLang = {
+      id: this.$i18n.locale,
+      label: this.$i18n.t("component.header.language." + this.$i18n.locale)
+    };
   }
 
   showCreateForm() {
@@ -178,6 +220,10 @@ export default class UserForm extends Vue {
 
   showEditForm(form: UserCreationDTO) {
     this.form = form;
+    this.selectedLang = {
+      id: form.language,
+      label: this.$i18n.t("component.header.language." + form.language)
+    };
     this.editMode = true;
     this.title = this.$t("component.user.update").toString();
     this.uriGenerated = true;
@@ -192,6 +238,10 @@ export default class UserForm extends Vue {
 
   onValidate() {
     return new Promise((resolve, reject) => {
+      this.form.language = this.selectedLang.id;
+      if (this.form.password == "") {
+        this.form.password = null;
+      }
       if (this.editMode) {
         this.$emit("onUpdate", this.form, result => {
           if (result instanceof Promise) {

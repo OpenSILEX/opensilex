@@ -8,6 +8,7 @@ package org.opensilex.sparql.deserializer;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -99,16 +100,20 @@ public class SPARQLDeserializers {
         return parameterizedClass(object.getClass(), target, paramIndex);
     }
 
-    public static Node nodeURI(URI uri) throws SPARQLInvalidURIException {
+    public static Node nodeURI(URI uri){
         try {
             return SPARQLDeserializers.getForClass(URI.class).getNodeFromString(uri.toString());
         } catch (Exception ex) {
-            throw new SPARQLInvalidURIException(uri);
+            return null;
         }
     }
 
     public static String getExpandedURI(String value) {
         return URIDeserializer.getExpandedURI(value);
+    }
+
+    public static URI formatURI(URI value) {
+        return URIDeserializer.formatURI(value);
     }
 
     public static List<Node> nodeListURI(List<URI> uris) throws Exception {

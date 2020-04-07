@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.opensilex.OpenSilex;
 import org.opensilex.unit.test.AbstractUnitTest;
 
-
 /**
  *
  * @author vincent
@@ -605,28 +604,28 @@ public class ConfigTest extends AbstractUnitTest {
 
     @Test(expected = InvalidConfigException.class)
     public void testInvalidClassMemberInConfig() throws Throwable {
-        ConfigManager provider = new ConfigManager();
+            ConfigManager provider = new ConfigManager();
 
-        TestConfig cfg = provider.loadConfig("test", TestConfig.class);
+            TestConfig cfg = provider.loadConfig("test", TestConfig.class);
 
-        try {
-            cfg.invalidClassMemberInConfig();
-        } catch (UndeclaredThrowableException ex) {
-            throw ex.getCause();
-        }
+            try {
+                cfg.invalidClassMemberInConfig();
+            } catch (UndeclaredThrowableException ex) {
+                throw ex.getCause();
+            }
     }
 
     @Test(expected = InvalidConfigException.class)
     public void testInvalidListDefault() throws Throwable {
-        ConfigManager provider = new ConfigManager();
+            ConfigManager provider = new ConfigManager();
 
-        TestConfig cfg = provider.loadConfig("test", TestConfig.class);
+            TestConfig cfg = provider.loadConfig("test", TestConfig.class);
 
-        try {
-            cfg.invalidListDefault();
-        } catch (UndeclaredThrowableException ex) {
-            throw ex.getCause();
-        }
+            try {
+                cfg.invalidListDefault();
+            } catch (UndeclaredThrowableException ex) {
+                throw ex.getCause();
+            }
     }
 
     @Test

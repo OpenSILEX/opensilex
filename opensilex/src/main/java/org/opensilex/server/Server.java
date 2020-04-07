@@ -34,6 +34,7 @@ import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.OpenSilexModule;
+import org.opensilex.module.ModuleNotFoundException;
 
 /**
  * <pre>
@@ -63,6 +64,11 @@ public class Server extends Tomcat {
     private final OpenSilex instance;
 
     /**
+     * Server configuration reference
+     */
+    private final ServerConfig config;
+
+    /**
      * Host name
      */
     private final String host;
@@ -87,11 +93,17 @@ public class Server extends Tomcat {
      * @param adminPort Server administration port
      * @param tomcatDirectory Tomcat server base directory
      */
-    public Server(OpenSilex instance, String host, int port, int adminPort, Path tomcatDirectory) {
+    public Server(OpenSilex instance, String host, int port, int adminPort, Path tomcatDirectory) throws ModuleNotFoundException {
         super();
-        // Define environment properties
+
+        // Set system properties
         System.setProperty("org.apache.catalina.startup.EXIT_ON_INIT_FAILURE", "true");
         System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
+
+        config = instance.getModuleConfig(ServerModule.class, ServerConfig.class);
+        config.tomcatSystemProperties().forEach((key, value) -> {
+            System.setProperty(key, value);
+        });
 
         this.instance = instance;
         this.baseDir = tomcatDirectory.toFile().getAbsolutePath();
@@ -112,11 +124,15 @@ public class Server extends Tomcat {
         // Load Swagger root application
         Context appContext = initApp("", "/", "/webapp", getClass());
         appContext.getPipeline().addValve(new RewriteValve());
-        StuckThreadDetectionValve threadTimeoutValve = new StuckThreadDetectionValve ();
-        threadTimeoutValve.setThreshold(120);
-        threadTimeoutValve.setInterruptThreadThreshold(30);
-        appContext.getPipeline().addValve(threadTimeoutValve);
 
+        if (this.config.enableAntiThreadLock()) {
+            // Prevent any thread to be stuck to long
+            StuckThreadDetectionValve threadTimeoutValve = new StuckThreadDetectionValve();
+            threadTimeoutValve.setThreshold(120);
+            threadTimeoutValve.setInterruptThreadThreshold(30);
+            appContext.getPipeline().addValve(threadTimeoutValve);
+        }
+        
         try {
             ClassUtils.listFilesByExtension(instance.getBaseDirectory() + "/webapps", "war", (File warfile) -> {
                 String filename = warfile.getName();
@@ -139,6 +155,7 @@ public class Server extends Tomcat {
         });
 
         Connector connector = getConnector();
+
         // Enable GZIP compression
         enableGzip(connector);
 

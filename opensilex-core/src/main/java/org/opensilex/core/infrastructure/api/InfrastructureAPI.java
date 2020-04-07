@@ -25,26 +25,26 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.infrastructure.dal.InfrastructureDAO;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
-import org.opensilex.rest.authentication.ApiCredential;
-import org.opensilex.rest.authentication.ApiProtected;
-import org.opensilex.rest.sparql.dto.ResourceTreeDTO;
-import org.opensilex.rest.user.dal.UserModel;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.rest.sparql.response.ResourceTreeResponse;
-import org.opensilex.rest.validation.ValidURI;
+import org.opensilex.security.authentication.ApiCredential;
+import org.opensilex.security.authentication.ApiCredentialGroup;
+import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.tree.ResourceTree;
+import org.opensilex.sparql.response.ResourceTreeDTO;
+import org.opensilex.sparql.response.ResourceTreeResponse;
 
 /**
  *
@@ -52,6 +52,10 @@ import org.opensilex.sparql.tree.ResourceTree;
  */
 @Api(InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID)
 @Path("/core/infrastructure")
+@ApiCredentialGroup(
+        groupId = InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
+        groupLabelKey = InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY
+)
 public class InfrastructureAPI {
 
     public static final String CREDENTIAL_GROUP_INFRASTRUCTURE_ID = "Infrastructures";
@@ -66,23 +70,17 @@ public class InfrastructureAPI {
     public static final String CREDENTIAL_INFRASTRUCTURE_READ_ID = "infrastructure-read";
     public static final String CREDENTIAL_INFRASTRUCTURE_READ_LABEL_KEY = "credential.infrastructure.read";
 
-    private final SPARQLService sparql;
-
-    /**
-     * Inject SPARQL service
-     */
     @Inject
-    public InfrastructureAPI(SPARQLService sparql) {
-        this.sparql = sparql;
-    }
+    private SPARQLService sparql;
 
+    @CurrentUser
+    UserModel user;
+    
     @POST
     @Path("create")
     @ApiOperation("Create an infrastructure")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
-            groupLabelKey = CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY,
             credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
     )
@@ -116,8 +114,6 @@ public class InfrastructureAPI {
     @ApiOperation("Get an experiment by URI")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
-            groupLabelKey = CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY,
             credentialId = CREDENTIAL_INFRASTRUCTURE_READ_ID,
             credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_READ_LABEL_KEY
     )
@@ -130,10 +126,8 @@ public class InfrastructureAPI {
     })
     public Response getInfrastructure(
             @ApiParam(value = "Infrastructure URI", example = "http://opensilex.dev/infrastructures/phenoarch", required = true) @PathParam("uri") @NotNull URI uri,
-            @ApiParam(value = "language", example = "en") @DefaultValue("en") @QueryParam("language") @NotEmpty String language,
-            @Context SecurityContext securityContext
+            @ApiParam(value = "language", example = "en") @DefaultValue("en") @QueryParam("language") @NotEmpty String language
     ) throws Exception {
-        UserModel user = (UserModel) securityContext.getUserPrincipal();
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
         InfrastructureModel model = dao.get(uri, user.getLanguageDefault(language));
 
@@ -152,8 +146,6 @@ public class InfrastructureAPI {
     @ApiOperation("Delete an infrastructure")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
-            groupLabelKey = CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY,
             credentialId = CREDENTIAL_INFRASTRUCTURE_DELETE_ID,
             credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_DELETE_LABEL_KEY
     )
@@ -180,8 +172,6 @@ public class InfrastructureAPI {
     @ApiOperation("Search infrastructures tree")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
-            groupLabelKey = CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY,
             credentialId = CREDENTIAL_INFRASTRUCTURE_READ_ID,
             credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_READ_LABEL_KEY
     )
@@ -192,19 +182,28 @@ public class InfrastructureAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchInfrastructuresTree(
-            @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
-            @Context SecurityContext securityContext
+            @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern
     ) throws Exception {
-        UserModel user = (UserModel) securityContext.getUserPrincipal();
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
 
-        ResourceTree<InfrastructureModel> tree = dao.searchTree(
+        SPARQLTreeListModel<InfrastructureModel> tree = dao.searchTree(
                 pattern,
                 user
         );
 
         boolean enableSelection = (pattern != null && !pattern.isEmpty());
-        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree, enableSelection)).getResponse();
+        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree, enableSelection, (model, dto) -> {
+            model.getDevices().forEach((device) -> {
+                ResourceTreeDTO deviceDTO = new ResourceTreeDTO();
+
+                deviceDTO.setUri(device.getUri());
+                deviceDTO.setType(device.getType());
+                deviceDTO.setName(device.getName());
+                deviceDTO.setParent(model.getUri());
+
+                dto.getChildren().add(deviceDTO);
+            });
+        })).getResponse();
     }
 
     @PUT
@@ -212,8 +211,6 @@ public class InfrastructureAPI {
     @ApiOperation("Update an infrastructure")
     @ApiProtected
     @ApiCredential(
-            groupId = CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
-            groupLabelKey = CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY,
             credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
     )

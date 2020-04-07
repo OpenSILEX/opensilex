@@ -12,10 +12,10 @@ import java.util.Set;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.core.Var;
-import org.opensilex.rest.authentication.SecurityOntology;
-import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.tree.ResourceTree;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 
@@ -30,10 +30,10 @@ public class InfrastructureDAO {
         this.sparql = sparql;
     }
 
-    public ResourceTree<InfrastructureModel> searchTree(String pattern, UserModel user) throws Exception {
+    public SPARQLTreeListModel<InfrastructureModel> searchTree(String pattern, UserModel user) throws Exception {
         Set<URI> infras = getUserInfrastructures(user);
         if (infras != null && infras.isEmpty()) {
-            return new ResourceTree<>();
+            return new SPARQLTreeListModel<>();
         }
 
         return sparql.searchResourceTree(

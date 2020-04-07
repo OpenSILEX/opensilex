@@ -19,11 +19,18 @@
     <div class="row">
       <div class="col-md">
         <sl-vue-tree v-model="nodes" @select="displayNodesDetail">
-          <template slot="title" slot-scope="{ node }">
-            <span class="item-icon">
-              <i class="fa fa-file" v-if="node.isLeaf"></i>
-              <i class="fa fa-folder" v-if="!node.isLeaf"></i>
+          <template slot="toggle" slot-scope="{ node }">
+            <span v-if="!node.isLeaf">
+              <font-awesome-icon v-if="node.isExpanded" icon="chevron-down" size="sm" />
+              <font-awesome-icon v-if="!node.isExpanded" icon="chevron-right" size="sm" />
             </span>
+          </template>
+
+          <template slot="title" slot-scope="{ node }">
+            <div v-if="node.isLeaf && node.data.parent" class="leaf-spacer"></div>
+            <span class="item-icon">
+              <font-awesome-icon :icon="$opensilex.getRDFIcon(node.data.type)" size="sm" />
+            </span>&nbsp;
             <strong v-if="node.data.selected">{{ node.title }}</strong>
             <span v-if="!node.data.selected">{{ node.title }}</span>
             <b-button-group class="tree-button-group" size="sm">
@@ -74,7 +81,32 @@
             <tr>
               <td class="capitalize-first-letter">{{$t("component.common.type")}}</td>
               <td v-if="selected != null">
-                <span class="capitalize-first-letter">{{selected.typeLabel}}</span>
+                <font-awesome-icon :icon="$opensilex.getRDFIcon(selected.type)" size="sm" />
+                &nbsp;
+                <span class="capitalize-first-letter">
+                  {{selected.typeLabel}}
+                  <small>({{selected.type}})</small>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td class="capitalize-first-letter">{{$t("component.infrastructure.devices")}}</td>
+              <td v-if="selected != null">
+                <div class="text-center">
+                  <b-button
+                    @click="showCreateForm(null)"
+                    variant="success"
+                    v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+                  >{{$t('component.infrastructure.device.add')}}</b-button>
+                </div>
+                <ul class="device-list">
+                  <li v-for="device in selected.devices" v-bind:key="device.uri">
+                    <span class="capitalize-first-letter">
+                      {{device.name}}
+                      <small>{{device.uri}}</small>
+                    </span>
+                  </li>
+                </ul>
               </td>
             </tr>
             <tr>
@@ -109,7 +141,6 @@ export default class InfrastructureTree extends Vue {
   $opensilex: any;
   $store: any;
   service: InfrastructuresService;
-  $i18n: any;
 
   get user() {
     return this.$store.state.user;
@@ -261,6 +292,11 @@ export default class InfrastructureTree extends Vue {
 
 .user-list {
   padding-left: 10px;
+}
+
+.leaf-spacer {
+  display: inline-block;
+  width: 23px;
 }
 
 @media (max-width: 768px) {

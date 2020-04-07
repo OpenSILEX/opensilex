@@ -16,15 +16,18 @@ import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.OpenSilex;
+import org.opensilex.OpenSilexConfig;
 import org.opensilex.config.ConfigManager;
 import org.opensilex.dependencies.DependencyManager;
 import org.opensilex.service.Service;
@@ -54,11 +57,13 @@ public class ModuleManager {
             add("opensilex-fs");
             add("opensilex-nosql");
             add("opensilex-sparql");
-            add("opensilex-rest");
+            add("opensilex-security");
             add("opensilex-core");
             add("opensilex-front");
         }
     };
+
+    private final static Map<String, String> IGNORED_MODULES = new HashMap<>();
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ModuleManager.class);
 
@@ -77,7 +82,7 @@ public class ModuleManager {
      * @param dependencyManager Dependency manager for finding dependencies
      * @param baseDirectory Base directory for modules to look at
      */
-    public void loadModulesWithDependencies(DependencyManager dependencyManager, Path baseDirectory) {
+    public void loadModulesWithDependencies(DependencyManager dependencyManager, Path baseDirectory, OpenSilexConfig systemConfig) {
         // Read existing dependencies from cache file
         Set<URL> readDependencies = ModuleManager.readDependencies(baseDirectory);
 
@@ -102,6 +107,10 @@ public class ModuleManager {
             // Otherwise simply register known dependencies
             registerDependencies(readDependencies);
         }
+
+        addOptionalModulesOrder(systemConfig.modulesOrder());
+
+        setIgnoredModules(systemConfig.ignoredModules());
     }
 
     /**
@@ -236,11 +245,14 @@ public class ModuleManager {
 
             modules = new ArrayList<>();
             Iterator<OpenSilexModule> i = ServiceLoader.load(OpenSilexModule.class, OpenSilex.getClassLoader()).iterator();
-            while(i.hasNext()) {
+            while (i.hasNext()) {
                 modules.add(i.next());
             }
             modules = modules
                     .stream()
+                    .filter((m) -> {
+                        return !IGNORED_MODULES.containsValue(m.getClass().getCanonicalName());
+                    })
                     .sorted((m1, m2) -> {
                         String artifact1 = ClassUtils.getProjectIdFromClass(m1.getClass());
                         String artifact2 = ClassUtils.getProjectIdFromClass(m2.getClass());
@@ -276,6 +288,14 @@ public class ModuleManager {
                     BUILD_IN_MODULES_ORDER.add(optionalModule);
                 }
             }
+
+            modules = null;
+        }
+    }
+
+    public void setIgnoredModules(Map<String, String> ignoredModules) {
+        if (ignoredModules != null) {
+            IGNORED_MODULES.putAll(ignoredModules);
 
             modules = null;
         }
@@ -351,7 +371,7 @@ public class ModuleManager {
         // Iterate over modules
         for (OpenSilexModule module : getModules()) {
 
-            ModuleConfig moduleConfig = module.getConfig();
+            Object moduleConfig = module.getConfig();
             // If module has configuration
             if (moduleConfig != null) {
                 // Iterate of module configuration interface methods
@@ -445,12 +465,12 @@ public class ModuleManager {
         for (OpenSilexModule module : getModules()) {
             // Get module configuration identifier and class
             String configId = module.getConfigId();
-            Class<? extends ModuleConfig> configClass = module.getConfigClass();
+            Class<?> configClass = module.getConfigClass();
 
             // If module is configurable
             if (configId != null && configClass != null) {
                 // Load configuration with manager
-                ModuleConfig config = configManager.loadConfig(configId, configClass);
+                Object config = configManager.loadConfig(configId, configClass);
                 // Affect loaded configuration to module
                 module.setConfig(config);
             }

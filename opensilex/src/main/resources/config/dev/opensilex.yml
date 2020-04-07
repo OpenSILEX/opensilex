@@ -1,2 +1,2 @@
-opensilex:
-    debug: true
+server:
+    enableAntiThreadLock: false

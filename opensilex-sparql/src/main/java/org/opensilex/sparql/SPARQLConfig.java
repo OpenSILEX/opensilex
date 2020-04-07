@@ -6,14 +6,13 @@
 package org.opensilex.sparql;
 
 import org.opensilex.config.ConfigDescription;
-import org.opensilex.module.ModuleConfig;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 
 /**
  *
  * @author vince
  */
-public interface SPARQLConfig extends ModuleConfig {
+public interface SPARQLConfig {
 
     @ConfigDescription(
             value = "Platform base URI",
@@ -33,7 +32,7 @@ public interface SPARQLConfig extends ModuleConfig {
     public SPARQLServiceFactory sparql();
 
     @ConfigDescription(
-            value = "Diasable URI prefixes",
+            value = "Enable URI prefixes",
             defaultBoolean = true
     )
     public boolean usePrefixes();

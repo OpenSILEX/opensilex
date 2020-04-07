@@ -11,7 +11,7 @@ import java.util.List;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;

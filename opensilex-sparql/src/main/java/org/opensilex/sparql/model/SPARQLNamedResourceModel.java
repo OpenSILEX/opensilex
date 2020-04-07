@@ -7,13 +7,14 @@ package org.opensilex.sparql.model;
 
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.sparql.annotations.SPARQLProperty;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
 /**
  *
  * @author vidalmor
  */
-public abstract class SPARQLNamedResourceModel<T extends SPARQLNamedResourceModel<T>> extends SPARQLResourceModel implements ClassURIGenerator<T> {
+public abstract class SPARQLNamedResourceModel<T extends SPARQLNamedResourceModel> extends SPARQLResourceModel implements ClassURIGenerator<T> {
 
     @SPARQLProperty(
             ontology = DCTerms.class,
@@ -37,5 +38,4 @@ public abstract class SPARQLNamedResourceModel<T extends SPARQLNamedResourceMode
             instance.getName()
         };
     }
-
 }

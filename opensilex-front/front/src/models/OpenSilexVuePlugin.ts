@@ -1,24 +1,26 @@
-import { Container } from 'inversify';
+import { Container, interfaces } from 'inversify';
 import moment from 'moment';
-import { ResourceTreeDTO } from 'opensilex-rest/index';
 import Vue from 'vue';
 import { VueCookies } from 'vue-cookies';
 import VueI18n from 'vue-i18n';
 import { Store } from 'vuex';
-import { ApiServiceBinder, FrontConfigDTO, IAPIConfiguration } from '../lib';
-import HttpClient from '../lib/HttpClient';
 import IHttpClient from '../lib/IHttpClient';
 import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import { User } from './User';
+import OpenSilexHttpClient from './OpenSilexHttpClient';
+import { FrontConfigDTO, ThemeConfigDTO, IAPIConfiguration, ApiServiceBinder } from '../lib';
+
 declare var $cookies: VueCookies;
 
 declare var window: any;
 
 export default class OpenSilexVuePlugin {
 
+    private DEFAULT_ICON = "folder";
     private container: Container;
     private baseApi: string;
     private config: FrontConfigDTO;
+    private themeConfig: ThemeConfigDTO;
     public $store: Store<any>;
     public $i18n: VueI18n;
     public $moment: any;
@@ -26,7 +28,8 @@ export default class OpenSilexVuePlugin {
 
     constructor(baseApi: string, store: Store<any>, i18n: VueI18n) {
         this.container = new Container();
-        this.container.bind<IHttpClient>("IApiHttpClient").to(HttpClient).inSingletonScope();
+        this.container.bind<OpenSilexVuePlugin>(OpenSilexVuePlugin).toConstantValue(this);
+        this.container.bind<IHttpClient>("IApiHttpClient").toConstantValue(new OpenSilexHttpClient(this));
         this.container.bind<IAPIConfiguration>("IAPIConfiguration").toConstantValue({
             basePath: baseApi
         });
@@ -60,6 +63,20 @@ export default class OpenSilexVuePlugin {
 
     getConfig() {
         return this.config;
+    }
+
+    setThemeConfig(themeConfig: ThemeConfigDTO) {
+        this.themeConfig = themeConfig;
+    }
+
+    getRDFIcon(type) {
+        let icon = this.themeConfig.iconClassesRDF[type];
+
+        if (!icon) {
+            icon = this.DEFAULT_ICON;
+        }
+
+        return icon;
     }
 
     showLoader() {
@@ -422,16 +439,16 @@ export default class OpenSilexVuePlugin {
         return "OPENSILEX-TOAST" + OpenSilexVuePlugin.hashCode(message + "|" + options.title + "|" + options.variant);
     }
 
-    public buildTreeListOptions(resourceTrees: Array<ResourceTreeDTO>) {
-    let options = [];
-    resourceTrees.forEach((resourceTree: ResourceTreeDTO) => {
-      options.push(this.buildTreeOptions(resourceTree));
-    });
+    public buildTreeListOptions(resourceTrees: Array<any>) {
+        let options = [];
+        resourceTrees.forEach((resourceTree: any) => {
+            options.push(this.buildTreeOptions(resourceTree));
+        });
 
-    return options;
-}
+        return options;
+    }
 
-    public buildTreeOptions(resourceTree: ResourceTreeDTO) {
+    public buildTreeOptions(resourceTree: any) {
         let option = {
             id: resourceTree.uri,
             label: resourceTree.name,
@@ -468,7 +485,7 @@ export default class OpenSilexVuePlugin {
     }
 
     private flatOntologies = {};
-    setOntologyClasses(result: ResourceTreeDTO[]) {
+    setOntologyClasses(result: any[]) {
         result.forEach(item => {
             this.flatOntologies[item.uri] = item;
             this.setOntologyClasses(item.children);
@@ -476,7 +493,7 @@ export default class OpenSilexVuePlugin {
     }
 
     getOntologyLabel(uri) {
-        if(this.flatOntologies[uri]) {
+        if (this.flatOntologies[uri]) {
             return this.flatOntologies[uri].name;
         } else {
             return uri;

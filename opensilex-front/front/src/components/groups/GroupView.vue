@@ -28,15 +28,15 @@ import {
   GroupCreationDTO,
   GroupUpdateDTO,
   GroupGetDTO,
-  UsersGroupsProfilesService,
+  SecurityService,
   ProfileGetDTO
-} from "opensilex-rest/index";
+} from "opensilex-security/index";
 
 @Component
 export default class GroupView extends Vue {
   $opensilex: any;
   $store: any;
-  service: UsersGroupsProfilesService;
+  service: SecurityService;
 
   get user() {
     return this.$store.state.user;
@@ -48,7 +48,7 @@ export default class GroupView extends Vue {
 
   async created() {
     this.service = this.$opensilex.getService(
-      "opensilex.UsersGroupsProfilesService"
+      "opensilex.SecurityService"
     );
   }
 

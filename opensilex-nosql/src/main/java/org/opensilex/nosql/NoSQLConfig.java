@@ -7,17 +7,16 @@ package org.opensilex.nosql;
 
 import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.config.ConfigDescription;
-import org.opensilex.module.ModuleConfig;
 
 /**
  *
  * @author vidalmor
  */
-public interface NoSQLConfig extends ModuleConfig {
+public interface NoSQLConfig {
 
     @ConfigDescription(
             value = "No SQL data source"
     )
     public NoSQLService nosql();
-    
+
 }

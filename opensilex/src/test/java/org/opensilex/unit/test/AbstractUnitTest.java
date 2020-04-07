@@ -19,11 +19,11 @@ import org.slf4j.LoggerFactory;
 public class AbstractUnitTest {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(AbstractUnitTest.class);
-    
+
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
             LOGGER.debug("\n\n####### Starting UT: " + description.getTestClass().getSimpleName() + " - " + description.getMethodName() + " #######");
         }
     };
-}
+    }

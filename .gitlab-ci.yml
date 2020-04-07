@@ -32,7 +32,7 @@ variables:
  #APP DEPLOY CONFIG
  DEV_TOOLS_REPO_CONF_FILES_PATH: "instances-configuration"
  OPENSILEX_STOP_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=${REMOTE_SERVER_IP} --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
- OPENSILEX_START_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --port=$OPENSILEX_JAR_PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
+ OPENSILEX_START_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=${REMOTE_SERVER_IP} --port=$OPENSILEX_JAR_PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
  # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
  # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
  #CACHE

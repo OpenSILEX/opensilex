@@ -56,7 +56,7 @@ public class MainCommand extends CLIHelpPrinterCommand implements IVersionProvid
         OpenSilexSetup setup = OpenSilex.createSetup(args);
 
         LOGGER.info("Create OpenSilex instance from command line");
-        OpenSilex opensilex = OpenSilex.createInstance(setup, true, false);
+        OpenSilex opensilex = OpenSilex.createInstance(setup, true, true);
 
         String[] remainingArgs = setup.getRemainingArgs();
         run(remainingArgs, opensilex);

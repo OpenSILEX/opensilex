@@ -10,6 +10,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -128,11 +129,13 @@ public class SwaggerAPIGenerator {
         String source = args[0];
         String destination = args[1];
 
-        Reflections reflection = new Reflections(ConfigurationBuilder.build("")
-                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
-                .setExpandSuperTypes(false));
+        OpenSilex instance = getOpenSilex(OpenSilex.getDefaultBaseDirectory());
 
-        Swagger swagger = generate(source, reflection);
+        Reflections localRef = new Reflections(ConfigurationBuilder.build("")
+                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
+                .setExpandSuperTypes(false)).merge(instance.getReflections());
+
+        Swagger swagger = generate(source, localRef);
 
         if (swagger != null) {
             ObjectMapper mapper = new ObjectMapper();
@@ -141,5 +144,22 @@ public class SwaggerAPIGenerator {
             swaggerFile.createNewFile();
             mapper.writeValue(swaggerFile, swagger);
         }
+    }
+
+    public static OpenSilex getOpenSilex(Path baseDirectory) throws Exception {
+        Map<String, String> args = new HashMap<String, String>() {
+            {
+                put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);
+                put(OpenSilex.DEBUG_ARG_KEY, "true");
+            }
+        };
+
+        if (baseDirectory == null) {
+            baseDirectory = OpenSilex.getDefaultBaseDirectory();
+        }
+
+        args.put(OpenSilex.BASE_DIR_ARG_KEY, baseDirectory.toFile().getCanonicalPath());
+
+        return OpenSilex.createInstance(args, false, true);
     }
 }

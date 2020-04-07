@@ -31,8 +31,8 @@ variables:
  OPENSILEX_BUILD_PATH: "opensilex-release/target"
  #APP DEPLOY CONFIG
  DEV_TOOLS_REPO_CONF_FILES_PATH: "instances-configuration"
- OPENSILEX_STOP_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=${REMOTE_SERVER_IP} --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
- OPENSILEX_START_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=${REMOTE_SERVER_IP} --port=$OPENSILEX_JAR_PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
+ OPENSILEX_STOP_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
+ OPENSILEX_START_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --port=$OPENSILEX_JAR_PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
  # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
  # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
  #CACHE
@@ -143,7 +143,6 @@ variables:
   when: manual
   image: instrumentisto/rsync-ssh
   script:
-    - export
     - apk add curl git
     - rm -R $CI_PROJECT_DIR/opensilex-dev-tools
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-dev-tools.git --branch master $CI_PROJECT_DIR/opensilex-dev-tools
@@ -163,12 +162,16 @@ variables:
     - echo "Remove dependencies list cache"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "rm -f ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/.opensilex.dependencies"
     - echo "Check files"
+    - echo ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "ls ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR};"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "ls ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR};"
     - echo "Restart server java -jar ${RSYNC_INSTANCES_BIN_PATH}/$REMOTE_SERVER_RSYNC_DIR/opensilex.jar"
     - echo "Stop with options ${OPENSILEX_STOP_SERVER_CMD}"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop ${OPENSILEX_STOP_SERVER_CMD}"
+    - STOP_CMD="$OPENSILEX_STOP_SERVER_CMD"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop ${STOP_CMD}"
+    - START_CMD="$OPENSILEX_START_SERVER_CMD"
     - echo "Start with options ${OPENSILEX_START_SERVER_CMD}"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start ${OPENSILEX_START_SERVER_CMD}"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start ${START_CMD}"
+    - export
   except:
     - schedules    
 

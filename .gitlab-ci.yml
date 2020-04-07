@@ -3,7 +3,7 @@
 ##GLOBAL VARIABLES 
 ########################
 variables:
- ###### COMMON CONFIGS ######
+ ###### COMMON CONFIGS ####
  # GIT CONFIG
  GIT_DEPTH: 5
  GIT_OPTIONS: "--allow-unrelated-histories"
@@ -12,7 +12,8 @@ variables:
  # As of Maven 3.3.0 instead of this you may define these options in `.mvn/maven.config` so the same config is used
  # when running from the command line.
  MAVEN_CLI_OPTS: "--batch-mode --show-version "
- BUILD_PATH: "$CI_PROJECT_DIR/opensilex-release/target"
+ MAVEN_CACHE_FOLDER: "$CI_PROJECT_DIR/.m2/repository"
+ MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
  # DEFAULT SERVER MAVEN VERSION
  MVN_VERSION: 3.6.3
  # DEFAULT SERVER JAVA VERSION
@@ -20,17 +21,16 @@ variables:
  ## DEPLOY CONFIGS ##
  # REMOTE SERVER CONFIG
  RSYNC_INSTANCES_OPTIONS: "--progress --delete"
- RSYNC_INSTANCES_PATH: "/home/phis/opensilex-instances/bin"
- RSYNC_INSTANCES_DATA: "/home/phis/opensilex-instances/data"
- RSYNC_INSTANCES_LOGS: "/home/phis/opensilex-instances/logs"
- RSYNC_INSTANCES_LOGS_ARCHIVED: "/home/phis/opensilex-instances/logs/old"
- REVISION: 'INSTANCE-SNAPSHOT'
- DEV_TOOLS_CONFIGURATION_FILES_PATH: "instances-configuration"
- STOP_SERVER_OPTS: "--adminPort=$ADMIN_PORT --host=$REMOTE_SERVER_IP --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
- START_SERVER_OPTS: "--adminPort=$ADMIN_PORT --host=$REMOTE_SERVER_IP --port=$PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
+ RSYNC_INSTANCES_BIN_PATH: "~/opensilex-instances/bin"
+ RSYNC_INSTANCES_DATA_PATH: "~/opensilex-instances/data"
+ RSYNC_INSTANCES_LOGS_PATH: "~/opensilex-instances/logs"
+ RSYNC_INSTANCES_LOGS_ARCHIVED: "~/opensilex-instances/logs/old"
+ 
+ DEV_TOOLS_REPO_CONF_FILES_PATH: "instances-configuration"
+ STOP_SERVER_OPTS: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
+ START_SERVER_OPTS: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --port=$OPENSILEX_JAR_PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
  # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
  # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
- #CACHE
  YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/cache_yarn"
  NODE_CACHE: "$CI_PROJECT_DIR/opensilex-dev/.node"
  EMBDED_MONGO_CACHE: "/root/.embedmongo/"
@@ -60,6 +60,10 @@ variables:
 .build:instance: &build_template_with_opensilex
   <<: *cache_dependencies
   before_script: 
+    - |
+      if [ ! -z "$COMMIT_SHA_OPENSILEX_DEV" ]; then
+        git checkout $COMMIT_SHA_OPENSILEX_DEV
+      fi
     - rm -r $CI_PROJECT_DIR/phis-ws
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/phis-ws.git --branch modularity
     - |
@@ -81,13 +85,13 @@ variables:
 .deploy_opensilex_before_script: &deploy_opensilex_before_script
   before_script:
     # test variables before deployement
-    -  if [ -z "$RSYNC_USER" ]; then echo "Missing RSYNC_USER variable"; exit 1; fi
+    -  if [ -z "$REMOTE_SERVER_RSYNC_ACCOUNT" ]; then echo "Missing REMOTE_SERVER_RSYNC_ACCOUNT variable"; exit 1; fi
     -  if [ -z "$REMOTE_SERVER_IP" ]; then echo "Missing REMOTE_SERVER_IP variable"; exit 1; fi
-    -  if [ -z "$CONFIGURATION_FILES_PATH" ]; then echo "Missing CONFIGURATION_FILES_PATH variable"; exit 1; fi
+    -  if [ -z "$INTERNAL_CONFIGURATION_FILES_PATH" ]; then echo "Missing INTERNAL_CONFIGURATION_FILES_PATH variable"; exit 1; fi
     -  if [ -z "$INSTANCE_CONFIGURATION_FILE_NAME" ]; then echo "Missing INSTANCE_CONFIGURATION_FILE_NAME variable"; exit 1; fi
-    -  if [ -z "$SSH_KEY" ]; then echo "Missing SSH_KEY variable"; exit 1; fi
-    -  if [ -z "$ADMIN_PORT" ]; then echo "Missing ADMIN_PORT variable"; exit 1; fi
-    -  if [ -z "$PORT" ]; then echo "Missing PORT variable"; exit 1; fi
+    -  if [ -z "$REMOTE_SERVER_SSH_KEY" ]; then echo "Missing REMOTE_SERVER_SSH_KEY variable"; exit 1; fi
+    -  if [ -z "$OPENSILEX_JAR_ADMIN_PORT" ]; then echo "Missing OPENSILEX_JAR_ADMIN_PORT variable"; exit 1; fi
+    -  if [ -z "$OPENSILEX_JAR_PORT" ]; then echo "Missing OPENSILEX_JAR_PORT variable"; exit 1; fi
     ##
     ## Create the SSH directory and give it the right permissions
     ##
@@ -111,7 +115,7 @@ variables:
     - mkdir -p ${HOME}/.ssh && touch ${HOME}/.ssh/known_hosts
     - ssh-keyscan -H "$REMOTE_SERVER_IP" >> ${HOME}/.ssh/known_hosts
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ${HOME}/.ssh/config
-    - echo "$SSH_KEY" >> ${HOME}/.ssh/id_rsa
+    - echo "$REMOTE_SERVER_SSH_KEY" >> ${HOME}/.ssh/id_rsa
     - chmod 600 ${HOME}/.ssh/id_rsa
 
 ########################
@@ -125,34 +129,29 @@ variables:
   script:
     - apk add curl git
     - rm -R $CI_PROJECT_DIR/opensilex-dev-tools
-    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-dev-tools.git --branch master $CI_PROJECT_DIR/opensilex-dev-tools
+    - echo "Cloning $DEV_BRANCH branch"
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-dev-tools.git --branch $DEV_BRANCH $CI_PROJECT_DIR/opensilex-dev-tools
     - ls $CI_PROJECT_DIR/opensilex-dev-tools
-    # Create directories
+    # Directory details
     - ls $CI_PROJECT_DIR/$REVISION
-    - echo "Create directory ${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}"
-    - echo "Create directory ${RSYNC_INSTANCES_DATA}/${RSYNC_DIR}"
-    - echo "Create directory ${RSYNC_INSTANCES_LOGS}"
+    - echo "Create directory ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
+    - echo "Create directory ${RSYNC_INSTANCES_DATA_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
+    - echo "Create directory ${RSYNC_INSTANCES_LOGS_PATH}"
     - echo "Create directory ${RSYNC_INSTANCES_LOGS_ARCHIVED}"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $RSYNC_USER@$REMOTE_SERVER_IP "mkdir -p $RSYNC_INSTANCES_PATH/$RSYNC_DIR; mkdir -p $RSYNC_INSTANCES_LOGS; mkdir -p $RSYNC_INSTANCES_LOGS_ARCHIVED; mkdir -p $RSYNC_INSTANCES_DATA/$RSYNC_DIR;"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "mkdir -p $RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR; mkdir -p $RSYNC_INSTANCES_LOGS_PATH; mkdir -p $RSYNC_INSTANCES_LOGS_ARCHIVED; mkdir -p $RSYNC_INSTANCES_DATA_PATH/$REMOTE_SERVER_RSYNC_DIR;"
     - echo "Upload files"
-    - rsync -arzv -e "ssh  -i ${HOME}/.ssh/id_rsa" $RSYNC_INSTANCES_OPTIONS  $CI_PROJECT_DIR/$REVISION/* $RSYNC_USER@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_PATH/$RSYNC_DIR
-    - echo "ls ${CONFIGURATION_FILES_PATH}"
-    - ls $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGURATION_FILES_PATH
-    - echo "scp -i ${HOME}/.ssh/id_rsa -o 'StrictHostKeyChecking no' $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGURATION_FILES_PATH/* ${RSYNC_USER}@${REMOTE_SERVER_IP}:${RSYNC_INSTANCES_PATH}/${RSYNC_DIR}"
-    - scp -i ${HOME}/.ssh/id_rsa -o "StrictHostKeyChecking no" $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGURATION_FILES_PATH/* $RSYNC_USER@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_PATH/$RSYNC_DIR
+    - rsync -arzv -e "ssh  -i ${HOME}/.ssh/id_rsa" $RSYNC_INSTANCES_OPTIONS  $CI_PROJECT_DIR/$REVISION/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR
+    - echo "ls ${INTERNAL_CONFIGURATION_FILES_PATH}"
+    - ls $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH
+    - echo "scp -i ${HOME}/.ssh/id_rsa -o 'StrictHostKeyChecking no' $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH/* ${REMOTE_SERVER_RSYNC_ACCOUNT}@${REMOTE_SERVER_IP}:${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
+    - scp -i ${HOME}/.ssh/id_rsa -o "StrictHostKeyChecking no" $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR
     - echo "Remove dependencies list cache"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "rm -f ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/.opensilex.dependencies"
     - echo "Check files"
-    - echo ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "ls ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR};"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "ls ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR};"
-    - echo "Restart server java -jar ${RSYNC_INSTANCES_BIN_PATH}/$REMOTE_SERVER_RSYNC_DIR/opensilex.jar"
-    - echo "Stop with options --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_STOP_SERVER_OPTS}"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_STOP_SERVER_OPTS}"
-    - echo "Start with options --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
-    - DYNAMIC_ENVIRONMENT_URL="http://$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT"        
-    - echo "Deploy To $DYNAMIC_ENVIRONMENT_URL"                 # In script, get the environment URL.
-    - echo "DYNAMIC_ENVIRONMENT_URL=$DYNAMIC_ENVIRONMENT_URL" >> deploy.env 
+    - echo "Restarting server with options ${START_SERVER_OPTS}"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop $STOP_SERVER_OPTS"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start $START_SERVER_OPTS"
   except:
     - schedules    
     
@@ -193,16 +192,15 @@ test:arnaud:deploy:
   <<: *deploy_opensilex_template
   when: on_success  
   variables:
-    RSYNC_USER: "phis"
-    REMOTE_SERVER_IP: "138.102.159.37"
-    RSYNC_DIR: "mistea/arnaud"
-    CONFIGURATION_FILES_PATH: "${DEV_TOOLS_CONFIGURATION_FILES_PATH}/mistea/arnaud"
+    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/arnaud"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-    SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-    ADMIN_PORT: 4086
-    PORT: 8086
-    PROJECT_ID: 403
-    BRANCH: arnaud
+    OPENSILEX_JAR_ADMIN_PORT: 4086
+    OPENSILEX_JAR_PORT: 8086
+    REMOTE_SERVER_RSYNC_ACCOUNT: "phis"
+    REMOTE_SERVER_IP: "138.102.159.37"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/arnaud"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+    DEV_BRANCH: arnaud
   only:
     - arnaud
   environment:

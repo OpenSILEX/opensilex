@@ -1,44 +1,42 @@
 <template>
-  <form-wizard 
-    @on-loading="setLoading"
-    @on-validate="handleValidation"
-    @on-complete="onComplete"
-    @on-error="handleErrorMessage"
+    <form-wizard 
+      @on-loading="setLoading"
+      @on-validate="handleValidation"
+      @on-complete="onComplete"
+      @on-error="handleErrorMessage"
 
-    @on-create="callCreateExperimentService"
+      ref="experimentCreateFormWizard"
+      shape="square" 
+      color="#00a38d">
+      <div class="loader" v-if="this.loadingWizard"></div>
+      <h2 slot="title">
+        <i>
+          <font-awesome-icon icon="vials" />
+          {{ $t('component.experiment.form-wizard.label') }}
+        </i>
+      </h2>
 
-    ref="experimentCreateFormWizard"
-    shape="square" 
-    color="#00a38d">
-    <div class="loader" v-if="this.loadingWizard"></div>
-    <h2 slot="title">
-      <i>
-        <font-awesome-icon icon="vials" />
-        {{ $t('component.experiment.form-wizard.label') }}
-      </i>
-    </h2>
+      <tab-content
+        v-bind:title="$t('component.experiment.form-wizard.general-informations')"
+        :before-change="checkBeforeVariablesStep">
+        <opensilex-core-ExperimentForm ref="experimentForm">
+        </opensilex-core-ExperimentForm>
+      </tab-content>
 
-    <tab-content
-      v-bind:title="$t('component.experiment.form-wizard.general-informations')"
-      :before-change="checkBeforeVariablesStep">
-      <opensilex-core-ExperimentForm ref="experimentForm">
-      </opensilex-core-ExperimentForm>
-    </tab-content>
+      <tab-content
+        v-bind:title="$t('component.experiment.form-wizard.users-groups-projects')">
+        <opensilex-core-ExperimentForm2 ref="experimentForm2">
+        </opensilex-core-ExperimentForm2>
+      </tab-content>
 
-    <tab-content
-      v-bind:title="$t('component.experiment.form-wizard.users-groups-projects')">
-      <opensilex-core-ExperimentForm2 ref="experimentForm2">
-      </opensilex-core-ExperimentForm2>
-    </tab-content>
-
-    <!-- <tab-content
-      v-bind:title="$t('component.experiment.form-wizard.sensors')"
-    >Done recap ?</tab-content> -->
-    <div v-if="this.errorMsg">
-      <span class="error">{{ $t(getErrorMsg) }}</span>
-    </div>
-    
-  </form-wizard>
+      <!-- <tab-content
+        v-bind:title="$t('component.experiment.form-wizard.sensors')"
+      >Done recap ?</tab-content> -->
+      <div v-if="this.errorMsg">
+        <span class="error">{{ $t(getErrorMsg) }}</span>
+      </div>
+      
+    </form-wizard>
 </template>
 
 <script lang="ts">
@@ -63,6 +61,8 @@ export default class ExperimentCreate extends Vue {
   errorMsg: string = null;
   count: number = 0;
 
+  editMode = false;
+
   get user() {
     return this.$store.state.user;
   }
@@ -72,16 +72,20 @@ export default class ExperimentCreate extends Vue {
   }
 
   created() {
-    console.debug("Loading form view...");
     this.service = this.$opensilex.getService("opensilex.ExperimentsService");
+    if(this.$store.editXp !== undefined){
+      this.editMode = this.$store.editXp;
+    }
+    // this.$form1 = this.$refs.experimentForm;
+    // this.$form2 = this.$refs.experimentForm2;
   }
 
   getLoadingWizard(){
-    return this.loadingWizard
+    return this.loadingWizard;
   }
 
   getErrorMsg(){
-    return this.errorMsg
+    return this.errorMsg;
   }
 
   async checkBeforeVariablesStep(){
@@ -115,7 +119,7 @@ export default class ExperimentCreate extends Vue {
   }
 
   handleErrorMessage(errorMsg : string){
-    this.errorMsg = errorMsg
+    this.errorMsg = errorMsg;
   }
 
   fillForm(formPart1 : ExperimentForm, formPart2: ExperimentForm2): ExperimentCreationDTO {
@@ -141,19 +145,13 @@ export default class ExperimentCreate extends Vue {
     let experimentForm: any = this.$refs.experimentForm;
     let experimentForm2: any = this.$refs.experimentForm2;
     let dto: ExperimentCreationDTO = this.fillForm(experimentForm,experimentForm2);
-
-    console.log(dto);
-    this.callCreateExperimentService(dto);
-
-    // return new Promise((resolve, reject) => {
-    //   return this.$emit("on-create", this.$refs.experimentForm, result => {
-    //       if (result instanceof Promise) {
-    //         result.then(resolve).catch(reject);
-    //       } else {
-    //         resolve(result);
-    //       }
-    //     });
-    // }); 
+    
+    console.log("complete "+this.editMode);
+    if(this.editMode){
+      this.callUpdateExperimentService(dto);
+    }else{
+      this.callCreateExperimentService(dto);
+    }
   }
 
   callCreateExperimentService(form: ExperimentCreationDTO) {
@@ -165,22 +163,24 @@ export default class ExperimentCreate extends Vue {
           let uri = http.response.result;
           console.debug("experiment created", uri);
           this.$router.push({ path: '/experiments' });
-        })
+        }).catch(this.$opensilex.errorHandler);
     // );
   }
 
-  // callUpdateExperimentService(form: ExperimentCreationDTO, done) {
-  //   done(
-  //     this.service
-  //       .updateExperiment(this.user.getAuthorizationHeader(), form)
-  //       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-  //         let uri = http.response.result;
-  //         console.debug("experiment updated", uri);
-  //         let experimentList: any = this.$refs.experimentList;
-  //         experimentList.refresh();
-  //       })
-  //   );
-  // }
+  callUpdateExperimentService(form: ExperimentCreationDTO) {
+    // done(
+      this.service
+        .updateExperiment(this.user.getAuthorizationHeader(), form)
+        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+          let uri = http.response.result;
+          console.debug("experiment updated", uri);
+          this.$router.push({ path: '/experiments' });
+          // let experimentList: any = this.$refs.experimentList;
+          // experimentList.refresh();
+
+        }).catch(this.$opensilex.errorHandler);
+    // );
+  }
 
   // editExperiment(form: ExperimentGetDTO) {
   //   console.debug("editExperiment" + form.uri)

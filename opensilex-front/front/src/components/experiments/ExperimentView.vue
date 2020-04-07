@@ -4,6 +4,7 @@
     <opensilex-core-ExperimentList
       ref="experimentList"
       @onCreate="goToExperimentCreate"
+      @onEdit="goToExperimentUpdate"
     ></opensilex-core-ExperimentList> 
   </div>
 </template>
@@ -33,26 +34,32 @@ export default class ExperimentView extends Vue {
   }
 
   created() {
-    console.debug("Loading form view...");
     this.service = this.$opensilex.getService("opensilex.ExperimentsService");
   }
 
   goToExperimentCreate(){
+    this.$store.editXp = false;
     this.$router.push({ path: '/experiments/create' });
   }
 
-  // callCreateExperimentService(form: ExperimentCreationDTO, done) {
-  //   done(
-  //     this.service
-  //       .createExperiment(this.user.getAuthorizationHeader(), form)
-  //       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-  //         let uri = http.response.result;
-  //         console.debug("experiment created", uri);
-  //         let experimentList: any = this.$refs.experimentList;
-  //         experimentList.refresh();
-  //       })
-  //   );
-  // }
+  goToExperimentUpdate(experimentDto: ExperimentGetDTO){
+      this.$store.xpToUpdate = experimentDto;
+      this.$store.editXp = true;
+      this.$router.push({  path: '/experiments/create' });
+  }
+
+  callCreateExperimentService(form: any, done) {
+    done(
+      this.service
+        .createExperiment(this.user.getAuthorizationHeader(), form)
+        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+          let uri = http.response.result;
+          console.debug("experiment created", uri);
+          let experimentList: any = this.$refs.experimentList;
+          experimentList.refresh();
+        })
+    );
+  }
 
   // callUpdateExperimentService(form: ExperimentCreationDTO, done) {
   //   done(

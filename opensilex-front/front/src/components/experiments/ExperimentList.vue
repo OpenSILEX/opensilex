@@ -42,6 +42,7 @@
                     <table class="table table-striped table-hover">
                         <thead>
                         <tr>
+                            <th>Actions</th>
                             <th>{{ $t('component.experiment.search.column.alias') }}</th>
                             <th>{{ $t('component.experiment.search.column.projects') }}</th>
                             <th>{{ $t('component.experiment.search.column.installations') }}</th>
@@ -58,7 +59,11 @@
 
                         <tr class="cell-filters">
                             <td>
-                                <b-form-input v-model="filter.alias" debounce="300" class="form-control" :placeholder="$t('component.experiment.search.filter.alias')"></b-form-input>
+                                Edit
+                            </td>
+                            <td>
+                                <b-form-input v-model="filter.alias" debounce="300" class="form-control" 
+                                :placeholder="$t('component.experiment.search.filter.alias')"></b-form-input>
                             </td>
                             <td width="250">
                                 <multiselect
@@ -159,6 +164,14 @@
                         </tr>
 
                         <tr v-for="experiment in experiments" v-bind:key="experiment.id">
+                            <td>
+                                    <b-button-group size="sm">
+                                        <b-button size="sm" @click="$emit('onEdit', experiment)" variant="outline-primary">
+                                            <font-awesome-icon icon="edit" size="sm" />
+                                        </b-button>
+                                    </b-button-group>
+                            </td>
+
                             <td>{{ experiment.label }}</td>
                             <td>
                                 <span :key="index" v-for="(uri, index) in experiment.projects">
@@ -204,13 +217,6 @@
     import { Component } from "vue-property-decorator";
     import Vue from "vue";
     import VueConstructor from "vue";
-    // import { ExperimentsService } from "../../lib/api/experiments.service";
-    // import { ProjectsService } from "../../lib/api/projects.service";
-    // import { SpeciesService } from "../../lib/api/species.service";
-    // import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
-    // import { ExperimentGetDTO } from "../../lib//model/experimentGetDTO";
-    // import { ProjectCreationDTO } from "../../lib//model/projectCreationDTO";
-    // import { SpeciesDTO } from "../../lib//model/speciesDTO";
 
 import VueRouter from "vue-router";
 

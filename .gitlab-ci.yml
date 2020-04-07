@@ -37,7 +37,7 @@ variables:
  # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
  #CACHE
  YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/cache_yarn"
- NODE_CACHE: "$CI_PROJECT_DIR/opensilex-dev/.node"
+ NODE_CACHE: "$CI_PROJECT_DIR/.node"
  EMBDED_MONGO_CACHE: "/root/.embedmongo/"
  # Prevent gitlab clone issues
  GITLAB_HTTPS: "false"

@@ -6,7 +6,6 @@
 package org.opensilex.core;
 
 import com.auth0.jwt.JWTCreator;
-import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;

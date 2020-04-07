@@ -28,7 +28,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.Tika;
-import org.opensilex.module.ModuleNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

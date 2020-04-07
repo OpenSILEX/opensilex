@@ -154,7 +154,7 @@ public class SPARQLModule extends OpenSilexModule {
         }
         sparql.createRepository();
         getOpenSilex().shutdown();
-        getOpenSilex().startup();
+        getOpenSilex().startupIfNeed();
 
         SPARQLService sparqlService = sparql.provide();
 

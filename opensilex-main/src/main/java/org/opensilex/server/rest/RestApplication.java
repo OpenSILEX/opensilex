@@ -24,7 +24,7 @@ import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.module.ModuleNotFoundException;
+import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.server.ServerModule;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.service.Service;
@@ -143,8 +143,8 @@ public class RestApplication extends ResourceConfig {
         ;
         try {
             beanConfig.setVersion(app.getModuleByClass(ServerModule.class).getOpenSilexVersion());
-        } catch (ModuleNotFoundException ex) {
-            LOGGER.warn("Errro while getting API version", ex);
+        } catch (OpenSilexModuleNotFoundException ex) {
+            LOGGER.warn("Error while getting API version", ex);
         }
         beanConfig.setResourcePackage(String.join(",", packageList));
         beanConfig.setTitle("OpenSilex API");

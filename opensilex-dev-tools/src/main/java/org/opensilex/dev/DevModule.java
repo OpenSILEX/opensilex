@@ -5,16 +5,18 @@
  */
 package org.opensilex.dev;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.cli.MainCommand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DevModule extends OpenSilexModule {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(DevModule.class);
 
     public final static String CONFIG_FILE_PATH = "./src/main/resources/config/sixtine.yml";
 
@@ -40,6 +42,7 @@ public class DevModule extends OpenSilexModule {
             args.put(OpenSilex.BASE_DIR_ARG_KEY, baseDirectory.toFile().getCanonicalPath());
             args.put(OpenSilex.CONFIG_FILE_ARG_KEY, getConfig(baseDirectory));
 
+            LOGGER.info("Create OpenSilex instance for development tools");
             devInstance = OpenSilex.createInstance(args);
         }
         return devInstance;

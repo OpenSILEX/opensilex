@@ -59,7 +59,7 @@ import org.slf4j.LoggerFactory;
 public class DependencyManager {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DependencyManager.class);
-    
+
     private final static String MAVEN_CENTRAL_URL = "https://repo1.maven.org/maven2/";
 
     /**
@@ -240,9 +240,9 @@ public class DependencyManager {
                 );
                 String key = getArtifactKey(artifact);
 
-                LOGGER.debug(String.format("Loading dependency: %s", key));
                 // If dependency is not already loaded
                 if (!loadedDependencies.contains(key)) {
+                    LOGGER.debug(String.format("Loading dependency: %s", key));
                     // Add it to the loaded list
                     loadedDependencies.add(key);
 

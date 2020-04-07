@@ -10,11 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 import org.opensilex.OpenSilex;
-import org.opensilex.cli.help.HelpFactory;
-import org.opensilex.cli.help.HelpPrinterCommand;
-import org.opensilex.module.ModuleManager;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexSetup;
+import static org.opensilex.server.extensions.APIExtension.LOGGER;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IVersionProvider;
@@ -32,7 +30,7 @@ import picocli.CommandLine.Option;
         header = "OpenSILEX Command Line Interface",
         description = "OpenSILEX is an information system based on ontologies"
 )
-public class MainCommand extends HelpPrinterCommand implements IVersionProvider {
+public class MainCommand extends CLIHelpPrinterCommand implements IVersionProvider {
 
     /**
      * <pre>
@@ -56,13 +54,19 @@ public class MainCommand extends HelpPrinterCommand implements IVersionProvider 
         // - OpenSilex.CONFIG_FILE --> Main configuration file
         // - OpenSilex.DEBUG --> Debug flag
         OpenSilexSetup setup = OpenSilex.createSetup(args);
-        OpenSilex opensilex = OpenSilex.createInstance(setup);
+
+        LOGGER.info("Create OpenSilex instance from command line");
+        OpenSilex opensilex = OpenSilex.createInstance(setup, true, false);
 
         String[] remainingArgs = setup.getRemainingArgs();
         run(remainingArgs, opensilex);
     }
 
+    private static OpenSilex opensilex;
+
     public static void run(String[] args, OpenSilex opensilex) throws Exception {
+        MainCommand.opensilex = opensilex;
+
         // If no arguments assume help is requested
         if (args.length == 0) {
             args = new String[]{"--help"};
@@ -80,7 +84,12 @@ public class MainCommand extends HelpPrinterCommand implements IVersionProvider 
                 });
 
         // Define the help factory class
-        cli.setHelpFactory(new HelpFactory());
+        cli.setHelpFactory(new CLIHelpFactory());
+
+        // Avoid to start OpenSilex instance if only help is required
+        if (!cli.parseArgs(args).isUsageHelpRequested()) {
+            opensilex.startupIfNeed();
+        }
 
         // Run actual commands
         cli.execute(args);
@@ -96,10 +105,9 @@ public class MainCommand extends HelpPrinterCommand implements IVersionProvider 
     @Override
     public String[] getVersion() throws Exception {
         List<String> versionList = new ArrayList<>();
-        ModuleManager moduleManager = new ModuleManager();
 
         // Add version in list for all modules
-        moduleManager.forEachModule((OpenSilexModule module) -> {
+        opensilex.getModules().forEach((OpenSilexModule module) -> {
             versionList.add(module.getClass().getCanonicalName() + ": " + module.getOpenSilexVersion());
         });
         String[] versionListArray = new String[versionList.size()];

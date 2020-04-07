@@ -16,10 +16,6 @@ import java.util.List;
 import org.apache.catalina.LifecycleException;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.OpenSilex;
-import org.opensilex.cli.MainCommand;
-import org.opensilex.cli.OpenSilexCommand;
-import org.opensilex.cli.help.HelpOption;
-import org.opensilex.cli.help.HelpPrinterCommand;
 import org.opensilex.server.Server;
 import org.opensilex.server.admin.ServerAdminClient;
 import org.slf4j.Logger;
@@ -42,7 +38,7 @@ import picocli.CommandLine.Parameters;
         name = "server",
         header = "Subcommand to group OpenSILEX server operations"
 )
-public class ServerCommands extends HelpPrinterCommand implements OpenSilexCommand {
+public class ServerCommands extends CLIHelpPrinterCommand implements OpenSilexCommand {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ServerCommands.class);
 
@@ -72,7 +68,7 @@ public class ServerCommands extends HelpPrinterCommand implements OpenSilexComma
             @Option(names = {"--adminPort"}, description = "Server port on which server is listening for admin commands", defaultValue = "8888") int adminPort,
             @Option(names = {"-d", "--daemon"}, description = "Run server as a daemon", defaultValue = "false") boolean daemon,
             @Parameters(description = "Tomcat directory", defaultValue = "") Path tomcatDirectory,
-            @Mixin HelpOption help
+            @Mixin CLIHelpOption help
     ) throws Exception {
 
         // If tomcat working directory is not defined create a temporary one
@@ -101,7 +97,7 @@ public class ServerCommands extends HelpPrinterCommand implements OpenSilexComma
 
                 OpenSilex instance = getOpenSilex();
                 String debug = instance.isDebug() ? "true" : "false";
-                
+
                 List<String> processArgs = new ArrayList<String>() {
                     {
                         add(System.getProperty("java.home") + "/bin/java");
@@ -114,13 +110,13 @@ public class ServerCommands extends HelpPrinterCommand implements OpenSilexComma
                         add("--adminPort=" + adminPort);
                         add("--DEBUG=" + debug);
                     }
-                    
+
                 };
-                
+
                 if (instance.getConfigFile() != null) {
                     processArgs.add("--CONFIG_FILE=" + instance.getConfigFile().getCanonicalPath());
                 }
-                
+
                 processArgs.add(tomcatDirectory.toAbsolutePath().toString());
                 // Create external process with given arguments
                 ProcessBuilder pb = new ProcessBuilder(
@@ -170,7 +166,7 @@ public class ServerCommands extends HelpPrinterCommand implements OpenSilexComma
     public void stop(
             @Option(names = {"--host"}, description = "Define server host", defaultValue = "localhost") String host,
             @Option(names = {"-ap", "--adminPort"}, description = "Server port on which server is listening for commands", defaultValue = "8888") int adminPort,
-            @Mixin HelpOption help
+            @Mixin CLIHelpOption help
     ) throws Exception {
         // Create the server admin client
         ServerAdminClient adminClient = new ServerAdminClient(host, adminPort);

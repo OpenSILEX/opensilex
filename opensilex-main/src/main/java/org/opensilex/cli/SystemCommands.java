@@ -7,12 +7,11 @@
 package org.opensilex.cli;
 
 import org.opensilex.OpenSilex;
-import org.opensilex.cli.help.HelpPrinterCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
-import org.opensilex.module.OpenSilexModuleUpdate;
+import org.opensilex.update.OpenSilexModuleUpdate;
 import picocli.CommandLine;
 
 /**
@@ -31,7 +30,7 @@ import picocli.CommandLine;
         name = "system",
         header = "Subcommand to group OpenSILEX system operations"
 )
-public class SystemCommands extends HelpPrinterCommand implements OpenSilexCommand {
+public class SystemCommands extends CLIHelpPrinterCommand implements OpenSilexCommand {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SystemCommands.class);
 

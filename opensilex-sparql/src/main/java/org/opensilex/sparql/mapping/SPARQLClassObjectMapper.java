@@ -29,7 +29,6 @@ import org.apache.jena.sparql.expr.E_StrLowerCase;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
@@ -78,7 +77,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             LOGGER.debug("Init SPARQL class query builder: " + objectClass.getName());
             classQueryBuilder = new SPARQLClassQueryBuilder(mapperIndex, classAnalizer);
         } catch (Throwable t) {
-            throw new SPARQLInvalidClassDefinitionException(objectClass, "Unexpected error wile initializing SPARQL Mapping", t);
+            throw new SPARQLInvalidClassDefinitionException(objectClass, "Unexpected error while initializing SPARQL Mapping", t.getCause());
         }
 
     }

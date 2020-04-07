@@ -37,6 +37,7 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.mockito.Mockito;
 import org.opensilex.OpenSilex;
+import static org.opensilex.server.extensions.APIExtension.LOGGER;
 import org.opensilex.server.rest.RestApplication;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
@@ -76,7 +77,9 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         args.put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.TEST_PROFILE_ID);
         args.put(OpenSilex.NO_CACHE_ARG_KEY, "true");
 //        args.put(OpenSilex.DEBUG_ARG_KEY, "true");
-        opensilex = OpenSilex.createInstance(args);
+
+        LOGGER.info("Create OpenSilex instance for Integration Test");
+        opensilex = OpenSilex.createInstance(args, false, true);
     }
 
     @AfterClass

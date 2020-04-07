@@ -41,13 +41,9 @@ public class SPARQLClassObjectMapperIndex {
 
     private final URI baseGraphURI;
 
-    public SPARQLClassObjectMapperIndex(URI baseGraphURI, Reflections reflections) throws SPARQLInvalidClassDefinitionException {
+    public SPARQLClassObjectMapperIndex(URI baseGraphURI, Set<Class<? extends SPARQLResourceModel>> initClasses) throws SPARQLInvalidClassDefinitionException {
         this.baseGraphURI = baseGraphURI;
-        Set<Class<? extends SPARQLResourceModel>> initClasses = new HashSet<>();
-        reflections.getTypesAnnotatedWith(SPARQLResource.class).forEach(c -> {
-            initClasses.add((Class<? extends SPARQLResourceModel>) c);
-        });
-        this.classes = new HashSet<>();
+        this.classes = initClasses;
         addClasses(initClasses);
     }
 
@@ -80,8 +76,6 @@ public class SPARQLClassObjectMapperIndex {
             classesMapper.put(sparqlModelClass, mapper);
         }
 
-        classes.addAll(newClasses);
-
         for (SPARQLClassObjectMapper<? extends SPARQLResourceModel> mapperUninit : classesMapper.values()) {
             mapperUninit.init();
             resourcesMapper.put(mapperUninit.getRDFType(), mapperUninit);
@@ -113,7 +107,7 @@ public class SPARQLClassObjectMapperIndex {
     }
 
     @SuppressWarnings("unchecked")
-    public synchronized <T extends SPARQLResourceModel> SPARQLClassObjectMapper<T> getForClass(Class<?> objectClass) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+    public <T extends SPARQLResourceModel> SPARQLClassObjectMapper<T> getForClass(Class<?> objectClass) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
         Class<T> concreteObjectClass = (Class<T>) getConcreteClass(objectClass);
 
         if (classesMapper.containsKey(concreteObjectClass)) {
@@ -123,12 +117,12 @@ public class SPARQLClassObjectMapperIndex {
         }
     }
 
-    public synchronized Set<Class<?>> getResourceClasses() {
+    public Set<Class<?>> getResourceClasses() {
         return Collections.unmodifiableSet(classesMapper.keySet());
     }
 
     @SuppressWarnings("unchecked")
-    public synchronized <T extends SPARQLResourceModel> SPARQLClassObjectMapper<T> getForResource(Resource resource) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+    public <T extends SPARQLResourceModel> SPARQLClassObjectMapper<T> getForResource(Resource resource) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
         if (resourcesMapper.containsKey(resource)) {
             return (SPARQLClassObjectMapper<T>) resourcesMapper.get(resource);
         } else {
@@ -137,7 +131,7 @@ public class SPARQLClassObjectMapperIndex {
 
     }
 
-    public synchronized Iterator<Map.Entry<Class<? extends SPARQLResourceModel>, Field>> getReverseReferenceIterator(Class<? extends SPARQLResourceModel> objectClass) {
+    public Iterator<Map.Entry<Class<? extends SPARQLResourceModel>, Field>> getReverseReferenceIterator(Class<? extends SPARQLResourceModel> objectClass) {
         return reverseRelationIndex.get(objectClass).entrySet().iterator();
     }
 

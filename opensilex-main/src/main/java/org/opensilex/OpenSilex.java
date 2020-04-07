@@ -15,30 +15,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.config.ConfigManager;
-import org.opensilex.module.ModuleManager;
-import org.opensilex.module.ModuleNotFoundException;
 import org.opensilex.dependencies.DependencyManager;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
 import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.LogFilter;
 import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
-import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,16 +114,12 @@ public class OpenSilex {
 
     public final static String NO_CACHE_ARG_KEY = "NO-CACHE";
 
-    public static Reflections createReflections() {
-        return new Reflections(ConfigurationBuilder.build("")
-                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
-                .setExpandSuperTypes(false));
-    }
-
     /**
      * Store reference to shutdown hook to avoid duplication on reset
      */
     private Thread SHUTDOWN_HOOK;
+
+    private boolean initialized = false;
 
     /**
      * <pre>
@@ -264,47 +251,38 @@ public class OpenSilex {
      *
      * @param args Map of arguments
      * @return The command line arguments array without the Opensilex parameters
+     * @throws Exception
      */
-    public static OpenSilex setup(Map<String, String> args) throws Exception {
-        return setup(args, true);
-    }
-
-    public static OpenSilex setup(Map<String, String> args, boolean startup) throws Exception {
-        List<String> argsList = new ArrayList<>();
-        args.forEach((String key, String value) -> {
-            argsList.add("--" + key + "=" + value);
-        });
-
-        return createInstance(argsList.toArray(new String[0]), startup);
-    }
-
     public static OpenSilex createInstance(Map<String, String> args) throws Exception {
+        return createInstance(args, false, false);
+    }
+
+    public static OpenSilex createInstance(String[] args, boolean manualStartup, boolean moduleJarReflection) throws Exception {
+        return createInstance(createSetup(args), manualStartup, moduleJarReflection);
+    }
+
+    public static OpenSilex createInstance(Map<String, String> args, boolean manualStartup, boolean moduleJarReflection) throws Exception {
         List<String> argsList = new ArrayList<>();
         args.forEach((String key, String value) -> {
             argsList.add("--" + key + "=" + value);
         });
 
-        return createInstance(argsList.toArray(new String[0]), true);
+        return createInstance(argsList.toArray(new String[0]), manualStartup, moduleJarReflection);
     }
 
-    public static OpenSilex createInstance(String[] args) throws Exception {
-        return createInstance(args, true);
-    }
-
-    private static OpenSilex createInstance(String[] args, boolean startup) throws Exception {
-
+    public static OpenSilex createInstance(OpenSilexSetup setup, boolean manualStartup, boolean moduleJarReflection) throws Exception {
         try {
-            OpenSilexSetup setup = createSetup(args);
-            OpenSilex instance = createInstance(setup);
-
+            LOGGER.debug("Build instance, services and modules");
+            OpenSilex instance = buildInstance(setup, moduleJarReflection);
             for (Service service : instance.serviceManager.getServices().values()) {
                 service.setOpenSilex(instance);
             }
             for (OpenSilexModule module : instance.getModules()) {
                 module.setOpenSilex(instance);
             }
+            LOGGER.debug("Instance build complete");
 
-            if (startup) {
+            if (!manualStartup) {
                 LOGGER.debug("Initialize instance");
                 instance.startup();
                 LOGGER.debug("Instance initialized");
@@ -317,6 +295,10 @@ public class OpenSilex {
         }
     }
 
+    public boolean isInitialized() {
+        return initialized;
+    }
+
     /**
      * Create and initialize OpenSilex application instance and return it
      *
@@ -326,7 +308,7 @@ public class OpenSilex {
      *
      * @return An instance of OpenSilex
      */
-    public static OpenSilex createInstance(OpenSilexSetup setup) throws Exception {
+    public static OpenSilex buildInstance(OpenSilexSetup setup, boolean moduleJarReflection) throws Exception {
 
         // Try to find logback.xml file in OpenSilex base directory to initialize logger configuration
         File logConfigFile = setup.getBaseDirectory().resolve("logback.xml").toFile();
@@ -361,35 +343,13 @@ public class OpenSilex {
         DependencyManager dependencyManager = new DependencyManager(
                 ClassUtils.getPomFile(OpenSilex.class, "org.opensilex", "opensilex-main")
         );
-        ModuleManager modManager = new ModuleManager();
-        modManager.loadModulesWithDependencies(dependencyManager, setup.getBaseDirectory(), sysConfig);
+        OpenSilexModuleManager modManager = new OpenSilexModuleManager(dependencyManager, setup.getBaseDirectory(), sysConfig, moduleJarReflection);
 
-        Set<URL> urlsToScan = new HashSet<>();
-        modManager.getModules().forEach(module -> {
-            try {
-                File f = ClassUtils.getJarFile(module.getClass());
-                if (f.isFile()) {
-                    URL moduleURL = f.toURI().toURL();
-                    urlsToScan.add(moduleURL);
-                }
-            } catch (MalformedURLException ex) {
-                LOGGER.warn("Error while adding manually registring a module, should never happend", ex);
-            }
-        });
-
-        ConfigurationBuilder builder;
-        if (!urlsToScan.isEmpty()) {
-            builder = ConfigurationBuilder.build("", OpenSilex.getClassLoader())
-                    .setUrls(urlsToScan)
-                    .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
-                    .setExpandSuperTypes(false);
-        } else {
-            builder = ConfigurationBuilder.build("", OpenSilex.getClassLoader())
-                    .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
-                    .setExpandSuperTypes(false);
+        if (LOGGER.isDebugEnabled()) {
+            modManager.forEachModule(m -> {
+                LOGGER.debug("Found module: " + m.getClass().getCanonicalName());
+            });
         }
-
-        Reflections loadedReflections = createReflections().merge(new Reflections(builder));
 
         LOGGER.debug("Build global configuration");
         cfgManager.build(setup.getBaseDirectory(), modManager.getModules(), setup.getProfileId(), setup.getConfigFile(), sysConfig);
@@ -407,7 +367,6 @@ public class OpenSilex {
                 cfgManager,
                 srvManager,
                 sysConfig,
-                loadedReflections,
                 setup
         );
 
@@ -469,7 +428,7 @@ public class OpenSilex {
     /**
      * Application modules manager
      */
-    private final ModuleManager moduleManager;
+    private final OpenSilexModuleManager moduleManager;
 
     /**
      * Application services manager
@@ -487,11 +446,6 @@ public class OpenSilex {
     private final OpenSilexConfig systemConfig;
 
     /**
-     * Application reflection tools
-     */
-    public final Reflections reflections;
-
-    /**
      * Constructor for OpenSilex application
      *
      * @param baseDirectory Base directory for the application used to load
@@ -503,19 +457,23 @@ public class OpenSilex {
      * @param serviceManager Services Manager instance
      */
     private OpenSilex(
-            ModuleManager moduleManager,
+            OpenSilexModuleManager moduleManager,
             ConfigManager configManager,
             ServiceManager serviceManager,
             OpenSilexConfig systemConfig,
-            Reflections reflections,
             OpenSilexSetup setup
     ) throws Exception {
         this.configManager = configManager;
         this.moduleManager = moduleManager;
         this.serviceManager = serviceManager;
         this.systemConfig = systemConfig;
-        this.reflections = reflections;
         this.setup = setup;
+    }
+
+    public void startupIfNeed() throws Exception {
+        if (isInitialized()) {
+            startup();
+        }
     }
 
     /**
@@ -527,7 +485,7 @@ public class OpenSilex {
      * Setup cleaning call for modules on application shutdown
      * </pre>
      */
-    public void startup() throws Exception {
+    private void startup() throws Exception {
 
         // Add hook to clean modules on shutdown
         if (SHUTDOWN_HOOK != null) {
@@ -550,17 +508,10 @@ public class OpenSilex {
         LOGGER.debug("Startup modules");
 
         moduleManager.startup(this);
+
+        initialized = true;
     }
 
-//    /**
-//     * Restart application
-//     *
-//     * @throws Exception
-//     */
-//    public OpenSilex restart() throws Exception {
-//        shutdown();
-//        setup(getSetupArgs(), true);
-//    }
     /**
      * Shutdown application
      *
@@ -569,6 +520,7 @@ public class OpenSilex {
     public void shutdown() throws Exception {
         LOGGER.debug("Shutdown modules");
         moduleManager.shutdown();
+        initialized = false;
     }
 
     /**
@@ -601,9 +553,10 @@ public class OpenSilex {
      * @param moduleClass The module class from which the instance should be
      * returned
      * @return The module class instance
-     * @throws ModuleNotFoundException If the corresponding module is not found
+     * @throws OpenSilexModuleNotFoundException If the corresponding module is
+     * not found
      */
-    public <T extends OpenSilexModule> T getModuleByClass(Class<T> moduleClass) throws ModuleNotFoundException {
+    public <T extends OpenSilexModule> T getModuleByClass(Class<T> moduleClass) throws OpenSilexModuleNotFoundException {
         return moduleManager.getModuleByClass(moduleClass);
     }
 
@@ -744,7 +697,7 @@ public class OpenSilex {
         return setup.getBaseDirectory();
     }
 
-    public <T> T getModuleConfig(Class<? extends OpenSilexModule> moduleClass, Class<T> configClass) throws ModuleNotFoundException {
+    public <T> T getModuleConfig(Class<? extends OpenSilexModule> moduleClass, Class<T> configClass) throws OpenSilexModuleNotFoundException {
         return getModuleByClass(moduleClass).getConfig(configClass);
     }
 
@@ -791,7 +744,7 @@ public class OpenSilex {
     }
 
     public Reflections getReflections() {
-        return reflections;
+        return moduleManager.getReflections();
     }
 
     public Set<Method> getMethodsAnnotatedWith(Class<? extends Annotation> annotation) {

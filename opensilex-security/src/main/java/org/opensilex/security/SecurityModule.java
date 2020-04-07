@@ -65,6 +65,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension {
     public void startup() throws Exception {
         SPARQLService.addPrefix(SecurityOntology.PREFIX, SecurityOntology.NAMESPACE);
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        factory.resetMapperIndex();
         if (factory instanceof RDF4JInMemoryServiceFactory) {
             createDefaultSuperAdmin();
         }
@@ -109,7 +110,8 @@ public class SecurityModule extends OpenSilexModule implements APIExtension {
 
     public void createDefaultSuperAdmin() throws Exception {
         OpenSilex opensilex = getOpenSilex();
-        SPARQLService sparql = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
+        SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
         try {
             AuthenticationService authentication = opensilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
 

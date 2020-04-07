@@ -27,14 +27,14 @@ import opensilex.service.view.brapi.form.ResponseFormGET;
  */
 @Provider
 public class PageSizeMaxRequestFilter implements ContainerRequestFilter {
-    
+
     /**
-     * To set the page size max constant only once during the first use of the 
+     * To set the page size max constant only once during the first use of the
      * filter, a boolean is used.
      */
     public static boolean PAGE_SIZE_MAX_HAS_BEEN_SET_UP = false;
     public static int PAGE_SIZE_MAX;
-    
+
     /**
      * Filters the pageSize parameter.
      * @param requestContext
@@ -46,7 +46,7 @@ public class PageSizeMaxRequestFilter implements ContainerRequestFilter {
         }
         UriInfo uriInfo = requestContext.getUriInfo();
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
-        
+
         if (queryParameters.containsKey("pageSize")) {
             try {
                 final int currentPageSize = Integer.valueOf(queryParameters.getFirst("pageSize"));
@@ -60,12 +60,17 @@ public class PageSizeMaxRequestFilter implements ContainerRequestFilter {
             }
         }
     }
-    
+
     /**
      * Sets the page size max value from the configuration file.
      */
-    private void setPageSizeMaxFromConfigFile() {        
-        PAGE_SIZE_MAX = Integer.parseInt(PropertiesFileManager.getConfigFileProperty("service", "pageSizeMax"));
+    private void setPageSizeMaxFromConfigFile() {
+        try {
+            PAGE_SIZE_MAX = Integer.parseInt(PropertiesFileManager.getConfigFileProperty("service", "pageSizeMax"));
+        } catch (Throwable t) {
+            // Silent fallback for legacy compatibility
+            PAGE_SIZE_MAX = 2097152;
+        }
         PAGE_SIZE_MAX_HAS_BEEN_SET_UP = true;
     }
 }

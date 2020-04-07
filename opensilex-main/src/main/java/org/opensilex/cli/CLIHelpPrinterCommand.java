@@ -1,14 +1,12 @@
 //******************************************************************************
-//                        HelpPrinterCommand.java
+//                        CLIHelpPrinterCommand.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.cli.help;
+package org.opensilex.cli;
 
 import org.opensilex.OpenSilex;
-import org.opensilex.cli.MainCommand;
-import org.opensilex.cli.OpenSilexCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
@@ -25,22 +23,22 @@ import picocli.CommandLine.Mixin;
         subcommands = {
             HelpCommand.class
         },
-        headerHeading = HelpFactory.CLI_HEADER_HEADING,
-        synopsisHeading = HelpFactory.CLI_SYNOPSYS_HEADING,
-        descriptionHeading = HelpFactory.CLI_DESCRIPTION_HEADING,
-        parameterListHeading = HelpFactory.CLI_PARAMETER_LIST_HEADING,
-        optionListHeading = HelpFactory.CLI_OPTION_LIST_HEADING,
-        commandListHeading = HelpFactory.CLI_COMMAND_LIST_HEADING,
-        footer = HelpFactory.CLI_FOOTER,
+        headerHeading = CLIHelpFactory.CLI_HEADER_HEADING,
+        synopsisHeading = CLIHelpFactory.CLI_SYNOPSYS_HEADING,
+        descriptionHeading = CLIHelpFactory.CLI_DESCRIPTION_HEADING,
+        parameterListHeading = CLIHelpFactory.CLI_PARAMETER_LIST_HEADING,
+        optionListHeading = CLIHelpFactory.CLI_OPTION_LIST_HEADING,
+        commandListHeading = CLIHelpFactory.CLI_COMMAND_LIST_HEADING,
+        footer = CLIHelpFactory.CLI_FOOTER,
         versionProvider = MainCommand.class
 )
-public abstract class HelpPrinterCommand implements Runnable, OpenSilexCommand {
+public abstract class CLIHelpPrinterCommand implements Runnable, OpenSilexCommand {
 
     /**
      * Generic help option
      */
     @Mixin
-    private HelpOption help = new HelpOption();
+    private CLIHelpOption help = new CLIHelpOption();
 
     /**
      * Display help if called with no arguments

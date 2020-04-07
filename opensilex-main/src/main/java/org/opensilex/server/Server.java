@@ -34,7 +34,7 @@ import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.module.ModuleNotFoundException;
+import org.opensilex.OpenSilexModuleNotFoundException;
 
 /**
  * <pre>
@@ -93,7 +93,7 @@ public class Server extends Tomcat {
      * @param adminPort Server administration port
      * @param tomcatDirectory Tomcat server base directory
      */
-    public Server(OpenSilex instance, String host, int port, int adminPort, Path tomcatDirectory) throws ModuleNotFoundException {
+    public Server(OpenSilex instance, String host, int port, int adminPort, Path tomcatDirectory) throws OpenSilexModuleNotFoundException {
         super();
 
         // Set system properties

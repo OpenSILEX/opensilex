@@ -279,7 +279,7 @@ final class SPARQLClassAnalyzer {
                 Class<?> genericParameter = (Class<?>) parameterizedType.getActualTypeArguments()[0];
                 LOGGER.debug("Field " + field.getName() + " is a list of: " + genericParameter.getName());
                 if (genericParameter == SPARQLLabel.class) {
-                    throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " as an unsupported type, List<SPARQLLabel> are not supported");
+                    throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " has an unsupported type, List<SPARQLLabel> are not supported");
                 } else if (SPARQLDeserializers.existsForClass(genericParameter)) {
                     LOGGER.debug("Field " + field.getName() + " is a data property list of: " + objectClass.getName());
                     dataPropertiesLists.put(field.getName(), property);
@@ -292,10 +292,10 @@ final class SPARQLClassAnalyzer {
                         cascadeDeleteClassesField.put(fieldClass, field.getName());
                     }
                 } else {
-                    throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " as an unsupported type, List<" + genericParameter.getCanonicalName() + "> is not supported");
+                    throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " has an unsupported type, List<" + genericParameter.getCanonicalName() + "> is not supported");
                 }
             } else {
-                throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " as an unsupported type, only List are allowed as generics");
+                throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " has an unsupported type, only List are allowed as generics");
             }
         } else if ((Class<?>) fType == SPARQLLabel.class) {
             LOGGER.debug("Field " + field.getName() + " is a label of: " + objectClass.getName());

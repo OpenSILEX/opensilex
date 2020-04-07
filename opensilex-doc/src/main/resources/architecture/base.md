@@ -615,7 +615,7 @@ Command Line Interface is the main entry point of OpenSilex application.
 CLI is implemented with Picocli library which provide automatic help, parameter validation, default values and much more.
 
 To add a new CLI command group, you have to add a new class in your module which
-- extends `org.opensilex.cli.help.HelpPrinterCommand`
+- extends `org.opensilex.cli.help.CLIHelpPrinterCommand`
 - implements `org.opensilex.cli.OpenSilexCommand`
 - use Picocli annotations on class and methods
 
@@ -636,7 +636,7 @@ See below an example of default help message produced by he given annotated Java
         name = "user",
         header = "Subcommand to group OpenSILEX users operations"
 )
-public class UserCommands extends HelpPrinterCommand implements OpenSilexCommand {
+public class UserCommands extends CLIHelpPrinterCommand implements OpenSilexCommand {
 
     @Command(
             name = "add",

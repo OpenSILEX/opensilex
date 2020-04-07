@@ -310,7 +310,7 @@ test:arnaud:deploy:
     - arnaud:build
   environment:
     name: $ARNAUD_DEV_ENV_NAME
-    url: ARNAUD_DEV_ENV_URL
+    url: $ARNAUD_DEV_ENV_URL
 
 ###################################
 ##  JULIEN-TEST-BUILD-DEPLOYMENT

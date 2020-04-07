@@ -1,18 +1,18 @@
 <template>
   <div>
     <b-form>
-      <phis-TimeSearch></phis-TimeSearch>
+      <phis2ws-TimeSearch></phis2ws-TimeSearch>
       <br>
       <div class="row">
         <div class="col-sm">
-          <phis-ExperimentSearch></phis-ExperimentSearch>
-          <phis-SciObjectTypeSearch></phis-SciObjectTypeSearch>
-          <phis-SciObjectAliasSearch></phis-SciObjectAliasSearch>
+          <phis2ws-ExperimentSearch></phis2ws-ExperimentSearch>
+          <phis2ws-SciObjectTypeSearch></phis2ws-SciObjectTypeSearch>
+          <phis2ws-SciObjectAliasSearch></phis2ws-SciObjectAliasSearch>
           <br><br>
-          <phis-SciObjectURISearch></phis-SciObjectURISearch>
+          <phis2ws-SciObjectURISearch></phis2ws-SciObjectURISearch>
         </div>
         <div class="col-sm">
-          <phis-ImageTypeSearch></phis-ImageTypeSearch>
+          <phis2ws-ImageTypeSearch></phis2ws-ImageTypeSearch>
         </div>
       </div>
     </b-form>
@@ -23,10 +23,9 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { ScientificObjectsService } from "../../lib/api/scientificObjects.service";
-import { ScientificObjectDTO } from "../../lib/model/scientificObjectDTO";
 import { EventBus } from "./event-bus";
+import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
+import { ScientificObjectDTO, ScientificObjectsService } from "opensilex-phis/index";
 
 @Component
 export default class ImageSearch extends Vue {

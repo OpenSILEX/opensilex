@@ -16,15 +16,11 @@
         "baseUrl": ".",
         "typeRoots": ["node_modules"],
         "types": [
-            "webpack-env",
-            "system"
+            "webpack-env"
         ],
         "paths": {
             "@/*": [
                 "src/*"
-            ],
-            "@/lib/*": [
-                "src/lib/*"
             ]
         },
         "lib": [
@@ -39,7 +35,7 @@
         "src/**/*.tsx",
         "src/**/*.vue",
         "tests/**/*.ts",
-        "tests/**/*.tsx", "shims-tsx.d.ts", "shims-vue.d.ts"
+        "tests/**/*.tsx"
     ],
     "exclude": [
         "node_modules"

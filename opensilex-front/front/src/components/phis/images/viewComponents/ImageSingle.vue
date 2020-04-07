@@ -17,9 +17,11 @@ import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import { EventBus } from "./../event-bus";
 import { Image } from "./../image";
-import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-import { ScientificObjectsService } from "../../../lib/api/scientificObjects.service";
-import { ScientificObjectDTO } from "../../../lib/model/scientificObjectDTO";
+import {
+  ScientificObjectsService,
+  ScientificObjectDTO
+} from "opensilex-phis/index";
+import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
 
 @Component
 export default class ImageSingle extends Vue {

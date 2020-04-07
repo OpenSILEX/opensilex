@@ -1,12 +1,12 @@
 
 <template>
     <div class="row">
-      <phis-ImageSingle
+      <phis2ws-ImageSingle
         v-for="(image, index) in images"
         v-bind:key="index"
         :image="image"
         :index="index"
-      ></phis-ImageSingle>
+      ></phis2ws-ImageSingle>
     </div>
 </template>
 

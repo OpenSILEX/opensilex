@@ -163,18 +163,10 @@
     <build>
         <plugins>
             <!-- Generate swagger.json file -->
-                
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>${maven.exec.plugin.version}</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.opensilex</groupId>
-                        <artifactId>opensilex-main</artifactId>
-                        <version>${revision}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             
             <!-- Generate TypeScript library from swagger.json file -->

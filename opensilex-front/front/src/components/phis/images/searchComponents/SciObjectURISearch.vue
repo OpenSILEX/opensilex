@@ -34,10 +34,9 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 
-import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-import { ScientificObjectsService } from "../../../lib/api/scientificObjects.service";
-import { ScientificObjectDTO } from "../../../lib/model/scientificObjectDTO";
 import { EventBus } from "./../event-bus";
+import { ScientificObjectsService, ScientificObjectDTO } from "opensilex-phis/index";
+import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
 
 @Component
 export default class SciObjectURISearch extends Vue {

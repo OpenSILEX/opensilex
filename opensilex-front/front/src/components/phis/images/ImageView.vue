@@ -13,7 +13,7 @@
     </b-button> <span class="beta" >(beta version, Firefox recommended)</span>
 
     <b-collapse id="collapse-1" v-model="showSearchComponent" class="mt-2">
-      <phis-ImageSearch @onSearchFormSubmit="onSearchFormSubmit"></phis-ImageSearch>
+      <phis2ws-ImageSearch @onSearchFormSubmit="onSearchFormSubmit"></phis2ws-ImageSearch>
     </b-collapse>
 
     <b-collapse id="collapse-2" v-model="showImageComponent" class="mt-2">
@@ -22,7 +22,7 @@
           Showed images: {{showedImages}}/{{totalImages}} (
           <b>Scroll to see more images</b>)
         </p>
-        <phis-ImageList :images="images"></phis-ImageList>
+        <phis2ws-ImageList :images="images"></phis2ws-ImageList>
 
         <div v-if="showScrollSpinner" class="d-flex align-items-center">
           <strong>Loading...</strong>
@@ -37,10 +37,9 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { DataService } from "../../lib/api/data.service";
-import { FileDescriptionDTO } from "../../lib/model/fileDescriptionDTO";
 import { Image } from "./image";
+import { DataService, FileDescriptionDTO } from "opensilex-phis/index";
+import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
 
 @Component
 export default class ImageView extends Vue {

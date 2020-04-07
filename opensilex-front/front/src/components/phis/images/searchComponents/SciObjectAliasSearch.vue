@@ -1,5 +1,5 @@
 <template>
-  <b-form-group label="Scientific Object Alias">
+  <b-form-group label="Search by Alias">
     <b-form-tags v-model="value" no-outer-focus class="mb-2">
       <template v-slot="{ tags, disabled }">
         <ul v-if="tags.length > 0" class="list-inline d-inline-block mb-2">
@@ -14,13 +14,13 @@
         </ul>
         <b-form-input
           v-model="search"
-          list="input-list"
-          id="input-with-list"
+          list="alias-input-list"
+          id="alias-input-with-list"
           placeholder="Enter Alias to search "
           autocomplete="off"
           @input="onWrite($event)"
         ></b-form-input>
-        <datalist id="input-list">
+        <datalist id="alias-input-list">
           <option v-for="option in options" :key="option">{{ option }}</option>
         </datalist>
       </template>
@@ -33,13 +33,12 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 
-import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-import { ScientificObjectsService } from "../../../lib/api/scientificObjects.service";
-import { ScientificObjectDTO } from "../../../lib/model/scientificObjectDTO";
 import { EventBus } from "./../event-bus";
+import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
+import { ScientificObjectDTO, ScientificObjectsService } from "opensilex-phis/index";
 
 @Component
-export default class ObjectSearch extends Vue {
+export default class SciObjectAliasSearch extends Vue {
   $opensilex: any;
   $store: any;
   get user() {
@@ -55,21 +54,19 @@ export default class ObjectSearch extends Vue {
   search = "";
   value = [];
   valueWithURI = {};
-  selectedValueWithUri = {};
 
   created() {
     this.options = [];
-
-     EventBus.$on("imageTypeSelected", type => {
-      this.selectedExperiment = null;
-      this.selectedSoType = null;
-      this.value = [];
-      this.options = [];
-      this.search = "";
-    });
-
+    // EventBus.$on("imageTypeSelected", type => {
+    //   this.selectedExperiment = null;
+    //   this.selectedSoType = null;
+    //   this.value = [];
+    //   this.options = [];
+    //   this.search = "";
+    // });
     EventBus.$on("experienceHasChanged", experience => {
       this.selectedExperiment = experience;
+      this.selectedSoType = null;
       this.value = [];
       this.options = [];
       this.search = "";
@@ -81,35 +78,36 @@ export default class ObjectSearch extends Vue {
       this.options = [];
       this.search = "";
     });
-
   }
 
   onChange(selectedValue) {
     console.log("onChange");
     this.value.push(selectedValue);
-    this.selectedValueWithUri = {};
+    console.log("Values: "+this.value); 
+    let uriValues =[];
     this.value.forEach(element => {
-      this.selectedValueWithUri[this.valueWithURI[element]] = element;
+      uriValues.push(this.valueWithURI[element]);
     });
     this.search = "";
-    EventBus.$emit("searchObjectSelected", this.selectedValueWithUri);
+    EventBus.$emit("aliasObjectSelected", uriValues);
   }
 
   onRemove(index) {
-    this.value.splice(index, 1);
-    this.selectedValueWithUri = {};
+    console.log("onRemove");
+    console.log("Values before: "+this.value);
+    this.value.splice(index, 1); 
+    console.log("Values: "+this.value); 
+    let uriValues =[];
     this.value.forEach(element => {
-      this.selectedValueWithUri[this.valueWithURI[element]] = element;
+      uriValues.push(this.valueWithURI[element]);
     });
-
     this.search = "";
-    EventBus.$emit("searchObjectSelected", this.selectedValueWithUri);
+    EventBus.$emit("aliasObjectSelected", uriValues);
   }
 
   onWrite(value) {
     if (this.options.includes(value)) {
       this.onChange(value);
-
     } else {
       this.alias = value;
       let service: ScientificObjectsService = this.$opensilex.getService(
@@ -121,7 +119,7 @@ export default class ObjectSearch extends Vue {
       if (this.selectedSoType === null) {
         this.selectedSoType = undefined;
       }
-      
+
       const result = service
         .getScientificObjectsBySearch(
           this.user.getAuthorizationHeader(),
@@ -164,6 +162,6 @@ export default class ObjectSearch extends Vue {
 
 <style scoped lang="scss">
 .badge-info {
-    background-color: #00A38D;
+  background-color: #00a38d;
 }
 </style>

@@ -14,11 +14,11 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-import { UriService } from "../../../lib/api/uri.service";
-import { Uri } from "../../../lib/model/uri";
 import VueRouter from "vue-router";
 import { EventBus } from "./../event-bus";
+import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
+import { Uri } from "opensilex-phis/model/uri";
+import { UriService } from "opensilex-phis/index";
 
 @Component
 export default class ImageTypeSearch extends Vue {

@@ -20,11 +20,10 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-import { ExperimentsService } from "../../../lib/api/experiments.service";
-import { Experiment } from "../../../lib/model/experiment";
 import VueRouter from "vue-router";
 import { EventBus } from "./../event-bus";
+import { ExperimentsService, Experiment } from "opensilex-phis/index";
+import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
 
 @Component
 export default class ExperimentSearch extends Vue {

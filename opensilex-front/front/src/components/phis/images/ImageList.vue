@@ -1,7 +1,7 @@
 <template>
     <div>
-        <phis-ImageGrid :images="images"></phis-ImageGrid>
-        <phis-ImageCarousel :images="images"></phis-ImageCarousel>
+        <phis2ws-ImageGrid :images="images"></phis2ws-ImageGrid>
+        <phis2ws-ImageCarousel :images="images"></phis2ws-ImageCarousel>
     </div>
 </template>
 

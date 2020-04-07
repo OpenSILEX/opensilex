@@ -155,7 +155,6 @@ variables:
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "mkdir -p $RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR; mkdir -p $RSYNC_INSTANCES_LOGS_PATH; mkdir -p $RSYNC_INSTANCES_LOGS_ARCHIVED; mkdir -p $RSYNC_INSTANCES_DATA_PATH/$REMOTE_SERVER_RSYNC_DIR;"
     - echo "Upload files"
     - rsync -arzv -e "ssh  -i ${HOME}/.ssh/id_rsa" $RSYNC_INSTANCES_OPTIONS  $CI_PROJECT_DIR/$OPENSILEX_APP_REVISION/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR
-    - echo "ls ${INTERNAL_CONFIGURATION_FILES_PATH}"
     - ls $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH
     - echo "scp -i ${HOME}/.ssh/id_rsa -o 'StrictHostKeyChecking no' $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH/* ${REMOTE_SERVER_RSYNC_ACCOUNT}@${REMOTE_SERVER_IP}:${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
     - scp -i ${HOME}/.ssh/id_rsa -o "StrictHostKeyChecking no" $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR
@@ -163,7 +162,8 @@ variables:
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "rm -f ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/.opensilex.dependencies"
     - echo "Check files"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "ls ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR};"
-    - echo "Restarting server with options ${OPENSILEX_START_SERVER_CMD}"
+    - echo "Restarting server ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar }"
+    - echo "Restarting with options ${OPENSILEX_START_SERVER_CMD}"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop $OPENSILEX_STOP_SERVER_CMD"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start $OPENSILEX_START_SERVER_CMD"
   except:
@@ -204,6 +204,28 @@ trigger:phis:deploy:test:
   needs: 
     - job: "opensilex:build"
 
+
+########################
+##  BUILD - GITLAB PAGES DOCS
+########################
+
+pages:
+  <<: *build_template_with_opensilex
+  script:
+    - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
+    - mvn install $MAVEN_CLI_OPTS
+    - cd $CI_PROJECT_DIR
+    - mvn install site $MAVEN_CLI_OPTS -Pwith-test-report -Pwith-security-check -DskipFrontBuild
+    - mkdir ../public
+    - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* public
+  artifacts:
+    paths:
+      - public
+  only:
+    refs:
+      - schedules
+    variables:
+      - $DEPLOY == "maven-doc"
 
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM
@@ -292,7 +314,7 @@ test:arnaud:deploy:
     - arnaud:build
 
 ###################################
-##  ARNAUD-TEST-BUILD-DEPLOYMENT
+##  JULIEN-TEST-BUILD-DEPLOYMENT
 ###################################
 
 julien:build:
@@ -372,6 +394,11 @@ test:vincent:deploy:
     - vincent
   needs:
     - vincent:build
+
+
+# ##########################################
+# ##  BUILD & DEPLOY FOR PARTNERS TEAMS
+# ##########################################
 
 ###################################
 ##  EPHESIA-TEST-BUILD-DEPLOYMENT

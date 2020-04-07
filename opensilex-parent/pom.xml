@@ -982,7 +982,6 @@
                             <services>
                                 <param>org.opensilex.OpenSilexModule</param>
                                 <param>org.opensilex.cli.OpenSilexCommand</param>
-                                <param>org.opensilex.module.OpenSilexModuleUpdate</param>
                             </services>
                         </configuration>
                     </execution>

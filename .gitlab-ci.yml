@@ -213,12 +213,13 @@ trigger:phis:deploy:test:
 pages:
   <<: *build_template_with_opensilex
   script:
+    - ln -s $JAVA_HOME java.home
     - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
     - mvn install $MAVEN_CLI_OPTS
     - cd $CI_PROJECT_DIR
     - mvn install site $MAVEN_CLI_OPTS -Pwith-test-report -Pwith-security-check -DskipFrontBuild
-    - mkdir public
-    - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* public
+    - mkdir ../public
+    - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* ../public
   artifacts:
     paths:
       - public

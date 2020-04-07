@@ -31,7 +31,7 @@ variables:
  OPENSILEX_BUILD_PATH: "opensilex-release/target"
  #APP DEPLOY CONFIG
  DEV_TOOLS_REPO_CONF_FILES_PATH: "instances-configuration"
- OPENSILEX_STOP_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
+ OPENSILEX_STOP_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=${REMOTE_SERVER_IP} --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
  OPENSILEX_START_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --port=$OPENSILEX_JAR_PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
  # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
  # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
@@ -163,7 +163,7 @@ variables:
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "rm -f ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/.opensilex.dependencies"
     - echo "Check files"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "ls ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR};"
-    - echo "Restart server java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar"
+    - echo "Restart server java -jar ${RSYNC_INSTANCES_BIN_PATH}/$REMOTE_SERVER_RSYNC_DIR}/opensilex.jar"
     - echo "Stop with options ${OPENSILEX_STOP_SERVER_CMD}"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop $OPENSILEX_STOP_SERVER_CMD"
     - echo "Start with options ${OPENSILEX_START_SERVER_CMD}"
@@ -303,7 +303,7 @@ test:arnaud:deploy:
     OPENSILEX_JAR_ADMIN_PORT: 4086
     OPENSILEX_JAR_PORT: 8086
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_IP: $REMOTE_TEST_SERVER_IP
     REMOTE_SERVER_RSYNC_DIR: "mistea/arnaud"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   only:
@@ -312,7 +312,7 @@ test:arnaud:deploy:
     - arnaud:build
   environment:
     name: $ARNAUD_DEV_ENV_NAME
-    url: $ARNAUD_DEV_ENV_URL
+    url: http://$$REMOTE_SERVER_IP:$$OPENSILEX_JAR_PORT
 
 ###################################
 ##  JULIEN-TEST-BUILD-DEPLOYMENT

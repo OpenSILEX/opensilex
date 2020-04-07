@@ -55,14 +55,6 @@ variables:
 .build:instance: &build_template_with_opensilex
   <<: *cache_dependencies
   before_script: 
-    - rm -r $CI_PROJECT_DIR/phis-ws
-    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/phis-ws.git --branch modularity
-    - |
-      if [ ! -z "$COMMIT_SHA_PHIS" ]; then
-        cd phis-ws
-        git checkout $COMMIT_SHA_PHIS
-        cd ..
-      fi    
   stage: build
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   except:
@@ -179,8 +171,8 @@ test:vincent:deploy:
     CONFIGURATION_FILES_PATH: "${DEV_TOOLS_CONFIGURATION_FILES_PATH}/mistea/vincent"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-    ADMIN_PORT: 4086
-    PORT: 8086
+    ADMIN_PORT: 4089
+    PORT: 8089
     PROJECT_ID: 403
     BRANCH: vincent
   only:

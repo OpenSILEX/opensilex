@@ -135,8 +135,7 @@ variables:
   script:
     - apk add curl git
     - rm -R $CI_PROJECT_DIR/opensilex-dev-tools
-    - echo "Cloning $DEV_BRANCH branch"
-    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-dev-tools.git --branch $DEV_BRANCH $CI_PROJECT_DIR/opensilex-dev-tools
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-dev-tools.git --branch master $CI_PROJECT_DIR/opensilex-dev-tools
     - ls $CI_PROJECT_DIR/opensilex-dev-tools
     # Directory details
     - ls $CI_PROJECT_DIR/$OPENSILEX_APP_REVISION
@@ -198,7 +197,6 @@ test:arnaud:deploy:
     REMOTE_SERVER_IP: "138.102.159.37"
     REMOTE_SERVER_RSYNC_DIR: "mistea/arnaud"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-    DEV_BRANCH: arnaud
   only:
     - arnaud
   needs:

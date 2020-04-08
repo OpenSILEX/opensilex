@@ -70,7 +70,8 @@
                 "external-ontologies" : "Ontologies de références",
                 "previous" : "Précédent",
                 "next" : "Suivant",
-                "done" : "Terminé"
+                "done" : "Terminer",
+                "cancel" : "Annuler"
             }
         },
         "header": {

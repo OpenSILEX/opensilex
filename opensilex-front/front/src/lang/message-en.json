@@ -72,7 +72,8 @@
                 "external-ontologies" : "External ontologies references",
                 "previous" : "Previous",
                 "next" : "Next",
-                "done" : "Done"
+                "done" : "Done",
+                "cancel" : "Cancel"
             }
         },
         "header": {

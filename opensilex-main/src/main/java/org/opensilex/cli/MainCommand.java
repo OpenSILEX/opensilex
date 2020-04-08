@@ -61,7 +61,7 @@ public class MainCommand extends CLIHelpPrinterCommand implements IVersionProvid
         CommandLine cli = getCLI(setup.getRemainingArgs(), null);
 
         // Avoid to start OpenSilex instance if only help is required
-        if (!cli.parseArgs(args).isUsageHelpRequested()) {
+        if (!cli.parseArgs(setup.getRemainingArgs()).isUsageHelpRequested()) {
             OpenSilex instance = OpenSilex.createInstance(setup);
             commands.forEach((OpenSilexCommand cmd) -> {
                 cmd.setOpenSilex(instance);

@@ -72,10 +72,38 @@ public interface ServerConfig {
 }
 ```
 
+Qui correspondrait au YAML suivant dans la configuration globale:
+
+```java
+my-module:
+    publicURI: http://example.com
+    availableLanguages: 
+        - en
+        -fr
+    tomcatSystemProperties:
+        p1: v1
+        p2: v2
+    enableAntiThreadLock: true
+```
+
 # Comment accéder à un paramètre de configuration ?
 
 Si le code où vous souhaitez utiliser ce paramètres est:
 - Un module
 - Un service
 - Une commande
+
+Ou que vous avez accès à des instances de ces objets, vous pouvez alors accèder à l'instance d'OpenSilex à l'aide de la méthode `getOpenSilex`.
+
+De là vous pouvez charger directement l'instance de configuration en connaissant sa classe et celle de son module:
+
+```java
+OpenSilex opensilex = obj.getOpenSilex();
+ServerConfig config = opensilex.getModuleConfig(MyModule.class, MyConfig.class);
+config.myParam(); // --> return parameter myParam value
+```
+
+# Quels osnt les types de données possibles comme paramètres
+
+## Valeurs primitives
 

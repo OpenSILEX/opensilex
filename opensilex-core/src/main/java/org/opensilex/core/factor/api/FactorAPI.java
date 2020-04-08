@@ -35,8 +35,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.factor.dal.FactorDAO;
 import org.opensilex.core.factor.dal.FactorModel;
-import org.opensilex.rest.authentication.ApiCredential;
-import org.opensilex.rest.authentication.ApiProtected;
+import org.opensilex.security.authentication.ApiCredential;
+import org.opensilex.security.authentication.ApiCredentialGroup;
+import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -52,8 +53,12 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author Arnaud Charleroy
  */
-@Api(value = "Factors")
+@Api(FactorAPI.CREDENTIAL_FACTOR_GROUP_ID)
 @Path("/core/factor")
+@ApiCredentialGroup(
+        groupId = FactorAPI.CREDENTIAL_FACTOR_GROUP_ID,
+        groupLabelKey = FactorAPI.CREDENTIAL_FACTOR_GROUP_LABEL_KEY
+)
 public class FactorAPI {
 
     public static final String FACTOR_EXAMPLE_URI = "http://opensilex/set/factors/ZA17";

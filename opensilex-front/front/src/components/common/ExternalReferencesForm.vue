@@ -2,6 +2,7 @@
   <div>
     <ValidationObserver ref="validatorRef">
       <b-form>
+        <p>{{$t('component.skos.link-external')}} : <em><strong>{{this.skosReferences.alias}}</strong></em> ({{this.skosReferences.uri}})</p>
         <b-card bg-variant="light">
           <div class="row">
             <div class="col">
@@ -51,7 +52,7 @@
                   ></b-form-select>
                   <div class="mt-3">
                     current selected relation:
-                    <strong>{{ (currentRelation == "") ? 'component.skos.norelation' : currentRelation }}</strong>
+                    <strong>{{ $t((currentRelation == "") ? 'component.skos.no-relation' : currentRelation) }}</strong>
                   </div>
                   <div class="error-message alert alert-danger">{{ errors[0] }}</div>
                 </ValidationProvider>

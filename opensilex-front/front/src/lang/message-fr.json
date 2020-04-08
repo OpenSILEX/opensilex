@@ -67,7 +67,7 @@
                 "form-step-errors" : "Certains champs sont requis avant de passer à l'étape suivante"
             },
             "form-wizard" :{
-                "external-ontologies" : "Ontologies de références",
+                "external-ontologies" : "(Optionnel) Ontologies de références",
                 "previous" : "Précédent",
                 "next" : "Suivant",
                 "done" : "Terminer",
@@ -256,9 +256,24 @@
             "closeMatch" : "Similaire",
             "broader" : "Plus général",
             "narrower" : "Plus spécifique",
-            "norelation" : "Sélectionner une relation",
-            "ontologies-references-label" :"Réferences ontologiques"
-
+            "no-relation" : "Sélectionner une relation",
+            "ontologies-references-label" :"Réferences ontologiques",
+            "link-external" :"Add external references to"
+        },
+        "germplasm": {
+            "uri": "URI du germplasm",
+            "uri-help": "Identifiant unique du germplasm",
+            "alias-placeholder": "Entrer le label du germplasm ",
+            "filter-placeholder": "Utiliser ce champ pour filtrer les germplasm",
+            "germplasm": "germplasm",
+            "add": "ajouter un germplasm",
+            "update": "meettre à jour un germplasm",
+            "alias": "alias",
+            "alias-help": "alias",
+            "form-alias-placeholder" : "Irrigation, Shading, Variety, etc.",
+            "errors": {
+                "germplasm-already-exists": "URI du germplasm déjà existant."
+            }
         }
     },
     "credential-groups": {

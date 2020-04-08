@@ -7,7 +7,6 @@
       {{title}}
     </template>
     <form-wizard
-      @on-loading="setLoading"
       @on-error="handleErrorMessage"
       ref="factorCreateFormWizard"
       shape="square"
@@ -17,7 +16,6 @@
       <h2 slot="title"></h2>
       <tab-content
         v-bind:title="$t('component.factor.form-wizard.general-informations')"
-        :before-change="checkBeforeSkosStep"
       >
         <ValidationObserver ref="validatorRef">
           <b-form>
@@ -98,29 +96,29 @@
       </tab-content>
       <tab-content v-bind:title="$t('component.common.form-wizard.external-ontologies')">
         <opensilex-ExternalReferencesForm :skosReferences="form"></opensilex-ExternalReferencesForm>
-        <b-button @click="onValidateData" variant="success">{{$t('component.skos.update')}}</b-button>
       </tab-content>
       <template slot="footer" slot-scope="props">
-        <div class="wizard-footer-left">
-          <wizard-button
-            v-if="props.activeTabIndex > 0 && !props.isLastStep"
-            @click.native="props.prevTab()"
-            :style="props.fillButtonStyle"
-          >{{$t('component.common.form-wizard.previous')}}</wizard-button>
-        </div>
+        
+  
         <div class="wizard-footer-right">
-          <wizard-button
+          <b-button
+            variant="secondary"
+            v-if="props.activeTabIndex == 0 && !props.isLastStep"
+            @click="hideForm"
+          >{{$t('component.common.form-wizard.cancel')}}</b-button>
+    
+          <b-button
+            variant="primary"
             v-if="!props.isLastStep"
-            @click.native="props.nextTab()"
-            class="wizard-footer-right"
-            :style="props.fillButtonStyle"
-          >{{$t( editMode ? 'component.factor.update' : 'component.factor.add')}}</wizard-button>
-          <wizard-button
+            @click="checkBeforeSkosStep"
+          >{{$t( editMode ? 'component.factor.update' : 'component.factor.add')}}</b-button>
+          <!-- {{$t('component.common.ok')}} -->
+          <b-button
             v-else
-            @click.native="hideForm"
-            class="wizard-footer-right finish-button"
-            :style="props.fillButtonStyle"
-          >{{props.isLastStep ? 'component.common.form-wizard.done' : 'component.common.form-wizard.next'}}</wizard-button>
+            variant="primary"
+            @click="onValidateData"
+          >{{$t(props.isLastStep ? 'component.skos.update' : 'component.common.form-wizard.next')}}</b-button>
+          <b-button v-if="props.isLastStep" @click="hideForm" variant="secondary">{{$t('component.common.form-wizard.done')}}</b-button>
         </div>
       </template>
     </form-wizard>
@@ -128,6 +126,10 @@
 </template>
 
 <script lang="ts">
+
+// remove on loading on form wizard
+// @on-loading="setLoading"
+
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import { FactorCreationDTO } from "opensilex-core/index";
@@ -271,23 +273,23 @@ export default class FactorForm extends Vue {
   async checkBeforeSkosStep() {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        this.setLoading(true);
+        // this.setLoading(true);
         this.validateForm().then(isValid => {
           if (isValid) {
             this.onValidateData()
               .then(() => {
                 this.editMode = true;
                 this.uriGenerated = true;
-                this.title = this.$t("component.factor.update").toString();
-                this
+                let factorCreateFormWizard: any = this.$refs.factorCreateFormWizard;
+                factorCreateFormWizard.nextTab();
                 resolve(true);
               })
               .catch(error => {
                 if (error.status == 409) {
-                  console.error("factorLevel already exists", error);
+                  console.error("factor already exists", error);
                   this.$opensilex.errorHandler(
                     error,
-                    this.$i18n.t("component.factorLevel.errors.already-exists")
+                    this.$i18n.t("component.factor.errors.already-exists")
                   );
                 } else {
                   this.$opensilex.errorHandler(error);
@@ -298,7 +300,7 @@ export default class FactorForm extends Vue {
             reject();
           }
         });
-        this.setLoading(false);
+        // this.setLoading(false);
       }, 400);
     });
   }
@@ -306,52 +308,52 @@ export default class FactorForm extends Vue {
 </script>
 
 <style scoped lang="scss">
-span.error {
-  color: #e74c3c;
-  font-size: 20px;
-  display: flex;
-  justify-content: center;
-}
-/* This is a css loader. It's not related to vue-form-wizard */
-.loader,
-.loader:after {
-  border-radius: 50%;
-  width: 10em;
-  height: 10em;
-}
-.loader {
-  margin: 60px auto;
-  font-size: 10px;
-  position: relative;
-  text-indent: -9999em;
-  border-top: 1.1em solid rgba(255, 255, 255, 0.2);
-  border-right: 1.1em solid rgba(255, 255, 255, 0.2);
-  border-bottom: 1.1em solid rgba(255, 255, 255, 0.2);
-  border-left: 1.1em solid #00a38d;
-  -webkit-transform: translateZ(0);
-  -ms-transform: translateZ(0);
-  transform: translateZ(0);
-  -webkit-animation: load8 1.1s infinite linear;
-  animation: load8 1.1s infinite linear;
-}
-@-webkit-keyframes load8 {
-  0% {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-@keyframes load8 {
-  0% {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
+// span.error {
+//   color: #e74c3c;
+//   font-size: 20px;
+//   display: flex;
+//   justify-content: center;
+// }
+// /* This is a css loader. It's not related to vue-form-wizard */
+// .loader,
+// .loader:after {
+//   border-radius: 50%;
+//   width: 10em;
+//   height: 10em;
+// }
+// .loader {
+//   margin: 60px auto;
+//   font-size: 10px;
+//   position: relative;
+//   text-indent: -9999em;
+//   border-top: 1.1em solid rgba(255, 255, 255, 0.2);
+//   border-right: 1.1em solid rgba(255, 255, 255, 0.2);
+//   border-bottom: 1.1em solid rgba(255, 255, 255, 0.2);
+//   border-left: 1.1em solid #00a38d;
+//   -webkit-transform: translateZ(0);
+//   -ms-transform: translateZ(0);
+//   transform: translateZ(0);
+//   -webkit-animation: load8 1.1s infinite linear;
+//   animation: load8 1.1s infinite linear;
+// }
+// @-webkit-keyframes load8 {
+//   0% {
+//     -webkit-transform: rotate(0deg);
+//     transform: rotate(0deg);
+//   }
+//   100% {
+//     -webkit-transform: rotate(360deg);
+//     transform: rotate(360deg);
+//   }
+// }
+// @keyframes load8 {
+//   0% {
+//     -webkit-transform: rotate(0deg);
+//     transform: rotate(0deg);
+//   }
+//   100% {
+//     -webkit-transform: rotate(360deg);
+//     transform: rotate(360deg);
+//   }
+// }
 </style>

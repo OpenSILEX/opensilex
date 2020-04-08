@@ -21,7 +21,7 @@
                     v-for="externalOntologyRef in externalOntologiesRefs"
                     :key="externalOntologyRef.label"
                   >
-                    <a
+                    <a target="_blank"
                       v-bind:title="externalOntologyRef.label"
                       v-bind:href="externalOntologyRef.link"
                       v-b-tooltip.v-info.hover.left="externalOntologyRef.description"

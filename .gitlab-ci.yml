@@ -213,7 +213,7 @@ trigger:phis:deploy:test:
 ########################
 
 ##  BUILD TEMPLATE
-.test:build: &test_build
+.test:build: &test_build:on-schedules
   <<: *cache_dependencies
   before_script: 
     -  if [ -z "$JAVA_VERSION" ]; then echo "Missing JAVA_VERSION variable"; exit 1; fi
@@ -252,26 +252,26 @@ trigger:phis:deploy:test:
 
 test:build:java8:
   <<: *java8
-  <<: *test_build 
+  <<: *test_build:on-schedules 
   
 test:build:java11:
   <<: *java11
-  <<: *test_build 
+  <<: *test_build:on-schedules 
 
 test:build:java13:
   <<: *java13
-  <<: *test_build 
+  <<: *test_build:on-schedules 
 
 test:build:java14:
   <<: *java14
-  <<: *test_build
+  <<: *test_build:on-schedules
 
 ########################
 ##  BUILD - GITLAB PAGES DOCS
 ########################
 
 pages:
-  <<: *test_build
+  <<: *test_build:on-schedules
   script:
     - ln -s $JAVA_HOME java.home
     - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
@@ -283,8 +283,6 @@ pages:
   artifacts:
     paths:
       - public
-  only:
-    - schedules
 
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM

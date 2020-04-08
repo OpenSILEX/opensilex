@@ -208,6 +208,65 @@ trigger:phis:deploy:test:
   needs: 
     - job: "opensilex:build"
 
+########################
+##  BUILD - TESTS WITH DIFFERENT MAVEN VERSIONS
+########################
+
+##  BUILD TEMPLATE
+.test:build: &test_build
+  <<: *cache_dependencies
+  before_script: 
+    -  if [ -z "$JAVA_VERSION" ]; then echo "Missing JAVA_VERSION variable"; exit 1; fi
+    -  if [ -z "$MVN_VERSION" ]; then echo "Missing MVN_VERSION variable"; exit 1; fi
+    - echo "with_java $JAVA_VERSION and maven $MVN_VERSION with latest version of OpenSILEX/opensilex-dev"
+  stage: build
+  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
+  except:
+    - schedules
+  script:
+    - mvn install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
+    - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
+    - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $OPENSILEX_APP_REVISION
+  only:
+    - schedules
+
+##  BUILD VERSIONS # example https://gitlab.com/gitlab-org/gitlab-foss/issues/13755
+
+.with_java8: &java8
+  variables: 
+    JAVA_VERSION: 8
+  
+.with_java11: &java11
+  variables: 
+    JAVA_VERSION: 11
+ 
+.with_java13: &java13
+  before_script:
+    - yum install -y git  
+  variables: 
+    JAVA_VERSION: 13
+ 
+.with_java14: &java14
+  before_script:
+    - yum install -y git  
+  variables:
+    JAVA_VERSION: 14
+
+test:build:java8:
+  <<: *java8
+  <<: *test_build 
+  
+test:build:java11:
+  <<: *java11
+  <<: *test_build 
+
+test:build:java13:
+  <<: *java13
+  <<: *test_build 
+
+test:build:java14:
+  <<: *java14
+  <<: *test_build
 
 ########################
 ##  BUILD - GITLAB PAGES DOCS
@@ -221,8 +280,8 @@ pages:
     - mvn install $MAVEN_CLI_OPTS
     - cd $CI_PROJECT_DIR
     - mvn install site $MAVEN_CLI_OPTS -Pwith-test-report -Pwith-security-check -DskipFrontBuild
-    - mkdir ../public
-    - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* ../public
+    - mkdir public
+    - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* public
   artifacts:
     paths:
       - public

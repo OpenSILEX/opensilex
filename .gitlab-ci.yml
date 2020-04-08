@@ -221,8 +221,6 @@ trigger:phis:deploy:test:
     - echo "with_java $JAVA_VERSION and maven $MVN_VERSION with latest version of OpenSILEX/opensilex-dev"
   stage: build
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
-  except:
-    - schedules
   script:
     - mvn install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
@@ -273,7 +271,7 @@ test:build:java14:
 ########################
 
 pages:
-  <<: *build_template_with_opensilex
+  <<: *test_build
   script:
     - ln -s $JAVA_HOME java.home
     - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin

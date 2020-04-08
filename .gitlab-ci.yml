@@ -213,7 +213,7 @@ trigger:phis:deploy:test:
 ########################
 
 ##  BUILD TEMPLATE
-.test:build: &test_build_on_schedules
+.test:build: &test_build
   <<: *cache_dependencies
   before_script: 
     -  if [ -z "$JAVA_VERSION" ]; then echo "Missing JAVA_VERSION variable"; exit 1; fi
@@ -221,6 +221,8 @@ trigger:phis:deploy:test:
     - echo "with_java $JAVA_VERSION and maven $MVN_VERSION with latest version of OpenSILEX/opensilex-dev"
   stage: build
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
+  except:
+    - schedules
   script:
     - mvn install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
@@ -252,37 +254,19 @@ trigger:phis:deploy:test:
 
 test:build:java8:
   <<: *java8
-  <<: *test_build_on_schedules 
+  <<: *test_build 
   
 test:build:java11:
   <<: *java11
-  <<: *test_build_on_schedules 
+  <<: *test_build 
 
 test:build:java13:
   <<: *java13
-  <<: *test_build_on_schedules 
+  <<: *test_build 
 
 test:build:java14:
   <<: *java14
-  <<: *test_build_on_schedules
-
-########################
-##  BUILD - GITLAB PAGES DOCS
-########################
-
-pages:
-  <<: *test_build_on_schedules
-  script:
-    - ln -s $JAVA_HOME java.home
-    - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
-    - mvn install $MAVEN_CLI_OPTS
-    - cd $CI_PROJECT_DIR
-    - mvn install site $MAVEN_CLI_OPTS -Pwith-test-report -Pwith-security-check -DskipFrontBuild
-    - mkdir public
-    - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* public
-  artifacts:
-    paths:
-      - public
+  <<: *test_build
 
 ########################
 ##  BUILD - GITLAB PAGES DOCS
@@ -296,8 +280,8 @@ pages:
     - mvn install $MAVEN_CLI_OPTS
     - cd $CI_PROJECT_DIR
     - mvn install site $MAVEN_CLI_OPTS -Pwith-test-report -Pwith-security-check -DskipFrontBuild
-    - mkdir ../public
-    - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* ../public
+    - mkdir public
+    - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* public
   artifacts:
     paths:
       - public

@@ -14,7 +14,6 @@ import java.net.URI;
 import java.util.List;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.OA;
-import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.extensions.LoginExtension;
 import org.opensilex.security.group.dal.GroupDAO;
 import org.opensilex.security.user.dal.UserModel;
@@ -65,7 +64,6 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
 
     @Override
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
-        SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
         list.add(new OntologyFileDefinition(
                 OA.NS,
@@ -89,13 +87,12 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
     }
 
     @Override
-    public void startup() throws Exception {
+    public void setup() throws Exception {
         SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         SPARQLServiceFactory factory = sparqlConfig.sparql();
         if (factory instanceof RDF4JInMemoryServiceFactory) {
-            install(false);
+           
         }
-        SPARQLService.addPrefix(SecurityOntology.PREFIX, SecurityOntology.NAMESPACE);
 
     }
 }

@@ -13,7 +13,6 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.Set;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -41,8 +40,6 @@ import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.opensilex.OpenSilex;
 import org.opensilex.service.ServiceDefaultDefinition;
-import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.utils.ClassUtils;
@@ -100,7 +97,7 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
         return config.timeout();
     }
 
-    private synchronized SPARQLService getNewService() throws Exception {
+    protected synchronized SPARQLService getNewService() throws Exception {
         RepositoryConnection connection = repository.getConnection();
         if (cm != null && LOGGER.isDebugEnabled()) {
             PoolStats stats = cm.getTotalStats();
@@ -119,8 +116,7 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
         sparql.setOpenSilex(getOpenSilex());
         sparql.setMapperIndex(getMapperIndex());
         sparql.setDefaultLang(getDefaultLanguage());
-        sparql.startup();
-
+        sparql.setup();
         return sparql;
     }
 

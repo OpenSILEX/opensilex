@@ -53,20 +53,26 @@ public class MainCommand extends CLIHelpPrinterCommand implements IVersionProvid
         // - OpenSilex.PROFILE_ID --> Laucnh profile of the application
         // - OpenSilex.CONFIG_FILE --> Main configuration file
         // - OpenSilex.DEBUG --> Debug flag
-        OpenSilexSetup setup = OpenSilex.createSetup(args);
-
         LOGGER.info("Create OpenSilex instance from command line");
-        OpenSilex opensilex = OpenSilex.createInstance(setup, true, false);
+        OpenSilexSetup setup = OpenSilex.createSetup(args);
+        for (String s : setup.getRemainingArgs()) {
+            LOGGER.warn(s);
+        }
+        CommandLine cli = getCLI(setup.getRemainingArgs(), null);
 
-        String[] remainingArgs = setup.getRemainingArgs();
-        run(remainingArgs, opensilex);
+        // Avoid to start OpenSilex instance if only help is required
+        if (!cli.parseArgs(args).isUsageHelpRequested()) {
+            OpenSilex instance = OpenSilex.createInstance(setup);
+            commands.forEach((OpenSilexCommand cmd) -> {
+                cmd.setOpenSilex(instance);
+            });
+        }
+        cli.execute(setup.getRemainingArgs());
     }
 
-    private static OpenSilex opensilex;
+    private static ServiceLoader<OpenSilexCommand> commands;
 
-    public static void run(String[] args, OpenSilex opensilex) throws Exception {
-        MainCommand.opensilex = opensilex;
-
+    public static CommandLine getCLI(String[] args, OpenSilex instance) {
         // If no arguments assume help is requested
         if (args.length == 0) {
             args = new String[]{"--help"};
@@ -76,23 +82,20 @@ public class MainCommand extends CLIHelpPrinterCommand implements IVersionProvid
         CommandLine cli = new CommandLine(new MainCommand());
 
         // Register all commands contained in OpenSilex modules
-        ServiceLoader.load(OpenSilexCommand.class, OpenSilex.getClassLoader())
-                .forEach((OpenSilexCommand cmd) -> {
-                    cmd.setOpenSilex(opensilex);
-                    Command cmdDef = cmd.getClass().getAnnotation(CommandLine.Command.class);
-                    cli.addSubcommand(cmdDef.name(), cmd);
-                });
+        commands = ServiceLoader.load(OpenSilexCommand.class, OpenSilex.getClassLoader());
+
+        commands.forEach((OpenSilexCommand cmd) -> {
+            if (instance != null) {
+                cmd.setOpenSilex(instance);
+            }
+            Command cmdDef = cmd.getClass().getAnnotation(CommandLine.Command.class);
+            cli.addSubcommand(cmdDef.name(), cmd);
+        });
 
         // Define the help factory class
         cli.setHelpFactory(new CLIHelpFactory());
 
-        // Avoid to start OpenSilex instance if only help is required
-        if (!cli.parseArgs(args).isUsageHelpRequested()) {
-            opensilex.startupIfNeed();
-        }
-
-        // Run actual commands
-        cli.execute(args);
+        return cli;
     }
 
     /**
@@ -107,7 +110,7 @@ public class MainCommand extends CLIHelpPrinterCommand implements IVersionProvid
         List<String> versionList = new ArrayList<>();
 
         // Add version in list for all modules
-        opensilex.getModules().forEach((OpenSilexModule module) -> {
+        getOpenSilex().getModules().forEach((OpenSilexModule module) -> {
             versionList.add(module.getClass().getCanonicalName() + ": " + module.getOpenSilexVersion());
         });
         String[] versionListArray = new String[versionList.size()];

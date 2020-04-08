@@ -58,9 +58,9 @@ public class RestApplication extends ResourceConfig {
     /**
      * Reference to the main application
      */
-    private OpenSilex app;
+    private OpenSilex opensilex;
 
-    public RestApplication(@Context ServletContext ctx) {
+    public RestApplication(@Context ServletContext ctx) throws Exception {
         this((OpenSilex) ctx.getAttribute("opensilex"));
     }
 
@@ -77,8 +77,8 @@ public class RestApplication extends ResourceConfig {
      *
      * @param app OpenSilex instance
      */
-    public RestApplication(OpenSilex app) {
-        this.app = app;
+    public RestApplication(OpenSilex opensilex) throws Exception {
+        this.opensilex = opensilex;
 
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
         property(ServerProperties.WADL_FEATURE_DISABLE, true);
@@ -142,7 +142,7 @@ public class RestApplication extends ResourceConfig {
         BeanConfig beanConfig = new BeanConfig();
         ;
         try {
-            beanConfig.setVersion(app.getModuleByClass(ServerModule.class).getOpenSilexVersion());
+            beanConfig.setVersion(opensilex.getModuleByClass(ServerModule.class).getOpenSilexVersion());
         } catch (OpenSilexModuleNotFoundException ex) {
             LOGGER.warn("Error while getting API version", ex);
         }
@@ -158,7 +158,7 @@ public class RestApplication extends ResourceConfig {
      * @return List of modules as APIExtension
      */
     private List<APIExtension> getAPIExtensionModules() {
-        return app.getModulesImplementingInterface(APIExtension.class);
+        return opensilex.getModulesImplementingInterface(APIExtension.class);
     }
 
     /**
@@ -178,15 +178,15 @@ public class RestApplication extends ResourceConfig {
             @SuppressWarnings("unchecked")
             protected void configure() {
                 // Make opensilex instance injectable
-                bind(app).to(OpenSilex.class);
+                bind(opensilex).to(OpenSilex.class);
 
                 // Make every module injectable
-                for (OpenSilexModule module : app.getModules()) {
+                for (OpenSilexModule module : opensilex.getModules()) {
                     bind(module).to((Class<? super OpenSilexModule>) module.getClass());
                 }
 
                 // Make every service injectable
-                app.getServiceManager().forEachInterface((Class<? extends Service> serviceClass, Map<String, Service> implementations) -> {
+                opensilex.getServiceManager().forEachInterface((Class<? extends Service> serviceClass, Map<String, Service> implementations) -> {
                     implementations.forEach((String name, Service implementation) -> {
                         if (implementation instanceof ServiceFactory) {
                             ServiceFactory<? extends Service> factory = (ServiceFactory<? extends Service>) implementation;

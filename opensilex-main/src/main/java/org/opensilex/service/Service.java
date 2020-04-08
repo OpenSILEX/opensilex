@@ -14,6 +14,10 @@ import org.opensilex.utils.ClassUtils;
  */
 public interface Service {
 
+    public default void setup() throws Exception {
+
+    }
+
     public default void startup() throws Exception {
 
     }

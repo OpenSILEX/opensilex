@@ -55,8 +55,13 @@ public class NoSQLService extends BaseService implements NoSQLConnection, Servic
     }
 
     @Override
-    public void startup() throws Exception {
+    public void setup() throws Exception {
         connection.setOpenSilex(getOpenSilex());
+        connection.setup();
+    }
+
+    @Override
+    public void startup() throws Exception {
         connection.startup();
     }
 

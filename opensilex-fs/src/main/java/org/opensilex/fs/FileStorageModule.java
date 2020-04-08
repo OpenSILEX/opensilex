@@ -31,7 +31,7 @@ public class FileStorageModule extends OpenSilexModule {
     }
 
     @Override
-    public void startup() throws Exception {
+    public void setup() throws Exception {
         FileStorageService fs = getOpenSilex().getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
         String basePath = ((FileStorageConfig) getConfig()).storageBasePath();
         LOGGER.debug("Setup base storage path: " + basePath);

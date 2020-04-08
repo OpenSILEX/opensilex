@@ -119,8 +119,6 @@ public class OpenSilex {
      */
     private Thread SHUTDOWN_HOOK;
 
-    private boolean initialized = false;
-
     /**
      * <pre>
      * Main method to setup Opensilex instance based on command line arguments,
@@ -257,46 +255,39 @@ public class OpenSilex {
         return createInstance(args, false, false);
     }
 
-    public static OpenSilex createInstance(String[] args, boolean manualStartup, boolean moduleJarReflection) throws Exception {
-        return createInstance(createSetup(args), manualStartup, moduleJarReflection);
+    public static OpenSilex createInstance(OpenSilexSetup setup) throws Exception {
+        return createInstance(setup, false, false);
     }
 
-    public static OpenSilex createInstance(Map<String, String> args, boolean manualStartup, boolean moduleJarReflection) throws Exception {
+    public static OpenSilex createInstance(String[] args, boolean manualServiceStartup, boolean moduleJarReflection) throws Exception {
+        return createInstance(createSetup(args), manualServiceStartup, moduleJarReflection);
+    }
+
+    public static OpenSilex createInstance(Map<String, String> args, boolean manualServiceStartup, boolean moduleJarReflection) throws Exception {
         List<String> argsList = new ArrayList<>();
         args.forEach((String key, String value) -> {
             argsList.add("--" + key + "=" + value);
         });
 
-        return createInstance(argsList.toArray(new String[0]), manualStartup, moduleJarReflection);
+        return createInstance(argsList.toArray(new String[0]), manualServiceStartup, moduleJarReflection);
     }
 
-    public static OpenSilex createInstance(OpenSilexSetup setup, boolean manualStartup, boolean moduleJarReflection) throws Exception {
+    public static OpenSilex createInstance(OpenSilexSetup setup, boolean manualServiceStartup, boolean moduleJarReflection) throws Exception {
         try {
             LOGGER.debug("Build instance, services and modules");
             OpenSilex instance = buildInstance(setup, moduleJarReflection);
-            for (Service service : instance.serviceManager.getServices().values()) {
-                service.setOpenSilex(instance);
-            }
-            for (OpenSilexModule module : instance.getModules()) {
-                module.setOpenSilex(instance);
-            }
             LOGGER.debug("Instance build complete");
 
-            if (!manualStartup) {
-                LOGGER.debug("Initialize instance");
-                instance.startup();
-                LOGGER.debug("Instance initialized");
-            }
+            LOGGER.debug("Initialize instance");
+            instance.startup(manualServiceStartup);
+            LOGGER.debug("Instance initialized");
 
             return instance;
+
         } catch (Exception ex) {
             LOGGER.error("Fail to create and initialize OpenSILEX instance", ex);
             throw ex;
         }
-    }
-
-    public boolean isInitialized() {
-        return initialized;
     }
 
     /**
@@ -341,7 +332,8 @@ public class OpenSilex {
 
         LOGGER.debug("Create modules manager");
         DependencyManager dependencyManager = new DependencyManager(
-                ClassUtils.getPomFile(OpenSilex.class, "org.opensilex", "opensilex-main")
+                ClassUtils.getPomFile(OpenSilex.class,
+                        "org.opensilex", "opensilex-main")
         );
         OpenSilexModuleManager modManager = new OpenSilexModuleManager(dependencyManager, setup.getBaseDirectory(), sysConfig, moduleJarReflection);
 
@@ -357,7 +349,7 @@ public class OpenSilex {
         LOGGER.debug("Load modules configuration");
         modManager.loadConfigs(cfgManager);
 
-        LOGGER.debug("Load modules services");
+        LOGGER.debug("Resgister modules services");
         ServiceManager srvManager = new ServiceManager();
         modManager.registerServices(srvManager);
 
@@ -470,23 +462,11 @@ public class OpenSilex {
         this.setup = setup;
     }
 
-    public void startupIfNeed() throws Exception {
-        if (isInitialized()) {
-            startup();
-        }
+    public void startup() throws Exception {
+        startup(false);
     }
 
-    /**
-     * <pre>
-     * Initialize application
-     *
-     * Load all modules and their configuration
-     * Load services and initialize them
-     * Setup cleaning call for modules on application shutdown
-     * </pre>
-     */
-    private void startup() throws Exception {
-
+    public void startup(boolean manualServiceStartup) throws Exception {
         // Add hook to clean modules on shutdown
         if (SHUTDOWN_HOOK != null) {
             Runtime.getRuntime().removeShutdownHook(SHUTDOWN_HOOK);
@@ -505,11 +485,23 @@ public class OpenSilex {
 
         LOGGER.debug("Current expanded configuration:" + getExpandedYAMLConfig());
 
-        LOGGER.debug("Startup modules");
+        LOGGER.debug("Setup modules");
+        for (OpenSilexModule module : getModules()) {
+            module.setOpenSilex(this);
+            module.setup();
+        }
+        LOGGER.debug("Setup Services");
+        for (Service service : serviceManager.getServices().values()) {
+            service.setOpenSilex(this);
+            service.setup();
+        }
 
-        moduleManager.startup(this);
-
-        initialized = true;
+        LOGGER.debug("Start services");
+        if (!manualServiceStartup) {
+            for (Service service : serviceManager.getServices().values()) {
+                service.startup();
+            }
+        }
     }
 
     /**
@@ -518,9 +510,17 @@ public class OpenSilex {
      * @throws Exception
      */
     public void shutdown() throws Exception {
-        LOGGER.debug("Shutdown modules");
-        moduleManager.shutdown();
-        initialized = false;
+        LOGGER.debug("Shutdown instance");
+
+        for (Service service : serviceManager.getServices().values()) {
+            service.shutdown();
+        };
+
+        // Clean all modules
+        for (OpenSilexModule module : getModules()) {
+            module.clean();
+        }
+
     }
 
     /**
@@ -707,6 +707,10 @@ public class OpenSilex {
 
     public static InputStream getResourceAsStream(String name) {
         return getClassLoader().getResourceAsStream(name);
+    }
+
+    public String[] getRemainingArgs() {
+        return setup.getRemainingArgs();
     }
 
     public File getConfigFile() {

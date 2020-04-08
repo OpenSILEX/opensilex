@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import org.opensilex.OpenSilex;
 
 /**
  *
@@ -39,6 +40,8 @@ public class ServiceManager {
 
     @SuppressWarnings("unchecked")
     public <T extends Service> T getServiceInstance(String name, Class<T> serviceInterface) {
-        return (T) serviceByNameRegistry.get(name);
+        T service = (T) serviceByNameRegistry.get(name);
+        
+        return service;
     }
 }

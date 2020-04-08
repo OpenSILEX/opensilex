@@ -11,13 +11,11 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.model.A;
 import org.opensilex.sparql.model.B;
 import org.opensilex.sparql.model.TEST_ONTOLOGY;
-import org.opensilex.sparql.service.SPARQLService;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -33,6 +31,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.C;
 import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.unit.test.AbstractUnitTest;
 
 /**
@@ -41,25 +40,18 @@ import org.opensilex.unit.test.AbstractUnitTest;
  */
 public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
-    protected static SPARQLService service;
+    protected static SPARQLService sparql;
+
     protected static SPARQLModule sparqlModule;
 
-    public static void initialize(SPARQLService service) throws Exception {
-        SPARQLServiceTest.service = service;
-        SPARQLServiceTest.sparqlModule = new SPARQLModule();
+    public static void initialize() throws Exception {
+        sparqlModule = opensilex.getModuleByClass(SPARQLModule.class);
 
         InputStream ontology = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.FILE_PATH.toString());
-        service.loadOntology(sparqlModule.getPlatformURI(), ontology, TEST_ONTOLOGY.FILE_FORMAT);
+        sparql.loadOntology(sparqlModule.getBaseURI(), ontology, TEST_ONTOLOGY.FILE_FORMAT);
 
         InputStream ontologyData = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.DATA_FILE_PATH.toString());
-        service.loadOntology(sparqlModule.getPlatformDomainGraphURI("data"), ontologyData, TEST_ONTOLOGY.DATA_FILE_FORMAT);
-    }
-
-    @AfterClass
-    public static void destroy() throws Exception {
-        service.clearGraph(sparqlModule.getPlatformURI());
-        service.clearGraph(sparqlModule.getPlatformDomainGraphURI("data"));
-        service.shutdown();
+        sparql.loadOntology(sparqlModule.getSuffixedURI("data"), ontologyData, TEST_ONTOLOGY.DATA_FILE_FORMAT);
     }
 
     @Test
@@ -72,14 +64,14 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         Node owlClassNode = NodeFactory.createURI(OWL.CLASS.stringValue());
         AskBuilder askQuery = new AskBuilder();
         askQuery.addWhere(clazz, RDF.type, owlClassNode);
-        boolean classExists = service.executeAskQuery(askQuery);
+        boolean classExists = sparql.executeAskQuery(askQuery);
         assertTrue("Class " + clazz.getLocalName() + " must exists in test ontology", classExists);
     }
 
     @Test
     public void testGetByURI() throws Exception {
         URI aURI = new URI("http://test.opensilex.org/a/001");
-        A a = service.getByURI(A.class, aURI, null);
+        A a = sparql.getByURI(A.class, aURI, null);
 
         assertEquals("Instance URI must be the same", aURI, a.getUri());
 
@@ -130,9 +122,9 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         a.setBool(true);
         a.setCharVar('V');
 
-        service.create(a);
+        sparql.create(a);
 
-        A selectedA = service.getByURI(A.class, aURI, null);
+        A selectedA = sparql.getByURI(A.class, aURI, null);
 
         assertEquals("Instance URI must be the same", aURI, selectedA.getUri());
         assertEquals("bool field values must be the same", true, selectedA.isBool());
@@ -151,9 +143,9 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         stringList.add("V2");
         b.setStringList(stringList);
 
-        service.create(b);
+        sparql.create(b);
 
-        B selectedB = service.getByURI(B.class, bURI, null);
+        B selectedB = sparql.getByURI(B.class, bURI, null);
 
         assertEquals("Instance URI must be the same", bURI, selectedB.getUri());
         assertEquals("B.getStringList size should match inserted triple count", stringList.size(), selectedB.getStringList().size());
@@ -167,13 +159,13 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         a.setBool(true);
         a.setCharVar('V');
 
-        service.create(a);
+        sparql.create(a);
 
-        A selectedA = service.getByURI(A.class, aURI, null);
+        A selectedA = sparql.getByURI(A.class, aURI, null);
         assertEquals("Instance URI must be the same", aURI, selectedA.getUri());
 
-        service.delete(A.class, aURI);
-        assertNull("Object must be null after deletion", service.getByURI(A.class, aURI, null));
+        sparql.delete(A.class, aURI);
+        assertNull("Object must be null after deletion", sparql.getByURI(A.class, aURI, null));
     }
 
     @Test
@@ -185,9 +177,9 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         a.setCharVar('V');
         a.setInteger(5);
 
-        service.create(a);
+        sparql.create(a);
 
-        A selectedA = service.getByURI(A.class, aURI, null);
+        A selectedA = sparql.getByURI(A.class, aURI, null);
         assertEquals("Instance URI must be the same", aURI, selectedA.getUri());
         assertEquals("A.isBool Method should return the selected boolean", Boolean.TRUE, selectedA.isBool());
         assertEquals("A.getCharVar Method should return the selected char", 'V', (char) selectedA.getCharVar());
@@ -197,9 +189,9 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         a.setCharVar('N');
         a.setInteger(null);
 
-        service.update(a);
+        sparql.update(a);
 
-        A updatedA = service.getByURI(A.class, aURI, null);
+        A updatedA = sparql.getByURI(A.class, aURI, null);
         assertEquals("Instance URI must be the same", aURI, updatedA.getUri());
         assertEquals("A.isBool Method should return the updated boolean", Boolean.FALSE, updatedA.isBool());
         assertEquals("A.getCharVar Method should return the updated char", Character.valueOf('N'), updatedA.getCharVar());
@@ -210,7 +202,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
     public void testUriExistsWithClass() throws Exception {
         URI bURI = new URI("http://test.opensilex.org/b/001");
 
-        assertTrue("URI must exists and be of type B", service.uriExists(B.class, bURI));
+        assertTrue("URI must exists and be of type B", sparql.uriExists(B.class, bURI));
     }
 
     @Test
@@ -222,20 +214,20 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         b.setCharVar('Z');
         b.setShortVar((short) 0);
 
-        service.create(b);
+        sparql.create(b);
 
-        List<B> bList = service.search(B.class, null);
+        List<B> bList = sparql.search(B.class, null);
         assertFalse(bList.isEmpty());
-        Node oldGraphNode = service.getDefaultGraph(B.class);
+        Node oldGraphNode = sparql.getDefaultGraph(B.class);
         URI newGraphUri = new URI(oldGraphNode.getURI() + "new_suffix");
-        service.renameGraph(new URI(oldGraphNode.getURI()), newGraphUri);
+        sparql.renameGraph(new URI(oldGraphNode.getURI()), newGraphUri);
 
         // the graph have changed so no B should be found from the old graph
-        bList = service.search(B.class, null);
+        bList = sparql.search(B.class, null);
         assertTrue(bList.isEmpty());
 
         // the graph have changed so B should be found in the new graph
-        bList = service.search(SPARQLDeserializers.nodeURI(newGraphUri), B.class, null);
+        bList = sparql.search(SPARQLDeserializers.nodeURI(newGraphUri), B.class, null);
         assertFalse(bList.isEmpty());
 
     }
@@ -246,9 +238,9 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         SPARQLLabel label = new SPARQLLabel("testCreateFR", "fr");
         label.addTranslation("testCreateEN", "en");
         c.setLabel(label);
-        service.create(c);
+        sparql.create(c);
 
-        C cActual = service.getByURI(C.class, c.getUri(), "fr");
+        C cActual = sparql.getByURI(C.class, c.getUri(), "fr");
         assertEquals(c.getUri(), cActual.getUri());
         SPARQLLabel labelActual = cActual.getLabel();
         assertEquals(label.getDefaultValue(), labelActual.getDefaultValue());
@@ -260,7 +252,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
         assertTrue(labelActual.getAllTranslations().size() == 2);
 
-        cActual = service.getByURI(C.class, c.getUri(), "en");
+        cActual = sparql.getByURI(C.class, c.getUri(), "en");
         labelActual = cActual.getLabel();
         assertEquals("testCreateEN", labelActual.getDefaultValue());
         assertEquals("en", labelActual.getDefaultLang());
@@ -269,16 +261,16 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertTrue(others.containsKey("fr"));
         assertEquals("testCreateFR", others.get("fr"));
 
-        List<C> list = service.search(C.class, "fr");
+        List<C> list = sparql.search(C.class, "fr");
         assertFalse(list.isEmpty());
         assertTrue(list.size() == 2);
 
-        list = service.search(C.class, "ru");
+        list = sparql.search(C.class, "ru");
         assertFalse(list.isEmpty());
         assertTrue(list.size() == 2);
         assertEquals("ru", list.get(0).getLabel().getDefaultLang());
 
-        list = service.search(C.class, null);
+        list = sparql.search(C.class, null);
         assertFalse(list.isEmpty());
         assertTrue(list.size() == 2);
         assertEquals(OpenSilex.DEFAULT_LANGUAGE, list.get(0).getLabel().getDefaultLang());

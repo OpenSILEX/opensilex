@@ -26,7 +26,6 @@ import org.opensilex.security.authentication.injection.CurrentUserResolver;
 import org.opensilex.security.user.dal.UserDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.extensions.APIExtension;
-import org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
@@ -62,13 +61,8 @@ public class SecurityModule extends OpenSilexModule implements APIExtension {
     }
 
     @Override
-    public void startup() throws Exception {
+    public void setup() throws Exception {
         SPARQLService.addPrefix(SecurityOntology.PREFIX, SecurityOntology.NAMESPACE);
-        SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-        factory.resetMapperIndex();
-        if (factory instanceof RDF4JInMemoryServiceFactory) {
-            createDefaultSuperAdmin();
-        }
     }
 
     @Override

@@ -9,17 +9,12 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
-import org.apache.jena.rdf.model.Resource;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLValidationException;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.sparql.service.SPARQLStatement;
 import org.opensilex.utils.ClassUtils;
@@ -31,6 +26,8 @@ import org.slf4j.LoggerFactory;
  * @author vince
  */
 public class SPARQLModule extends OpenSilexModule {
+
+    private final static String DEFAULT_BASE_URI = "http://default.opensilex.org/";
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLModule.class);
 
@@ -46,42 +43,37 @@ public class SPARQLModule extends OpenSilexModule {
         return "ontologies";
     }
 
+    private URI baseURI;
+
+    private String basePrefix;
+
+    private SPARQLConfig sparqlConfig;
+
     @Override
-    public void startup() throws Exception {
-        final String basePrefix;
-        SPARQLConfig sparqlConfig = this.getConfig(SPARQLConfig.class);
+    public void setup() throws Exception {
+        sparqlConfig = this.getConfig(SPARQLConfig.class);
         if (sparqlConfig != null) {
             basePrefix = sparqlConfig.baseURIAlias() + "-";
+            baseURI = new URI(sparqlConfig.baseURI());
         } else {
             basePrefix = "";
+            baseURI = new URI(DEFAULT_BASE_URI);
         }
 
-        platformURI = new URI(sparqlConfig.baseURI());
+        LOGGER.debug("Set platform URI: " + baseURI.toString());
+        LOGGER.debug("Set platform URI prefix: " + basePrefix);
+    }
 
-        if (sparqlConfig.usePrefixes()) {
-            SPARQLServiceFactory sparqlFactory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-            sparqlFactory.getMapperIndex().forEach((Resource resource, SPARQLClassObjectMapper<?> mapper) -> {
-                String resourceNamespace = mapper.getResourceGraphNamespace();
-                String resourcePrefix = mapper.getResourceGraphPrefix();
-                if (resourceNamespace != null && resourcePrefix != null && !resourcePrefix.isEmpty()) {
-                    SPARQLService.addPrefix(basePrefix + mapper.getResourceGraphPrefix(), resourceNamespace + "#");
-                }
-            });
+    public String getBasePrefix() {
+        return basePrefix;
+    }
 
-            SPARQLConfig cfg = this.getConfig(SPARQLConfig.class);
-            SPARQLService.addPrefix(cfg.baseURIAlias(), cfg.baseURI());
+    public URI getBaseURI() {
+        return baseURI;
+    }
 
-            for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
-                for (OntologyFileDefinition ontologyDef : module.getOntologiesFiles()) {
-                    SPARQLService.addPrefix(ontologyDef.getPrefix(), ontologyDef.getPrefixUri().toString());
-                }
-            }
-
-        } else {
-            SPARQLService.clearPrefixes();
-        }
-
-        URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), sparqlConfig.usePrefixes());
+    public URI getSuffixedURI(String suffix) {
+        return baseURI.resolve(suffix);
     }
 
     public void installOntologies(SPARQLService sparql, boolean reset) throws Exception {
@@ -106,46 +98,6 @@ public class SPARQLModule extends OpenSilexModule {
     }
 
     @Override
-    public void shutdown() {
-        SPARQLService.clearPrefixes();
-    }
-
-    private URI platformURI;
-
-    /**
-     * Return configured platform base URI
-     *
-     * @return plateform URI
-     */
-    public URI getPlatformURI() {
-        if (platformURI == null) {
-            platformURI = getDefaultPlatformURI();
-        }
-
-        return platformURI;
-    }
-
-    public static URI getDefaultPlatformURI() {
-        try {
-            return new URI("http://test.opensilex.org/");
-        } catch (URISyntaxException ex) {
-            // Silently ignore never happending error
-        }
-        return null;
-    }
-
-    public URI getPlatformDomainGraphURI(String graphSuffix) {
-        return getPlatformURI().resolve(graphSuffix);
-    }
-
-    public void clearPlatformGraphs(SPARQLService sparql, List<String> graphsSuffixToClear) throws SPARQLException {
-        for (String graphName : graphsSuffixToClear) {
-            sparql.clearGraph(getPlatformDomainGraphURI(graphName));
-        }
-        sparql.clearGraph(getPlatformURI());
-    }
-
-    @Override
     public void install(boolean reset) throws Exception {
         SPARQLConfig cfg = this.getConfig(SPARQLConfig.class);
         SPARQLServiceFactory sparql = cfg.sparql();
@@ -154,7 +106,8 @@ public class SPARQLModule extends OpenSilexModule {
         }
         sparql.createRepository();
         getOpenSilex().shutdown();
-        getOpenSilex().startupIfNeed();
+        getOpenSilex().startup();
+        sparql = cfg.sparql();
 
         SPARQLService sparqlService = sparql.provide();
 

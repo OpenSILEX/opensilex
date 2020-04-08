@@ -7,6 +7,7 @@ package org.opensilex.sparql.utils;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import org.junit.AfterClass;
@@ -26,33 +27,27 @@ import org.opensilex.sparql.service.SPARQLService;
  */
 public abstract class SHACLTest extends AbstractUnitTest {
 
-    private static SPARQLService service;
-    private static SPARQLModule sparqlModule;
+    protected static SPARQLService sparql;
 
-    public static void initialize(SPARQLService service) throws Exception {
-        SHACLTest.service = service;
-        SHACLTest.sparqlModule = new SPARQLModule();
+    protected static SPARQLModule sparqlModule;
+
+    public static void initialize() throws Exception {
+        sparqlModule = opensilex.getModuleByClass(SPARQLModule.class);
 
         InputStream ontology = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.FILE_PATH.toString());
-        service.loadOntology(sparqlModule.getPlatformURI(), ontology, TEST_ONTOLOGY.FILE_FORMAT);
-    }
-
-    @AfterClass
-    public static void destroy() throws Exception {
-        service.clearGraph(sparqlModule.getPlatformURI());
-        service.shutdown();
+        sparql.loadOntology(sparqlModule.getBaseURI(), ontology, TEST_ONTOLOGY.FILE_FORMAT);
     }
 
     @Test
     public void testSHACLGeneration() throws Exception {
-        service.enableSHACL();
+        sparql.enableSHACL();
 
         InputStream ontologyData = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.DATA_FILE_PATH.toString());
-        service.loadOntology(sparqlModule.getPlatformDomainGraphURI("data"), ontologyData, TEST_ONTOLOGY.DATA_FILE_FORMAT);
+        sparql.loadOntology(sparqlModule.getSuffixedURI("data"), ontologyData, TEST_ONTOLOGY.DATA_FILE_FORMAT);
 
         ontologyData = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.SHACL_FAIL_FILE_PATH.toString());
         try {
-            service.loadOntology(sparqlModule.getPlatformDomainGraphURI("data"), ontologyData, TEST_ONTOLOGY.SHACL_FAIL_FILE_FORMAT);
+            sparql.loadOntology(sparqlModule.getSuffixedURI("data"), ontologyData, TEST_ONTOLOGY.SHACL_FAIL_FILE_FORMAT);
             throw new Exception("This ontology should fail to validate with SHACL");
         } catch (SPARQLValidationException ex) {
             Map<URI, Map<URI, List<URI>>> errors = ex.getValidationErrors();

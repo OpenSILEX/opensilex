@@ -9,6 +9,7 @@ package org.opensilex.integration.test.security;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URI;
 import org.junit.After;
 import org.opensilex.server.response.SingleObjectResponse;
 
@@ -19,13 +20,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.BeforeClass;
 import org.opensilex.integration.test.AbstractIntegrationTest;
+import org.opensilex.security.SecurityModule;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.api.AuthenticationDTO;
 import org.opensilex.security.authentication.api.TokenGetDTO;
-import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLQueryException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
@@ -40,6 +43,14 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
 
     protected final static Logger LOGGER = LoggerFactory.getLogger(AbstractSecurityIntegrationTest.class);
 
+    protected static SecurityModule securityModule;
+
+    @BeforeClass
+    public static void createAdmin() throws Exception {
+        securityModule = opensilex.getModuleByClass(SecurityModule.class);
+        securityModule.createDefaultSuperAdmin();
+    }
+
     /**
      * Clear the list of SPARQL graph to clear after each test execution
      *
@@ -47,22 +58,33 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @see #getGraphsToCleanNames()
      */
     @After
-    public void clearGraph() throws Exception {
-        clearGraphs(getGraphsToCleanNames());
+    public void clearGraphs() throws Exception {
+        clearGraphs(getModelsToClean());
         this.afterEach();
-
     }
 
     public void afterEach() throws Exception {
 
     }
 
+    private SPARQLService sparql;
+
     public SPARQLService getSparqlService() {
-        return getOpensilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
+        if (sparql == null) {
+            sparql = getOpensilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
+        }
+
+        return sparql;
     }
 
+    private AuthenticationService authentication;
+
     public AuthenticationService getAuthenticationService() {
-        return getOpensilex().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
+        if (authentication == null) {
+            authentication = getOpensilex().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
+        }
+
+        return authentication;
     }
 
     /**
@@ -71,16 +93,21 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @throws SPARQLQueryException if an errors occurs during SPARQL query
      * execution
      */
-    public void clearGraphs(List<String> graphsToClear) throws Exception {
-        try (SPARQLService sparqlService = getSparqlService()) {
-            getOpensilex().getModuleByClass(SPARQLModule.class).clearPlatformGraphs(sparqlService, graphsToClear);
+    public void clearGraphs(List<Class<? extends SPARQLResourceModel>> modelsToClear) throws Exception {
+        SPARQLService sparqlService = getSparqlService();
+        List<String> graphsToClean = new ArrayList<>();
+        for (Class<? extends SPARQLResourceModel> modelClass : modelsToClear) {
+            URI graphURI = sparqlService.getDefaultGraphURI(modelClass);
+            graphsToClean.add(graphURI.toString());
         }
+
+        sparqlService.clearGraphs(graphsToClean.toArray(new String[graphsToClean.size()]));
     }
 
     /**
-     * @return the List of SPARQL graph to clear after each test execution.
+     * @return the List of SPARQL Model to clear after each test execution.
      */
-    protected List<String> getGraphsToCleanNames() {
+    protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
         return new ArrayList<>();
     }
 

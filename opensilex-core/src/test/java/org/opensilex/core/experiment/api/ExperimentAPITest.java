@@ -4,7 +4,6 @@
 // Copyright © INRAE 2020
 // Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
-
 package org.opensilex.core.experiment.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -25,7 +24,9 @@ import java.util.*;
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
  * @author Vincent MIGOT
@@ -188,7 +189,7 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
     }
 
     @Override
-    protected List<String> getGraphsToCleanNames() {
-        return Collections.singletonList("set/experiments");
+    protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
+        return Collections.singletonList(ExperimentModel.class);
     }
 }

@@ -32,8 +32,26 @@ public class AbstractUnitTest {
         }
     };
 
-    protected boolean isDebug() {
-        return false;
+    protected static OpenSilex opensilex;
+
+    public static OpenSilex getOpensilex() {
+        return opensilex;
+    }
+
+    @BeforeClass
+    public static void createOpenSilex() throws Exception {
+        Map<String, String> args = new HashMap<>();
+        args.put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.TEST_PROFILE_ID);
+        args.put(OpenSilex.NO_CACHE_ARG_KEY, "true");
+//        args.put(OpenSilex.DEBUG_ARG_KEY, "true");
+
+        LOGGER.info("Create OpenSilex instance for Integration Test");
+        opensilex = OpenSilex.createInstance(args, false, true);
+    }
+
+    @AfterClass
+    public static void stopOpenSilex() throws Exception {
+        opensilex.shutdown();
     }
 
 }

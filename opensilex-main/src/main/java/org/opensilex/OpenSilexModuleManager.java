@@ -6,7 +6,6 @@
 //******************************************************************************
 package org.opensilex;
 
-import org.opensilex.OpenSilexModule;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -27,8 +26,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
-import org.opensilex.OpenSilex;
-import org.opensilex.OpenSilexConfig;
 import org.opensilex.config.ConfigManager;
 import org.opensilex.dependencies.DependencyManager;
 import org.opensilex.service.Service;
@@ -176,9 +173,8 @@ public class OpenSilexModuleManager {
                     LOGGER.warn("Invalid module URL for: " + m.getClass().getSimpleName(), ex);
                 }
             });
-            if (jarModulesURLs.size() > 0) {
-                urlsToScan.addAll(jarModulesURLs);
-            }
+
+            urlsToScan.addAll(jarModulesURLs);
         }
 
         ConfigurationBuilder builder;
@@ -498,56 +494,6 @@ public class OpenSilexModuleManager {
                 }
             }
         }
-    }
-
-    /**
-     * Start all registred modules and their services
-     *
-     * @throws Exception rethrow all exceptions during service startup or module
-     * initialization.
-     */
-    public void startup(OpenSilex opensilex) throws Exception {
-        // Start all services for all modules
-        for (Service service : services.getServices().values()) {
-            service.setOpenSilex(opensilex);
-        }
-
-        // Init all modules
-        for (OpenSilexModule module : getModules()) {
-            module.setOpenSilex(opensilex);
-        }
-
-        for (Service service : services.getServices().values()) {
-            service.startup();
-        };
-
-        for (OpenSilexModule module : getModules()) {
-            try {
-                LOGGER.debug("Start module: " + module.getClass().getCanonicalName());
-                module.startup();
-                LOGGER.debug("Module started: " + module.getClass().getSimpleName());
-            } catch (Exception ex) {
-                LOGGER.error("Fail to start module: " + module.getClass().getCanonicalName(), ex);
-                throw ex;
-            }
-        }
-    }
-
-    /**
-     * Shutdown all modules and their services
-     *
-     * @throws Exception In case of error during moduules shutdown
-     */
-    public void shutdown() throws Exception {
-        // Clean all modules
-        for (OpenSilexModule module : getModules()) {
-            module.shutdown();
-        }
-
-        // Stop all services for all modules
-        for (Service service : services.getServices().values()) {
-            service.shutdown();
-        };
     }
 
     /**

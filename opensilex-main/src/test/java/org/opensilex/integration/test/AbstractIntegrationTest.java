@@ -37,7 +37,6 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.mockito.Mockito;
 import org.opensilex.OpenSilex;
-import static org.opensilex.server.extensions.APIExtension.LOGGER;
 import org.opensilex.server.rest.RestApplication;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
@@ -61,11 +60,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         }
     };
 
-    protected boolean isDebug() {
-        return false;
-    }
-
-    private static OpenSilex opensilex;
+    protected static OpenSilex opensilex;
 
     public static OpenSilex getOpensilex() {
         return opensilex;

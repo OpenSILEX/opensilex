@@ -77,7 +77,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             LOGGER.debug("Init SPARQL class query builder: " + objectClass.getName());
             classQueryBuilder = new SPARQLClassQueryBuilder(mapperIndex, classAnalizer);
         } catch (Throwable t) {
-            throw new SPARQLInvalidClassDefinitionException(objectClass, "Unexpected error while initializing SPARQL Mapping", t.getCause());
+            throw new SPARQLInvalidClassDefinitionException(objectClass, "Unexpected error while initializing SPARQL Mapping", t);
         }
 
     }

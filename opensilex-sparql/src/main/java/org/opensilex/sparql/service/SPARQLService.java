@@ -78,7 +78,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLService.class);
 
     public final static String DEFAULT_SPARQL_SERVICE = "sparql";
-
     private final SPARQLConnection connection;
 
     public SPARQLService(SPARQLConnection connection) {
@@ -96,8 +95,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     @Override
-    public void startup() throws Exception {
+    public void setup() throws Exception {
         connection.setOpenSilex(getOpenSilex());
+        connection.setMapperIndex(getMapperIndex());
+        connection.setup();
+    }
+
+    @Override
+    public void startup() throws Exception {
         connection.startup();
     }
 
@@ -1066,6 +1071,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public Node getDefaultGraph(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {
         return getMapperIndex().getForClass(modelClass).getDefaultGraph();
+    }
+
+    public URI getDefaultGraphURI(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {
+        SPARQLClassObjectMapperIndex i = getMapperIndex();
+        SPARQLClassObjectMapper<SPARQLResourceModel> g = i.getForClass(modelClass);
+        return g.getDefaultGraphURI();
     }
 
     public Var getURIFieldVar(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {

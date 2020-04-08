@@ -348,21 +348,21 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
     }
 
     /**
-     * Default method for module startup, to be implemented by module
+     * Default method for module setup, to be implemented by module
      * implementations for starting logic
      *
      * @throws Exception Can throw anything
      */
-    public void startup() throws Exception {
-        LOGGER.debug("Nothing to init for module class: " + getClass().getCanonicalName());
+    public void setup() throws Exception {
+        LOGGER.debug("Nothing to setup for module class: " + getClass().getCanonicalName());
     }
 
     /**
-     * Default method for module shutdown, to be implemented by module
+     * Default method for module clean, to be implemented by module
      * implementations for stopping logic
      */
-    public void shutdown() {
-        LOGGER.debug("Nothing to shutdown for module class: " + getClass().getCanonicalName());
+    public void clean() {
+        LOGGER.debug("Nothing to clean for module class: " + getClass().getCanonicalName());
     }
 //
 //    public static <T> T getModuleConfig(Class<? extends OpenSilexModule> moduleClass, Class<T> configClass) throws ModuleNotFoundException {

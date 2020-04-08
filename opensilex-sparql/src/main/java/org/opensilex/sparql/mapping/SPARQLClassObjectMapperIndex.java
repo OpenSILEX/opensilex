@@ -7,20 +7,20 @@ package org.opensilex.sparql.mapping;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import org.apache.jena.rdf.model.Resource;
 import org.opensilex.sparql.annotations.SPARQLManualLoading;
-import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,8 +59,14 @@ public class SPARQLClassObjectMapperIndex {
         resourcesMapper.forEach(lambda);
     }
 
+    public void addClasses(Class<? extends SPARQLResourceModel>... newClasses) throws SPARQLInvalidClassDefinitionException {
+        List<Class<? extends SPARQLResourceModel>> classList = Arrays.asList(newClasses);
+        this.classes.addAll(classList);
+        addClasses(classList);
+    }
+
     @SuppressWarnings("unchecked")
-    public void addClasses(Set<Class<? extends SPARQLResourceModel>> newClasses) throws SPARQLInvalidClassDefinitionException {
+    private void addClasses(Collection<Class<? extends SPARQLResourceModel>> newClasses) throws SPARQLInvalidClassDefinitionException {
         newClasses.forEach((clazz) -> {
             LOGGER.debug("SPARQL Resource class found: " + clazz.getCanonicalName());
         });

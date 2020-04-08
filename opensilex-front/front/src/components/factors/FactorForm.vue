@@ -278,10 +278,11 @@ export default class FactorForm extends Vue {
           if (isValid) {
             this.onValidateData()
               .then(() => {
-                this.editMode = true;
-                this.uriGenerated = true;
-                let factorCreateFormWizard: any = this.$refs.factorCreateFormWizard;
-                factorCreateFormWizard.nextTab();
+                if(!this.editMode){
+                  // on creation
+                  let factorCreateFormWizard: any = this.$refs.factorCreateFormWizard;
+                  factorCreateFormWizard.nextTab();
+                }
                 resolve(true);
               })
               .catch(error => {

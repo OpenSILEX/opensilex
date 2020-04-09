@@ -54,7 +54,7 @@ public class DevModule extends OpenSilexModule {
 
     public static void run(Path baseDirectory, String[] args) throws Exception {
         OpenSilex instance = getOpenSilexDev(baseDirectory);
-        MainCommand.getCLI(args, instance).execute(instance.getRemainingArgs());
+        MainCommand.getCLI(args, instance).execute(args);
     }
 
     private static String getConfig(Path baseDirectory) {

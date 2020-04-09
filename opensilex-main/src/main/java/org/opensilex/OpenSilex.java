@@ -162,6 +162,11 @@ public class OpenSilex {
      * @return The command line arguments array without the Opensilex parameters
      */
     public static OpenSilexSetup createSetup(String[] args) throws Exception {
+        return createSetup(args, false);
+    }
+    
+    
+    public static OpenSilexSetup createSetup(String[] args, boolean forceDebug) {
         List<Object> cliArgsList = new ArrayList<>();
 
         // Initialize with existing environment variables
@@ -198,6 +203,8 @@ public class OpenSilex {
             }
         }
 
+        debug = debug || forceDebug;
+        
         // Set default value for base directory if not set previously
         if (baseDirectory == null || baseDirectory.equals("")) {
             baseDirectory = getDefaultBaseDirectory().toString();
@@ -278,9 +285,11 @@ public class OpenSilex {
             OpenSilex instance = buildInstance(setup, moduleJarReflection);
             LOGGER.debug("Instance build complete");
 
-            LOGGER.debug("Initialize instance");
-            instance.startup(manualServiceStartup);
-            LOGGER.debug("Instance initialized");
+            LOGGER.debug("Starting instance");
+            if (!manualServiceStartup) {
+                instance.startup();
+            }
+            LOGGER.debug("Instance start");
 
             return instance;
 
@@ -463,10 +472,6 @@ public class OpenSilex {
     }
 
     public void startup() throws Exception {
-        startup(false);
-    }
-
-    public void startup(boolean manualServiceStartup) throws Exception {
         // Add hook to clean modules on shutdown
         if (SHUTDOWN_HOOK != null) {
             Runtime.getRuntime().removeShutdownHook(SHUTDOWN_HOOK);
@@ -490,6 +495,7 @@ public class OpenSilex {
             module.setOpenSilex(this);
             module.setup();
         }
+
         LOGGER.debug("Setup Services");
         for (Service service : serviceManager.getServices().values()) {
             service.setOpenSilex(this);
@@ -497,10 +503,8 @@ public class OpenSilex {
         }
 
         LOGGER.debug("Start services");
-        if (!manualServiceStartup) {
-            for (Service service : serviceManager.getServices().values()) {
-                service.startup();
-            }
+        for (Service service : serviceManager.getServices().values()) {
+            service.startup();
         }
     }
 

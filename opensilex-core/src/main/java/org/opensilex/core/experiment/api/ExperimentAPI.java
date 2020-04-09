@@ -30,6 +30,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import org.opensilex.security.SecurityModule;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -229,7 +230,7 @@ public class ExperimentAPI {
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
 
             List<URI> groupUris = new ArrayList<>();
-            for (String groupUri : authentication.decodeStringArrayClaim(currentUser.getToken(), CoreModule.TOKEN_USER_GROUP_URIS)) {
+            for (String groupUri : authentication.decodeStringArrayClaim(currentUser.getToken(), SecurityModule.TOKEN_USER_GROUP_URIS)) {
                 groupUris.add(new URI(groupUri));
             }
 

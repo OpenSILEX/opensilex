@@ -170,7 +170,7 @@ For more information on this module see [documentation](./main.md)
 +                                                             +
 +  +---- FRONT WEB APP ------+   +--------- CLI -----------+  +
 +  + Swagger-UI              +   + Add system commands     +  +
-+  +   Setup on "/api-docs"  +   + Add server commands     +  +
++  +   Setup on "/"          +   + Add server commands     +  +
 +  +-------------------------+   +-------------------------+  +
 +               🠧                             🠧               +
 +  +---------------------- REST API -----------------------+  +
@@ -190,6 +190,11 @@ For more information on this module see [documentation](./main.md)
 +   allow other modules to interact with Tomcat Server        +
 + APIExtension:                                               +
 +   allow other modules to interact with Jersey & Swagger     +
+++++++++++++++++++ Implemented extensions +++++++++++++++++++++
++ APIExtension:                                               +
++   register Swagger API packages                             +
++   register OpenSilex validation annotations                 +
++   register OpenSilex generic serialization objects          +
 +-------------------------------------------------------------+
 ```
 
@@ -360,13 +365,15 @@ For more information on this module see [documentation](./security.md)
 +  + Integrate BCrypt java library                         +  +
 +  +-------------------------------------------------------+  +
 +                                                             +
++++++++++++++++++++ Provided extensions +++++++++++++++++++++++
++ LoginExtension:                                             +
++   allow other modules to interact on user login/logout      +
 ++++++++++++++++++ Implemented extensions +++++++++++++++++++++
 + APIExtension:                                               +
 +   register module API packages                              +
 +   register Jersey filter to protected API entry points      +
-+++++++++++++++++++ Provided extensions +++++++++++++++++++++++
 + LoginExtension:                                             +
-+   allow other modules to interact on user login/logout      +
++   store user group credentials id into user token           +
 +-------------------------------------------------------------+
 ```
 ### opensilex-core
@@ -395,8 +402,7 @@ For more information on this module see [documentation](./core.md)
 + APIExtension:                                               +
 +   register module API packages                              +
 + LoginExtension:                                             +
-+   store user informations related to core concept in        +
-+   user token                                                +
++   store custom informations into user token                 +
 + SPARQLExtension:                                            +
 +   Add mapping to core ontology files                        +
 +-------------------------------------------------------------+
@@ -414,15 +420,15 @@ This module integrate a Vue.js extensible application for OpenSlex modules.
 For more information on this module see [documentation](./vuejs.md)
 
 ```
-+----------- opensilex-security - SecurityModule -------------+
++-------------- opensilex-front - FrontModule ----------------+
 +                                                             +
 +  +------------------- FRONT WEB APP ---------------------+  +
 +  + Vue.js base application , Setup on "/app"             +  +
 +  + Integrate Vue.js common mechanisms and libraries      +  +
 +  + Add Generic Vue.js components                         +  +
 +  + Add Vue.js components related to built-in concepts    +  +
-+  +---------------------- REST API -----------------------+  +
-+              🠧                                              +
++  +-------------------------------------------------------+  +
++                             🠧                               +
 +  +---------------------- REST API -----------------------+  +
 +  + Add Front API to provide front app configuration      +  +
 +  + Add mechanism for Vue.js module extension management  +  +

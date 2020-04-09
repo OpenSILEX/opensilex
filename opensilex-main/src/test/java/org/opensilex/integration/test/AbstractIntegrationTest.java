@@ -73,7 +73,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         args.put(OpenSilex.NO_CACHE_ARG_KEY, "true");
 //        args.put(OpenSilex.DEBUG_ARG_KEY, "true");
 
-        LOGGER.info("Create OpenSilex instance for Integration Test");
+        LOGGER.debug("Create OpenSilex instance for Integration Test");
         opensilex = OpenSilex.createInstance(args, false, true);
     }
 

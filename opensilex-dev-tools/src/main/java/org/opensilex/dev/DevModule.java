@@ -42,7 +42,7 @@ public class DevModule extends OpenSilexModule {
             args.put(OpenSilex.BASE_DIR_ARG_KEY, baseDirectory.toFile().getCanonicalPath());
             args.put(OpenSilex.CONFIG_FILE_ARG_KEY, getConfig(baseDirectory));
 
-            LOGGER.info("Create OpenSilex instance for development tools");
+            LOGGER.debug("Create OpenSilex instance for development tools");
             devInstance = OpenSilex.createInstance(args);
         }
         return devInstance;
@@ -54,6 +54,12 @@ public class DevModule extends OpenSilexModule {
 
     public static void run(Path baseDirectory, String[] args) throws Exception {
         OpenSilex instance = getOpenSilexDev(baseDirectory);
+
+        // If no arguments assume help is requested
+        if (args.length == 0) {
+            args = new String[]{"--help"};
+        }
+
         MainCommand.getCLI(args, instance).execute(args);
     }
 

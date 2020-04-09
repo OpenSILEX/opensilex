@@ -140,7 +140,7 @@ public class RestApplication extends ResourceConfig {
 
         // Init swagger UI
         BeanConfig beanConfig = new BeanConfig();
-        ;
+
         try {
             beanConfig.setVersion(opensilex.getModuleByClass(ServerModule.class).getOpenSilexVersion());
         } catch (OpenSilexModuleNotFoundException ex) {
@@ -148,7 +148,6 @@ public class RestApplication extends ResourceConfig {
         }
         beanConfig.setResourcePackage(String.join(",", packageList));
         beanConfig.setTitle("OpenSilex API");
-        beanConfig.setExpandSuperTypes(false);
         beanConfig.setScan(true);
     }
 

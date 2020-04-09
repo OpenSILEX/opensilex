@@ -45,7 +45,7 @@ public class AbstractUnitTest {
         args.put(OpenSilex.NO_CACHE_ARG_KEY, "true");
 //        args.put(OpenSilex.DEBUG_ARG_KEY, "true");
 
-        LOGGER.info("Create OpenSilex instance for Integration Test");
+        LOGGER.debug("Create OpenSilex instance for Unit Test (setup only)");
         opensilex = OpenSilex.createInstance(args, false, true);
     }
 

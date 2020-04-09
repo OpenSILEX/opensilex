@@ -25,7 +25,6 @@ import opensilex.service.view.brapi.Status;
 import opensilex.service.view.brapi.form.AbstractResultForm;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
 import org.apache.commons.lang3.StringUtils;
-import org.opensilex.core.CoreModule;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.project.dal.ProjectDAO;
@@ -51,6 +50,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import org.opensilex.security.SecurityModule;
 
 /**
  * Experiment resource service.
@@ -67,7 +67,7 @@ public class ExperimentResourceService extends ResourceService {
 
     @Inject
     private SPARQLService sparql;
-    
+
     @Inject
     private AuthenticationService authentication;
 
@@ -78,10 +78,10 @@ public class ExperimentResourceService extends ResourceService {
     @ApiOperation(value = "Get all experiments corresponding to the searched params given",
             notes = "Retrieve all experiments authorized for the user corresponding to the searched params given")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve all experiments", response = Experiment.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
+        @ApiResponse(code = 200, message = "Retrieve all experiments", response = Experiment.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExperimentsBySearch(
@@ -104,12 +104,12 @@ public class ExperimentResourceService extends ResourceService {
 
             UserModel userModel = authentication.getCurrentUser(securityContext);
             List<URI> groupUris = new ArrayList<>();
-            for (String groupUri : authentication.decodeStringArrayClaim(userModel.getToken(), CoreModule.TOKEN_USER_GROUP_URIS)) {
+            for (String groupUri : authentication.decodeStringArrayClaim(userModel.getToken(), SecurityModule.TOKEN_USER_GROUP_URIS)) {
                 groupUris.add(new URI(groupUri));
             }
 
             List<URI> projectUris = new ArrayList<>();
-            if(projectUri != null) {
+            if (projectUri != null) {
                 projectUris.add(projectUri);
             }
             ListWithPagination<ExperimentModel> resultList = xpDao.search(
@@ -165,16 +165,15 @@ public class ExperimentResourceService extends ResourceService {
     @ApiOperation(value = "Get an experiment",
             notes = "Retrieve an experiment. Need URL encoded experiment URI (Unique resource identifier).")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve an experiment.", response = Experiment.class),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+        @ApiResponse(code = 200, message = "Retrieve an experiment.", response = Experiment.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExperimentDetail(
-            @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI, required = true) @PathParam("experiment") URI
-                    experimentURI,
+            @ApiParam(value = DocumentationAnnotation.EXPERIMENT_URI_DEFINITION, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI, required = true) @PathParam("experiment") URI experimentURI,
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) {
 
@@ -213,10 +212,10 @@ public class ExperimentResourceService extends ResourceService {
     @ApiOperation(value = "Post a experiment",
             notes = "Register a new experiment in the database")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Experiment saved", response = ResponseFormPOST.class),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+        @ApiResponse(code = 201, message = "Experiment saved", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -279,10 +278,10 @@ public class ExperimentResourceService extends ResourceService {
     @PUT
     @ApiOperation(value = "Update experiment")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Experiment updated", response = ResponseFormPOST.class),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 404, message = "Experiment not found"),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+        @ApiResponse(code = 200, message = "Experiment updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 404, message = "Experiment not found"),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -346,10 +345,10 @@ public class ExperimentResourceService extends ResourceService {
     @Path("{uri}/variables")
     @ApiOperation(value = "Update the observed variables of an experiment")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Measured observed variables of the experiment updated", response = ResponseFormPOST.class),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+        @ApiResponse(code = 200, message = "Measured observed variables of the experiment updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -370,7 +369,6 @@ public class ExperimentResourceService extends ResourceService {
                 variablesUris.add(new URI(variableUri));
             }
             xpDao.updateWithVariables(uri, variablesUris);
-
 
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, "The experiment " + uri + " has now " + variables.size() + " linked variables"));
             return Response.status(Response.Status.OK).entity(postResponse).build();
@@ -399,10 +397,10 @@ public class ExperimentResourceService extends ResourceService {
     @Path("{uri}/sensors")
     @ApiOperation(value = "Update the sensors which participates in an experiment")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "The list of sensors which participates in the experiment updated", response = ResponseFormPOST.class),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+        @ApiResponse(code = 201, message = "The list of sensors which participates in the experiment updated", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -422,7 +420,6 @@ public class ExperimentResourceService extends ResourceService {
             xpDao.updateWithSensors(uri, sensorUris);
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, "The experiment " + uri + " has now " + sensors.size() + " linked sensors"));
             return Response.status(Response.Status.OK).entity(postResponse).build();
-
 
         } catch (IllegalArgumentException | URISyntaxException e) {
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));

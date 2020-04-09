@@ -33,33 +33,11 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
 
     private final static Logger LOGGER = LoggerFactory.getLogger(CoreModule.class);
 
-    public static final String TOKEN_USER_GROUP_URIS = "user_group_uris";
-
     @Override
     public void login(UserModel user, JWTCreator.Builder tokenBuilder) throws Exception {
 
         // TODO add experiments, projects, infrastructures related to the user as token claims...
-        SPARQLServiceFactory sparqlServiceFactory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-        SPARQLService sparql = sparqlServiceFactory.provide();
-        try {
-            GroupDAO groupDAO = new GroupDAO(sparql);
-
-            List<URI> groupUris = groupDAO.getGroupUriList(user);
-            if (groupUris.isEmpty()) {
-                tokenBuilder.withArrayClaim(TOKEN_USER_GROUP_URIS, new String[0]);
-            } else {
-                String[] groupArray = new String[groupUris.size()];
-                int index = 0;
-                for (URI groupUri : groupUris) {
-                    groupArray[index] = groupUri.toString();
-                    index++;
-                }
-                tokenBuilder.withArrayClaim(TOKEN_USER_GROUP_URIS, groupArray);
-            }
-
-        } finally {
-            sparqlServiceFactory.dispose(sparql);
-        }
+       
     }
 
     @Override

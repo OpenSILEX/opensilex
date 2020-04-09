@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.config.ConfigManager;
 import org.opensilex.dependencies.DependencyManager;
+import org.opensilex.server.ServerModule;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
 import org.opensilex.utils.ClassUtils;
@@ -163,14 +164,16 @@ public class OpenSilexModuleManager {
             LOGGER.debug("Extra module JAR files registring for Integration Test");
             Set<URL> jarModulesURLs = new HashSet<>();
             forEachModule(m -> {
-                File jarFile = ClassUtils.getJarFile(m.getClass());
+                if (!m.getClass().equals(ServerModule.class)) {
+                    File jarFile = ClassUtils.getJarFile(m.getClass());
 
-                try {
-                    URL jarURL = new URL("file://" + jarFile.getAbsolutePath());
-                    LOGGER.debug("Register module JAR URL for" + m.getClass().getSimpleName() + ": " + jarURL.getPath());
-                    jarModulesURLs.add(jarURL);
-                } catch (MalformedURLException ex) {
-                    LOGGER.warn("Invalid module URL for: " + m.getClass().getSimpleName(), ex);
+                    try {
+                        URL jarURL = new URL("file://" + jarFile.getAbsolutePath());
+                        LOGGER.debug("Register module JAR URL for" + m.getClass().getSimpleName() + ": " + jarURL.getPath());
+                        jarModulesURLs.add(jarURL);
+                    } catch (MalformedURLException ex) {
+                        LOGGER.warn("Invalid module URL for: " + m.getClass().getSimpleName(), ex);
+                    }
                 }
             });
 

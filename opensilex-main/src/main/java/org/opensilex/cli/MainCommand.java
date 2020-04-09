@@ -47,39 +47,55 @@ public class MainCommand extends AbstractOpenSilexCommand implements IVersionPro
      * @param args Command line arguments array
      */
     public static void main(String[] args) throws Exception {
-        // Initialize OpenSilex instance with arguments and return 
-        // remaining commands arguments, ie without :
-        // - OpenSilex.BASE_DIR_ARG_KEY -> Base directory of the application
-        // - OpenSilex.PROFILE_ID --> Laucnh profile of the application
-        // - OpenSilex.CONFIG_FILE --> Main configuration file
-        // - OpenSilex.DEBUG --> Debug flag
-        LOGGER.info("Create OpenSilex instance from command line");
-        OpenSilexSetup setup = OpenSilex.createSetup(args);
+        boolean forceDebug = false;
+//        forceDebug = true;
+
+        // If no arguments assume help is requested
+        if (args.length == 0) {
+            args = new String[]{"--help"};
+        }
+
+        LOGGER.debug("Create OpenSilex instance from command line");
+        OpenSilexSetup setup = OpenSilex.createSetup(args, forceDebug);
+
         for (String s : setup.getRemainingArgs()) {
-            LOGGER.warn(s);
+            LOGGER.debug("CLI input parameters", s);
         }
         CommandLine cli = getCLI(setup.getRemainingArgs(), null);
 
-        // Avoid to start OpenSilex instance if only help is required
-        if (!cli.parseArgs(setup.getRemainingArgs()).isUsageHelpRequested()) {
-            OpenSilex instance = OpenSilex.createInstance(setup);
-            commands.forEach((OpenSilexCommand cmd) -> {
-                cmd.setOpenSilex(instance);
-            });
+        try {
+            // Avoid to start OpenSilex instance if only help is required
+            CommandLine.ParseResult parsedArgs = cli.parseArgs(setup.getRemainingArgs());
+
+            boolean isHelp = false;
+            List<CommandLine> foundCommands = parsedArgs.asCommandLineList();
+
+            if (foundCommands.size() > 0) {
+                CommandLine commandToExcute = foundCommands.get(foundCommands.size() - 1);
+                isHelp = isHelp || commandToExcute.getCommandName().equals("help");
+                isHelp = isHelp || commandToExcute.getSubcommands().size() > 0;
+            }
+
+            if (!isHelp) {
+                OpenSilex instance = OpenSilex.createInstance(setup, false, true);
+                commands.forEach((OpenSilexCommand cmd) -> {
+                    cmd.setOpenSilex(instance);
+                });
+            }
+        } catch (CommandLine.ParameterException ex) {
+            // Silently ignore parameter exceptions meaning help will be printed
         }
+
         cli.execute(setup.getRemainingArgs());
     }
 
     private static ServiceLoader<OpenSilexCommand> commands;
 
     public static CommandLine getCLI(String[] args, OpenSilex instance) {
-        // If no arguments assume help is requested
-        if (args.length == 0) {
-            args = new String[]{"--help"};
-        }
-
         // Initialize picocli library
-        CommandLine cli = new CommandLine(new MainCommand());
+        CommandLine cli = new CommandLine(new MainCommand()) {
+
+        };
 
         // Register all commands contained in OpenSilex modules
         commands = ServiceLoader.load(OpenSilexCommand.class, OpenSilex.getClassLoader());

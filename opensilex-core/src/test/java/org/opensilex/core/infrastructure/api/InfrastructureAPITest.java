@@ -17,7 +17,9 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import org.junit.Test;
+import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.response.ResourceTreeResponse;
 
@@ -91,7 +93,7 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
     }
 
     @Override
-    protected List<String> getGraphsToCleanNames() {
-        return Collections.singletonList("infrastructures");
+    protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
+        return Collections.singletonList(InfrastructureModel.class);
     }
 }

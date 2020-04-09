@@ -38,6 +38,18 @@ import GermplasmView from './germplasm/GermplasmView.vue';
 import GermplasmForm from './germplasm/GermplasmForm.vue';
 import GermplasmList from './germplasm/GermplasmList.vue';
 
+import ImageList from './phis/images/ImageList.vue';
+import ImageView from './phis/images/ImageView.vue';
+import ImageSearch from './phis/images/ImageSearch.vue';
+import ImageGrid from './phis/images/viewComponents/ImageGrid.vue';
+import ImageSingle from './phis/images/viewComponents/ImageSingle.vue';
+import ImageCarousel from './phis/images/viewComponents/ImageCarousel.vue';
+import SciObjectURISearch from './phis/images/searchComponents/SciObjectURISearch.vue';
+import SciObjectAliasSearch from './phis/images/searchComponents/SciObjectAliasSearch.vue';
+import ImageTypeSearch from './phis/images/searchComponents/ImageTypeSearch.vue';
+import ExperimentSearch from './phis/images/searchComponents/ExperimentSearch.vue';
+import SciObjectTypeSearch from './phis/images/searchComponents/SciObjectTypeSearch.vue';
+import TimeSearch from './phis/images/searchComponents/TimeSearch.vue';
 
 export default {
     'opensilex-DefaultFooterComponent': DefaultFooterComponent,
@@ -83,6 +95,20 @@ export default {
     "opensilex-GermplasmForm": GermplasmForm,
     "opensilex-GermplasmList": GermplasmList,
 
-    'opensilex-ToDoComponent': ToDoComponent
+    'opensilex-ToDoComponent': ToDoComponent,
+
+    // PHIS Services related components
+    'phis2ws-ImageView': ImageView,
+    'phis2ws-ImageSearch': ImageSearch,
+    'phis2ws-ImageList': ImageList,
+    'phis2ws-ImageGrid': ImageGrid,
+    'phis2ws-ImageSingle': ImageSingle,
+    'phis2ws-ImageCarousel': ImageCarousel,
+    'phis2ws-SciObjectURISearch': SciObjectURISearch,
+    'phis2ws-SciObjectAliasSearch': SciObjectAliasSearch,
+    'phis2ws-ImageTypeSearch': ImageTypeSearch,
+    'phis2ws-ExperimentSearch': ExperimentSearch,
+    'phis2ws-SciObjectTypeSearch': SciObjectTypeSearch,
+    'phis2ws-TimeSearch': TimeSearch
     
 };

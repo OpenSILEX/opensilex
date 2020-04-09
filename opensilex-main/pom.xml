@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+******************************************************************************
+ OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ Copyright © INRA 2019
+ Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+ 
+ OpenSilex Software main pom.xml
+ This module includes:
+ - An embed Tomcat Server
+ - An extensible Rest API using Jersey library
+ - An extensible Command Line Interface (CLI) using Picocli library
+ - An extensible Configuration management system
+ - An extensible Service management system
+ - A module management system for all extensions
+ - A security system based on Users, Groups and Profiles
+ - A Swagger UI interface to access web-services API
+ - A SPARQL object model system based on annotations
+ - A big data object model system based on annotations using DataNucleus library
+ - Base classes for unit and integration test
+ This module build create a Shade Jar including all core dependencies.
+ For more information see: https://maven.apache.org/plugins/maven-shade-plugin/
+******************************************************************************
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>opensilex-main</artifactId>
+    <packaging>jar</packaging>
+    <name>opensilex-main</name>
+
+    <url>https://www.opensilex.org/</url>
+
+    <parent>
+        <groupId>org.opensilex</groupId>
+        <artifactId>opensilex-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../opensilex-parent/pom.xml</relativePath>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>swagger-ui</artifactId>
+            <version>2.2.10-1</version>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <!-- include swagger webapp -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <!-- Define swagger interface resources -->
+            <resource>
+                <directory>src/main/webapp</directory>
+                <includes>
+                    <include>**</include>
+                </includes>
+                <targetPath>webapp</targetPath>
+            </resource>
+        </resources>
+        <plugins>
+            <!-- Check plugin and dependencies available updates -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>${versions.maven.plugin.version}</version>
+                <configuration>
+                    <rulesUri>file:////${project.basedir}/src/main/resources/version-rules.xml</rulesUri>
+                    <skip>${ignoreMavenPluginVersion}</skip>
+                </configuration>
+            </plugin>
+            
+            <!-- Front Node & Yarn management -->
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${frontend.maven.plugin.version}</version>
+                <executions>
+                    <!-- install node and yarn globally -->
+                    <execution>
+                        <id>install node and package manager</id>
+                        <goals>
+                            <goal>install-node-and-yarn</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                    
+                    <!-- install typescript and dts-generator types definition generator globally -->
+                    <execution>
+                        <id>install typescript and dts-generator globally</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>global add typescript dts-generator</arguments>
+                        </configuration>
+                        <phase>initialize</phase>
+                    </execution>
+
+                    <!-- install shared Javascript dependencies -->
+                    <execution>
+                        <id>install common js dependencies</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>--network-timeout 1000000 install</arguments>
+                            <workingDirectory>../</workingDirectory>
+                        </configuration>
+                        <phase>initialize</phase>
+                    </execution>
+                    
+                    <!-- Check shared Javascript dependencies version -->
+                    <execution>
+                        <id>check common js outdated dependencies</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+
+                        <configuration>
+                            <skip>${skipFrontBuild}</skip>
+                            <arguments>run check:outdated</arguments>
+                            <workingDirectory>../</workingDirectory>
+                        </configuration>
+                    </execution>
+                            
+                    <!-- Check shared Javascript dependencies security issues -->
+                    <execution>
+                        <id>check common js dependencies security issues</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+
+                        <configuration>
+                            <skip>${skipFrontAudit}</skip>
+                            <arguments>run check:security</arguments>
+                            <workingDirectory>../</workingDirectory>
+                        </configuration>
+                    </execution>
+                    
+                </executions>
+            </plugin>
+            
+            <!-- Generate Shaded jar with dependencies -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>full</shadedClassifierName>
+                            <transformers>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Main-Class>org.opensilex.cli.MainCommand</Main-Class>
+                                    </manifestEntries>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer" />
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>**/module-info.class</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>jakarta.annotation:jakarta.annotation-api</exclude>
+                                    <exclude>org.glassfish.hk2.external:jakarta.inject</exclude>
+                                    <exclude>commons-logging:commons-logging</exclude>
+                                    <exclude>javax.activation:javax.activation-api</exclude>
+                                    <exclude>javax.mail:javax.mail-api</exclude>
+                                    <exclude>javax.validation:validation-api</exclude>
+                                    <exclude>jakarta.xml.bind:jakarta.xml.bind-api</exclude>
+                                    <exclude>jakarta.activation:jakarta.activation-api</exclude>
+                                    <exclude>com.sun.activation:jakarta.activation</exclude>
+                                    <exclude>jakarta.el:jakarta.el-api</exclude>
+                                    <exclude>org.glassfish:jakarta.el</exclude>
+                                    <exclude>javax.annotation:javax.annotation-api</exclude>
+                                    <exclude>org.apache.httpcomponents:httpcore-osgi</exclude>
+                                    <exclude>org.apache.httpcomponents:httpclient-osgi</exclude>
+                                </excludes>
+                            </artifactSet>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+

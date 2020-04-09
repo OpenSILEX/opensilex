@@ -33,7 +33,7 @@ For more information on Maven, please read our [documentation](../tools/maven)
 
 Git is our version control system.
 
-The code during development is hosted on [INRA Forgemia](https://forgemia.inra.fr/OpenSILEX/opensilex-dev) and publicly available on [Github](https://github.com/OpenSILEX/opensilex-dev).
+The code during development is hosted on [INRA Forgemia](https://forgemia.inra.fr/OpenSILEX/opensilex) and publicly available on [Github](https://github.com/OpenSILEX/opensilex-dev).
 
 [Install Git 2.17.1+](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 

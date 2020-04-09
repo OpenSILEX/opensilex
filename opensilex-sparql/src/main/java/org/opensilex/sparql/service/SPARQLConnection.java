@@ -24,6 +24,7 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.Lang;
 import org.opensilex.service.Service;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 
 /**
  *
@@ -47,8 +48,8 @@ public interface SPARQLConnection extends Service {
 
     public void executeDeleteQuery(UpdateBuilder update) throws SPARQLException;
 
-    public List<SPARQLStatement> getGraphStatement(URI graph) throws SPARQLException ;
-    
+    public List<SPARQLStatement> getGraphStatement(URI graph) throws SPARQLException;
+
     public void clearGraph(URI graph) throws SPARQLException;
 
     void renameGraph(URI oldGraphURI, URI newGraphURI) throws SPARQLException;
@@ -68,7 +69,7 @@ public interface SPARQLConnection extends Service {
     public void disableSHACL() throws SPARQLException;
 
     public void enableSHACL() throws SPARQLException;
-    
+
     public default void loadOntology(URI graph, InputStream ontology, Lang format) throws SPARQLException {
         Node graphNode = NodeFactory.createURI(graph.toString());
         Model model = ModelFactory.createDefaultModel();
@@ -89,5 +90,9 @@ public interface SPARQLConnection extends Service {
         ByteArrayInputStream ontologyStream = new ByteArrayInputStream(ontology.getBytes());
         loadOntology(graph, ontologyStream, format);
     }
+
+    public SPARQLClassObjectMapperIndex getMapperIndex();
+
+    public void setMapperIndex(SPARQLClassObjectMapperIndex mapperIndex);
 
 }

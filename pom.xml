@@ -12,10 +12,10 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>opensilex-dev</artifactId>
+    <artifactId>opensilex</artifactId>
     <packaging>pom</packaging>
     
-    <name>opensilex-dev</name>
+    <name>opensilex</name>
       
     <url>https://www.opensilex.org/</url>
       
@@ -34,7 +34,7 @@
     <modules>
         <!-- Main OpenSilex modules -->
         <module>opensilex-parent</module>
-        <module>opensilex</module>
+        <module>opensilex-main</module>
         <module>opensilex-sparql</module>
         <module>opensilex-nosql</module>
         <module>opensilex-fs</module>
@@ -42,10 +42,12 @@
         <module>opensilex-module</module>
         <module>opensilex-core</module>
         <module>opensilex-front</module>
+
+        <!-- PHIS legacy module -->
+        <module>opensilex-phis</module>        
         
         <!-- Extension modules -->
         <!--<module>inrae-sixtine</module>-->
-        <module>phis-ws/phis2-ws</module>
             
         <!-- Development module -->
         <module>opensilex-dev-tools</module>
@@ -71,7 +73,7 @@
         <!-- OpenSilex build-in modules dependencies-->
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex</artifactId>
+            <artifactId>opensilex-main</artifactId>
             <version>${revision}</version>
         </dependency>
         
@@ -111,13 +113,15 @@
             <version>${revision}</version>
         </dependency>
         
-        <!--Other extension modules must be declared as dependencies-->
+        <!--PHIS legacy dependency-->
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>phis2ws</artifactId>
+            <artifactId>opensilex-phis</artifactId>
             <version>${revision}</version>
         </dependency>
-<!--        <dependency>
+        
+        <!--Other extension modules must be declared as dependencies-->
+        <!--        <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>inrae-sixtine</artifactId>
             <version>${revision}</version>

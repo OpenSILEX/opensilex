@@ -21,7 +21,7 @@ menu:
         label: component.menu.data.images
         route: 
           path: /images
-          component: phis2ws-ImageView
+          component: phis-ImageView
           credentials: []
   - id: experiments
     label: component.menu.experiments

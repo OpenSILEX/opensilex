@@ -3,7 +3,7 @@
 ##GLOBAL VARIABLES 
 ########################
 variables:
- ###### COMMON CONFIGS ######
+ ###### COMMON CONFIGS ######
  # GIT CONFIG
  GIT_DEPTH: 5
  GIT_OPTIONS: "--allow-unrelated-histories"
@@ -25,14 +25,14 @@ variables:
  RSYNC_INSTANCES_DATA_PATH: "~/opensilex-instances/data"
  RSYNC_INSTANCES_LOGS_PATH: "~/opensilex-instances/logs"
  RSYNC_INSTANCES_LOGS_ARCHIVED: "~/opensilex-instances/logs/old"
- ###### OPENSILEX ######
+ ###### OPENSILEX ######
  #APP BUILD CONFIG
  OPENSILEX_APP_REVISION: "INSTANCE-SNAPSHOT"
  OPENSILEX_BUILD_PATH: "opensilex-release/target"
  #APP DEPLOY CONFIG
  DEV_TOOLS_REPO_CONF_FILES_PATH: "instances-configuration"
- OPENSILEX_STOP_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
- OPENSILEX_START_SERVER_CMD: "--adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP --port=$OPENSILEX_JAR_PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
+ OPENSILEX_STOP_SERVER_OPTS: "--CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
+ OPENSILEX_START_SERVER_OPTS: "--port=$OPENSILEX_JAR_PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
  # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
  # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
  #CACHE
@@ -72,6 +72,7 @@ variables:
       if [ ! -z "$COMMIT_SHA_OPENSILEX_DEV" ]; then
         git checkout $COMMIT_SHA_OPENSILEX_DEV
       fi
+    # remove end of before script key
     - rm -r $CI_PROJECT_DIR/phis-ws
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/phis-ws.git --branch modularity
     - |
@@ -79,7 +80,7 @@ variables:
         cd phis-ws
         git checkout $COMMIT_SHA_PHIS
         cd ..
-      fi    
+      fi
   stage: build
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   except:
@@ -102,7 +103,7 @@ variables:
     -  if [ -z "$REMOTE_SERVER_RSYNC_ACCOUNT" ]; then echo "Missing REMOTE_SERVER_RSYNC_ACCOUNT variable"; exit 1; fi
     -  if [ -z "$REMOTE_SERVER_RSYNC_DIR" ]; then echo "Missing REMOTE_SERVER_RSYNC_DIR variable"; exit 1; fi 
     -  if [ -z "$REMOTE_SERVER_IP" ]; then echo "Missing REMOTE_SERVER_IP variable"; exit 1; fi
-    -  if [ -z "$INTERNAL_CONFIGURATION_FILES_PATH" ]; then echo "Missing INTERNAL_CONFIGURATION_FILES_PATH variable"; exit 1; fi
+    -  if [ -z "$CONFIGS_FILES_DIR_PATH" ]; then echo "Missing CONFIGS_FILES_DIR_PATH variable"; exit 1; fi
     -  if [ -z "$INSTANCE_CONFIGURATION_FILE_NAME" ]; then echo "Missing INSTANCE_CONFIGURATION_FILE_NAME variable"; exit 1; fi
     -  if [ -z "$REMOTE_SERVER_SSH_KEY" ]; then echo "Missing REMOTE_SERVER_SSH_KEY variable"; exit 1; fi
     -  if [ -z "$OPENSILEX_JAR_ADMIN_PORT" ]; then echo "Missing OPENSILEX_JAR_ADMIN_PORT variable"; exit 1; fi
@@ -110,6 +111,7 @@ variables:
     ##
     ## Create the SSH directory and give it the right permissions
     ##
+    - echo "$REMOTE_SERVER_IP"
     - mkdir -p ${HOME}/.ssh
     - chmod 700 ${HOME}/.ssh
     ##
@@ -155,23 +157,30 @@ variables:
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "mkdir -p $RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR; mkdir -p $RSYNC_INSTANCES_LOGS_PATH; mkdir -p $RSYNC_INSTANCES_LOGS_ARCHIVED; mkdir -p $RSYNC_INSTANCES_DATA_PATH/$REMOTE_SERVER_RSYNC_DIR;"
     - echo "Upload files"
     - rsync -arzv -e "ssh  -i ${HOME}/.ssh/id_rsa" $RSYNC_INSTANCES_OPTIONS  $CI_PROJECT_DIR/$OPENSILEX_APP_REVISION/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR
-    - ls $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH
-    - echo "scp -i ${HOME}/.ssh/id_rsa -o 'StrictHostKeyChecking no' $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH/* ${REMOTE_SERVER_RSYNC_ACCOUNT}@${REMOTE_SERVER_IP}:${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
-    - scp -i ${HOME}/.ssh/id_rsa -o "StrictHostKeyChecking no" $CI_PROJECT_DIR/opensilex-dev-tools/$INTERNAL_CONFIGURATION_FILES_PATH/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR
+    - ls $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGS_FILES_DIR_PATH
+    - echo "scp -i ${HOME}/.ssh/id_rsa -o 'StrictHostKeyChecking no' $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGS_FILES_DIR_PATH/* ${REMOTE_SERVER_RSYNC_ACCOUNT}@${REMOTE_SERVER_IP}:${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
+    - scp -i ${HOME}/.ssh/id_rsa -o "StrictHostKeyChecking no" $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGS_FILES_DIR_PATH/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR
     - echo "Remove dependencies list cache"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "rm -f ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/.opensilex.dependencies"
     - echo "Check files"
+    - echo ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "ls ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR};"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "ls ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR};"
-    - echo "Restarting server ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar }"
-    - echo "Restarting with options ${OPENSILEX_START_SERVER_CMD}"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop $OPENSILEX_STOP_SERVER_CMD"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start $OPENSILEX_START_SERVER_CMD"
+    - echo "Restart server java -jar ${RSYNC_INSTANCES_BIN_PATH}/$REMOTE_SERVER_RSYNC_DIR/opensilex.jar"
+    - echo "Stop with options --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_STOP_SERVER_OPTS}"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_STOP_SERVER_OPTS}"
+    - echo "Start with options --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
+    - DYNAMIC_ENVIRONMENT_URL="http://$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT"        
+    - echo "Deploy To $DYNAMIC_ENVIRONMENT_URL"                 # In script, get the environment URL.
+    - echo "DYNAMIC_ENVIRONMENT_URL=$DYNAMIC_ENVIRONMENT_URL" >> deploy.env 
   except:
-    - schedules    
+    - schedules
   environment:
-    name: $CI_JOB_NAME
-    url: http://$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT
-
+    name: "$CI_COMMIT_REF_NAME-test"
+    url: $DYNAMIC_ENVIRONMENT_URL
+  artifacts:
+    reports:
+      dotenv: deploy.env        
 
 # ########################
 # ##  DEFAULT BUILD 
@@ -204,28 +213,81 @@ trigger:phis:deploy:test:
   needs: 
     - job: "opensilex:build"
 
+########################
+##  BUILD - TESTS WITH DIFFERENT MAVEN VERSIONS
+########################
+
+##  BUILD TEMPLATE
+.test:build: &test_build_on_schedules
+  <<: *cache_dependencies
+  before_script: 
+    -  if [ -z "$JAVA_VERSION" ]; then echo "Missing JAVA_VERSION variable"; exit 1; fi
+    -  if [ -z "$MVN_VERSION" ]; then echo "Missing MVN_VERSION variable"; exit 1; fi
+    - echo "with_java $JAVA_VERSION and maven $MVN_VERSION with latest version of OpenSILEX/opensilex-dev"
+  stage: build
+  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
+  script:
+    - mvn install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
+    - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
+    - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $OPENSILEX_APP_REVISION
+  only:
+    - schedules
+
+##  BUILD VERSIONS # example https://gitlab.com/gitlab-org/gitlab-foss/issues/13755
+
+.with_java8: &java8
+  variables: 
+    JAVA_VERSION: 8
+  
+.with_java11: &java11
+  variables: 
+    JAVA_VERSION: 11
+ 
+.with_java13: &java13
+  before_script:
+    - yum install -y git  
+  variables: 
+    JAVA_VERSION: 13
+ 
+.with_java14: &java14
+  before_script:
+    - yum install -y git  
+  variables:
+    JAVA_VERSION: 14
+
+test:build:java8:
+  <<: *java8
+  <<: *test_build_on_schedules 
+  
+test:build:java11:
+  <<: *java11
+  <<: *test_build_on_schedules 
+
+test:build:java13:
+  <<: *java13
+  <<: *test_build_on_schedules 
+
+test:build:java14:
+  <<: *java14
+  <<: *test_build_on_schedules
 
 ########################
 ##  BUILD - GITLAB PAGES DOCS
 ########################
 
 pages:
-  <<: *build_template_with_opensilex
+  <<: *test_build_on_schedules
   script:
+    - ln -s $JAVA_HOME java.home
     - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
     - mvn install $MAVEN_CLI_OPTS
     - cd $CI_PROJECT_DIR
     - mvn install site $MAVEN_CLI_OPTS -Pwith-test-report -Pwith-security-check -DskipFrontBuild
-    - mkdir ../public
+    - mkdir public
     - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* public
   artifacts:
     paths:
       - public
-  only:
-    refs:
-      - schedules
-    variables:
-      - $DEPLOY == "maven-doc"
 
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM
@@ -245,19 +307,18 @@ test:alice:deploy:
   <<: *deploy_opensilex_template
   when: on_success
   variables:
-    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/alice"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/alice"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4084
     OPENSILEX_JAR_PORT: 8084
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_IP: $REMOTE_TEST_SERVER_IP
     REMOTE_SERVER_RSYNC_DIR: "mistea/alice"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   only:
     - alice
   needs:
     - alice:build
-
 
 ###################################
 ##  ANNE-TEST-SNAPSHOT-DEPLOYMENT
@@ -273,7 +334,7 @@ anne:alice:deploy:
   <<: *deploy_opensilex_template
   when: on_success  
   variables:
-    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/anne"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/anne"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4085
     OPENSILEX_JAR_PORT: 8085
@@ -300,7 +361,7 @@ test:arnaud:deploy:
   <<: *deploy_opensilex_template
   when: on_success  
   variables:
-    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/arnaud"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/arnaud"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4086
     OPENSILEX_JAR_PORT: 8086
@@ -327,7 +388,7 @@ test:julien:deploy:
   <<: *deploy_opensilex_template
   when: on_success  
   variables:
-    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/julien"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/julien"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4087
     OPENSILEX_JAR_PORT: 8087
@@ -355,7 +416,7 @@ test:renaud:deploy:
   <<: *deploy_opensilex_template
   when: on_success  
   variables:
-    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/renaud"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/renaud"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4088
     OPENSILEX_JAR_PORT: 8088
@@ -382,7 +443,7 @@ test:vincent:deploy:
   <<: *deploy_opensilex_template
   when: on_success  
   variables:
-    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/vincent"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/vincent"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4089
     OPENSILEX_JAR_PORT: 8089
@@ -414,7 +475,7 @@ test:ephesia:deploy:
   <<: *deploy_opensilex_template
   when: on_success  
   variables:
-    INTERNAL_CONFIGURATION_FILES_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/ephesia"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/ephesia"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4090
     OPENSILEX_JAR_PORT: 8090

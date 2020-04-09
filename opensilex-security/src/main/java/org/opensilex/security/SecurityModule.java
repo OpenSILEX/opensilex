@@ -26,7 +26,6 @@ import org.opensilex.security.authentication.injection.CurrentUserResolver;
 import org.opensilex.security.user.dal.UserDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.extensions.APIExtension;
-import org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
@@ -35,10 +34,9 @@ import org.slf4j.LoggerFactory;
 public class SecurityModule extends OpenSilexModule implements APIExtension {
 
     public final static String REST_SECURITY_API_ID = "Security";
-    
+
     public final static String REST_AUTHENTICATION_API_ID = "Authentication";
 
-    
     private static final Logger LOGGER = LoggerFactory.getLogger(SecurityModule.class);
 
     @Override
@@ -63,12 +61,8 @@ public class SecurityModule extends OpenSilexModule implements APIExtension {
     }
 
     @Override
-    public void startup() throws Exception {
+    public void setup() throws Exception {
         SPARQLService.addPrefix(SecurityOntology.PREFIX, SecurityOntology.NAMESPACE);
-        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-        if (factory instanceof RDF4JInMemoryServiceFactory) {
-            SecurityModule.createDefaultSuperAdmin();
-        }
     }
 
     @Override
@@ -80,8 +74,8 @@ public class SecurityModule extends OpenSilexModule implements APIExtension {
     private final static String DEFAULT_PROFILE_URI = "http://www.opensilex.org/profiles/default-profile";
     private final static String DEFAULT_PROFILE_NAME = "Default profile";
 
-    public static void createDefaultProfile(boolean reset) throws Exception {
-        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+    public void createDefaultProfile(boolean reset) throws Exception {
+        SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
 
         AuthenticationDAO securityDAO = new AuthenticationDAO(sparql);
@@ -97,7 +91,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension {
     @Override
     public void check() throws Exception {
         LOGGER.info("Check User existence");
-        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
         UserDAO userDAO = new UserDAO(sparql);
         int userCount = userDAO.getCount();
@@ -108,9 +102,10 @@ public class SecurityModule extends OpenSilexModule implements APIExtension {
         }
     }
 
-    public static void createDefaultSuperAdmin() throws Exception {
-        OpenSilex opensilex = OpenSilex.getInstance();
-        SPARQLService sparql = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
+    public void createDefaultSuperAdmin() throws Exception {
+        OpenSilex opensilex = getOpenSilex();
+        SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
         try {
             AuthenticationService authentication = opensilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
 

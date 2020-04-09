@@ -7,10 +7,7 @@
  
  OpenSilex Module pom.xml
  This abstract module is used as parent module for all OpenSilex extensions
- It brings Maven build for integration with OpenSilex and dependencies to:
- - opensilex
- - opensilex-core
- - opensilex-front
+ It brings Maven build for integration with OpenSilex and built-in dependencies
 ******************************************************************************
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -35,13 +32,13 @@
         <!-- OpenSilex Base -->
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex</artifactId>
+            <artifactId>opensilex-main</artifactId>
             <version>${revision}</version>
         </dependency>
         <!-- OpenSilex Base test -->
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex</artifactId>
+            <artifactId>opensilex-main</artifactId>
             <version>${revision}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
@@ -95,23 +92,9 @@
             <version>${revision}</version>
         </dependency>
         <!-- OpenSilex Core test -->
-        <!--        <dependency>
+        <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-core</artifactId>
-            <version>${revision}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-        </dependency>-->
-        <!-- OpenSilex Front -->
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-front</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <!-- OpenSilex Front test -->
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-front</artifactId>
             <version>${revision}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
@@ -130,6 +113,20 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
+        <!--OpenSilex Front--> 
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-front</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- OpenSilex Front test -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-front</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
     </dependencies>
     
     <build>
@@ -142,7 +139,7 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.opensilex</groupId>
-                        <artifactId>opensilex</artifactId>
+                        <artifactId>opensilex-main</artifactId>
                         <version>${revision}</version>
                     </dependency>
                 </dependencies>
@@ -189,12 +186,12 @@
                 <version>${versions.maven.plugin.version}</version>
                 <configuration>
                     <rulesUri>classpath:///version-rules.xml</rulesUri>
-                        <skip>${ignoreMavenPluginVersion}</skip>
+                    <skip>${ignoreMavenPluginVersion}</skip>
                 </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>org.opensilex</groupId>
-                        <artifactId>opensilex</artifactId>
+                        <artifactId>opensilex-main</artifactId>
                         <version>${revision}</version>
                     </dependency>
                 </dependencies>
@@ -230,7 +227,7 @@
             </plugin>
             
             <!--mongodb embed testing server--> 
-<!--            <plugin>
+            <!--            <plugin>
                 <groupId>com.github.joelittlejohn.embedmongo</groupId>
                 <artifactId>embedmongo-maven-plugin</artifactId>
             </plugin>-->

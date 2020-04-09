@@ -7,6 +7,7 @@
 package org.opensilex.security.extensions;
 
 import com.auth0.jwt.JWTCreator;
+import org.opensilex.OpenSilexExtension;
 import org.opensilex.security.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Vincent Migot
  */
-public interface LoginExtension {
+public interface LoginExtension extends OpenSilexExtension {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(LoginExtension.class);
 

@@ -26,13 +26,14 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.sail.shacl.ShaclSailValidationException;
+import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLConnection;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLStatement;
 import org.opensilex.sparql.exceptions.SPARQLValidationException;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 import org.opensilex.sparql.utils.SHACL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,7 @@ import org.slf4j.LoggerFactory;
         configClass = RDF4JConfig.class,
         configID = "rdf4j"
 )
-public class RDF4JConnection implements SPARQLConnection {
+public class RDF4JConnection extends BaseService implements SPARQLConnection {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(RDF4JConnection.class);
 
@@ -392,9 +393,9 @@ public class RDF4JConnection implements SPARQLConnection {
         rdf4JConnection.begin();
         clearGraph(RDF4J.SHACL_SHAPE_GRAPH);
 
-        for (Class<?> c : SPARQLClassObjectMapper.getResourceClasses()) {
+        for (Class<?> c : getMapperIndex().getResourceClasses()) {
             try {
-                String shaclTTL = SHACL.generateSHACL(c);
+                String shaclTTL = SHACL.generateSHACL(c, getMapperIndex());
                 if (shaclTTL != null) {
                     LOGGER.debug("Generated SHACL for: " + c.getCanonicalName() + "\n" + shaclTTL);
                     rdf4JConnection.add(new StringReader(shaclTTL), "", RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
@@ -408,5 +409,17 @@ public class RDF4JConnection implements SPARQLConnection {
 
         rdf4JConnection.commit();
 
+    }
+
+    private SPARQLClassObjectMapperIndex mapperIndex;
+
+    @Override
+    public SPARQLClassObjectMapperIndex getMapperIndex() {
+        return mapperIndex;
+    }
+
+    @Override
+    public void setMapperIndex(SPARQLClassObjectMapperIndex mapperIndex) {
+        this.mapperIndex = mapperIndex;
     }
 }

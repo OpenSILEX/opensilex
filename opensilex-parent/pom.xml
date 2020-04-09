@@ -63,7 +63,7 @@
         <swagger.jersey2.jaxrs.version>1.6.1</swagger.jersey2.jaxrs.version>
         <maven.resolver.version>1.4.1</maven.resolver.version>
         <maven.resolver.provider.version>3.6.3</maven.resolver.provider.version>
-        <rdf4j.version>3.1.2</rdf4j.version>
+        <rdf4j.version>3.1.3</rdf4j.version>
         <jena.query.builder.version>3.14.0</jena.query.builder.version>
         <data.nucleus.version>5.2.2</data.nucleus.version>
         <data.nucleus.api.jdo.version>5.2.3</data.nucleus.api.jdo.version>
@@ -639,7 +639,7 @@
                             </goals>
                             <configuration>
                                 <inputSpec>${project.basedir}/front/src/lib/swagger.json</inputSpec>
-                                <templateDirectory>${project.basedir}/../opensilex/src/main/resources/swagger/templates/typescript-inversify</templateDirectory>
+                                <templateDirectory>${project.basedir}/../opensilex-main/src/main/resources/swagger/templates/typescript-inversify</templateDirectory>
                                 <language>typescript-inversify</language>
                                 <output>${project.basedir}/front/src/lib/</output>
                                 <configOptions>
@@ -982,7 +982,6 @@
                             <services>
                                 <param>org.opensilex.OpenSilexModule</param>
                                 <param>org.opensilex.cli.OpenSilexCommand</param>
-                                <param>org.opensilex.module.OpenSilexModuleUpdate</param>
                             </services>
                         </configuration>
                     </execution>

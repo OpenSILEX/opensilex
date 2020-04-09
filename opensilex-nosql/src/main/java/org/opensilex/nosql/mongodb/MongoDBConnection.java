@@ -7,8 +7,10 @@
 package org.opensilex.nosql.mongodb;
 
 import java.util.HashMap;
+import org.opensilex.OpenSilex;
 import org.opensilex.nosql.datanucleus.AbstractDataNucleusConnection;
 import org.opensilex.service.Service;
+import org.opensilex.service.ServiceConstructorArguments;
 import org.opensilex.service.ServiceDefaultDefinition;
 
 /**
@@ -48,4 +50,27 @@ public class MongoDBConnection extends AbstractDataNucleusConnection implements 
         // TODO implement mongodb shutdown mechanism
     }
 
+    private ServiceConstructorArguments constructorArgs;
+
+    @Override
+    public void setServiceConstructorArguments(ServiceConstructorArguments args) {
+        this.constructorArgs = args;
+    }
+
+    @Override
+    public ServiceConstructorArguments getServiceConstructorArguments() {
+        return this.constructorArgs;
+    }
+
+    private OpenSilex opensilex;
+
+    @Override
+    public void setOpenSilex(OpenSilex opensilex) {
+        this.opensilex = opensilex;
+    }
+
+    @Override
+    public OpenSilex getOpenSilex() {
+        return this.opensilex;
+    }
 }

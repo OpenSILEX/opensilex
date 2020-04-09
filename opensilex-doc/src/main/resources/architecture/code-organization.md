@@ -8,7 +8,7 @@ This stucture can apply to a new module or by only adding concept's specific fol
 Try to keep modules coherent and minimize dependencies between modules if possible.
 
 ```
-opensilex-dev --> Root of OpenSilex sources
+opensilex --> Root of OpenSilex sources
 |
 +-- my-module --> Root module folder
 |   |
@@ -82,7 +82,7 @@ If it's not possible please be sure to check and report error to user in case of
 # Theme definition
 
 ```
-opensilex-dev --> Root of OpenSilex sources
+opensilex --> Root of OpenSilex sources
 |
 +-- my-module --> Root module folder
     |

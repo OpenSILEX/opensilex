@@ -9,6 +9,7 @@ package org.opensilex.fs.service;
 import java.io.File;
 import java.nio.file.Path;
 import org.opensilex.fs.local.LocalFileSystemConnection;
+import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.slf4j.Logger;
@@ -22,7 +23,7 @@ import org.slf4j.LoggerFactory;
 @ServiceDefaultDefinition(
         serviceClass = LocalFileSystemConnection.class
 )
-public class FileStorageService implements Service, FileStorageConnection {
+public class FileStorageService extends BaseService  implements Service, FileStorageConnection {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(FileStorageService.class);
 

@@ -52,11 +52,6 @@ public class SPARQLQueryHelper {
         return exprFactory;
     }
 
-    public final static <T> Var getUriFieldVar(Class<T> objectClass) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
-        SPARQLClassObjectMapper<SPARQLResourceModel> mapper = SPARQLClassObjectMapper.getForClass(objectClass);
-        return makeVar(mapper.getURIFieldName());
-    }
-
     public static Expr regexFilter(String varName, String regexPattern) {
         return regexFilter(varName, regexPattern, null);
     }

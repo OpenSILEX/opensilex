@@ -97,7 +97,7 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
         return config.timeout();
     }
 
-    private synchronized SPARQLService getNewService() throws Exception {
+    protected synchronized SPARQLService getNewService() throws Exception {
         RepositoryConnection connection = repository.getConnection();
         if (cm != null && LOGGER.isDebugEnabled()) {
             PoolStats stats = cm.getTotalStats();
@@ -113,8 +113,10 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
         RDF4JConnection rdf4jConnection = new RDF4JConnection(connection);
         rdf4jConnection.setTimeout(getTimeout());
         SPARQLService sparql = new SPARQLService(rdf4jConnection);
-        sparql.startup();
-
+        sparql.setOpenSilex(getOpenSilex());
+        sparql.setMapperIndex(getMapperIndex());
+        sparql.setDefaultLang(getDefaultLanguage());
+        sparql.setup();
         return sparql;
     }
 
@@ -125,9 +127,10 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
     @Override
     public SPARQLService provide() {
         try {
-            return getNewService();
+            SPARQLService service = getNewService();
+            return service;
         } catch (Exception ex) {
-            LOGGER.error("Error while opening RDF4J service connectioninstance", ex);
+            LOGGER.error("Error while opening RDF4J service connection instance", ex);
             return null;
         }
     }
@@ -211,4 +214,5 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
             repositoryManager.shutDown();
         }
     }
+
 }

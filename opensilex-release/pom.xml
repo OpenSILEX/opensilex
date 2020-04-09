@@ -7,7 +7,7 @@
  
  OpenSilex Dev Release pom.xml
  This module create a distribuable zip file of Jar with opensilex and
- all non-dev modules declared in opensilex-dev <modules> section.
+ all non-dev modules declared in opensilex <modules> section.
  To create a release wtih the given X.Y.Z version use this command:
  mvn install -Drevision=<RELEASE_NUMBER_X.Y.Z>
 ******************************************************************************
@@ -26,7 +26,7 @@
 
     <parent>
         <groupId>org.opensilex</groupId>
-        <artifactId>opensilex-dev</artifactId>
+        <artifactId>opensilex</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>

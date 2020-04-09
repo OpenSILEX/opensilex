@@ -12,7 +12,7 @@
                 <include>${project.groupId}:*:jar</include>
             </includes>
             <excludes>
-                <exclude>${project.groupId}:opensilex:*:${project.version}</exclude>
+                <exclude>${project.groupId}:opensilex-main:*:${project.version}</exclude>
                 <exclude>${project.groupId}:opensilex-swagger-codegen-maven-plugin:*:${project.version}</exclude>
             </excludes>
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
@@ -23,7 +23,7 @@
     </dependencySets>    
     <files>
         <file>
-            <source>${project.basedir}/../opensilex/target/opensilex-${project.version}-full.jar</source>
+            <source>${project.basedir}/../opensilex-main/target/opensilex-main-${project.version}-full.jar</source>
             <outputDirectory>.</outputDirectory>
             <destName>opensilex.jar</destName>
         </file>

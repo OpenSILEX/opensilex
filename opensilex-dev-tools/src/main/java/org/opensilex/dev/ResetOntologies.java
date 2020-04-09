@@ -12,7 +12,7 @@ package org.opensilex.dev;
 public class ResetOntologies {
 
     public static void main(String[] args) throws Exception {
-        DevModule.runCommand(new String[]{
+        DevModule.run(new String[]{
             "sparql",
             "reset-ontologies"
         });

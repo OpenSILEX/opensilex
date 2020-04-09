@@ -17,13 +17,13 @@ import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
+import org.opensilex.OpenSilex;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +57,7 @@ public final class AuthenticationDAO {
             credentialsGroups = new TreeMap<>();
             credentialsGroupLabels = new HashMap<>();
             credentialsIdList = new ArrayList<>();
-            Set<Method> methods = ClassUtils.getAnnotatedMethods(ApiCredential.class);
+            Set<Method> methods = sparql.getOpenSilex().getMethodsAnnotatedWith(ApiCredential.class);
             methods.forEach((method) -> {
                 ApiCredential apiCredential = method.getAnnotation(ApiCredential.class);
                 ApiCredentialGroup apiCredentialGroup = method.getDeclaringClass().getAnnotation(ApiCredentialGroup.class);

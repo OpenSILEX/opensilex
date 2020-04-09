@@ -15,7 +15,6 @@ import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.opensilex.*;
-import org.opensilex.cli.*;
 import org.opensilex.front.FrontModule;
 import org.opensilex.front.api.FrontAPI;
 import org.opensilex.OpenSilexModule;
@@ -36,7 +35,7 @@ public class StartServerWithFront {
     private static CountDownLatch countDownLatch;
 
     public static void main(String[] args) throws Exception {
-        start(Paths.get(System.getProperty("user.dir")));
+        start(OpenSilex.getDefaultBaseDirectory());
     }
 
     public static void start(Path baseDirectory) throws Exception {
@@ -84,7 +83,8 @@ public class StartServerWithFront {
         });
 
         LOGGER.debug("start back server");
-        MainCommand.run(new String[]{
+
+        DevModule.run(new String[]{
             "server",
             "start"
         });
@@ -122,9 +122,6 @@ public class StartServerWithFront {
         ProcessBuilder frontBuilder = new ProcessBuilder(args);
 
         String modulePath = moduleId;
-        if (moduleId.equals("phis2ws")) {
-            modulePath = "phis-ws/phis2-ws";
-        }
 
         Path moduleDirectory = baseDirectory.resolve("../" + modulePath + "/front");
         frontBuilder.directory(moduleDirectory.toFile());

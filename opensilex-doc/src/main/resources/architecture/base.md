@@ -43,9 +43,9 @@ Maven offer different type of modules (there are others but out of the scope of 
 Here is a description of the built-in modules by directories.
 
 ```
-opensilex-dev --> POM - Main module aggregating all others
+opensilex --> POM - Main module aggregating all others
 |
-+-- opensilex --> JAR - Main application module
++-- opensilex-main --> JAR - Main application module
 |
 +-- opensilex-core  --> JAR - Main application concepts & API to manipulate experimental data
 |
@@ -63,7 +63,7 @@ opensilex-dev --> POM - Main module aggregating all others
 |
 +-- opensilex-sparql --> JAR - Add service to access SPARQL triple stores like RDF4J with an ORM-like implementation
 |
-+-- phis2ws --> JAR - Legacy web services for compatibility
++-- opensilex-phis --> JAR - Legacy web services for compatibility
 ```
 
 ### Development modules
@@ -71,7 +71,7 @@ opensilex-dev --> POM - Main module aggregating all others
 Here is a description of the development modules by directories, they will not be included in produced OpenSilex release archive.
 
 ```
-opensilex-dev --> POM - Main module aggregating all others
+opensilex --> POM - Main module aggregating all others
 |
 +-- opensilex-dev-tools  --> JAR - Development tools module
 |
@@ -109,17 +109,17 @@ You can read it both ways like by example:
                             ↑
                      opensilex-core
                             ↑
+                      opensilex-phis
+                            ↑
                      opensilex-front
                             ↑
                      opensilex-module
-                            ↑
-                         phis2ws
 ```
 
 And for development modules dependency tree is represented by the following hierarchy:
 
 ```
-                      opensilex-dev 
+                        opensilex 
          (dependent itself to all built-in modules)
                             ↑
           +-----------------+-------------------+
@@ -158,11 +158,11 @@ See below hierarchy of built-in OpenSilex module classes by Maven modules:
                      opensilex-core
                        CoreModule
                             ↑
+                      opensilex-phis
+                       PhisWsModule
+                            ↑
                      opensilex-front
                        FrontModule
-                            ↑
-                         phis2ws
-                       PhisWsModule
 ```
 
 ### Default features
@@ -184,10 +184,10 @@ See how-to's for more information on how to implement and use this features.
 
 ### Basic directory structure
 
-The simplest working module is a folder in `opensilex-dev` with the following directory structure:
+The simplest working module is a folder in `opensilex` with the following directory structure:
 
 ```
-opensilex-dev --> Root of OpenSilex sources
+opensilex --> Root of OpenSilex sources
 |
 +-- my-module --> Root module folder
 |   |
@@ -379,13 +379,13 @@ ontologies: SPARQLConfig   file-system: FileStorageConfig   big-data: NoSQLConfi
                                      CoreModule
                                (No configuration yet)
                                           ↑
+                                   opensilex-phis
+                                     PhisWsModule
+                                 phisws: PhisWsConfig
+                                          ↑
                                    opensilex-front
                                      FrontModule
                                  front: FrontConfig
-                                          ↑
-                                       phis2ws
-                                     PhisWsModule
-                                 phisws: PhisWsConfig
 ```
 
 See below the output of the resulted fully processed configuration with comments:
@@ -615,7 +615,7 @@ Command Line Interface is the main entry point of OpenSilex application.
 CLI is implemented with Picocli library which provide automatic help, parameter validation, default values and much more.
 
 To add a new CLI command group, you have to add a new class in your module which
-- extends `org.opensilex.cli.help.HelpPrinterCommand`
+- extends `org.opensilex.cli.help.CLIHelpPrinterCommand`
 - implements `org.opensilex.cli.OpenSilexCommand`
 - use Picocli annotations on class and methods
 
@@ -636,7 +636,7 @@ See below an example of default help message produced by he given annotated Java
         name = "user",
         header = "Subcommand to group OpenSILEX users operations"
 )
-public class UserCommands extends HelpPrinterCommand implements OpenSilexCommand {
+public class UserCommands extends CLIHelpPrinterCommand implements OpenSilexCommand {
 
     @Command(
             name = "add",

@@ -17,10 +17,10 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
  */
 class SPARQLProxyResource<T extends SPARQLResourceModel> extends SPARQLProxy<T> {
 
-    SPARQLProxyResource(Node graph, URI uri, Class<T> type, String lang, SPARQLService service) throws Exception {
-        super(graph, type, lang, service);
+    SPARQLProxyResource(SPARQLClassObjectMapperIndex repository, Node graph, URI uri, Class<T> type, String lang, SPARQLService service) throws Exception {
+        super(repository,graph, type, lang, service);
         this.uri = uri;
-        this.mapper = SPARQLClassObjectMapper.getForClass(type);
+        this.mapper = repository.getForClass(type);
     }
 
     protected final SPARQLClassObjectMapper<T> mapper;

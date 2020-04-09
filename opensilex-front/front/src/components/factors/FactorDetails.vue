@@ -36,7 +36,7 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import { FactorCreationDTO, FactorDetailsDTO } from "opensilex-core/index";
+import { FactorDetailsGetDTO } from "opensilex-core/index";
 
 @Component
 export default class FactorDetails extends Vue {
@@ -52,7 +52,7 @@ export default class FactorDetails extends Vue {
     return this.$store.state.user;
   }
 
-  details: FactorDetailsDTO = {
+  details: FactorDetailsGetDTO = {
     uri: null,
     alias: null,
     comment: null,

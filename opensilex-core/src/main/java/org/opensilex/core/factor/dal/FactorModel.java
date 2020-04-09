@@ -67,7 +67,7 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
            Normalizer
                    .normalize(instance.getAlias(), Normalizer.Form.NFD)
                    .replaceAll("[^\\p{ASCII}]", "")
-                   .replaceAll("\\s+","");
+                   .replaceAll("\\s+","")
         };
     }
 }

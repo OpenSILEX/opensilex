@@ -176,7 +176,7 @@ variables:
   except:
     - schedules
   environment:
-    name: "$CI_COMMIT_REF_NAME-test5"
+    name: "$CI_COMMIT_REF_NAME-test"
     url: $DYNAMIC_ENVIRONMENT_URL
   artifacts:
     reports:

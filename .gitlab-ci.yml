@@ -230,8 +230,9 @@ trigger:phis:deploy:test:
     - mvn install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
     - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $OPENSILEX_APP_REVISION
-  only:
-    - schedules
+  only: 
+    variables:
+      - $SCHEDULES == "test-java-versions"
 
 ##  BUILD VERSIONS # example https://gitlab.com/gitlab-org/gitlab-foss/issues/13755
 
@@ -288,6 +289,9 @@ pages:
   artifacts:
     paths:
       - public
+  only: 
+    variables:
+      - $SCHEDULES == "pages"
 
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM

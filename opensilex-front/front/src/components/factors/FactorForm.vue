@@ -16,7 +16,8 @@
       <h2 slot="title"></h2>
       <tab-content
         v-bind:title="$t('component.factor.form-wizard.general-informations')"
-      >
+      > 
+      <template slot="default" slot-scope="props">
         <ValidationObserver ref="validatorRef">
           <b-form>
             <!-- URI -->
@@ -91,33 +92,44 @@
                 <div class="error-message alert alert-danger">{{ errors[0] }}</div>
               </ValidationProvider>
             </b-form-group>
+            <b-form-group>
+              <b-button
+              variant="primary"
+              v-if="!props.isLastStep"
+              @click="checkBeforeSkosStep"
+            >{{$t( editMode ? 'component.factor.update' : 'component.factor.add')}}</b-button>
+            </b-form-group>
           </b-form>
         </ValidationObserver>
+      </template>
       </tab-content>
       <tab-content v-bind:title="$t('component.common.form-wizard.external-ontologies')">
         <opensilex-ExternalReferencesForm :skosReferences="form"></opensilex-ExternalReferencesForm>
+         <b-button
+            variant="primary"
+            @click="onValidateData"
+          >{{$t('component.skos.update')}}</b-button>
       </tab-content>
       <template slot="footer" slot-scope="props">
-        
+          <div class="wizard-footer-left">
+            <b-button
+              variant="secondary"
+              v-if="props.activeTabIndex == 0 && !props.isLastStep"
+              @click="hideForm"
+            >{{$t('component.common.form-wizard.cancel')}}</b-button>
+            <b-button
+              variant="secondary"
+              v-else
+              @click="props.prevTab()"
+            >{{$t('component.common.form-wizard.previous')}}</b-button>
+          </div>
   
         <div class="wizard-footer-right">
           <b-button
-            variant="secondary"
-            v-if="props.activeTabIndex == 0 && !props.isLastStep"
-            @click="hideForm"
-          >{{$t('component.common.form-wizard.cancel')}}</b-button>
-    
-          <b-button
-            variant="primary"
-            v-if="!props.isLastStep"
-            @click="checkBeforeSkosStep"
-          >{{$t( editMode ? 'component.factor.update' : 'component.factor.add')}}</b-button>
-          <!-- {{$t('component.common.ok')}} -->
-          <b-button
-            v-else
-            variant="primary"
-            @click="onValidateData"
-          >{{$t(props.isLastStep ? 'component.skos.update' : 'component.common.form-wizard.next')}}</b-button>
+            v-if="!props.isLastStep && editMode"
+            variant="success"
+            @click="props.nextTab()"
+          >{{$t('component.skos.link-external-button')}}</b-button>
           <b-button v-if="props.isLastStep" @click="hideForm" variant="secondary">{{$t('component.common.form-wizard.done')}}</b-button>
         </div>
       </template>
@@ -282,6 +294,7 @@ export default class FactorForm extends Vue {
                   // on creation
                   let factorCreateFormWizard: any = this.$refs.factorCreateFormWizard;
                   factorCreateFormWizard.nextTab();
+                  this.editMode = true;
                 }
                 resolve(true);
               })

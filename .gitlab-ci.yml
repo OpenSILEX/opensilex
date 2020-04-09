@@ -165,7 +165,7 @@ variables:
     - schedules
   environment:
     name: "$CI_COMMIT_REF_NAME-test3"
-    url: http://$$REMOTE_SERVER_IP:$$OPENSILEX_JAR_PORT
+    url: http://$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT
 
 
 # ########################

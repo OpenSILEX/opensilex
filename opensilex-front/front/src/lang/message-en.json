@@ -256,7 +256,8 @@
             "narrower" : "narrower",
             "no-relation" : "Please choose a relation type",
             "ontologies-references-label" :"Ontologies References",
-            "link-external" :"Add external references to"
+            "link-external" :"Add external references to",
+            "link-external-button" :"Add external references"
         },
         "germplasm": {
             "uri": "Germplasm URI",

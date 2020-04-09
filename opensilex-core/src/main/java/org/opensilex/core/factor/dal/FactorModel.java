@@ -9,6 +9,7 @@
  */
 package org.opensilex.core.factor.dal;
 
+import java.text.Normalizer;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SKOSReferencesModel;
@@ -63,7 +64,10 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
     @Override
     public String[] getUriSegments(FactorModel instance) {
         return new String[]{
-            instance.getAlias()
+           Normalizer
+                   .normalize(instance.getAlias(), Normalizer.Form.NFD)
+                   .replaceAll("[^\\p{ASCII}]", "")
+                   .replaceAll("\\s+","");
         };
     }
 }

@@ -2,7 +2,7 @@
   <div>
     <ValidationObserver ref="validatorRef">
       <b-form>
-        <p>{{$t('component.skos.link-external')}} : <em><strong>{{this.skosReferences.alias}}</strong></em> ({{this.skosReferences.uri}})</p>
+        <p>{{$t('component.skos.link-external')}} : <em><strong class="text-primary">{{this.skosReferences.alias}}</strong></em> ({{this.skosReferences.uri}})</p>
         <b-card bg-variant="light">
           <div class="row">
             <div class="col">
@@ -84,7 +84,7 @@
               <b-form-group label-align-sm="right">
                 <b-button
                   @click="addRelationsToSkosReferences"
-                  variant="info"
+                  variant="success"
                 >{{$t('component.skos.add')}}</b-button>
               </b-form-group>
             </div>
@@ -302,4 +302,3 @@ export default class ExternalReferencesForm extends Vue {
 
 <style scoped lang="scss">
 </style>
-

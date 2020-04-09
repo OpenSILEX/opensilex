@@ -258,7 +258,8 @@
             "narrower" : "Plus spécifique",
             "no-relation" : "Sélectionner une relation",
             "ontologies-references-label" :"Réferences ontologiques",
-            "link-external" :"Add external references to"
+            "link-external" :"Ajouter des références externes à",
+            "link-external-button" :"Ajouter des références externes"
         },
         "germplasm": {
             "uri": "URI du germplasm",

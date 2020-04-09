@@ -72,10 +72,7 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
 
         Set<Class<? extends SPARQLResourceModel>> initClasses = new HashSet<>();
 
-//        Reflections localRef = new Reflections(ConfigurationBuilder.build("")
-//                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
-//                .setExpandSuperTypes(false)).merge(getOpenSilex().getReflections());
-        getOpenSilex().getReflections().getTypesAnnotatedWith(SPARQLResource.class).forEach(c -> {
+        getOpenSilex().getAnnotatedClasses(SPARQLResource.class).forEach(c -> {
             LOGGER.debug("Register model class to build: " + c.getCanonicalName());
             initClasses.add((Class<? extends SPARQLResourceModel>) c);
         });

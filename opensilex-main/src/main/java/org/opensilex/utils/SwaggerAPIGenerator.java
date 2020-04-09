@@ -160,6 +160,6 @@ public class SwaggerAPIGenerator {
 
         args.put(OpenSilex.BASE_DIR_ARG_KEY, baseDirectory.toFile().getCanonicalPath());
 
-        return OpenSilex.createInstance(args, false, true);
+        return OpenSilex.createStaticInstance(args);
     }
 }

@@ -15,7 +15,6 @@ import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,27 +27,16 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.config.ConfigManager;
 import org.opensilex.dependencies.DependencyManager;
-import org.opensilex.server.ServerModule;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
 import org.opensilex.utils.ClassUtils;
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
-import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * <pre>
  * Module manager for OpenSilex applications
- * - Load modules with dependencies
- * - Load their configuration
- * - Start/stop services
- * - Start/stop modules
- * - Call install method for all modules
- * - Provide methods to access modules (By class, implemented extension, ...)
+ * Load modules with dependencies and store references
  * </pre>
  *
  * @author Vincent Migot
@@ -90,15 +78,15 @@ public class OpenSilexModuleManager {
 
     private final Set<URL> modulesURLs;
 
-    private final boolean moduleJarReflection;
-    private Reflections reflections;
-
-    public OpenSilexModuleManager(DependencyManager dependencyManager, Path baseDirectory, OpenSilexConfig systemConfig, boolean moduleJarReflection) {
+    public OpenSilexModuleManager(DependencyManager dependencyManager, Path baseDirectory, OpenSilexConfig systemConfig) {
         this.dependencyManager = dependencyManager;
         this.baseDirectory = baseDirectory;
         this.systemConfig = systemConfig;
         this.modulesURLs = loadModulesWithDependencies();
-        this.moduleJarReflection = moduleJarReflection;
+    }
+
+    public Set<URL> getModulesURLs() {
+        return modulesURLs;
     }
 
     /**
@@ -142,79 +130,6 @@ public class OpenSilexModuleManager {
         setIgnoredModules(systemConfig.ignoredModules());
 
         return urls;
-    }
-
-    private void buildReflections() {
-        LOGGER.debug("Initialize JAR URLs to scan by reflection");
-        Set<URL> urlsToScan = this.modulesURLs;
-
-        LOGGER.debug("Exclude ignored modules from reflection");
-        Collection<String> ignoredModuleFilePatterns = systemConfig.ignoredModules().values();
-        urlsToScan = urlsToScan.stream().filter((URL url) -> {
-            for (String ignoredModuleFilePattern : ignoredModuleFilePatterns) {
-                if (!url.getPath().endsWith(ignoredModuleFilePattern)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }).collect(Collectors.toSet());
-
-        if (moduleJarReflection) {
-            LOGGER.debug("Extra module JAR files registring for Integration Test");
-            Set<URL> jarModulesURLs = new HashSet<>();
-            forEachModule(m -> {
-                if (!m.getClass().equals(ServerModule.class)) {
-                    File jarFile = ClassUtils.getJarFile(m.getClass());
-
-                    try {
-                        URL jarURL = new URL("file://" + jarFile.getAbsolutePath());
-                        LOGGER.debug("Register module JAR URL for" + m.getClass().getSimpleName() + ": " + jarURL.getPath());
-                        jarModulesURLs.add(jarURL);
-                    } catch (MalformedURLException ex) {
-                        LOGGER.warn("Invalid module URL for: " + m.getClass().getSimpleName(), ex);
-                    }
-                }
-            });
-
-            urlsToScan.addAll(jarModulesURLs);
-        }
-
-        ConfigurationBuilder builder;
-        if (!urlsToScan.isEmpty()) {
-
-            // Load dependencies through URL Class Loader based on actual class loader
-            if (urlsToScan.size() > 0) {
-                URLClassLoader classLoader = new URLClassLoader(
-                        urlsToScan.toArray(new URL[urlsToScan.size()]),
-                        Thread.currentThread().getContextClassLoader()
-                );
-                LOGGER.debug("Module registred, jar URLs added to classpath");
-
-                // Set the newly created class loader as the main one
-                Thread.currentThread().setContextClassLoader(classLoader);
-            } else {
-                LOGGER.debug("No external module found !");
-            }
-
-            builder = ConfigurationBuilder.build("", OpenSilex.getClassLoader())
-                    .setUrls(urlsToScan)
-                    .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
-                    .setExpandSuperTypes(false);
-        } else {
-            builder = ConfigurationBuilder.build("", OpenSilex.getClassLoader())
-                    .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
-                    .setExpandSuperTypes(false);
-        }
-
-        reflections = new Reflections(builder);
-    }
-
-    public Reflections getReflections() {
-        if (reflections == null) {
-            this.buildReflections();
-        }
-        return reflections;
     }
 
     /**
@@ -561,37 +476,7 @@ public class OpenSilexModuleManager {
         throw new OpenSilexModuleNotFoundException(moduleClass);
     }
 
-    /**
-     * Call install method for all modules
-     *
-     * @throws Exception Rethrow any exception in module install method
-     */
-    public void install(boolean reset) throws Exception {
-        for (OpenSilexModule module : getModules()) {
-            try {
-                LOGGER.info("Install module: " + module.getClass().getCanonicalName());
-                module.install(reset);
-            } catch (Exception ex) {
-                LOGGER.error("Fail to install module: " + module.getClass().getCanonicalName(), ex);
-                throw ex;
-            }
-        }
-    }
-
-    public void check() throws Exception {
-        for (OpenSilexModule module : getModules()) {
-            try {
-                LOGGER.info("Check module: " + module.getClass().getCanonicalName());
-                module.check();
-            } catch (Exception ex) {
-                LOGGER.error("Fail to check module: " + module.getClass().getCanonicalName(), ex);
-                throw ex;
-            }
-        }
-    }
-
     public boolean isRegistredURL(URL url) {
         return registredURLs.contains(url);
     }
-
 }

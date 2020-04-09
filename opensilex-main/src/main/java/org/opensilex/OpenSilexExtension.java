@@ -10,7 +10,6 @@ package org.opensilex;
  * @author vince
  */
 public interface OpenSilexExtension {
-    
-    
+
     public OpenSilex getOpenSilex();
 }

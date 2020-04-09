@@ -219,6 +219,7 @@
             "form-alias-placeholder" : "Irrigation, Ombrage, Variété, etc.",
             "comment": "Description associée à ce facteur (protocole, apport de composé)",
             "comment-help": "alias",
+            "details" : "Détails du facteur",
             "form-comment-placeholder" : "Protocole n°1289 - Apport d'eau de 5 ml/jour.",
             "errors": {
                 "user-already-exists": "URI du facteur déjà existante."

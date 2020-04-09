@@ -2,7 +2,13 @@
   <div>
     <ValidationObserver ref="validatorRef">
       <b-form>
-        <p>{{$t('component.skos.link-external')}} : <em><strong class="text-primary">{{this.skosReferences.alias}}</strong></em> ({{this.skosReferences.uri}})</p>
+        <p>
+          {{$t('component.skos.link-external')}} :
+          <em>
+            <strong class="text-primary">{{this.skosReferences.alias}}</strong>
+          </em>
+          ({{this.skosReferences.uri}})
+        </p>
         <b-card bg-variant="light">
           <div class="row">
             <div class="col">
@@ -12,9 +18,7 @@
                 label-class="font-weight-bold pt-0"
                 class="mb-0"
               >
-                <template
-                  v-slot:label
-                >{{$t('component.skos.ontologies-references-label') }}</template>
+                <template v-slot:label>{{$t('component.skos.ontologies-references-label') }}</template>
               </b-form-group>
               <b-card-text>
                 <ul>
@@ -22,7 +26,8 @@
                     v-for="externalOntologyRef in externalOntologiesRefs"
                     :key="externalOntologyRef.label"
                   >
-                    <a target="_blank"
+                    <a
+                      target="_blank"
                       v-bind:title="externalOntologyRef.label"
                       v-bind:href="externalOntologyRef.link"
                       v-b-tooltip.v-info.hover.left="externalOntologyRef.description"
@@ -116,7 +121,6 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import Multiselect from "vue-multiselect";
-// import { OntologyReferenceDTO } from "opensilex-core/index";
 import Vue from "vue";
 
 @Component
@@ -243,7 +247,7 @@ export default class ExternalReferencesForm extends Vue {
     this.updateRelations("broader", this.skosReferences.broader);
     this.updateRelations("closeMatch", this.skosReferences.closeMatch);
     this.updateRelations("exactMatch", this.skosReferences.exactMatch);
-    console.log(this.relationsInternal);
+    console.debug(this.relationsInternal);
     return this.relationsInternal;
   }
 
@@ -283,7 +287,7 @@ export default class ExternalReferencesForm extends Vue {
     console.log(this.skosReferences, this.skosReferences[currentRelation]);
 
     this.$nextTick(function() {
-      console.log(this.skosReferences, this.skosReferences[currentRelation]);
+      console.debug(this.skosReferences, this.skosReferences[currentRelation]);
       if (!this.skosReferences[currentRelation].includes(currentExternalUri)) {
         this.skosReferences[currentRelation].push(currentExternalUri);
       }

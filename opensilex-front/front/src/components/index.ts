@@ -24,6 +24,8 @@ import InfrastructureForm from './infrastructures/InfrastructureForm.vue';
 import FactorView from './factors/FactorView.vue';
 import FactorList from './factors/FactorList.vue';
 import FactorForm from './factors/FactorForm.vue';
+import FactorDetails from './factors/FactorDetails.vue';
+
 // factors
 import FactorLevelView from './factors/FactorLevelView.vue';
 import FactorLevelList from './factors/FactorLevelList.vue';
@@ -31,7 +33,7 @@ import FactorLevelForm from './factors/FactorLevelForm.vue';
 //common
 import FormInputLabelHelper from './common/FormInputLabelHelper.vue'
 import ExternalReferencesForm from './common/ExternalReferencesForm.vue'
-
+import ExternalReferencesDetails from './common/ExternalReferencesDetails.vue'
 
 import ExperimentForm from './experiments/ExperimentForm.vue';
 import ExperimentForm2 from './experiments/ExperimentForm2.vue';
@@ -82,6 +84,7 @@ export default {
     "opensilex-FactorView": FactorView,
     "opensilex-FactorList": FactorList,
     "opensilex-FactorForm": FactorForm,
+    "opensilex-FactorDetails": FactorDetails,
     // factors levels
     "opensilex-FactorLevelView": FactorLevelView,
     "opensilex-FactorLevelList": FactorLevelList,
@@ -89,6 +92,7 @@ export default {
     //common
     'opensilex-FormInputLabelHelper': FormInputLabelHelper,
     'opensilex-ExternalReferencesForm': ExternalReferencesForm,
+    'opensilex-ExternalReferencesDetails': ExternalReferencesDetails,
     'opensilex-ToDoComponent': ToDoComponent
     
 };

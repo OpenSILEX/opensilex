@@ -95,9 +95,9 @@
             <b-form-group>
               <b-button
               variant="primary"
-              v-if="!props.isLastStep"
+              v-if="!props.isLastStep && editMode"
               @click="checkBeforeSkosStep"
-            >{{$t( editMode ? 'component.factor.update' : 'component.factor.add')}}</b-button>
+            >{{$t('component.factor.update')}}</b-button>
             </b-form-group>
           </b-form>
         </ValidationObserver>
@@ -126,10 +126,10 @@
   
         <div class="wizard-footer-right">
           <b-button
-            v-if="!props.isLastStep && editMode"
-            variant="success"
+            v-if="!props.isLastStep"
+            :variant="!editMode ? 'primary' : 'success'"
             @click="props.nextTab()"
-          >{{$t('component.skos.link-external-button')}}</b-button>
+          >{{$t(!editMode ? 'component.factor.add' : 'component.skos.link-external-button')}}</b-button>
           <b-button v-if="props.isLastStep" @click="hideForm" variant="secondary">{{$t('component.common.form-wizard.done')}}</b-button>
         </div>
       </template>
@@ -250,10 +250,12 @@ export default class FactorForm extends Vue {
         return this.$emit("onCreate", this.form, result => {
           if (result instanceof Promise) {
             result.then(resolve).catch(reject);
-            result.then(resolve => {
-              this.setUri(resolve);
+            result.then(uri => {
+              this.setUri(uri);
+              console.log(uri)
             });
           } else {
+            this.setUri(result);
             resolve(result);
           }
         });

@@ -217,6 +217,7 @@
             "form-alias-placeholder": "Irrigation, Shading, Variety, etc.",
             "comment": "comment",
             "comment-help": "Description associated to this factors (protocol, amount of component)",
+            "details" : "Factor details",
             "form-comment-placeholder": "Protocol n°1289 - Amount of water 5 ml/Days.",
             "errors": {
                 "user-already-exists": "Factor already exists with this URI."

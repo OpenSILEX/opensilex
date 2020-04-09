@@ -1,8 +1,8 @@
-<template v-slot:label> 
-    <span>
-      <span>{{$t(label)}}: </span>
-      <font-awesome-icon icon="question-circle" v-b-tooltip.hover :title="$t(helpMessage)"/>
-    </span>
+<template v-slot:label>
+  <span>
+    <span>{{$t(label)}}:</span>
+    <font-awesome-icon icon="question-circle" v-b-tooltip.hover :title="$t(helpMessage)" />
+  </span>
 </template>
 
 <script lang="ts">
@@ -16,9 +16,9 @@ export default class FormInputLabelHelper extends Vue {
 
   @Prop()
   helpMessage: string;
-  
+
   @Prop()
-  label
+  label;
 }
 </script>
 

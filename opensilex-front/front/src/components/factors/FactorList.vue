@@ -31,6 +31,9 @@
       <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
       <template v-slot:cell(actions)="data">
         <b-button-group size="sm">
+          <b-button size="sm" @click="$emit('onDetails', data.item.uri)" variant="outline-success">
+            <font-awesome-icon icon="eye" size="sm" /> 
+          </b-button>
           <b-button size="sm" @click="$emit('onEdit', data.item.uri)" variant="outline-primary">
             <font-awesome-icon icon="edit" size="sm" />
           </b-button>

@@ -30,7 +30,7 @@ import picocli.CommandLine;
         name = "system",
         header = "Subcommand to group OpenSILEX system operations"
 )
-public class SystemCommands extends CLIHelpPrinterCommand implements OpenSilexCommand {
+public class SystemCommands extends AbstractOpenSilexCommand implements OpenSilexCommand {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SystemCommands.class);
 

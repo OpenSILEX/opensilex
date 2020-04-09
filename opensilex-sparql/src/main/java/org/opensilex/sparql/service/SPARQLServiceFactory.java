@@ -23,7 +23,6 @@ import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.rdf4j.RDF4JServiceFactory;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,8 +56,6 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
 
     private URI baseURI;
 
-    private Reflections reflections;
-
     protected SPARQLClassObjectMapperIndex mapperIndex;
 
     private SPARQLModule sparqlModule;
@@ -67,7 +64,6 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
     public void setup() throws Exception {
         sparqlModule = getOpenSilex().getModuleByClass(SPARQLModule.class);
         baseURI = sparqlModule.getBaseURI();
-        reflections = getOpenSilex().getReflections();
     }
 
     @Override
@@ -75,7 +71,11 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
         LOGGER.warn("Build SPARQL models for base URI: " + baseURI.toString());
 
         Set<Class<? extends SPARQLResourceModel>> initClasses = new HashSet<>();
-        reflections.getTypesAnnotatedWith(SPARQLResource.class).forEach(c -> {
+
+//        Reflections localRef = new Reflections(ConfigurationBuilder.build("")
+//                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
+//                .setExpandSuperTypes(false)).merge(getOpenSilex().getReflections());
+        getOpenSilex().getReflections().getTypesAnnotatedWith(SPARQLResource.class).forEach(c -> {
             LOGGER.debug("Register model class to build: " + c.getCanonicalName());
             initClasses.add((Class<? extends SPARQLResourceModel>) c);
         });

@@ -9,8 +9,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import org.opensilex.cli.OpenSilexCommand;
-import org.opensilex.cli.CLIHelpOption;
-import org.opensilex.cli.CLIHelpPrinterCommand;
+import org.opensilex.cli.HelpOption;
+import org.opensilex.cli.AbstractOpenSilexCommand;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLValidationException;
 import org.opensilex.sparql.service.SPARQLService;
@@ -26,7 +26,7 @@ import picocli.CommandLine.Command;
         name = "sparql",
         header = "Subcommand to group OpenSILEX sparql operations"
 )
-public class SPARQLCommands extends CLIHelpPrinterCommand implements OpenSilexCommand {
+public class SPARQLCommands extends AbstractOpenSilexCommand implements OpenSilexCommand {
 
     @CommandLine.Command(
             name = "reset-ontologies",
@@ -34,7 +34,7 @@ public class SPARQLCommands extends CLIHelpPrinterCommand implements OpenSilexCo
             description = "Reset configred ontologies graph defined in each modules"
     )
     public void resetOntologies(
-            @CommandLine.Mixin CLIHelpOption help
+            @CommandLine.Mixin HelpOption help
     ) throws Exception {
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
@@ -54,7 +54,7 @@ public class SPARQLCommands extends CLIHelpPrinterCommand implements OpenSilexCo
     public void renameGraph(
             @CommandLine.Parameters(description = "Old graph URI", defaultValue = "") URI oldGraphURI,
             @CommandLine.Parameters(description = "New graph URI", defaultValue = "") URI newGraphURI,
-            @CommandLine.Mixin CLIHelpOption help
+            @CommandLine.Mixin HelpOption help
     ) throws Exception {
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
@@ -68,7 +68,7 @@ public class SPARQLCommands extends CLIHelpPrinterCommand implements OpenSilexCo
             description = "Enable SHACL validation"
     )
     public void shaclEnable(
-            @CommandLine.Mixin CLIHelpOption help
+            @CommandLine.Mixin HelpOption help
     ) throws Exception {
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
@@ -97,7 +97,7 @@ public class SPARQLCommands extends CLIHelpPrinterCommand implements OpenSilexCo
             description = "Disable SHACL validation"
     )
     public void shaclDisable(
-            @CommandLine.Mixin CLIHelpOption help
+            @CommandLine.Mixin HelpOption help
     ) throws Exception {
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();

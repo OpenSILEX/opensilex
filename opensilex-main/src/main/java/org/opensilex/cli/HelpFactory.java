@@ -1,5 +1,5 @@
 //******************************************************************************
-//                           CLIHelpFactory.java
+//                           HelpFactory.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -22,7 +22,7 @@ import picocli.CommandLine.Model.CommandSpec;
  *
  * @author Vincent Migot
  */
-public class CLIHelpFactory implements IHelpFactory {
+public class HelpFactory implements IHelpFactory {
 
     /**
      * Ascii Art header when displaying help command

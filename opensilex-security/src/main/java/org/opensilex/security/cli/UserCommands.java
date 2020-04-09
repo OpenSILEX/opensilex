@@ -10,8 +10,8 @@ import javax.mail.internet.InternetAddress;
 import org.opensilex.OpenSilex;
 import org.opensilex.cli.MainCommand;
 import org.opensilex.cli.OpenSilexCommand;
-import org.opensilex.cli.CLIHelpOption;
-import org.opensilex.cli.CLIHelpPrinterCommand;
+import org.opensilex.cli.HelpOption;
+import org.opensilex.cli.AbstractOpenSilexCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
@@ -29,7 +29,7 @@ import picocli.CommandLine;
         name = "user",
         header = "Subcommand to group OpenSILEX users operations"
 )
-public class UserCommands extends CLIHelpPrinterCommand implements OpenSilexCommand {
+public class UserCommands extends AbstractOpenSilexCommand implements OpenSilexCommand {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(UserCommands.class);
 
@@ -56,7 +56,7 @@ public class UserCommands extends CLIHelpPrinterCommand implements OpenSilexComm
             @CommandLine.Option(names = {"--password"}, description = "Define user password", defaultValue = "admin") String password,
             @CommandLine.Option(names = {"--admin"}, description = "Define if user is admin", defaultValue = "false") boolean isAdmin,
             @CommandLine.Option(names = {"--lang"}, description = "Define if user default language", defaultValue = OpenSilex.DEFAULT_LANGUAGE) String lang,
-            @CommandLine.Mixin CLIHelpOption help
+            @CommandLine.Mixin HelpOption help
     ) throws Exception {
 
         OpenSilex opensilex = getOpenSilex();

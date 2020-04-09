@@ -38,7 +38,7 @@ import picocli.CommandLine.Parameters;
         name = "server",
         header = "Subcommand to group OpenSILEX server operations"
 )
-public class ServerCommands extends CLIHelpPrinterCommand implements OpenSilexCommand {
+public class ServerCommands extends AbstractOpenSilexCommand implements OpenSilexCommand {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ServerCommands.class);
 
@@ -68,7 +68,7 @@ public class ServerCommands extends CLIHelpPrinterCommand implements OpenSilexCo
             @Option(names = {"--adminPort"}, description = "Server port on which server is listening for admin commands", defaultValue = "8888") int adminPort,
             @Option(names = {"-d", "--daemon"}, description = "Run server as a daemon", defaultValue = "false") boolean daemon,
             @Parameters(description = "Tomcat directory", defaultValue = "") Path tomcatDirectory,
-            @Mixin CLIHelpOption help
+            @Mixin HelpOption help
     ) throws Exception {
 
         // If tomcat working directory is not defined create a temporary one
@@ -166,7 +166,7 @@ public class ServerCommands extends CLIHelpPrinterCommand implements OpenSilexCo
     public void stop(
             @Option(names = {"--host"}, description = "Define server host", defaultValue = "localhost") String host,
             @Option(names = {"-ap", "--adminPort"}, description = "Server port on which server is listening for commands", defaultValue = "8888") int adminPort,
-            @Mixin CLIHelpOption help
+            @Mixin HelpOption help
     ) throws Exception {
         // Create the server admin client
         ServerAdminClient adminClient = new ServerAdminClient(host, adminPort);

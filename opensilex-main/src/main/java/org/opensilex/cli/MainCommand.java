@@ -30,7 +30,7 @@ import picocli.CommandLine.Option;
         header = "OpenSILEX Command Line Interface",
         description = "OpenSILEX is an information system based on ontologies"
 )
-public class MainCommand extends CLIHelpPrinterCommand implements IVersionProvider {
+public class MainCommand extends AbstractOpenSilexCommand implements IVersionProvider {
 
     /**
      * <pre>
@@ -93,7 +93,7 @@ public class MainCommand extends CLIHelpPrinterCommand implements IVersionProvid
         });
 
         // Define the help factory class
-        cli.setHelpFactory(new CLIHelpFactory());
+        cli.setHelpFactory(new HelpFactory());
 
         return cli;
     }

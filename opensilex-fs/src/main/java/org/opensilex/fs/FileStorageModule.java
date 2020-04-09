@@ -6,7 +6,6 @@
 package org.opensilex.fs;
 
 import java.nio.file.Paths;
-import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.fs.service.FileStorageService;
 import org.slf4j.Logger;

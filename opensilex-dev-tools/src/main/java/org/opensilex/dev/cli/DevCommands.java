@@ -9,8 +9,8 @@ import org.opensilex.dev.Install;
 import java.nio.file.Path;
 import org.opensilex.OpenSilex;
 import org.opensilex.cli.OpenSilexCommand;
-import org.opensilex.cli.CLIHelpOption;
-import org.opensilex.cli.CLIHelpPrinterCommand;
+import org.opensilex.cli.HelpOption;
+import org.opensilex.cli.AbstractOpenSilexCommand;
 import org.opensilex.dev.StartServer;
 import org.opensilex.dev.StartServerWithFront;
 import picocli.CommandLine;
@@ -23,7 +23,7 @@ import picocli.CommandLine;
         name = "dev",
         header = "Subcommand to group OpenSILEX development tools operations"
 )
-public class DevCommands extends CLIHelpPrinterCommand implements OpenSilexCommand {
+public class DevCommands extends AbstractOpenSilexCommand implements OpenSilexCommand {
 
     @CommandLine.Command(
             name = "install",
@@ -32,7 +32,7 @@ public class DevCommands extends CLIHelpPrinterCommand implements OpenSilexComma
     )
     public void install(
             @CommandLine.Option(names = {"-r", "--reset"}, description = "Clear existing database before initialization", defaultValue = "false") boolean reset,
-            @CommandLine.Mixin CLIHelpOption help
+            @CommandLine.Mixin HelpOption help
     ) throws Exception {
         Path baseDirectory = OpenSilex.getDefaultBaseDirectory().resolve("../../../opensilex-dev-tools/");
         Install.install(reset, baseDirectory);
@@ -45,7 +45,7 @@ public class DevCommands extends CLIHelpPrinterCommand implements OpenSilexComma
     )
     public void start(
             @CommandLine.Option(names = {"--no-front-dev"}, description = "Disable Vue.JS hot reload development server", defaultValue = "false") boolean noFrontDev,
-            @CommandLine.Mixin CLIHelpOption help
+            @CommandLine.Mixin HelpOption help
     ) throws Exception {
         Path baseDirectory = OpenSilex.getDefaultBaseDirectory().resolve("../../../opensilex-dev-tools/");
         if (noFrontDev) {

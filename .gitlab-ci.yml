@@ -204,22 +204,17 @@ trigger:phis:deploy:test:
   needs: 
     - job: "opensilex:build"
 
-# Trigger pipeline for phis module deployment
+# Update nightly builds branch
 update:nightly:builds:branch:
   stage: build
   script:
-    - apt update && apt install -y git 
-    - existBranch=`git show-ref refs/heads/nightly-builds`
-    - |
-      if [  -z "$existBranch" ]; then
-          echo 'branch nightly-builds not exists!'
-          git checkout -b nightly-builds  > /dev/null 2>&1
-      fi
-    - git checkout nightly-builds
+    - apt update && apt install -y git
+    - if [  -z "`git show-ref refs/heads/nightly-builds`" ]; then  echo 'branch nightly-builds will be created!' &&  git checkout -b nightly-builds; else git checkout nightly-builds ;fi
     - git merge origin/master
     - git push origin nightly-builds
   only:
     - master
+
 
 ########################
 ##  BUILD - TESTS WITH DIFFERENT MAVEN VERSIONS

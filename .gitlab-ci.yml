@@ -322,7 +322,7 @@ anne:build:
   only:
     - anne
 
-anne:alice:deploy:
+test:anne:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   when: on_success  

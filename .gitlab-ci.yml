@@ -187,7 +187,7 @@ trigger:sixtine:build:
   stage: deploy
   image: curlimages/curl
   script:
-    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/1757/trigger/pipeline
+    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" https://forgemia.inra.fr/api/v4/projects/1757/trigger/pipeline
   only:
     - master    
   needs: 
@@ -198,7 +198,18 @@ trigger:phis:deploy:test:
   stage: deploy
   image: curlimages/curl
   script:
-    - curl --request POST --form "variables[DEPLOY]=phis-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+    - curl --request POST --form "variables[DEPLOY]=phis-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV"  https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+  only:
+    - master    
+  needs: 
+    - job: "opensilex:build"
+
+# Trigger pipeline for phis module deployment
+trigger:bdg:deploy:test:
+  stage: deploy
+  image: curlimages/curl
+  script:
+    - curl --request POST --form "variables[DEPLOY]=bdg-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" https://forgemia.inra.fr/api/v4/projects/2063/trigger/pipeline
   only:
     - master    
   needs: 
@@ -207,10 +218,37 @@ trigger:phis:deploy:test:
 # Update nightly builds branch
 update:nightly:builds:branch:
   stage: build
+  before_script:
+    # test variables before deployement
+    -  if [ -z "$GITLAB_DEPLOY_KEY" ]; then echo "Missing GITLAB_DEPLOY_KEY in GITLAB CI variable"; exit 1; fi
+    ##
+    ## Create the SSH directory and give it the right permissions
+    ##
+    - mkdir -p ${HOME}/.ssh
+    - chmod 700 ${HOME}/.ssh
+    ##
+    ## Install ssh-agent if not already installed, it is required by Docker.
+    ## (change apt-get to yum if you use an RPM-based image)
+    ##
+    - 'which ssh-agent || ( apt-get update && apt-get install openssh-client -y )'
+    ##
+    ## Run ssh-agent (inside the build environment)
+    ##
+    - eval $(ssh-agent -s)
+    ##
+    ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+    ## We're using tr to fix line endings which makes ed25519 keys work
+    ## without extra base64 encoding.
+    ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+    ##
+    - mkdir -p ${HOME}/.ssh && touch ${HOME}/.ssh/known_hosts
+    - echo "$GITLAB_DEPLOY_KEY" >> ${HOME}/.ssh/id_rsa
+    - chmod 600 ${HOME}/.ssh/id_rsa
   script:
     - apt update && apt install -y git
     - if [  -z "`git show-ref refs/heads/nightly-builds`" ]; then  echo 'branch nightly-builds will be created!' &&  git checkout -b nightly-builds; else git checkout nightly-builds ;fi
     - git merge origin/master
+    - git fetch origin
     - git push origin nightly-builds
   only:
     - master

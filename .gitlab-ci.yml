@@ -241,7 +241,7 @@ update:nightly:builds:branch:
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
     - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $OPENSILEX_APP_REVISION
   rules:
-    - if: $CI_COMMIT_BRANCH == "schedules" 
+    - if: $NIGHTLY_BUILD == "true" 
 
 ##  BUILD VERSIONS # example https://gitlab.com/gitlab-org/gitlab-foss/issues/13755
 
@@ -299,7 +299,7 @@ pages:
     paths:
       - public
   rules:
-    - if: $CI_COMMIT_BRANCH == "schedules" 
+    - if: $NIGHTLY_BUILD == "true"
 
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM

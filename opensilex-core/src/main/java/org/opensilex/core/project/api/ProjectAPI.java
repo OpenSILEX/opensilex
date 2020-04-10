@@ -125,7 +125,7 @@ public class ProjectAPI {
      * the updated Project {@link URI}
      */
     @PUT
-    // @Path("{uri}")
+    @Path("update")
     @ApiOperation("Update a project")
     @ApiProtected
     @ApiCredential(
@@ -278,7 +278,8 @@ public class ProjectAPI {
             return new ErrorResponse(e).getResponse();
         }
     }
-
+    
+    
     
     /**
      * Remove a project

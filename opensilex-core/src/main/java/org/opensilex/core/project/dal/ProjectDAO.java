@@ -143,6 +143,7 @@ public class ProjectDAO {
         );
     }
     
+    
 
     protected void appendRegexLabelFilter(SelectBuilder select, String label) {
         if (!StringUtils.isEmpty(label)) {

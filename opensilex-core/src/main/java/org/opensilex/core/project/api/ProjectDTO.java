@@ -49,6 +49,8 @@ public abstract class ProjectDTO {
     protected List<URI> relatedProjects = new LinkedList<>();
 
     protected List<URI> groups = new LinkedList<>();
+
+    protected Boolean isPublic;
     
     
     
@@ -194,6 +196,16 @@ public abstract class ProjectDTO {
 
     public ProjectDTO setGroups(List<URI> groups) {
         this.groups = groups;
+        return this;
+    }
+    
+     @ApiModelProperty(example = "true")
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+
+    public ProjectDTO setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
         return this;
     }
 

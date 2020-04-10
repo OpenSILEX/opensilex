@@ -130,7 +130,6 @@ variables:
 
 .deploy:opensilex:instance: &deploy_opensilex_template
   stage: deploy
-  when: manual
   image: instrumentisto/rsync-ssh
   script:
     - apk add curl git
@@ -318,7 +317,6 @@ alice:build:
 test:alice:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
-  when: on_success
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/alice"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
@@ -329,7 +327,8 @@ test:alice:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/alice"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "alice" 
+    - if: $CI_COMMIT_BRANCH == "alice"
+      when: on_success
   needs:
     - alice:build
 
@@ -345,7 +344,6 @@ anne:build:
 test:anne:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
-  when: on_success  
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/anne"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
@@ -357,6 +355,7 @@ test:anne:deploy:
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
     - if: $CI_COMMIT_BRANCH == "anne"
+      when: on_success
   needs:
     - anne:build
 
@@ -372,7 +371,6 @@ arnaud:build:
 test:arnaud:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
-  when: on_success  
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/arnaud"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
@@ -384,6 +382,7 @@ test:arnaud:deploy:
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
     - if: $CI_COMMIT_BRANCH == "arnaud"
+      when: on_success
   needs:
     - arnaud:build
 
@@ -399,7 +398,6 @@ julien:build:
 test:julien:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
-  when: on_success  
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/julien"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
@@ -411,6 +409,7 @@ test:julien:deploy:
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
     - if: $CI_COMMIT_BRANCH == "julien"
+      when: on_success
   needs:
     - julien:build
 
@@ -427,7 +426,6 @@ renaud:build:
 test:renaud:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
-  when: on_success  
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/renaud"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
@@ -439,6 +437,7 @@ test:renaud:deploy:
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
     - if: $CI_COMMIT_BRANCH == "renaud"
+      when: on_success
   needs:
     - renaud:build
 
@@ -454,7 +453,6 @@ vincent:build:
 test:vincent:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
-  when: on_success  
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/vincent"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
@@ -466,6 +464,7 @@ test:vincent:deploy:
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
     - if: $CI_COMMIT_BRANCH == "vincent"
+      when: on_success
   needs:
     - vincent:build
 
@@ -486,7 +485,6 @@ ephesia:build:
 test:ephesia:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
-  when: on_success  
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/ephesia"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
@@ -498,5 +496,6 @@ test:ephesia:deploy:
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
     - if: $CI_COMMIT_BRANCH == "ephesia"
+      when: on_success
   needs:
     - ephesia:build

@@ -205,10 +205,14 @@ trigger:phis:deploy:test:
     - job: "opensilex:build"
 
 # Trigger pipeline for phis module deployment
-trigger:phis:deploy:test:
+update:nightly:builds:branch:
   stage: deploy
   script:
-    - git checkout -b nightly-builds  > /dev/null 2>&1
+    - |
+      if [  -z "`git show-ref refs/heads/nightly-builds`"" ]; then
+          echo 'branch nightly-builds not exists!'
+          git checkout -b nightly-builds  > /dev/null 2>&1
+      fi
     - git checkout nightly-builds
     - git merge origin/master
     - git push origin nightly-builds

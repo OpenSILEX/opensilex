@@ -209,7 +209,7 @@ update:nightly:builds:branch:
   stage: build
   script:
     - |
-      if [  -z "`git show-ref refs/heads/nightly-builds`"" ]; then
+      if [  -z "`git show-ref refs/heads/nightly-builds`" ]; then
           echo 'branch nightly-builds not exists!'
           git checkout -b nightly-builds  > /dev/null 2>&1
       fi

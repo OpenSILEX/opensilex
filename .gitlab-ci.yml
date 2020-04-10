@@ -204,6 +204,19 @@ trigger:phis:deploy:test:
   needs: 
     - job: "opensilex:build"
 
+# Trigger pipeline for phis module deployment
+trigger:phis:deploy:test:
+  stage: deploy
+  script:
+    - git checkout -b nightly-builds  > /dev/null 2>&1
+    - git checkout nightly-builds
+    - git merge origin/master
+    - git push origin nightly-builds
+  only:
+    - master    
+  needs: 
+    - job: "opensilex:build"
+
 ########################
 ##  BUILD - TESTS WITH DIFFERENT MAVEN VERSIONS
 ########################

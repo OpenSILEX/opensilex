@@ -206,7 +206,7 @@ trigger:phis:deploy:test:
 
 # Trigger pipeline for phis module deployment
 update:nightly:builds:branch:
-  stage: deploy
+  stage: build
   script:
     - |
       if [  -z "`git show-ref refs/heads/nightly-builds`"" ]; then
@@ -217,9 +217,7 @@ update:nightly:builds:branch:
     - git merge origin/master
     - git push origin nightly-builds
   only:
-    - master    
-  needs: 
-    - job: "opensilex:build"
+    - master
 
 ########################
 ##  BUILD - TESTS WITH DIFFERENT MAVEN VERSIONS

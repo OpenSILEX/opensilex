@@ -207,6 +207,7 @@ trigger:phis:deploy:test:
 # Trigger pipeline for phis module deployment
 update:nightly:builds:branch:
   stage: build
+  image: alpine/git
   script:
     - |
       if [  -z "`git show-ref refs/heads/nightly-builds`" ]; then

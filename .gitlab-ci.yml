@@ -208,7 +208,7 @@ trigger:phis:deploy:test:
 update:nightly:builds:branch:
   stage: build
   script:
-    - apt update && apt install git
+    - apt update && apt install -y git 
     - existBranch=`git show-ref refs/heads/nightly-builds`
     - |
       if [  -z "$existBranch" ]; then

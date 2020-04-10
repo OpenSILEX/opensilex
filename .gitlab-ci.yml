@@ -222,8 +222,7 @@ update:nightly:builds:branch:
     - apt update && apt install -y git
     - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"
     - if [  -z "`git show-ref refs/heads/nightly-builds`" ]; then  echo 'branch nightly-builds will be created!' &&  git checkout -b nightly-builds; else git checkout nightly-builds ;fi
-    - git merge origin/master
-    - git fetch origin
+    - git rebase -Xtheirs origin/master
     - git push origin nightly-builds
   only:
     - master

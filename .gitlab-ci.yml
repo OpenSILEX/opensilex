@@ -209,8 +209,9 @@ update:nightly:builds:branch:
   stage: build
   image: alpine/git
   script:
+    - existBranch=`git show-ref refs/heads/nightly-builds`
     - |
-      if [  -z "`git show-ref refs/heads/nightly-builds`" ]; then
+      if [  -z "$existBranch" ]; then
           echo 'branch nightly-builds not exists!'
           git checkout -b nightly-builds  > /dev/null 2>&1
       fi

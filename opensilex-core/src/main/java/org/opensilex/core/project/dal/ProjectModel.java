@@ -7,9 +7,12 @@ package org.opensilex.core.project.dal;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.LinkedList;
 import java.util.List;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -17,7 +20,9 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
-
+/**
+ * @author Julien BONNEFONT
+ */
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Project",
@@ -27,12 +32,12 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerator<ProjectModel> {
 
     @SPARQLProperty(
-            ontology = FOAF.class,
-            property = "name",
+            ontology = RDFS.class,
+            property = "label",
             required = true
     )
-    private String name;
-    public static final String NAME_SPARQL_VAR = "name";
+    String label;
+    public static final String LABEL_VAR = "label";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -48,6 +53,12 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
     private String description;
     public static final String DESCRIPTION_SPARQL_VAR = "description";
 
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasExperiment"
+    )
+    List<ExperimentModel> experiments = new LinkedList<>();
+    public static final String EXPERIMENT_URI_SPARQL_VAR = "experiment";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -56,7 +67,6 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
     private String objective;
     public static final String OBJECTIVE_SPARQL_VAR = "objective";
 
-
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "startDate"
@@ -64,14 +74,12 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
     private LocalDate startDate;
     public static final String START_DATE_SPARQL_VAR = "startDate";
 
-
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "endDate"
     )
     private LocalDate endDate;
     public static final String END_DATE_SPARQL_VAR = "endDate";
-
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -85,7 +93,6 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
     )
     private URI homePage;
     public static final String HOMEPAGE_SPARQL_VAR = "homePage";
-
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -110,13 +117,20 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
             property = "hasRelatedProject"
     )
     private List<ProjectModel> relatedProjects;
+    
+      @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasGroup"
+    )
+    List<GroupModel> groups = new LinkedList<>();
+    public static final String GROUP_SPARQL_VAR = "group";
 
-    public String getName() {
-        return name;
+    public String getLabel() {
+        return label;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public String getShortname() {
@@ -125,6 +139,14 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
 
     public void setShortname(String shortname) {
         this.shortname = shortname;
+    }
+
+    public List<ExperimentModel> getExperiments() {
+        return experiments;
+    }
+
+    public void setExperiments(List<ExperimentModel> experiments) {
+        this.experiments = experiments;
     }
 
     public List<ProjectModel> getRelatedProjects() {
@@ -206,13 +228,22 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
     public void setScientificContacts(List<UserModel> scientificContacts) {
         this.scientificContacts = scientificContacts;
     }
+    
+     public List<GroupModel> getGroups() {
+        return groups;
+    }
 
+    public void setGroups(List<GroupModel> groups) {
+        this.groups = groups;
+    }
+    
     @Override
     public String[] getUriSegments(ProjectModel instance) {
         return new String[]{
-            "project",
-            instance.getName()
+                instance.getLabel()
         };
     }
+
+
 
 }

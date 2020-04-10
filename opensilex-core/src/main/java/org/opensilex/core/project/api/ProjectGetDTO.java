@@ -6,52 +6,56 @@
 package org.opensilex.core.project.api;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.opensilex.core.project.dal.ProjectModel;
-
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
  *
+ * A basic GetDTO which extends the {@link ProjectDTO} and which add the
+ * conversion from an {@link ProjectModel} to a {@link ProjectGetDTO}
+ *
  * @author vidalmor
+ * @author Julien BONNEFONT
  */
-public class ProjectGetDTO {
+public class ProjectGetDTO extends ProjectDTO {
 
-    private URI uri;
+    protected static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
 
-    private String label;
-
-    private String comment;
-
-    public URI getUri() {
-        return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
+        if (models == null || models.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return models.stream().map(SPARQLResourceModel::getUri)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public static ProjectGetDTO fromModel(ProjectModel model) {
+
         ProjectGetDTO dto = new ProjectGetDTO();
 
-        dto.setUri(model.getUri());
-        dto.setLabel(model.getName());
-        //dto.setComment(model.getComment());
-        
+        dto.setUri(model.getUri())
+                .setLabel(model.getLabel())
+                .setStartDate(model.getStartDate().toString())
+                .setShortname(model.getShortname())
+                .setDescription(model.getDescription())
+                .setObjective(model.getObjective())
+                .setHomePage(model.getHomePage());
+        if (model.getEndDate() != null) {
+            dto.setEndDate(model.getEndDate().toString());
+        }
+
+        dto.setKeywords(model.getKeywords())
+                .setAdministrativeContacts(getUriList(model.getAdministrativeContacts()))
+                .setCoordinators(getUriList(model.getCoordinators()))
+                .setScientificContacts(getUriList(model.getScientificContacts()))
+                .setRelatedProjects(getUriList(model.getRelatedProjects()))
+                .setExperiments(getUriList(model.getExperiments()))
+                .setGroups(getUriList(model.getGroups()));
+
         return dto;
     }
+
 }

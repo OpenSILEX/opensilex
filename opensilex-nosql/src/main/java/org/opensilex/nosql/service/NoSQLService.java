@@ -7,8 +7,8 @@
 package org.opensilex.nosql.service;
 
 import org.opensilex.nosql.exceptions.NoSQLTransactionException;
-import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBConnection;
+import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceDefaultDefinition;
 
@@ -25,11 +25,11 @@ import org.opensilex.service.ServiceDefaultDefinition;
         serviceClass = MongoDBConnection.class,
         serviceID = "mongodb"
 )
-public class NoSQLService implements NoSQLConnection, Service {
+public class NoSQLService extends BaseService implements NoSQLConnection, Service {
 
     /**
      * Constructor with NoSQLConnection to allow multiple configurable
- implementations
+     * implementations
      *
      * @param connection Connection for the service
      */
@@ -52,6 +52,12 @@ public class NoSQLService implements NoSQLConnection, Service {
     @Override
     public void rollbackTransaction(Exception ex) throws Exception {
         connection.rollbackTransaction(ex);
+    }
+
+    @Override
+    public void setup() throws Exception {
+        connection.setOpenSilex(getOpenSilex());
+        connection.setup();
     }
 
     @Override

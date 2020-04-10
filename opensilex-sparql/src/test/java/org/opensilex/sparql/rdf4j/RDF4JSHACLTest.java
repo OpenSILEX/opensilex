@@ -5,9 +5,11 @@
 //******************************************************************************
 package org.opensilex.sparql.rdf4j;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.opensilex.sparql.SPARQLServiceTest;
-import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.model.A;
+import org.opensilex.sparql.model.B;
+import org.opensilex.sparql.model.C;
 import org.opensilex.sparql.utils.SHACLTest;
 
 /**
@@ -16,11 +18,25 @@ import org.opensilex.sparql.utils.SHACLTest;
  */
 public class RDF4JSHACLTest extends SHACLTest {
 
-    private static SPARQLService sparql;
+    protected static RDF4JInMemoryServiceFactory factory;
 
     @BeforeClass
-    public static void initialize() throws Exception {
-        sparql = new RDF4JInMemoryServiceFactory().provide();
-        SHACLTest.initialize(sparql);
+    public static void setupSPARQL() throws Exception {
+        factory = new RDF4JInMemoryServiceFactory();
+        factory.setOpenSilex(opensilex);
+        factory.setup();
+        factory.startup();
+        factory.getMapperIndex().addClasses(
+                A.class,
+                B.class,
+                C.class
+        );
+        sparql = factory.provide();
+        SHACLTest.initialize();
+    }
+
+    @AfterClass
+    public static void cleanSPARQL() throws Exception {
+        factory.dispose(sparql);
     }
 }

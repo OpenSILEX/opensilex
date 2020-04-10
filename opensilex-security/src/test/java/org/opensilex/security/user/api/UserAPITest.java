@@ -14,8 +14,10 @@ import static junit.framework.TestCase.assertFalse;
 import org.opensilex.OpenSilex;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.security.SecurityModule;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 public class UserAPITest extends AbstractSecurityIntegrationTest {
 
@@ -216,16 +218,14 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
     }
 
     @Override
-    protected List<String> getGraphsToCleanNames() {
-        return new ArrayList<String>() {
-            {
-                add("users");
-            }
-        };
+    protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
+        ArrayList<Class<? extends SPARQLResourceModel>> modelList = new ArrayList<>();
+        modelList.add(UserModel.class);
+        return modelList;
     }
 
     @Override
     public void afterEach() throws Exception {
-        SecurityModule.createDefaultSuperAdmin();
+        getOpensilex().getModuleByClass(SecurityModule.class).createDefaultSuperAdmin();
     }
 }

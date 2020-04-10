@@ -66,7 +66,14 @@
                 "server-error": "An error occured at server level, please contact your local support..",
                 "unexpected-error": "An unexpected error occured, please contact your local support.",
                 "unauthorized-error": "Your session expired, please login again.",
-                "form-step-errors": "Some field are required in order to go to the next step"
+                "form-step-errors" : "Some field are required in order to go to the next step"
+            },
+            "form-wizard" :{
+                "external-ontologies" : "(Optional) External ontologies references",
+                "previous" : "Previous",
+                "next" : "Next",
+                "done" : "Done",
+                "cancel" : "Cancel"
             }
         },
         "header": {
@@ -203,16 +210,20 @@
             "alias-placeholder": "Enter factor alias",
             "filter-placeholder": "Use this field to filter factors",
             "factors": "factor",
-            "add": "add factor",
+            "add": "create a factor",
             "update": "update factor",
             "alias": "alias",
             "alias-help": "Name used to define this factor",
             "form-alias-placeholder": "Irrigation, Shading, Variety, etc.",
             "comment": "comment",
             "comment-help": "Description associated to this factors (protocol, amount of component)",
+            "details" : "Factor details",
             "form-comment-placeholder": "Protocol n°1289 - Amount of water 5 ml/Days.",
             "errors": {
                 "user-already-exists": "Factor already exists with this URI."
+            },
+            "form-wizard" :{
+                "general-informations" : "Factor description"
             }
         },
         "factorLevel": {
@@ -230,6 +241,24 @@
             "errors": {
                 "user-already-exists": "Factor level already exists with this URI."
             }
+        },
+        "skos" :{
+            "uri" : "reference URI",
+            "uri-help" : "reference identifier URI",
+            "uri-placeholder" : "http://aims.fao.org/aos/agrovoc/c_8332",
+            "relation" : "relation",
+            "relation-help" : "relation associated between Reference URI and this local individual",
+            "relation-placeholder" : "exactMatch",
+            "add" : "add new relation",
+            "update" : "update relations",
+            "exactMatch" : "exactmatch",
+            "closeMatch" : "closematch",
+            "broader" : "broader",
+            "narrower" : "narrower",
+            "no-relation" : "Please choose a relation type",
+            "ontologies-references-label" :"Ontologies References",
+            "link-external" :"Add external references to",
+            "link-external-button" :"Add external references"
         },
         "germplasm": {
             "uri": "Germplasm URI",

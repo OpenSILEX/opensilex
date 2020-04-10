@@ -24,7 +24,8 @@ abstract class SPARQLProxy<T> implements InvocationHandler {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLProxy.class);
 
-    public SPARQLProxy(Node graph, Class<T> type, String lang, SPARQLService service) {
+    public SPARQLProxy(SPARQLClassObjectMapperIndex mapperIndex, Node graph, Class<T> type, String lang, SPARQLService service) {
+        this.mapperIndex = mapperIndex;
         this.type = type;
         this.service = service;
         this.graph = graph;
@@ -35,6 +36,7 @@ abstract class SPARQLProxy<T> implements InvocationHandler {
     protected final SPARQLService service;
     protected final Node graph;
     protected final String lang;
+    protected final SPARQLClassObjectMapperIndex mapperIndex;
     protected T instance;
 
     public T getInstance() {

@@ -29,5 +29,11 @@ public class RDF4JInMemoryServiceFactory extends RDF4JServiceFactory {
 
         return repository;
     }
-    
+
+    @Override
+    public void startup() throws Exception {
+        super.startup();
+        // TODO load all ontologies
+    }
+
 }

@@ -72,6 +72,11 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
         URIDeserializer.usePrefixes = usePrefixes;
     }
 
+    public static void clearPrefixes() {
+        prefixes = null;
+        usePrefixes = false;
+    }
+
     @Override
     public XSDDatatype getDataType() {
         return XSDDatatype.XSDanyURI;

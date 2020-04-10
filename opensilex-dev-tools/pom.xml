@@ -17,7 +17,7 @@
  - Default development configuration in /src/main/resources/config/opensilex.yml
     Default loaded configuration file in use with StartServer or StartServerWithFront
  - Default database and tools with Docker
-    see: README in opensilex-dev and /src/main/resources/docker/docker-compose.yml
+    see: README in opensilex and /src/main/resources/docker/docker-compose.yml
 ******************************************************************************
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -34,7 +34,7 @@
 
     <parent>
         <groupId>org.opensilex</groupId>
-        <artifactId>opensilex-dev</artifactId>
+        <artifactId>opensilex</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>

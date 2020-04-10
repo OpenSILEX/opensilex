@@ -4,7 +4,7 @@
  *  OpenSILEX
  *  Copyright © INRA 2019
  *  Creation date:  17 December, 2019
- *  Contact: arnaud.charleroy@inra.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ *  Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * ******************************************************************************
  */
 package org.opensilex.core.factor.dal;
@@ -14,9 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
-import org.opensilex.core.factor.api.FactorGetDTO;
 import org.opensilex.core.factor.api.FactorSearchDTO;
-import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.OrderBy;
@@ -28,6 +26,8 @@ import org.opensilex.utils.ListWithPagination;
  */
 public class FactorDAO {
 
+     // 1. TODO list properties skos
+    
     protected final SPARQLService sparql;
 
     public FactorDAO(SPARQLService sparql) {
@@ -51,7 +51,7 @@ public class FactorDAO {
     public FactorModel get(URI instanceURI) throws Exception {
         return sparql.getByURI(FactorModel.class, instanceURI, null);
     }
-
+            
     public ListWithPagination<FactorModel> search(String alias, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         return sparql.searchWithPagination(
                 FactorModel.class,
@@ -91,5 +91,4 @@ public class FactorDAO {
             select.addFilter(filterExpr);
         }
     }
-
 }

@@ -89,6 +89,9 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     @Inject
     AuthenticationService authentication;
 
+    @Inject
+    OpenSilex opensilex;
+
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         if (LOGGER.isDebugEnabled()) {
@@ -142,7 +145,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                     break;
                 }
                 if (locale == null) {
-                    locale = LocaleUtils.toLocale(OpenSilex.getDefaultLanguage());
+                    locale = LocaleUtils.toLocale(opensilex.getDefaultLanguage());
                 }
                 user.setLocale(locale);
 

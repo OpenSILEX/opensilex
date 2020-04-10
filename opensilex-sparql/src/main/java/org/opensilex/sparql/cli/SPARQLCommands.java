@@ -8,12 +8,10 @@ package org.opensilex.sparql.cli;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import org.opensilex.OpenSilex;
 import org.opensilex.cli.OpenSilexCommand;
-import org.opensilex.cli.help.HelpOption;
-import org.opensilex.cli.help.HelpPrinterCommand;
+import org.opensilex.cli.HelpOption;
+import org.opensilex.cli.AbstractOpenSilexCommand;
 import org.opensilex.sparql.SPARQLModule;
-import static org.opensilex.sparql.SPARQLModule.installOntologies;
 import org.opensilex.sparql.exceptions.SPARQLValidationException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
@@ -28,7 +26,7 @@ import picocli.CommandLine.Command;
         name = "sparql",
         header = "Subcommand to group OpenSILEX sparql operations"
 )
-public class SPARQLCommands extends HelpPrinterCommand implements OpenSilexCommand {
+public class SPARQLCommands extends AbstractOpenSilexCommand implements OpenSilexCommand {
 
     @CommandLine.Command(
             name = "reset-ontologies",
@@ -38,10 +36,10 @@ public class SPARQLCommands extends HelpPrinterCommand implements OpenSilexComma
     public void resetOntologies(
             @CommandLine.Mixin HelpOption help
     ) throws Exception {
-        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
         try {
-            SPARQLModule.installOntologies(sparql, true);
+            getOpenSilex().getModuleByClass(SPARQLModule.class).installOntologies(sparql, true);
         } finally {
             factory.dispose(sparql);
         }
@@ -58,7 +56,7 @@ public class SPARQLCommands extends HelpPrinterCommand implements OpenSilexComma
             @CommandLine.Parameters(description = "New graph URI", defaultValue = "") URI newGraphURI,
             @CommandLine.Mixin HelpOption help
     ) throws Exception {
-        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
         sparql.renameGraph(oldGraphURI, newGraphURI);
         factory.dispose(sparql);
@@ -72,7 +70,7 @@ public class SPARQLCommands extends HelpPrinterCommand implements OpenSilexComma
     public void shaclEnable(
             @CommandLine.Mixin HelpOption help
     ) throws Exception {
-        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
         try {
             sparql.enableSHACL();
@@ -101,7 +99,7 @@ public class SPARQLCommands extends HelpPrinterCommand implements OpenSilexComma
     public void shaclDisable(
             @CommandLine.Mixin HelpOption help
     ) throws Exception {
-        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
         try {
             sparql.disableSHACL();

@@ -21,13 +21,13 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
  */
 public class SPARQLProxyListObject<T extends SPARQLResourceModel> extends SPARQLProxyList<T> {
 
-    public SPARQLProxyListObject(Node graph, URI uri, Property property, Class<T> genericType, boolean isReverseRelation, String lang, SPARQLService service) {
-        super(graph, uri, property, genericType, isReverseRelation, lang, service);
+    public SPARQLProxyListObject(SPARQLClassObjectMapperIndex repository, Node graph, URI uri, Property property, Class<T> genericType, boolean isReverseRelation, String lang, SPARQLService service) {
+        super(repository, graph, uri, property, genericType, isReverseRelation, lang, service);
     }
 
     @Override
     protected List<T> loadData() throws Exception {
-        SPARQLClassObjectMapper<T> mapper = SPARQLClassObjectMapper.getForClass(genericType);
+        SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(genericType);
 
         Node nodeURI = SPARQLDeserializers.nodeURI(uri);
         List<T> list = service.search(genericType, lang, (SelectBuilder select) -> {

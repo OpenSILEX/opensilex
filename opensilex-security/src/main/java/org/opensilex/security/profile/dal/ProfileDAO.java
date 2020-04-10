@@ -108,7 +108,7 @@ public final class ProfileDAO {
                     whereHandler.addWhere(select.makeTriplePath(groupURIVar, SecurityOntology.hasProfile, profileURIVar));
                     whereHandler.addWhere(select.makeTriplePath(groupURIVar, SecurityOntology.hasUser, SPARQLDeserializers.nodeURI(uri)));
 
-                    ElementNamedGraph elementNamedGraph = new ElementNamedGraph(SPARQLService.getDefaultGraph(GroupUserProfileModel.class), whereHandler.getElement());
+                    ElementNamedGraph elementNamedGraph = new ElementNamedGraph(sparql.getDefaultGraph(GroupUserProfileModel.class), whereHandler.getElement());
                     select.getWhereHandler().getClause().addElement(elementNamedGraph);
                 }
         );

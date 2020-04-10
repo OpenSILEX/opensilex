@@ -42,7 +42,7 @@ public class NoSQLModule extends OpenSilexModule {
 
     @Override
     public void check() throws Exception {
-        MongoDBConfig config = OpenSilex.getInstance().loadConfigPath("big-data.nosql.mongodb", MongoDBConfig.class);
+        MongoDBConfig config = getOpenSilex().loadConfigPath("big-data.nosql.mongodb", MongoDBConfig.class);
         MongoClient mongo = getMongoClient(config);
         MongoDatabase db = mongo.getDatabase(config.database());
 
@@ -88,18 +88,6 @@ public class NoSQLModule extends OpenSilexModule {
         MongoClient mongo = new MongoClient(new MongoClientURI(url));
 
         return mongo;
-    }
-
-    public static void initMongo(boolean reset) throws Exception {
-        MongoDBConfig config = OpenSilex.getInstance().loadConfigPath("big-data.nosql.mongodb", MongoDBConfig.class);
-        MongoClient mongo = getMongoClient(config);
-
-        MongoDatabase adminDb = mongo.getDatabase("admin");
-        if (!reset) {
-            adminDb.runCommand(new Document("replSetInitiate", new Document()));
-        } else {
-            mongo.dropDatabase(config.database());
-        }
     }
 
 }

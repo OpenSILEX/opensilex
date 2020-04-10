@@ -19,8 +19,8 @@ import org.opensilex.sparql.service.SPARQLService;
  */
 class SPARQLProxyLabel extends SPARQLProxy<SPARQLLabel> {
 
-    SPARQLProxyLabel(Node graph, String defaultValue, URI resourceURI, Property labelProperty, boolean reverseRelation, String lang, SPARQLService service) {
-        super(graph, SPARQLLabel.class, lang, service);
+    SPARQLProxyLabel(SPARQLClassObjectMapperIndex repository, Node graph, String defaultValue, URI resourceURI, Property labelProperty, boolean reverseRelation, String lang, SPARQLService service) {
+        super(repository,graph, SPARQLLabel.class, lang, service);
         this.defaultValue = defaultValue;
         this.resourceURI = resourceURI;
         this.labelProperty = labelProperty;

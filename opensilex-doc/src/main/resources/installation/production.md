@@ -123,7 +123,7 @@ Directory for OpenSILEX file logs:
 
 ## Download & extract OpenSILEX production release
 
-Please download the OpenSILEX latest release archive on [Github](https://github.com/OpenSILEX/opensilex-dev/releases)
+Please download the OpenSILEX latest release archive on [Github](https://github.com/OpenSILEX/opensilex/releases)
 
 In this paragraph, `<X.Y.Z>` means the OpenSILEX release version.
 
@@ -133,13 +133,13 @@ Linux example commands:
 
 ```
 cd /home/opensilex/bin
-wget https://github.com/OpenSILEX/opensilex-dev/releases/download/X.Y.Z/opensilex-X.Y.Z.zip
+wget https://github.com/OpenSILEX/opensilex/releases/download/X.Y.Z/opensilex-X.Y.Z.zip
 unzip opensilex-X.Y.Z.zip
 ```
 For latest version
 ```
 cd /home/opensilex/bin
-wget https://github.com/OpenSILEX/opensilex-dev/releases/download/3.4.0-beta/opensilex-3.4.0-beta.zip
+wget https://github.com/OpenSILEX/opensilex/releases/download/3.4.0-beta/opensilex-3.4.0-beta.zip
 unzip opensilex-3.4.0-beta.zip
 ```
 
@@ -158,7 +158,7 @@ You should get the following directory structure:
             +-- opensilex-nosql.jar
             +-- opensilex-security.jar
             +-- opensilex-sparql.jar
-            +-- phis2ws.jar
+            +-- opensilex-phis.jar
 +-- config/
 +-- data/
 +-- logs/

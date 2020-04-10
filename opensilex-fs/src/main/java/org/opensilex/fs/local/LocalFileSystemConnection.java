@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.fs.service.FileStorageConnection;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.service.BaseService;
 
 /**
  * Local filesystem connection for file storage service
@@ -19,7 +20,7 @@ import org.opensilex.fs.service.FileStorageService;
  * @see org.opensilex.fs.service.FileStorageService
  * @author Vincent Migot
  */
-public class LocalFileSystemConnection implements FileStorageConnection {
+public class LocalFileSystemConnection extends BaseService implements FileStorageConnection {
 
     @Override
     public String readFile(Path filePath) throws Exception {

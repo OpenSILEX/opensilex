@@ -14,19 +14,26 @@ import GroupForm from './groups/GroupForm.vue';
 import GroupUserProfileForm from './groups/GroupUserProfileForm.vue';
 import GroupView from './groups/GroupView.vue';
 import GroupList from './groups/GroupList.vue';
-import FormInputMessageHelper from './common/FormInputMessageHelper.vue'
+
 import ToDoComponent from './layout/ToDoComponent.vue';
+// infrastructures
 import InfrastructureView from './infrastructures/InfrastructureView.vue';
 import InfrastructureTree from './infrastructures/InfrastructureTree.vue';
 import InfrastructureForm from './infrastructures/InfrastructureForm.vue';
-
+// factors levels
 import FactorView from './factors/FactorView.vue';
 import FactorList from './factors/FactorList.vue';
 import FactorForm from './factors/FactorForm.vue';
+import FactorDetails from './factors/FactorDetails.vue';
 
+// factors
 import FactorLevelView from './factors/FactorLevelView.vue';
 import FactorLevelList from './factors/FactorLevelList.vue';
 import FactorLevelForm from './factors/FactorLevelForm.vue';
+//common
+import FormInputLabelHelper from './common/FormInputLabelHelper.vue'
+import ExternalReferencesForm from './common/ExternalReferencesForm.vue'
+import ExternalReferencesDetails from './common/ExternalReferencesDetails.vue'
 
 import ExperimentForm from './experiments/ExperimentForm.vue';
 import ExperimentForm2 from './experiments/ExperimentForm2.vue';
@@ -38,6 +45,18 @@ import GermplasmView from './germplasm/GermplasmView.vue';
 import GermplasmForm from './germplasm/GermplasmForm.vue';
 import GermplasmList from './germplasm/GermplasmList.vue';
 
+import ImageList from './phis/images/ImageList.vue';
+import ImageView from './phis/images/ImageView.vue';
+import ImageSearch from './phis/images/ImageSearch.vue';
+import ImageGrid from './phis/images/viewComponents/ImageGrid.vue';
+import ImageSingle from './phis/images/viewComponents/ImageSingle.vue';
+import ImageCarousel from './phis/images/viewComponents/ImageCarousel.vue';
+import SciObjectURISearch from './phis/images/searchComponents/SciObjectURISearch.vue';
+import SciObjectAliasSearch from './phis/images/searchComponents/SciObjectAliasSearch.vue';
+import ImageTypeSearch from './phis/images/searchComponents/ImageTypeSearch.vue';
+import ExperimentSearch from './phis/images/searchComponents/ExperimentSearch.vue';
+import SciObjectTypeSearch from './phis/images/searchComponents/SciObjectTypeSearch.vue';
+import TimeSearch from './phis/images/searchComponents/TimeSearch.vue';
 
 export default {
     'opensilex-DefaultFooterComponent': DefaultFooterComponent,
@@ -61,28 +80,19 @@ export default {
     "opensilex-InfrastructureView": InfrastructureView,
     "opensilex-InfrastructureTree": InfrastructureTree,
     "opensilex-InfrastructureForm": InfrastructureForm,
-    'opensilex-FormInputMessageHelper': FormInputMessageHelper,
     // factors
     "opensilex-FactorView": FactorView,
     "opensilex-FactorList": FactorList,
     "opensilex-FactorForm": FactorForm,
+    "opensilex-FactorDetails": FactorDetails,
     // factors levels
     "opensilex-FactorLevelView": FactorLevelView,
     "opensilex-FactorLevelList": FactorLevelList,
     "opensilex-FactorLevelForm": FactorLevelForm,
-
-    // experiments
-    "opensilex-core-ExperimentForm": ExperimentForm,
-    "opensilex-core-ExperimentForm2": ExperimentForm2,
-    "opensilex-core-ExperimentList": ExperimentList,
-    "opensilex-core-ExperimentCreate": ExperimentCreate,
-    "opensilex-core-ExperimentView": ExperimentView,
-
-    // germplasm
-    "opensilex-GermplasmView": GermplasmView,
-    "opensilex-GermplasmForm": GermplasmForm,
-    "opensilex-GermplasmList": GermplasmList,
-
+    //common
+    'opensilex-FormInputLabelHelper': FormInputLabelHelper,
+    'opensilex-ExternalReferencesForm': ExternalReferencesForm,
+    'opensilex-ExternalReferencesDetails': ExternalReferencesDetails,
     'opensilex-ToDoComponent': ToDoComponent
     
 };

@@ -18,20 +18,19 @@ import org.opensilex.OpenSilex;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.authentication.AuthenticationService;
+import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.security.profile.dal.ProfileDAO;
+import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.security.user.dal.UserDAO;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 public class GroupAPITest extends AbstractSecurityIntegrationTest {
 
-    /*
-     * Uncomment this method to enable test debug logging
-     */
-//    protected boolean isDebug() {
-//        return true;
-//    }
     protected String path = "/group";
     protected String createPath = path + "/create";
     protected String updatePath = path + "/update";
@@ -45,17 +44,17 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
     private final static String PROFILE2_URI = "http://example.org/profiles/profile2";
 
     protected void createTestEnv() throws Exception {
-        try (SPARQLService sparql = this.getSparqlService()) {
-            UserDAO userDao = new UserDAO(sparql);
-            AuthenticationService authentication = this.getAuthenticationService();
+        SPARQLService sparql = this.getSparqlService();
+        sparql.getDefaultGraph(GroupModel.class);
+        AuthenticationService authentication = this.getAuthenticationService();
 
-            userDao.create(new URI(USER1_URI), new InternetAddress("user1@opensilex.org"), "user1", "anonymous", true, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
-            userDao.create(new URI(USER2_URI), new InternetAddress("user2@opensilex.org"), "user2", "anonymous", false, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
+        UserDAO userDao = new UserDAO(sparql);
+        userDao.create(new URI(USER1_URI), new InternetAddress("user1@opensilex.org"), "user1", "anonymous", true, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
+        userDao.create(new URI(USER2_URI), new InternetAddress("user2@opensilex.org"), "user2", "anonymous", false, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
 
-            ProfileDAO profileDao = new ProfileDAO(sparql);
-            profileDao.create(new URI(PROFILE1_URI), "profile1", new ArrayList<>());
-            profileDao.create(new URI(PROFILE2_URI), "profile2", new ArrayList<>());
-        }
+        ProfileDAO profileDao = new ProfileDAO(sparql);
+        profileDao.create(new URI(PROFILE1_URI), "profile1", new ArrayList<>());
+        profileDao.create(new URI(PROFILE2_URI), "profile2", new ArrayList<>());
     }
 
     protected GroupCreationDTO getGroupCreationDTO() throws URISyntaxException {
@@ -232,19 +231,17 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
     }
 
     @Override
-    protected List<String> getGraphsToCleanNames() {
-        return new ArrayList<String>() {
-            {
-                add("groups");
-                add("groupUserProfiles");
-                add("profiles");
-                add("users");
-            }
-        };
+    protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
+        ArrayList<Class<? extends SPARQLResourceModel>> modelList = new ArrayList<>();
+        modelList.add(GroupModel.class);
+        modelList.add(GroupUserProfileModel.class);
+        modelList.add(ProfileModel.class);
+        modelList.add(UserModel.class);
+        return modelList;
     }
 
     @Override
     public void afterEach() throws Exception {
-        SecurityModule.createDefaultSuperAdmin();
+        getOpensilex().getModuleByClass(SecurityModule.class).createDefaultSuperAdmin();
     }
 }

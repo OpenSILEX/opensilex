@@ -7,24 +7,28 @@
       @onUpdate="callUpdateFactorService"
     ></opensilex-FactorForm>
     <opensilex-FactorList 
-      ref="factorList" 
-      @onEdit="editFactor"
-      @onDelete="deleteFactor">
-    </opensilex-FactorList>
+    ref="factorList" 
+    @onEdit="editFactor" 
+    @onDelete="deleteFactor" 
+    @onDetails="showFactorDetails"
+    ></opensilex-FactorList>
+    <opensilex-FactorDetails
+     ref="factorDetails">
+    </opensilex-FactorDetails>
   </div>
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { 
+import {
   FactorCreationDTO,
   FactorsService,
-  FactorGetDTO, 
-  FactorSearchDTO 
-} 
-from "opensilex-core/index";
+  FactorGetDTO,
+  FactorDetailsGetDTO,
+  FactorSearchDTO
+} from "opensilex-core/index";
 
 @Component
 export default class FactorView extends Vue {
@@ -40,14 +44,21 @@ export default class FactorView extends Vue {
     return this.$store.state.credentials;
   }
 
+  @Ref("modalRef") readonly modalRef!: any;
+
+  @Ref("factorForm") readonly factorForm!: any;
+
+  @Ref("factorList") readonly factorList!: any;
+
+  @Ref("factorDetails") readonly factorDetails!: any;
+
   created() {
-    console.debug("Loading form view...");
+    console.debug("Loading FactorView view...");
     this.service = this.$opensilex.getService("opensilex.FactorsService");
   }
 
   showCreateForm() {
-    let factorForm: any = this.$refs.factorForm;
-    factorForm.showCreateForm();
+    this.factorForm.showCreateForm();
   }
 
   callCreateFactorService(form: FactorCreationDTO, done) {
@@ -57,8 +68,8 @@ export default class FactorView extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("factor created", uri);
-          let factorList: any = this.$refs.factorList;
-          factorList.refresh();
+          this.factorList.refresh();
+          return uri;
         })
     );
   }
@@ -70,16 +81,28 @@ export default class FactorView extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("factor updated", uri);
-          let factorList: any = this.$refs.factorList;
-          factorList.refresh();
+          this.factorList.refresh();
         })
     );
   }
+  showFactorDetails(uri: string){
+    console.debug("showFactorDetails" + uri);
+    this.service
+      .getFactor(this.user.getAuthorizationHeader(), uri)
+      .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
+        this.factorDetails.showDetails(http.response.result);
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
 
-  editFactor(form: FactorGetDTO) {
-    console.debug("editFactor" + form.uri);
-    let factorForm: any = this.$refs.factorForm;
-    factorForm.showEditForm(form);
+  editFactor(uri: string) {
+    console.debug("editFactor" + uri);
+    this.service
+      .getFactor(this.user.getAuthorizationHeader(), uri)
+      .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
+        this.factorForm.showEditForm(http.response.result);
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 
   deleteFactor(uri: string) {
@@ -87,8 +110,7 @@ export default class FactorView extends Vue {
     this.service
       .deleteFactor(this.user.getAuthorizationHeader(), uri)
       .then(() => {
-        let factorList: any = this.$refs.factorList;
-        factorList.refresh();
+        this.factorList.refresh();
       })
       .catch(this.$opensilex.errorHandler);
   }

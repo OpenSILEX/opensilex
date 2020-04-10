@@ -34,8 +34,8 @@ Following commands should work from everywhere in your system without errors:
 
 ```
 cd <BASE_DIR>
-git clone --recurse-submodules https://github.com/OpenSILEX/opensilex-dev.git
-cd opensilex-dev/phis-ws
+git clone --recurse-submodules https://github.com/OpenSILEX/opensilex.git
+cd opensilex/phis-ws
 git pull origin modularity
 cd ..
 ```
@@ -43,7 +43,7 @@ cd ..
 # Build project
 
 ```
-cd <BASE_DIR>/opensilex-dev
+cd <BASE_DIR>/opensilex
 mvn install
 ```
 
@@ -56,7 +56,7 @@ Create file `.bash_aliases` in your home folder if it doesn't exists.
 Add this line in it replacing <BASE_DIR> variable:
 
 ```
-alias opensilex=<BASE_DIR>/opensilex-dev/opensilex-release/target/opensilex/opensilex.sh
+alias opensilex=<BASE_DIR>/opensilex/opensilex-release/target/opensilex/opensilex.sh
 ```
 
 Reload bash aliases and test it:
@@ -71,13 +71,13 @@ opensilex help
 Add the following directory to your PATH environment variable replacing <BASE_DIR> variable:
 
 ```
-path %PATH%;<BASE_DIR>\opensilex-dev\opensilex-release\target\opensilex\
+path %PATH%;<BASE_DIR>\opensilex\opensilex-release\target\opensilex\
 opensilex help
 ```
 
 # Setup configuration
 
-Edit ```<BASE_DIR>/opensilex-dev/opensilex-dev-tools/src/main/resources/config/opensilex.yml```
+Edit ```<BASE_DIR>/opensilex/opensilex-dev-tools/src/main/resources/config/opensilex.yml```
 
 Be careful if you change host and port of databases as you will have to update docker-compose configuration file accordingly.
 
@@ -105,7 +105,7 @@ You need to log out and log in again to make it work.
 
 ```
 cd <BASE_DIR>
-cd opensilex-dev/opensilex-dev-tools/src/main/resources/docker
+cd opensilex/opensilex-dev-tools/src/main/resources/docker
 docker-compose up -d
 ```
 
@@ -119,7 +119,7 @@ but you will have to run the preious command after each restart manually.
 
 ## With Netbeans
 
-Right-click on opensilex-dev project and select "Open Required Projects" --> "Open All Projects"
+Right-click on opensilex project and select "Open Required Projects" --> "Open All Projects"
 
 Then right-click on ```org.opensilex.dev.Install``` class in opensilex-dev-tools projet and select "run" or "debug"
 
@@ -227,7 +227,7 @@ mvn install -DskipFrontBuild
 Make sure the environment variable ```JAVA_HOME``` is defined.
 
 ```
-cd <BASE_DIR>/opensilex-dev
+cd <BASE_DIR>/opensilex
 mvn site -Pwith-test-report -DskipFrontBuild
 ```
 

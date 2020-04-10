@@ -65,7 +65,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
     private FrontConfigDTO config = null;
 
     public FrontConfigDTO getConfigDTO() {
-        if (this.config == null || OpenSilex.getInstance().isDev()) {
+        if (this.config == null || getOpenSilex().isDev()) {
             FrontConfig frontConfig = getConfig(FrontConfig.class);
 
             FrontConfigDTO config = new FrontConfigDTO();
@@ -88,7 +88,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
 
             List<String> menuExclusions = frontConfig.menuExclusions();
 
-            for (OpenSilexModule m : OpenSilex.getInstance().getModules()) {
+            for (OpenSilexModule m : getOpenSilex().getModules()) {
                 try {
                     if (m.fileExists(FRONT_CONFIG_PATH)) {
                         ConfigManager cfg = new ConfigManager();

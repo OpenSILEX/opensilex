@@ -2,60 +2,38 @@
   <div ref="modalRef" @ok.prevent="validate">
     <ValidationObserver ref="validatorRef">
       <b-form>
-        <!-- scientificSupervisors -->
-        <b-form-group required>
-          <slot name="scientificSupervisors">
-            <opensilex-FormInputMessageHelper
-              label="component.experiment.scientificSupervisors"
-              helpMessage="component.experiment.scientificSupervisors-help"
-            ></opensilex-FormInputMessageHelper>
-          </slot>
-          <ValidationProvider
-            :name="$t('component.experiment.scientificSupervisors')"
-            v-slot="{ errors }"
-          >
-            <b-form-select
-              id="scientificSupervisors"
-              v-model="form.scientificSupervisors"
-              :options="scientificSupervisors"
-              multiple
-              :select-size="3"
-            ></b-form-select>
-            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+          
+      <!-- scientificSupervisors -->
+        <b-form-group  required  >
+            <opensilex-FormInputLabelHelper 
+            label=component.experiment.scientificSupervisors 
+            helpMessage="component.experiment.scientificSupervisors-help" >
+            </opensilex-FormInputLabelHelper>
+          <ValidationProvider :name="$t('component.experiment.scientificSupervisors')" v-slot="{ errors }">
+          <b-form-select id="scientificSupervisors" v-model="form.scientificSupervisors" :options="scientificSupervisors" multiple :select-size="3"> </b-form-select>
+          <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
 
-        <!-- technicalSupervisors -->
-        <b-form-group required>
-          <slot name="technicalSupervisors">
-            <opensilex-FormInputMessageHelper
-              label="component.experiment.technicalSupervisors"
-              helpMessage="component.experiment.technicalSupervisors-help"
-            ></opensilex-FormInputMessageHelper>
-          </slot>
-          <ValidationProvider
-            :name="$t('component.experiment.technicalSupervisors')"
-            v-slot="{ errors }"
-          >
-            <b-form-select
-              id="technicalSupervisors"
-              v-model="form.technicalSupervisors"
-              :options="technicalSupervisors"
-              multiple
-              :select-size="3"
-            ></b-form-select>
-            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+      <!-- technicalSupervisors -->
+        <b-form-group  required  >
+          <opensilex-FormInputLabelHelper l
+          abel=component.experiment.technicalSupervisors 
+          helpMessage="component.experiment.technicalSupervisors-help" >
+          </opensilex-FormInputLabelHelper>
+          <ValidationProvider :name="$t('component.experiment.technicalSupervisors')" v-slot="{ errors }">
+          <b-form-select id="technicalSupervisors" v-model="form.technicalSupervisors" :options="technicalSupervisors" multiple :select-size="3"> </b-form-select>
+          <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
 
-        <!-- groups -->
-        <b-form-group required>
-          <slot name="technicalSupervisors">
-            <opensilex-FormInputMessageHelper
-              label="component.experiment.groups"
-              helpMessage="component.experiment.groups-help"
-            ></opensilex-FormInputMessageHelper>
-          </slot>
+      <!-- groups -->
+        <b-form-group  required  >
+          <opensilex-FormInputLabelHelper 
+          label=component.experiment.groups 
+          helpMessage="component.experiment.groups-help" >
+          </opensilex-FormInputLabelHelper>
+
           <ValidationProvider :name="$t('component.experiment.groups')" v-slot="{ errors }">
             <b-form-select
               id="groups"
@@ -68,14 +46,12 @@
           </ValidationProvider>
         </b-form-group>
 
-        <!-- projects -->
-        <b-form-group required>
-          <slot name="projects">
-            <opensilex-FormInputMessageHelper
-              label="component.experiment.projects"
-              helpMessage="component.experiment.projects-help"
-            ></opensilex-FormInputMessageHelper>
-          </slot>
+         <!-- projects -->
+        <b-form-group  required  >
+          <opensilex-FormInputLabelHelper 
+          label=component.experiment.projects 
+          helpMessage="component.experiment.projects-help" >
+          </opensilex-FormInputLabelHelper>
           <ValidationProvider :name="$t('component.experiment.projects')" v-slot="{ errors }">
             <b-form-select
               id="projects"
@@ -88,26 +64,15 @@
           </ValidationProvider>
         </b-form-group>
 
-        <!-- infrastructures -->
-        <b-form-group required>
-          <slot name="infrastructures">
-            <opensilex-FormInputMessageHelper
-              label="component.experiment.infrastructures"
-              helpMessage="component.experiment.infrastructures-help"
-            ></opensilex-FormInputMessageHelper>
-          </slot>
-          <ValidationProvider
-            :name="$t('component.experiment.infrastructures')"
-            v-slot="{ errors }"
-          >
-            <b-form-select
-              id="infrastructures"
-              v-model="form.infrastructures"
-              :options="infrastructureList"
-              multiple
-              :select-size="3"
-            ></b-form-select>
-            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+         <!-- infrastructures -->
+        <b-form-group  required  >
+          <opensilex-FormInputLabelHelper 
+          label=component.experiment.infrastructures 
+          helpMessage="component.experiment.infrastructures-help" >
+          </opensilex-FormInputLabelHelper>
+          <ValidationProvider :name="$t('component.experiment.infrastructures')" v-slot="{ errors }">
+          <b-form-select id="infrastructures" v-model="form.infrastructures" :options="infrastructureList" multiple :select-size="3"> </b-form-select>
+          <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
       </b-form>

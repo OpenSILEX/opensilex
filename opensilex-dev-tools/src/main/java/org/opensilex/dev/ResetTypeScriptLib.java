@@ -50,7 +50,7 @@ public class ResetTypeScriptLib {
 
         for (OpenSilexModule module : opensilex.getModules()) {
             if (ClassUtils.isJarClassDirectory(module.getClass())) {
-                Swagger moduleAPI = SwaggerAPIGenerator.getModuleApi(module.getClass());
+                Swagger moduleAPI = SwaggerAPIGenerator.getModuleApi(module.getClass(), opensilex.getReflections());
                 if (moduleAPI != null) {
                     LOGGER.info("Process Module API: " + module.getClass().getCanonicalName());
                     moduleAPI.setHost("localhost");

@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.ws.rs.core.SecurityContext;
-import org.opensilex.OpenSilex;
 import org.opensilex.security.SecurityConfig;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.service.Service;
@@ -37,6 +36,7 @@ import org.opensilex.security.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.security.extensions.LoginExtension;
+import org.opensilex.service.BaseService;
 
 /**
  * <pre>
@@ -57,7 +57,7 @@ import org.opensilex.security.extensions.LoginExtension;
  *
  * @author Vincent Migot
  */
-public class AuthenticationService implements Service {
+public class AuthenticationService extends BaseService implements Service {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationService.class);
 
@@ -234,7 +234,7 @@ public class AuthenticationService implements Service {
         }
 
         // Allow any module implementing LoginExtension to add custom claims on login
-        for (LoginExtension module : OpenSilex.getInstance().getModulesImplementingInterface(LoginExtension.class)) {
+        for (LoginExtension module : getOpenSilex().getModulesImplementingInterface(LoginExtension.class)) {
             module.login(user, tokenBuilder);
         }
 
@@ -444,7 +444,7 @@ public class AuthenticationService implements Service {
      * @return removed user or null if not found
      */
     public synchronized UserModel removeUserByURI(URI userURI) throws Exception {
-        boolean allowMultiConnection = OpenSilex.getInstance().getModuleConfig(SecurityModule.class, SecurityConfig.class).allowMultiConnection();
+        boolean allowMultiConnection = getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class).allowMultiConnection();
         if (!allowMultiConnection && hasUserURI(userURI)) {
             LOGGER.debug("Unregister user: " + userURI);
             schedulerRegistry.get(userURI).interrupt();
@@ -453,7 +453,7 @@ public class AuthenticationService implements Service {
             UserModel user = userRegistry.remove(userURI);
 
             // Allow any module implementing LoginExtension to do something on logout
-            for (LoginExtension module : OpenSilex.getInstance().getModulesImplementingInterface(LoginExtension.class)) {
+            for (LoginExtension module : getOpenSilex().getModulesImplementingInterface(LoginExtension.class)) {
                 module.logout(user);
             }
 

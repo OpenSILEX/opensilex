@@ -28,20 +28,16 @@
       <template v-slot:head(alias)="data">{{$t(data.label)}}</template>
       <template v-slot:head(comment)="data">{{$t(data.label)}}</template>
       <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
-       <template v-slot:cell(actions)="data">
+      <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
+      <template v-slot:cell(actions)="data">
         <b-button-group size="sm">
-          <b-button
-            size="sm"
-            @click="$emit('onEdit', data.item)"
-            variant="outline-primary"
-          >
+          <b-button size="sm" @click="$emit('onDetails', data.item.uri)" variant="outline-success">
+            <font-awesome-icon icon="eye" size="sm" /> 
+          </b-button>
+          <b-button size="sm" @click="$emit('onEdit', data.item.uri)" variant="outline-primary">
             <font-awesome-icon icon="edit" size="sm" />
           </b-button>
-          <b-button
-            size="sm"
-            @click="$emit('onDelete', data.item.uri)"
-            variant="danger"
-          >
+          <b-button size="sm" @click="$emit('onDelete', data.item.uri)" variant="danger">
             <font-awesome-icon icon="trash-alt" size="sm" />
           </b-button>
         </b-button-group>
@@ -60,12 +56,11 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { 
+import {
   FactorsService,
-  FactorGetDTO, 
-  FactorSearchDTO 
-} 
-from "opensilex-core/index";
+  FactorGetDTO,
+  FactorSearchDTO
+} from "opensilex-core/index";
 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
@@ -74,6 +69,7 @@ export default class FactorList extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
+  service: FactorsService;
 
   get user() {
     return this.$store.state.user;
@@ -92,8 +88,8 @@ export default class FactorList extends Vue {
   private searchFrom: FactorSearchDTO = {
     uri: "",
     alias: "",
-    comment:"",
-     // lang: "en-US"
+    comment: ""
+    // lang: "en-US"
   };
 
   set filterByAlias(value: string) {
@@ -106,6 +102,7 @@ export default class FactorList extends Vue {
   }
 
   created() {
+    this.service = this.$opensilex.getService("opensilex.FactorsService");
     let query: any = this.$route.query;
     if (query.filterByAlias) {
       this.searchFrom.alias = decodeURI(query.filterByAlias);
@@ -147,12 +144,7 @@ export default class FactorList extends Vue {
   }
 
   loadData() {
-    let service: FactorsService = this.$opensilex.getService(
-      "opensilex.FactorsService"
-    );
-    let factorSearchDTO : FactorSearchDTO;
-
-    let orderBy : string[] = [];
+    let orderBy: string[] = [];
     if (this.sortBy) {
       let orderByText = this.sortBy + "=";
       if (this.sortDesc) {
@@ -161,7 +153,7 @@ export default class FactorList extends Vue {
         orderBy.push(orderByText + "asc");
       }
     }
-    return service
+    return this.service
       .searchFactors(
         this.user.getAuthorizationHeader(),
         orderBy,
@@ -185,8 +177,7 @@ export default class FactorList extends Vue {
               pageSize: "" + this.pageSize
             }
           })
-          .catch(err => {})
-
+          .catch(err => {});
         return http.response.result;
       })
       .catch(this.$opensilex.errorHandler);

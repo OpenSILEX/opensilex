@@ -15,7 +15,7 @@ This documentation is currently under developpement.
 If an user of OpenSILEX developments wish to point out a flaw in this documentation, (s)he is welcomed to do so in this repository's [GitHub issues](https://github.com/OpenSILEX/docs-community-dev/issues).
 
 
-Concerning issues with OpenSILEX itself, users are invited to report them via the GitHub issues of the repositories causing trouble, for instance [opensilex-dev/issues](https://github.com/OpenSILEX/opensilex-dev/issues) for problems concerning the OpenSILEX server and [phis-webapp/issues](https://github.com/OpenSILEX/phis-webapp/issues) for issues with the PHP Web client.
+Concerning issues with OpenSILEX itself, users are invited to report them via the GitHub issues of the repositories causing trouble, for instance [opensilex/issues](https://github.com/OpenSILEX/opensilex/issues) for problems concerning the OpenSILEX server and [phis-webapp/issues](https://github.com/OpenSILEX/phis-webapp/issues) for issues with the PHP Web client.
 
 OpenSILEX development team can also be contacted through its official email address [opensilex@gmail.com](mailto:opensilex@gmail.com) or through the mailing list [opensilex-help@groupes.renater.fr](mailto:opensilex-help@groupes.renater.fr) when reporting a bug or seeking help.
 

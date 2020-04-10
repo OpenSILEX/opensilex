@@ -23,7 +23,6 @@ import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +56,7 @@ public final class AuthenticationDAO {
             credentialsGroups = new TreeMap<>();
             credentialsGroupLabels = new HashMap<>();
             credentialsIdList = new ArrayList<>();
-            Set<Method> methods = ClassUtils.getAnnotatedMethods(ApiCredential.class);
+            Set<Method> methods = sparql.getOpenSilex().getMethodsAnnotatedWith(ApiCredential.class);
             methods.forEach((method) -> {
                 ApiCredential apiCredential = method.getAnnotation(ApiCredential.class);
                 ApiCredentialGroup apiCredentialGroup = method.getDeclaringClass().getAnnotation(ApiCredentialGroup.class);

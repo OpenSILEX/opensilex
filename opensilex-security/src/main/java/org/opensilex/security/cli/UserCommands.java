@@ -9,9 +9,9 @@ package org.opensilex.security.cli;
 import javax.mail.internet.InternetAddress;
 import org.opensilex.OpenSilex;
 import org.opensilex.cli.MainCommand;
-import org.opensilex.cli.help.HelpPrinterCommand;
 import org.opensilex.cli.OpenSilexCommand;
-import org.opensilex.cli.help.HelpOption;
+import org.opensilex.cli.HelpOption;
+import org.opensilex.cli.AbstractOpenSilexCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
@@ -29,12 +29,12 @@ import picocli.CommandLine;
         name = "user",
         header = "Subcommand to group OpenSILEX users operations"
 )
-public class UserCommands extends HelpPrinterCommand implements OpenSilexCommand {
+public class UserCommands extends AbstractOpenSilexCommand implements OpenSilexCommand {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(UserCommands.class);
 
     /**
-    /**
+     * /**
      * This method add a user to OpenSilex instance
      *
      * @param firstName First name of the user
@@ -58,10 +58,10 @@ public class UserCommands extends HelpPrinterCommand implements OpenSilexCommand
             @CommandLine.Option(names = {"--lang"}, description = "Define if user default language", defaultValue = OpenSilex.DEFAULT_LANGUAGE) String lang,
             @CommandLine.Mixin HelpOption help
     ) throws Exception {
-        
-        OpenSilex opensilex = OpenSilex.getInstance();
-        
-        SPARQLServiceFactory factory = OpenSilex.getInstance().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+
+        OpenSilex opensilex = getOpenSilex();
+
+        SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
 
         AuthenticationService authentication = opensilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
@@ -70,18 +70,18 @@ public class UserCommands extends HelpPrinterCommand implements OpenSilexCommand
 
         String passwordHash = authentication.getPasswordHash(password);
         UserModel user = userDAO.create(null, new InternetAddress(email), firstName, lastName, isAdmin, passwordHash, lang);
-        
+
         LOGGER.info("User created: " + user.getUri());
         factory.dispose(sparql);
     }
-    
-    public static void main(String[] args) {
+
+    public static void main(String[] args) throws Exception {
         MainCommand.main(new String[]{
             "user",
             "add",
             "--admin",
-            "--CONFIG_FILE=/home/vmigot/sources/opensilex-dev/opensilex-dev-tools/src/main/resources/config/opensilex.yml"
+            "--CONFIG_FILE=/home/vmigot/sources/opensilex/opensilex-dev-tools/src/main/resources/config/opensilex.yml"
         });
     }
-    
+
 }

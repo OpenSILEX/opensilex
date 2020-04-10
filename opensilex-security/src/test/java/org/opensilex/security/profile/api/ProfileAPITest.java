@@ -13,8 +13,10 @@ import static junit.framework.TestCase.assertFalse;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 public class ProfileAPITest extends AbstractSecurityIntegrationTest {
 
@@ -24,7 +26,6 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
 //    protected boolean isDebug() {
 //        return true;
 //    }
-    
     protected String path = "/profile";
     protected String createPath = path + "/create";
     protected String updatePath = path + "/update";
@@ -204,7 +205,9 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
     }
 
     @Override
-    protected List<String> getGraphsToCleanNames() {
-        return Collections.singletonList("profiles");
+    protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
+        ArrayList<Class<? extends SPARQLResourceModel>> modelList = new ArrayList<>();
+        modelList.add(ProfileModel.class);
+        return modelList;
     }
 }

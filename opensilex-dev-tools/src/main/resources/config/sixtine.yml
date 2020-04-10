@@ -1,6 +1,6 @@
 system:
     ignoredModules:
-        phis2ws: opensilex.service.PhisWsModule
+        opensilex.service.PhisWsModule: opensilex-phis.jar
     
 ontologies:
     baseURI: http://opensilex.dev/

@@ -31,13 +31,13 @@
         <!-- OpenSilex Base -->
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex</artifactId>
+            <artifactId>opensilex-main</artifactId>
             <version>${revision}</version>
         </dependency>
         <!-- OpenSilex Base test -->
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex</artifactId>
+            <artifactId>opensilex-main</artifactId>
             <version>${revision}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
@@ -70,6 +70,14 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>  
+        
+        <!--PHIS legacy dependency-->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-phis</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        
         <!-- Sass compilation for theme building -->
         <!-- https://mvnrepository.com/artifact/io.bit3/jsass -->
         <dependency>

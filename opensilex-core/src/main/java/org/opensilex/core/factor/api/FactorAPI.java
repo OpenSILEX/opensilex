@@ -4,7 +4,7 @@
  *  OpenSILEX
  *  Copyright © INRA 2019
  *  Creation date:  17 December, 2019
- *  Contact: arnaud.charleroy@inra.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ *  Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * ******************************************************************************
  */
 package org.opensilex.core.factor.api;
@@ -53,7 +53,7 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author Arnaud Charleroy
  */
-@Api(value = "Factors")
+@Api(FactorAPI.CREDENTIAL_FACTOR_GROUP_ID)
 @Path("/core/factor")
 @ApiCredentialGroup(
         groupId = FactorAPI.CREDENTIAL_FACTOR_GROUP_ID,
@@ -128,15 +128,19 @@ public class FactorAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Factor retrieved", response = FactorDetailsGetDTO.class),
+        @ApiResponse(code = 204, message = "No factor found", response = ErrorResponse.class)
+    })
     public Response getFactor(
             @ApiParam(value = "Factor URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         FactorDAO dao = new FactorDAO(sparql);
         FactorModel model = dao.get(uri);
-
+        
         if (model != null) {
-            return new SingleObjectResponse<>(
-                    FactorGetDTO.fromModel(model)
+             return new SingleObjectResponse<>(
+                    FactorDetailsGetDTO.fromModel(model)
             ).getResponse();
         } else {
             return new ErrorResponse(
@@ -190,9 +194,9 @@ public class FactorAPI {
         );
 
         // Convert paginated list to DTO
-        ListWithPagination<FactorGetDTO> resultDTOList = resultList.convert(
-                FactorGetDTO.class,
-                FactorGetDTO::fromModel
+        ListWithPagination<FactorDetailsGetDTO> resultDTOList = resultList.convert(
+                FactorDetailsGetDTO.class,
+                FactorDetailsGetDTO::fromModel
         );
 
         // Return paginated list of factor DTO
@@ -240,12 +244,12 @@ public class FactorAPI {
     /**
      * Remove an factor
      *
-     * @param xpUri the factor URI
+     * @param factorUri the factor URI
      * @return a {@link Response} with a {@link ObjectUriResponse} containing
      * the deleted Factor {@link URI}
      */
     @DELETE
-    @Path("delete/{uri}")
+    @Path("{uri}")
     @ApiOperation("Delete an factor")
     @ApiProtected
     @ApiCredential(
@@ -259,12 +263,12 @@ public class FactorAPI {
         @ApiResponse(code = 400, message = "Invalid or unknown Factor URI", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response deleteFactor(
-            @ApiParam(value = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+            @ApiParam(value = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI factorUri
     ) {
         try {
             FactorDAO dao = new FactorDAO(sparql);
-            dao.delete(xpUri);
-            return new ObjectUriResponse(xpUri).getResponse();
+            dao.delete(factorUri);
+            return new ObjectUriResponse(factorUri).getResponse();
 
         } catch (SPARQLInvalidURIException e) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Factor URI", e.getMessage()).getResponse();
@@ -289,7 +293,7 @@ public class FactorAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Experiment updated", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Factor updated", response = ObjectUriResponse.class),
         @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response updateFactor(

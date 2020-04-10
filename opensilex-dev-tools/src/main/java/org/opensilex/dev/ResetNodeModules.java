@@ -25,7 +25,7 @@ public class ResetNodeModules {
     private final static Logger LOGGER = LoggerFactory.getLogger(ResetNodeModules.class);
 
     public static void main(String[] args) throws Exception {
-        start(Paths.get(System.getProperty("user.dir")));
+        start(OpenSilex.getDefaultBaseDirectory());
     }
 
     private static String nodeBin = "node";
@@ -56,9 +56,7 @@ public class ResetNodeModules {
             String projectId = ClassUtils.getProjectIdFromClass(module.getClass());
             LOGGER.debug("Purge front node_modules folder for: " + projectId);
             String modulePath = projectId;
-            if (projectId.equals("phis2ws")) {
-                modulePath = "phis-ws/phis2-ws";
-            }
+
             Path nodeModulesPath = baseDirectory.resolve("..").resolve(modulePath).resolve("front/node_modules");
             File nodeDir = nodeModulesPath.toFile();
             if (nodeDir.exists() && nodeDir.isDirectory()) {

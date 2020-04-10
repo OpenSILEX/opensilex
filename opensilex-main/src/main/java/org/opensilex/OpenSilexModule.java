@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class OpenSilexModule implements OpenSilexExtension {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(OpenSilexModule.class);
+    protected final static Logger LOGGER = LoggerFactory.getLogger(OpenSilexModule.class);
 
     /**
      * <pre>
@@ -326,49 +326,6 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
         return null;
     }
 
-    /**
-     * Default method for module installation, to be implemented by module
-     * implementations for installation logic
-     *
-     * @param reset should reset intallation
-     * @throws Exception Can throw anything
-     */
-    public void install(boolean reset) throws Exception {
-        LOGGER.debug("Nothing to install for module class: " + getClass().getCanonicalName());
-    }
-
-    /**
-     * Default method for module configuration check, to be implemented by
-     * module implementations for validation logic
-     *
-     * @throws Exception Can throw anything
-     */
-    public void check() throws Exception {
-        LOGGER.debug("Nothing to check for module class: " + getClass().getCanonicalName());
-    }
-
-    /**
-     * Default method for module setup, to be implemented by module
-     * implementations for starting logic
-     *
-     * @throws Exception Can throw anything
-     */
-    public void setup() throws Exception {
-        LOGGER.debug("Nothing to setup for module class: " + getClass().getCanonicalName());
-    }
-
-    /**
-     * Default method for module clean, to be implemented by module
-     * implementations for stopping logic
-     */
-    public void clean() {
-        LOGGER.debug("Nothing to clean for module class: " + getClass().getCanonicalName());
-    }
-//
-//    public static <T> T getModuleConfig(Class<? extends OpenSilexModule> moduleClass, Class<T> configClass) throws ModuleNotFoundException {
-//        return OpenSilex.getInstance().getModuleConfig(moduleClass, configClass);
-//    }
-
     private OpenSilex opensilex;
 
     @Override
@@ -380,4 +337,42 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
         this.opensilex = opensilex;
     }
 
+    /**
+     * Default method for module installation, to be implemented by module
+     * implementations for installation logic
+     *
+     * @param reset should reset intallation
+     * @throws Exception Can throw anything
+     */
+    public void install(boolean reset) throws Exception {
+        OpenSilexModule.LOGGER.debug("Nothing to install for module class: " + getClass().getCanonicalName());
+    }
+
+    /**
+     * Default method for module configuration check, to be implemented by
+     * module implementations for validation logic
+     *
+     * @throws Exception Can throw anything
+     */
+    public void check() throws Exception {
+        OpenSilexModule.LOGGER.debug("Nothing to check for module class: " + getClass().getCanonicalName());
+    }
+
+    /**
+     * Default method for module setup, to be implemented by module
+     * implementations for starting logic
+     *
+     * @throws Exception Can throw anything
+     */
+    public void setup() throws Exception {
+        OpenSilexModule.LOGGER.debug("Nothing to setup for module class: " + getClass().getCanonicalName());
+    }
+
+    /**
+     * Default method for module clean, to be implemented by module
+     * implementations for stopping logic
+     */
+    public void clean() throws Exception {
+        OpenSilexModule.LOGGER.debug("Nothing to clean for module class: " + getClass().getCanonicalName());
+    }
 }

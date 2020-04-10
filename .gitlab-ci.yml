@@ -207,8 +207,8 @@ trigger:phis:deploy:test:
 # Trigger pipeline for phis module deployment
 update:nightly:builds:branch:
   stage: build
-  image: dockerfile/ubuntu
   script:
+    - apt update && apt install git
     - existBranch=`git show-ref refs/heads/nightly-builds`
     - |
       if [  -z "$existBranch" ]; then

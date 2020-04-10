@@ -74,8 +74,6 @@ variables:
       fi
   stage: build
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
-  except:
-    - schedules
   script:
     - mvn install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
@@ -164,8 +162,6 @@ variables:
     - DYNAMIC_ENVIRONMENT_URL="http://$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT"        
     - echo "Deploy To $DYNAMIC_ENVIRONMENT_URL"                 # In script, get the environment URL.
     - echo "DYNAMIC_ENVIRONMENT_URL=$DYNAMIC_ENVIRONMENT_URL" >> deploy.env 
-  except:
-    - schedules
   environment:
     name: "$CI_COMMIT_REF_NAME-test"
     url: $DYNAMIC_ENVIRONMENT_URL
@@ -179,8 +175,9 @@ variables:
 
 opensilex:build:
   <<: *build_template_with_opensilex
-  only:
-    - master
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == "master"
 
 # Trigger pipeline for sixtine module deployment
 trigger:sixtine:build:
@@ -188,8 +185,8 @@ trigger:sixtine:build:
   image: curlimages/curl
   script:
     - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" https://forgemia.inra.fr/api/v4/projects/1757/trigger/pipeline
-  only:
-    - master    
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"  
   needs: 
     - job: "opensilex:build"
 
@@ -199,8 +196,8 @@ trigger:phis:deploy:test:
   image: curlimages/curl
   script:
     - curl --request POST --form "variables[DEPLOY]=phis-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV"  https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
-  only:
-    - master    
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" 
   needs: 
     - job: "opensilex:build"
 
@@ -210,8 +207,8 @@ trigger:bdg:deploy:test:
   image: curlimages/curl
   script:
     - curl --request POST --form "variables[DEPLOY]=bdg-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" https://forgemia.inra.fr/api/v4/projects/2063/trigger/pipeline
-  only:
-    - master    
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" 
   needs: 
     - job: "opensilex:build"
 
@@ -224,9 +221,8 @@ update:nightly:builds:branch:
     - if [  -z "`git show-ref refs/heads/nightly-builds`" ]; then  echo 'branch nightly-builds will be created!' &&  git checkout -b nightly-builds; else git checkout nightly-builds ;fi
     - git rebase -Xtheirs origin/master
     - git push origin nightly-builds
-  only:
-    - master
-
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" 
 
 ########################
 ##  BUILD - TESTS WITH DIFFERENT MAVEN VERSIONS
@@ -245,8 +241,8 @@ update:nightly:builds:branch:
     - mvn install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
     - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $OPENSILEX_APP_REVISION
-  only: 
-    - schedules
+  rules:
+    - if: $CI_COMMIT_BRANCH == "schedules" 
 
 ##  BUILD VERSIONS # example https://gitlab.com/gitlab-org/gitlab-foss/issues/13755
 
@@ -303,8 +299,8 @@ pages:
   artifacts:
     paths:
       - public
-  only: 
-    - schedules
+  rules:
+    - if: $CI_COMMIT_BRANCH == "schedules" 
 
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM
@@ -316,8 +312,8 @@ pages:
 
 alice:build:
   <<: *build_template_with_opensilex
-  only:
-    - alice
+  rules:
+    - if: $CI_COMMIT_BRANCH == "alice" 
 
 test:alice:deploy:
   <<: *deploy_opensilex_before_script
@@ -332,8 +328,8 @@ test:alice:deploy:
     REMOTE_SERVER_IP: $REMOTE_TEST_SERVER_IP
     REMOTE_SERVER_RSYNC_DIR: "mistea/alice"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  only:
-    - alice
+  rules:
+    - if: $CI_COMMIT_BRANCH == "alice" 
   needs:
     - alice:build
 
@@ -343,8 +339,8 @@ test:alice:deploy:
 
 anne:build:
   <<: *build_template_with_opensilex
-  only:
-    - anne
+  rules:
+    - if: $CI_COMMIT_BRANCH == "anne" 
 
 test:anne:deploy:
   <<: *deploy_opensilex_before_script
@@ -359,8 +355,8 @@ test:anne:deploy:
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/anne"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  only:
-    - anne
+  rules:
+    - if: $CI_COMMIT_BRANCH == "anne"
   needs:
     - anne:build
 
@@ -370,8 +366,8 @@ test:anne:deploy:
 
 arnaud:build:
   <<: *build_template_with_opensilex
-  only:
-    - arnaud
+  rules:
+    - if: $CI_COMMIT_BRANCH == "arnaud"
 
 test:arnaud:deploy:
   <<: *deploy_opensilex_before_script
@@ -386,8 +382,8 @@ test:arnaud:deploy:
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/arnaud"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  only:
-    - arnaud
+  rules:
+    - if: $CI_COMMIT_BRANCH == "arnaud"
   needs:
     - arnaud:build
 
@@ -397,8 +393,8 @@ test:arnaud:deploy:
 
 julien:build:
   <<: *build_template_with_opensilex
-  only:
-    - julien
+  rules:
+    - if: $CI_COMMIT_BRANCH == "julien"
 
 test:julien:deploy:
   <<: *deploy_opensilex_before_script
@@ -413,8 +409,8 @@ test:julien:deploy:
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/julien"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  only:
-    - julien
+  rules:
+    - if: $CI_COMMIT_BRANCH == "julien"
   needs:
     - julien:build
 
@@ -425,8 +421,8 @@ test:julien:deploy:
 
 renaud:build:
   <<: *build_template_with_opensilex
-  only:
-    - renaud
+  rules:
+    - if: $CI_COMMIT_BRANCH == "renaud"
 
 test:renaud:deploy:
   <<: *deploy_opensilex_before_script
@@ -441,8 +437,8 @@ test:renaud:deploy:
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/renaud"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  only:
-    - renaud
+  rules:
+    - if: $CI_COMMIT_BRANCH == "renaud"
   needs:
     - renaud:build
 
@@ -452,8 +448,8 @@ test:renaud:deploy:
 
 vincent:build:
   <<: *build_template_with_opensilex
-  only:
-    - vincent
+  rules:
+    - if: $CI_COMMIT_BRANCH == "vincent"
 
 test:vincent:deploy:
   <<: *deploy_opensilex_before_script
@@ -468,8 +464,8 @@ test:vincent:deploy:
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/vincent"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  only:
-    - vincent
+  rules:
+    - if: $CI_COMMIT_BRANCH == "vincent"
   needs:
     - vincent:build
 
@@ -484,8 +480,8 @@ test:vincent:deploy:
 
 ephesia:build:
   <<: *build_template_with_opensilex
-  only:
-    - ephesia
+  rules:
+    - if: $CI_COMMIT_BRANCH == "ephesia"
 
 test:ephesia:deploy:
   <<: *deploy_opensilex_before_script
@@ -500,7 +496,7 @@ test:ephesia:deploy:
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/ephesia"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  only:
-    - ephesia
+  rules:
+    - if: $CI_COMMIT_BRANCH == "ephesia"
   needs:
     - ephesia:build

@@ -55,6 +55,11 @@ public class ProjectDAO {
     public ProjectModel get(URI instanceURI, String lang) throws Exception {
         return sparql.getByURI(ProjectModel.class, instanceURI, lang);
     }
+    
+    
+    public void delete(URI instanceURI) throws Exception {
+        sparql.delete(ProjectModel.class, instanceURI);
+    }
 
     public ListWithPagination<ProjectModel> search(URI uri,
                                                    String name, String shortname, String description, String startDate, String endDate, URI homePage, String objective,

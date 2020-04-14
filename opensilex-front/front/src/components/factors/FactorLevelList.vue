@@ -173,7 +173,6 @@ export default class FactorLevelList extends Vue {
 
     return service
       .searchFactorLevels(
-        this.user.getAuthorizationHeader(),
         orderBy,
         this.currentPage - 1,
         this.pageSize,

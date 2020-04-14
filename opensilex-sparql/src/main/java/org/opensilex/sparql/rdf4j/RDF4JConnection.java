@@ -374,10 +374,13 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
         return rdf4JConnection;
     }
 
+    private boolean shaclEnabled = false;
+
     @Override
     public void disableSHACL() throws SPARQLException {
         try {
             clearGraph(RDF4J.SHACL_SHAPE_GRAPH);
+            shaclEnabled = false;
         } catch (RepositoryException ex) {
             Throwable cause = ex.getCause();
             if (cause instanceof ShaclSailValidationException) {
@@ -408,7 +411,13 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
         }
 
         rdf4JConnection.commit();
+        shaclEnabled = true;
 
+    }
+
+    @Override
+    public boolean isShaclEnabled() {
+        return shaclEnabled;
     }
 
     private SPARQLClassObjectMapperIndex mapperIndex;

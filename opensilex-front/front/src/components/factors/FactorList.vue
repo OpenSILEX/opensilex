@@ -155,7 +155,6 @@ export default class FactorList extends Vue {
     }
     return this.service
       .searchFactors(
-        this.user.getAuthorizationHeader(),
         orderBy,
         this.currentPage - 1,
         this.pageSize,

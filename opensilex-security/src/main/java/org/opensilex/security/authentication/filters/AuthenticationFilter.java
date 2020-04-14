@@ -29,7 +29,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.LocaleUtils;
 import org.opensilex.OpenSilex;
 import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.exceptions.UnauthorizedException;
@@ -104,6 +103,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                 }
                 LOGGER.debug("Incoming request header: " + header + " -> " + value);
             });
+
             try {
                 if (isJSON.get()) {
                     String body = IOUtils.toString(requestContext.getEntityStream(), Charset.forName("UTF-8"));
@@ -116,10 +116,12 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                 LOGGER.debug("Error while reading request body: ", ex);
             }
         }
+
         // get user header token
         String tokenValue = requestContext.getHeaderString(ApiProtected.HEADER_NAME);
 
         // Ignore user definition if no token
+        UserModel user;
         if (tokenValue != null) {
 
             try {
@@ -128,29 +130,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                 URI userURI = authentication.decodeTokenUserURI(token);
 
                 // Get corresponding user
-                UserModel user;
                 if (authentication.hasUserURI(userURI)) {
                     user = authentication.getUserByUri(userURI);
                 } else {
                     throw new ForbiddenException("User not found with URI: " + userURI);
                 }
-
-                // Define user to be accessed through SecurityContext
-                SecurityContext originalContext = requestContext.getSecurityContext();
-                List<Locale> locales = headers.getAcceptableLanguages();
-
-                Locale locale = null;
-                for (Locale l : locales) {
-                    locale = l;
-                    break;
-                }
-                if (locale == null) {
-                    locale = LocaleUtils.toLocale(opensilex.getDefaultLanguage());
-                }
-                user.setLocale(locale);
-
-                SecurityContext newContext = new SecurityContextProxy(originalContext, user);
-                requestContext.setSecurityContext(newContext);
 
             } catch (JWTVerificationException | URISyntaxException ex) {
                 LOGGER.debug("Error while decoding and verifying token: " + ex.getMessage());
@@ -160,6 +144,25 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             } catch (Throwable ex) {
                 throw new UnexpectedErrorException(ex);
             }
+        } else {
+            user = UserModel.getAnonymous();
         }
+
+        List<Locale> locales = headers.getAcceptableLanguages();
+
+        Locale locale = null;
+        for (Locale l : locales) {
+            locale = l;
+            break;
+        }
+
+        if (locale != null) {
+            user.setLocale(locale);
+        }
+
+        // Define user to be accessed through SecurityContext
+        SecurityContext originalContext = requestContext.getSecurityContext();
+        SecurityContext newContext = new SecurityContextProxy(originalContext, user);
+        requestContext.setSecurityContext(newContext);
     }
 }

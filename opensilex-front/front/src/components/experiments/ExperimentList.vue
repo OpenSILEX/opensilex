@@ -509,7 +509,6 @@
             }
                 
             service.searchExperiments(
-                this.user.getAuthorizationHeader(),
                 uri,
                 startDate,
                 endDate,
@@ -558,7 +557,6 @@
             );
 
             service.searchProjects(
-                this.user.getAuthorizationHeader(),
                 null,
                 0,
                 1000
@@ -600,7 +598,7 @@
                 "opensilex.SpeciesService"
             );
 
-            service.getAllSpecies(this.$i18n.locale).then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
+            service.getAllSpecies().then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
                 let results: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
                 let resultsList = [];
                 for(let i=0; i<http.response.result.length; i++) {
@@ -627,14 +625,14 @@
             if(this.speciesByUri.has(uri)){
                 return this.speciesByUri.get(uri).label;
             }
-            return null;
+            return null
         }
 
         getInfrastructureName(uri: String): String {
             if(this.infrastructuresByUri.has(uri)){
                 return this.infrastructuresByUri.get(uri).name;
             }
-            return null;
+            return null
         }
 
         goToExperimentCreateComponent(){

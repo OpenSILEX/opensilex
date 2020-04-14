@@ -64,7 +64,7 @@ export default class UserView extends Vue {
     console.log(form);
     done(
       this.service
-        .createUser(this.user.getAuthorizationHeader(), form)
+        .createUser(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("User created", uri);
@@ -77,7 +77,7 @@ export default class UserView extends Vue {
   callUpdateUserService(form: UserUpdateDTO, done) {
     done(
       this.service
-        .updateUser(this.user.getAuthorizationHeader(), form)
+        .updateUser(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("User updated", uri);
@@ -94,7 +94,7 @@ export default class UserView extends Vue {
 
   deleteUser(uri: string) {
     this.service
-      .deleteUser(this.user.getAuthorizationHeader(), uri)
+      .deleteUser(uri)
       .then(() => {
         let userList: any = this.userList;
         userList.refresh();

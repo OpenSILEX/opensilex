@@ -69,6 +69,8 @@ public interface SPARQLConnection extends Service {
     public void disableSHACL() throws SPARQLException;
 
     public void enableSHACL() throws SPARQLException;
+    
+    public boolean isShaclEnabled();
 
     public default void loadOntology(URI graph, InputStream ontology, Lang format) throws SPARQLException {
         Node graphNode = NodeFactory.createURI(graph.toString());

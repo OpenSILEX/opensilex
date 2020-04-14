@@ -52,20 +52,18 @@ export class {{classname}} {
      {{/allParams}}{{#useHttpClient}}* @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.{{/useHttpClient}}
      */
-    public {{nickname}}({{#headerParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/headerParams}}{{#pathParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/pathParams}}{{#queryParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/queryParams}}{{#formParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/formParams}}{{#bodyParam}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/bodyParam}}observe?: 'response', headers?: Headers): {{#usePromise}}Promise{{/usePromise}}{{^usePromise}}Observable{{/usePromise}}<HttpResponse<OpenSilexResponse<{{#returnType}}{{{returnType}}}{{#isResponseTypeFile}}|undefined{{/isResponseTypeFile}}{{/returnType}}{{^returnType}}any{{/returnType}}>>>;
-    public {{nickname}}({{#headerParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/headerParams}}{{#pathParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/pathParams}}{{#queryParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/queryParams}}{{#formParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/formParams}}{{#bodyParam}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/bodyParam}}observe: any = 'body', headers: Headers = {}): {{#usePromise}}Promise{{/usePromise}}{{^usePromise}}Observable{{/usePromise}}<any> {
+    public {{nickname}}({{#pathParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/pathParams}}{{#queryParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/queryParams}}{{#formParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/formParams}}{{#bodyParam}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/bodyParam}}observe?: 'response', headers?: Headers): {{#usePromise}}Promise{{/usePromise}}{{^usePromise}}Observable{{/usePromise}}<HttpResponse<OpenSilexResponse<{{#returnType}}{{{returnType}}}{{#isResponseTypeFile}}|undefined{{/isResponseTypeFile}}{{/returnType}}{{^returnType}}any{{/returnType}}>>>;
+    public {{nickname}}({{#pathParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/pathParams}}{{#queryParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/queryParams}}{{#formParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/formParams}}{{#bodyParam}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/bodyParam}}observe: any = 'body', headers: Headers = {}): {{#usePromise}}Promise{{/usePromise}}{{^usePromise}}Observable{{/usePromise}}<any> {
 
-{{#allParams}}
+{{#hasQueryParams}}
+        let queryParameters: string[] = [];
+{{#queryParams}}
 {{#required}}
         if (!{{paramName}}){
             throw new Error('Required parameter {{paramName}} was null or undefined when calling {{nickname}}.');
         }
-
 {{/required}}
-{{/allParams}}
-{{#hasQueryParams}}
-        let queryParameters: string[] = [];
-{{#queryParams}}
+
         {{#isListContainer}}
         if ({{paramName}}) {
         {{#isCollectionFormatMulti}}
@@ -91,19 +89,7 @@ export class {{classname}} {
 {{/queryParams}}
 
 {{/hasQueryParams}}
-{{#headerParams}}
-        {{#isListContainer}}
-        if ({{paramName}}) {
-            headers['{{baseName}}'] = {{paramName}}.join(COLLECTION_FORMATS['{{collectionFormat}}']);
-        }
-        {{/isListContainer}}
-        {{^isListContainer}}
-        if ({{paramName}}) {
-            headers['{{baseName}}'] = String({{paramName}});
-        }
-        {{/isListContainer}}
 
-{{/headerParams}}
 {{#authMethods}}
         // authentication ({{name}}) required
 {{#isApiKey}}
@@ -139,6 +125,11 @@ export class {{classname}} {
         headers['Accept'] = '{{{mediaType}}}';
         {{/produces.0}}
 {{#bodyParam}}
+{{#required}}
+        if (!{{paramName}}){
+            throw new Error('Required parameter {{paramName}} was null or undefined when calling {{nickname}}.');
+        }
+{{/required}}
         {{^consumes}}
         headers['Content-Type'] = 'application/json';
         {{/consumes}}
@@ -151,6 +142,11 @@ export class {{classname}} {
         let formData: FormData = new FormData();
         headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
 {{#formParams}}
+{{#required}}
+        if (!{{paramName}}){
+            throw new Error('Required parameter {{paramName}} was null or undefined when calling {{nickname}}.');
+        }
+{{/required}}
         {{#isListContainer}}
         if ({{paramName}}) {
         {{#isCollectionFormatMulti}}

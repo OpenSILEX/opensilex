@@ -64,7 +64,7 @@ export default class FactorView extends Vue {
   callCreateFactorService(form: FactorCreationDTO, done) {
     done(
       this.service
-        .createFactor(this.user.getAuthorizationHeader(), form)
+        .createFactor(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("factor created", uri);
@@ -77,7 +77,7 @@ export default class FactorView extends Vue {
   callUpdateFactorService(form: FactorCreationDTO, done) {
     done(
       this.service
-        .updateFactor(this.user.getAuthorizationHeader(), form)
+        .updateFactor(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("factor updated", uri);
@@ -88,7 +88,7 @@ export default class FactorView extends Vue {
   showFactorDetails(uri: string){
     console.debug("showFactorDetails" + uri);
     this.service
-      .getFactor(this.user.getAuthorizationHeader(), uri)
+      .getFactor(uri)
       .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
         this.factorDetails.showDetails(http.response.result);
       })
@@ -98,7 +98,7 @@ export default class FactorView extends Vue {
   editFactor(uri: string) {
     console.debug("editFactor" + uri);
     this.service
-      .getFactor(this.user.getAuthorizationHeader(), uri)
+      .getFactor(uri)
       .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
         this.factorForm.showEditForm(http.response.result);
       })
@@ -108,7 +108,7 @@ export default class FactorView extends Vue {
   deleteFactor(uri: string) {
     console.debug("deleteFactor " + uri);
     this.service
-      .deleteFactor(this.user.getAuthorizationHeader(), uri)
+      .deleteFactor(uri)
       .then(() => {
         this.factorList.refresh();
       })

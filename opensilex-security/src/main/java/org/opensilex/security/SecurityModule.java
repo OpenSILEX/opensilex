@@ -29,12 +29,13 @@ import org.opensilex.security.group.dal.GroupDAO;
 import org.opensilex.security.user.dal.UserDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.extensions.APIExtension;
+import org.opensilex.sparql.extensions.SPARQLExtension;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SecurityModule extends OpenSilexModule implements APIExtension, LoginExtension {
+public class SecurityModule extends OpenSilexModule implements APIExtension, LoginExtension, SPARQLExtension {
 
     public final static String REST_SECURITY_API_ID = "Security";
 
@@ -163,5 +164,10 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
 
         binder.bind(CurrentUserResolver.class).to(new TypeLiteral<InjectionResolver<CurrentUser>>() {
         }).in(Singleton.class);
+    }
+
+    @Override
+    public void inMemoryInitialization() throws Exception {
+        createDefaultSuperAdmin();
     }
 }

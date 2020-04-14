@@ -6,10 +6,13 @@
 package org.opensilex.security.user.dal;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import org.apache.jena.sparql.vocabulary.FOAF;
+import org.opensilex.OpenSilex;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -28,6 +31,23 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         prefix = "usr"
 )
 public class UserModel extends SPARQLResourceModel implements Principal, ClassURIGenerator<UserModel> {
+
+    public static UserModel getAnonymous() {
+        UserModel anonymous = new UserModel();
+        anonymous.setFirstName("Anonymous");
+        anonymous.setLastName("Anonymous");
+        try {
+            anonymous.setEmail(new InternetAddress("no@email.com"));
+        } catch (AddressException ex) {
+            // can't happend
+        }
+        anonymous.setUserProfiles(new ArrayList<>());
+        anonymous.setAdmin(false);
+        anonymous.setAnonymous(true);
+        anonymous.setLocale(Locale.forLanguageTag(OpenSilex.DEFAULT_LANGUAGE));
+
+        return anonymous;
+    }
 
     @SPARQLProperty(
             ontology = FOAF.class,
@@ -81,6 +101,8 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
     private List<GroupUserProfileModel> userProfiles;
 
     private String token;
+
+    private boolean anonymous = false;
 
     public String getFirstName() {
         return firstName;
@@ -147,13 +169,6 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
         return language;
     }
 
-    public String getLanguageDefault(String overrideLanguage) {
-        if (overrideLanguage == null) {
-            return language;
-        }
-        return overrideLanguage;
-    }
-
     public void setLanguage(String language) {
         this.language = language;
     }
@@ -164,6 +179,14 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
 
     public void setLocale(Locale locale) {
         setLanguage(locale.getLanguage());
+    }
+
+    public boolean isAnonymous() {
+        return anonymous;
+    }
+
+    public void setAnonymous(boolean anonymous) {
+        this.anonymous = anonymous;
     }
 
     @Override

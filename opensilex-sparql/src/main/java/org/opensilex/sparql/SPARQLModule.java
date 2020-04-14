@@ -15,6 +15,7 @@ import org.opensilex.OpenSilexModule;
 import org.opensilex.sparql.exceptions.SPARQLValidationException;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
+import org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.sparql.service.SPARQLStatement;
 import org.opensilex.utils.ClassUtils;
@@ -160,4 +161,15 @@ public class SPARQLModule extends OpenSilexModule {
         }
         factory.dispose(sparql);
     }
+
+    @Override
+    public void startup() throws Exception {
+        SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        if (factory instanceof RDF4JInMemoryServiceFactory) {
+            for (SPARQLExtension module :getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
+                module.inMemoryInitialization();
+            }
+        }
+    }
+
 }

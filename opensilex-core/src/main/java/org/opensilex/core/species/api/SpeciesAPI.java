@@ -4,7 +4,6 @@
 // Copyright © INRAE 2020
 // Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
-
 package org.opensilex.core.species.api;
 
 import io.swagger.annotations.*;
@@ -20,43 +19,48 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.opensilex.security.authentication.ApiTranslatable;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.rest.cache.ApiCache;
 
 /**
  * @author Renaud COLIN
  */
-
 @Api(SpeciesAPI.CREDENTIAL_SPECIES_GROUP_ID)
 @Path("/core/species")
 public class SpeciesAPI {
+
+    public final static String SPECIES_CACHE_CATEGORY = "species";
 
     public static final String CREDENTIAL_SPECIES_GROUP_ID = "Species";
 
     @Inject
     private SPARQLService sparql;
-    
+
+    @CurrentUser
+    UserModel user;
+
     @GET
-    @Path("getAll")
+    @Path("get-all")
     @ApiOperation("get all species")
+    @ApiTranslatable
+    @ApiCache(
+            category = SPECIES_CACHE_CATEGORY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return Species list", response = SpeciesDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 204, message = "No Species found", response = ErrorResponse.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Return Species list", response = SpeciesDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 404, message = "No Species found", response = ErrorResponse.class),
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
-    public Response getAllSpecies(
-            @ApiParam(value= "Species lang", example = "fr") @QueryParam("lang") String lang
-    ){
-        try{
-            SpeciesDAO dao = new SpeciesDAO(sparql);
-            List<SpeciesModel> species = dao.getAll(lang);
+    public Response getAllSpecies() throws Exception {
+        SpeciesDAO dao = new SpeciesDAO(sparql);
+        List<SpeciesModel> species = dao.getAll(user.getLanguage());
 
-            List<SpeciesDTO> dtoList = species.stream().map(SpeciesDTO::fromModel).collect(Collectors.toList());
-            return new PaginatedListResponse<>(dtoList).getResponse();
-
-        }catch (Exception e){
-            return new ErrorResponse(e).getResponse();
-        }
+        List<SpeciesDTO> dtoList = species.stream().map(SpeciesDTO::fromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
 }

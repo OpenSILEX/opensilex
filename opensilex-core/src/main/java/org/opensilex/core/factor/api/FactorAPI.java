@@ -62,7 +62,7 @@ import org.opensilex.utils.ListWithPagination;
 public class FactorAPI {
 
     public static final String FACTOR_EXAMPLE_URI = "http://opensilex/set/factors/ZA17";
-    
+
     public static final String CREDENTIAL_FACTOR_GROUP_ID = "Factors";
     public static final String CREDENTIAL_FACTOR_GROUP_LABEL_KEY = "credential-groups.factors";
 
@@ -77,7 +77,7 @@ public class FactorAPI {
 
     @Inject
     private SPARQLService sparql;
-    
+
     /**
      * Create a factor model from a FactorCreationDTO object
      *
@@ -89,8 +89,8 @@ public class FactorAPI {
     @ApiOperation("Create an factor")
     @ApiProtected
     @ApiCredential(
-        credentialId = CREDENTIAL_FACTOR_MODIFICATION_ID,
-        credentialLabelKey = CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY
+            credentialId = CREDENTIAL_FACTOR_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -123,23 +123,23 @@ public class FactorAPI {
     @ApiOperation("Get an factor")
     @ApiProtected
     @ApiCredential(
-        credentialId = CREDENTIAL_FACTOR_READ_ID,
-        credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY
+            credentialId = CREDENTIAL_FACTOR_READ_ID,
+            credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Factor retrieved", response = FactorDetailsGetDTO.class),
-        @ApiResponse(code = 204, message = "No factor found", response = ErrorResponse.class)
+        @ApiResponse(code = 404, message = "No factor found", response = ErrorResponse.class)
     })
     public Response getFactor(
             @ApiParam(value = "Factor URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         FactorDAO dao = new FactorDAO(sparql);
         FactorModel model = dao.get(uri);
-        
+
         if (model != null) {
-             return new SingleObjectResponse<>(
+            return new SingleObjectResponse<>(
                     FactorDetailsGetDTO.fromModel(model)
             ).getResponse();
         } else {
@@ -155,7 +155,7 @@ public class FactorAPI {
      * Search factors
      *
      * @param factorSearchDTO
-     * @see org.opensilex.core.factor.dal.FactorDAO 
+     * @see org.opensilex.core.factor.dal.FactorDAO
      * @param orderByList List of fields to sort as an array of
      * fieldName=asc|desc
      * @param page Page number
@@ -168,8 +168,8 @@ public class FactorAPI {
     @ApiOperation("Search factors")
     @ApiProtected
     @ApiCredential(
-        credentialId = CREDENTIAL_FACTOR_READ_ID,
-        credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY
+            credentialId = CREDENTIAL_FACTOR_READ_ID,
+            credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -183,7 +183,7 @@ public class FactorAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-         
+
         // Search factors with Factor DAO
         FactorDAO dao = new FactorDAO(sparql);
         ListWithPagination<FactorModel> resultList = dao.search(
@@ -202,11 +202,11 @@ public class FactorAPI {
         // Return paginated list of factor DTO
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
-    
+
     /**
      * getAll factors
      *
-     * @see org.opensilex.core.factor.dal.FactorDAO 
+     * @see org.opensilex.core.factor.dal.FactorDAO
      * @return filtered, ordered and paginated list
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
@@ -215,19 +215,18 @@ public class FactorAPI {
     @ApiOperation("Get all factors")
     @ApiProtected
     @ApiCredential(
-        credentialId = CREDENTIAL_FACTOR_READ_ID,
-        credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY
+            credentialId = CREDENTIAL_FACTOR_READ_ID,
+            credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return factor list", response = FactorGetDTO.class, responseContainer = "List"),
-    })
+        @ApiResponse(code = 200, message = "Return factor list", response = FactorGetDTO.class, responseContainer = "List"),})
     public Response getAllFactors() throws Exception {
-         
+
         // Search factors with Factor DAO
         FactorDAO dao = new FactorDAO(sparql);
-        List<FactorModel> factorModelsList = dao.getAll();  
+        List<FactorModel> factorModelsList = dao.getAll();
         List<FactorGetDTO> getFactorDTOList = new ArrayList<>();
         for (FactorModel factorModel : factorModelsList) {
             FactorGetDTO factorGetDTO = new FactorGetDTO();
@@ -240,7 +239,7 @@ public class FactorAPI {
         // Return paginated list of factor DTO
         return new PaginatedListResponse<>(getFactorDTOList).getResponse();
     }
- 
+
     /**
      * Remove an factor
      *
@@ -276,7 +275,7 @@ public class FactorAPI {
             return new ErrorResponse(e).getResponse();
         }
     }
-    
+
     /**
      * @param factorDTO the Factor to update
      * @return a {@link Response} with a {@link ObjectUriResponse} containing

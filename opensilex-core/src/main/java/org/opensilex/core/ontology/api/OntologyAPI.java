@@ -31,6 +31,8 @@ import org.opensilex.core.ontology.dal.PropertyModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.rest.cache.ApiCache;
+import org.opensilex.server.rest.cache.ApiCacheService;
 import org.opensilex.sparql.response.ResourceTreeResponse;
 
 /**
@@ -51,6 +53,9 @@ public class OntologyAPI {
     @Path("/subclass-of")
     @ApiOperation("Search sub-classes tree of an RDF class")
     @ApiProtected
+    @ApiCache(
+            category = ApiCacheService.STATIC_CATEGORY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -76,6 +81,9 @@ public class OntologyAPI {
     @Path("/subproperties-of")
     @ApiOperation("Search sub-properties tree of an RDF property")
     @ApiProtected
+    @ApiCache(
+            category = ApiCacheService.STATIC_CATEGORY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

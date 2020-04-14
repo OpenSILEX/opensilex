@@ -16,24 +16,7 @@ import java.lang.annotation.Target;
 import javax.ws.rs.core.HttpHeaders;
 import org.opensilex.OpenSilex;
 
-/**
- * <pre>
- * Annotation use to add header token protection for API service.
- *
- * Protection mechanism is implemented in {@code org.opensilex.server.security.AuthenticationFilter}
- * </pre>
- *
- * @see org.opensilex.security.authentication.filters.AuthenticationFilter
- * @author Vincent Migot
- */
 @ApiImplicitParams({
-    @ApiImplicitParam(
-            name = ApiProtected.HEADER_NAME,
-            required = true,
-            dataType = "string",
-            paramType = "header",
-            value = "Authentication token"
-    ),
     @ApiImplicitParam(
             name = HttpHeaders.ACCEPT_LANGUAGE,
             dataType = "string",
@@ -45,9 +28,6 @@ import org.opensilex.OpenSilex;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface ApiProtected {
-
-    public final static String HEADER_NAME = "Authorization";
-    public final static String TOKEN_PARAMETER_PREFIX = "Bearer ";
+public @interface ApiTranslatable {
 
 }

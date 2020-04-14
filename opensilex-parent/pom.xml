@@ -61,6 +61,7 @@
         <jackson.version>2.10.3</jackson.version>
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
         <swagger.jersey2.jaxrs.version>1.6.1</swagger.jersey2.jaxrs.version>
+        <commons.jcs.cache.version>2.2.1</commons.jcs.cache.version>
         <maven.resolver.version>1.4.1</maven.resolver.version>
         <maven.resolver.provider.version>3.6.3</maven.resolver.provider.version>
         <rdf4j.version>3.1.3</rdf4j.version>
@@ -390,6 +391,7 @@
             <artifactId>hibernate-validator-annotation-processor</artifactId>
             <version>${hibernate.validator.version}</version>
         </dependency>
+        
         <!--Servlet API v4 provided by Tomcat--> 
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -411,6 +413,20 @@
             </exclusions>
         </dependency>
         
+        <!-- Cache library --> 
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-jcs</artifactId>
+            <version>${commons.jcs.cache.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-jcs-core</artifactId>
+            <version>${commons.jcs.cache.version}</version>
+        </dependency>
+
+
         <!--Java extension compatibility for JDK 9+--> 
         <dependency>
             <groupId>javax.xml.bind</groupId>

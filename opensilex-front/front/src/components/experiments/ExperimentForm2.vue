@@ -125,7 +125,7 @@ export default class ExperimentForm2 extends ExperimentForm {
       "opensilex.ProjectsService"
     );
     service
-      .searchProjects(this.user.getAuthorizationHeader(), null, 0, 1000)
+      .searchProjects(null, 0, 1000)
       .then(
         (http: HttpResponse<OpenSilexResponse<Array<ProjectCreationDTO>>>) => {
           for (let i = 0; i < http.response.result.length; i++) {
@@ -142,7 +142,7 @@ export default class ExperimentForm2 extends ExperimentForm {
       "opensilex.SecurityService"
     );
     service
-      .searchGroups(this.user.getAuthorizationHeader(), undefined, null, 0, 100)
+      .searchGroups(undefined, null, 0, 100)
       .then((http: HttpResponse<OpenSilexResponse<Array<GroupGetDTO>>>) => {
         for (let i = 0; i < http.response.result.length; i++) {
           let dto = http.response.result[i];
@@ -157,7 +157,7 @@ export default class ExperimentForm2 extends ExperimentForm {
       "opensilex.SecurityService"
     );
     service
-      .searchUsers(this.user.getAuthorizationHeader(), undefined, null, 0, 100)
+      .searchUsers(undefined, null, 0, 100)
       .then((http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) => {
         for (let i = 0; i < http.response.result.length; i++) {
           let dto = http.response.result[i];
@@ -178,7 +178,7 @@ export default class ExperimentForm2 extends ExperimentForm {
       "opensilex.InfrastructuresService"
     );
     service
-      .searchInfrastructuresTree(this.user.getAuthorizationHeader(), undefined)
+      .searchInfrastructuresTree(undefined)
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
         for (let i = 0; i < http.response.result.length; i++) {
           let dto = http.response.result[i];

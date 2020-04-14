@@ -69,7 +69,7 @@ export default class InfrastructureView extends Vue {
 
   private refresh() {
     this.service
-      .searchInfrastructuresTree(this.user.getAuthorizationHeader())
+      .searchInfrastructuresTree()
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
         let infrastructures = http.response.result;
         this.parentOptions = this.$opensilex.buildTreeListOptions(
@@ -87,7 +87,7 @@ export default class InfrastructureView extends Vue {
   callCreateInfrastructureService(form: any, done) {
     done(
       this.service
-        .createInfrastructure(this.user.getAuthorizationHeader(), form)
+        .createInfrastructure(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Infrastructure created", uri);
@@ -101,7 +101,7 @@ export default class InfrastructureView extends Vue {
   callUpdateInfrastructureService(form: InfrastructureUpdateDTO, done) {
     done();
     this.service
-      .updateInfrastructure(this.user.getAuthorizationHeader(), form)
+      .updateInfrastructure(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("Infrastructure updated", uri);
@@ -113,11 +113,7 @@ export default class InfrastructureView extends Vue {
 
   editInfrastructure(uri) {
     this.service
-      .getInfrastructure(
-        this.user.getAuthorizationHeader(),
-        uri,
-        this.$i18n.locale
-      )
+      .getInfrastructure(uri)
       .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
         let detailDTO: InfrastructureGetDTO = http.response.result;
         this.infrastructureForm.showEditForm(detailDTO);
@@ -126,7 +122,7 @@ export default class InfrastructureView extends Vue {
 
   deleteInfrastructure(uri: string) {
     this.service
-      .deleteInfrastructure(this.user.getAuthorizationHeader(), uri)
+      .deleteInfrastructure(uri)
       .then(() => {
         this.infrastructureTree.refresh();
         this.refresh();

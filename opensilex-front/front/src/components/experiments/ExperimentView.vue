@@ -242,7 +242,7 @@ export default class ExperimentView extends Vue {
     );
 
     if(this.uri) {
-        service.getExperiment(this.user.getAuthorizationHeader(), this.uri).then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
+        service.getExperiment(this.uri).then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
           this.experiment = http.response.result;
 
           this.loadProjects();
@@ -286,7 +286,6 @@ export default class ExperimentView extends Vue {
     if(this.experiment.infrastructures) {
       this.experiment.infrastructures.forEach(infrastructure => {
         service.getInfrastructure(
-          this.user.getAuthorizationHeader(),
           infrastructure
         ).then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
           this.infrastructuresList.push(http.response.result);
@@ -303,7 +302,6 @@ export default class ExperimentView extends Vue {
     if(this.experiment.groups) {
       this.experiment.groups.forEach(group => {
         service.getGroup(
-          this.user.getAuthorizationHeader(),
           group
         ).then((http: HttpResponse<OpenSilexResponse<GroupGetDTO>>) => {
           this.groupsList.push(http.response.result);
@@ -320,7 +318,6 @@ export default class ExperimentView extends Vue {
     if(this.experiment.scientificSupervisors) {
       this.experiment.scientificSupervisors.forEach(scientificSupervisor => {
         service.getUser(
-            this.user.getAuthorizationHeader(),
             scientificSupervisor
         )
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
@@ -332,7 +329,6 @@ export default class ExperimentView extends Vue {
     if(this.experiment.technicalSupervisors) {
       this.experiment.technicalSupervisors.forEach(technicalSupervisor => {
         service.getUser(
-            this.user.getAuthorizationHeader(),
             technicalSupervisor
         )
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
@@ -348,7 +344,7 @@ export default class ExperimentView extends Vue {
     );
 
     if(this.experiment.species) {
-      service.getAllSpecies(undefined).then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
+      service.getAllSpecies().then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
           for(let i=0; i<http.response.result.length; i++) {
               if(this.experiment.species === http.response.result[i].uri) {
                 this.speciesList.push(http.response.result[i]);
@@ -366,7 +362,6 @@ export default class ExperimentView extends Vue {
     if(this.experiment.projects) {
       this.experiment.projects.forEach(project => {
         service.getProject(
-            this.user.getAuthorizationHeader(),
             project
         )
         .then((http: HttpResponse<OpenSilexResponse<ProjectCreationDTO>>) => {

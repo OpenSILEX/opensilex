@@ -375,4 +375,12 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
     public void clean() throws Exception {
         OpenSilexModule.LOGGER.debug("Nothing to clean for module class: " + getClass().getCanonicalName());
     }
+
+    public void startup() throws Exception {
+        OpenSilexModule.LOGGER.debug("Nothing to startup for module class: " + getClass().getCanonicalName());
+    }
+
+    public void shutdown() throws Exception {
+        OpenSilexModule.LOGGER.debug("Nothing to shutdown for module class: " + getClass().getCanonicalName());
+    }
 }

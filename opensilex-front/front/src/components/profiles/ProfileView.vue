@@ -87,7 +87,7 @@ export default class ProfileView extends Vue {
   callCreateProfileService(form: ProfileCreationDTO, done) {
     done(
       this.service
-        .createProfile(this.user.getAuthorizationHeader(), form)
+        .createProfile(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Profile created", uri);
@@ -100,7 +100,7 @@ export default class ProfileView extends Vue {
   callUpdateProfileService(form: ProfileUpdateDTO, done) {
     done(
       this.service
-        .updateProfile(this.user.getAuthorizationHeader(), form)
+        .updateProfile(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Profile updated", uri);
@@ -117,7 +117,7 @@ export default class ProfileView extends Vue {
 
   deleteProfile(uri: string) {
     this.service
-      .deleteProfile(this.user.getAuthorizationHeader(), uri)
+      .deleteProfile( uri)
       .then(() => {
         let profileList: any = this.profileList;
         profileList.refresh();

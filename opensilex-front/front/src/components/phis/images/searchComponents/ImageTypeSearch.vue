@@ -50,7 +50,6 @@ export default class ImageTypeSearch extends Vue {
     );
     const result = service
       .getDescendants(
-        this.user.getAuthorizationHeader(),
         this.imageTypeUri,
         100,
         0

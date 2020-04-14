@@ -64,7 +64,7 @@ export default class GroupView extends Vue {
   callCreateGroupService(form: GroupCreationDTO, done) {
     done(
       this.service
-        .createGroup(this.user.getAuthorizationHeader(), form)
+        .createGroup( form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Group created", uri);
@@ -77,7 +77,7 @@ export default class GroupView extends Vue {
   callUpdateGroupService(form: GroupUpdateDTO, done) {
     done(
       this.service
-        .updateGroup(this.user.getAuthorizationHeader(), form)
+        .updateGroup(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Group updated", uri);
@@ -94,7 +94,7 @@ export default class GroupView extends Vue {
 
   deleteGroup(uri: string) {
     this.service
-      .deleteGroup(this.user.getAuthorizationHeader(), uri)
+      .deleteGroup( uri)
       .then(() => {
         let groupList: any = this.groupList;
         groupList.refresh();

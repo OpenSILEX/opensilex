@@ -24,10 +24,6 @@ import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
-import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -150,7 +146,7 @@ public class SPARQLQueryHelper {
 
             Expr boundExpr = exprFactory.not(exprFactory.bound(var));
             Expr groupInUrisExpr = exprFactory.in(var, uris.stream()
-                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.formatURI(uri).toString()))
+                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
                     .toArray());
 
             rootFilteringElem.addElement(new ElementOptional(optionals));
@@ -176,7 +172,7 @@ public class SPARQLQueryHelper {
             elementGroup.addTriplePattern(relationTriple);
 
             Expr resourceInUrisExpr = exprFactory.in(var, uris.stream()
-                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.formatURI(uri).toString()))
+                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
                     .toArray());
 
             rootFilteringElem.addElement(elementGroup);
@@ -196,7 +192,7 @@ public class SPARQLQueryHelper {
 
             Expr resourceInUrisExpr = exprFactory.in(makeVar(uriField), uris.stream()
                     .map(uri -> {
-                        return NodeFactory.createURI(SPARQLDeserializers.formatURI(uri).toString());
+                        return NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString()));
                     })
                     .toArray());
 

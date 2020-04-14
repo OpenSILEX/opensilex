@@ -53,13 +53,12 @@
           helpMessage="component.experiment.projects-help" >
           </opensilex-FormInputLabelHelper>
           <ValidationProvider :name="$t('component.experiment.projects')" v-slot="{ errors }">
-            <b-form-select
-              id="projects"
-              v-model="form.projects"
-              :options="projectList"
-              multiple
-              :select-size="3"
-            ></b-form-select>
+          <opensilex-DualList ref="dualList" 
+            :leftTableData = "projectList"
+            :rightTableData="experimentProjects" 
+            leftListTitle="Projects list" rightListTitle="Experiment projects"
+          >
+          </opensilex-DualList>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
@@ -75,20 +74,24 @@
           <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
+
+      
       </b-form>
+
     </ValidationObserver>
   </div>
 </template>
 
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 
 import ExperimentForm from "./ExperimentForm.vue";
 
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import DualList from "./DualList.vue";
 
 import {
   InfrastructuresService,
@@ -105,15 +108,26 @@ import {
 
 @Component
 export default class ExperimentForm2 extends ExperimentForm {
+
   projectList: any = [];
   groupList: any = [];
   infrastructureList: any = [];
   technicalSupervisors: any = [];
   scientificSupervisors: any = [];
 
-  // form2: ExperimentCreationDTO;
+  experimentProjects: any = [];
 
-  created() {
+  getProjects(){
+    return this.experimentProjects;
+  }
+
+  @Ref("dualList") readonly dualList!: DualList;
+
+  // mymethod(form: any) {
+  //   this.userProfilesRef.initFormProfiles(this.projectList);
+  // }
+
+  async created() {
     this.loadProjects();
     this.loadGroups();
     this.loadUsers();
@@ -131,6 +145,12 @@ export default class ExperimentForm2 extends ExperimentForm {
           for (let i = 0; i < http.response.result.length; i++) {
             let dto = http.response.result[i];
             this.projectList.push({ value: dto.uri, text: dto.label });
+          }
+
+          for(let i=0; i<this.form.projects.length; i++){
+            let uri = this.form.projects[i];
+            let label = this.projectList.find(item => item.value == uri).text;
+            this.experimentProjects.push({ value: uri, text : label});
           }
         }
       )

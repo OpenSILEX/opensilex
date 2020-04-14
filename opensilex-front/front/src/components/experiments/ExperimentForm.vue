@@ -115,7 +115,7 @@
         </b-form-group>
 
       <!-- Keywords -->
-         <b-form-group  required  >
+         <!-- <b-form-group  required  >
           <opensilex-FormInputLabelHelper 
           label=component.experiment.keywords 
           helpMessage="component.experiment.keywords-help" >
@@ -126,7 +126,7 @@
             </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
-        </b-form-group> -->
+        </b-form-group>  -->
 
       </b-form>
     </ValidationObserver>
@@ -217,7 +217,7 @@ export default class ExperimentForm extends Vue {
 
   loadSpecies(){
     let service: SpeciesService = this.$opensilex.getService("opensilex.SpeciesService");
-    service.getAllSpecies("fr")
+    service.getAllSpecies()
     .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
 
         for(let i=0; i<http.response.result.length; i++) {

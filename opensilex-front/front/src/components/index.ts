@@ -40,6 +40,7 @@ import ExperimentForm2 from './experiments/ExperimentForm2.vue';
 import ExperimentList from './experiments/ExperimentList.vue';
 import ExperimentCreate from './experiments/ExperimentCreate.vue';
 import ExperimentView from './experiments/ExperimentView.vue';
+import DualList from './experiments/DualList.vue';
 
 import GermplasmView from './germplasm/GermplasmView.vue';
 import GermplasmForm from './germplasm/GermplasmForm.vue';
@@ -81,6 +82,7 @@ export default {
     'opensilex-ExperimentList': ExperimentList,
     'opensilex-ExperimentCreate': ExperimentCreate,
     'opensilex-ExperimentView': ExperimentView,
+    'opensilex-DualList' : DualList,
 
     'opensilex-GermplasmView': GermplasmView,
     'opensilex-GermplasmForm': GermplasmForm,

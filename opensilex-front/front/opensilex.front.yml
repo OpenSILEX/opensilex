@@ -124,7 +124,7 @@ menu:
 
 routes:
   - path: /experiments/create
-    component: opensilex-core-ExperimentCreate
+    component: opensilex-ExperimentCreate
     credentials: []
   - path: /experiments/details
     component: opensilex-core-ExperimentDetails

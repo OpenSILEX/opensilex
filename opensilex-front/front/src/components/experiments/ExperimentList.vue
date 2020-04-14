@@ -30,17 +30,17 @@
         </div>
 
         <div class="card">
-            <!--
+            
             <div class="card-header row clearfix">
                 <div class="col col-sm-3">
                     <div class="card-options d-inline-block">
-                        <b-button id="create-experiment" @click="$emit('onCreate')" variant="primary"><i class="ik ik-plus"></i>{{ $t('component.experiment.search.buttons.create-experiment') }}</b-button>
-                        todo: add theming color
+                        <b-button id="create-experiment" @click="goToExperimentCreateComponent()" variant="primary"><i class="ik ik-plus"></i>{{ $t('component.experiment.search.buttons.create-experiment') }}</b-button>
+                        <!-- todo: add theming color -->
                         <b-tooltip target="create-experiment" >{{ $t('component.experiment.search.buttons.create-experiment-help') }}</b-tooltip>
                     </div>
                 </div>
             </div>
-            -->
+    
 
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -172,6 +172,21 @@
                         </tr>
 
                         <tr v-for="experiment in experiments" v-bind:key="experiment.id">
+
+                            <!-- <td>
+                                    <b-button-group size="sm">
+                                        <b-button size="sm"  variant="outline-primary">
+                                            <font-awesome-icon icon="edit" size="sm" />
+                                        </b-button>
+                                    </b-button-group>
+                            </td> -->
+                            <td>
+                                 <b-button-group size="sm">
+                                        <b-button size="sm"  variant="outline-primary">
+                                            <font-awesome-icon icon="edit" size="sm" />
+                                        </b-button>
+                                    </b-button-group>
+                            </td>
                             <td>
                                 <router-link :to="{path: '/experiment/' + encodeURIComponent(experiment.uri)}">
                                     {{ experiment.label }}
@@ -604,14 +619,10 @@
             );
 
             service.getAllSpecies().then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
-                let results: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
-                let resultsList = [];
                 for(let i=0; i<http.response.result.length; i++) {
-                    results.set(http.response.result[i].uri, http.response.result[i]);
-                    resultsList.push(http.response.result[i]);
+                    this.speciesByUri.set(http.response.result[i].uri, http.response.result[i]);
+                    this.speciesList.push(http.response.result[i]);
                 }
-                this.speciesList = resultsList;
-                this.speciesByUri = results;
             }).catch(this.$opensilex.errorHandler);
         }
 

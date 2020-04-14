@@ -19,14 +19,14 @@
       <tab-content
         v-bind:title="$t('component.experiment.form-wizard.general-informations')"
         :before-change="checkBeforeVariablesStep">
-        <opensilex-core-ExperimentForm ref="experimentForm">
-        </opensilex-core-ExperimentForm>
+        <opensilex-ExperimentForm ref="experimentForm">
+        </opensilex-ExperimentForm>
       </tab-content>
 
       <tab-content
         v-bind:title="$t('component.experiment.form-wizard.users-groups-projects')">
-        <opensilex-core-ExperimentForm2 ref="experimentForm2">
-        </opensilex-core-ExperimentForm2>
+        <opensilex-ExperimentForm2 ref="experimentForm2">
+        </opensilex-ExperimentForm2>
       </tab-content>
 
       <!-- <tab-content
@@ -131,7 +131,13 @@ export default class ExperimentCreate extends Vue {
 
     let dto2: ExperimentCreationDTO = formPart2.getForm();
     dto.groups = dto2.groups;
-    dto.projects = dto2.projects;
+    
+    dto.projects = [];
+    formPart2.getProjects().forEach(item => {
+      console.log("fillForm item : "+item.value+","+item.text);
+      dto.projects.push(item.value);
+    });
+
     dto.scientificSupervisors = dto2.scientificSupervisors;
     dto.technicalSupervisors = dto2.technicalSupervisors;
     dto.infrastructures = dto2.infrastructures;
@@ -155,7 +161,7 @@ export default class ExperimentCreate extends Vue {
   callCreateExperimentService(form: ExperimentCreationDTO) {
 
     this.service
-      .createExperiment(this.user.getAuthorizationHeader(), form)
+      .createExperiment(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("experiment created", uri);
@@ -165,7 +171,7 @@ export default class ExperimentCreate extends Vue {
 
   callUpdateExperimentService(form: ExperimentCreationDTO) {
     this.service
-      .updateExperiment(this.user.getAuthorizationHeader(), form)
+      .updateExperiment(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("experiment updated", uri);

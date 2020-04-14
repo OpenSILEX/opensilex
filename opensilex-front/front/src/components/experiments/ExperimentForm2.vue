@@ -35,14 +35,14 @@
           </opensilex-FormInputLabelHelper>
 
           <ValidationProvider :name="$t('component.experiment.groups')" v-slot="{ errors }">
-            <b-form-select
-              id="groups"
-              v-model="form.groups"
-              :options="groupList"
-              multiple
-              :select-size="3"
-            ></b-form-select>
-            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+
+          <opensilex-DualList ref="groupDualList" 
+            :leftTableData = "groupList"
+            :rightTableData="experimentGroups" 
+            leftListTitle="Group list" rightListTitle="Experiment groups"
+          ></opensilex-DualList>
+
+          <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
 
@@ -53,7 +53,7 @@
           helpMessage="component.experiment.projects-help" >
           </opensilex-FormInputLabelHelper>
           <ValidationProvider :name="$t('component.experiment.projects')" v-slot="{ errors }">
-          <opensilex-DualList ref="dualList" 
+          <opensilex-DualList ref="projectDualList" 
             :leftTableData = "projectList"
             :rightTableData="experimentProjects" 
             leftListTitle="Projects list" rightListTitle="Experiment projects"
@@ -70,7 +70,14 @@
           helpMessage="component.experiment.infrastructures-help" >
           </opensilex-FormInputLabelHelper>
           <ValidationProvider :name="$t('component.experiment.infrastructures')" v-slot="{ errors }">
-          <b-form-select id="infrastructures" v-model="form.infrastructures" :options="infrastructureList" multiple :select-size="3"> </b-form-select>
+          
+           <opensilex-DualList ref="infrastructureDualList" 
+            :leftTableData = "infrastructureList"
+            :rightTableData="experimentInfrastructures" 
+            leftListTitle="Infrastructure list" rightListTitle="Experiment infrastructures"
+          >
+          </opensilex-DualList>       
+          <!-- <b-form-select id="infrastructures" v-model="form.infrastructures" :options="infrastructureList" multiple :select-size="3"> </b-form-select> -->
           <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
@@ -116,12 +123,22 @@ export default class ExperimentForm2 extends ExperimentForm {
   scientificSupervisors: any = [];
 
   experimentProjects: any = [];
+  experimentGroups: any = [];
+  experimentInfrastructures: any = [];
 
   getProjects(){
     return this.experimentProjects;
   }
 
-  @Ref("dualList") readonly dualList!: DualList;
+  getGroups(){
+    return this.experimentGroups;
+  }
+
+  getInfrastructures(){
+    return this.experimentInfrastructures;
+  }
+
+  // @Ref("dualList") readonly dualList!: DualList;
 
   // mymethod(form: any) {
   //   this.userProfilesRef.initFormProfiles(this.projectList);
@@ -168,6 +185,11 @@ export default class ExperimentForm2 extends ExperimentForm {
           let dto = http.response.result[i];
           this.groupList.push({ value: dto.uri, text: dto.name });
         }
+        for(let i=0; i<this.form.groups.length; i++){
+          let uri = this.form.groups[i];
+          let label = this.groupList.find(item => item.value == uri).text;
+          this.experimentGroups.push({ value: uri, text : label});
+        }
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -182,12 +204,8 @@ export default class ExperimentForm2 extends ExperimentForm {
         for (let i = 0; i < http.response.result.length; i++) {
           let dto = http.response.result[i];
           let displayName = dto.firstName + " " + dto.lastName;
-
           this.technicalSupervisors.push({ value: dto.uri, text: displayName });
-          this.scientificSupervisors.push({
-            value: dto.uri,
-            text: displayName
-          });
+          this.scientificSupervisors.push({ value: dto.uri, text: displayName });
         }
       })
       .catch(this.$opensilex.errorHandler);
@@ -203,6 +221,11 @@ export default class ExperimentForm2 extends ExperimentForm {
         for (let i = 0; i < http.response.result.length; i++) {
           let dto = http.response.result[i];
           this.infrastructureList.push({ value: dto.uri, text: dto.name });
+        }
+        for(let i=0; i<this.form.infrastructures.length; i++){
+          let uri = this.form.infrastructures[i];
+          let label = this.infrastructureList.find(item => item.value == uri).text;
+          this.experimentInfrastructures.push({ value: uri, text : label});
         }
       })
       .catch(this.$opensilex.errorHandler);

@@ -172,17 +172,9 @@
                         </tr>
 
                         <tr v-for="experiment in experiments" v-bind:key="experiment.id">
-
-                            <!-- <td>
-                                    <b-button-group size="sm">
-                                        <b-button size="sm"  variant="outline-primary">
-                                            <font-awesome-icon icon="edit" size="sm" />
-                                        </b-button>
-                                    </b-button-group>
-                            </td> -->
                             <td>
-                                 <b-button-group size="sm">
-                                        <b-button size="sm"  variant="outline-primary">
+                                    <b-button-group size="sm">
+                                        <b-button size="sm" @click="goToExperimentUpdateComponent(experiment)" variant="outline-primary">
                                             <font-awesome-icon icon="edit" size="sm" />
                                         </b-button>
                                     </b-button-group>
@@ -653,6 +645,13 @@
 
         goToExperimentCreateComponent(){
             this.$router.push({ path: '/experiments/create' });
+        }
+        
+        goToExperimentUpdateComponent(experimentDto: ExperimentGetDTO){
+            this.$store.xpToUpdate = experimentDto;
+            this.$store.editXp = true;
+            console.log("goToExperimentUpdateComponent : "+experimentDto.uri);
+            this.$router.push({  path: '/experiments/create' });
         }
 
         copyUri(uri: string) {

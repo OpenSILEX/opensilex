@@ -160,6 +160,7 @@ export default class ExperimentForm extends Vue {
   }
 
   form: ExperimentCreationDTO = {
+    projects: [],
     keywords: [],
     scientificSupervisors: [],
     technicalSupervisors: [],
@@ -167,7 +168,7 @@ export default class ExperimentForm extends Vue {
     infrastructures: [],
     installations: [],
     variables: [],
-    sensors: []
+    sensors: [],
     // lang: "en-US"
   };
 
@@ -216,12 +217,16 @@ export default class ExperimentForm extends Vue {
   }
 
   loadSpecies(){
+
+    console.log("loadSpecies ");
+
     let service: SpeciesService = this.$opensilex.getService("opensilex.SpeciesService");
     service.getAllSpecies()
     .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
 
         for(let i=0; i<http.response.result.length; i++) {
           let speciesDto = http.response.result[i];
+          console.log("loadSpecies "+speciesDto.uri+","+speciesDto.label);
           this.speciesList.push({
               value: speciesDto.uri,
               text: speciesDto.label

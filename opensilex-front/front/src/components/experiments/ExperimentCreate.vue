@@ -130,17 +130,23 @@ export default class ExperimentCreate extends Vue {
     }
 
     let dto2: ExperimentCreationDTO = formPart2.getForm();
-    dto.groups = dto2.groups;
+    dto.groups = [];
+    formPart2.getGroups().forEach(item => {
+      dto.groups.push(item.value);
+    });
     
     dto.projects = [];
     formPart2.getProjects().forEach(item => {
-      console.log("fillForm item : "+item.value+","+item.text);
       dto.projects.push(item.value);
+    });
+
+    dto.infrastructures = [];
+    formPart2.getInfrastructures().forEach(item => {
+      dto.infrastructures.push(item.value);
     });
 
     dto.scientificSupervisors = dto2.scientificSupervisors;
     dto.technicalSupervisors = dto2.technicalSupervisors;
-    dto.infrastructures = dto2.infrastructures;
     return dto;
   }
 

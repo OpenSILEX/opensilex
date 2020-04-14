@@ -166,7 +166,6 @@ public class ExperimentAPI {
 
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Experiment retrieved", response = ExperimentGetDTO.class),
-        @ApiResponse(code = 204, message = "No experiment found", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response getExperiment(
             @ApiParam(value = "Experiment URI", example = "http://opensilex.dev/set/experiments/ZA17", required = true) @PathParam("uri") @NotNull URI xpUri
@@ -206,7 +205,6 @@ public class ExperimentAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return Experiment list", response = ExperimentGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 204, message = "No experiment found", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     public Response searchExperiments(

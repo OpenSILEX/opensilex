@@ -30,7 +30,7 @@ Le seul point spécifique ici est la surcharge de la méthode `authenticate` qui
 
 Les méthodes `setup()̀`, `clean()̀`, `startup()̀` et `shutdown()̀` sont implémentables dans n'importe quel service et sont appelées automatiquement.
 
-Ensuite pour activer ce `LDAPAuthenticationService` via le fichier de configuration YAML de l'application il faut déclarer la partie suivante dans le ficheir de configuration: 
+Ensuite pour activer ce `LDAPAuthenticationService` via le fichier de configuration YAML de l'application il faut déclarer la partie suivante:
 
 ```yml
 security:

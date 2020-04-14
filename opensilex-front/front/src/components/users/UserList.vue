@@ -203,7 +203,6 @@ export default class UserList extends Vue {
 
     return this.service
       .searchUsers(
-        this.user.getAuthorizationHeader(),
         this.filterPattern,
         orderBy,
         this.currentPage - 1,
@@ -240,7 +239,7 @@ export default class UserList extends Vue {
     if (!data.detailsShowing) {
       this.groupDetails = [];
       this.service
-        .getUserGroups(this.user.getAuthorizationHeader(), data.item.uri)
+        .getUserGroups(data.item.uri)
         .then(
           (http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
             this.groupDetails = http.response.result;

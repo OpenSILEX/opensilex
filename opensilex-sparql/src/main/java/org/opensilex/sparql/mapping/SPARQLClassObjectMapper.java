@@ -443,14 +443,27 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classAnalizer.isReverseRelation(relationField);
     }
 
+    public <T extends SPARQLResourceModel> Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getRelationsUrisByMapper(T instance) throws Exception {
+        return getRelationsUrisByMapper(instance, new HashMap<>());
+    }
+
+    public <T extends SPARQLResourceModel> Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap) throws Exception {
+        return getRelationsUrisByMapper(instance, existingMap, false);
+    }
+
     public Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getReverseRelationsUrisByMapper(T instance) throws Exception {
         return getReverseRelationsUrisByMapper(instance, new HashMap<>());
 
     }
 
-    public Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getReverseRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap) throws Exception {
+    public <T extends SPARQLResourceModel> Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getReverseRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap) throws Exception {
+        return getRelationsUrisByMapper(instance, existingMap, true);
+    }
+
+    private <T extends SPARQLResourceModel> Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap, boolean reverse) {
         classAnalizer.forEachObjectProperty(ThrowingBiConsumer.wrap((field, property) -> {
-            if (classAnalizer.isReverseRelation(field)) {
+            if ((reverse && classAnalizer.isReverseRelation(field))
+                    || (!reverse && !classAnalizer.isReverseRelation(field))) {
                 Object fieldValue = classAnalizer.getFieldValue(field, instance);
 
                 if (fieldValue != null) {
@@ -471,17 +484,20 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         ));
 
         classAnalizer.forEachObjectPropertyList(ThrowingBiConsumer.wrap((field, property) -> {
-            List<? extends SPARQLResourceModel> values = (List<? extends SPARQLResourceModel>) classAnalizer.getFieldValue(field, instance);
-            if (values != null && !values.isEmpty()) {
-                for (SPARQLResourceModel value : values) {
-                    SPARQLClassObjectMapper<SPARQLResourceModel> mapper = mapperIndex.getForClass(value.getClass());
-                    URI propertyFieldURI = mapper.getURI(value);
+            if ((reverse && classAnalizer.isReverseRelation(field))
+                    || (!reverse && !classAnalizer.isReverseRelation(field))) {
+                List<? extends SPARQLResourceModel> values = (List<? extends SPARQLResourceModel>) classAnalizer.getFieldValue(field, instance);
+                if (values != null && !values.isEmpty()) {
+                    for (SPARQLResourceModel value : values) {
+                        SPARQLClassObjectMapper<SPARQLResourceModel> mapper = mapperIndex.getForClass(value.getClass());
+                        URI propertyFieldURI = mapper.getURI(value);
 
-                    if (propertyFieldURI != null) {
-                        if (!existingMap.containsKey(mapper)) {
-                            existingMap.put(mapper, new HashSet());
+                        if (propertyFieldURI != null) {
+                            if (!existingMap.containsKey(mapper)) {
+                                existingMap.put(mapper, new HashSet());
+                            }
+                            existingMap.get(mapper).add(propertyFieldURI);
                         }
-                        existingMap.get(mapper).add(propertyFieldURI);
                     }
                 }
             }
@@ -593,4 +609,5 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             }
         }
     }
+
 }

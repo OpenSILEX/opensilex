@@ -52,7 +52,7 @@ let renewTokenOnEvent = function (event) {
   let $opensilex: OpenSilexVuePlugin = getOpenSilexPlugin();
 
   $opensilex.getService<AuthenticationService>("opensilex-security.AuthenticationService")
-    .renewToken(currentUser.getAuthorizationHeader())
+    .renewToken()
     .then((http) => {
       console.debug("Token renewed", http.response.result.token);
       currentUser.setToken(http.response.result.token);
@@ -223,6 +223,8 @@ let store = new Vuex.Store({
       state.openSilexRouter.refresh();
     },
     lang(state, lang) {
+      console.debug("Define user language", lang);
+      state.user.setLocale(lang);
       state.lang = lang;
     }
   },

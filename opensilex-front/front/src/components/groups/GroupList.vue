@@ -178,7 +178,6 @@ export default class GroupList extends Vue {
 
     return service
       .searchGroups(
-        this.user.getAuthorizationHeader(),
         this.filterPattern,
         orderBy,
         this.currentPage - 1,

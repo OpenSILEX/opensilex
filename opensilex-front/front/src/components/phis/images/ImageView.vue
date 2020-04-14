@@ -143,7 +143,6 @@ export default class ImageView extends Vue {
     console.log(this.searchImagesFields);
     this.dataService
       .getDataFileDescriptionsBySearch(
-        this.user.getAuthorizationHeader(),
         this.searchImagesFields.rdfType,
         this.searchImagesFields.startDate,
         this.searchImagesFields.endDate,

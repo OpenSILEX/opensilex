@@ -224,7 +224,6 @@ export default class ProfileList extends Vue {
 
     return service
       .searchProfiles(
-        this.user.getAuthorizationHeader(),
         this.filterPattern,
         orderBy,
         this.currentPage - 1,

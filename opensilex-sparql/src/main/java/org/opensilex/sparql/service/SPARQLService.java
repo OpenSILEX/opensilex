@@ -658,7 +658,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
         generateUniqueUriIfNullOrValidateCurrent(mapper, instance, checkUriExist);
 
-        validateReverseRelations(instance);
+        validate(instance);
 
         for (SPARQLResourceModel subInstance : mapper.getAllDependentResourcesToCreate(instance)) {
             create(subInstance);
@@ -675,7 +675,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         if (instances.size() > 0) {
             UpdateBuilder create = new UpdateBuilder();
-            validateReverseRelations(instances);
+            validate(instances);
             for (T instance : instances) {
                 SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
                 prepareInstanceCreation(instance, mapper, true);
@@ -718,7 +718,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         try {
             startTransaction();
 
-            validateReverseRelations(instance);
+            validate(instance);
 
             URI uri = mapper.getURI(instance);
             T oldInstance = loadByURI(graph, objectClass, uri, getDefaultLang());
@@ -748,7 +748,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             if (instances.size() > 0) {
 
-                validateReverseRelations(instances);
+                validate(instances);
 
                 for (T instance : instances) {
                     Node instanceGraph = graph;
@@ -1063,6 +1063,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         connection.enableSHACL();
     }
 
+    @Override
+    public boolean isShaclEnabled() {
+        return connection.isShaclEnabled();
+    }
+
     @Deprecated
     public RepositoryConnection getRepositoryConnection() {
         RDF4JConnection cnt = (RDF4JConnection) this.connection;
@@ -1083,36 +1088,63 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return getMapperIndex().getForClass(modelClass).getURIFieldVar();
     }
 
-    public <T extends SPARQLResourceModel> void validateReverseRelations(T instance) throws Exception {
-        SPARQLClassObjectMapper<SPARQLResourceModel> mapper = getMapperIndex().getForClass(instance.getClass());
-        Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMappers = mapper.getReverseRelationsUrisByMapper(instance);
+    public <T extends SPARQLResourceModel> void validate(T instance) throws Exception {
+        if (!this.isShaclEnabled()) {
+            validateRelations(instance);
+        }
+
+        validateReverseRelations(instance);
+    }
+
+    public <T extends SPARQLResourceModel> void validate(List<T> instances) throws Exception {
+        if (!this.isShaclEnabled()) {
+            validateRelations(instances);
+        }
+
+        validateReverseRelations(instances);
+    }
+
+    private <T extends SPARQLResourceModel> void validateRelations(Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMappers) throws Exception {
         for (Map.Entry<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMapper : urisByMappers.entrySet()) {
             SPARQLClassObjectMapper<SPARQLResourceModel> modelMapper = urisByMapper.getKey();
             Set<URI> uris = urisByMapper.getValue();
 
             if (uriListExists(modelMapper.getObjectClass(), uris)) {
-                // TODO: better exception
+                // TODO: better exception for validation
                 throw new Exception("Invalid URI list !!");
             }
         }
     }
 
-    public <T extends SPARQLResourceModel> void validateReverseRelations(List<T> instances) throws Exception {
+    private <T extends SPARQLResourceModel> void validateRelations(T instance) throws Exception {
+        SPARQLClassObjectMapper<SPARQLResourceModel> mapper = getMapperIndex().getForClass(instance.getClass());
+        validateRelations(mapper.getRelationsUrisByMapper(instance));
+
+    }
+
+    private <T extends SPARQLResourceModel> void validateRelations(List<T> instances) throws Exception {
+        Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMappers = new HashMap<>();
+        for (T instance : instances) {
+            SPARQLClassObjectMapper<SPARQLResourceModel> mapper = getMapperIndex().getForClass(instance.getClass());
+            mapper.getRelationsUrisByMapper(instance, urisByMappers);
+        }
+
+        validateRelations(urisByMappers);
+    }
+
+    private <T extends SPARQLResourceModel> void validateReverseRelations(T instance) throws Exception {
+        SPARQLClassObjectMapper<SPARQLResourceModel> mapper = getMapperIndex().getForClass(instance.getClass());
+        validateRelations(mapper.getReverseRelationsUrisByMapper(instance));
+    }
+
+    private <T extends SPARQLResourceModel> void validateReverseRelations(List<T> instances) throws Exception {
         Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMappers = new HashMap<>();
         for (T instance : instances) {
             SPARQLClassObjectMapper<SPARQLResourceModel> mapper = getMapperIndex().getForClass(instance.getClass());
             mapper.getReverseRelationsUrisByMapper(instance, urisByMappers);
         }
 
-        for (Map.Entry<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMapper : urisByMappers.entrySet()) {
-            SPARQLClassObjectMapper<SPARQLResourceModel> modelMapper = urisByMapper.getKey();
-            Set<URI> uris = urisByMapper.getValue();
-
-            if (uriListExists(modelMapper.getObjectClass(), uris)) {
-                // TODO: better exception
-                throw new Exception("Invalid URI list !!");
-            }
-        }
+        validateRelations(urisByMappers);
     }
 
     public <T extends SPARQLResourceModel> SPARQLClassObjectMapper<T> getForClass(Class<T> modelClass) throws SPARQLException {

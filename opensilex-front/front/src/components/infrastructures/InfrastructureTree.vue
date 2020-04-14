@@ -179,10 +179,7 @@ export default class InfrastructureTree extends Vue {
 
   refresh(uri?) {
     this.service
-      .searchInfrastructuresTree(
-        this.user.getAuthorizationHeader(),
-        this.filterPattern
-      )
+      .searchInfrastructuresTree(this.filterPattern)
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
         let treeNode = [];
 
@@ -256,11 +253,7 @@ export default class InfrastructureTree extends Vue {
 
   public displayNodeDetail(uri: string) {
     return this.service
-      .getInfrastructure(
-        this.user.getAuthorizationHeader(),
-        uri,
-        this.$i18n.locale
-      )
+      .getInfrastructure(uri)
       .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
         let detailDTO: InfrastructureGetDTO = http.response.result;
         this.selected = detailDTO;

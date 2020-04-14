@@ -122,7 +122,6 @@ export default class SciObjectAliasSearch extends Vue {
 
       const result = service
         .getScientificObjectsBySearch(
-          this.user.getAuthorizationHeader(),
           this.pageSize,
           this.currentPage,
           undefined,

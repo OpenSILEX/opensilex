@@ -214,7 +214,7 @@ export default class ExperimentForm extends Vue {
 
   loadSpecies(){
     let service: SpeciesService = this.$opensilex.getService("opensilex.SpeciesService");
-            service.getAllSpecies("fr")
+            service.getAllSpecies()
             .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
 
                 for(let i=0; i<http.response.result.length; i++) {

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import org.opensilex.OpenSilex;
 import org.opensilex.config.ConfigDescription;
+import org.opensilex.server.rest.cache.ApiCacheService;
 
 /**
  * Default configuration for OpenSilex base module
@@ -40,5 +41,10 @@ public interface ServerConfig {
             defaultBoolean = true
     )
     public boolean enableAntiThreadLock();
+
+    @ConfigDescription(
+            value = "REST API cache management"
+    )
+    public ApiCacheService cache();
 
 }

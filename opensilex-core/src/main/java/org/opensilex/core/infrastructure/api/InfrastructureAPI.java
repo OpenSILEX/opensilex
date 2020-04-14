@@ -13,7 +13,6 @@ import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import javax.inject.Inject;
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -75,7 +74,7 @@ public class InfrastructureAPI {
 
     @CurrentUser
     UserModel user;
-    
+
     @POST
     @Path("create")
     @ApiOperation("Create an infrastructure")
@@ -122,14 +121,13 @@ public class InfrastructureAPI {
 
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Infrastructure retrieved", response = InfrastructureGetDTO.class),
-        @ApiResponse(code = 204, message = "No experiment found", response = ErrorResponse.class)
+        @ApiResponse(code = 404, message = "No infrastructure found", response = ErrorResponse.class)
     })
     public Response getInfrastructure(
-            @ApiParam(value = "Infrastructure URI", example = "http://opensilex.dev/infrastructures/phenoarch", required = true) @PathParam("uri") @NotNull URI uri,
-            @ApiParam(value = "language", example = "en") @DefaultValue("en") @QueryParam("language") @NotEmpty String language
+            @ApiParam(value = "Infrastructure URI", example = "http://opensilex.dev/infrastructures/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        InfrastructureModel model = dao.get(uri, user.getLanguageDefault(language));
+        InfrastructureModel model = dao.get(uri, user.getLanguage());
 
         if (model != null) {
             return new SingleObjectResponse<>(InfrastructureGetDTO.fromModel(model)).getResponse();

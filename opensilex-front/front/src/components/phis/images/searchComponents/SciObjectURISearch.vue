@@ -115,7 +115,6 @@ export default class SciObjectURISearch extends Vue {
 
       const result = service
         .getScientificObjectsBySearch(
-          this.user.getAuthorizationHeader(),
           this.pageSize,
           this.currentPage,
           this.uri,

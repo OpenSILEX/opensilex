@@ -86,7 +86,7 @@ public class CredentialFilter implements ContainerRequestFilter {
             if (securityAnnotation != null) {
 
                 // Throw exception if no token
-                if (user == null) {
+                if (user == null || user.isAnonymous()) {
                     throw new UnauthorizedException();
                 }
 

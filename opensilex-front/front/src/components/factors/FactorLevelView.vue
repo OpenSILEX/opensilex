@@ -70,7 +70,6 @@ export default class FactorLevelView extends Vue {
     let http: HttpResponse<OpenSilexResponse<
       Array<FactorGetDTO>
     >> = await factorsService.searchFactors(
-      this.$opensilex.getUser().getAuthorizationHeader(),
       [],
       200,
       0
@@ -88,7 +87,7 @@ export default class FactorLevelView extends Vue {
   callCreateFactorLevelService(form: FactorLevelCreationDTO, done) {
     done(
       this.service
-        .createFactorLevel(this.user.getAuthorizationHeader(), form)
+        .createFactorLevel(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("factorLevel created", uri);
@@ -101,7 +100,7 @@ export default class FactorLevelView extends Vue {
   callUpdateFactorLevelService(form: FactorLevelCreationDTO, done) {
     done(
       this.service
-        .updateFactorLevel(this.user.getAuthorizationHeader(), form)
+        .updateFactorLevel(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("factorLevel updated", uri);
@@ -120,7 +119,7 @@ export default class FactorLevelView extends Vue {
   deleteFactorLevel(uri: string) {
      console.log("delete" + uri)
     this.service
-      .deleteFactorLevel(this.user.getAuthorizationHeader(), uri)
+      .deleteFactorLevel(uri)
       .then(() => {
         let factorLevelList: any = this.$refs.factorLevelList;
         factorLevelList.refresh();

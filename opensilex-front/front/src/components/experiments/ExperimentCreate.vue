@@ -160,7 +160,7 @@ export default class ExperimentCreate extends Vue {
 
     // done(
       this.service
-        .createExperiment(this.user.getAuthorizationHeader(), form)
+        .createExperiment(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("experiment created", uri);

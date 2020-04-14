@@ -84,10 +84,6 @@ public class OpenSilex {
      */
     public final static String DEV_PROFILE_ID = "dev";
 
-//    /**
-//     * Singleton variable of the OpenSilex running instance
-//     */
-//    private static OpenSilex instance;
     /**
      * Environment key for OpenSilex base directory
      */
@@ -527,6 +523,10 @@ public class OpenSilex {
         for (Service service : serviceManager.getServices().values()) {
             service.startup();
         }
+
+        for (OpenSilexModule module : getModules()) {
+            module.startup();
+        }
     }
 
     /**
@@ -536,6 +536,10 @@ public class OpenSilex {
      */
     public void shutdown() throws Exception {
         LOGGER.debug("Shutdown instance");
+
+        for (OpenSilexModule module : getModules()) {
+            module.shutdown();
+        }
 
         for (Service service : serviceManager.getServices().values()) {
             service.shutdown();
@@ -838,8 +842,9 @@ public class OpenSilex {
             LOGGER.debug("Extra module JAR files registring for static instance");
             Set<URL> jarModulesURLs = new HashSet<>();
             getModules().forEach(m -> {
-                if (!m.getClass().equals(ServerModule.class)) {
-                    File jarFile = ClassUtils.getJarFile(m.getClass());
+                File jarFile = ClassUtils.getJarFile(m.getClass());
+
+                if (!m.getClass().equals(ServerModule.class) || !jarFile.isFile()) {
 
                     try {
                         URL jarURL = new URL("file://" + jarFile.getAbsolutePath());

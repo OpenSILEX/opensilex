@@ -9,6 +9,7 @@ package org.opensilex.server;
 import java.util.List;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.server.extensions.APIExtension;
+import org.opensilex.server.rest.cache.JCSApiCacheExtension;
 
 /**
  * Tomcat Server integration module for OpenSilex.
@@ -16,7 +17,7 @@ import org.opensilex.server.extensions.APIExtension;
  * @see org.opensilex.server.ServerConfig
  * @author Vincent Migot
  */
-public class ServerModule extends OpenSilexModule implements APIExtension {
+public class ServerModule extends OpenSilexModule implements APIExtension, JCSApiCacheExtension {
 
     @Override
     public Class<?> getConfigClass() {
@@ -33,6 +34,7 @@ public class ServerModule extends OpenSilexModule implements APIExtension {
         List<String> list = APIExtension.super.getPackagesToScan();
         list.add("org.opensilex.server.rest.serialization");
         list.add("org.opensilex.server.rest.validation");
+        list.add("org.opensilex.server.rest.cache");
 
         return list;
     }

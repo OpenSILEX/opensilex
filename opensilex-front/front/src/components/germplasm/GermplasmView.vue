@@ -46,7 +46,7 @@ export default class GermplasmView extends Vue {
   callCreateGermplasmService(form: GermplasmCreationDTO, done) {
     done(
       this.service
-        .createGermplasm(this.user.getAuthorizationHeader(), form)
+        .createGermplasm(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("germplasm created", uri);

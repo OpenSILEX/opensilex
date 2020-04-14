@@ -38,8 +38,7 @@ public class FactorLevelSearchDTO {
     }
 
     public String getAlias() {
-        if(alias != null
-            && (alias.equals("") || alias.isEmpty())){
+        if(alias != null && alias.trim().isEmpty()){
             return null;
         } 
         return alias;
@@ -58,8 +57,7 @@ public class FactorLevelSearchDTO {
     }
 
     public URI getHasFactor() {
-        if(hasFactor != null
-            && (hasFactor.toString().isBlank() || hasFactor.toString().isEmpty())){
+        if(hasFactor != null && hasFactor.toString().trim().isEmpty()){
             return null;
         } 
         return hasFactor;

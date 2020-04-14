@@ -158,12 +158,12 @@ variables:
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_STOP_SERVER_OPTS}"
     - echo "Start with options --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
-    - DYNAMIC_ENVIRONMENT_URL="http://$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT"        
-    - echo "Deploy To $DYNAMIC_ENVIRONMENT_URL"                 # In script, get the environment URL.
-    - echo "DYNAMIC_ENVIRONMENT_URL=$DYNAMIC_ENVIRONMENT_URL" >> deploy.env 
+    - AUTOGENERATE_ENVIRONMENT_URL="$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT"        
+    - echo "Deploy To $AUTOGENERATE_ENVIRONMENT_URL"                 # In script, get the environment URL.
+    - echo "AUTOGENERATE_ENVIRONMENT_URL=$AUTOGENERATE_ENVIRONMENT_URL" >> deploy.env 
   environment:
     name: "$CI_COMMIT_REF_NAME-test"
-    url: $DYNAMIC_ENVIRONMENT_URL
+    url: http://$AUTOGENERATE_ENVIRONMENT_URL
   artifacts:
     reports:
       dotenv: deploy.env        

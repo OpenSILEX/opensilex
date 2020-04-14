@@ -21,14 +21,14 @@
     <tab-content
       v-bind:title="$t('component.experiment.form-wizard.general-informations')"
       :before-change="checkBeforeVariablesStep">
-      <opensilex-core-ExperimentForm ref="experimentForm">
-      </opensilex-core-ExperimentForm>
+      <opensilex-ExperimentForm ref="experimentForm">
+      </opensilex-ExperimentForm>
     </tab-content>
 
     <tab-content
       v-bind:title="$t('component.experiment.form-wizard.users-groups-projects')">
-      <opensilex-core-ExperimentForm2 ref="experimentForm2">
-      </opensilex-core-ExperimentForm2>
+      <opensilex-ExperimentForm2 ref="experimentForm2">
+      </opensilex-ExperimentForm2>
     </tab-content>
 
     <!-- <tab-content

@@ -51,9 +51,6 @@ public class SpeciesAPI {
             SpeciesDAO dao = new SpeciesDAO(sparql);
             List<SpeciesModel> species = dao.getAll(lang);
 
-            if(species.isEmpty()){
-                return new ErrorResponse(Response.Status.NO_CONTENT, "No species found", "").getResponse();
-            }
             List<SpeciesDTO> dtoList = species.stream().map(SpeciesDTO::fromModel).collect(Collectors.toList());
             return new PaginatedListResponse<>(dtoList).getResponse();
 

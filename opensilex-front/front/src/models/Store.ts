@@ -72,6 +72,13 @@ let defaultConfig: FrontConfigDTO = {
   routes: []
 };
 
+export class SearchStore {
+
+  results = [];
+  filter = null;
+
+}
+
 let store = new Vuex.Store({
   state: {
     user: User.ANONYMOUS(),
@@ -83,6 +90,9 @@ let store = new Vuex.Store({
     disconnected: false,
     release: new Release(),
     lang: "en",
+    search: {
+      experiments: new SearchStore()
+    },
     credentials: {
       CREDENTIAL_EXPERIMENT_MODIFICATION_ID: "experiment-modification",
       CREDENTIAL_EXPERIMENT_READ_ID: "experiment-read",

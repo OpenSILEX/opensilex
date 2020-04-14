@@ -6,10 +6,12 @@
 //******************************************************************************
 package org.opensilex.server.response;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.utils.ListWithPagination;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * <pre>
@@ -25,22 +27,30 @@ import javax.ws.rs.core.Response;
 public class PaginatedListResponse<T> extends JsonResponse<List<T>> {
 
     public PaginatedListResponse(ListWithPagination<T> paginatedList) {
-        this();
+        this(Status.OK, paginatedList);
+    }
+
+    public PaginatedListResponse(Status status, ListWithPagination<T> paginatedList) {
+        super(status);
         this.result = paginatedList.getList();
         this.metadata = new MetadataDTO(new PaginationDTO(paginatedList.getPageSize(), paginatedList.getPage(), paginatedList.getTotal()));
     }
 
-    public PaginatedListResponse(){
-        super(Response.Status.OK);
+    public PaginatedListResponse() {
+        this(Status.OK, new ArrayList<>());
     }
 
-    public PaginatedListResponse(List<T> list) {
-        this();
+    public PaginatedListResponse(Status status, List<T> list) {
+        super(status);
         setResult(list);
     }
 
+    public PaginatedListResponse(List<T> list) {
+        this(Status.OK, list);
+    }
+
     @Override
-    public PaginatedListResponse<T> setResult(List<T> list){
+    public PaginatedListResponse<T> setResult(List<T> list) {
         this.result = list;
         this.metadata = new MetadataDTO(new PaginationDTO(list.size(), 0, list.size()));
         return this;

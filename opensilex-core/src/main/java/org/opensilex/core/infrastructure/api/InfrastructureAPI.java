@@ -135,7 +135,7 @@ public class InfrastructureAPI {
             return new SingleObjectResponse<>(InfrastructureGetDTO.fromModel(model)).getResponse();
         } else {
             return new ErrorResponse(
-                    Response.Status.NO_CONTENT, "Infrastructure not found",
+                    Response.Status.NOT_FOUND, "Infrastructure not found",
                     "Unknown infrastructure URI: " + uri.toString()
             ).getResponse();
         }

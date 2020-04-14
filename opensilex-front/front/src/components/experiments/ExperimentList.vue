@@ -555,16 +555,17 @@
             let service: ProjectsService = this.$opensilex.getService(
                 "opensilex.ProjectsService"
             );
-
-            service.searchProjects(
-                null,
-                0,
-                1000
-            )
-            .then((http: HttpResponse<OpenSilexResponse<Array<ProjectCreationDTO>>>) => {
-                let results: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
-                let resultsList = [];
-                for(let i=0; i<http.response.result.length; i++) {
+            
+                service.searchProjects(
+                  this.user.getAuthorizationHeader(),
+                  null,null,null,null,null,null,null,null,
+                  0,
+                  1000
+                )
+                .then((http: HttpResponse<OpenSilexResponse<Array<ProjectCreationDTO>>>) => {
+                  let results: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
+                  let resultsList = [];
+                  for(let i=0; i<http.response.result.length; i++) {
                     results.set(http.response.result[i].uri, http.response.result[i]);
                     resultsList.push(http.response.result[i]);
                 }

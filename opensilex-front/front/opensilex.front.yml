@@ -20,6 +20,13 @@ menu:
           path: /images
           component: phis-ImageView
           credentials: []
+  - id: projects
+    label: component.menu.projects
+    icon: ik-layers
+    route: 
+      path: /projects
+      component: opensilex-core-ProjectView
+      credentials: []
   - id: experiments
     label: component.menu.experiments
     route: 
@@ -34,6 +41,7 @@ menu:
       path: /users
       component: opensilex-UserView
       credentials: []
+    icon: ik-globe
   - id: scientificObjects
     label: component.menu.scientificObjects
     route: 

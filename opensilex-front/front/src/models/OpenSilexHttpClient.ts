@@ -4,6 +4,7 @@ import HttpResponse from "../lib/HttpResponse";
 import { injectable, inject } from "inversify";
 import { Headers } from "../lib/Headers";
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
+import { User } from './User';
 
 declare var window: any;
 
@@ -53,6 +54,15 @@ class OpenSilexHttpClient implements IHttpClient {
 
         let $opensilex = this.opensilex;
 
+        let user: User = this.opensilex.getUser();
+        if (user != User.ANONYMOUS()) {
+            headers["Authorization"] = user.getAuthorizationHeader();
+        }
+
+        if (user.getLocale() != null) {
+            headers["Accept-Language"] = user.getLocale();
+        }
+
         $opensilex.showLoader();
 
         return new Promise((resolve, reject) => {
@@ -71,9 +81,14 @@ class OpenSilexHttpClient implements IHttpClient {
                     let content: any;
                     let metadata: any = {};
                     if (contentType.match("application/json")) {
-                        content = JSON.parse(text);
-                        if (content.metadata) {
-                            metadata = content.metadata;
+                        try {
+                            content = JSON.parse(text);
+                            if (content.metadata) {
+                                metadata = content.metadata;
+                            }
+                        } catch (error) {
+                            console.error("Error while parsing JSON request result: " + url, error);
+                            throw error;
                         }
                     } else {
                         content = text;

@@ -15,21 +15,32 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.config.ConfigManager;
 import org.opensilex.dependencies.DependencyManager;
+import org.opensilex.server.ServerModule;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
 import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.LogFilter;
 import org.reflections.Reflections;
+import org.reflections.scanners.MethodAnnotationsScanner;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
+import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,10 +84,6 @@ public class OpenSilex {
      */
     public final static String DEV_PROFILE_ID = "dev";
 
-//    /**
-//     * Singleton variable of the OpenSilex running instance
-//     */
-//    private static OpenSilex instance;
     /**
      * Environment key for OpenSilex base directory
      */
@@ -164,8 +171,7 @@ public class OpenSilex {
     public static OpenSilexSetup createSetup(String[] args) throws Exception {
         return createSetup(args, false);
     }
-    
-    
+
     public static OpenSilexSetup createSetup(String[] args, boolean forceDebug) {
         List<Object> cliArgsList = new ArrayList<>();
 
@@ -204,7 +210,7 @@ public class OpenSilex {
         }
 
         debug = debug || forceDebug;
-        
+
         // Set default value for base directory if not set previously
         if (baseDirectory == null || baseDirectory.equals("")) {
             baseDirectory = getDefaultBaseDirectory().toString();
@@ -259,36 +265,42 @@ public class OpenSilex {
      * @throws Exception
      */
     public static OpenSilex createInstance(Map<String, String> args) throws Exception {
-        return createInstance(args, false, false);
+        return createInstance(getArgs(args), false);
     }
 
     public static OpenSilex createInstance(OpenSilexSetup setup) throws Exception {
-        return createInstance(setup, false, false);
+        return createInstance(setup, false);
     }
 
-    public static OpenSilex createInstance(String[] args, boolean manualServiceStartup, boolean moduleJarReflection) throws Exception {
-        return createInstance(createSetup(args), manualServiceStartup, moduleJarReflection);
+    public static OpenSilex createStaticInstance(Map<String, String> args) throws Exception {
+        return createInstance(getArgs(args), true);
     }
 
-    public static OpenSilex createInstance(Map<String, String> args, boolean manualServiceStartup, boolean moduleJarReflection) throws Exception {
+    public static OpenSilex createStaticInstance(OpenSilexSetup setup) throws Exception {
+        return createInstance(setup, true);
+    }
+
+    private static String[] getArgs(Map<String, String> args) {
         List<String> argsList = new ArrayList<>();
         args.forEach((String key, String value) -> {
             argsList.add("--" + key + "=" + value);
         });
 
-        return createInstance(argsList.toArray(new String[0]), manualServiceStartup, moduleJarReflection);
+        return argsList.toArray(new String[0]);
     }
 
-    public static OpenSilex createInstance(OpenSilexSetup setup, boolean manualServiceStartup, boolean moduleJarReflection) throws Exception {
+    private static OpenSilex createInstance(String[] args, boolean isStatic) throws Exception {
+        return createInstance(createSetup(args), isStatic);
+    }
+
+    private static OpenSilex createInstance(OpenSilexSetup setup, boolean isStatic) throws Exception {
         try {
             LOGGER.debug("Build instance, services and modules");
-            OpenSilex instance = buildInstance(setup, moduleJarReflection);
+            OpenSilex instance = buildInstance(setup, isStatic);
             LOGGER.debug("Instance build complete");
 
             LOGGER.debug("Starting instance");
-            if (!manualServiceStartup) {
-                instance.startup();
-            }
+            instance.startup();
             LOGGER.debug("Instance start");
 
             return instance;
@@ -300,15 +312,14 @@ public class OpenSilex {
     }
 
     /**
-     * Create and initialize OpenSilex application instance and return it
+     * Build OpenSilex application from setup
      *
-     * @param baseDirectory Application base directory
-     * @param profileId Application profile identifier
-     * @param configFile Application main configuration file
-     *
-     * @return An instance of OpenSilex
+     * @param setup OpenSilex
+     * @param isStatic
+     * @return
+     * @throws Exception
      */
-    public static OpenSilex buildInstance(OpenSilexSetup setup, boolean moduleJarReflection) throws Exception {
+    public static OpenSilex buildInstance(OpenSilexSetup setup, boolean isStatic) throws Exception {
 
         // Try to find logback.xml file in OpenSilex base directory to initialize logger configuration
         File logConfigFile = setup.getBaseDirectory().resolve("logback.xml").toFile();
@@ -344,7 +355,7 @@ public class OpenSilex {
                 ClassUtils.getPomFile(OpenSilex.class,
                         "org.opensilex", "opensilex-main")
         );
-        OpenSilexModuleManager modManager = new OpenSilexModuleManager(dependencyManager, setup.getBaseDirectory(), sysConfig, moduleJarReflection);
+        OpenSilexModuleManager modManager = new OpenSilexModuleManager(dependencyManager, setup.getBaseDirectory(), sysConfig);
 
         if (LOGGER.isDebugEnabled()) {
             modManager.forEachModule(m -> {
@@ -368,7 +379,8 @@ public class OpenSilex {
                 cfgManager,
                 srvManager,
                 sysConfig,
-                setup
+                setup,
+                isStatic
         );
 
         return app;
@@ -446,6 +458,8 @@ public class OpenSilex {
      */
     private final OpenSilexConfig systemConfig;
 
+    private final boolean isStatic;
+
     /**
      * Constructor for OpenSilex application
      *
@@ -462,13 +476,15 @@ public class OpenSilex {
             ConfigManager configManager,
             ServiceManager serviceManager,
             OpenSilexConfig systemConfig,
-            OpenSilexSetup setup
+            OpenSilexSetup setup,
+            boolean isStatic
     ) throws Exception {
         this.configManager = configManager;
         this.moduleManager = moduleManager;
         this.serviceManager = serviceManager;
         this.systemConfig = systemConfig;
         this.setup = setup;
+        this.isStatic = isStatic;
     }
 
     public void startup() throws Exception {
@@ -490,11 +506,12 @@ public class OpenSilex {
 
         LOGGER.debug("Current expanded configuration:" + getExpandedYAMLConfig());
 
-        LOGGER.debug("Setup modules");
+        LOGGER.debug("Initialize modules");
         for (OpenSilexModule module : getModules()) {
             module.setOpenSilex(this);
-            module.setup();
         }
+
+        setup();
 
         LOGGER.debug("Setup Services");
         for (Service service : serviceManager.getServices().values()) {
@@ -506,6 +523,10 @@ public class OpenSilex {
         for (Service service : serviceManager.getServices().values()) {
             service.startup();
         }
+
+        for (OpenSilexModule module : getModules()) {
+            module.startup();
+        }
     }
 
     /**
@@ -516,14 +537,16 @@ public class OpenSilex {
     public void shutdown() throws Exception {
         LOGGER.debug("Shutdown instance");
 
+        for (OpenSilexModule module : getModules()) {
+            module.shutdown();
+        }
+
         for (Service service : serviceManager.getServices().values()) {
             service.shutdown();
         };
 
         // Clean all modules
-        for (OpenSilexModule module : getModules()) {
-            module.clean();
-        }
+        clean();
 
     }
 
@@ -534,19 +557,6 @@ public class OpenSilex {
      */
     public Iterable<OpenSilexModule> getModules() {
         return moduleManager.getModules();
-    }
-
-    /**
-     * Run install method for every modules
-     *
-     * @throws Exception
-     */
-    public void install(boolean reset) throws Exception {
-        moduleManager.install(reset);
-    }
-
-    public void check() throws Exception {
-        moduleManager.check();
     }
 
     /**
@@ -751,12 +761,132 @@ public class OpenSilex {
         return getReflections().getTypesAnnotatedWith(annotation);
     }
 
-    public Reflections getReflections() {
-        return moduleManager.getReflections();
-    }
-
     public Set<Method> getMethodsAnnotatedWith(Class<? extends Annotation> annotation) {
         return getReflections().getMethodsAnnotatedWith(annotation);
+    }
+
+    public void install(boolean reset) throws Exception {
+        for (OpenSilexModule module : getModules()) {
+            try {
+                LOGGER.info("Install module: " + module.getClass().getCanonicalName());
+                module.install(reset);
+            } catch (Exception ex) {
+                LOGGER.error("Fail to install module: " + module.getClass().getCanonicalName(), ex);
+                throw ex;
+            }
+        }
+    }
+
+    public void check() throws Exception {
+        for (OpenSilexModule module : getModules()) {
+            try {
+                LOGGER.info("Check module: " + module.getClass().getCanonicalName());
+                module.check();
+            } catch (Exception ex) {
+                LOGGER.error("Fail to check module: " + module.getClass().getCanonicalName(), ex);
+                throw ex;
+            }
+        }
+    }
+
+    public void setup() throws Exception {
+        for (OpenSilexModule module : getModules()) {
+            try {
+                LOGGER.info("Setup module: " + module.getClass().getCanonicalName());
+                module.setup();
+            } catch (Exception ex) {
+                LOGGER.error("Fail to setup module: " + module.getClass().getCanonicalName(), ex);
+                throw ex;
+            }
+        }
+    }
+
+    public void clean() throws Exception {
+        for (OpenSilexModule module : getModules()) {
+            try {
+                LOGGER.info("Clean module: " + module.getClass().getCanonicalName());
+                module.clean();
+            } catch (Exception ex) {
+                LOGGER.error("Fail to clean module: " + module.getClass().getCanonicalName(), ex);
+                throw ex;
+            }
+        }
+    }
+
+    private Reflections reflections;
+
+    public Reflections getReflections() {
+        if (reflections == null) {
+            this.buildReflections();
+        }
+        return reflections;
+    }
+
+    private void buildReflections() {
+        LOGGER.debug("Initialize JAR URLs to scan by reflection");
+        Set<URL> urlsToScan = this.moduleManager.getModulesURLs();
+
+        LOGGER.debug("Exclude ignored modules from reflection");
+        Collection<String> ignoredModuleFilePatterns = systemConfig.ignoredModules().values();
+        urlsToScan = urlsToScan.stream().filter((URL url) -> {
+            for (String ignoredModuleFilePattern : ignoredModuleFilePatterns) {
+                if (!url.getPath().endsWith(ignoredModuleFilePattern)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }).collect(Collectors.toSet());
+
+        if (isStatic) {
+            LOGGER.debug("Extra module JAR files registring for static instance");
+            Set<URL> jarModulesURLs = new HashSet<>();
+            getModules().forEach(m -> {
+                File jarFile = ClassUtils.getJarFile(m.getClass());
+
+                if (!m.getClass().equals(ServerModule.class) || !jarFile.isFile()) {
+
+                    try {
+                        URL jarURL = new URL("file://" + jarFile.getAbsolutePath());
+                        LOGGER.debug("Register module JAR URL for" + m.getClass().getSimpleName() + ": " + jarURL.getPath());
+                        jarModulesURLs.add(jarURL);
+                    } catch (MalformedURLException ex) {
+                        LOGGER.warn("Invalid module URL for: " + m.getClass().getSimpleName(), ex);
+                    }
+                }
+            });
+
+            urlsToScan.addAll(jarModulesURLs);
+        }
+
+        ConfigurationBuilder builder;
+        if (!urlsToScan.isEmpty()) {
+
+            // Load dependencies through URL Class Loader based on actual class loader
+            if (urlsToScan.size() > 0) {
+                URLClassLoader classLoader = new URLClassLoader(
+                        urlsToScan.toArray(new URL[urlsToScan.size()]),
+                        Thread.currentThread().getContextClassLoader()
+                );
+                LOGGER.debug("Module registred, jar URLs added to classpath");
+
+                // Set the newly created class loader as the main one
+                Thread.currentThread().setContextClassLoader(classLoader);
+            } else {
+                LOGGER.debug("No external module found !");
+            }
+
+            builder = ConfigurationBuilder.build("", OpenSilex.getClassLoader())
+                    .setUrls(urlsToScan)
+                    .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
+                    .setExpandSuperTypes(false);
+        } else {
+            builder = ConfigurationBuilder.build("", OpenSilex.getClassLoader())
+                    .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
+                    .setExpandSuperTypes(false);
+        }
+
+        reflections = new Reflections(builder);
     }
 
 }

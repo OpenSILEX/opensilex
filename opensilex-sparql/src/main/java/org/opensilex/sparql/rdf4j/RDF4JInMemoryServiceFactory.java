@@ -10,6 +10,8 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.eclipse.rdf4j.sail.shacl.ShaclSail;
+import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  *
@@ -33,7 +35,9 @@ public class RDF4JInMemoryServiceFactory extends RDF4JServiceFactory {
     @Override
     public void startup() throws Exception {
         super.startup();
-        // TODO load all ontologies
+        SPARQLService sparql = this.provide();
+        getOpenSilex().getModuleByClass(SPARQLModule.class).installOntologies(sparql, false);
+        this.dispose(sparql);
     }
 
 }

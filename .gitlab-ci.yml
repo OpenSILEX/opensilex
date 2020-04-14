@@ -74,8 +74,6 @@ variables:
       fi
   stage: build
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
-  except:
-    - schedules
   script:
     - mvn install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
@@ -132,7 +130,6 @@ variables:
 
 .deploy:opensilex:instance: &deploy_opensilex_template
   stage: deploy
-  when: manual
   image: instrumentisto/rsync-ssh
   script:
     - apk add curl git
@@ -161,14 +158,12 @@ variables:
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_STOP_SERVER_OPTS}"
     - echo "Start with options --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
-    - DYNAMIC_ENVIRONMENT_URL="http://$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT"        
-    - echo "Deploy To $DYNAMIC_ENVIRONMENT_URL"                 # In script, get the environment URL.
-    - echo "DYNAMIC_ENVIRONMENT_URL=$DYNAMIC_ENVIRONMENT_URL" >> deploy.env 
-  except:
-    - schedules
+    - AUTOGENERATE_ENVIRONMENT_URL="$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT"        
+    - echo "Deploy To $AUTOGENERATE_ENVIRONMENT_URL"                 # In script, get the environment URL.
+    - echo "AUTOGENERATE_ENVIRONMENT_URL=$AUTOGENERATE_ENVIRONMENT_URL" >> deploy.env 
   environment:
     name: "$CI_COMMIT_REF_NAME-test"
-    url: $DYNAMIC_ENVIRONMENT_URL
+    url: http://$AUTOGENERATE_ENVIRONMENT_URL
   artifacts:
     reports:
       dotenv: deploy.env        
@@ -179,17 +174,18 @@ variables:
 
 opensilex:build:
   <<: *build_template_with_opensilex
-  only:
-    - master
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == "master"
 
 # Trigger pipeline for sixtine module deployment
 trigger:sixtine:build:
   stage: deploy
   image: curlimages/curl
   script:
-    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/1757/trigger/pipeline
-  only:
-    - master    
+    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" https://forgemia.inra.fr/api/v4/projects/1757/trigger/pipeline
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"  
   needs: 
     - job: "opensilex:build"
 
@@ -198,11 +194,34 @@ trigger:phis:deploy:test:
   stage: deploy
   image: curlimages/curl
   script:
-    - curl --request POST --form "variables[DEPLOY]=phis-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" --form "variables[COMMIT_SHA_PHIS]=$COMMIT_SHA_PHIS" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
-  only:
-    - master    
+    - curl --request POST --form "variables[DEPLOY]=phis-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV"  https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" 
   needs: 
     - job: "opensilex:build"
+
+# Trigger pipeline for phis module deployment
+trigger:bdg:deploy:test:
+  stage: deploy
+  image: curlimages/curl
+  script:
+    - curl --request POST --form "variables[DEPLOY]=bdg-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV" https://forgemia.inra.fr/api/v4/projects/2063/trigger/pipeline
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" 
+  needs: 
+    - job: "opensilex:build"
+
+# Update nightly builds branch
+update:nightly:builds:branch:
+  stage: build
+  script:
+    - apt update && apt install -y git
+    - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"
+    - if [  -z "`git show-ref refs/heads/nightly-builds`" ]; then  echo 'branch nightly-builds will be created!' &&  git checkout -b nightly-builds; else git checkout nightly-builds ;fi
+    - git pull --rebase origin master
+    - git push -f origin nightly-builds
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" 
 
 ########################
 ##  BUILD - TESTS WITH DIFFERENT MAVEN VERSIONS
@@ -221,8 +240,8 @@ trigger:phis:deploy:test:
     - mvn install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
     - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $OPENSILEX_APP_REVISION
-  only:
-    - schedules
+  rules:
+    - if: $NIGHTLY_BUILD == "true" 
 
 ##  BUILD VERSIONS # example https://gitlab.com/gitlab-org/gitlab-foss/issues/13755
 
@@ -279,6 +298,8 @@ pages:
   artifacts:
     paths:
       - public
+  rules:
+    - if: $NIGHTLY_BUILD == "true"
 
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM
@@ -290,13 +311,12 @@ pages:
 
 alice:build:
   <<: *build_template_with_opensilex
-  only:
-    - alice
+  rules:
+    - if: $CI_COMMIT_BRANCH == "alice" 
 
 test:alice:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
-  when: on_success
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/alice"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
@@ -306,8 +326,9 @@ test:alice:deploy:
     REMOTE_SERVER_IP: $REMOTE_TEST_SERVER_IP
     REMOTE_SERVER_RSYNC_DIR: "mistea/alice"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  only:
-    - alice
+  rules:
+    - if: $CI_COMMIT_BRANCH == "alice"
+      when: on_success
   needs:
     - alice:build
 
@@ -317,13 +338,12 @@ test:alice:deploy:
 
 anne:build:
   <<: *build_template_with_opensilex
-  only:
-    - anne
+  rules:
+    - if: $CI_COMMIT_BRANCH == "anne" 
 
-anne:alice:deploy:
+test:anne:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
-  when: on_success  
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/anne"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
@@ -333,8 +353,9 @@ anne:alice:deploy:
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/anne"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  only:
-    - anne
+  rules:
+    - if: $CI_COMMIT_BRANCH == "anne"
+      when: on_success
   needs:
     - anne:build
 
@@ -344,13 +365,12 @@ anne:alice:deploy:
 
 arnaud:build:
   <<: *build_template_with_opensilex
-  only:
-    - arnaud
+  rules:
+    - if: $CI_COMMIT_BRANCH == "arnaud"
 
 test:arnaud:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
-  when: on_success  
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/arnaud"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
@@ -360,8 +380,9 @@ test:arnaud:deploy:
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/arnaud"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  only:
-    - arnaud
+  rules:
+    - if: $CI_COMMIT_BRANCH == "arnaud"
+      when: on_success
   needs:
     - arnaud:build
 
@@ -371,13 +392,12 @@ test:arnaud:deploy:
 
 julien:build:
   <<: *build_template_with_opensilex
-  only:
-    - julien
+  rules:
+    - if: $CI_COMMIT_BRANCH == "julien"
 
 test:julien:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
-  when: on_success  
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/julien"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
@@ -387,8 +407,9 @@ test:julien:deploy:
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/julien"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  only:
-    - julien
+  rules:
+    - if: $CI_COMMIT_BRANCH == "julien"
+      when: on_success
   needs:
     - julien:build
 
@@ -399,13 +420,12 @@ test:julien:deploy:
 
 renaud:build:
   <<: *build_template_with_opensilex
-  only:
-    - renaud
+  rules:
+    - if: $CI_COMMIT_BRANCH == "renaud"
 
 test:renaud:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
-  when: on_success  
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/renaud"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
@@ -415,8 +435,9 @@ test:renaud:deploy:
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/renaud"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  only:
-    - renaud
+  rules:
+    - if: $CI_COMMIT_BRANCH == "renaud"
+      when: on_success
   needs:
     - renaud:build
 
@@ -426,13 +447,12 @@ test:renaud:deploy:
 
 vincent:build:
   <<: *build_template_with_opensilex
-  only:
-    - vincent
+  rules:
+    - if: $CI_COMMIT_BRANCH == "vincent"
 
 test:vincent:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
-  when: on_success  
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/vincent"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
@@ -442,8 +462,9 @@ test:vincent:deploy:
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/vincent"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  only:
-    - vincent
+  rules:
+    - if: $CI_COMMIT_BRANCH == "vincent"
+      when: on_success
   needs:
     - vincent:build
 
@@ -458,13 +479,12 @@ test:vincent:deploy:
 
 ephesia:build:
   <<: *build_template_with_opensilex
-  only:
-    - ephesia
+  rules:
+    - if: $CI_COMMIT_BRANCH == "ephesia"
 
 test:ephesia:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
-  when: on_success  
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/ephesia"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
@@ -474,7 +494,8 @@ test:ephesia:deploy:
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/ephesia"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  only:
-    - ephesia
+  rules:
+    - if: $CI_COMMIT_BRANCH == "ephesia"
+      when: on_success
   needs:
     - ephesia:build

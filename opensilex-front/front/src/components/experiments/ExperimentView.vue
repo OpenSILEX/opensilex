@@ -1,98 +1,407 @@
 <template>
-  <div> 
-    <br>
-    <opensilex-core-ExperimentList
-      ref="experimentList"
-      @onCreate="goToExperimentCreate"
-      @onEdit="goToExperimentUpdate"
-    ></opensilex-core-ExperimentList> 
+
+  <div class="container-fluid container-experiment" v-if="experiment">
+                        
+    <div class="page-header">
+      <div class="row align-items-end">
+          <div class="col-lg-8">
+              <div class="page-header-title">
+                  <i class="ik ik-layers bg-phis-green"></i>
+                  <div class="d-inline">
+                      <h5 class="mb-1">{{ $t('component.experiment.view.title') }}{{ $t('component.common.colon') }} {{ experiment.label}}</h5>
+                      <span class="uri inline-action">{{ experiment.uri }} <a href="#" v-on:click="copyUri(experiment.uri, $event)" class="inline-action-btn" :title="$t('component.copyToClipboard.copyUri')"><i class="ik ik-copy"></i></a></span>
+                  </div>
+              </div>
+          </div>
+          <div class="col-lg-4">
+              <nav class="breadcrumb-container" aria-label="breadcrumb">
+                  <ol class="breadcrumb">
+                      <li class="breadcrumb-item">
+                        <router-link :to="{path: '/dashboard'}" :title="$t('component.menu.backToDashboard')">
+                          <i class="ik ik-grid mr-1"></i>
+                          {{ $t('component.menu.dashboard') }}
+                        </router-link>
+                      </li>
+                      <li class="breadcrumb-item">
+                        <router-link :to="{path: '/experiments'}" :title="$t('component.experiment.view.list.return')">
+                          <i class="ik ik-layers mr-1"></i>
+                          {{ $t('component.menu.experiments') }}
+                        </router-link>
+                      </li>
+                      <li class="breadcrumb-item active">{{ experiment.label }}</li>
+                  </ol>
+              </nav>
+          </div>
+      </div>
+    </div>   
+  
+    <div class="card">
+      <div class="card-header row clearfix">
+          <div class="col col-sm-6">
+              <div class="card-options d-inline-block">
+                <router-link :to="{path: '/experiments'}" class="btn btn-outline-primary" :title="$t('component.experiment.view.list.return')">
+                  <i class="ik ik-corner-up-left"></i>
+                </router-link>
+              </div>
+          </div>
+          <div class="col col-sm-3"></div> 
+          <div class="col col-sm-3">
+              <div class="card-options text-right">
+                  <router-link v-if="previousExperiment" :to="{path: '/experiment/' + encodeURIComponent(previousExperiment)}" :title="$t('component.experiment.view.list.previous')" class="view-nav mr-2">
+                      <i class="ik ik-chevron-left"></i>{{ $t('component.common.previous') }}
+                  </router-link>
+                  <router-link v-if="nextExperiment" :to="{path: '/experiment/' + encodeURIComponent(nextExperiment)}" :title="$t('component.experiment.view.list.next')" class="view-nav">
+                      {{ $t('component.common.next') }}<i class="ik ik-chevron-right"></i>
+                  </router-link>
+              </div>
+          </div>                                
+      </div>                                                
+    </div>
+
+    <div class="row">
+      <div class="col col-xl-6" style="min-width: 400px">
+          <div class="card">
+              <div class="card-header">
+                  <h3><i class="ik ik-clipboard"></i>{{ $t('component.experiment.description') }}</h3>
+                  <div class="card-header-right">
+                      <span v-if="!experiment.isEnded" class="badge badge-pill badge-info-phis" :title="$t('component.experiment.view.status.finished')"><i class="ik ik-activity mr-1"></i>{{ $t('component.experiment.common.status.in-progress') }}</span>
+                      <span v-else class="badge badge-pill badge-light" :title="$t('component.experiment.view.status.finished')"><i class="ik ik-archive"></i>{{ $t('component.experiment.common.status.finished') }}</span>
+
+                      <span v-if="experiment.isPublic" class="badge badge-pill badge-info" :title="$t('component.experiment.view.status.public')"><i class="ik ik-users mr-1"></i>{{ $t('component.experiment.common.status.public') }}</span>
+                  </div>
+              </div>
+              <div class="card-body">
+                  <div class="static-field">
+                      <span class="static-field-key">{{ $t('component.experiment.alias') }}{{ $t('component.common.colon') }}</span>
+                      <span class="static-field-line">{{ experiment.label }}</span>
+                  </div>
+                  <div class="static-field">
+                      <span class="static-field-key">{{ $t('component.experiment.uri') }}{{ $t('component.common.colon') }}</span>
+                      <span class="inline-action static-field-line">{{ experiment.uri }} <a href="#" class="inline-action-btn" v-on:click="copyUri(experiment.uri, $event)" :title="$t('component.copyToClipboard.copyUri')"><i class="ik ik-copy"></i></a></span>
+                  </div>
+                  <div class="static-field">
+                      <span class="static-field-key">{{ $t('component.experiment.period') }}{{ $t('component.common.colon') }}</span>
+                      <span class="static-field-line">{{ period }}</span>
+                  </div>
+                  <div class="static-field">
+                      <span class="static-field-key">{{ $t('component.experiment.objective') }}{{ $t('component.common.colon') }}</span>
+                      <div class="static-field-text">{{ experiment.objective }}</div>
+                  </div>
+                  <div class="static-field">
+                      <span class="static-field-key">{{ $t('component.experiment.comment') }}{{ $t('component.common.colon') }}</span>
+                      <div class="static-field-text">{{ experiment.comment }}</div>
+                  </div>
+              </div>
+              <div class="card-footer text-center">
+                  <h6>{{ $t('component.experiment.keywords') }}</h6>
+                  <span :key="index" v-for="(uri, index) in experiment.keywords">
+                      <span class="keyword badge badge-pill badge-dark">{{ uri }}</span>
+                  </span>
+              </div>
+          </div>
+      </div>
+      <div class="col col-xl-6">
+          <div class="card">
+              <div class="card-header">
+                  <h3><i class="ik ik-box"></i>{{ $t('component.experiment.context') }}</h3>
+              </div>
+              <div class="card-body">
+                  <div class="static-field">
+                      <span class="static-field-key">{{ $t('component.experiment.installations') }}{{ $t('component.common.colon') }}</span>
+                      <span class="static-field-line"></span>
+                  </div>
+                  <div class="static-field">
+                        <span class="static-field-key">{{ $t('component.experiment.projects') }}{{ $t('component.common.colon') }}</span>
+                        <span class="static-field-line">
+                          <span :key="index" v-for="(project, index) in projectsList">
+                              <span :title="uri">{{ project.label }}</span><span v-if="index + 1 < projectsList.length">, </span>
+                          </span>
+                        </span>
+                  </div>
+                  <div class="static-field">
+                      <span class="static-field-key">{{ $t('component.experiment.campaign') }}{{ $t('component.common.colon') }}</span>
+                      <span class="static-field-line">{{ experiment.campaign }}</span>
+                  </div>
+                  <div class="static-field">
+                      <span class="static-field-key">{{ $t('component.experiment.places') }}{{ $t('component.common.colon') }}</span>
+                      <span class="static-field-line">
+                        <span :key="index" v-for="(infrastructure, index) in infrastructuresList">
+                            <span :title="infrastructure.uri">{{ infrastructure.name }}</span><span v-if="index + 1 < infrastructuresList.length">, </span>
+                        </span>
+                      </span>
+                  </div>
+                  <div class="static-field">
+                      <span class="static-field-key">{{ $t('component.experiment.species') }}{{ $t('component.common.colon') }}</span>
+                      <span class="static-field-line">
+                        <span :key="index" v-for="(species, index) in speciesList">
+                            <span :title="species.uri">{{ species.label }}</span><span v-if="index + 1 < speciesList.length">, </span>
+                        </span>
+                      </span>
+                  </div>
+                  <div class="static-field">
+                      <span class="static-field-key">{{ $t('component.experiment.groups') }}{{ $t('component.common.colon') }}</span>
+                      <ul class="static-field-list" :key="index" v-for="(group, index) in groupsList">
+                          <li class="inline-action">
+                              <span :title="group.uri">{{ group.name }}</span>
+                          </li>
+                      </ul>
+                  </div>
+              </div>
+          </div>
+          <div class="card">
+              <div class="card-header">
+                  <h3><i class="ik ik-users"></i>{{ $t('component.experiment.contacts') }}</h3>
+              </div>
+              <div class="card-body">
+                  <div class="static-field">
+                      <span class="static-field-key">{{ $t('component.experiment.scientificSupervisors') }}{{ $t('component.common.colon') }}</span>
+                      <ul class="static-field-list" :key="index" v-for="(scientificSupervisor, index) in scientificSupervisorsList">
+                          <li class="inline-action">
+                              <span class="uri inline-action">{{ scientificSupervisor.firstName }} {{ scientificSupervisor.lastName }} <a href="#" v-on:click="copyUri(scientificSupervisor.email, $event)" class="inline-action-btn" :title="$t('component.copyToClipboard.copyEmail')"><i class="ik ik-copy"></i></a></span>
+                          </li>
+                      </ul>
+                  </div>
+                  <div class="static-field">
+                      <span class="static-field-key">{{ $t('component.experiment.technicalSupervisors') }}{{ $t('component.common.colon') }}</span>
+                      <ul class="static-field-list" :key="index" v-for="(technicalSupervisor, index) in technicalSupervisorsList">
+                          <li class="inline-action">
+                              <span class="uri inline-action">{{ technicalSupervisor.firstName }} {{ technicalSupervisor.lastName }} <a href="#" v-on:click="copyUri(technicalSupervisor.email, $event)" class="inline-action-btn" :title="$t('component.copyToClipboard.copyEmail')"><i class="ik ik-copy"></i></a></span>
+                          </li>
+                      </ul>
+                  </div>
+              </div>
+          </div>
+      </div> 
+    </div>
+                         
   </div>
+
 </template>
 
 <script lang="ts">
+
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
+import VueRouter from "vue-router";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { ExperimentCreationDTO, ExperimentGetDTO, ExperimentsService } from "opensilex-core/index";
+import { 
+  ExperimentCreationDTO, 
+  ExperimentGetDTO, 
+  ExperimentsService, 
+  ProjectCreationDTO, 
+  InfrastructureGetDTO,
+  ProjectsService, 
+  InfrastructuresService,
+  SpeciesDTO, 
+  SpeciesService 
+} from "opensilex-core/index";
+import {
+  SecurityService,
+  GroupGetDTO,
+  UserGetDTO
+} from "opensilex-security/index";
+import VueI18n from 'vue-i18n';
+import moment from "moment";
+import copy from "copy-to-clipboard";
 
-/**
-  * Manage interaction between webservice 
-  * and CRUD components
-  */
+
 @Component
 export default class ExperimentView extends Vue {
   $opensilex: any;
   $store: any;
-  service: ExperimentsService;
+  $router: VueRouter;
+
+  uri: string = "";
+  period: string = "";
+
+  experiment: ExperimentGetDTO = null;
+ 
+  speciesList = [];
+  groupsList = [];
+  projectsList = [];
+  scientificSupervisorsList = [];
+  technicalSupervisorsList = [];
+  installationsList = [];
+  infrastructuresList = [];
+
+  previousExperiment: string = null;
+  nextExperiment: string = null;
+
+  created () {
+    this.uri = this.$route.params.uri;
+    this.loadExperiment();
+  }
 
   get user() {
     return this.$store.state.user;
   }
 
-  get credentials() {
-    return this.$store.state.credentials;
-  }
-
-  created() {
-    this.service = this.$opensilex.getService("opensilex.ExperimentsService");
-  }
-
-  goToExperimentCreate(){
-    this.$store.editXp = false;
-    this.$router.push({ path: '/experiments/create' });
-  }
-
-  goToExperimentUpdate(experimentDto: ExperimentGetDTO){
-      this.$store.xpToUpdate = experimentDto;
-      this.$store.editXp = true;
-      this.$router.push({  path: '/experiments/create' });
-  }
-
-  callCreateExperimentService(form: any, done) {
-    done(
-      this.service
-        .createExperiment(this.user.getAuthorizationHeader(), form)
-        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-          let uri = http.response.result;
-          console.debug("experiment created", uri);
-          let experimentList: any = this.$refs.experimentList;
-          experimentList.refresh();
-        })
+  loadExperiment() {
+    let service: ExperimentsService = this.$opensilex.getService(
+      "opensilex.ExperimentsService"
     );
+
+    if(this.uri) {
+        service.getExperiment(this.uri).then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
+          this.experiment = http.response.result;
+
+          this.loadProjects();
+          this.loadUsers();
+          this.loadSpecies();
+          this.loadGroups();
+          this.loadInstallations();
+          this.loadInfrastructures();
+
+          this.period = this.formatPeriod(this.experiment.startDate, this.experiment.endDate);
+          this.setPreviousAndNextExperiment();
+        }).catch(error => {
+          this.$opensilex.errorHandler(error);
+        });
+    }
   }
 
-  // callUpdateExperimentService(form: ExperimentCreationDTO, done) {
-  //   done(
-  //     this.service
-  //       .updateExperiment(this.user.getAuthorizationHeader(), form)
-  //       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-  //         let uri = http.response.result;
-  //         console.debug("experiment updated", uri);
-  //         let experimentList: any = this.$refs.experimentList;
-  //         experimentList.refresh();
-  //       })
-  //   );
-  // }
+  setPreviousAndNextExperiment() {
+    if(this.$store.state.search.results) {
+      let length = this.$store.state.search.results.length;
+      let index = this.$store.state.search.results.indexOf(this.uri);
 
-  // editExperiment(form: ExperimentGetDTO) {
-  //   console.debug("editExperiment" + form.uri)
-  //   let experimentForm: any = this.$refs.experimentForm;
-  //   experimentForm.showEditForm(form);
-  // }
+      if(index > 0) {
+        this.previousExperiment = this.$store.state.search.results[index - 1];
+      }
+      if(index < length) {
+        this.nextExperiment = this.$store.state.search.results[index + 1];
+      }
+    }
+  }
 
-  // deleteExperiment(uri: string) {
-  //    console.debug("deleteExperiment " + uri)
-  //   this.service
-  //     .deleteExperiment(this.user.getAuthorizationHeader(), uri)
-  //     .then(() => {
-  //       let experimentList: any = this.$refs.experimentList;
-  //       experimentList.refresh();
-  //     })
-  //     .catch(this.$opensilex.errorHandler);
-  // }
+  loadInstallations() {
+
+  }
+
+  loadInfrastructures() {
+    let service: InfrastructuresService = this.$opensilex.getService(
+      "opensilex.InfrastructuresService"
+    );
+
+    if(this.experiment.infrastructures) {
+      this.experiment.infrastructures.forEach(infrastructure => {
+        service.getInfrastructure(
+          infrastructure
+        ).then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
+          this.infrastructuresList.push(http.response.result);
+        }).catch(this.$opensilex.errorHandler);
+      });
+    }
+  }
+
+  loadGroups() {
+    let service: SecurityService = this.$opensilex.getService(
+      "opensilex.SecurityService"
+    );
+
+    if(this.experiment.groups) {
+      this.experiment.groups.forEach(group => {
+        service.getGroup(
+          group
+        ).then((http: HttpResponse<OpenSilexResponse<GroupGetDTO>>) => {
+          this.groupsList.push(http.response.result);
+        }).catch(this.$opensilex.errorHandler);
+      });
+    }
+  }
+
+  loadUsers() {
+    let service: SecurityService = this.$opensilex.getService(
+        "opensilex.SecurityService"
+    );
+
+    if(this.experiment.scientificSupervisors) {
+      this.experiment.scientificSupervisors.forEach(scientificSupervisor => {
+        service.getUser(
+            scientificSupervisor
+        )
+        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
+            this.scientificSupervisorsList.push(http.response.result);
+        }).catch(this.$opensilex.errorHandler);
+      });
+    }
+
+    if(this.experiment.technicalSupervisors) {
+      this.experiment.technicalSupervisors.forEach(technicalSupervisor => {
+        service.getUser(
+            technicalSupervisor
+        )
+        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
+            this.technicalSupervisorsList.push(http.response.result);
+        }).catch(this.$opensilex.errorHandler);
+      });
+    }    
+  }
+
+  loadSpecies() {
+    let service: SpeciesService = this.$opensilex.getService(
+        "opensilex.SpeciesService"
+    );
+
+    if(this.experiment.species) {
+      service.getAllSpecies().then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
+          for(let i=0; i<http.response.result.length; i++) {
+              if(this.experiment.species === http.response.result[i].uri) {
+                this.speciesList.push(http.response.result[i]);
+              }
+          }
+      }).catch(this.$opensilex.errorHandler);
+    }
+  }
+
+  loadProjects() {
+    let service: ProjectsService = this.$opensilex.getService(
+        "opensilex.ProjectsService"
+    );
+
+    if(this.experiment.projects) {
+      this.experiment.projects.forEach(project => {
+        service.getProject(
+            project
+        )
+        .then((http: HttpResponse<OpenSilexResponse<ProjectCreationDTO>>) => {
+            this.projectsList.push(http.response.result);
+        }).catch(this.$opensilex.errorHandler);
+      });
+    }
+  }
+
+  copyUri(uri: string, event) {
+    copy(uri);
+    if(event) {
+      event.preventDefault()
+    }
+  }
+
+  formatPeriod(startDateValue: string, endDateValue: string) {
+    let statDate = moment(startDateValue, 'YYYY-MM-dd');
+    let endDate;
+    let result = statDate.format('DD/MM/YYYY');
+
+    if(endDateValue) {
+      endDate = moment(endDateValue, 'YYYY-MM-dd');
+      result += " - " + endDate.format('DD/MM/YYYY');
+    } else {
+      endDate = moment();
+    }
+
+    let period = endDate.diff(statDate);
+    let duration = Math.floor(moment.duration(period).asMonths());
+
+    result += " (" + duration + " " + this.$i18n.t("component.common.months").toString() + ")";
+
+    return result;
+  }
+
 }
+
 </script>
 
 <style scoped lang="scss">
-</style>
 
+</style>

@@ -115,7 +115,7 @@
         </b-form-group>
 
       <!-- Keywords -->
-         <!-- <b-form-group  required  >
+         <b-form-group  required  >
           <opensilex-FormInputLabelHelper 
           label=component.experiment.keywords 
           helpMessage="component.experiment.keywords-help" >

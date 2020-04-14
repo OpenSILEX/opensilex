@@ -72,7 +72,6 @@ export default class ImageSearch extends Vue {
 
       const result = service
         .getScientificObjectsBySearch(
-          this.user.getAuthorizationHeader(),
           8000,
           0,
           undefined,

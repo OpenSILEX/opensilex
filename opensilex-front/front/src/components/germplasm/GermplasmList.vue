@@ -157,7 +157,6 @@ export default class GermplasmList extends Vue {
     }
     return service
       .searchGermplasm(
-        this.user.getAuthorizationHeader(),
         orderBy,
         this.currentPage - 1,
         this.pageSize,

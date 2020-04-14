@@ -46,6 +46,7 @@
                     "x-more": "and {count} more"
                 }
             },
+            "months": "month(s)",
             "yes": "yes",
             "no": "no",
             "ok": "OK",
@@ -59,6 +60,9 @@
             "parent": "parent",
             "type": "type",
             "select-lang": "Choose a language",
+            "next": "Next",
+            "previous": "Previous",
+            "colon": ":",
             "errors": {
                 "error-title": "Error",
                 "constraint-error": "A data validation error occured, please check the validity of the submited fields.",
@@ -66,8 +70,19 @@
                 "server-error": "An error occured at server level, please contact your local support..",
                 "unexpected-error": "An unexpected error occured, please contact your local support.",
                 "unauthorized-error": "Your session expired, please login again.",
-                "form-step-errors": "Some field are required in order to go to the next step"
+                "form-step-errors" : "Some field are required in order to go to the next step"
+            },
+            "form-wizard" :{
+                "external-ontologies" : "(Optional) External ontologies references",
+                "previous" : "Previous",
+                "next" : "Next",
+                "done" : "Done",
+                "cancel" : "Cancel"
             }
+        },
+        "copyToClipboard": {
+            "copyUri": "Copy URI to clipboard",
+            "copyEmail": "Copy this contact's email address"
         },
         "header": {
             "language": {
@@ -81,11 +96,13 @@
         },
         "menu": {
             "dashboard": "Dashboard",
-            "data": {
-                "label": "Data",
-                "images": "Images"
+            "backToDashboard": "Return to the dashboard",
+            "data":{
+                "label":"Data",
+                "images":"Images"
             },
             "experiments": "Experiments",
+            "infrastructure": "Infrastructure",
             "installations": "Installations",
             "projects": "Projects",
             "scientificObjects": "Scientific Objects",
@@ -184,6 +201,93 @@
                 "group-already-exists": "Group already exists with this URI or this name"
             }
         },
+        "experiment": {
+            "uri" : "uri",
+            "uri-help" :"Unique experiment identifier",
+            "label" : "Label",
+            "label-placeholder" : "ZA17",
+            "label-help" :"Experiment name",
+            "objective" : "Objective",
+            "objective-placeholder" : "",
+            "comment" : "Comment",
+            "comment-placeholder" : "",
+            "startDate" : "Start date",
+            "endDate" : "End date",
+            "campaign" : "Campaign",
+            "campaign-placeholder" : "2020",
+            "species" : "Species",
+            "keywords" : "Keywords",
+            "keywords-placeholder" : "Opensilex Irrigation",
+            "groups": "Groups",
+            "places": "Places",
+            "projects": "Projects",
+            "installations": "Installations",
+            "context": "Context",
+            "alias": "Alias",
+            "technicalSupervisors" : "Technical Supervisors",
+            "scientificSupervisors" : "Scientific Supervisors",
+            "infrastructures" : "Infrastructures",
+            "contacts": "Contacts",
+            "period": "Periode",
+            "description": "Description",
+            "common": {
+                "status": {
+                    "finished": "Finished",
+                    "in-progress": "In-progress",
+                    "public": "Public"
+                }
+            },
+            "view": {
+                "title": "Experiment",
+                "list": {
+                    "previous": "Consult the previous experiment",
+                    "next": "Consult the next experiment",
+                    "return": "Return to the list of experiments"
+                },
+                "status": {
+                    "finished": "The experiment is ended",
+                    "in-progress": "Experimentation is still active",
+                    "public": "Some data from this experiment are public"
+                }
+            },
+            "search": {
+                "description": "Manage and configure experiments",
+                "buttons": {
+                    "create-experiment": "Create experiment",
+                    "create-experiment-help" : " Create an experiment (experimental informations, sensors/variables/factors linked)"
+                },
+                "column": {
+                    "alias": "Alias",
+                    "projects": "Project(s)",
+                    "installations": "Installation(s)",
+                    "campaign": "Campaign",
+                    "places": "Places",
+                    "species": "Species",
+                    "startDate": "Start date",
+                    "endDate": "End date",
+                    "uri": "URI",
+                    "state": "State"
+                },
+                "filter": {
+                    "alias": "Filter by Alias",
+                    "campains": "Filter by Campain(s)",
+                    "installations": "Filter by Installation(s)",
+                    "projects": "Filter by Project(s)",
+                    "places": "Filter by Place(s)",
+                    "species": "Filter by Species",
+                    "startDate": "Filter by start date",
+                    "endDate": "Filtrer by end date",
+                    "uri": "Filter by URI",
+                    "state": "Filter par state"
+                }
+            },
+            "form-wizard": {
+                "label" : "Experiment creation wizard",
+                "general-informations" : "General informations",
+                "users-groups-projects" : "Users, groups and projects",
+                "variables-sensors-factors" : "Variables, factors and sensors"
+            }
+        },
         "infrastructure": {
             "infrastructure-uri": "Infrastructure URI",
             "form-name-placeholder": "Enter infrastructure name",
@@ -203,16 +307,20 @@
             "alias-placeholder": "Enter factor alias",
             "filter-placeholder": "Use this field to filter factors",
             "factors": "factor",
-            "add": "add factor",
+            "add": "create a factor",
             "update": "update factor",
             "alias": "alias",
             "alias-help": "Name used to define this factor",
             "form-alias-placeholder": "Irrigation, Shading, Variety, etc.",
             "comment": "comment",
             "comment-help": "Description associated to this factors (protocol, amount of component)",
+            "details" : "Factor details",
             "form-comment-placeholder": "Protocol n°1289 - Amount of water 5 ml/Days.",
             "errors": {
                 "user-already-exists": "Factor already exists with this URI."
+            },
+            "form-wizard" :{
+                "general-informations" : "Factor description"
             }
         },
         "factorLevel": {
@@ -230,6 +338,24 @@
             "errors": {
                 "user-already-exists": "Factor level already exists with this URI."
             }
+        },
+        "skos" :{
+            "uri" : "reference URI",
+            "uri-help" : "reference identifier URI",
+            "uri-placeholder" : "http://aims.fao.org/aos/agrovoc/c_8332",
+            "relation" : "relation",
+            "relation-help" : "relation associated between Reference URI and this local individual",
+            "relation-placeholder" : "exactMatch",
+            "add" : "add new relation",
+            "update" : "update relations",
+            "exactMatch" : "exactmatch",
+            "closeMatch" : "closematch",
+            "broader" : "broader",
+            "narrower" : "narrower",
+            "no-relation" : "Please choose a relation type",
+            "ontologies-references-label" :"Ontologies References",
+            "link-external" :"Add external references to",
+            "link-external-button" :"Add external references"
         },
         "germplasm": {
             "uri": "Germplasm URI",
@@ -304,5 +430,30 @@
     "validations": {
         "url": "The {_field_} field must be a valid URL",
         "emailOrUrl": "The {_field_} field must be a valid URL or email address"
+    },
+    "icon": {
+        "component": {
+            "menu": {
+                "default": "ik-folder",
+                "dashboard": "ik-grid",
+                "data": {
+                    "label": "ik-bar-chart-line"
+                }, 
+                "equipments": {
+                    "label": "ik-aperture"
+                },
+                "experiments": "ik-layers",
+                "installations": "ik-globe",
+                "infrastructure": "ik-globe",
+                "projects": "ik-folder",
+                "security": {
+                    "label": "ik-lock"
+                },
+                "scientificObjects": "ik-target",
+                "experimentalDesign": {
+                    "label": "ik-map"
+                }
+            }
+        }
     }
 }

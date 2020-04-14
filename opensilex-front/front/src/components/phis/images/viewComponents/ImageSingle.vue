@@ -62,7 +62,6 @@ export default class ImageSingle extends Vue {
     );
     const result = service
       .getScientificObjectsBySearch(
-        this.user.getAuthorizationHeader(),
         1,
         0,
         this.image.objectUri,

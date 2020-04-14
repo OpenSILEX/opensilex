@@ -51,22 +51,6 @@
                     <div class="error-message alert alert-danger">{{ errors[0] }}</div>
                   </ValidationProvider>
                 </b-form-group>
-                <div class="row">
-                  <div class="col text-left">
-                    <label class="custom-control custom-checkbox">
-                      <input
-                        type="checkbox"
-                        class="custom-control-input"
-                        id="item_checkbox"
-                        name="item_checkbox"
-                        value="option1"
-                      />
-                      <span
-                        class="custom-control-label"
-                      >&nbsp;{{ $t('component.login.remember-me') }}</span>
-                    </label>
-                  </div>
-                </div>
                 <div class="sign-btn text-center">
                   <b-button
                     type="submit"

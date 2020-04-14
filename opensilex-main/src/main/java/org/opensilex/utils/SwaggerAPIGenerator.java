@@ -150,6 +150,8 @@ public class SwaggerAPIGenerator {
         Map<String, String> args = new HashMap<String, String>() {
             {
                 put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);
+                
+// NOTE: uncomment this line to enable full debug during swagger API generation process              
 //                put(OpenSilex.DEBUG_ARG_KEY, "true");
             }
         };
@@ -160,6 +162,6 @@ public class SwaggerAPIGenerator {
 
         args.put(OpenSilex.BASE_DIR_ARG_KEY, baseDirectory.toFile().getCanonicalPath());
 
-        return OpenSilex.createInstance(args, false, true);
+        return OpenSilex.createStaticInstance(args);
     }
 }

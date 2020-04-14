@@ -14,19 +14,26 @@ import GroupForm from './groups/GroupForm.vue';
 import GroupUserProfileForm from './groups/GroupUserProfileForm.vue';
 import GroupView from './groups/GroupView.vue';
 import GroupList from './groups/GroupList.vue';
-import FormInputLabelHelper from './common/FormInputLabelHelper.vue'
+
 import ToDoComponent from './layout/ToDoComponent.vue';
+// infrastructures
 import InfrastructureView from './infrastructures/InfrastructureView.vue';
 import InfrastructureTree from './infrastructures/InfrastructureTree.vue';
 import InfrastructureForm from './infrastructures/InfrastructureForm.vue';
-
+// factors levels
 import FactorView from './factors/FactorView.vue';
 import FactorList from './factors/FactorList.vue';
 import FactorForm from './factors/FactorForm.vue';
+import FactorDetails from './factors/FactorDetails.vue';
 
+// factors
 import FactorLevelView from './factors/FactorLevelView.vue';
 import FactorLevelList from './factors/FactorLevelList.vue';
 import FactorLevelForm from './factors/FactorLevelForm.vue';
+//common
+import FormInputLabelHelper from './common/FormInputLabelHelper.vue'
+import ExternalReferencesForm from './common/ExternalReferencesForm.vue'
+import ExternalReferencesDetails from './common/ExternalReferencesDetails.vue'
 
 import ExperimentForm from './experiments/ExperimentForm.vue';
 import ExperimentForm2 from './experiments/ExperimentForm2.vue';
@@ -69,46 +76,46 @@ export default {
     'opensilex-GroupView': GroupView,
     'opensilex-GroupList': GroupList,
 
+    'opensilex-ExperimentForm': ExperimentForm,
+    'opensilex-ExperimentForm2': ExperimentForm2,
+    'opensilex-ExperimentList': ExperimentList,
+    'opensilex-ExperimentCreate': ExperimentCreate,
+    'opensilex-ExperimentView': ExperimentView,
+
+    'opensilex-GermplasmView': GermplasmView,
+    'opensilex-GermplasmForm': GermplasmForm,
+    'opensilex-GermplasmList': GermplasmList,
+
+    'opensilex-ImageList': ImageList,
+    'opensilex-ImageView': ImageView,
+    'opensilex-ImageSearch': ImageSearch,
+    'opensilex-ImageGrid': ImageGrid,
+    'opensilex-ImageSingle': ImageSingle,
+    'opensilex-ImageCarousel': ImageCarousel,
+    'opensilex-SciObjectURISearch': SciObjectURISearch,
+    'opensilex-SciObjectAliasSearch': SciObjectAliasSearch,
+    'opensilex-ImageTypeSearch': ImageTypeSearch,
+    'opensilex-ExperimentSearch': ExperimentSearch,
+    'opensilex-SciObjectTypeSearch': SciObjectTypeSearch,
+    'opensilex-TimeSearch': TimeSearch,
+
     // infrastructures
     "opensilex-InfrastructureView": InfrastructureView,
     "opensilex-InfrastructureTree": InfrastructureTree,
     "opensilex-InfrastructureForm": InfrastructureForm,
-    'opensilex-FormInputLabelHelper': FormInputLabelHelper,
     // factors
     "opensilex-FactorView": FactorView,
     "opensilex-FactorList": FactorList,
     "opensilex-FactorForm": FactorForm,
+    "opensilex-FactorDetails": FactorDetails,
     // factors levels
     "opensilex-FactorLevelView": FactorLevelView,
     "opensilex-FactorLevelList": FactorLevelList,
     "opensilex-FactorLevelForm": FactorLevelForm,
+    //common
+    'opensilex-FormInputLabelHelper': FormInputLabelHelper,
+    'opensilex-ExternalReferencesForm': ExternalReferencesForm,
+    'opensilex-ExternalReferencesDetails': ExternalReferencesDetails,
+    'opensilex-ToDoComponent': ToDoComponent
 
-    // experiments
-    "opensilex-core-ExperimentForm": ExperimentForm,
-    "opensilex-core-ExperimentForm2": ExperimentForm2,
-    "opensilex-core-ExperimentList": ExperimentList,
-    "opensilex-core-ExperimentCreate": ExperimentCreate,
-    "opensilex-core-ExperimentView": ExperimentView,
-
-    // germplasm
-    "opensilex-GermplasmView": GermplasmView,
-    "opensilex-GermplasmForm": GermplasmForm,
-    "opensilex-GermplasmList": GermplasmList,
-
-    'opensilex-ToDoComponent': ToDoComponent,
-
-    // PHIS Services related components
-    'phis2ws-ImageView': ImageView,
-    'phis2ws-ImageSearch': ImageSearch,
-    'phis2ws-ImageList': ImageList,
-    'phis2ws-ImageGrid': ImageGrid,
-    'phis2ws-ImageSingle': ImageSingle,
-    'phis2ws-ImageCarousel': ImageCarousel,
-    'phis2ws-SciObjectURISearch': SciObjectURISearch,
-    'phis2ws-SciObjectAliasSearch': SciObjectAliasSearch,
-    'phis2ws-ImageTypeSearch': ImageTypeSearch,
-    'phis2ws-ExperimentSearch': ExperimentSearch,
-    'phis2ws-SciObjectTypeSearch': SciObjectTypeSearch,
-    'phis2ws-TimeSearch': TimeSearch
-    
 };

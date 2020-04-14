@@ -7,29 +7,23 @@ package org.opensilex.core;
 
 import com.auth0.jwt.JWTCreator;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.service.SPARQLServiceFactory;
 
-import java.net.URI;
 import java.util.List;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.OA;
 import org.opensilex.security.extensions.LoginExtension;
-import org.opensilex.security.group.dal.GroupDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.extensions.APIExtension;
-import org.opensilex.sparql.SPARQLConfig;
-import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.server.rest.cache.JCSApiCacheExtension;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
-import org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Core OpenSILEX module implementation
  */
-public class CoreModule extends OpenSilexModule implements APIExtension, LoginExtension, SPARQLExtension {
+public class CoreModule extends OpenSilexModule implements APIExtension, LoginExtension, SPARQLExtension, JCSApiCacheExtension {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(CoreModule.class);
 
@@ -37,7 +31,6 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
     public void login(UserModel user, JWTCreator.Builder tokenBuilder) throws Exception {
 
         // TODO add experiments, projects, infrastructures related to the user as token claims...
-       
     }
 
     @Override
@@ -62,15 +55,5 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
                 "oeev"
         ));
         return list;
-    }
-
-    @Override
-    public void setup() throws Exception {
-        SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
-        SPARQLServiceFactory factory = sparqlConfig.sparql();
-        if (factory instanceof RDF4JInMemoryServiceFactory) {
-           
-        }
-
     }
 }

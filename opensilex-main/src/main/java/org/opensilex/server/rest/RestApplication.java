@@ -148,6 +148,7 @@ public class RestApplication extends ResourceConfig {
         }
         beanConfig.setResourcePackage(String.join(",", packageList));
         beanConfig.setTitle("OpenSilex API");
+        beanConfig.setExpandSuperTypes(false);
         beanConfig.setScan(true);
     }
 

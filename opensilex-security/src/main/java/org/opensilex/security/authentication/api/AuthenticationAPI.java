@@ -45,6 +45,7 @@ import org.opensilex.security.user.dal.UserDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.opensilex.security.authentication.ApiTranslatable;
 
 /**
  * <pre>

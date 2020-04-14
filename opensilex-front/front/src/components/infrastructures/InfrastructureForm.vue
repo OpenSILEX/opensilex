@@ -144,7 +144,6 @@ export default class InfrastructureForm extends Vue {
   loadInfraTypes({ action, parentNode, callback }) {
     this.service
       .getSubClassesOf(
-        this.user.getAuthorizationHeader(),
         Oeso.INFRASTRUCTURE_TYPE_URI,
         true
       )

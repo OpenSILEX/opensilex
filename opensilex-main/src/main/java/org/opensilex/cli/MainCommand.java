@@ -77,7 +77,7 @@ public class MainCommand extends AbstractOpenSilexCommand implements IVersionPro
             }
 
             if (!isHelp) {
-                OpenSilex instance = OpenSilex.createInstance(setup, false, true);
+                OpenSilex instance = OpenSilex.createStaticInstance(setup);
                 commands.forEach((OpenSilexCommand cmd) -> {
                     cmd.setOpenSilex(instance);
                 });

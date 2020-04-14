@@ -44,6 +44,7 @@
                     "x-more": "et {count} de plus"
                 }
             },
+            "months": "mois",
             "yes": "oui",
             "no": "non",
             "ok": "OK",
@@ -57,6 +58,9 @@
             "parent": "parent",
             "type": "type",
             "select-lang": "Choisissez une langue",
+            "next": "Suivant",
+            "previous": "Précédent",
+            "colon": " :",
             "errors": {
                 "error-title": "Erreur",
                 "constraint-error": "Une erreur de validation s'est produite, merci de vérifier les données saisies.",
@@ -65,7 +69,18 @@
                 "unexpected-error": "Une erreur inattendue s'est produite, merci de contacter votre administrateur local.",
                 "unauthorized-error": "Votre session à expirée, merci de vous connecter à nouveau.",
                 "form-step-errors" : "Certains champs sont requis avant de passer à l'étape suivante"
+            },
+            "form-wizard" :{
+                "external-ontologies" : "(Optionnel) Ontologies de références",
+                "previous" : "Précédent",
+                "next" : "Suivant",
+                "done" : "Terminer",
+                "cancel" : "Annuler"
             }
+        },
+        "copyToClipboard": {
+            "copyUri": "Copier l'URI dans le presse papier",
+            "copyEmail": "Copier l'adresse email de ce contact"
         },
         "header": {
             "language": {
@@ -79,11 +94,13 @@
         },
         "menu": {
             "dashboard": "Tableau de bord",
+            "backToDashboard": "Revenir au tableau de bord",
             "data": {
                 "label": "Données",
                 "images": "Images"
             },
             "experiments": "Expérimentations",
+            "infrastructure": "Infrastructures",
             "installations": "Installations",
             "projects": "Projets",
             "scientificObjects": "Objets Scientifiques",
@@ -182,6 +199,93 @@
                 "group-already-exists": "Un groupe existe déjà avec cette URI ou ce nom."
             }
         },
+        "experiment": {
+            "uri" : "uri",
+            "uri-help" :"Identifiant unique de l'expérimentation",
+            "label" : "Label",
+            "label-placeholder" : "ZA17",
+            "label-help" :"Nom utilisé pour identifier l'expérimentation",
+            "objective" : "Objectif",
+            "objective-placeholder" : "",
+            "comment" : "Description",
+            "comment-placeholder" : "",
+            "startDate" : "Date de début",
+            "endDate" : "Date de fin",
+            "campaign" : "Campagne",
+            "campaign-placeholder" : "2020",
+            "species" : "Espèces",
+            "keywords" : "Mot clés",
+            "keywords-placeholder" : "Opensilex Irrigation",
+            "groups": "Groupes",
+            "places": "Lieux",
+            "projects": "Projets",
+            "installations": "Installations",
+            "context": "Contexte",
+            "alias": "Alias",
+            "period": "Période",
+            "description": "Description",
+            "technicalSupervisors" : "Responsables technique",
+            "scientificSupervisors" : "Responsables scientifique",
+            "infrastructures" : "Infrastructures",
+            "contacts": "Contacts",
+            "common": {
+                "status": {
+                    "finished": "Terminé",
+                    "in-progress": "En cours",
+                    "public": "Public"
+                }
+            },
+            "view": {
+                "title": "Expérimentation",
+                "list": {
+                    "previous": "Consulter l'expérimentation précédente",
+                    "next": "Consulter l'expérimentation suivante",
+                    "return": "Revenir à la liste des expérimentations"
+                },
+                "status": {
+                    "finished": "L'expérimentation est terminée",
+                    "in-progress": "L'expérimentation est toujours active",
+                    "public": "Certaines données de cette expérimentation sont publiques"
+                }
+            },
+            "search": {
+                "description": "Gérer et configurer les expérimentations",
+                "buttons": {
+                    "create-experiment": "Créer expérimentation",
+                    "create-experiment-help" : "Créer une expérimentation (informations expérimentales, variables/capteurs/facteurs associés)"
+                },
+                "column": {
+                    "alias": "Alias",
+                    "projects": "Projet(s)",
+                    "installations": "Installation(s)",
+                    "campaign": "Campagne",
+                    "places": "Lieux",
+                    "species": "Espèces",
+                    "startDate": "Date de début",
+                    "endDate": "Date de fin",
+                    "uri": "URI",
+                    "state": "Etat"
+                },
+                "filter": {
+                    "alias": "Filtrer par Alias",
+                    "campains": "Filtrer par Campagne(s)",
+                    "installations": "Filtrer par Installation(s)",
+                    "projects": "Filtrer par Projet(s)",
+                    "places": "Filtrer par Lieux",
+                    "species": "Filtrer par Espèce(s)",
+                    "startDate": "Filtrer par Date de début",
+                    "endDate": "Filtrer par Date de fin",
+                    "uri": "Filtrer par URI",
+                    "state": "Filtrer par état"
+                }
+            },
+            "form-wizard": {
+                "label" : "Assistant de création d'expérimentation",
+                "general-informations" : "Informations générales",
+                "users-groups-projects" : "Utilisateurs, groupes et projets",
+                "variables-sensors-factors" : "Variables, facteurs et capteurs"
+            }
+        },
         "infrastructure": {
             "infrastructure-uri": "URI de l'infrastructure",
             "form-name-placeholder": "Saisir le nom de l'infrastructure",
@@ -205,16 +309,20 @@
             "alias-placeholder": "Renseignez un alias de facteur",
             "filter-placeholder": "Utiliser ce filter pour filter les facteurs",
             "factors": "facteur",
-            "add": "ajouter un facteur",
-            "update": "mettre à jour un facteur",
+            "add": "Ajouter un facteur",
+            "update": "Modifier un facteur",
             "alias": "alias",
             "alias-help": "alias",
             "form-alias-placeholder" : "Irrigation, Ombrage, Variété, etc.",
             "comment": "Description associée à ce facteur (protocole, apport de composé)",
             "comment-help": "alias",
+            "details" : "Détails du facteur",
             "form-comment-placeholder" : "Protocole n°1289 - Apport d'eau de 5 ml/jour.",
             "errors": {
                 "user-already-exists": "URI du facteur déjà existante."
+            },
+            "form-wizard" :{
+                "general-informations" : "Factor "
             }
         },
         "factorLevel": {
@@ -223,8 +331,8 @@
             "factor-selector-placeholder": "Sélectionnez un alias de facteur",
             "filter-placeholder": "Utilisez ce change pour filter vos niveau de facteur",
             "factorLevel": "niveau de facteur",
-            "add": "ajouter un niveau de facteur",
-            "update": "mettre à jour niveau de facteur",
+            "add": "Ajouter un niveau de facteur",
+            "update": "Modifier un niveau de facteur",
             "alias": "alias",
             "factor": "facteur",
             "comment": "description", 
@@ -232,6 +340,24 @@
             "errors": {
                 "user-already-exists": "URI du niveau de facteur déjà existante."
             }
+        },
+        "skos" :{
+            "uri" : "URI de référence",
+            "uri-help" : "Identifiant du concept référencé",
+            "uri-placeholder" : "http://aims.fao.org/aos/agrovoc/c_8332",
+            "relation" : "Relation",
+            "relation-help" : "Relation entre l'individu décrit localement et le concept lié à cet identifiant",
+            "relation-placeholder" : "exactMatch",
+            "update" : "Modifier les relations",
+            "add" : "Créer une nouvelle relation",
+            "exactMatch" : "Equivalent",
+            "closeMatch" : "Similaire",
+            "broader" : "Plus général",
+            "narrower" : "Plus spécifique",
+            "no-relation" : "Sélectionner une relation",
+            "ontologies-references-label" :"Réferences ontologiques",
+            "link-external" :"Ajouter des références externes à",
+            "link-external-button" :"Ajouter des références externes"
         },
         "germplasm": {
             "uri": "URI du germplasm",

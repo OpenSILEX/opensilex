@@ -16,9 +16,9 @@ export default class FormInputLabelHelper extends Vue {
 
   @Prop()
   helpMessage: string;
-  
+
   @Prop()
-  label
+  label;
 }
 </script>
 

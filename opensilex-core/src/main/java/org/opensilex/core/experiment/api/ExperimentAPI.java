@@ -166,7 +166,6 @@ public class ExperimentAPI {
 
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Experiment retrieved", response = ExperimentGetDTO.class),
-        @ApiResponse(code = 204, message = "No experiment found", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response getExperiment(
             @ApiParam(value = "Experiment URI", example = "http://opensilex.dev/set/experiments/ZA17", required = true) @PathParam("uri") @NotNull URI xpUri
@@ -179,7 +178,7 @@ public class ExperimentAPI {
                 return new SingleObjectResponse<>(ExperimentGetDTO.fromModel(model)).getResponse();
             } else {
                 return new ErrorResponse(
-                        Response.Status.NO_CONTENT, "Experiment not found",
+                        Response.Status.NOT_FOUND, "Experiment not found",
                         "Unknown Experiment URI: " + xpUri.toString()
                 ).getResponse();
             }
@@ -206,7 +205,6 @@ public class ExperimentAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return Experiment list", response = ExperimentGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 204, message = "No experiment found", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     public Response searchExperiments(
@@ -251,9 +249,6 @@ public class ExperimentAPI {
                     pageSize
             );
 
-            if (resultList.getList().isEmpty()) {
-                return new ErrorResponse(Response.Status.NO_CONTENT, "No experiment found", "").getResponse();
-            }
             // Convert paginated list to DTO
             ListWithPagination<ExperimentGetDTO> resultDTOList = resultList.convert(ExperimentGetDTO.class, ExperimentGetDTO::fromModel);
             return new PaginatedListResponse<>(resultDTOList).getResponse();

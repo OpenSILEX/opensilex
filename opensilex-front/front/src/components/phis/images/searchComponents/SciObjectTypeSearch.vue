@@ -68,7 +68,6 @@ export default class SciObjectTypeSearch extends Vue {
     );
     const result = service
       .getDescendants(
-        this.user.getAuthorizationHeader(),
         this.sciObjectUri,
         100,
         0
@@ -106,7 +105,6 @@ export default class SciObjectTypeSearch extends Vue {
   findTypeByExperimentObjects(experience) {
     const result = this.scientificObjectService
       .getScientificObjectsBySearch(
-        this.user.getAuthorizationHeader(),
         8000,
         0,
         undefined,

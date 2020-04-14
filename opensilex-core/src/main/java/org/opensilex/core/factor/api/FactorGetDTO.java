@@ -4,7 +4,7 @@
  *  OpenSILEX
  *  Copyright © INRA 2019
  *  Creation date:  17 December, 2019
- *  Contact: arnaud.charleroy@inra.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ *  Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * ******************************************************************************
  */
 package org.opensilex.core.factor.api;
@@ -16,14 +16,14 @@ import org.opensilex.core.factor.dal.FactorModel;
  * 
  * @author Arnaud Charleroy
  */
-public class FactorGetDTO {
+public class FactorGetDTO{
     
     private URI uri;
 
     private String alias;
 
     private String comment;
-
+    
     public URI getUri() {
         return uri;
     }
@@ -46,7 +46,7 @@ public class FactorGetDTO {
 
     public void setComment(String comment) {
         this.comment = comment;
-    }
+    }   
     
     public static FactorGetDTO fromModel(FactorModel model) {
         FactorGetDTO dto = new FactorGetDTO();

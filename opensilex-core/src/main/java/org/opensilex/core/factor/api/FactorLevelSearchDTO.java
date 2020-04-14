@@ -4,7 +4,7 @@
  *  OpenSILEX
  *  Copyright © INRAE 2020
  *  Creation date:  11 March, 2020
- *  Contact: arnaud.charleroy@inra.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ *  Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * ******************************************************************************
  */
 package org.opensilex.core.factor.api;
@@ -38,8 +38,7 @@ public class FactorLevelSearchDTO {
     }
 
     public String getAlias() {
-        if(alias != null
-            && (alias.isBlank() || alias.isEmpty())){
+        if(alias != null && alias.trim().isEmpty()){
             return null;
         } 
         return alias;
@@ -58,8 +57,7 @@ public class FactorLevelSearchDTO {
     }
 
     public URI getHasFactor() {
-        if(hasFactor != null
-            && (hasFactor.toString().isBlank() || hasFactor.toString().isEmpty())){
+        if(hasFactor != null && hasFactor.toString().trim().isEmpty()){
             return null;
         } 
         return hasFactor;

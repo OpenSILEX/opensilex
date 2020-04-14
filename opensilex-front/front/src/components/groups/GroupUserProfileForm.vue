@@ -193,15 +193,11 @@ export default class GroupUserProfileForm extends Vue {
   }
 
   async created() {
-    this.service = this.$opensilex.getService(
-      "opensilex.SecurityService"
-    );
+    this.service = this.$opensilex.getService("opensilex.SecurityService");
 
     let http: HttpResponse<OpenSilexResponse<
       Array<ProfileGetDTO>
-    >> = await this.service.getAllProfiles(
-      this.$opensilex.getUser().getAuthorizationHeader()
-    );
+    >> = await this.service.getAllProfiles();
     this.profiles = http.response.result;
     console.debug("Profiles list loaded !", this.profiles);
   }
@@ -219,7 +215,6 @@ export default class GroupUserProfileForm extends Vue {
 
     return this.service
       .searchUsers(
-        this.user.getAuthorizationHeader(),
         this.filterPattern,
         orderBy,
         this.currentPage - 1,

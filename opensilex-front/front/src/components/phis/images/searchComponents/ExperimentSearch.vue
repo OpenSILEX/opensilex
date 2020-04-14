@@ -57,7 +57,6 @@ export default class ExperimentSearch extends Vue {
     );
     const result = service
       .getExperimentsBySearch(
-        this.user.getAuthorizationHeader(),
         100,
         0,
         undefined,

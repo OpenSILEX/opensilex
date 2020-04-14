@@ -17,7 +17,10 @@
                     <nav class="breadcrumb-container" aria-label="breadcrumb">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item">
-                                <a href="index.html" title="Revenir au tableau de bord"><i class="ik ik-grid mr-1"></i>{{ $t('component.menu.dashboard') }}</a>
+                                <router-link :to="{path: '/dashboard'}" :title="$t('component.menu.backToDashboard')">
+                              <i class="ik ik-grid mr-1"></i>
+                              {{ $t('component.menu.dashboard') }}
+                            </router-link>
                             </li>
                             <li class="breadcrumb-item active"><i class="ik ik-layers mr-1"></i>{{ $t('component.menu.experiments') }}</li>
                         </ol>
@@ -27,15 +30,17 @@
         </div>
 
         <div class="card">
+            <!--
             <div class="card-header row clearfix">
                 <div class="col col-sm-3">
                     <div class="card-options d-inline-block">
                         <b-button id="create-experiment" @click="$emit('onCreate')" variant="primary"><i class="ik ik-plus"></i>{{ $t('component.experiment.search.buttons.create-experiment') }}</b-button>
-                        <!-- todo: add theming color -->
+                        todo: add theming color
                         <b-tooltip target="create-experiment" >{{ $t('component.experiment.search.buttons.create-experiment-help') }}</b-tooltip>
                     </div>
                 </div>
             </div>
+            -->
 
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -65,7 +70,7 @@
                                 <b-form-input v-model="filter.alias" debounce="300" class="form-control" 
                                 :placeholder="$t('component.experiment.search.filter.alias')"></b-form-input>
                             </td>
-                            <td width="250">
+                            <td width="190">
                                 <multiselect
                                         :limit="1"
                                         :multiple="true"
@@ -80,47 +85,50 @@
                                         deselectLabel="X"
                                         :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"/>
                             </td>
-                            <td width="250">
+                            <td width="220">
                                 <multiselect
                                         :limit="1"
                                         :multiple="true"
                                         :placeholder="$t('component.experiment.search.filter.installations')"
                                         :closeOnSelect="false"
                                         v-model="filter.installations"
-                                        :options="installations"
+                                        :options="installationsList"
                                         selectLabel=""
                                         selectedLabel="X"
                                         deselectLabel="X"
                                         :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"/>
                             </td>
-                            <td width="200">
+                            <td width="220">
                                 <multiselect
                                         :limit="1"
                                         :placeholder="$t('component.experiment.search.filter.campain')"
                                         :closeOnSelect="false"
                                         v-model="filter.campaign"
-                                        :options="campains"
+                                        :options="campaigns"
                                         selectLabel=""
                                         selectedLabel="X"
                                         deselectLabel="X"
                                         :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})" />
                             </td>
-                            <td width="250">
+                            <td width="180">
                                 <multiselect
                                         :limit="1"
+                                        track-by="uri"
                                         :multiple="true"
                                         :placeholder="$t('component.experiment.search.filter.places')"
                                         :closeOnSelect="false"
-                                        v-model="filter.places"
-                                        :options="places"
+                                        v-model="filter.infrastructures"
+                                        :options="infrastructuresList"
+                                        :custom-label="infrastructure => infrastructure.name"
                                         selectLabel=""
                                         selectedLabel="X"
                                         deselectLabel="X"
                                         :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})" />
                             </td>
-                            <td width="250">
+                            <td width="200">
                                 <multiselect
                                         :limit="1"
+                                        track-by="uri"
                                         :placeholder="$t('component.experiment.search.filter.species')"
                                         :closeOnSelect="false"
                                         v-model="filter.species"
@@ -147,7 +155,7 @@
                             <td>
                                 <b-form-input v-model="filter.uri" debounce="300" class="form-control" :placeholder="$t('component.experiment.search.filter.uri')"></b-form-input>
                             </td>
-                            <td width="200">
+                            <td width="170">
                                 <multiselect
                                         track-by="code"
                                         :custom-label="state => state.label"
@@ -165,29 +173,34 @@
 
                         <tr v-for="experiment in experiments" v-bind:key="experiment.id">
                             <td>
-                                    <b-button-group size="sm">
-                                        <b-button size="sm" @click="$emit('onEdit', experiment)" variant="outline-primary">
-                                            <font-awesome-icon icon="edit" size="sm" />
-                                        </b-button>
-                                    </b-button-group>
+                                <router-link :to="{path: '/experiment/' + encodeURIComponent(experiment.uri)}">
+                                    {{ experiment.label }}
+                                </router-link>
                             </td>
-
-                            <td>{{ experiment.label }}</td>
                             <td>
                                 <span :key="index" v-for="(uri, index) in experiment.projects">
-                                <span :title="uri">{{ getProjectName(uri) }}</span><span v-if="index + 1 < experiment.projects.length">, </span>
+                                    <span :title="uri">{{ getProjectName(uri) }}</span><span v-if="index + 1 < experiment.projects.length">, </span>
                                 </span>
                             </td>
                             <td></td>
                             <td>{{ experiment.campaign }}</td>
-                            <td></td>
-                            <td>{{ getSpeciesName(experiment.species) }}</td>
-                            <td>{{ formatDate(experiment.startDate) }}</td>
-                            <td><span class="uri">{{ experiment.uri }}<a href="#" class="uri-copy" title="Copier dans le presse-papier"><i class="ik ik-copy"></i></a></span></td>
                             <td>
-                                <i v-if="!experiment.isEnded" class="ik ik-sun badge-icon badge-info-phis" :title="$t('component.experiment.common.status.in-progress')"></i>
-                                <i v-else class="ik ik-moon badge-icon badge-light" :title="$t('component.experiment.common.status.finished')"></i>
-                                <!-- i class="ik ik-users badge-icon badge-info" :title="$t('component.experiment.common.status.public')"></i -->
+                                <span :key="index" v-for="(uri, index) in experiment.infrastructures">
+                                    <span :title="uri">{{ getInfrastructureName(uri) }}</span><span v-if="index + 1 < experiment.infrastructures.length">, </span>
+                                </span>
+                            </td>
+                            <td><span :title="experiment.species">{{ getSpeciesName(experiment.species) }}</span></td>
+                            <td>{{ formatDate(experiment.startDate) }}</td>
+                            <td>
+                                <span class="uri">
+                                    {{ experiment.uri }}
+                                    <a href="#" v-on:click="copyUri(experiment.uri, $event)" class="uri-copy" :title="$t('component.copyToClipboard.copyUri')"><i class="ik ik-copy"></i></a>
+                                </span>
+                            </td>
+                            <td>
+                                <i v-if="!experiment.isEnded" class="ik ik-activity badge-icon badge-info-phis" :title="$t('component.experiment.common.status.in-progress')"></i>
+                                <i v-else class="ik ik-archive badge-icon badge-light" :title="$t('component.experiment.common.status.finished')"></i>
+                                <i v-if="experiment.isPublic" class="ik ik-users badge-icon badge-info" :title="$t('component.experiment.common.status.public')"></i>
                             </td>
                         </tr>
                         </tbody>
@@ -198,11 +211,11 @@
             <div v-if="totalRow > pageSize" class="card-footer">
                 <nav class="float-right">
                     <b-pagination
-                            v-model="currentPage"
-                            :total-rows="totalRow"
-                            :per-page="pageSize"
-                            @change="loadExperiments()"
-                            class="pagination mb-0"
+                        v-model="currentPage"
+                        :total-rows="totalRow"
+                        :per-page="pageSize"
+                        @change="loadExperiments()"
+                        class="pagination mb-0"
                     >
                     </b-pagination>
                 </nav>
@@ -214,14 +227,26 @@
 </template>
 
 <script lang="ts">
+
     import { Component } from "vue-property-decorator";
     import Vue from "vue";
     import VueConstructor from "vue";
-
-import VueRouter from "vue-router";
-
-import { ProjectCreationDTO, SpeciesDTO, ExperimentGetDTO, ExperimentsService, ProjectsService, SpeciesService } from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+    import VueRouter from "vue-router";
+    import moment from "moment";
+    import copy from "copy-to-clipboard"; 
+    import VueI18n from 'vue-i18n';
+    import { 
+        ProjectCreationDTO, 
+        SpeciesDTO, 
+        ExperimentGetDTO, 
+        ResourceTreeDTO,
+        InfrastructureGetDTO,
+        ExperimentsService, 
+        InfrastructuresService,
+        ProjectsService, 
+        SpeciesService
+    } from "opensilex-core/index";
+    import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
     export class ExperimentState {
 
@@ -241,18 +266,18 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
         private _alias: string;
         private _uri: string;
+        private _beginDate: string;
         private _startDate: string;
         private _endDate: string;
         private _campaign: number;
         private _projects: Array<ProjectCreationDTO>;
-        private _installations: Array<string>;
-        private _places: Array<string>;
+        private _installations: Array<any>;
+        private _infrastructures: Array<ResourceTreeDTO>;
         private _species: SpeciesDTO;
         private _state: ExperimentState;
 
         constructor(experimentList: ExperimentList) {
             this._experimentList = experimentList;
-            this._species = null;
         }
 
         get alias() {
@@ -274,9 +299,36 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
         }
 
         updateBeginDate() {
+            let startDate = moment(this.startDate, 'YYYY-MM-DD');
+            let endDate = moment(this.endDate, 'YYYY-MM-DD');
+            this.beginDate = startDate.format("DD/MM/YYYY") + " - " + endDate.format("DD/MM/YYYY");
+        }
+
+        set beginDate(value: string) {
+            console.log(value);
+            this._beginDate = value;
+
+            let dates = value.split(" - ");
+
+            this._endDate = undefined;
+            this._startDate = undefined;
+            
+            if(dates.length == 2 && dates[0].length == 10 && dates[1].length == 10) {
+                let startDate = moment(dates[0], 'DD/MM/YYYY');
+                let endDate = moment(dates[1], 'DD/MM/YYYY');
+
+                if(startDate.isValid() && endDate.isValid()) {
+                    this._startDate = startDate.format('YYYY-MM-DD');
+                    this._endDate = endDate.format('YYYY-MM-DD');
+                }  
+            }
+
             this._experimentList.loadExperiments();
         }
 
+        get beginDate() {
+            return this._beginDate;
+        }
         set startDate(value) {
             this._startDate = value;
         }
@@ -294,6 +346,7 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
         }
 
         set campaign(value: number) {
+            console.log(value);
             this._campaign = value;
             this._experimentList.loadExperiments();
         }
@@ -303,6 +356,7 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
         }
 
         set projects(values: Array<ProjectCreationDTO>) {
+            console.log(values);
             this._projects = values;
             this._experimentList.loadExperiments();
         }
@@ -312,6 +366,7 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
         }
 
         set installations(values: Array<string>) {
+            console.log(values);
             this._installations = values;
             this._experimentList.loadExperiments();
         }
@@ -320,16 +375,18 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
             return this._installations;
         }
 
-        set places(values: Array<string>) {
-            this._places = values;
+        set infrastructures(values: Array<ResourceTreeDTO>) {
+            console.log(values);
+            this._infrastructures = values;
             this._experimentList.loadExperiments();
         }
 
-        get places() {
-            return this._places;
+        get infrastructures() {
+            return this._infrastructures;
         }
 
         set species(value: SpeciesDTO) {
+            console.log(value);
             this._species = value;
             this._experimentList.loadExperiments();
         }
@@ -354,22 +411,23 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
         $opensilex: any;
         $store: any;
         $router: VueRouter;
-        $i18n: any;
-        $moment: any;
-
-        projectsList = [];
-        projectsByUri: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
-        experiments: Array<ExperimentGetDTO> = new Array<ExperimentGetDTO>();
 
         speciesList = [];
         speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
+
+        infrastructuresList = [];
+        infrastructuresByUri: Map<String, ResourceTreeDTO> = new Map<String, ResourceTreeDTO>();
+
+        projectsList = [];
+        projectsByUri: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
+
+        installationsList = [];
+        installationsByUri: Map<String, any> = new Map<String, any>();
+        
         experimentStates: Array<ExperimentState> = new Array<ExperimentState>();
-        campains: Array<Number> = new Array<Number>();
+        campaigns: Array<Number> = new Array<Number>();
 
-        installations = [];
-        places = [];
-
-        filter: ExperimentFilter;
+        experiments: Array<ExperimentGetDTO> = new Array<ExperimentGetDTO>();
 
         orderBy: Array<string>;
         currentPage: number = 1;
@@ -378,11 +436,18 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
         constructor() {
             super();
-            this.filter = new ExperimentFilter(this);
+
+            if(!this.$store.state.search.experiments.filter) {
+                this.$store.state.search.experiments.filter = new ExperimentFilter(this);
+            }
         }
 
         created () {
             this.loadDatas();
+        }
+
+        get filter() {
+            return this.$store.state.search.experiments.filter;
         }
 
         get user() {
@@ -392,55 +457,69 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
         loadDatas() {
             this.loadProjects();
             this.loadSpecies();
+            this.loadInfrastructures();
             this.loadExperiments();
             this.loadExperimentStates();
         }
 
         loadExperiments() {
-
             let service: ExperimentsService = this.$opensilex.getService(
                 "opensilex.ExperimentsService"
             );
 
-            let projects = null;
+            let projects = undefined;
             if(this.filter.projects && this.filter.projects.length > 0) {
                 projects = this.filter.projects.map(project => project.uri);
             }
 
-            let isEnded;
-            let isPublic;
+            let isEnded = undefined;
+            let isPublic = undefined;
             if(this.filter.state) {
-                if(this.filter.state.code === "finished"){
+                if(this.filter.state.code === "finished") {
                     isEnded = true;
-                }else if(this.filter.state.code === "in-progress"){
+                } else if(this.filter.state.code === "in-progress") {
                     isEnded = false;
-                }else if(this.filter.state.code === "public"){
+                } else if(this.filter.state.code === "public") {
                     isPublic = true;
                 }
             }
 
-            let speciesUri;
-            if(this.filter.species != null){
-                speciesUri = this.filter.species.uri;
-            }
-
-            let startDate;
-            let endDate;
-            if(this.filter.startDate){
+            let startDate = undefined;
+            let endDate = undefined;
+            if(this.filter.startDate && this.filter.startDate.length > 0) {
                 startDate = this.filter.startDate;
             }
-            if(this.filter.endDate){
+            if(this.filter.endDate && this.filter.endDate.length > 0) {
                 endDate = this.filter.endDate;
             }
 
+            let species = undefined;
+            if(this.filter.species) {
+                species = this.filter.species.uri;
+            }
+
+            let uri = undefined;
+            if(this.filter.uri && this.filter.uri.length > 0) {
+                uri = this.filter.uri;
+            }
+
+            let alias = undefined;
+            if(this.filter.alias && this.filter.alias.length > 0) {
+                alias = this.filter.alias;
+            }
+
+            let campaign = undefined;
+            if(this.filter.campaign) {
+                campaign = this.filter.campaign;
+            }
+                
             service.searchExperiments(
-                this.user.getAuthorizationHeader(),
-                this.filter.uri,
+                uri,
                 startDate,
                 endDate,
-                this.filter.campaign,
-                this.filter.alias,
-                speciesUri,
+                campaign,
+                alias,
+                species,
                 projects,
                 isPublic,
                 isEnded,
@@ -451,15 +530,18 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
             .then((http: HttpResponse<OpenSilexResponse<Array<ExperimentGetDTO>>>) => {
                 this.totalRow = http.response.metadata.pagination.totalCount;
                 this.experiments = http.response.result;
-                if(this.campains.length == 0) {
-                let allCampaigns = this.experiments.map(experiment => experiment.campaign);
-                this.campains = allCampaigns.filter((campaign, index) => {
-                    return allCampaigns.indexOf(campaign) === index;
-                });
-                }
-            })
-            .catch(this.resetExperiments);
 
+                if(this.campaigns.length == 0) {
+                    let allCampaigns = this.experiments.map(experiment => experiment.campaign);
+                    this.campaigns = allCampaigns.filter((campaign, index) => {
+                        return allCampaigns.indexOf(campaign) === index;
+                    });
+                }
+
+                this.$store.state.search.results = this.experiments.map(experiment => experiment.uri);
+            }).catch(error => {
+                this.resetExperiments(error);
+            });
         }
 
         resetExperiments(error) {
@@ -479,63 +561,94 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
                 "opensilex.ProjectsService"
             );
 
-                service.searchProjects(
-                  this.user.getAuthorizationHeader(),
-                  null,
-                  0,
-                  1000
-                )
-                .then((http: HttpResponse<OpenSilexResponse<Array<ProjectCreationDTO>>>) => {
-                  let results: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
-                  let resultsList = [];
-                  for(let i=0; i<http.response.result.length; i++) {
+            service.searchProjects(
+                null,
+                0,
+                1000
+            )
+            .then((http: HttpResponse<OpenSilexResponse<Array<ProjectCreationDTO>>>) => {
+                let results: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
+                let resultsList = [];
+                for(let i=0; i<http.response.result.length; i++) {
                     results.set(http.response.result[i].uri, http.response.result[i]);
                     resultsList.push(http.response.result[i]);
-                  }
-                  this.projectsList = resultsList;
-                  this.projectsByUri = results;
-                }).catch(this.$opensilex.errorHandler);
-
-        }
-
-        loadSpecies(){
-
-            let service: SpeciesService = this.$opensilex.getService("opensilex.SpeciesService");
-            service.getAllSpecies("fr")
-            .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
-
-                for(let i=0; i<http.response.result.length; i++) {
-                    let res = http.response.result[i];
-                    this.speciesList.push(res);
-                    this.speciesByUri.set(res.uri,res);
                 }
-
+                this.projectsList = resultsList;
+                this.projectsByUri = results;
             }).catch(this.$opensilex.errorHandler);
-
         }
 
-        formatDate(date: any): String {
-            return date;
-            // return this.$moment().year(date.year).month(value.month).date(value.day).format('DD/MM/YYYY');
+        loadInfrastructures() {
+            let service: InfrastructuresService = this.$opensilex.getService(
+                "opensilex.InfrastructuresService"
+            );
+
+            service.searchInfrastructuresTree(
+                this.user.getAuthorizationHeader(),
+                undefined
+            ).then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+                let results: Map<String, ResourceTreeDTO> = new Map<String, ResourceTreeDTO>();
+                let resultsList = [];
+                for(let i=0; i<http.response.result.length; i++) {
+                    results.set(http.response.result[i].uri, http.response.result[i]);
+                    resultsList.push(http.response.result[i]);
+                }
+                this.infrastructuresList = resultsList;
+                this.infrastructuresByUri = results;
+            }).catch(this.$opensilex.errorHandler);
+        }
+
+        loadSpecies() {
+            let service: SpeciesService = this.$opensilex.getService(
+                "opensilex.SpeciesService"
+            );
+
+            service.getAllSpecies().then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
+                let results: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
+                let resultsList = [];
+                for(let i=0; i<http.response.result.length; i++) {
+                    results.set(http.response.result[i].uri, http.response.result[i]);
+                    resultsList.push(http.response.result[i]);
+                }
+                this.speciesList = resultsList;
+                this.speciesByUri = results;
+            }).catch(this.$opensilex.errorHandler);
+        }
+
+        formatDate(value: string): string {
+            return moment(value, 'YYYY-MM-dd').format('DD/MM/YYYY');
         }
 
         getProjectName(uri: String): String {
             if(this.projectsByUri.has(uri)) {
-                let project = this.projectsByUri.get(uri);
-                return project.label;
+                return this.projectsByUri.get(uri).label;
             }
             return null;
         }
 
         getSpeciesName(uri: String): String {
-            if(! this.speciesByUri.has(uri)){
-                return null;
+            if(this.speciesByUri.has(uri)){
+                return this.speciesByUri.get(uri).label;
             }
-            return this.speciesByUri.get(uri).label;
+            return null
+        }
+
+        getInfrastructureName(uri: String): String {
+            if(this.infrastructuresByUri.has(uri)){
+                return this.infrastructuresByUri.get(uri).name;
+            }
+            return null
         }
 
         goToExperimentCreateComponent(){
             this.$router.push({ path: '/experiments/create' });
+        }
+
+        copyUri(uri: string) {
+            copy(uri);
+            if(event) {
+                event.preventDefault()
+            }
         }
     }
 
@@ -544,4 +657,3 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 <style scoped lang="scss">
 
 </style>
-

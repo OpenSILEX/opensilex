@@ -7,6 +7,7 @@
 package org.opensilex.server.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -44,7 +45,7 @@ import javax.ws.rs.core.Response.Status;
  * @see org.opensilex.server.response.MetadataDTO
  * @author Vincent Migot
  */
-public abstract class JsonResponse<T> {
+public abstract class JsonResponse<T> implements Serializable {
 
     /**
      * HTTP status

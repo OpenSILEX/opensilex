@@ -20,4 +20,7 @@ public interface SPARQLExtension extends OpenSilexExtension {
         return list;
     }
 
+    public default void inMemoryInitialization() throws Exception {
+    }
+
 }

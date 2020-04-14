@@ -22,7 +22,7 @@ import javax.ws.rs.core.Response.Status;
 public class ObjectUriResponse extends JsonResponse<String> {
 
     public ObjectUriResponse(Status status, URI uri) {
-        super(status);
+        this(status);
         this.metadata = new MetadataDTO(new PaginationDTO());
         this.metadata.addDataFile(uri);
         this.result = uri.toString();
@@ -33,6 +33,10 @@ public class ObjectUriResponse extends JsonResponse<String> {
     }
 
     public ObjectUriResponse() {
-        super(Status.OK);
+        this(Status.OK);
+    }
+    
+    public ObjectUriResponse(Status status) {
+        super(status);
     }
 }

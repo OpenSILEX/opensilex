@@ -179,7 +179,7 @@ public class ExperimentAPI {
                 return new SingleObjectResponse<>(ExperimentGetDTO.fromModel(model)).getResponse();
             } else {
                 return new ErrorResponse(
-                        Response.Status.NO_CONTENT, "Experiment not found",
+                        Response.Status.NOT_FOUND, "Experiment not found",
                         "Unknown Experiment URI: " + xpUri.toString()
                 ).getResponse();
             }
@@ -251,9 +251,6 @@ public class ExperimentAPI {
                     pageSize
             );
 
-            if (resultList.getList().isEmpty()) {
-                return new ErrorResponse(Response.Status.NO_CONTENT, "No experiment found", "").getResponse();
-            }
             // Convert paginated list to DTO
             ListWithPagination<ExperimentGetDTO> resultDTOList = resultList.convert(ExperimentGetDTO.class, ExperimentGetDTO::fromModel);
             return new PaginatedListResponse<>(resultDTOList).getResponse();

@@ -76,6 +76,29 @@ export default {
     'opensilex-GroupView': GroupView,
     'opensilex-GroupList': GroupList,
 
+    'opensilex-ExperimentForm': ExperimentForm,
+    'opensilex-ExperimentForm2': ExperimentForm2,
+    'opensilex-ExperimentList': ExperimentList,
+    'opensilex-ExperimentCreate': ExperimentCreate,
+    'opensilex-ExperimentView': ExperimentView,
+
+    'opensilex-GermplasmView': GermplasmView,
+    'opensilex-GermplasmForm': GermplasmForm,
+    'opensilex-GermplasmList': GermplasmList,
+
+    'opensilex-ImageList': ImageList,
+    'opensilex-ImageView': ImageView,
+    'opensilex-ImageSearch': ImageSearch,
+    'opensilex-ImageGrid': ImageGrid,
+    'opensilex-ImageSingle': ImageSingle,
+    'opensilex-ImageCarousel': ImageCarousel,
+    'opensilex-SciObjectURISearch': SciObjectURISearch,
+    'opensilex-SciObjectAliasSearch': SciObjectAliasSearch,
+    'opensilex-ImageTypeSearch': ImageTypeSearch,
+    'opensilex-ExperimentSearch': ExperimentSearch,
+    'opensilex-SciObjectTypeSearch': SciObjectTypeSearch,
+    'opensilex-TimeSearch': TimeSearch,
+
     // infrastructures
     "opensilex-InfrastructureView": InfrastructureView,
     "opensilex-InfrastructureTree": InfrastructureTree,
@@ -94,5 +117,5 @@ export default {
     'opensilex-ExternalReferencesForm': ExternalReferencesForm,
     'opensilex-ExternalReferencesDetails': ExternalReferencesDetails,
     'opensilex-ToDoComponent': ToDoComponent
-    
+
 };

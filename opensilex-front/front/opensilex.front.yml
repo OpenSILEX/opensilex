@@ -1,21 +1,18 @@
 menu: 
   - id: dashboard
     label: component.menu.dashboard
-    icon: ik-grid
     route: 
       path: /users
       component: opensilex-UserView
       credentials: []
   - id: infrastructures
-    label: component.menu.infrastructures
-    icon: ik-grid
+    label: component.menu.infrastructure
     route: 
       path: /infrastructures
       component: opensilex-InfrastructureView
       credentials: []        
   - id: data
     label: component.menu.data.label
-    icon: ik-trending-up
     children:
       - id: images
         label: component.menu.data.images
@@ -25,31 +22,26 @@ menu:
           credentials: []
   - id: experiments
     label: component.menu.experiments
-    icon: ik-layers
     route: 
       path: /experiments
-      component: opensilex-core-ExperimentView
+      component: opensilex-ExperimentList
       credentials: []
   - id: installations
     label: component.menu.installations
-    icon: ik-globe
   - id: projects
     label: component.menu.projects
-    icon: ik-folder
     route: 
       path: /users
       component: opensilex-UserView
       credentials: []
   - id: scientificObjects
     label: component.menu.scientificObjects
-    icon: ik-target
     route: 
       path: /users
       component: opensilex-UserView
       credentials: []
   - id: equipments
     label: component.menu.equipments.label
-    icon: ik-aperture
     route: 
       path: /users
       component: opensilex-UserView
@@ -81,7 +73,6 @@ menu:
           credentials: []
   - id: security
     label: component.menu.security.label
-    icon: ik-lock
     children:
       - id: users
         label: component.menu.security.users
@@ -106,11 +97,9 @@ menu:
             - profile-read
   - id: experimentalDesign
     label: component.menu.experimentalDesign.label
-    icon: ik-lock
     children:
       - id: factors
         label: component.menu.experimentalDesign.factors
-        icon: ik-cloud-rain
         route: 
           path: /factors
           component: opensilex-FactorView
@@ -118,7 +107,6 @@ menu:
             - factor-read
       - id: factor-levels
         label: component.menu.experimentalDesign.factorLevels
-        icon: ik-cloud-rain
         route: 
           path: /factorLevels
           component: opensilex-FactorLevelView
@@ -140,6 +128,9 @@ routes:
     credentials: []
   - path: /experiments/details
     component: opensilex-core-ExperimentDetails
+    credentials: []
+  - path: /experiment/:uri
+    component: opensilex-ExperimentView
     credentials: []
 # Route item example:
 #  - path: /users/create

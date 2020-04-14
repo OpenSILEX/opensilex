@@ -71,9 +71,14 @@ class OpenSilexHttpClient implements IHttpClient {
                     let content: any;
                     let metadata: any = {};
                     if (contentType.match("application/json")) {
-                        content = JSON.parse(text);
-                        if (content.metadata) {
-                            metadata = content.metadata;
+                        try {
+                            content = JSON.parse(text);
+                            if (content.metadata) {
+                                metadata = content.metadata;
+                            }
+                        } catch (error) {
+                            console.error("Error while parsing JSON request result: " + url, error);
+                            throw error;
                         }
                     } else {
                         content = text;

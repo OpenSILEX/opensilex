@@ -138,7 +138,10 @@ export default class ExperimentForm2 extends ExperimentForm {
     return this.experimentInfrastructures;
   }
 
-  // @Ref("dualList") readonly dualList!: DualList;
+  @Ref("projectDualList") readonly projectDualList!: DualList;
+  @Ref("groupDualList") readonly groupDualList!: DualList;
+  @Ref("infrastructureDualList") readonly infrastructureDualList!: DualList;
+
 
   // mymethod(form: any) {
   //   this.userProfilesRef.initFormProfiles(this.projectList);
@@ -149,6 +152,9 @@ export default class ExperimentForm2 extends ExperimentForm {
     this.loadGroups();
     this.loadUsers();
     this.loadInfrastructures();
+    this.projectDualList.initLeftTableSelection();
+    this.groupDualList.initLeftTableSelection();
+    this.infrastructureList.initLeftTableSelection();
   }
 
   loadProjects() {

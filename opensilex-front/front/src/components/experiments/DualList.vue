@@ -1,6 +1,7 @@
 <template>
   <div>
-    <b-input-group class="mt-3 mb-3" size="sm">
+    <!-- List filtering -->
+    <!-- <b-input-group class="mt-3 mb-3" size="sm">
       <b-input-group>
         <b-form-input
           v-model="filterPattern"
@@ -13,7 +14,7 @@
           </b-btn>
         </template>
       </b-input-group>
-    </b-input-group>
+    </b-input-group> -->
     <div class="tables">
       <div class="table-left">
         <div>
@@ -182,15 +183,22 @@ export default class DualList extends Vue {
     this.service = this.$opensilex.getService(
       "opensilex.SecurityService"
     );
+  }
 
+  initLeftTableSelection(){
     this.leftTableDataSelected = {};
     this.leftTableData.forEach(element => {
         this.leftTableDataSelected[element.value] = false;
+        console.log("created, left"+element.value);
+
     });
     this.rightTableData.forEach(element => {
+        // element of the left table which are present into the right table are selected by default
         this.leftTableDataSelected[element.value] = true;
+        console.log("created, right"+element.value);
     })
   }
+
 
   fields = [
     {

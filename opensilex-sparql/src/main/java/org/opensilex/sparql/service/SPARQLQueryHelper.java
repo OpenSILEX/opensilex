@@ -20,10 +20,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.E_GreaterThanOrEqual;
 import org.apache.jena.sparql.expr.E_LessThanOrEqual;
-import org.opensilex.sparql.deserializer.DateDeserializer;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.*;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -116,6 +113,11 @@ public class SPARQLQueryHelper {
     public static Expr eq(String varName, Object object) throws Exception {
         Node node = SPARQLDeserializers.getForClass(object.getClass()).getNode(object);
         return eq(varName, node);
+    }
+
+    public static Expr eq(String varName, URI uri){
+        Node uriNode = NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString()));
+        return eq(varName,uriNode);
     }
 
     /**

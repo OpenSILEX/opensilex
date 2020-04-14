@@ -10,8 +10,8 @@ import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.rest.validation.Required;
-import org.opensilex.rest.validation.date.DateConstraint;
+import org.opensilex.server.rest.validation.DateConstraint;
+import org.opensilex.server.rest.validation.Required;
 
 
 /**

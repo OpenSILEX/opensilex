@@ -110,6 +110,11 @@ public class ProjectDAO {
     public void delete(List<URI> prjctUris) throws Exception {
         sparql.delete(ProjectModel.class, prjctUris);
     }
+    
+    
+    public void delete(URI instanceURI) throws Exception {
+        sparql.delete(ProjectModel.class, instanceURI);
+    }
 
     public ProjectModel get(URI instanceURI) throws Exception {
         return sparql.getByURI(ProjectModel.class, instanceURI, null);
@@ -134,7 +139,7 @@ public class ProjectDAO {
                     appendUriRegexFilter(select, uri);
                     appendRegexLabelFilter(select, name);
                     appendDateFilters(select, isEnded, startDate, endDate);
-                    appendGroupsListFilters(select, admin, isPublic, groups);
+//                    appendGroupsListFilters(select, admin, isPublic, groups);
                     appendExperimentListFilter(select, experiments);
                 },
                 orderByList,
@@ -199,34 +204,34 @@ public class ProjectDAO {
     }
     
     
-     protected void appendGroupsListFilters(SelectBuilder select, boolean admin, Boolean isPublic, List<URI> groups) {
-
-        if (admin) {
-            // add no filter on groups for the admin
-            return;
-        }
-        Var groupVar = makeVar(ProjectModel.GROUP_SPARQL_VAR);
-        Triple groupTriple = new Triple(makeVar(ProjectModel.URI_FIELD), Oeso.hasGroup.asNode(), groupVar);
-
-        if (CollectionUtils.isEmpty(groups) || (isPublic != null && isPublic)) {
-            // get project without any group
-            select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(groupTriple)));
-        } else {
-            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
-
-            // get project with no group specified or in the given list
-            ElementGroup rootFilteringElem = new ElementGroup();
-            ElementGroup optionals = new ElementGroup();
-            optionals.addTriplePattern(groupTriple);
-
-            Expr boundExpr = exprFactory.not(exprFactory.bound(groupVar));
-            Expr groupInUrisExpr = exprFactory.in(groupVar, groups.stream()
-                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
-                    .toArray());
-
-            rootFilteringElem.addElement(new ElementOptional(optionals));
-            rootFilteringElem.addElementFilter(new ElementFilter(SPARQLQueryHelper.or(boundExpr, groupInUrisExpr)));
-            select.getWhereHandler().getClause().addElement(rootFilteringElem);
-        }
-    }
+//     protected void appendGroupsListFilters(SelectBuilder select, boolean admin, Boolean isPublic, List<URI> groups) {
+//
+//        if (admin) {
+//            // add no filter on groups for the admin
+//            return;
+//        }
+//        Var groupVar = makeVar(ProjectModel.GROUP_SPARQL_VAR);
+//        Triple groupTriple = new Triple(makeVar(ProjectModel.URI_FIELD), Oeso.hasGroup.asNode(), groupVar);
+//
+//        if (CollectionUtils.isEmpty(groups) || (isPublic != null && isPublic)) {
+//            // get project without any group
+//            select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(groupTriple)));
+//        } else {
+//            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+//
+//            // get project with no group specified or in the given list
+//            ElementGroup rootFilteringElem = new ElementGroup();
+//            ElementGroup optionals = new ElementGroup();
+//            optionals.addTriplePattern(groupTriple);
+//
+//            Expr boundExpr = exprFactory.not(exprFactory.bound(groupVar));
+//            Expr groupInUrisExpr = exprFactory.in(groupVar, groups.stream()
+//                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
+//                    .toArray());
+//
+//            rootFilteringElem.addElement(new ElementOptional(optionals));
+//            rootFilteringElem.addElementFilter(new ElementFilter(SPARQLQueryHelper.or(boundExpr, groupInUrisExpr)));
+//            select.getWhereHandler().getClause().addElement(rootFilteringElem);
+//        }
+//    }
 }

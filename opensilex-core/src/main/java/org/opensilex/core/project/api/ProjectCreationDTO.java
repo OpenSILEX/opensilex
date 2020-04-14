@@ -11,8 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.rest.group.dal.GroupModel;
-import org.opensilex.rest.user.dal.UserModel;
+import org.opensilex.security.user.dal.UserModel;
 
 /**
  *
@@ -82,13 +81,13 @@ public class ProjectCreationDTO extends ProjectDTO {
         });
         model.setExperiments(expeList);
         
-         List<GroupModel> groupList = new ArrayList<>(groups.size());
-        groups.forEach((URI u) -> {
-            GroupModel group = new GroupModel();
-            group.setUri(u);
-            groupList.add(group);
-        });
-        model.setGroups(groupList);
+//         List<GroupModel> groupList = new ArrayList<>(groups.size());
+//        groups.forEach((URI u) -> {
+//            GroupModel group = new GroupModel();
+//            group.setUri(u);
+//            groupList.add(group);
+//        });
+//        model.setGroups(groupList);
         
 
         return model;

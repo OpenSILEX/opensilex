@@ -52,8 +52,8 @@ public class ProjectGetDTO extends ProjectDTO {
                 .setCoordinators(getUriList(model.getCoordinators()))
                 .setScientificContacts(getUriList(model.getScientificContacts()))
                 .setRelatedProjects(getUriList(model.getRelatedProjects()))
-                .setExperiments(getUriList(model.getExperiments()))
-                .setGroups(getUriList(model.getGroups()));
+                .setExperiments(getUriList(model.getExperiments()));
+//                .setGroups(getUriList(model.getGroups()));
 
         return dto;
     }

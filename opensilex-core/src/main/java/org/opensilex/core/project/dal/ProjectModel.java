@@ -118,12 +118,12 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
     )
     private List<ProjectModel> relatedProjects;
     
-      @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasGroup"
-    )
-    List<GroupModel> groups = new LinkedList<>();
-    public static final String GROUP_SPARQL_VAR = "group";
+//      @SPARQLProperty(
+//            ontology = Oeso.class,
+//            property = "hasGroup"
+//    )
+//    List<GroupModel> groups = new LinkedList<>();
+//    public static final String GROUP_SPARQL_VAR = "group";
     
       @SPARQLProperty(
             ontology = Oeso.class,
@@ -237,13 +237,13 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
         this.scientificContacts = scientificContacts;
     }
     
-     public List<GroupModel> getGroups() {
-        return groups;
-    }
-
-    public void setGroups(List<GroupModel> groups) {
-        this.groups = groups;
-    }
+//     public List<GroupModel> getGroups() {
+//        return groups;
+//    }
+//
+//    public void setGroups(List<GroupModel> groups) {
+//        this.groups = groups;
+//    }
     
      public Boolean getIsPublic() {
         return isPublic;

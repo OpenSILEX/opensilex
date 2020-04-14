@@ -45,6 +45,13 @@ import GermplasmView from './germplasm/GermplasmView.vue';
 import GermplasmForm from './germplasm/GermplasmForm.vue';
 import GermplasmList from './germplasm/GermplasmList.vue';
 
+
+import ProjectForm from './projects/ProjectForm.vue';
+import ProjectTable from './projects/ProjectTable.vue';
+import FilterTable from './projects/FilterTable.vue';
+import ProjectView from './projects/ProjectView.vue';
+
+
 import ImageList from './phis/images/ImageList.vue';
 import ImageView from './phis/images/ImageView.vue';
 import ImageSearch from './phis/images/ImageSearch.vue';
@@ -81,6 +88,11 @@ export default {
     'opensilex-ExperimentList': ExperimentList,
     'opensilex-ExperimentCreate': ExperimentCreate,
     'opensilex-ExperimentView': ExperimentView,
+
+    "opensilex-core-ProjectView":ProjectView,
+    "opensilex-core-ProjectTable": ProjectTable,
+    "opensilex-core-ProjectForm": ProjectForm,
+    "opensilex-core-FilterTable": FilterTable,
 
     'opensilex-GermplasmView': GermplasmView,
     'opensilex-GermplasmForm': GermplasmForm,

@@ -30,6 +30,10 @@ public interface Service {
 
     }
 
+    public default void clean() throws Exception {
+
+    }
+
     public void setOpenSilex(OpenSilex opensilex);
 
     public OpenSilex getOpenSilex();

@@ -9,6 +9,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.*;
 import org.opensilex.OpenSilexModule;
@@ -99,8 +100,21 @@ public class ResetNodeModules {
         nodeModulesBuilder.directory(moduleDirectory.toFile());
         nodeModulesBuilder.inheritIO();
 
-        nodeModulesBuilder.start().onExit().thenRun(() -> {
-            countDownLatch.countDown();
-        });
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    Process process = nodeModulesBuilder.start();
+                    process.waitFor();
+                } catch (Exception ex) {
+                    LOGGER.error("Yarn install process interrupted", ex);
+                } finally {
+                    countDownLatch.countDown();
+                }
+
+            }
+
+        }.start();
+
     }
 }

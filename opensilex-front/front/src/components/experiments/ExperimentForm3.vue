@@ -65,11 +65,6 @@ export default class ExperimentForm3 extends ExperimentForm {
   experimentScientificSupervisors: any = {};
   experimentTechnicalSupervisors: any = {};
 
-
-  // mymethod(form: any) {
-  //   this.userProfilesRef.initFormProfiles(this.projectList);
-  // }
-
   async created() {
     this.loadUsers();
   }

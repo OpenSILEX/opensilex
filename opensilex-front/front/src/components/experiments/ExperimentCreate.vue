@@ -189,9 +189,6 @@ export default class ExperimentCreate extends Vue {
         let uri = http.response.result;
         console.debug("experiment updated", uri);
         this.$router.push({ path: '/experiments' });
-        // let experimentList: any = this.$refs.experimentList;
-        // experimentList.refresh();
-
       }).catch(this.$opensilex.errorHandler);
   }
 

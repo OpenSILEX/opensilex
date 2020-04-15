@@ -1089,11 +1089,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void validate(T instance) throws Exception {
-//        if (!this.isShaclEnabled()) {
-//            validateRelations(instance);
-//        }
+        if (!this.isShaclEnabled()) {
+            validateRelations(instance);
+        }
 
-//        validateReverseRelations(instance);
+        validateReverseRelations(instance);
     }
 
     public <T extends SPARQLResourceModel> void validate(List<T> instances) throws Exception {

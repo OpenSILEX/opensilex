@@ -118,11 +118,6 @@ export default class ExperimentForm2 extends ExperimentForm {
   @Ref("groupDualList") readonly groupDualList!: DualList;
   @Ref("infrastructureDualList") readonly infrastructureDualList!: DualList;
 
-
-  // mymethod(form: any) {
-  //   this.userProfilesRef.initFormProfiles(this.projectList);
-  // }
-
   async created() {
     this.loadProjects();
     this.loadGroups();

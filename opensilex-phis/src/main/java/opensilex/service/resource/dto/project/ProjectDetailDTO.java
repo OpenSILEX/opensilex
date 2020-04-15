@@ -70,7 +70,7 @@ public class ProjectDetailDTO extends AbstractVerifiedClass {
 
     public ProjectDetailDTO(ProjectModel project, SPARQLService sparql, String lang) throws Exception {
         uri = project.getUri().toString();
-        name = project.getName();
+        name = project.getLabel();
         shortname = project.getShortname();
 //        financialReference = project.getFinancialReference();
         description = project.getDescription();
@@ -98,7 +98,7 @@ public class ProjectDetailDTO extends AbstractVerifiedClass {
         }
 
         for (ProjectModel relatedProject : project.getRelatedProjects()) {
-            relatedProjects.add(new RdfResourceDTO(relatedProject.getUri().toString(), relatedProject.getName()));
+            relatedProjects.add(new RdfResourceDTO(relatedProject.getUri().toString(), relatedProject.getLabel()));
         }
 
         UserDAO userDao = new UserDAO(sparql);

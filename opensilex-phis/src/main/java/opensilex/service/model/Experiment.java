@@ -261,7 +261,7 @@ public class Experiment {
         if (xp.getProjects() != null) {
 
             for (Project project : xp.getProjects()) {
-                ProjectModel projectModel = projectDAO.get(new URI(project.getUri()), "");
+                ProjectModel projectModel = projectDAO.get(new URI(project.getUri()),null);
                 if (projectModel == null) {
                     throw new IllegalArgumentException("Unknown project URI :" + project.getUri());
                 }

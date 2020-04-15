@@ -75,10 +75,11 @@ public class ProjectAPI {
     public static final String CREDENTIAL_PROJECT_READ_ID = "project-read";
     public static final String CREDENTIAL_PROJECT_READ_LABEL_KEY = "credential.project.read";
 
-    @CurrentUser
-    UserModel user;
+    
     protected static final String PROJECT_EXAMPLE_URI = "http://opensilex/set/project/BW1";
 
+    @CurrentUser
+    UserModel currentUser;
    
 
     @Inject
@@ -111,7 +112,7 @@ public class ProjectAPI {
 
     public Response createProject(
             @ApiParam("Project description") @Valid ProjectCreationDTO dto
-    ) throws Exception {
+    ) {
        
         try {
             ProjectDAO dao = new ProjectDAO(sparql);
@@ -168,7 +169,7 @@ public class ProjectAPI {
      * the {@link ExperimentGetDTO}
      */
     @GET
-    @Path("{get/{uri}")
+    @Path("get/{uri}")
     @ApiOperation("Get a project by URI")
     @ApiProtected
     @ApiCredential(
@@ -179,7 +180,6 @@ public class ProjectAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Project retrieved", response = ProjectGetDTO.class),
-        @ApiResponse(code = 204, message = "No project found", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 
     public Response getProject(
@@ -187,7 +187,7 @@ public class ProjectAPI {
     ) {
         try {
             ProjectDAO dao = new ProjectDAO(sparql);
-            ProjectModel model = dao.get(prjctUri);
+            ProjectModel model = dao.get(prjctUri, currentUser.getLanguage());
 
             if (model != null) {
                 return new SingleObjectResponse<>(ProjectGetDTO.fromModel(model)).getResponse();
@@ -210,7 +210,6 @@ public class ProjectAPI {
      * @param endDate
      * @param label
      * @param experiments
-     * @param isPublic
      * @param isEnded
      * @param orderByList
      * @param page
@@ -232,17 +231,15 @@ public class ProjectAPI {
     @Produces(MediaType.APPLICATION_JSON)
        @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return Project list", response = ProjectGetDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 204, message = "No project found", response = ErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     public Response searchProjects(
            @ApiParam(value = "Search by uri", example = PROJECT_EXAMPLE_URI) @QueryParam("uri") URI uri,
             @ApiParam(value = "Search by start date", example = "2017-06-15") @QueryParam("startDate") @DateConstraint String startDate,
             @ApiParam(value = "Search by end date", example = "2017-06-15") @QueryParam("endDate") @DateConstraint String endDate,
-            @ApiParam(value = "Regex pattern for filtering by label", example = "ZA17") @QueryParam("label") String label,
+            @ApiParam(value = "Regex pattern for filtering by label", example = "PJ17") @QueryParam("label") String label,
             @ApiParam(value = "Search by related experiment uri", example = "http://www.phenome-fppn.fr/experiments/ZA17\nhttp://www.phenome-fppn.fr/id/expe/ZA18") @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search private(false) or public projects(true)", example = "true") @QueryParam("isPublic") Boolean isPublic,
-            @ApiParam(value = "Search ended(false) or active projects(true)", example = "true") @QueryParam("isEnded") Boolean isEnded,
+            @ApiParam(value = "Search ended(false) ", example = "true") @QueryParam("isEnded") Boolean isEnded,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "label=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
@@ -253,7 +250,7 @@ public class ProjectAPI {
             ProjectDAO prjctDao = new ProjectDAO(sparql);
 
             UserModel userModel = authentication.getCurrentUser(securityContext);
-            List<URI> groupUris = new ArrayList<>();
+           // List<URI> groupUris = new ArrayList<>();
 //            for (String groupUri : authentication.decodeStringArrayClaim(userModel.getToken(), CoreModule.TOKEN_USER_GROUP_URIS)) {
 //                groupUris.add(new URI(groupUri));
 //            }
@@ -265,9 +262,6 @@ public class ProjectAPI {
                     endDate,
                     isEnded,
                     experiments,
-                    isPublic,
-                    groupUris,
-                    userModel.isAdmin(),
                     orderByList,
                     page,
                     pageSize
@@ -295,7 +289,7 @@ public class ProjectAPI {
      * the deleted Project {@link URI}
      */
     @DELETE
-    @Path("{uri}")
+    @Path("delete/{uri}")
     @ApiOperation("Delete a project")
     @ApiProtected
     @ApiCredential(

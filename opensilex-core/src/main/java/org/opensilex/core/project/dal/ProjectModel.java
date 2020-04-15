@@ -125,12 +125,12 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
 //    List<GroupModel> groups = new LinkedList<>();
 //    public static final String GROUP_SPARQL_VAR = "group";
     
-      @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "isPublic"
-    )
-    protected Boolean isPublic;
-    public static final String IS_PUBLIC_SPARQL_VAR = "isPublic";
+//      @SPARQLProperty(
+//            ontology = Oeso.class,
+//            property = "isPublic"
+//    )
+//    protected Boolean isPublic;
+//    public static final String IS_PUBLIC_SPARQL_VAR = "isPublic";
     
 
     public String getLabel() {
@@ -245,13 +245,13 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
 //        this.groups = groups;
 //    }
     
-     public Boolean getIsPublic() {
-        return isPublic;
-    }
-
-    public void setIsPublic(Boolean isPublic) {
-        this.isPublic = isPublic;
-    }
+//     public Boolean getIsPublic() {
+//        return isPublic;
+//    }
+//
+//    public void setIsPublic(Boolean isPublic) {
+//        this.isPublic = isPublic;
+//    }
     @Override
     public String[] getUriSegments(ProjectModel instance) {
         return new String[]{

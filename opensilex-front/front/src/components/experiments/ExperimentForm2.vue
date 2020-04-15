@@ -2,31 +2,7 @@
   <div ref="modalRef" @ok.prevent="validate">
     <ValidationObserver ref="validatorRef">
       <b-form>
-          
-      <!-- scientificSupervisors -->
-        <b-form-group  required  >
-            <opensilex-FormInputLabelHelper 
-            label=component.experiment.scientificSupervisors 
-            helpMessage="component.experiment.scientificSupervisors-help" >
-            </opensilex-FormInputLabelHelper>
-          <ValidationProvider :name="$t('component.experiment.scientificSupervisors')" v-slot="{ errors }">
-          <b-form-select id="scientificSupervisors" v-model="form.scientificSupervisors" :options="scientificSupervisors" multiple :select-size="3"> </b-form-select>
-          <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-          </ValidationProvider>
-        </b-form-group>
-
-      <!-- technicalSupervisors -->
-        <b-form-group  required  >
-          <opensilex-FormInputLabelHelper l
-          abel=component.experiment.technicalSupervisors 
-          helpMessage="component.experiment.technicalSupervisors-help" >
-          </opensilex-FormInputLabelHelper>
-          <ValidationProvider :name="$t('component.experiment.technicalSupervisors')" v-slot="{ errors }">
-          <b-form-select id="technicalSupervisors" v-model="form.technicalSupervisors" :options="technicalSupervisors" multiple :select-size="3"> </b-form-select>
-          <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-          </ValidationProvider>
-        </b-form-group>
-
+        
       <!-- groups -->
         <b-form-group  required  >
           <opensilex-FormInputLabelHelper 
@@ -152,9 +128,6 @@ export default class ExperimentForm2 extends ExperimentForm {
     this.loadGroups();
     this.loadUsers();
     this.loadInfrastructures();
-    this.projectDualList.initLeftTableSelection();
-    this.groupDualList.initLeftTableSelection();
-    this.infrastructureList.initLeftTableSelection();
   }
 
   loadProjects() {

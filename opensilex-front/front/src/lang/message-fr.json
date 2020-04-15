@@ -282,7 +282,8 @@
             "form-wizard": {
                 "label" : "Assistant de création d'expérimentation",
                 "general-informations" : "Informations générales",
-                "users-groups-projects" : "Utilisateurs, groupes et projets",
+                "infra-groups-projects" : "Infrastructures, groupes et projets",
+                "scientific-technical-users": "Utilisateurs",
                 "variables-sensors-factors" : "Variables, facteurs et capteurs"
             }
         },

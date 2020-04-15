@@ -179,24 +179,19 @@ export default class DualList extends Vue {
     return this.filterPatternValue;
   }
 
-  async created() {
-    this.service = this.$opensilex.getService(
-      "opensilex.SecurityService"
-    );
+  created() {
+    this.initLeftTableSelection();
   }
 
   initLeftTableSelection(){
-    this.leftTableDataSelected = {};
-    this.leftTableData.forEach(element => {
-        this.leftTableDataSelected[element.value] = false;
-        console.log("created, left"+element.value);
-
-    });
-    this.rightTableData.forEach(element => {
-        // element of the left table which are present into the right table are selected by default
-        this.leftTableDataSelected[element.value] = true;
-        console.log("created, right"+element.value);
-    })
+    // this.leftTableDataSelected = {};
+    // this.leftTableData.forEach(element => {
+    //     this.leftTableDataSelected[element.value] = false;
+    // });
+    // this.rightTableData.forEach(element => {
+    //     // element of the left table which are present into the right table are selected by default
+    //     this.leftTableDataSelected[element.value] = true;
+    // })
   }
 
 

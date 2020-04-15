@@ -37,6 +37,8 @@ import ExternalReferencesDetails from './common/ExternalReferencesDetails.vue'
 
 import ExperimentForm from './experiments/ExperimentForm.vue';
 import ExperimentForm2 from './experiments/ExperimentForm2.vue';
+import ExperimentForm3 from './experiments/ExperimentForm3.vue';
+
 import ExperimentList from './experiments/ExperimentList.vue';
 import ExperimentCreate from './experiments/ExperimentCreate.vue';
 import ExperimentView from './experiments/ExperimentView.vue';
@@ -79,6 +81,7 @@ export default {
 
     'opensilex-ExperimentForm': ExperimentForm,
     'opensilex-ExperimentForm2': ExperimentForm2,
+    'opensilex-ExperimentForm3' : ExperimentForm3,
     'opensilex-ExperimentList': ExperimentList,
     'opensilex-ExperimentCreate': ExperimentCreate,
     'opensilex-ExperimentView': ExperimentView,

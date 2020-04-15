@@ -24,9 +24,15 @@
       </tab-content>
 
       <tab-content
-        v-bind:title="$t('component.experiment.form-wizard.users-groups-projects')">
+        v-bind:title="$t('component.experiment.form-wizard.infra-groups-projects')">
         <opensilex-ExperimentForm2 ref="experimentForm2">
         </opensilex-ExperimentForm2>
+      </tab-content>
+
+       <tab-content
+        v-bind:title="$t('component.experiment.form-wizard.scientific-technical-users')">
+        <opensilex-ExperimentForm3 ref="experimentForm3">
+        </opensilex-ExperimentForm3>
       </tab-content>
 
       <!-- <tab-content
@@ -47,8 +53,9 @@ import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import ExperimentForm from "./ExperimentForm.vue";
 import ExperimentForm2 from "./ExperimentForm2.vue";
-import { ExperimentsService, ExperimentCreationDTO } from "opensilex-core/index";
+import ExperimentForm3 from "./ExperimentForm3.vue";
 
+import { ExperimentsService, ExperimentCreationDTO } from "opensilex-core/index";
 
 @Component
 export default class ExperimentCreate extends Vue {

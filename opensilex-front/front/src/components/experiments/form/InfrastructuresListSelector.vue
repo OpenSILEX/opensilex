@@ -29,21 +29,16 @@
             :sort-desc.sync="sortDesc"
             no-provider-paging
           >
-            <template v-slot:head(firstName)="data">{{ $t(data.label) }}</template>
+            <template v-slot:head(label)="data">{{ $t(data.label) }}</template>
 
             <template v-slot:cell(selected)="data">
               <b-form-checkbox
-                v-model="selectedUsers[data.item.uri]"
-                @change="toggleUserSelection(data.item)"
+                v-model="selectedInfrastructures[data.item.uri]"
+                @change="toggleSelection(data.item)"
               ></b-form-checkbox>
             </template>
 
-            <template v-slot:cell(firstName)="data">
-              {{data.item.firstName}} {{data.item.lastName}}
-              <a
-                :href="'mailto:' + data.item.email"
-              >({{ data.item.email }})</a>
-            </template>
+            <template v-slot:cell(label)="data"> {{data.item.name}}  </template>
           </b-table>
         </div>
         <b-pagination
@@ -69,7 +64,7 @@
             :per-page="pageSize"
             :current-page="currentSelectedPage"
           >
-            <template v-slot:head(firstName)="data">{{ $t(data.label) }}</template>
+            <template v-slot:head(label)="data">{{ $t(data.name) }}</template>
 
             <template v-slot:cell(selected)="data">
               <b-btn
@@ -82,7 +77,7 @@
               </b-btn>
             </template>
 
-            <template v-slot:cell(firstName)="data">{{data.item}}</template>
+            <template v-slot:cell(label)="data">{{data.item}}</template>
 
           </b-table>
         </div>
@@ -103,28 +98,24 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import {
-  SecurityService,
-  UserGetDTO,
-} from "opensilex-security/index";
+  InfrastructuresService,
+  ResourceTreeDTO,
+} from "opensilex-core/index";
 
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
-export default class UserListSelector extends Vue {
+export default class InfrastructuresListSelector extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
 
-  selectedUsers = {};
+  selectedInfrastructures = {};
 
   @Prop()
   selectedTableData;
 
-  service: SecurityService;
-
-  get user() {
-    return this.$store.state.user;
-  }
+  service: InfrastructuresService;
 
   mounted() {
     this.clearForm();
@@ -135,10 +126,10 @@ export default class UserListSelector extends Vue {
     this.currentPage = 1;
     this.pageSize = 5;
     this.totalRow = 0;
-    this.sortBy = "firstName";
+    this.sortBy = "label";
     this.sortDesc = false;
     this.filterPatternValue = "";
-    this.selectedUsers = {};
+    this.selectedInfrastructures = {};
   }
  
   @Ref("tableRef") readonly tableRef!: any;
@@ -151,7 +142,7 @@ export default class UserListSelector extends Vue {
   currentSelectedPage: number = 1;
   pageSize = 5;
   totalRow = 0;
-  sortBy = "firstName";
+  sortBy = "label";
   sortDesc = false;
 
   private filterPatternValue: any = "";
@@ -165,7 +156,7 @@ export default class UserListSelector extends Vue {
   }
 
   async created() {
-    this.service = this.$opensilex.getService("opensilex.SecurityService");
+    this.service = this.$opensilex.getService("opensilex.InfrastructuresService");
   }
 
   loadData() {
@@ -180,13 +171,10 @@ export default class UserListSelector extends Vue {
     }
 
     return this.service
-      .searchUsers(
-        this.filterPattern,
-        orderBy,
-        this.currentPage - 1,
-        this.pageSize
+      .searchInfrastructuresTree(
+        this.filterPattern
       )
-      .then((http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
         this.totalRow = http.response.metadata.pagination.totalCount;
         this.pageSize = http.response.metadata.pagination.pageSize;
         setTimeout(() => {
@@ -204,7 +192,7 @@ export default class UserListSelector extends Vue {
       label: ""
     },
     {
-      key: "firstName",
+      key: "label",
       label: "component.common.name",
       sortable: true
     }
@@ -216,19 +204,19 @@ export default class UserListSelector extends Vue {
       label: ""
     },
     {
-      key: "firstName",
+      key: "label",
       label: "component.common.name",
       sortable: true
     }
   ];
 
-  toggleUserSelection(user) {
+  toggleSelection(infra) {
   
-    if (!this.selectedUsers[user.uri]) {
-      this.selectedUsers[user.uri] = true;
-      this.selectedTableData.push(user.uri);
+    if (!this.selectedInfrastructures[infra.uri]) {
+      this.selectedInfrastructures[infra.uri] = true;
+      this.selectedTableData.push(infra.uri);
     } else {
-      this.unselect(user.uri);
+      this.unselect(infra.uri);
     }
   }
 
@@ -239,7 +227,7 @@ export default class UserListSelector extends Vue {
     if (index > -1) {
       this.selectedTableData.splice(index, 1);
     }
-    this.selectedUsers[uri] = false;
+    this.selectedInfrastructures[uri] = false;
   }
 }
 </script>

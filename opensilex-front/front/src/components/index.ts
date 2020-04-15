@@ -37,11 +37,13 @@ import ExternalReferencesForm from './common/ExternalReferencesForm.vue'
 import ExternalReferencesDetails from './common/ExternalReferencesDetails.vue'
 import ListSelector from './common/ListSelector.vue';
 
-
 import ExperimentForm from './experiments/form/ExperimentForm.vue';
 import ExperimentForm2 from './experiments/form/ExperimentForm2.vue';
 import ExperimentForm3 from './experiments/form/ExperimentForm3.vue';
 import UserListSelector from './experiments/form/UserListSelector.vue';
+import ProjectsListSelector from './experiments/form/ProjectsListSelector.vue';
+import GroupsListSelector from './experiments/form/GroupsListSelector.vue';
+import InfrastructuresListSelector from './experiments/form/InfrastructuresListSelector.vue';
 
 
 import ExperimentList from './experiments/ExperimentList.vue';
@@ -75,7 +77,7 @@ export default {
     'opensilex-UserForm': UserForm,
     'opensilex-UserList': UserList,
     'opensilex-UserView': UserView,
-    'opensilex-UserListSelector': UserListSelector,
+
     'opensilex-ProfileForm': ProfileForm,
     'opensilex-ProfileView': ProfileView,
     'opensilex-ProfileList': ProfileList,
@@ -90,6 +92,12 @@ export default {
     'opensilex-ExperimentList': ExperimentList,
     'opensilex-ExperimentCreate': ExperimentCreate,
     'opensilex-ExperimentView': ExperimentView,
+    'opensilex-UserListSelector': UserListSelector,
+    'opensilex-ProjectsListSelector': ProjectsListSelector,
+    'opensilex-GroupsListSelector': GroupsListSelector,
+    'opensilex-InfrastructuresListSelector': InfrastructuresListSelector,
+
+    
 
     'opensilex-GermplasmView': GermplasmView,
     'opensilex-GermplasmForm': GermplasmForm,

@@ -1,19 +1,5 @@
 <template>
   <div>
-    <b-input-group class="mt-3 mb-3" size="sm">
-      <b-input-group>
-        <b-form-input
-          v-model="filterPattern"
-          debounce="300"
-          :placeholder="$t('component.user.filter-placeholder')"
-        ></b-form-input>
-        <template v-slot:append>
-          <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
-            <font-awesome-icon icon="times" size="sm" />
-          </b-btn>
-        </template>
-      </b-input-group>
-    </b-input-group>
     <div class="tables">
       <div class="table-left">
         <div>
@@ -29,21 +15,16 @@
             :sort-desc.sync="sortDesc"
             no-provider-paging
           >
-            <template v-slot:head(firstName)="data">{{ $t(data.label) }}</template>
+            <template v-slot:head(label)="data">{{ $t(data.label) }}</template>
 
             <template v-slot:cell(selected)="data">
               <b-form-checkbox
-                v-model="selectedUsers[data.item.uri]"
-                @change="toggleUserSelection(data.item)"
+                v-model="selectedProjects[data.item.uri]"
+                @change="toggleSelection(data.item)"
               ></b-form-checkbox>
             </template>
 
-            <template v-slot:cell(firstName)="data">
-              {{data.item.firstName}} {{data.item.lastName}}
-              <a
-                :href="'mailto:' + data.item.email"
-              >({{ data.item.email }})</a>
-            </template>
+            <template v-slot:cell(label)="data"> {{data.item.label}}  </template>
           </b-table>
         </div>
         <b-pagination
@@ -69,7 +50,7 @@
             :per-page="pageSize"
             :current-page="currentSelectedPage"
           >
-            <template v-slot:head(firstName)="data">{{ $t(data.label) }}</template>
+            <template v-slot:head(label)="data">{{ $t(data.label) }}</template>
 
             <template v-slot:cell(selected)="data">
               <b-btn
@@ -82,7 +63,7 @@
               </b-btn>
             </template>
 
-            <template v-slot:cell(firstName)="data">{{data.item}}</template>
+            <template v-slot:cell(label)="data">{{data.item}}</template>
 
           </b-table>
         </div>
@@ -103,28 +84,24 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import {
-  SecurityService,
-  UserGetDTO,
-} from "opensilex-security/index";
+  ProjectsService,
+  ProjectCreationDTO,
+} from "opensilex-core/index";
 
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
-export default class UserListSelector extends Vue {
+export default class ProjectsListSelector extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
 
-  selectedUsers = {};
+  selectedProjects = {};
 
   @Prop()
   selectedTableData;
 
-  service: SecurityService;
-
-  get user() {
-    return this.$store.state.user;
-  }
+  service: ProjectsService;
 
   mounted() {
     this.clearForm();
@@ -135,10 +112,10 @@ export default class UserListSelector extends Vue {
     this.currentPage = 1;
     this.pageSize = 5;
     this.totalRow = 0;
-    this.sortBy = "firstName";
+    this.sortBy = "label";
     this.sortDesc = false;
     this.filterPatternValue = "";
-    this.selectedUsers = {};
+    this.selectedProjects = {};
   }
  
   @Ref("tableRef") readonly tableRef!: any;
@@ -151,7 +128,7 @@ export default class UserListSelector extends Vue {
   currentSelectedPage: number = 1;
   pageSize = 5;
   totalRow = 0;
-  sortBy = "firstName";
+  sortBy = "label";
   sortDesc = false;
 
   private filterPatternValue: any = "";
@@ -165,7 +142,7 @@ export default class UserListSelector extends Vue {
   }
 
   async created() {
-    this.service = this.$opensilex.getService("opensilex.SecurityService");
+    this.service = this.$opensilex.getService("opensilex.ProjectsService");
   }
 
   loadData() {
@@ -180,13 +157,12 @@ export default class UserListSelector extends Vue {
     }
 
     return this.service
-      .searchUsers(
-        this.filterPattern,
+      .searchProjects(
         orderBy,
         this.currentPage - 1,
         this.pageSize
       )
-      .then((http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<ProjectCreationDTO>>>) => {
         this.totalRow = http.response.metadata.pagination.totalCount;
         this.pageSize = http.response.metadata.pagination.pageSize;
         setTimeout(() => {
@@ -204,7 +180,7 @@ export default class UserListSelector extends Vue {
       label: ""
     },
     {
-      key: "firstName",
+      key: "label",
       label: "component.common.name",
       sortable: true
     }
@@ -216,19 +192,19 @@ export default class UserListSelector extends Vue {
       label: ""
     },
     {
-      key: "firstName",
+      key: "label",
       label: "component.common.name",
       sortable: true
     }
   ];
 
-  toggleUserSelection(user) {
+  toggleSelection(project) {
   
-    if (!this.selectedUsers[user.uri]) {
-      this.selectedUsers[user.uri] = true;
-      this.selectedTableData.push(user.uri);
+    if (!this.selectedProjects[project.uri]) {
+      this.selectedProjects[project.uri] = true;
+      this.selectedTableData.push(project.uri);
     } else {
-      this.unselect(user.uri);
+      this.unselect(project.uri);
     }
   }
 
@@ -239,7 +215,7 @@ export default class UserListSelector extends Vue {
     if (index > -1) {
       this.selectedTableData.splice(index, 1);
     }
-    this.selectedUsers[uri] = false;
+    this.selectedProjects[uri] = false;
   }
 }
 </script>

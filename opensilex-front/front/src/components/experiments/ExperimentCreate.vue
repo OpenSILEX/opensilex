@@ -51,9 +51,10 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import ExperimentForm from "./ExperimentForm.vue";
-import ExperimentForm2 from "./ExperimentForm2.vue";
-import ExperimentForm3 from "./ExperimentForm3.vue";
+
+import ExperimentForm from "./form/ExperimentForm.vue";
+import ExperimentForm2 from "./form/ExperimentForm2.vue";
+import ExperimentForm3 from "./form/ExperimentForm3.vue";
 
 import { ExperimentsService, ExperimentCreationDTO } from "opensilex-core/index";
 
@@ -120,14 +121,14 @@ export default class ExperimentCreate extends Vue {
 
 
   handleValidation(isValid: boolean, tabIndex :number){
-    console.log('Tab: '+tabIndex+ ' valid: '+isValid)
+    // console.log('Tab: '+tabIndex+ ' valid: '+isValid)
   }
 
   handleErrorMessage(errorMsg : string){
     this.errorMsg = errorMsg;
   }
 
-  fillForm(formPart1 : ExperimentForm, formPart2: ExperimentForm2): ExperimentCreationDTO {
+  fillForm(formPart1 : ExperimentForm, formPart2: ExperimentForm2, formPart3: ExperimentForm3): ExperimentCreationDTO {
 
     let dto: ExperimentCreationDTO = formPart1.getForm();
 
@@ -152,8 +153,9 @@ export default class ExperimentCreate extends Vue {
       dto.infrastructures.push(item.value);
     });
 
-    dto.scientificSupervisors = dto2.scientificSupervisors;
-    dto.technicalSupervisors = dto2.technicalSupervisors;
+    let dto3: ExperimentCreationDTO = formPart3.getForm();
+    dto.scientificSupervisors = dto3.scientificSupervisors;
+    dto.technicalSupervisors = dto3.technicalSupervisors;
     return dto;
   }
 
@@ -161,9 +163,10 @@ export default class ExperimentCreate extends Vue {
 
     let experimentForm: any = this.$refs.experimentForm;
     let experimentForm2: any = this.$refs.experimentForm2;
-    let dto: ExperimentCreationDTO = this.fillForm(experimentForm,experimentForm2);
+    let experimentForm3: any = this.$refs.experimentForm3;
+
+    let dto: ExperimentCreationDTO = this.fillForm(experimentForm,experimentForm2,experimentForm3);
     
-    console.log("complete "+this.editMode);
     if(this.editMode){
       this.callUpdateExperimentService(dto);
     }else{

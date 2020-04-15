@@ -3,13 +3,13 @@
     <div class="tables">
       <div class="table-left">
         <div>
-          <div class="table-title">{{leftListTitle}}</div>
+          <div class="table-title">{{selectionListTitle}}</div>
           <b-table
             ref="tableRef"
             striped
             hover
             small
-            :items="leftTableData"
+            :items="selectionTableData"
             :fields="fields"
             :sort-by.sync="sortBy"
             :sort-desc.sync="sortDesc"
@@ -19,7 +19,7 @@
 
             <template v-slot:cell(selected)="data">
               <b-form-checkbox
-                v-model="leftTableDataSelected[data.item.value]"
+                v-model="selectionTableDataSelected[data.item.value]"
                 @change="toggleRightTableSelection(data.item)"
               ></b-form-checkbox>
             </template>
@@ -39,15 +39,13 @@
       </div>
       <div class="table-right">
         <div>
-          <div
-            class="table-title"
-          >{{rightListTitle}} ({{rightTableData.length}})</div>
+          <div class="table-title">{{selectedListTitle}} ({{selectedTableData.length}})</div>
           <b-table
             id="user-selection-table"
             striped
             hover
             small
-            :items="rightTableData"
+            :items="selectedTableData"
             :fields="selectedFields"
             :per-page="pageSize"
             :current-page="currentSelectedPage"
@@ -76,7 +74,7 @@
         <b-pagination
           class="bottom-pagination"
           v-model="currentSelectedPage"
-          :total-rows="rightTableData.length"
+          :total-rows="selectedTableData.length"
           :per-page="pageSize"
           aria-controls="user-selection-table"
         ></b-pagination>
@@ -89,6 +87,7 @@
 import { Component, Prop, Emit, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
+
 import {
   UserCreationDTO,
   GroupUpdateDTO,
@@ -101,27 +100,27 @@ import {
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
-export default class DualList extends Vue {
+export default class ListSelector extends Vue {
 
   @Prop()
-  leftListTitle;
+  selectionListTitle;
 
   @Prop()
-  rightListTitle;
+  selectedListTitle;
 
   $opensilex: any;
   $store: any;
   $router: VueRouter;
-
-  leftTableDataSelected = {};
-
-  @Prop()
-  leftTableData;
-
-  @Prop()
-  rightTableData;
-
   service: SecurityService;
+
+  selectionTableDataSelected = {};
+
+  @Prop()
+  selectionTableData;
+
+  @Prop()
+  selectedTableData;
+
 
   get user() {
     return this.$store.state.user;
@@ -165,7 +164,7 @@ export default class DualList extends Vue {
   }
 
   created() {
-    
+
   }
 
   fields = [
@@ -194,24 +193,22 @@ export default class DualList extends Vue {
 
   toggleRightTableSelection(item) {
    
-    console.log("toggleUserSelection :"+item.value + "," + item.text);
-
-    if(! this.leftTableDataSelected[item.value]){
-        this.leftTableDataSelected[item.value] = true;
-        this.rightTableData.push(item);
+    if(! this.selectionTableDataSelected[item.value]){
+        this.selectionTableDataSelected[item.value] = true;
+        this.selectedTableData.push(item);
     }else{
         this.unselectOnLeftTable(item);
     }
   }
 
   unselectOnLeftTable(item) {
-    const index = this.rightTableData.findIndex(
+    const index = this.selectedTableData.findIndex(
       up => up.value == item.value
     );
     if (index > -1) {
-      this.rightTableData.splice(index, 1);
+      this.selectedTableData.splice(index, 1);
     }
-    this.leftTableDataSelected[item.value] = false;
+    this.selectionTableDataSelected[item.value] = false;
   }
 }
 </script>

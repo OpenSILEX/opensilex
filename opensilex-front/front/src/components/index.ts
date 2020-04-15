@@ -7,6 +7,7 @@ import DefaultNotFoundComponent from './layout/DefaultNotFoundComponent.vue';
 import UserForm from './users/UserForm.vue';
 import UserList from './users/UserList.vue';
 import UserView from './users/UserView.vue';
+
 import ProfileForm from './profiles/ProfileForm.vue';
 import ProfileView from './profiles/ProfileView.vue';
 import ProfileList from './profiles/ProfileList.vue';
@@ -34,15 +35,18 @@ import FactorLevelForm from './factors/FactorLevelForm.vue';
 import FormInputLabelHelper from './common/FormInputLabelHelper.vue'
 import ExternalReferencesForm from './common/ExternalReferencesForm.vue'
 import ExternalReferencesDetails from './common/ExternalReferencesDetails.vue'
+import ListSelector from './common/ListSelector.vue';
 
-import ExperimentForm from './experiments/ExperimentForm.vue';
-import ExperimentForm2 from './experiments/ExperimentForm2.vue';
-import ExperimentForm3 from './experiments/ExperimentForm3.vue';
+
+import ExperimentForm from './experiments/form/ExperimentForm.vue';
+import ExperimentForm2 from './experiments/form/ExperimentForm2.vue';
+import ExperimentForm3 from './experiments/form/ExperimentForm3.vue';
+import UserListSelector from './experiments/form/UserListSelector.vue';
+
 
 import ExperimentList from './experiments/ExperimentList.vue';
 import ExperimentCreate from './experiments/ExperimentCreate.vue';
 import ExperimentView from './experiments/ExperimentView.vue';
-import DualList from './experiments/DualList.vue';
 
 import GermplasmView from './germplasm/GermplasmView.vue';
 import GermplasmForm from './germplasm/GermplasmForm.vue';
@@ -71,6 +75,7 @@ export default {
     'opensilex-UserForm': UserForm,
     'opensilex-UserList': UserList,
     'opensilex-UserView': UserView,
+    'opensilex-UserListSelector': UserListSelector,
     'opensilex-ProfileForm': ProfileForm,
     'opensilex-ProfileView': ProfileView,
     'opensilex-ProfileList': ProfileList,
@@ -85,7 +90,6 @@ export default {
     'opensilex-ExperimentList': ExperimentList,
     'opensilex-ExperimentCreate': ExperimentCreate,
     'opensilex-ExperimentView': ExperimentView,
-    'opensilex-DualList' : DualList,
 
     'opensilex-GermplasmView': GermplasmView,
     'opensilex-GermplasmForm': GermplasmForm,
@@ -121,6 +125,7 @@ export default {
     'opensilex-FormInputLabelHelper': FormInputLabelHelper,
     'opensilex-ExternalReferencesForm': ExternalReferencesForm,
     'opensilex-ExternalReferencesDetails': ExternalReferencesDetails,
+    'opensilex-ListSelector' : ListSelector,
     'opensilex-ToDoComponent': ToDoComponent
 
 };

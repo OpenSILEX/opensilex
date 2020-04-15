@@ -12,11 +12,11 @@
 
           <ValidationProvider :name="$t('component.experiment.groups')" v-slot="{ errors }">
 
-          <opensilex-DualList ref="groupDualList" 
-            :leftTableData = "groupList"
-            :rightTableData="experimentGroups" 
-            leftListTitle="Group list" rightListTitle="Experiment groups"
-          ></opensilex-DualList>
+          <opensilex-ListSelector ref="groupListSelector" 
+            :selectionTableData = "groupList"
+            :selectedTableData="experimentGroups" 
+            selectionListTitle="Group list" selectedListTitle="Experiment groups"
+          ></opensilex-ListSelector>
 
           <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
@@ -29,12 +29,12 @@
           helpMessage="component.experiment.projects-help" >
           </opensilex-FormInputLabelHelper>
           <ValidationProvider :name="$t('component.experiment.projects')" v-slot="{ errors }">
-          <opensilex-DualList ref="projectDualList" 
-            :leftTableData = "projectList"
-            :rightTableData="experimentProjects" 
-            leftListTitle="Projects list" rightListTitle="Experiment projects"
+          <opensilex-ListSelector ref="projectListSelector" 
+            :selectionTableData = "projectList"
+            :selectedTableData="experimentProjects" 
+            selectionListTitle="Projects list" selectedListTitle="Experiment projects"
           >
-          </opensilex-DualList>
+          </opensilex-ListSelector>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
@@ -47,12 +47,12 @@
           </opensilex-FormInputLabelHelper>
           <ValidationProvider :name="$t('component.experiment.infrastructures')" v-slot="{ errors }">
           
-           <opensilex-DualList ref="infrastructureDualList" 
-            :leftTableData = "infrastructureList"
-            :rightTableData="experimentInfrastructures" 
-            leftListTitle="Infrastructure list" rightListTitle="Experiment infrastructures"
+           <opensilex-ListSelector ref="infrastructureListSelector" 
+            :selectionTableData = "infrastructureList"
+            :selectedTableData="experimentInfrastructures" 
+            selectionListTitle="Infrastructure list" selectedListTitle="Experiment infrastructures"
           >
-          </opensilex-DualList>       
+          </opensilex-ListSelector>       
           <!-- <b-form-select id="infrastructures" v-model="form.infrastructures" :options="infrastructureList" multiple :select-size="3"> </b-form-select> -->
           <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
@@ -74,7 +74,7 @@ import VueRouter from "vue-router";
 import ExperimentForm from "./ExperimentForm.vue";
 
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import DualList from "./DualList.vue";
+import ListSelector from "opensilex-core/index";
 
 import {
   InfrastructuresService,
@@ -86,7 +86,6 @@ import {
 import {
   SecurityService,
   GroupGetDTO,
-  UserGetDTO
 } from "opensilex-security/index";
 
 @Component
@@ -95,8 +94,6 @@ export default class ExperimentForm2 extends ExperimentForm {
   projectList: any = [];
   groupList: any = [];
   infrastructureList: any = [];
-  technicalSupervisors: any = [];
-  scientificSupervisors: any = [];
 
   experimentProjects: any = [];
   experimentGroups: any = [];
@@ -114,14 +111,9 @@ export default class ExperimentForm2 extends ExperimentForm {
     return this.experimentInfrastructures;
   }
 
-  @Ref("projectDualList") readonly projectDualList!: DualList;
-  @Ref("groupDualList") readonly groupDualList!: DualList;
-  @Ref("infrastructureDualList") readonly infrastructureDualList!: DualList;
-
-  async created() {
+  created() {
     this.loadProjects();
     this.loadGroups();
-    this.loadUsers();
     this.loadInfrastructures();
   }
 
@@ -163,23 +155,6 @@ export default class ExperimentForm2 extends ExperimentForm {
           let uri = this.form.groups[i];
           let label = this.groupList.find(item => item.value == uri).text;
           this.experimentGroups.push({ value: uri, text : label});
-        }
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-
-  loadUsers() {
-    let service: SecurityService = this.$opensilex.getService(
-      "opensilex.SecurityService"
-    );
-    service
-      .searchUsers(undefined, null, 0, 100)
-      .then((http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) => {
-        for (let i = 0; i < http.response.result.length; i++) {
-          let dto = http.response.result[i];
-          let displayName = dto.firstName + " " + dto.lastName;
-          this.technicalSupervisors.push({ value: dto.uri, text: displayName });
-          this.scientificSupervisors.push({ value: dto.uri, text: displayName });
         }
       })
       .catch(this.$opensilex.errorHandler);

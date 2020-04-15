@@ -1,20 +1,5 @@
 <template>
   <div>
-    <!-- List filtering -->
-    <!-- <b-input-group class="mt-3 mb-3" size="sm">
-      <b-input-group>
-        <b-form-input
-          v-model="filterPattern"
-          debounce="300"
-          :placeholder="$t('component.user.filter-placeholder')"
-        ></b-form-input>
-        <template v-slot:append>
-          <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
-            <font-awesome-icon icon="times" size="sm" />
-          </b-btn>
-        </template>
-      </b-input-group>
-    </b-input-group> -->
     <div class="tables">
       <div class="table-left">
         <div>
@@ -180,20 +165,8 @@ export default class DualList extends Vue {
   }
 
   created() {
-    this.initLeftTableSelection();
+    
   }
-
-  initLeftTableSelection(){
-    // this.leftTableDataSelected = {};
-    // this.leftTableData.forEach(element => {
-    //     this.leftTableDataSelected[element.value] = false;
-    // });
-    // this.rightTableData.forEach(element => {
-    //     // element of the left table which are present into the right table are selected by default
-    //     this.leftTableDataSelected[element.value] = true;
-    // })
-  }
-
 
   fields = [
     {

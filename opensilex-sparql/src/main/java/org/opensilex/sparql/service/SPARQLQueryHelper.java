@@ -231,11 +231,10 @@ public class SPARQLQueryHelper {
         Object[] nodes = new Node[values.size()];
         int i = 0;
         for (Object object : values) {
-            nodes[i++] = SPARQLDeserializers.getForClass(object.getClass()).getNodeFromString(object.toString());
+            nodes[i++] = SPARQLDeserializers.getForClass(object.getClass()).getNode(object);
         }
         where.addWhereValueVar(varName, nodes);
     }
-
 
     /**
      * Update the given {@link SelectBuilder} by adding a list of FILTER clause

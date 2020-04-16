@@ -7,9 +7,8 @@ package org.opensilex.security.authentication.dal;
 
 import org.opensilex.security.user.dal.UserModel;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -49,13 +48,13 @@ public final class AuthenticationDAO {
 
     private static Map<String, String> credentialsGroupLabels;
 
-    private static List<String> credentialsIdList;
+    private static Set<String> credentialsIdList;
 
     private void buildCredentials() {
         if (credentialsGroups == null || credentialsGroupLabels == null || credentialsIdList == null) {
             credentialsGroups = new TreeMap<>();
             credentialsGroupLabels = new HashMap<>();
-            credentialsIdList = new ArrayList<>();
+            credentialsIdList = new HashSet<>();
             Set<Method> methods = sparql.getOpenSilex().getMethodsAnnotatedWith(ApiCredential.class);
             methods.forEach((method) -> {
                 ApiCredential apiCredential = method.getAnnotation(ApiCredential.class);
@@ -77,7 +76,7 @@ public final class AuthenticationDAO {
         }
     }
 
-    public List<String> getCredentialsIdList() {
+    public Set<String> getCredentialsIdList() {
         buildCredentials();
         return credentialsIdList;
     }

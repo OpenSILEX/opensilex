@@ -34,15 +34,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <pre>
- * Module manager for OpenSilex applications
+ * Module manager for OpenSilex applications.
+ *
  * Load modules with dependencies and store references
- * </pre>
  *
  * @author Vincent Migot
  */
 public class OpenSilexModuleManager {
 
+    /**
+     * List of build-in modules ordered by their loading order.
+     */
     private final static List<String> BUILD_IN_MODULES_ORDER = new ArrayList<String>() {
         {
             add("opensilex-main");
@@ -55,29 +57,53 @@ public class OpenSilexModuleManager {
         }
     };
 
+    /**
+     * Map of ignored module, key is module class and value is JAR artifact name.
+     */
     private final static Map<String, String> IGNORED_MODULES = new HashMap<>();
 
+    /**
+     * Class Logger.
+     */
     private final static Logger LOGGER = LoggerFactory.getLogger(OpenSilexModuleManager.class);
 
     /**
-     * Dependencies cache file to avoid unneeded multiple downloads
+     * Dependencies cache file to avoid unneeded multiple downloads.
      */
     private final static String DEPENDENCIES_LIST_CACHE_FILE = ".opensilex.dependencies";
+
     /**
-     * Subfolder where JAR modules are located
+     * Subfolder where JAR modules are located.
      */
     private final static String MODULES_JAR_FOLDER = "modules";
 
-    private Set<URL> registredURLs = new HashSet<>();
-
+    /**
+     * Dependency manager reference.
+     */
     private final DependencyManager dependencyManager;
 
+    /**
+     * System base directory.
+     */
     private final Path baseDirectory;
 
+    /**
+     * System configuration.
+     */
     private final OpenSilexConfig systemConfig;
 
+    /**
+     * Loaded modules URLs list.
+     */
     private final Set<URL> modulesURLs;
 
+    /**
+     * Constructor for module manager.
+     *
+     * @param dependencyManager related dependency manager
+     * @param baseDirectory system base directory
+     * @param systemConfig system configuration
+     */
     public OpenSilexModuleManager(DependencyManager dependencyManager, Path baseDirectory, OpenSilexConfig systemConfig) {
         this.dependencyManager = dependencyManager;
         this.baseDirectory = baseDirectory;
@@ -85,15 +111,19 @@ public class OpenSilexModuleManager {
         this.modulesURLs = loadModulesWithDependencies();
     }
 
+    /**
+     * Return list of loaded modules JAR URLs.
+     *
+     * @return list of loaded modules JAR URLs
+     */
     public Set<URL> getModulesURLs() {
         return modulesURLs;
     }
 
     /**
-     * Load modules with their dependencies, downloading them if needed
+     * Load modules with their dependencies, downloading them if needed.
      *
-     * @param dependencyManager Dependency manager for finding dependencies
-     * @param baseDirectory Base directory for modules to look at
+     * @return list of loaded JAR URLs
      */
     private Set<URL> loadModulesWithDependencies() {
         // Read existing dependencies from cache file
@@ -133,7 +163,7 @@ public class OpenSilexModuleManager {
     }
 
     /**
-     * Utility method to read dependencies from cache file
+     * Utility method to read dependencies from cache file.
      *
      * @param baseDirectory Directory where dependency cache file is.
      *
@@ -149,7 +179,7 @@ public class OpenSilexModuleManager {
                 // If it's a file read all lines and add in the dependencyURLs list
                 for (String dependency : FileUtils.readLines(dependencyFile, StandardCharsets.UTF_8.name())) {
                     dependencyURLs.add(new URL(dependency));
-                };
+                }
             }
 
             // Return the list
@@ -161,7 +191,7 @@ public class OpenSilexModuleManager {
     }
 
     /**
-     * Utility method to write dependencies URL to a cache file
+     * Utility method to write dependencies URL to a cache file.
      *
      * @param baseDirectory Directory where dependency cache file is.
      * @param dependencies Depndencies JAR URL list.
@@ -178,17 +208,17 @@ public class OpenSilexModuleManager {
     }
 
     /**
-     * List of loaded modules
+     * List of loaded modules.
      */
     private List<OpenSilexModule> modules;
 
     /**
-     * Service manager reference
+     * Service manager reference.
      */
     private ServiceManager services;
 
     /**
-     * Load modules and their dependencies
+     * Load modules and their dependencies.
      *
      * @param dependencyManager Dependency manager to load dependencies
      * @param modulesJarURLs List of module JAR URLs
@@ -198,7 +228,6 @@ public class OpenSilexModuleManager {
         try {
             // Load module dependencies and get the list
             Set<URL> dependenciesURL = dependencyManager.loadModulesDependencies(modulesJarURLs);
-//            dependenciesURL.addAll(modulesJarURLs);
 
             // Register all dependencies and modules
             registerDependencies(dependenciesURL);
@@ -211,8 +240,7 @@ public class OpenSilexModuleManager {
     }
 
     /**
-     * Register all depents JAR URL in list for use with class loaders
-     *
+     * Register all depents JAR URL in list for use with class loaders.
      *
      * @param dependenciesURL List of dependencies to register
      */
@@ -239,8 +267,10 @@ public class OpenSilexModuleManager {
     }
 
     /**
-     * Utility method to iterate through modules. Example:
+     * Utility method to iterate through modules.
+     *
      * <pre>
+     * Example:
      * <code>
      * moduleManager.forEachModule((OpenSilexModule module) -&gt; {
      *      // DO STUFF WITH MODULE..
@@ -248,14 +278,14 @@ public class OpenSilexModuleManager {
      * </code>
      * </pre>
      *
-     * @param lambda Lambda to realize action on modules
+     * @param lambda Lambda to realize action on modules.
      */
     public void forEachModule(Consumer<OpenSilexModule> lambda) {
         getModules().forEach(lambda);
     }
 
     /**
-     * Return an Iterable of modules to do custom loop logic
+     * Return an Iterable of modules to do custom loop logic.
      *
      * @return Iterable of modules
      */
@@ -300,6 +330,11 @@ public class OpenSilexModuleManager {
         return modules;
     }
 
+    /**
+     * Add a module specific ordering (but after built-in).
+     *
+     * @param modulesOrder list of modules order identifier
+     */
     public void addOptionalModulesOrder(List<String> modulesOrder) {
         if (modulesOrder != null && !modulesOrder.isEmpty()) {
             for (String optionalModule : modulesOrder) {
@@ -312,6 +347,13 @@ public class OpenSilexModuleManager {
         }
     }
 
+    /**
+     * Defined ignored module map.
+     *
+     * Key is module class and value is module jar file name.
+     *
+     * @param ignoredModules Map of ignored modules.
+     */
     public void setIgnoredModules(Map<String, String> ignoredModules) {
         if (ignoredModules != null) {
             IGNORED_MODULES.putAll(ignoredModules);
@@ -321,8 +363,7 @@ public class OpenSilexModuleManager {
     }
 
     /**
-     * Utility method to get modules URL inside MODULES_JAR_FOLDER subdirectory
-     * of the given directory parameter.
+     * Utility method to get modules URL inside MODULES_JAR_FOLDER subdirectory of the given directory parameter.
      *
      * @param baseDirectory Directory to look in
      * @return List of modules JAR URL found
@@ -355,7 +396,7 @@ public class OpenSilexModuleManager {
     }
 
     /**
-     * Return corresonding JAR URL of the given file or null
+     * Return corresonding JAR URL of the given file or null.
      *
      * @param moduleFile The file to check
      * @return JAR URL or null
@@ -415,7 +456,7 @@ public class OpenSilexModuleManager {
     }
 
     /**
-     * Return list of modules implementing the given interface
+     * Return list of modules implementing the given interface.
      *
      * @param <T> Interface class parameter
      * @param extensionInterface Interface class
@@ -434,7 +475,7 @@ public class OpenSilexModuleManager {
     }
 
     /**
-     * Load all modules configurations
+     * Load all modules configurations.
      *
      * @param configManager Configuration manager instance
      */
@@ -457,13 +498,12 @@ public class OpenSilexModuleManager {
     }
 
     /**
-     * Return the module instance by is class
+     * Return the module instance by is class.
      *
      * @param <T> Module class parameter
      * @param moduleClass Module class
      * @return Module instance
-     * @throws OpenSilexModuleNotFoundException Throw exception if module is not
-     * found
+     * @throws OpenSilexModuleNotFoundException Throw exception if module is not found
      */
     @SuppressWarnings("unchecked")
     public <T extends OpenSilexModule> T getModuleByClass(Class<T> moduleClass) throws OpenSilexModuleNotFoundException {
@@ -474,9 +514,5 @@ public class OpenSilexModuleManager {
         }
 
         throw new OpenSilexModuleNotFoundException(moduleClass);
-    }
-
-    public boolean isRegistredURL(URL url) {
-        return registredURLs.contains(url);
     }
 }

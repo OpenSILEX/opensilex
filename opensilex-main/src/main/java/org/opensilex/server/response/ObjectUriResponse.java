@@ -21,22 +21,32 @@ import javax.ws.rs.core.Response.Status;
  */
 public class ObjectUriResponse extends JsonResponse<String> {
 
+    /**
+     * Generic constructor.
+     *
+     * @param status response status
+     * @param uri object uri
+     */
     public ObjectUriResponse(Status status, URI uri) {
-        this(status);
+        super(status);
         this.metadata = new MetadataDTO(new PaginationDTO());
         this.metadata.addDataFile(uri);
         this.result = uri.toString();
     }
 
-    public ObjectUriResponse(URI uri){
-       this(Status.OK,uri);
+    /**
+     * Constructor OK for an URI.
+     *
+     * @param uri object uri
+     */
+    public ObjectUriResponse(URI uri) {
+        this(Status.OK, uri);
     }
 
+    /**
+     * Empty constructor with OK status and no URI.
+     */
     public ObjectUriResponse() {
-        this(Status.OK);
-    }
-    
-    public ObjectUriResponse(Status status) {
-        super(status);
+        super(Status.OK);
     }
 }

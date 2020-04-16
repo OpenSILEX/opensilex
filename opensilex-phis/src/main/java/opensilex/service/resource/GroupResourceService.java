@@ -100,7 +100,7 @@ public class GroupResourceService extends ResourceService {
             @ApiParam(value = "Search by uri", example = DocumentationAnnotation.EXAMPLE_GROUP_URI) @QueryParam("uri") @URL String uri,
             @ApiParam(value = "Search by name", example = DocumentationAnnotation.EXAMPLE_GROUP_NAME) @QueryParam("name") String name,
             @ApiParam(value = "Search by level", example = DocumentationAnnotation.EXAMPLE_GROUP_LEVEL) @QueryParam("level") @GroupLevel String level) throws Exception {
-            GroupDAO groupDao = new GroupDAO(sparql);
+        GroupDAO groupDao = new GroupDAO(sparql);
 
         if (uri != null && !uri.isEmpty()) {
             GroupModel group = groupDao.get(new URI(uri));
@@ -318,7 +318,7 @@ public class GroupResourceService extends ResourceService {
             profile.setUri(profileURI);
             profile.setName("Default profile");
             AuthenticationDAO securityDAO = new AuthenticationDAO(sparql);
-            profile.setCredentials(securityDAO.getCredentialsIdList());
+            profile.setCredentials(new ArrayList<>(securityDAO.getCredentialsIdList()));
         }
 
         for (String email : group.getUsersEmails()) {

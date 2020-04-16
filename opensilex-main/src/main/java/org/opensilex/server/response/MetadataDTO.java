@@ -43,52 +43,95 @@ import java.util.List;
 public class MetadataDTO {
 
     /**
-     * PaginationDTO section
+     * PaginationDTO section.
      */
     private final PaginationDTO pagination;
 
     /**
-     * Array of custom status message
+     * Array of custom status message.
      */
     private final List<StatusDTO> status = new ArrayList<>();
 
     /**
-     * Array of result URI
+     * Array of result URI.
      */
     private final List<URI> datafiles = new ArrayList<>();
 
+    /**
+     * Constructor with pagination.
+     *
+     * @param pagination
+     */
     public MetadataDTO(PaginationDTO pagination) {
         this.pagination = pagination;
     }
 
-    public MetadataDTO(){
+    /**
+     * Default empty constructor.
+     */
+    public MetadataDTO() {
         pagination = new PaginationDTO();
     }
 
+    /**
+     * Add metadata status.
+     *
+     * @param status status to add
+     */
     public void addStatus(StatusDTO status) {
         this.status.add(status);
     }
 
+    /**
+     * Add metadata status list.
+     *
+     * @param statusList status list to add
+     */
     public void addStatusList(List<StatusDTO> statusList) {
         this.status.addAll(statusList);
     }
 
+    /**
+     * Add metadata data file.
+     *
+     * @param uri file uri
+     */
     public void addDataFile(URI uri) {
         this.datafiles.add(uri);
     }
 
+    /**
+     * Add metadata data file list.
+     *
+     * @param uris list of file uri
+     */
     public void addDataFiles(List<URI> uris) {
         this.datafiles.addAll(uris);
     }
 
+    /**
+     * Getter for pagination.
+     *
+     * @return pagination DTO
+     */
     public PaginationDTO getPagination() {
         return pagination;
     }
 
+    /**
+     * Getter for metadata status.
+     *
+     * @return list of status
+     */
     public List<StatusDTO> getStatus() {
         return status;
     }
 
+    /**
+     * Getter for metadata data files.
+     *
+     * @return list fo files URI
+     */
     public List<URI> getDatafiles() {
         return datafiles;
     }

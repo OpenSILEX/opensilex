@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <pre>
- * This class is the main entry point of OpenSILEX REST API:
+ * This class is the main entry point of OpenSILEX REST API.
  * - extends Jersey ResourceConfig
  * - can automatically get OpenSilex instance via ServletContext or through constructor argument
  * - configure all Jersey features and options in constructor
@@ -46,26 +46,35 @@ import org.slf4j.LoggerFactory;
  * see: https://jersey.github.io/
  * </pre>
  *
- * @see org.opensilex.rest.extensions.APIExtension
+ * @see org.opensilex.server.extensions.APIExtension
  * @author Vincent Migot
  */
 @ApplicationPath("/rest")
 @Singleton
 public class RestApplication extends ResourceConfig {
 
+    /**
+     * Class Logger.
+     */
     final private static Logger LOGGER = LoggerFactory.getLogger(ResourceConfig.class);
 
     /**
-     * Reference to the main application
+     * Reference to the main application.
      */
     private OpenSilex opensilex;
 
+    /**
+     * Main constructor.
+     *
+     * @param ctx servlet context to get OpenSilex instance reference
+     * @throws Exception
+     */
     public RestApplication(@Context ServletContext ctx) throws Exception {
         this((OpenSilex) ctx.getAttribute("opensilex"));
     }
 
     /**
-     * Constructor for opensilex Application:
+     * Constructor for opensilex Application.
      * <pre>
      * - Load core configuration
      * - register packages for API classes implementing APIExtension
@@ -75,7 +84,8 @@ public class RestApplication extends ResourceConfig {
      * - call all modules initRestApplication method
      * </pre>
      *
-     * @param app OpenSilex instance
+     * @param opensilex OpenSilex instance
+     * @throws Exception If any initialization error occured for Jersey Rest Application
      */
     public RestApplication(OpenSilex opensilex) throws Exception {
         this.opensilex = opensilex;
@@ -106,11 +116,9 @@ public class RestApplication extends ResourceConfig {
     }
 
     /**
-     * Initialize packages list to scan for services and request filters (A.K.A.
-     * components) from all modules
+     * Initialize packages list to scan for services and request filters (A.K.A. components) from all modules.
      *
-     * @see
-     * https://jersey.github.io/apidocs/2.28/jersey/org/glassfish/jersey/server/ResourceConfig.html#packages-boolean-java.lang.String...-
+     * @see https://jersey.github.io/apidocs/2.28/jersey/org/glassfish/jersey/server/ResourceConfig.html#packages-boolean-java.lang.String...-
      */
     private void registerAPI() {
         ArrayList<String> packageList = new ArrayList<>();
@@ -127,8 +135,7 @@ public class RestApplication extends ResourceConfig {
     }
 
     /**
-     * Initialize swagger UI registering every packages to scan for services
-     * defined in modules
+     * Initialize swagger UI registering every packages to scan for services defined in modules.
      */
     private void initSwagger() {
         // Load all packages to scan from modules implementing APIExtension
@@ -153,7 +160,7 @@ public class RestApplication extends ResourceConfig {
     }
 
     /**
-     * Return list of modules implementing APIExtension
+     * Return list of modules implementing APIExtension.
      *
      * @return List of modules as APIExtension
      */
@@ -162,7 +169,7 @@ public class RestApplication extends ResourceConfig {
     }
 
     /**
-     * Call start method of every OpenSILEX modules
+     * Call start method of every OpenSILEX modules.
      */
     private void initModules() {
         getAPIExtensionModules().forEach((APIExtension api) -> {
@@ -170,6 +177,9 @@ public class RestApplication extends ResourceConfig {
         });
     }
 
+    /**
+     * Register services for injection.
+     */
     private void registerServices() {
         // Create and register binding for service injection
         register(new AbstractBinder() {

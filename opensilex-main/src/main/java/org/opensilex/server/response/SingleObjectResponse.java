@@ -10,22 +10,29 @@ import javax.ws.rs.core.Response.Status;
 
 /**
  * <pre>
- * Single Object URI response (for get by uri result by example).
- *
- * Automatically set given object to result body with no metadata.
+ * Single Object URI response (for get by uri result by example).Automatically set given object to result body with no metadata.
  * </pre>
  *
  * @see org.opensilex.server.response.JsonResponse
  * @author Vincent Migot
+ * @param <T> response object type
  */
 public class SingleObjectResponse<T> extends JsonResponse<T> {
 
+    /**
+     * Constructor for single object response.
+     *
+     * @param result object.
+     */
     public SingleObjectResponse(T result) {
         this();
         this.result = result;
     }
 
-    public SingleObjectResponse(){
+    /**
+     * Private constructor to initialize empty metadata.
+     */
+    private SingleObjectResponse() {
         super(Status.OK);
         this.metadata = new MetadataDTO(new PaginationDTO());
     }

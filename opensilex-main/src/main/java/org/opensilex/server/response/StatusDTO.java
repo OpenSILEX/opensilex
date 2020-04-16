@@ -9,7 +9,6 @@ package org.opensilex.server.response;
 import ch.qos.logback.classic.Level;
 
 /**
- *
  * <pre>
  * Response metadata status DTO.
  *
@@ -23,24 +22,40 @@ import ch.qos.logback.classic.Level;
 public class StatusDTO {
 
     /**
-     * Status message
+     * Status message.
      */
     public final String message;
 
     /**
-     * Status message type ERROR|WARN|INFO|DEBUG
+     * Status message type ERROR|WARN|INFO|DEBUG.
      */
     public final Level messageType;
 
+    /**
+     * Constructor for status.
+     *
+     * @param message status message
+     * @param messageType status type
+     */
     public StatusDTO(String message, Level messageType) {
         this.message = message;
         this.messageType = messageType;
     }
 
+    /**
+     * Getter for message.
+     *
+     * @return message
+     */
     public String getMessage() {
         return message;
     }
 
+    /**
+     * Getter for status message type.
+     *
+     * @return message type
+     */
     public Level getMessageType() {
         return messageType;
     }

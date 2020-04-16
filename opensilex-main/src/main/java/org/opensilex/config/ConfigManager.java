@@ -38,46 +38,102 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <pre>
- * Configuration manager based on YAML files
- * TODO update Javadoc
- * </pre>
+ * Configuration manager based on YAML files.
  *
  * @author Vincent Migot
  */
 public class ConfigManager {
 
+    /**
+     * Class Logger.
+     */
     private final static Logger LOGGER = LoggerFactory.getLogger(ConfigManager.class);
 
+    /**
+     * Jackson object mapper.
+     */
     private final ObjectMapper mapper = new ObjectMapper();
+
+    /**
+     * Root configuration node.
+     */
     private ObjectNode root = mapper.createObjectNode();
+
+    /**
+     * YAML factory.
+     */
     private final YAMLFactory yamlFactory = new YAMLFactory();
+
+    /**
+     * YAML object mapper.
+     */
     private final ObjectMapper yamlMapper = new ObjectMapper(yamlFactory);
 
+    /**
+     * Constructor.
+     */
     public ConfigManager() {
         yamlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
+    /**
+     * Add a yaml string to configuration.
+     *
+     * @param yamlString string to merge
+     * @throws IOException
+     */
     public void addSource(String yamlString) throws IOException {
         addSource(yamlMapper.readTree(yamlString));
     }
 
+    /**
+     * Add an array of yaml string lines to configuration.
+     *
+     * @param yamlLines strings to merge
+     * @throws IOException
+     */
     public void addLines(String... yamlLines) throws IOException {
         addSource(yamlMapper.readTree(String.join("\n", yamlLines)));
     }
 
+    /**
+     * Add a yaml input stream to configuration.
+     *
+     * @param yamlInput yaml stream to merge
+     * @throws IOException
+     */
     public void addSource(InputStream yamlInput) throws IOException {
         addSource(yamlMapper.readTree(yamlInput));
     }
 
+    /**
+     * Add a yaml file to configuration.
+     *
+     * @param yamlFile yaml file to merge
+     * @throws IOException
+     */
     public void addSource(File yamlFile) throws IOException {
         addSource(yamlMapper.readTree(yamlFile));
     }
 
+    /**
+     * Add a Jackson JSON node to configuration.
+     *
+     * @param tree JSON node tree to merge
+     * @throws IOException
+     */
     public void addSource(JsonNode tree) throws IOException {
         root = mapper.updateValue(root, tree);
     }
 
+    /**
+     * Load a configuration root key into the specified config interface.
+     *
+     * @param <T> Interface to map
+     * @param key yaml root key to map
+     * @param configClass Interface to map
+     * @return Proxy instance of mapped interface
+     */
     @SuppressWarnings("unchecked")
     public <T> T loadConfig(String key, Class<T> configClass) {
         T config;
@@ -94,6 +150,14 @@ public class ConfigManager {
         return config;
     }
 
+    /**
+     * Load a configuration path into the specified config interface.
+     *
+     * @param <T> Interface to map
+     * @param path yaml path to map (list of keys separated by ".")
+     * @param configClass Interface to map
+     * @return Proxy instance of mapped interface
+     */
     @SuppressWarnings("unchecked")
     public <T> T loadConfigPath(String path, Class<T> configClass) {
 
@@ -125,10 +189,23 @@ public class ConfigManager {
         return config;
     }
 
+    /**
+     * Print current configuration into output stream.
+     *
+     * @param os output stream to print into.
+     * @throws IOException
+     */
     public void toYaml(OutputStream os) throws IOException {
         yamlFactory.createGenerator(os).writeObject(root);
     }
 
+    /**
+     * Build system configuration.
+     *
+     * @param baseConfigFile Initial config file
+     * @return Loaded configuration
+     * @throws IOException
+     */
     public OpenSilexConfig buildSystemConfig(File baseConfigFile) throws IOException {
         ObjectMapper systemMapper = new ObjectMapper(yamlFactory);
         ObjectNode systemRoot = systemMapper.createObjectNode();
@@ -146,7 +223,23 @@ public class ConfigManager {
         );
     }
 
-    public void build(Path baseDirectory, Iterable<OpenSilexModule> modules, String id, File baseConfigFile, OpenSilexConfig systemConfig) throws IOException {
+    /**
+     * Build configuration for all modules.
+     *
+     * @param baseDirectory Base system directory
+     * @param modules List of module
+     * @param id Configuration profile identifier
+     * @param baseConfigFile Initial config file
+     * @param systemConfig System configuration
+     * @throws IOException
+     */
+    public void build(
+            Path baseDirectory,
+            Iterable<OpenSilexModule> modules,
+            String id,
+            File baseConfigFile,
+            OpenSilexConfig systemConfig
+    ) throws IOException {
         try {
             String extensionId = id;
             boolean buildExtension = false;
@@ -218,10 +311,23 @@ public class ConfigManager {
 
     }
 
+    /**
+     * Yaml configuration separator for getExpandedYAMLConfig method.
+     */
+    private final static String YAML_CONFIG_SEPARATOR = StringUtils.repeat("-", 78);
+
+    /**
+     * Return expanded yaml configuration.
+     *
+     * @param systemConfig system configuration
+     * @param modules list of modules
+     * @return Full YAML config
+     * @throws Exception
+     */
     public String getExpandedYAMLConfig(OpenSilexConfig systemConfig, Iterable<OpenSilexModule> modules) throws Exception {
         StringBuilder yml = new StringBuilder();
 
-        yml.append("\n# " + StringUtils.repeat("-", 78) + "\n");
+        yml.append("\n# " + YAML_CONFIG_SEPARATOR + "\n");
         yml.append("# Base system configuration " + OpenSilex.class.getSimpleName() + " (" + OpenSilexConfig.class.getSimpleName() + ")\n");
         addConfigInterface(yml, "system", systemConfig, OpenSilexConfig.class, 0);
 
@@ -229,18 +335,31 @@ public class ConfigManager {
             String configId = module.getConfigId();
             Class<?> configClass = module.getConfigClass();
             if (configId != null && configClass != null && !configId.isEmpty()) {
-                yml.append("\n# " + StringUtils.repeat("-", 78) + "\n");
+                yml.append("\n# " + YAML_CONFIG_SEPARATOR + "\n");
                 yml.append("# Configuration for module: " + module.getClass().getSimpleName() + " (" + configClass.getSimpleName() + ")\n");
                 Object config = module.getConfig();
                 addConfigInterface(yml, configId, config, configClass, 0);
             }
-        };
+        }
 
         return yml.toString();
     }
 
+    /**
+     * YAML space level separator.
+     */
     private final static String YAML_SEPARATOR = "  ";
 
+    /**
+     * Add a config interface to global generated yml config.
+     *
+     * @param yml global yml string
+     * @param key interface config key
+     * @param value interface instance
+     * @param objectClass interface class
+     * @param depth depth in yml config
+     * @throws Exception
+     */
     private void addConfigInterface(StringBuilder yml, String key, Object value, Class<?> objectClass, int depth) throws Exception {
         int elementDepth = depth;
         if (key != null && !key.isEmpty()) {
@@ -256,9 +375,29 @@ public class ConfigManager {
         }
     }
 
-    private void addConfigPropertyValue(StringBuilder yml, String key, Object value, Type returnType, ConfigDescription cfgDescription, int depth) throws Exception {
+    /**
+     * Add a config property to global generated yml config.
+     *
+     * @param yml global yml string
+     * @param key interface config key
+     * @param value interface instance
+     * @param returnType property type
+     * @param cfgDescription property description
+     * @param depth depth in yml config
+     * @throws Exception
+     */
+    private void addConfigPropertyValue(
+            StringBuilder yml,
+            String key,
+            Object value,
+            Type returnType,
+            ConfigDescription cfgDescription,
+            int depth
+    ) throws Exception {
         if (cfgDescription != null) {
-            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "# " + cfgDescription.value() + " (" + getShortType(returnType) + ")\n");
+            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
+                    + "# " + cfgDescription.value()
+                    + " (" + getShortType(returnType) + ")\n");
         }
 
         if (ClassUtils.isGenericType(returnType)) {
@@ -287,7 +426,9 @@ public class ConfigManager {
             } else if (ClassUtils.isClass(returnTypeClass)) {
                 yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + ((Class<?>) value).getCanonicalName() + "\n");
             } else {
-                LOGGER.warn("Unexpected generic parameter for configuration: " + key + " - " + returnTypeClass.getSimpleName() + "<" + genericParameter.getTypeName() + ">");
+                LOGGER.warn("Unexpected generic parameter for configuration: "
+                        + key + " - " + returnTypeClass.getSimpleName()
+                        + "<" + genericParameter.getTypeName() + ">");
             }
         } else {
             Class<?> returnTypeClass = (Class<?>) returnType;
@@ -310,41 +451,87 @@ public class ConfigManager {
         }
     }
 
+    /**
+     * Add a config property list to global generated yml config.
+     *
+     * @param yml global yml string
+     * @param value property list value
+     * @param type property list type
+     * @param depth depth in yml config
+     * @throws Exception
+     */
     private void addConfigPropertyListValue(StringBuilder yml, Object value, Type type, int depth) throws Exception {
         yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "- ");
         addConfigPropertyValue(yml, null, value, type, null, depth + 1);
     }
 
+    /**
+     * Add a service config to global generated yml config.
+     *
+     * @param yml global yml string
+     * @param name service name
+     * @param service service instance
+     * @param serviceBaseType service class
+     * @param depth depth in yml config
+     * @throws Exception
+     */
     private void addConfigService(StringBuilder yml, String name, Service service, Type serviceBaseType, int depth) throws Exception {
         ServiceConstructorArguments serviceConfig = service.getServiceConstructorArguments();
-        yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "# Service implementation class for: " + name + " (" + getShortType(serviceBaseType) + ")\n");
+        yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
+                + "# Service implementation class for: "
+                + name
+                + " (" + getShortType(serviceBaseType) + ")\n");
         yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "implementation: " + serviceConfig.implementation().getCanonicalName() + "\n");
         if (serviceConfig.configID() != null && serviceConfig.configClass() != null) {
             Constructor<?> constructor = ClassUtils.getConstructorWithParameterImplementing(serviceConfig.implementation(), ServiceConfig.class);
-            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "# Configuration class used as constructor parameter for: " + name + " (" + getShortType(constructor.getParameters()[0].getType()) + ")\n");
-            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "configClass: " + serviceConfig.configClass().getCanonicalName() + "\n");
+            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
+                    + "# Configuration class used as constructor parameter for: "
+                    + name
+                    + " (" + getShortType(constructor.getParameters()[0].getType()) + ")\n");
+            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
+                    + "configClass: " + serviceConfig.configClass().getCanonicalName() + "\n");
             if (!serviceConfig.configID().isEmpty()) {
-                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "# Configuration identifier used as constructor parameter for: " + name + "\n");
-                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "configID: " + serviceConfig.configID() + "\n");
+                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
+                        + "# Configuration identifier used as constructor parameter for: "
+                        + name + "\n");
+                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
+                        + "configID: "
+                        + serviceConfig.configID() + "\n");
             }
             addConfigInterface(yml, serviceConfig.configID(), serviceConfig.getConfig(), serviceConfig.configClass(), depth);
 
         } else if (serviceConfig.getService() != null) {
-            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "# Service class used as constructor parameter for: " + name + "\n");
-            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "serviceClass: " + serviceConfig.serviceClass().getCanonicalName() + "\n");
+            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
+                    + "# Service class used as constructor parameter for: "
+                    + name + "\n");
+            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
+                    + "serviceClass: "
+                    + serviceConfig.serviceClass().getCanonicalName() + "\n");
 
             String serviceID = serviceConfig.serviceID();
             if (serviceID != null && !serviceID.isEmpty()) {
-                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "# Service identifier used as constructor parameter for: " + name + "\n");
-                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "serviceID: " + serviceID + "\n");
-                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + serviceID + ":\n");
+                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
+                        + "# Service identifier used as constructor parameter for: " + name + "\n");
+                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
+                        + "serviceID: " + serviceID + "\n");
+                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
+                        + serviceID + ":\n");
 
-                Constructor<? extends Service> constructor = ClassUtils.getConstructorWithParameterImplementing(serviceConfig.implementation(), Service.class);
+                Constructor<? extends Service> constructor = ClassUtils.getConstructorWithParameterImplementing(
+                        serviceConfig.implementation(),
+                        Service.class
+                );
                 addConfigService(yml, serviceID, serviceConfig.getService(), constructor.getParameters()[0].getType(), depth + 1);
             }
         }
     }
 
+    /**
+     * Return short type to display.
+     *
+     * @param returnType type to shorten
+     * @return shorten type
+     */
     private static String getShortType(Type returnType) {
         return returnType.getTypeName().replaceAll("([^.<]+\\.)+", "");
     }

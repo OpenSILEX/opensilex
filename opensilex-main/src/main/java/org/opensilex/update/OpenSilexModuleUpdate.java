@@ -9,28 +9,28 @@ package org.opensilex.update;
 import java.time.LocalDateTime;
 
 /**
- * Interface for modules update classes
+ * Interface for modules update classes.
  *
  * @author Vincent Migot
  */
 public interface OpenSilexModuleUpdate {
 
     /**
-     * Date of update creation for auto execution
+     * Date of update creation for auto execution.
      *
      * @return Date of update creation
      */
     public LocalDateTime getDate();
 
     /**
-     * Description of the update
+     * Description of the update.
      *
      * @return Description
      */
     public String getDescription();
 
     /**
-     * Update logic to implement
+     * Update logic to implement.
      *
      * @throws Exception Update can throw any exception
      */

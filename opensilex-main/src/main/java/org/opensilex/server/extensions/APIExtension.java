@@ -18,17 +18,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Extension interface for OpenSilex modules which implements REST extension
+ * Extension interface for OpenSilex modules which implements REST extension.
  *
  * @author Vincent Migot
  */
 public interface APIExtension extends OpenSilexExtension {
 
+    /**
+     * Class Logger.
+     */
     public static final Logger LOGGER = LoggerFactory.getLogger(APIExtension.class);
 
     /**
-     * This method is called during application initialization to get all
-     * packages to scan for components like request filters or response mapper
+     * This method is called during application initialization to get all packages to scan for components like request filters or response mapper.
      *
      * @return List of packages to scan
      */
@@ -40,9 +42,8 @@ public interface APIExtension extends OpenSilexExtension {
     }
 
     /**
-     * This method is called during application initialization to get all
-     * packages to scan for jersey web services wich will be displayed into
-     * swagger UI
+     * This method is called during application initialization to get all packages to scan for jersey web services wich will be displayed into
+     * swagger-UI.
      *
      * @return List of packages to scan for web services
      */
@@ -56,16 +57,19 @@ public interface APIExtension extends OpenSilexExtension {
         return packageSet;
     }
 
+    /**
+     * This entry point allow module to bind custom services with Jersey HK2.
+     *
+     * @param binder service binder instance
+     */
     public default void bindServices(AbstractBinder binder) {
         LOGGER.debug("No service to bind for module: " + this.getClass().getCanonicalName());
     }
 
     /**
-     * This entry point allow module to initialize anything in application after
-     * all configuration is loaded at the end of application loading
+     * This entry point allow module to initialize anything in application after all configuration is loaded at the end of application loading.
      *
-     * @param resourceConfig API main entry point instance extending Jersey
-     * {@code org.glassfish.jersey.server.ResourceConfig}
+     * @param resourceConfig API main entry point instance extending Jersey {@code org.glassfish.jersey.server.ResourceConfig}
      */
     public default void initRestApplication(RestApplication resourceConfig) {
         LOGGER.debug("Init API for module: " + this.getClass().getCanonicalName());

@@ -1,19 +1,28 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.service;
 
 import org.opensilex.OpenSilex;
 
 /**
+ * Abstract service definition.
  *
- * @author vince
+ * @author Vincent Migot
  */
-public class BaseService implements Service {
+public abstract class BaseService implements Service {
 
+    /**
+     * Service construction arguments definitions.
+     */
     private ServiceConstructorArguments constructorArgs;
+
+    /**
+     * OpenSilex instance.
+     */
+    private OpenSilex opensilex;
 
     @Override
     public void setServiceConstructorArguments(ServiceConstructorArguments args) {
@@ -24,8 +33,6 @@ public class BaseService implements Service {
     public ServiceConstructorArguments getServiceConstructorArguments() {
         return this.constructorArgs;
     }
-
-    private OpenSilex opensilex;
 
     @Override
     public void setOpenSilex(OpenSilex opensilex) {

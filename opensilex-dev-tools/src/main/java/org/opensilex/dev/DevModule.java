@@ -43,7 +43,7 @@ public class DevModule extends OpenSilexModule {
             args.put(OpenSilex.CONFIG_FILE_ARG_KEY, getConfig(baseDirectory));
 
             LOGGER.debug("Create OpenSilex instance for development tools");
-            devInstance = OpenSilex.createStaticInstance(args);
+            devInstance = OpenSilex.createInstance(args);
         }
         return devInstance;
     }

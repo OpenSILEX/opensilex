@@ -10,11 +10,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.List;
-import org.opensilex.OpenSilex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
+ * Error DTO class.
  * <pre>
  * This class define an error DTO used by {@code org.opensilex.server.response.ErrorResponse}
  * It's defined by a title and a message and eventually a source exception.
@@ -30,8 +28,6 @@ import org.slf4j.LoggerFactory;
  */
 @ApiModel
 public class ErrorDTO {
-
-    private final static Logger LOGGER = LoggerFactory.getLogger(ErrorDTO.class);
 
     /**
      * Title of the error.
@@ -57,10 +53,23 @@ public class ErrorDTO {
     @ApiModelProperty(hidden = true)
     public List<String> fullstack;
 
+    /**
+     * Error DTO constructor.
+     *
+     * @param title error title
+     * @param message error message
+     */
     public ErrorDTO(String title, String message) {
         this(title, message, null);
     }
 
+    /**
+     * Error DTO constructor.
+     *
+     * @param title error title
+     * @param message error message
+     * @param t errror cause
+     */
     public ErrorDTO(String title, String message, Throwable t) {
         this.title = title;
         this.message = message;

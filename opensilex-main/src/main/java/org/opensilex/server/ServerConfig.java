@@ -13,7 +13,7 @@ import org.opensilex.config.ConfigDescription;
 import org.opensilex.server.rest.cache.ApiCacheService;
 
 /**
- * Default configuration for OpenSilex base module
+ * Default configuration for OpenSilex base module.
  *
  * @author Vincent Migot
  */

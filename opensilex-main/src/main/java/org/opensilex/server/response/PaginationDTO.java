@@ -15,27 +15,27 @@ package org.opensilex.server.response;
 public class PaginationDTO {
 
     /**
-     * number of elements in the current returned page
+     * number of elements in the current returned page.
      */
     private final long pageSize;
 
     /**
-     * index number of the current returned page
+     * index number of the current returned page.
      */
     private final long currentPage;
 
     /**
-     * total number of elements available in the super set (unpaged)
+     * total number of elements available in the super set (unpaged).
      */
     private final long totalCount;
 
     /**
-     * total number of pages available (total count / requested page size)
+     * total number of pages available (total count / requested page size).
      */
     private final long totalPages;
 
     /**
-     * Empty constructor assume no pagination
+     * Empty constructor assume no pagination.
      */
     public PaginationDTO() {
         this.pageSize = 0;
@@ -68,18 +68,38 @@ public class PaginationDTO {
         }
     }
 
+    /**
+     * Getter for page size.
+     *
+     * @return page size
+     */
     public long getPageSize() {
         return pageSize;
     }
 
+    /**
+     * Getter for current page.
+     *
+     * @return current page
+     */
     public long getCurrentPage() {
         return currentPage;
     }
 
+    /**
+     * Getter for total count.
+     *
+     * @return total count
+     */
     public long getTotalCount() {
         return totalCount;
     }
 
+    /**
+     * Getter for total pages.
+     *
+     * @return toatal pages
+     */
     public long getTotalPages() {
         return totalPages;
     }

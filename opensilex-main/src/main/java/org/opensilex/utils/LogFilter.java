@@ -13,19 +13,42 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Logging filter for SLF4J.
  *
- * @author vincent
+ * @author Vincent Migot
  */
 public class LogFilter extends ThresholdFilter {
 
+    /**
+     * Method to force debug output.
+     */
     public static void forceDebug() {
         levelOverride = Level.DEBUG;
     }
+
+    /**
+     * Log level override.
+     */
     private static Level levelOverride;
 
+    /**
+     * Log level for included and excluded patterns.
+     */
     private Level customLevel;
+
+    /**
+     * List of logger to include at custom level.
+     */
     private List<String> loggerIncludeList = new ArrayList<String>();
+
+    /**
+     * List of logger to exclude from custom level.
+     */
     private List<String> loggerExcludeList = new ArrayList<String>();
+
+    /**
+     * List of logger to use at debug level.
+     */
     private List<String> debug = new ArrayList<String>();
 
     @Override
@@ -33,7 +56,7 @@ public class LogFilter extends ThresholdFilter {
         if (!isStarted()) {
             return FilterReply.NEUTRAL;
         }
-        
+
         if (debug.contains(event.getLoggerName())) {
             return FilterReply.ACCEPT;
         }
@@ -62,14 +85,29 @@ public class LogFilter extends ThresholdFilter {
         }
     }
 
+    /**
+     * Setter to add logger at debug level.
+     *
+     * @param logger
+     */
     public void setDebug(String logger) {
         this.debug.add(logger);
     }
 
+    /**
+     * Setter to define custom level.
+     *
+     * @param level
+     */
     public void setCustomLevel(Level level) {
         this.customLevel = level;
     }
 
+    /**
+     * Getter for custom level.
+     *
+     * @return custom level
+     */
     public Level getCustomLevel() {
         if (levelOverride != null) {
             return levelOverride;
@@ -77,14 +115,25 @@ public class LogFilter extends ThresholdFilter {
         return customLevel;
     }
 
+    /**
+     * Setter to add logger in custom level include list.
+     *
+     * @param logger
+     */
     public void setInclude(String logger) {
         this.loggerIncludeList.add(logger);
     }
 
+    /**
+     * Setter to add logger in custom level exclude list.
+     *
+     * @param logger
+     */
     public void setExclude(String logger) {
         this.loggerExcludeList.add(logger);
     }
 
+    @Override
     public void start() {
         if (this.getCustomLevel() != null) {
             super.start();

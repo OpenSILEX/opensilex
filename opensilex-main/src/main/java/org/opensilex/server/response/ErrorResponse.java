@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import javax.ws.rs.core.Response.Status;
 
 /**
+ * Error JSON message.
  * <pre>
  * This class represents an HTTP error response (Status &gt;= 400) in JSON.
  * Response status is automatically set to 500 - INTERNAL_SERVER_ERROR if error comes from a source exception.
@@ -36,7 +37,7 @@ import javax.ws.rs.core.Response.Status;
  *      }
  * }
  * </pre>
- * 
+ *
  * @see org.opensilex.server.response.ErrorDTO
  * @author Vincent Migot
  */
@@ -44,7 +45,7 @@ import javax.ws.rs.core.Response.Status;
 public class ErrorResponse extends JsonResponse<ErrorDTO> {
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param exception Exception to wrap into a structured error response
      */
@@ -58,6 +59,13 @@ public class ErrorResponse extends JsonResponse<ErrorDTO> {
         );
     }
 
+    /**
+     * Constructor.
+     *
+     * @param status errror status code
+     * @param title error title
+     * @param message errror message
+     */
     public ErrorResponse(Status status, String title, String message) {
         super(status);
         metadata = new MetadataDTO(new PaginationDTO());

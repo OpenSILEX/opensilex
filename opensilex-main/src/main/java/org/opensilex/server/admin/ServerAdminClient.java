@@ -12,35 +12,34 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
-
 /**
  * Client for the ServerAdmin class used to send commands to a runnning server.
- * 
+ *
  * @author Vincent Migot
  */
 public class ServerAdminClient {
 
     /**
-     * Socket to connect to the admin server socket
+     * Socket to connect to the admin server socket.
      */
     private Socket connection;
 
     /**
-     * Reader for data send by the admin server
+     * Reader for data send by the admin server.
      */
     private BufferedReader reader;
 
     /**
-     * Output stream to send commands to the admin server
+     * Output stream to send commands to the admin server.
      */
     private DataOutputStream output;
 
     /**
-     * Initialize connection to the admin server socket
+     * Initialize connection to the admin server socket.
      *
      * @param host Server host to connect with
      * @param adminPort Server administration port to connect with
-     * 
+     *
      * @throws IOException In case of connection problem to administration server
      */
     public ServerAdminClient(String host, int adminPort) throws IOException {
@@ -50,7 +49,7 @@ public class ServerAdminClient {
     }
 
     /**
-     * Stop the tomcat server and close the connection after it
+     * Stop the tomcat server and close the connection after it.
      *
      * @throws IOException In case of communication problem with administration server
      */
@@ -60,7 +59,7 @@ public class ServerAdminClient {
     }
 
     /**
-     * Send a command and read all response from admin server
+     * Send a command and read all response from admin server.
      *
      * @param command
      * @throws IOException
@@ -80,7 +79,7 @@ public class ServerAdminClient {
     }
 
     /**
-     * Close the connection to the admin server
+     * Close the connection to the admin server.
      *
      * @throws IOException
      */

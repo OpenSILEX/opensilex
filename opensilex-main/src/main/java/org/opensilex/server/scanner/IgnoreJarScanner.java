@@ -12,11 +12,15 @@ import org.apache.tomcat.JarScanner;
 import org.apache.tomcat.JarScannerCallback;
 
 /**
+ * Jar scanner for tomcat to avoid unnecessary JAR inspection.
  *
- * @author vidalmor
+ * @author Vincent Migot
  */
 public class IgnoreJarScanner implements JarScanner {
 
+    /**
+     * Scan filter.
+     */
     private JarScanFilter jarScanFilter = (JarScanType jst, String string) -> false;
 
     @Override

@@ -24,8 +24,26 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ConfigurationBuilder;
 
-public class SwaggerAPIGenerator {
+/**
+ * Helper class to generate Swagger API JSON file.
+ *
+ * @author Vincent Migot
+ */
+public final class SwaggerAPIGenerator {
 
+    /**
+     * Private constructor to avoid missuse of SwaggerAPIGenerator.
+     */
+    private SwaggerAPIGenerator() {
+
+    }
+
+    /**
+     * Return full Swagger API for annotated classes found by Reflections.
+     *
+     * @param reflection Reflections instances for classes
+     * @return Swagger API
+     */
     public static synchronized Swagger getFullApi(Reflections reflection) {
         Swagger swagger = null;
 
@@ -47,6 +65,13 @@ public class SwaggerAPIGenerator {
         return null;
     }
 
+    /**
+     * Return Swagger API for annotated classes found by Reflections in a specifi module.
+     *
+     * @param moduleClass Module class to limit API scope
+     * @param reflection Reflections instances for classes
+     * @return Swagger API
+     */
     public static synchronized Swagger getModuleApi(Class<? extends OpenSilexModule> moduleClass, Reflections reflection) {
         Swagger swagger = null;
 
@@ -76,6 +101,16 @@ public class SwaggerAPIGenerator {
         return null;
     }
 
+    /**
+     * Generate Swagger API for all java files in a specific folder.
+     *
+     * This API is filtered from global API using Java classes found in source or ti's sub-folder.
+     *
+     * @param source Base directory to look in
+     * @param reflection Reflections instances for classes
+     * @return Swagger API
+     * @throws Exception
+     */
     private static synchronized Swagger generate(String source, Reflections reflection) throws Exception {
         Swagger swagger = null;
 
@@ -102,7 +137,7 @@ public class SwaggerAPIGenerator {
                                     String packageId = absoluteDirectory.substring(source.length()).replaceAll("\\\\|\\/", ".");
 
                                     if (filename.endsWith(".java")) {
-                                        String className = packageId + "." + filename.substring(0, filename.length() - 5);
+                                        String className = packageId + "." + filename.substring(0, filename.length() - ".java".length());
                                         if (availableAPI.containsKey(className)) {
                                             classes.add(availableAPI.get(className));
                                         }
@@ -125,6 +160,18 @@ public class SwaggerAPIGenerator {
         return null;
     }
 
+    /**
+     * Main entry point for swagger API generation.
+     *
+     * <pre>
+     * Used by maven build to generate specific Swagger.json file for each OpenSilex module.
+     * - First argument is the source folder
+     * - Second argument is the destination swagger.json file produced
+     * </pre>
+     *
+     * @param args command line arguments.
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
         String source = args[0];
         String destination = args[1];
@@ -146,13 +193,20 @@ public class SwaggerAPIGenerator {
         }
     }
 
+    /**
+     * Return opensilex instance.
+     *
+     * @param baseDirectory
+     * @return opensilex instance
+     * @throws Exception
+     */
     public static OpenSilex getOpenSilex(Path baseDirectory) throws Exception {
         Map<String, String> args = new HashMap<String, String>() {
             {
                 put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.DEV_PROFILE_ID);
-                
-// NOTE: uncomment this line to enable full debug during swagger API generation process              
-//                put(OpenSilex.DEBUG_ARG_KEY, "true");
+
+                // NOTE: uncomment this line to enable full debug during swagger API generation process
+                // put(OpenSilex.DEBUG_ARG_KEY, "true");
             }
         };
 
@@ -162,6 +216,6 @@ public class SwaggerAPIGenerator {
 
         args.put(OpenSilex.BASE_DIR_ARG_KEY, baseDirectory.toFile().getCanonicalPath());
 
-        return OpenSilex.createStaticInstance(args);
+        return OpenSilex.createInstance(args);
     }
 }

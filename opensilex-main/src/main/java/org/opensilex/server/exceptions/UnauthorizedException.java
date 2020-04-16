@@ -14,7 +14,7 @@ import org.opensilex.server.response.ErrorResponse;
 /**
  * <pre>
  * This class represent an unauthorized exception (401 - UNAUTHORIZED).
- * 
+ *
  * It should only be used for authentication errors (ie: invalid credentials or token decoding issues)
  *
  * Do not confuse it with {@code org.opensilex.server.exceptions.ForbiddenException}
@@ -25,6 +25,9 @@ import org.opensilex.server.response.ErrorResponse;
  */
 public class UnauthorizedException extends WebApplicationException {
 
+    /**
+     * Exception constructor.
+     */
     public UnauthorizedException() {
         super(Response.status(Response.Status.UNAUTHORIZED)
                 .entity(new ErrorResponse(

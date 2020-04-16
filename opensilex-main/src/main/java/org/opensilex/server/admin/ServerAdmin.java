@@ -14,31 +14,29 @@ import java.net.Socket;
 import org.opensilex.server.Server;
 
 /**
- * Server administration tool used to execute recieved commands from the command
- * line while tomcat server is running and managed it remotly.
- * 
+ * Server administration tool used to execute recieved commands from the command line while tomcat server is running and managed it remotly.
+ *
  * @author Vincent Migot
  */
 public class ServerAdmin implements Runnable {
 
     /**
-     * Command to shutdown tomcat server
+     * Command to shutdown tomcat server.
      */
     public static final String SHUTDOWN_COMMAND = "SHUTDOWN_OPENSILEX";
 
     /**
-     * Instance of the managed server
+     * Instance of the managed server.
      */
     private final Server instance;
 
     /**
-     * Socket on which this thread is listening
+     * Socket on which this thread is listening.
      */
     private final ServerSocket adminSocket;
 
     /**
-     * Create the admin socket for the given server instance on the
-     * corresponding adminPort
+     * Create the admin socket for the given server instance on the corresponding adminPort.
      *
      * @param instance Server instance controlled by this administration thread
      * @param adminPort Administration port to listen on
@@ -50,7 +48,7 @@ public class ServerAdmin implements Runnable {
     }
 
     /**
-     * Main method listening for connections and interpreting commands
+     * Main method listening for connections and interpreting commands.
      */
     @Override
     public void run() {

@@ -1,8 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                              RestApplication.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.server.rest.serialization;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -12,14 +13,21 @@ import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 
 /**
+ * Jackson serialization mapper initialization.
  *
  * @author vince
  */
 @Provider
 public class ObjectMapperContextResolver implements ContextResolver<ObjectMapper> {
 
+    /**
+     * Internal mapper.
+     */
     private final ObjectMapper mapper;
 
+    /**
+     * Constructor to initialize mapper.
+     */
     public ObjectMapperContextResolver() {
         this.mapper = createObjectMapper();
     }
@@ -29,6 +37,11 @@ public class ObjectMapperContextResolver implements ContextResolver<ObjectMapper
         return mapper;
     }
 
+    /**
+     * Help method to create Jackson serialization mapper with correct options.
+     *
+     * @return Jackson mapper
+     */
     private ObjectMapper createObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.enable(SerializationFeature.INDENT_OUTPUT);

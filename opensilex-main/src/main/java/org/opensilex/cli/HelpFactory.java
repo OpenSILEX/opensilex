@@ -14,7 +14,7 @@ import picocli.CommandLine.Model.CommandSpec;
 /**
  * <pre>
  * This class implements picocli.CommandLine.IHelpFactory to generate good
- * looking help messages for OpenSilex commands with custom styles and colors
+ * looking help messages for OpenSilex commands with custom styles and colors.
  *
  * see: <a href="https://picocli.info/#_usage_help_with_styles_and_colors">Picocli
  * Documentation</a>
@@ -25,7 +25,7 @@ import picocli.CommandLine.Model.CommandSpec;
 public class HelpFactory implements IHelpFactory {
 
     /**
-     * Ascii Art header when displaying help command
+     * Ascii Art header when displaying help command.
      */
     public static final String CLI_HEADER_HEADING = "\n"
             + "         .+.\n"
@@ -48,38 +48,37 @@ public class HelpFactory implements IHelpFactory {
             + "\n";
 
     /**
-     * Prefix for "Usage" help section
+     * Prefix for "Usage" help section.
      */
     public static final String CLI_SYNOPSYS_HEADING = "\n@|bold,underline Usage|@: ";
 
     /**
-     * Prefix for "usage" help section
+     * Prefix for "usage" help section.
      */
     public static final String CLI_DESCRIPTION_HEADING = "\n@|bold,underline Description|@:\n";
 
     /**
-     * Prefix for "Paramters" help section
+     * Prefix for "Paramters" help section.
      */
     public static final String CLI_PARAMETER_LIST_HEADING = "\n@|bold,underline Parameters|@:\n";
 
     /**
-     * Prefix for "Options" help section
+     * Prefix for "Options" help section.
      */
     public static final String CLI_OPTION_LIST_HEADING = "\n@|bold,underline Options|@:\n";
 
     /**
-     * Prefix for "sub commands" help section
+     * Prefix for "sub commands" help section.
      */
     public static final String CLI_COMMAND_LIST_HEADING = "\n@|bold,underline Commands|@:\n";
 
     /**
-     * "footer" help section
+     * "footer" help section.
      */
     public static final String CLI_FOOTER = "\nCopyright(c) INRA - UMR MISTEA - 2019";
 
     /**
-     * Initialize help layout values and return the
-     * {@code picocli.CommandLine.Help} command
+     * Initialize help layout values and return the {@code picocli.CommandLine.Help} command.
      *
      * @param commandSpec the command to create usage help for
      * @param colorScheme the color scheme to use when rendering usage help

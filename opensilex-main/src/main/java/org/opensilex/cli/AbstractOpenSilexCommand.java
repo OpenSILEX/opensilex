@@ -13,8 +13,7 @@ import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.Mixin;
 
 /**
- * Utility class used as super class for commands which are only a regroup of
- * other commands and which only has purpose of displaying help for them.
+ * Utility class used as super class for commands which are only a regroup of other commands and which only has purpose of displaying help for them.
  *
  * @author Vincent Migot
  */
@@ -35,19 +34,22 @@ import picocli.CommandLine.Mixin;
 public abstract class AbstractOpenSilexCommand implements Runnable, OpenSilexCommand {
 
     /**
-     * Generic help option
+     * Generic help option.
      */
     @Mixin
     private HelpOption help = new HelpOption();
 
     /**
-     * Display help if called with no arguments
+     * Display help if called with no arguments.
      */
     @Override
     public void run() {
         CommandLine.usage(this, System.out);
     }
 
+    /**
+     * Application instance.
+     */
     private OpenSilex opensilex;
 
     @Override

@@ -46,7 +46,7 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { ProjectsService } from "../../lib/api/projects.service";
+import {ProjectGetDTO,ProjectsService} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
 
 @Component
@@ -126,22 +126,20 @@ export default class ProjectTable extends Vue {
         orderBy.push(orderByText + "asc");
       }
     }
-
     return service
       .searchProjects(
-        this.user.getAuthorizationHeader(),
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
         this.currentPage - 1,
         this.pageSize
       )
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<ProjectGetDTO>>>) => {
+        console.log(http);
         this.totalRow = http.response.metadata.pagination.totalCount;
         this.pageSize = http.response.metadata.pagination.pageSize;
         setTimeout(() => {

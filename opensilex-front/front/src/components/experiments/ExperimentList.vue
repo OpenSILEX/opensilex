@@ -101,7 +101,7 @@
                             <td width="220">
                                 <multiselect
                                         :limit="1"
-                                        :placeholder="$t('component.experiment.search.filter.campain')"
+                                        :placeholder="$t('component.experiment.search.filter.campaign')"
                                         :closeOnSelect="false"
                                         v-model="filter.campaign"
                                         :options="campaigns"
@@ -363,7 +363,6 @@
         }
 
         set projects(values: Array<ProjectCreationDTO>) {
-            console.log(values);
             this._projects = values;
             this._experimentList.loadExperiments();
         }
@@ -373,7 +372,6 @@
         }
 
         set installations(values: Array<string>) {
-            console.log(values);
             this._installations = values;
             this._experimentList.loadExperiments();
         }
@@ -383,7 +381,6 @@
         }
 
         set infrastructures(values: Array<ResourceTreeDTO>) {
-            console.log(values);
             this._infrastructures = values;
             this._experimentList.loadExperiments();
         }
@@ -393,7 +390,6 @@
         }
 
         set species(value: SpeciesDTO) {
-            console.log(value);
             this._species = value;
             this._experimentList.loadExperiments();
         }
@@ -441,20 +437,15 @@
         pageSize = 10;
         totalRow = 0;
 
+        filter: ExperimentFilter;
+
         constructor() {
             super();
-
-            if(!this.$store.state.search.experiments.filter) {
-                this.$store.state.search.experiments.filter = new ExperimentFilter(this);
-            }
+            this.filter = new ExperimentFilter(this);
         }
 
         created () {
             this.loadDatas();
-        }
-
-        get filter() {
-            return this.$store.state.search.experiments.filter;
         }
 
         get user() {
@@ -650,7 +641,6 @@
         goToExperimentUpdateComponent(experimentDto: ExperimentGetDTO){
             this.$store.xpToUpdate = experimentDto;
             this.$store.editXp = true;
-            console.log("goToExperimentUpdateComponent : "+experimentDto.uri);
             this.$router.push({  path: '/experiments/create' });
         }
 

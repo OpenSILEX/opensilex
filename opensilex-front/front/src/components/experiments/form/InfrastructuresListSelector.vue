@@ -5,7 +5,7 @@
         <b-form-input
           v-model="filterPattern"
           debounce="300"
-          :placeholder="$t('component.user.filter-placeholder')"
+          :placeholder="$t('component.infrastructure.filter-placeholder')"
         ></b-form-input>
         <template v-slot:append>
           <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
@@ -17,7 +17,7 @@
     <div class="tables">
       <div class="table-left">
         <div>
-          <div class="table-title">{{$t('component.group.form-all-users-title')}}</div>
+          <div class="table-title">{{$t('component.experiment.form.infrastructures-selection-list-title')}}</div>
           <b-table
             ref="tableRef"
             striped
@@ -53,7 +53,7 @@
         <div>
           <div
             class="table-title"
-          >{{$t('component.group.form-selected-users-title')}} ({{selectedTableData.length}})</div>
+          >{{$t('component.experiment.form.infrastructures-selected-list-title')}} ({{selectedTableData.length}})</div>
           <b-table
             id="user-selection-table"
             striped

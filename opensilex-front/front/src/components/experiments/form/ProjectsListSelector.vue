@@ -3,7 +3,7 @@
     <div class="tables">
       <div class="table-left">
         <div>
-          <div class="table-title">{{$t('component.group.form-all-users-title')}}</div>
+          <div class="table-title">{{$t('component.experiment.form.projects-selection-list-title')}}</div>
           <b-table
             ref="tableRef"
             striped
@@ -39,7 +39,7 @@
         <div>
           <div
             class="table-title"
-          >{{$t('component.group.form-selected-users-title')}} ({{selectedTableData.length}})</div>
+          >{{$t('component.experiment.form.projects-selected-list-title')}} ({{selectedTableData.length}})</div>
           <b-table
             id="user-selection-table"
             striped

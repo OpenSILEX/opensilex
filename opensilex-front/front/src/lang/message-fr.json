@@ -279,6 +279,14 @@
                     "state": "Filtrer par état"
                 }
             },
+            "form" : {
+                "groups-selection-list-title":"Liste des groupes",
+                "groups-selected-list-title":"Groupes de l'expérience",
+                "projects-selection-list-title":"Liste des projets",
+                "projects-selected-list-title":"Projets de l'expérience",
+                "infrastructures-selection-list-title":"Liste des infrastructures",
+                "infrastructures-selected-list-title":"Infrastructures de l'expérience"
+            },
             "form-wizard": {
                 "label" : "Assistant de création d'expérimentation",
                 "general-informations" : "Informations générales",

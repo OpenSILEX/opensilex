@@ -290,6 +290,14 @@
                     "state": "Filter par state"
                 }
             },
+            "form" : {
+                "groups-selection-list-title":"Global group list",
+                "groups-selected-list-title":"Experiment groups",
+                "projects-selection-list-title":"Global projects list",
+                "projects-selected-list-title":"Experiment projects",
+                "infrastructures-selection-list-title":"Global infrastructures list",
+                "infrastructures-selected-list-title":"Experiment infrastructures"
+            },
             "form-wizard": {
                 "label" : "Experiment creation wizard",
                 "general-informations" : "General informations",

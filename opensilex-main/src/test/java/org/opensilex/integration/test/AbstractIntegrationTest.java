@@ -71,12 +71,11 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         Map<String, String> args = new HashMap<>();
         args.put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.TEST_PROFILE_ID);
         args.put(OpenSilex.NO_CACHE_ARG_KEY, "true");
-        
-// NOTE: uncomment this line to enable full debug during integration tests       
-//        args.put(OpenSilex.DEBUG_ARG_KEY, "true");
 
+        // NOTE: uncomment this line to enable full debug during integration tests       
+        // args.put(OpenSilex.DEBUG_ARG_KEY, "true");
         LOGGER.debug("Create OpenSilex instance for Integration Test");
-        opensilex = OpenSilex.createStaticInstance(args);
+        opensilex = OpenSilex.createInstance(args);
     }
 
     @AfterClass
@@ -139,8 +138,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      *
      * Get {@link Response} from an open GET{uri} service call.
      *
-     * @param target the {@link WebTarget} on which get an entity with the given
-     * URI
+     * @param target the {@link WebTarget} on which get an entity with the given URI
      * @param uri the URI of the resource to fetch from the given target.
      * @return target invocation response.
      *
@@ -184,8 +182,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     }
 
     /**
-     * Append pagination, ordering and a set of query params to a given
-     * {@link WebTarget}
+     * Append pagination, ordering and a set of query params to a given {@link WebTarget}
      *
      * @param target the {@link WebTarget} on which append params
      * @param page the current page index
@@ -232,14 +229,12 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     }
 
     /**
-     * This method try to extract an URI from the given {@link Response} and is
-     * expecting that the Response describe a {@link ObjectUriResponse}
+     * This method try to extract an URI from the given {@link Response} and is expecting that the Response describe a {@link ObjectUriResponse}
      *
      * @param response the Response on which we want to extract URI
      * @return the URI extracted from the given Response
      *
-     * @throws URISyntaxException if the extracted URI as String could not be
-     * parse as an {@link URI}
+     * @throws URISyntaxException if the extracted URI as String could not be parse as an {@link URI}
      */
     protected URI extractUriFromResponse(final Response response) throws URISyntaxException {
         JsonNode node = response.readEntity(JsonNode.class
@@ -251,8 +246,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     }
 
     /**
-     * This method try to extract an URI from the given {@link Response} and is
-     * expecting that the Response describe a {@link PaginatedListResponse}
+     * This method try to extract an URI from the given {@link Response} and is expecting that the Response describe a {@link PaginatedListResponse}
      *
      * @param response the Response on which we want to extract an URI List
      * @return the List of URI extracted from the given Response

@@ -2,8 +2,7 @@
 //                              Required.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2018
-// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, 
-// anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Contact: arnaud.charleroy@inra.fr, morgane.vidal@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.server.rest.validation;
 
@@ -39,9 +38,24 @@ import javax.validation.constraints.NotNull;
 @ReportAsSingleViolation
 public @interface Required {
 
+    /**
+     * Error message if parameter is not present.
+     *
+     * @return error message if parameter is not present
+     */
     String message() default "is required and must be filled";
 
+    /**
+     * Validation group.
+     *
+     * @return Validation group
+     */
     Class<?>[] groups() default {};
 
+    /**
+     * Validation payload.
+     *
+     * @return Validation payload
+     */
     Class<? extends Payload>[] payload() default {};
 }

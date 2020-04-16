@@ -1,8 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                              RestApplication.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.server.rest.cache;
 
 import java.util.HashMap;
@@ -10,8 +11,9 @@ import java.util.Map;
 import org.opensilex.service.BaseService;
 
 /**
+ * Cache implementation for no caching.
  *
- * @author vince
+ * @author Vincent Migot
  */
 public class NoApiCacheService extends BaseService implements ApiCacheService {
 

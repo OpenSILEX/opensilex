@@ -26,6 +26,8 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 /**
+ * OpenSilex server command group.
+ *
  * <pre>
  * This class regroup all commands concerning OpenSilex server operations:
  * - start: Start the server
@@ -40,20 +42,20 @@ import picocli.CommandLine.Parameters;
 )
 public class ServerCommands extends AbstractOpenSilexCommand implements OpenSilexCommand {
 
+    /**
+     * Class Logger.
+     */
     private final static Logger LOGGER = LoggerFactory.getLogger(ServerCommands.class);
 
     /**
-     * This function start the OpenSilex server with the given host, port and
-     * adminPort If the daemon flag is set to true, this command will try to run
-     * the server in another process
+     * This function start the OpenSilex server with the given host, port and adminPort If the daemon flag is set to true, this command will try to
+     * run the server in another process.
      *
      * @param host Server host name (default: localhost)
      * @param port Server port (default: 8666)
      * @param adminPort Server administration port (default: 8888)
-     * @param daemon Flag to determine if server must be started as a dameon
-     * process (default: false)
-     * @param tomcatDirectory Tomcat working directory (default: create a
-     * temporary directory)
+     * @param daemon Flag to determine if server must be started as a dameon process (default: false)
+     * @param tomcatDirectory Tomcat working directory (default: create a temporary directory)
      * @param help Helper parameter to allow help usage display for this command
      * @throws Exception Propagate any exception that could occurs
      */
@@ -63,10 +65,26 @@ public class ServerCommands extends AbstractOpenSilexCommand implements OpenSile
             description = "Start OpenSILEX server with given hostname and port"
     )
     public void start(
-            @Option(names = {"--host"}, description = "Define server host", defaultValue = "localhost") String host,
-            @Option(names = {"-p", "--port"}, description = "Define server port", defaultValue = "8666") int port,
-            @Option(names = {"--adminPort"}, description = "Server port on which server is listening for admin commands", defaultValue = "8888") int adminPort,
-            @Option(names = {"-d", "--daemon"}, description = "Run server as a daemon", defaultValue = "false") boolean daemon,
+            @Option(
+                    names = {"--host"},
+                    description = "Define server host",
+                    defaultValue = "localhost"
+            ) String host,
+            @Option(
+                    names = {"-p", "--port"},
+                    description = "Define server port",
+                    defaultValue = "8666"
+            ) int port,
+            @Option(
+                    names = {"--adminPort"},
+                    description = "Server port on which server is listening for admin commands",
+                    defaultValue = "8888"
+            ) int adminPort,
+            @Option(
+                    names = {"-d", "--daemon"},
+                    description = "Run server as a daemon",
+                    defaultValue = "false"
+            ) boolean daemon,
             @Parameters(description = "Tomcat directory", defaultValue = "") Path tomcatDirectory,
             @Mixin HelpOption help
     ) throws Exception {
@@ -150,8 +168,7 @@ public class ServerCommands extends AbstractOpenSilexCommand implements OpenSile
     }
 
     /**
-     * This command stop the OpenSilex server using the ServerAdminClient
-     * listening on the given host and adminPort
+     * This command stop the OpenSilex server using the ServerAdminClient listening on the given host and adminPort.
      *
      * @param host Server host name (default: localhost)
      * @param adminPort Server administration port (default: 8888)
@@ -164,8 +181,16 @@ public class ServerCommands extends AbstractOpenSilexCommand implements OpenSile
             description = "Stop OpenSILEX server with given hostname using admin port"
     )
     public void stop(
-            @Option(names = {"--host"}, description = "Define server host", defaultValue = "localhost") String host,
-            @Option(names = {"-ap", "--adminPort"}, description = "Server port on which server is listening for commands", defaultValue = "8888") int adminPort,
+            @Option(
+                    names = {"--host"},
+                    description = "Define server host",
+                    defaultValue = "localhost"
+            ) String host,
+            @Option(
+                    names = {"-ap", "--adminPort"},
+                    description = "Server port on which server is listening for commands",
+                    defaultValue = "8888"
+            ) int adminPort,
             @Mixin HelpOption help
     ) throws Exception {
         // Create the server admin client
@@ -176,9 +201,10 @@ public class ServerCommands extends AbstractOpenSilexCommand implements OpenSile
     }
 
     /**
-     * Utility static function to start server in dev mode
+     * Utility static function to start server in dev mode.
      *
      * @param args unused
+     * @throws Exception In case of any error during command execution
      */
     public static void main(String[] args) throws Exception {
         MainCommand.main(new String[]{

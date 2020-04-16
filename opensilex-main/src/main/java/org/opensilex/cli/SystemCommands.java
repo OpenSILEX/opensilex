@@ -15,14 +15,7 @@ import org.opensilex.update.OpenSilexModuleUpdate;
 import picocli.CommandLine;
 
 /**
- * <pre>
- * This class regroup all commands concerning OpenSilex system operations:
- * TODO - install: install module(s)
- * TODO - update: Update module(s)
- * TODO - uninstall: uninstall one or all modules
- * TODO - check: check system configuration.
- * TODO Clean and update Javadoc
- * </pre>
+ * This class regroup all commands concerning OpenSilex system operations.
  *
  * @author Vincent Migot
  */
@@ -32,8 +25,17 @@ import picocli.CommandLine;
 )
 public class SystemCommands extends AbstractOpenSilexCommand implements OpenSilexCommand {
 
+    /**
+     * Class Logger.
+     */
     private final static Logger LOGGER = LoggerFactory.getLogger(SystemCommands.class);
 
+    /**
+     * Command to execute an update.
+     *
+     * @param updateClassName Update class to execution.
+     * @throws Exception
+     */
     @Command(
             name = "run-update",
             header = "Execute opensilex module specific update",
@@ -48,10 +50,16 @@ public class SystemCommands extends AbstractOpenSilexCommand implements OpenSile
         updateInstance.execute();
     }
 
+    /**
+     * Install or re-install all modules content.
+     *
+     * @param reset if true re-install instead of install.
+     * @throws Exception
+     */
     @Command(
             name = "install",
-            header = "Setup initial database content",
-            description = "Setup initial RDF4J and MongoDB database content"
+            header = "Install all modules",
+            description = "Install or re-install all modules content"
     )
     public void install(
             @CommandLine.Option(names = {"--reset"}, description = "Reset existing databases content", defaultValue = "false") Boolean reset
@@ -62,6 +70,11 @@ public class SystemCommands extends AbstractOpenSilexCommand implements OpenSile
         opensilex.install(reset);
     }
 
+    /**
+     * Command to check local installation parameters.
+     *
+     * @throws Exception
+     */
     @Command(
             name = "check",
             header = "Check local installation"
@@ -75,6 +88,12 @@ public class SystemCommands extends AbstractOpenSilexCommand implements OpenSile
         opensilex.check();
     }
 
+    /**
+     * Utility method to launch "check" command in dev mode.
+     *
+     * @param args unused
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
         MainCommand.main(new String[]{
             "system",
@@ -83,6 +102,11 @@ public class SystemCommands extends AbstractOpenSilexCommand implements OpenSile
         });
     }
 
+    /**
+     * Command to display full processed system configuration.
+     *
+     * @throws Exception
+     */
     @Command(
             name = "full-config",
             header = "Return full configuration"

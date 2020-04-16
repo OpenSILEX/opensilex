@@ -6,28 +6,32 @@
 //******************************************************************************
 package org.opensilex;
 
-import org.opensilex.OpenSilexModule;
-
 /**
- * Exception thrown when a module is not found based on it's class
+ * Exception thrown when a module is not found based on it's class.
  *
  * @author Vincent Migot
  */
 public class OpenSilexModuleNotFoundException extends Exception {
 
     /**
-     * Class of the not found module
+     * Class of the not found module.
      */
     private final Class<? extends OpenSilexModule> moduleClass;
 
     /**
-     * Constructor based on module class
+     * Constructor based on module class.
+     *
      * @param moduleClass Not found module class
      */
     public OpenSilexModuleNotFoundException(Class<? extends OpenSilexModule> moduleClass) {
         this.moduleClass = moduleClass;
     }
 
+    /**
+     * Return error message.
+     *
+     * @return error message
+     */
     @Override
     public String getMessage() {
         return "Can't find module corresponding to class: " + moduleClass.getCanonicalName();

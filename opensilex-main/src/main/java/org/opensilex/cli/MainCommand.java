@@ -19,9 +19,9 @@ import picocli.CommandLine.IVersionProvider;
 import picocli.CommandLine.Option;
 
 /**
- * This class is the main entry point for the CLI application It uses the
- * Picocli library to automatically generate help messages and argument parsing
- * see: https://picocli.info/
+ * This class is the main entry point for the CLI application.
+ *
+ * It uses the Picocli library to automatically generate help messages and argument parsing, see: https://picocli.info/
  *
  * @author Vincent Migot
  */
@@ -34,7 +34,7 @@ public class MainCommand extends AbstractOpenSilexCommand implements IVersionPro
 
     /**
      * <pre>
-     * Version flag option (automatically handled by the picocli library)
+     * Version flag option (automatically handled by the picocli library).
      * For details see: https://picocli.info/#_version_help
      * </pre>
      */
@@ -45,6 +45,7 @@ public class MainCommand extends AbstractOpenSilexCommand implements IVersionPro
      * Static main to launch commands.
      *
      * @param args Command line arguments array
+     * @throws Exception In case of any error during command execution
      */
     public static void main(String[] args) throws Exception {
         boolean forceDebug = false;
@@ -57,6 +58,7 @@ public class MainCommand extends AbstractOpenSilexCommand implements IVersionPro
 
         LOGGER.debug("Create OpenSilex instance from command line");
         OpenSilexSetup setup = OpenSilex.createSetup(args, forceDebug);
+        OpenSilex instance = OpenSilex.createInstance(setup, false);
 
         for (String s : setup.getRemainingArgs()) {
             LOGGER.debug("CLI input parameters", s);
@@ -77,7 +79,7 @@ public class MainCommand extends AbstractOpenSilexCommand implements IVersionPro
             }
 
             if (!isHelp) {
-                OpenSilex instance = OpenSilex.createStaticInstance(setup);
+                instance.startup();
                 commands.forEach((OpenSilexCommand cmd) -> {
                     cmd.setOpenSilex(instance);
                 });
@@ -89,8 +91,19 @@ public class MainCommand extends AbstractOpenSilexCommand implements IVersionPro
         cli.execute(setup.getRemainingArgs());
     }
 
+    /**
+     * Loader for commands.
+     */
     private static ServiceLoader<OpenSilexCommand> commands;
 
+    /**
+     * Return command line instance.
+     *
+     * @param args Command line arguments
+     * @param instance OpenSilex instance
+     *
+     * @return loaded command
+     */
     public static CommandLine getCLI(String[] args, OpenSilex instance) {
         // Initialize picocli library
         CommandLine cli = new CommandLine(new MainCommand()) {
@@ -115,8 +128,7 @@ public class MainCommand extends AbstractOpenSilexCommand implements IVersionPro
     }
 
     /**
-     * Implementation of picocli.CommandLine.IVersionProvider to display the
-     * list of known modules when using the -V command line flag
+     * Implementation of picocli.CommandLine.IVersionProvider to display the list of known modules when using the -V command line flag.
      *
      * @return List of all module with their version
      * @throws Exception Propagate any exception that could occurs

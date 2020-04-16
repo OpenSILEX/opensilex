@@ -12,17 +12,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Extension interface for OpenSilex modules which add logic at server
- * initialisation and shutdown.
+ * Extension interface for OpenSilex modules which add logic at server initialisation and shutdown.
  *
  * @author Vincent Migot
  */
 public interface ServerExtension extends OpenSilexExtension {
 
+    /**
+     * Class Logger.
+     */
     public static final Logger LOGGER = LoggerFactory.getLogger(ServerExtension.class);
 
     /**
-     * Hook on server initialisation
+     * Hook on server initialisation.
      *
      * @param server Unstarted server instance
      * @throws Exception Can throw anything
@@ -32,7 +34,7 @@ public interface ServerExtension extends OpenSilexExtension {
     }
 
     /**
-     * Hook on server shutdown
+     * Hook on server shutdown.
      *
      * @param server Unstopped server instance
      * @throws Exception Can throw anything

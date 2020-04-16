@@ -12,15 +12,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Simple logger for dependencies resolution.
- * Almost usefull for debugging
+ * Simple logger for dependencies resolution. Almost usefull for debugging
  *
  * @see org.eclipse.aether.AbstractRepositoryListener
  * @author Vincent Migot
  */
-public class DependencyLogger
+public final class DependencyLogger
         extends AbstractRepositoryListener {
 
+    /**
+     * Class Logger.
+     */
     private final static Logger LOGGER = LoggerFactory.getLogger(DependencyManager.class);
 
     @Override

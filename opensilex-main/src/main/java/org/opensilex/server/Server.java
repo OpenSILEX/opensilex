@@ -38,7 +38,7 @@ import org.opensilex.OpenSilexModuleNotFoundException;
 
 /**
  * <pre>
- * This class extends Tomcat server to embbeded it:
+ * This class extends Tomcat server to embbeded.
  * - Set configuration in constructor
  * - Load swagger "root" application
  * - Call initServer method for all modules implementing {@code org.opensilex.module.extensions.ServerExtension}
@@ -51,47 +51,60 @@ import org.opensilex.OpenSilexModuleNotFoundException;
  */
 public class Server extends Tomcat {
 
+    /**
+     * Class Logger.
+     */
     private final static Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
     /**
-     * Base directory for tomcat server
+     * Base directory for tomcat server.
      */
     private final String baseDir;
 
     /**
-     * OpenSilex application instance
+     * OpenSilex application instance.
      */
     private final OpenSilex instance;
 
     /**
-     * Server configuration reference
+     * Server configuration reference.
      */
     private final ServerConfig config;
 
     /**
-     * Host name
+     * Host name.
      */
     private final String host;
 
     /**
-     * Tomcat port
+     * Tomcat port.
      */
     private final int port;
 
     /**
-     * Administration port for server to be remotly managed
+     * Administration port for server to be remotly managed.
      */
     private final int adminPort;
 
     /**
-     * Construct OpenSilex server with host, port and adminPort adminPort is
-     * used to communicate with the running server by the cli
+     * Threshold for thread lock check.
+     */
+    private final static int THREAD_LOCK_THRESHOLD = 120;
+
+    /**
+     * Inactivity threshold for thread lock interuption.
+     */
+    private final static int THREAD_LOCK_INTERRUPT_THRESHOLD = 30;
+
+    /**
+     * Construct OpenSilex server with host, port and adminPort adminPort is used to communicate with the running server by the cli.
      *
      * @param instance OpenSilex application instance
      * @param host Server hostname or IP
      * @param port Server port
      * @param adminPort Server administration port
      * @param tomcatDirectory Tomcat server base directory
+     * @throws OpenSilexModuleNotFoundException If server module is not found (which should never happend)
      */
     public Server(OpenSilex instance, String host, int port, int adminPort, Path tomcatDirectory) throws OpenSilexModuleNotFoundException {
         super();
@@ -112,6 +125,11 @@ public class Server extends Tomcat {
         this.adminPort = adminPort;
     }
 
+    /**
+     * Tomcat start method override.
+     *
+     * @throws LifecycleException
+     */
     @Override
     public void start() throws LifecycleException {
         // Define properties
@@ -128,15 +146,15 @@ public class Server extends Tomcat {
         if (this.config.enableAntiThreadLock()) {
             // Prevent any thread to be stuck to long
             StuckThreadDetectionValve threadTimeoutValve = new StuckThreadDetectionValve();
-            threadTimeoutValve.setThreshold(120);
-            threadTimeoutValve.setInterruptThreadThreshold(30);
+            threadTimeoutValve.setThreshold(THREAD_LOCK_THRESHOLD);
+            threadTimeoutValve.setInterruptThreadThreshold(THREAD_LOCK_INTERRUPT_THRESHOLD);
             appContext.getPipeline().addValve(threadTimeoutValve);
         }
-        
+
         try {
             ClassUtils.listFilesByExtension(instance.getBaseDirectory() + "/webapps", "war", (File warfile) -> {
                 String filename = warfile.getName();
-                String context = "/" + filename.substring(0, filename.length() - 4);
+                String context = "/" + filename.substring(0, filename.length() - ".war".length());
                 addWarApp(context, warfile);
             });
 
@@ -168,6 +186,11 @@ public class Server extends Tomcat {
         super.start();
     }
 
+    /**
+     * Tomcat stop method override.
+     *
+     * @throws LifecycleException
+     */
     @Override
     public void stop() throws LifecycleException {
         // Call shutDownServer method for all modules implementing ServerExtension
@@ -184,14 +207,11 @@ public class Server extends Tomcat {
     }
 
     /**
-     * Initialize a new application from an opensilex module accessible througth
-     * the server
+     * Initialize a new application from an opensilex module accessible througth the server.
      *
-     * @param name Name of this application use an empty string to fine the ROOT
-     * application
+     * @param name Name of this application use an empty string to fine the ROOT application
      * @param contextPath Public URL path where the application will be served
-     * @param baseDirectory Resource path of the web application whithin the
-     * module
+     * @param baseDirectory Resource path of the web application whithin the module
      * @param moduleClass Class of the module where the application belong
      * @return Application context
      */
@@ -207,11 +227,23 @@ public class Server extends Tomcat {
             WebResourceRoot resource = new StandardRoot(context);
             if (jarFile.isFile()) {
                 // Define resources as a JAR file
-                resource.createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR, contextPath, jarFile.getCanonicalPath(), null, baseDirectory);
+                resource.createWebResourceSet(
+                        WebResourceRoot.ResourceSetType.RESOURCE_JAR,
+                        contextPath,
+                        jarFile.getCanonicalPath(),
+                        null,
+                        baseDirectory
+                );
 
             } else {
                 // Define resources as a folder if module is a folder (DEV MODE)
-                resource.createWebResourceSet(WebResourceRoot.ResourceSetType.PRE, contextPath, jarFile.getCanonicalPath(), null, baseDirectory);
+                resource.createWebResourceSet(
+                        WebResourceRoot.ResourceSetType.PRE,
+                        contextPath,
+                        jarFile.getCanonicalPath(),
+                        null,
+                        baseDirectory
+                );
             }
 
             // Speed class scanning avoiding to scan useless dependencies
@@ -259,7 +291,7 @@ public class Server extends Tomcat {
     }
 
     /**
-     * Load war application at the given contextPath (root url of the war)
+     * Load war application at the given contextPath (root url of the war).
      *
      * @param contextPath Public URL path where the application will be served
      * @param warFile War file to be served
@@ -287,8 +319,7 @@ public class Server extends Tomcat {
     }
 
     /**
-     * Init administration thread on the given port to listen for commands
-     * execution from cli
+     * Init administration thread on the given port to listen for commands execution from cli.
      *
      * @param adminPort The administration port where server listen to
      */
@@ -303,7 +334,7 @@ public class Server extends Tomcat {
     }
 
     /**
-     * Enable GZIP compression for current Tomcat service connector
+     * Enable GZIP compression for current Tomcat service connector.
      *
      * @param connector
      */
@@ -314,6 +345,11 @@ public class Server extends Tomcat {
         connector.setProperty("compressableMimeType", "text/html,text/xml, text/css, application/json, application/javascript");
     }
 
+    /**
+     * Enable UTF-8 support.
+     *
+     * @param connector
+     */
     private void enableUTF8(Connector connector) {
         connector.setURIEncoding("UTF-8");
     }

@@ -41,6 +41,9 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class OpenSilexModule implements OpenSilexExtension {
 
+    /**
+     * Class Logger.
+     */
     protected final static Logger LOGGER = LoggerFactory.getLogger(OpenSilexModule.class);
 
     /**
@@ -52,15 +55,14 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
     private final static String APP_PROPERTIES = "app.properties";
 
     /**
-     * Properties wich will be filled with those generated during maven build
+     * Properties wich will be filled with those generated during maven build.
      */
     private Properties mavenProperties = new Properties();
 
     /**
-     * Read Maven build properties
+     * Read Maven build properties.
      *
-     * @return Return maven properties as an instance of
-     * {@code java.util.Properties}
+     * @return Return maven properties as an instance of {@code java.util.Properties}
      */
     public Properties getMavenProperties() {
         if (mavenProperties.isEmpty()) {
@@ -80,7 +82,7 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
     }
 
     /**
-     * Return OpenSilex version
+     * Return OpenSilex version.
      *
      * @return OpenSilex version
      */
@@ -89,7 +91,7 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
     }
 
     /**
-     * Utility function to determine if a file exists within a module JAR
+     * Utility function to determine if a file exists within a module JAR.
      *
      * @param fileName File name to check
      * @return true if the file exists and false otherwise
@@ -128,7 +130,7 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
     }
 
     /**
-     * Return last modified date of a file in the module
+     * Return last modified date of a file in the module.
      *
      * @param fileName File to check
      * @return Last modification date
@@ -157,7 +159,7 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
     }
 
     /**
-     * Return file inside module as a {@code java.io.InputStream}
+     * Return file inside module as a {@code java.io.InputStream}.
      *
      * @param fileName File to get
      * @return Input stream of the file
@@ -202,13 +204,21 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
         return null;
     }
 
+    /**
+     * Return file mime type using Apache Tika. See: http://tika.apache.org/
+     *
+     * @param filePath PAth of the file to analyse
+     * @return File mime type
+     * @throws IOException If file mime type detection fail
+     * @throws URISyntaxException If file path parameter is not a valid URI file path
+     */
     public String getFileMimeType(String filePath) throws IOException, URISyntaxException {
         Tika tika = new Tika();
         return tika.detect(getFileInputStream(filePath));
     }
 
     /**
-     * List a directory inside a module
+     * List a directory inside a module.
      *
      * @param directoryName Directory to list
      * @return List of found filenames
@@ -255,7 +265,7 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
     }
 
     /**
-     * Return configuration file of given profile in module
+     * Return configuration file of given profile in module.
      *
      * @param profileId Profile idnetifier
      * @return Inputstream of the configuration file
@@ -273,12 +283,12 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
     }
 
     /**
-     * Module configuration interface
+     * Module configuration interface.
      */
     private Object config;
 
     /**
-     * Setter for module configuration
+     * Setter for module configuration.
      *
      * @param config Module configuration instance
      */
@@ -287,7 +297,7 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
     }
 
     /**
-     * Getter for module configuration
+     * Getter for module configuration.
      *
      * @return Module configuration instance
      */
@@ -296,8 +306,7 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
     }
 
     /**
-     * Getter for module configuration converted in given subclass of
-     * ModuleConfig
+     * Getter for module configuration converted in given subclass of ModuleConfig.
      *
      * @param <T> Class configuration real implementation parameter
      * @param configClass Class configuration real implementation
@@ -309,7 +318,7 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
     }
 
     /**
-     * Return module configuration identifier (index in main configuration)
+     * Return module configuration identifier (index in main configuration).
      *
      * @return Configuration identifier
      */
@@ -318,7 +327,7 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
     }
 
     /**
-     * Return module configuration class
+     * Return module configuration class.
      *
      * @return Module configuration class
      */
@@ -326,6 +335,9 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
         return null;
     }
 
+    /**
+     * OpenSilex instance reference.
+     */
     private OpenSilex opensilex;
 
     @Override
@@ -333,24 +345,27 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
         return opensilex;
     }
 
-    public void setOpenSilex(OpenSilex opensilex) {
-        this.opensilex = opensilex;
+    /**
+     * Define opensilex instance.
+     *
+     * @param instance
+     */
+    public void setOpenSilex(OpenSilex instance) {
+        this.opensilex = instance;
     }
 
     /**
-     * Default method for module installation, to be implemented by module
-     * implementations for installation logic
+     * Default method for module installation, to be implemented by module implementations for installation logic.
      *
      * @param reset should reset intallation
      * @throws Exception Can throw anything
      */
-    public void install(boolean reset) throws Exception {
+    public void install(final boolean reset) throws Exception {
         OpenSilexModule.LOGGER.debug("Nothing to install for module class: " + getClass().getCanonicalName());
     }
 
     /**
-     * Default method for module configuration check, to be implemented by
-     * module implementations for validation logic
+     * Default method for module configuration check, to be implemented by module implementations for validation logic.
      *
      * @throws Exception Can throw anything
      */
@@ -359,8 +374,7 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
     }
 
     /**
-     * Default method for module setup, to be implemented by module
-     * implementations for starting logic
+     * Default method for module setup, to be implemented by module implementations for initialization logic.
      *
      * @throws Exception Can throw anything
      */
@@ -369,17 +383,28 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
     }
 
     /**
-     * Default method for module clean, to be implemented by module
-     * implementations for stopping logic
+     * Default method for module clean, to be implemented by module implementations for cleaning logic.
+     *
+     * @throws Exception Can throw anything
      */
     public void clean() throws Exception {
         OpenSilexModule.LOGGER.debug("Nothing to clean for module class: " + getClass().getCanonicalName());
     }
 
+    /**
+     * Default method for module startup, to be implemented by module implementations for starting logic.
+     *
+     * @throws Exception Can throw anything
+     */
     public void startup() throws Exception {
         OpenSilexModule.LOGGER.debug("Nothing to startup for module class: " + getClass().getCanonicalName());
     }
 
+    /**
+     * Default method for module shutdown, to be implemented by module implementations for stopping logic.
+     *
+     * @throws Exception Can throw anything
+     */
     public void shutdown() throws Exception {
         OpenSilexModule.LOGGER.debug("Nothing to shutdown for module class: " + getClass().getCanonicalName());
     }

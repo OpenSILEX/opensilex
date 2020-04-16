@@ -9,14 +9,23 @@ package org.opensilex.cli;
 import org.opensilex.OpenSilex;
 
 /**
- * This interface is requested for any command in OpenSilex modules to be
- * detected on loading.
+ * This interface is requested for any command in OpenSilex modules to be detected on loading.
  *
  * @author Vincent Migot
  */
 public interface OpenSilexCommand {
 
+    /**
+     * Define application instance.
+     *
+     * @param opensilex
+     */
     public void setOpenSilex(OpenSilex opensilex);
 
+    /**
+     * Get application instance.
+     *
+     * @return application instance
+     */
     public OpenSilex getOpenSilex();
 }

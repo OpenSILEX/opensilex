@@ -1,24 +1,63 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.service;
 
 /**
+ * Store service construction parameters.
  *
- * @author vince
+ * @author Vincent Migot
  */
-public class ServiceConstructorArguments implements ServiceDefinition {
+public final class ServiceConstructorArguments implements ServiceDefinition {
 
+    /**
+     * Service implementation.
+     */
     private final Class<? extends Service> implementation;
+
+    /**
+     * Service config class parameter for constructor if exists.
+     */
     private final Class<?> configClass;
+
+    /**
+     * Service config identifier parameter for constructor if exists.
+     */
     private final String configID;
+
+    /**
+     * Service config object used for service construction.
+     */
     private final Object config;
+
+    /**
+     * Service identifier used for Service constructor parameter.
+     */
     private final String serviceID;
+
+    /**
+     * Service class used for Service constructor parameter.
+     */
     private final Class<? extends Service> serviceClass;
+
+    /**
+     * Service instance used for Service constructor parameter.
+     */
     private final Service serviceInstance;
 
+    /**
+     * Global constructor with all field.
+     *
+     * @param implementation
+     * @param configClass
+     * @param configID
+     * @param config
+     * @param serviceID
+     * @param serviceClass
+     * @param serviceInstance
+     */
     private ServiceConstructorArguments(
             Class<? extends Service> implementation,
             Class<?> configClass,
@@ -37,6 +76,14 @@ public class ServiceConstructorArguments implements ServiceDefinition {
         this.serviceInstance = serviceInstance;
     }
 
+    /**
+     * Used for services constructed with another service as constructor parameter.
+     *
+     * @param implementation
+     * @param serviceID
+     * @param serviceClass
+     * @param serviceInstance
+     */
     public ServiceConstructorArguments(
             Class<? extends Service> implementation,
             String serviceID,
@@ -46,6 +93,14 @@ public class ServiceConstructorArguments implements ServiceDefinition {
         this(implementation, null, null, null, serviceID, serviceClass, serviceInstance);
     }
 
+    /**
+     * Used for services constructed with a configuration as constructor parameter.
+     *
+     * @param implementation
+     * @param configClass
+     * @param configID
+     * @param config
+     */
     public ServiceConstructorArguments(
             Class<? extends Service> implementation,
             Class<?> configClass,
@@ -55,6 +110,11 @@ public class ServiceConstructorArguments implements ServiceDefinition {
         this(implementation, configClass, configID, config, null, null, null);
     }
 
+    /**
+     * Used for services constructed with no constructor parameter.
+     *
+     * @param implementation
+     */
     public ServiceConstructorArguments(
             Class<? extends Service> implementation
     ) {
@@ -76,6 +136,11 @@ public class ServiceConstructorArguments implements ServiceDefinition {
         return configID;
     }
 
+    /**
+     * Return config constructor parameter instance.
+     *
+     * @return config constructor parameter instance
+     */
     public Object getConfig() {
         return config;
     }
@@ -90,6 +155,11 @@ public class ServiceConstructorArguments implements ServiceDefinition {
         return serviceClass;
     }
 
+    /**
+     * Return service constructor parameter instance.
+     *
+     * @return service constructor parameter instance
+     */
     public Service getService() {
         return serviceInstance;
     }

@@ -14,7 +14,7 @@ import org.opensilex.server.response.ErrorResponse;
 /**
  * <pre>
  * This class represent a not fount exception (404 - NOT_FOUND).
- * 
+ *
  * It should be use if requested resource does not exists.
  * </pre>
  *
@@ -22,6 +22,11 @@ import org.opensilex.server.response.ErrorResponse;
  */
 public class NotFoundException extends WebApplicationException {
 
+    /**
+     * Exception constructor.
+     *
+     * @param message exception detail
+     */
     public NotFoundException(String message) {
         super(Response.status(Response.Status.NOT_FOUND)
                 .entity(new ErrorResponse(

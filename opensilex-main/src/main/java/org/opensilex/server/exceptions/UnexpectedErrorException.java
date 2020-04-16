@@ -24,6 +24,11 @@ import org.opensilex.server.response.ErrorResponse;
  */
 public class UnexpectedErrorException extends WebApplicationException {
 
+    /**
+     * Exception constructor.
+     *
+     * @param ex original exception
+     */
     public UnexpectedErrorException(Throwable ex) {
         super(Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                 .entity(new ErrorResponse(ex))

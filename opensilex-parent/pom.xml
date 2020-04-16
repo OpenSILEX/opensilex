@@ -57,7 +57,7 @@
         <!-- dependencies version -->
         <jersey.version>2.30.1</jersey.version>
         <tomcat.version>9.0.34</tomcat.version>
-        <hibernate.validator.version>6.1.2.Final</hibernate.validator.version>
+        <hibernate.validator.version>6.1.3.Final</hibernate.validator.version>
         <jackson.version>2.10.3</jackson.version>
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
         <swagger.jersey2.jaxrs.version>1.6.1</swagger.jersey2.jaxrs.version>
@@ -85,7 +85,7 @@
         <jaxb.version>2.3.0.1</jaxb.version>
         <jaxb.impl.version>2.3.2</jaxb.impl.version>
         <javax.activation.api.version>1.2.0</javax.activation.api.version>
-        <reflections.version>0.9.11</reflections.version>
+        <reflections.version>0.9.12</reflections.version>
         <httpclient.version>4.5.12</httpclient.version>
         <httpcore.version>4.4.13</httpcore.version>
         <javaee.web.api.version>8.0.1</javaee.web.api.version>
@@ -768,10 +768,6 @@
                                     <property name="optional" value="true"/>
                                 </module>
 
-                                <!-- Checks that a package-info.java file exists for each package.     -->
-                                <!-- See https://checkstyle.org/config_javadoc.html#JavadocPackage -->
-                                <module name="JavadocPackage"/>
-
                                 <!-- Checks whether files end with a new line.                        -->
                                 <!-- See https://checkstyle.org/config_misc.html#NewlineAtEndOfFile -->
                                 <module name="NewlineAtEndOfFile"/>
@@ -785,6 +781,7 @@
                                 <module name="FileLength"/>
                                 <module name="LineLength">
                                     <property name="fileExtensions" value="java"/>
+                                    <property name="max" value="150"/>
                                 </module>
 
                                 <!-- Checks for whitespace                               -->
@@ -812,12 +809,16 @@
                                     <!-- Checks for Javadoc comments.                     -->
                                     <!-- See https://checkstyle.org/config_javadoc.html -->
                                     <module name="InvalidJavadocPosition"/>
-                                    <module name="JavadocMethod"/>
+                                    <module name="JavadocMethod">
+                                        <property name="allowedAnnotations" value="Override, Test, Before, After, BeforeClass, AfterClass, ConfigDescription"/>
+                                    </module>
                                     <module name="JavadocType"/>
                                     <module name="JavadocVariable"/>
                                     <module name="JavadocStyle"/>
-                                    <module name="MissingJavadocMethod"/>
-
+                                    <module name="MissingJavadocMethod">
+                                        <property name="allowedAnnotations" value="Override, Test, Before, After, BeforeClass, AfterClass, ConfigDescription"/>
+                                    </module>
+                                    
                                     <!-- Checks for Naming Conventions.                  -->
                                     <!-- See https://checkstyle.org/config_naming.html -->
                                     <module name="ConstantName"/>
@@ -857,11 +858,6 @@
                                     <module name="WhitespaceAfter"/>
                                     <module name="WhitespaceAround"/>
 
-                                    <!-- Modifier Checks                                    -->
-                                    <!-- See https://checkstyle.org/config_modifiers.html -->
-                                    <module name="ModifierOrder"/>
-                                    <module name="RedundantModifier"/>
-
                                     <!-- Checks for blocks. You know, those {}'s         -->
                                     <!-- See https://checkstyle.org/config_blocks.html -->
                                     <module name="AvoidNestedBlocks"/>
@@ -874,7 +870,6 @@
                                     <!-- See https://checkstyle.org/config_coding.html -->
                                     <module name="EmptyStatement"/>
                                     <module name="EqualsHashCode"/>
-                                    <module name="HiddenField"/>
                                     <module name="IllegalInstantiation"/>
                                     <module name="InnerAssignment"/>
                                     <module name="MagicNumber"/>
@@ -885,16 +880,13 @@
 
                                     <!-- Checks for class design                         -->
                                     <!-- See https://checkstyle.org/config_design.html -->
-                                    <module name="DesignForExtension"/>
                                     <module name="FinalClass"/>
                                     <module name="HideUtilityClassConstructor"/>
                                     <module name="InterfaceIsType"/>
-                                    <module name="VisibilityModifier"/>
 
                                     <!-- Miscellaneous other checks.                   -->
                                     <!-- See https://checkstyle.org/config_misc.html -->
                                     <module name="ArrayTypeStyle"/>
-                                    <module name="FinalParameters"/>
                                     <module name="TodoComment"/>
                                     <module name="UpperEll"/>
 

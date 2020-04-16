@@ -1,8 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                            OpenSilexConfig.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex;
 
 import java.util.List;
@@ -10,11 +11,15 @@ import java.util.Map;
 import org.opensilex.config.ConfigDescription;
 
 /**
+ * OpenSilex system configuration description.
  *
- * @author vince
+ * @author Vincent Migot
  */
 public interface OpenSilexConfig {
 
+    /**
+     * YAML key for system configuration.
+     */
     public final static String YAML_KEY = "system";
 
     @ConfigDescription(

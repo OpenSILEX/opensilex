@@ -29,27 +29,44 @@ import org.opensilex.utils.ClassUtils;
 import org.slf4j.LoggerFactory;
 
 /**
- * <pre>
- * Proxy class to transform configuration interfaces into real objects, reading
- * directly from loaded configuration.
- * TODO update Javadoc
- * </pre>
+ * Proxy class to transform configuration interfaces into real objects, reading directly from loaded configuration.
  *
  * @author Vincent Migot
  */
 public class ConfigProxyHandler implements InvocationHandler {
 
+    /**
+     * Class Logger.
+     */
     private final static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ConfigManager.class);
 
-    private final String baseDirectory;
+    /**
+     * Base JSON key path.
+     */
+    private final String baseKey;
+
+    /**
+     * Global configuration JSON node.
+     */
     private final JsonNode rootNode;
+
+    /**
+     * YAML object mapper.
+     */
     private final ObjectMapper yamlMapper;
 
+    /**
+     * Constructor.
+     *
+     * @param key base key
+     * @param rootNode Global configuration
+     * @param yamlMapper Taml mapper
+     */
     public ConfigProxyHandler(String key, JsonNode rootNode, ObjectMapper yamlMapper) {
         if (key.startsWith("/") || key.isEmpty()) {
-            this.baseDirectory = key + "/";
+            this.baseKey = key + "/";
         } else {
-            this.baseDirectory = "/" + key + "/";
+            this.baseKey = "/" + key + "/";
         }
         this.rootNode = rootNode;
         this.yamlMapper = yamlMapper;
@@ -57,11 +74,21 @@ public class ConfigProxyHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws InvalidConfigException {
-        String key = baseDirectory + method.getName();
+        String key = baseKey + method.getName();
 
         return nodeToObject(method.getGenericReturnType(), key, rootNode, method);
     }
 
+    /**
+     * Return object corresponding to given key.
+     *
+     * @param type Type to return
+     * @param key configuration key
+     * @param node Configuration node
+     * @param method Interface method
+     * @return Loaded object corresponding to given key
+     * @throws InvalidConfigException
+     */
     @SuppressWarnings("unchecked")
     private Object nodeToObject(Type type, String key, JsonNode node, Method method) throws InvalidConfigException {
         Object result;
@@ -121,6 +148,14 @@ public class ConfigProxyHandler implements InvocationHandler {
         return result;
     }
 
+    /**
+     * Return a primitive object (or default).
+     *
+     * @param type primitive type
+     * @param node corresponding node
+     * @param method correponding interface method
+     * @return primitive value
+     */
     public static Object getPrimitive(String type, JsonNode node, Method method) {
         Object result = null;
 
@@ -166,6 +201,13 @@ public class ConfigProxyHandler implements InvocationHandler {
         return result;
     }
 
+    /**
+     * Return boolean value.
+     *
+     * @param node corresponding node
+     * @param method correponding interface method
+     * @return boolean value
+     */
     private static boolean getBoolean(JsonNode node, Method method) {
         boolean result = false;
         if (node.isMissingNode() || node.isNull()) {
@@ -182,6 +224,13 @@ public class ConfigProxyHandler implements InvocationHandler {
         return result;
     }
 
+    /**
+     * Return int value.
+     *
+     * @param node corresponding node
+     * @param method correponding interface method
+     * @return int value
+     */
     private static int getInt(JsonNode node, Method method) {
         int result = 0;
         if (node.isMissingNode() || node.isNull()) {
@@ -198,6 +247,13 @@ public class ConfigProxyHandler implements InvocationHandler {
         return result;
     }
 
+    /**
+     * Return long value.
+     *
+     * @param node corresponding node
+     * @param method correponding interface method
+     * @return long value
+     */
     private static long getLong(JsonNode node, Method method) {
         long result = 0L;
         if (node.isMissingNode() || node.isNull()) {
@@ -214,6 +270,13 @@ public class ConfigProxyHandler implements InvocationHandler {
         return result;
     }
 
+    /**
+     * Return float value.
+     *
+     * @param node corresponding node
+     * @param method correponding interface method
+     * @return float value
+     */
     private static float getFloat(JsonNode node, Method method) {
         float result = 0;
         String nodeText = node.asText();
@@ -231,6 +294,13 @@ public class ConfigProxyHandler implements InvocationHandler {
         return result;
     }
 
+    /**
+     * Return double value.
+     *
+     * @param node corresponding node
+     * @param method correponding interface method
+     * @return double value
+     */
     private static double getDouble(JsonNode node, Method method) {
         double result = 0;
         if (node.isMissingNode() || node.isNull()) {
@@ -247,6 +317,13 @@ public class ConfigProxyHandler implements InvocationHandler {
         return result;
     }
 
+    /**
+     * Return char value.
+     *
+     * @param node corresponding node
+     * @param method correponding interface method
+     * @return char value
+     */
     private static char getChar(JsonNode node, Method method) {
         char result = Character.MIN_VALUE;
         String nodeText = node.asText();
@@ -264,6 +341,13 @@ public class ConfigProxyHandler implements InvocationHandler {
         return result;
     }
 
+    /**
+     * Return short value.
+     *
+     * @param node corresponding node
+     * @param method correponding interface method
+     * @return short value
+     */
     private static short getShort(JsonNode node, Method method) {
         short result = (short) 0;
         String nodeText = node.asText();
@@ -281,6 +365,13 @@ public class ConfigProxyHandler implements InvocationHandler {
         return result;
     }
 
+    /**
+     * Return byte value.
+     *
+     * @param node corresponding node
+     * @param method correponding interface method
+     * @return byte value
+     */
     private static byte getByte(JsonNode node, Method method) {
         byte result = (byte) 0;
         String nodeText = node.asText();
@@ -298,6 +389,13 @@ public class ConfigProxyHandler implements InvocationHandler {
         return result;
     }
 
+    /**
+     * Return string value.
+     *
+     * @param node corresponding node
+     * @param method correponding interface method
+     * @return string value
+     */
     private static String getString(JsonNode node, Method method) {
         String result = "";
         if (node.isMissingNode() || node.isNull()) {
@@ -314,6 +412,16 @@ public class ConfigProxyHandler implements InvocationHandler {
         return result;
     }
 
+    /**
+     * Return map value.
+     *
+     * @param genericParameter Map generic parameter
+     * @param value corresponding node
+     * @param method correponding interface method
+     * @return map value
+     * @throws IOException
+     * @throws InvalidConfigException
+     */
     private List<?> getList(Type genericParameter, JsonNode value, Method method) throws IOException, InvalidConfigException {
         List<Object> list = new ArrayList<>();
 
@@ -344,6 +452,16 @@ public class ConfigProxyHandler implements InvocationHandler {
         );
     }
 
+    /**
+     * Return list value.
+     *
+     * @param genericParameter List generic parameter
+     * @param value corresponding node
+     * @param method correponding interface method
+     * @return list value
+     * @throws IOException
+     * @throws InvalidConfigException
+     */
     private Map<?, ?> getMap(Type genericParameter, JsonNode value, Method method) throws InvalidConfigException, IOException {
         Map<String, Object> map = new HashMap<>();
 
@@ -379,6 +497,16 @@ public class ConfigProxyHandler implements InvocationHandler {
         }
     }
 
+    /**
+     * Return a service instance.
+     *
+     * @param <T> Service class
+     * @param serviceClass Service class
+     * @param value Conrreponding service configuration node
+     * @param serviceName Service name
+     * @return Service instance
+     * @throws InvalidConfigException
+     */
     @SuppressWarnings("unchecked")
     private <T extends Service> T getService(Class<T> serviceClass, JsonNode value, String serviceName) throws InvalidConfigException {
 
@@ -437,10 +565,13 @@ public class ConfigProxyHandler implements InvocationHandler {
                     Constructor<T> constructorWithConnection = ClassUtils.getConstructorWithParameterImplementing(implementation, Service.class);
                     if (constructorWithConnection != null) {
                         instance = constructorWithConnection.newInstance(connection);
-                        instance.setServiceConstructorArguments(new ServiceConstructorArguments(implementation, connectionID, connectionClass, connection));
+                        instance.setServiceConstructorArguments(
+                                new ServiceConstructorArguments(implementation, connectionID, connectionClass, connection)
+                        );
 
                     } else {
-                        String errorMessage = "No valid constructor found for service with connection: " + serviceName + " - " + connectionClass.getName();
+                        String errorMessage = "No valid constructor found for service with connection: "
+                                + serviceName + " - " + connectionClass.getName();
                         LOGGER.error(errorMessage);
                         throw new Exception(errorMessage);
                     }

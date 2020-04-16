@@ -14,10 +14,10 @@ import org.opensilex.server.response.ErrorResponse;
 /**
  * <pre>
  * This class represent a forbidden exception (403 - FORBIDDEN).
- * 
+ *
  * It should be use for any access rights restrictriction.
- * 
- * Do not confuse it with {@code org.opensilex.server.exceptions.UnauthorizedException} 
+ *
+ * Do not confuse it with {@code org.opensilex.server.exceptions.UnauthorizedException}
  * which should only be used for authentication errors (ie: invalid credentials or token decoding issues)
  * </pre>
  *
@@ -25,6 +25,11 @@ import org.opensilex.server.response.ErrorResponse;
  */
 public class ForbiddenException extends WebApplicationException {
 
+    /**
+     * Exception constructor.
+     *
+     * @param message exception detail
+     */
     public ForbiddenException(String message) {
         super(Response.status(Response.Status.FORBIDDEN)
                 .entity(new ErrorResponse(

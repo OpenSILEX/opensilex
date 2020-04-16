@@ -43,12 +43,11 @@ public class AbstractUnitTest {
         Map<String, String> args = new HashMap<>();
         args.put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.TEST_PROFILE_ID);
         args.put(OpenSilex.NO_CACHE_ARG_KEY, "true");
-        
-// NOTE: uncomment this line to enable full debug during unit tests
-//        args.put(OpenSilex.DEBUG_ARG_KEY, "true");
 
+        // NOTE: uncomment this line to enable full debug during unit tests
+        // args.put(OpenSilex.DEBUG_ARG_KEY, "true");
         LOGGER.debug("Create OpenSilex instance for Unit Test");
-        opensilex = OpenSilex.createStaticInstance(args);
+        opensilex = OpenSilex.createInstance(args);
     }
 
     @AfterClass

@@ -7,7 +7,7 @@
 package org.opensilex.config;
 
 /**
- * Excption in case of invalid configuration detection
+ * Excption in case of invalid configuration detection.
  *
  * @author Vincent Migot
  */

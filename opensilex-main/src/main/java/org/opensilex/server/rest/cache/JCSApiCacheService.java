@@ -1,8 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                              RestApplication.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.server.rest.cache;
 
 import java.io.File;
@@ -17,13 +18,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Cache service implemtation for JSC.
  *
- * @author vince
+ * See: http://commons.apache.org/proper/commons-jcs/
+ *
+ * @author Vincent Migot
  */
 public class JCSApiCacheService extends BaseService implements ApiCacheService {
 
+    /**
+     * Class Logger.
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(JCSApiCacheService.class);
 
+    /**
+     * Temprorary cache directory.
+     */
     private File cacheDir;
 
     @Override

@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <pre>
- * Dependency manager based on Maven Resolver API for modules dependency resolution
+ * Dependency manager based on Maven Resolver API for modules dependency resolution.
  * see: https://maven.apache.org/resolver/index.html
  * </pre>
  *
@@ -58,12 +58,18 @@ import org.slf4j.LoggerFactory;
  */
 public class DependencyManager {
 
+    /**
+     * Class Logger.
+     */
     private final static Logger LOGGER = LoggerFactory.getLogger(DependencyManager.class);
 
+    /**
+     * Maven central repository URL.
+     */
     private final static String MAVEN_CENTRAL_URL = "https://repo1.maven.org/maven2/";
 
     /**
-     * Generate a unique key for an artifact
+     * Generate a unique key for an artifact.
      *
      * @param artifact Artifact used to generate the key
      * @return Unique key for the given artifact
@@ -77,7 +83,7 @@ public class DependencyManager {
     }
 
     /**
-     * Get Maven local system repository
+     * Get Maven local system repository.
      *
      * @return Maven local system repository
      */
@@ -99,8 +105,10 @@ public class DependencyManager {
     }
 
     /**
-     * Get session for Maven local system repository
+     * Get session for Maven local system repository.
      *
+     * @param system system repository
+     * @param repositoryPath repository path
      * @return Session for Maven local system repository
      */
     private static DefaultRepositorySystemSession getRepositorySystemSession(RepositorySystem system, String repositoryPath) {
@@ -117,7 +125,7 @@ public class DependencyManager {
     }
 
     /**
-     * Get Maven remote repository (Maven central)
+     * Get Maven remote repository (Maven central).
      *
      * @return Maven remote repository
      */
@@ -126,7 +134,7 @@ public class DependencyManager {
     }
 
     /**
-     * Get Maven remote repositories defined in pom file
+     * Get Maven remote repositories defined in pom file.
      *
      * @param model the pom model to check
      * @return list of remote repositories
@@ -143,32 +151,32 @@ public class DependencyManager {
     }
 
     /**
-     * Local system repository
+     * Local system repository.
      */
     private RepositorySystem system;
 
     /**
-     * Session for local system repository
+     * Session for local system repository.
      */
     private RepositorySystemSession session;
 
     /**
-     * Local system repository path
+     * Local system repository path.
      */
     private String repositoryPath = System.getProperty("user.home") + "/.m2/repository/";
 
     /**
-     * Loaded dependencies list
+     * Loaded dependencies list.
      */
     private final List<String> loadedDependencies = new ArrayList<>();
 
     /**
-     * Build-in dependencies list
+     * Build-in dependencies list.
      */
     private final List<String> buildinDependencies = new ArrayList<>();
 
     /**
-     * Constructor for dependency manager based on a main pom file
+     * Constructor for dependency manager based on a main pom file.
      *
      * @param mainPom Base pom file
      * @throws ModelBuildingException In case of bad pom files
@@ -182,7 +190,7 @@ public class DependencyManager {
     }
 
     /**
-     * Init local repository access
+     * Init local repository access.
      */
     private void initRegistries() {
         system = getRepositorySystem();
@@ -190,7 +198,7 @@ public class DependencyManager {
     }
 
     /**
-     * Register pom.xml file as a loaded dependency
+     * Register pom.xml file as a loaded dependency.
      *
      * @param pom pom.xml to register
      * @return pom.xml parsed model
@@ -208,18 +216,17 @@ public class DependencyManager {
     }
 
     /**
-     * Load pom.xml dependencies and try download them if needed if flag
-     * downloadWithMaven is true.
+     * Load pom.xml dependencies and try download them if needed if flag downloadWithMaven is true.
      *
      * @param pom pom.xml to get dependencies
-     * @param downloadWithMaven Flag to determine if missing dependencies should
-     * be downloaded
+     * @param downloadWithMaven Flag to determine if missing dependencies should be downloaded
      * @return List of downloaded dependencies
      * @throws ModelBuildingException In case of bad pom files
      * @throws DependencyResolutionException Dependency resolution issue
      * @throws MalformedURLException In case of bad url format
      */
-    private List<URL> loadDependencies(File pom, boolean downloadWithMaven) throws DependencyResolutionException, ModelBuildingException, MalformedURLException {
+    private List<URL> loadDependencies(File pom, boolean downloadWithMaven)
+            throws DependencyResolutionException, ModelBuildingException, MalformedURLException {
         List<URL> resolvedDependencies = new ArrayList<>();
 
         // Parse pom.xml to a Model
@@ -278,7 +285,7 @@ public class DependencyManager {
     }
 
     /**
-     * Load all modules dependencies in list
+     * Load all modules dependencies in list.
      *
      * @param jarModulesURLs List of modules JAR
      * @return List of dependencies URL
@@ -306,7 +313,7 @@ public class DependencyManager {
     }
 
     /**
-     * Build pom.xml model from pom.xml file
+     * Build pom.xml model from pom.xml file.
      *
      * @param pom pom.xml to analyse
      * @return pom.xml model

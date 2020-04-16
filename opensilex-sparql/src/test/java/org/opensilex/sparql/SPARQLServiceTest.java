@@ -22,9 +22,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -230,6 +228,41 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         bList = sparql.search(SPARQLDeserializers.nodeURI(newGraphUri), B.class, null);
         assertFalse(bList.isEmpty());
 
+    }
+
+    @Test
+    public void testUriListExists() throws Exception {
+
+        B b = new B();
+        b.setBool(true);
+        b.setFloatVar(45f);
+        b.setDoubleVar(0d);
+        b.setCharVar('Z');
+        b.setShortVar((short) 0);
+
+        B b1 = new B();
+        b1.setFloatVar(45f);
+        b1.setDoubleVar(0d);
+        b1.setCharVar('Z');
+        b1.setShortVar((short) 0);
+
+        sparql.create(b);
+        sparql.create(b1);
+
+        // test one or more good URI
+        assertTrue(sparql.uriListExists(B.class, Collections.singletonList(b.getUri())));
+        assertTrue(sparql.uriListExists(B.class, Arrays.asList(b.getUri(),b1.getUri())));
+
+        URI badUri = new URI(b.getUri().toString()+"prefix");
+        URI badUri2 = new URI(b.getUri().toString()+"prefix2");
+
+        // test one or more bad URI
+        assertFalse(sparql.uriExists(B.class,badUri));
+        assertFalse(sparql.uriListExists(B.class, Collections.singletonList(badUri)));
+        assertFalse(sparql.uriListExists(B.class, Arrays.asList(badUri,badUri2)));
+
+        // test a good and a bad URI
+        assertFalse(sparql.uriListExists(B.class, Arrays.asList(b.getUri(),badUri)));
     }
 
     @Test

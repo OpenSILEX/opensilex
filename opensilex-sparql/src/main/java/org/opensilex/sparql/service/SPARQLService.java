@@ -908,7 +908,18 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if (uris == null || uris.isEmpty()) {
             return false;
         }
-        return executeAskQuery(getUriListExistsQuery(objectClass, uris));
+        if(uris.size() == 1){
+            return uriExists(objectClass,uris.iterator().next());
+        }
+
+        SelectBuilder selectQuery = getUriListExistQuery(objectClass,uris);
+        for (SPARQLResult result : executeSelectQuery(selectQuery)) {
+            boolean value = Boolean.parseBoolean(result.getStringValue(EXISTING_VAR));
+            if (!value) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -940,17 +951,28 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return askQuery;
     }
 
-    public <T extends SPARQLResourceModel> AskBuilder getUriListExistsQuery(Class<T> objectClass, Collection<URI> uris) throws SPARQLException {
+    private static final String EXISTING_VAR = "existing";
+
+    public <T extends SPARQLResourceModel> SelectBuilder getUriListExistQuery(Class<T> objectClass, Collection<URI> uris) throws Exception {
+
         SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
 
-        AskBuilder askQuery = new AskBuilder();
-
-        Var fieldType = mapper.getTypeFieldVar();
-        SPARQLQueryHelper.inURI(askQuery, mapper.getURIFieldName(), uris);
+        Var uriVar = mapper.getURIFieldVar();
+        Var existing = makeVar(EXISTING_VAR);
+        Var typeVar = mapper.getTypeFieldVar();
         Resource typeDef = mapper.getRDFType();
 
-        askQuery.addWhere(fieldType, Ontology.subClassAny, typeDef);
-        return askQuery;
+        SelectBuilder select = new SelectBuilder();
+        SPARQLQueryHelper.addWhereUriValues(select,uriVar.getVarName(),uris);
+
+        WhereBuilder where = new WhereBuilder()
+            .addWhere(uriVar,makeVar("p"),makeVar("o"))
+            .addWhere(typeVar,Ontology.subClassAny,typeDef)
+            .addWhere(uriVar,RDF.type,typeVar);
+        Expr existExpr = SPARQLQueryHelper.getExprFactory().exists(where);
+        select.addVar(existExpr,existing);
+
+        return select;
     }
 
     /**
@@ -1111,7 +1133,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             if (! uriListExists(modelMapper.getObjectClass(), uris)) {
                 // TODO: better exception for validation
-               // throw new Exception("Invalid URI list !!");
+                throw new Exception("Invalid URI list !!");
             }
         }
     }

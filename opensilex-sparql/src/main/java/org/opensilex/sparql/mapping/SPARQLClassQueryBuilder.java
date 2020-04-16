@@ -66,6 +66,8 @@ class SPARQLClassQueryBuilder {
 
     public SelectBuilder getSelectBuilder(Node graph, String lang) {
         SelectBuilder selectBuilder = new SelectBuilder();
+        selectBuilder.setDistinct(true);
+
         addSelectUriTypeVars(selectBuilder);
         analyzer.forEachDataProperty((Field field, Property property) -> {
             selectBuilder.addVar(field.getName());

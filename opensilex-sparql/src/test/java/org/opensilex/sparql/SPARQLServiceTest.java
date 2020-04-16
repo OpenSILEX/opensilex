@@ -5,7 +5,9 @@
 //******************************************************************************
 package org.opensilex.sparql;
 
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -29,6 +31,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.C;
 import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.unit.test.AbstractUnitTest;
 
@@ -230,11 +233,11 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
     }
 
+
     @Test
     public void testUriListExists() throws Exception {
 
         B b = new B();
-        b.setBool(true);
         b.setFloatVar(45f);
         b.setDoubleVar(0d);
         b.setCharVar('Z');
@@ -310,6 +313,44 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
         // TODO test delete
         // TODO test update
+    }
+
+    @Test
+    public void testDistinctListSearch() throws Exception {
+
+        // this test try to insert an object b with a list and a property p,
+        // b has two element in this list ( v1 and v2)
+
+        // once this object created, we try to fetch all objects which have v1 or v2 as p value
+
+        // if we don't use DISTINCT when selecting objects, then b appears twice in the list since it satisfy the
+        // filter twice
+
+        B b = new B();
+        b.setBool(true);
+        b.setFloatVar(45f);
+        b.setDoubleVar(0d);
+        b.setCharVar('Z');
+        b.setShortVar((short) 0);
+
+        List<String> list1 = Arrays.asList("value1","value2");
+        b.setStringList(list1);
+
+        sparql.create(b);
+
+        List<B> results = sparql.searchWithPagination(
+                B.class,
+                null,
+                (SelectBuilder select) -> {
+                    select.addWhere(makeVar(B.URI_FIELD),TEST_ONTOLOGY.hasStringList.asNode(),makeVar("list"));
+                    SPARQLQueryHelper.addWhereValues(select,"list",b.getStringList());
+                },
+                null,
+                0,
+                10
+        ).getList();
+
+        assertEquals(1,results.size());
     }
 
 }

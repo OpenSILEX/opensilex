@@ -53,13 +53,11 @@ public class ExperimentDAO {
     }
 
     public ExperimentModel create(ExperimentModel instance) throws Exception {
-        checkURIs(instance);
         sparql.create(instance);
         return instance;
     }
 
     public ExperimentModel update(ExperimentModel instance) throws Exception {
-        checkURIs(instance);
         sparql.update(instance);
         return instance;
     }
@@ -83,46 +81,6 @@ public class ExperimentDAO {
             throw new IllegalArgumentException("Unknown experiment " + xpUri);
         }
         sparql.updateSubjectRelations(SPARQLDeserializers.nodeURI(xpUri), factorsUris, Oeso.influencedBy, xpUri);
-    }
-
-    /**
-     * check if all URI from uris have the typeResource as {@link RDF#type} into the SPARQL graph
-     *
-     * @param uris         the {@link List} of {@link URI} to check
-     * @param typeResource the {@link Resource} indicating the {@link RDF#type
-     */
-    protected void checkURIs(List<URI> uris, Resource typeResource) throws URISyntaxException, SPARQLException {
-
-        if (uris == null || uris.isEmpty()) {
-            return;
-        }
-        for (URI uri : uris) {
-            if (!sparql.uriExists(new URI(typeResource.getURI()), uri)) {
-                throw new IllegalArgumentException("Trying to insert an experiment with an unknown " + typeResource.getLocalName() + " : " + uri);
-            }
-        }
-    }
-
-    /**
-     * Check that all URI(s) which refers to a non {@link org.opensilex.sparql.annotations.SPARQLResource}-compliant model exists.
-     *
-     * @param model the experiment for which we check if all URI(s) exists
-     * @throws SPARQLException          if the SPARQL uri checking query fail
-     * @throws IllegalArgumentException if the given model contains a unknown URI
-     */
-    protected void checkURIs(ExperimentModel model) throws SPARQLException, IllegalArgumentException, URISyntaxException {
-
-        // #TODO use a method to test in one query if multiple URI(s) exists and are of a given type, or use SHACL validation
-
-        checkURIs(model.getInfrastructures(), (Oeso.Infrastructure));
-        checkURIs(model.getSensors(), (Oeso.SensingDevice));
-        checkURIs(model.getVariables(), (Oeso.Variable));
-        checkURIs(model.getDevices(), (Oeso.Installation));
-
-        if (model.getSpecies() != null && !sparql.uriExists(new URI(Oeso.Species.getURI()), model.getSpecies())) {
-            throw new IllegalArgumentException("Trying to insert an experiment with an unknown species : " + model.getSpecies());
-        }
-
     }
 
     public void delete(URI xpUri) throws Exception {

@@ -94,7 +94,7 @@ import {
   InfrastructuresService,
   InfrastructureGetDTO,
   ProjectsService,
-  ProjectCreationDTO,
+  ProjectGetDTO,
   ResourceTreeDTO
 } from "opensilex-core/index";
 import {
@@ -125,9 +125,9 @@ export default class ExperimentForm2 extends ExperimentForm {
       "opensilex.ProjectsService"
     );
     service
-      .searchProjects(null, 0, 1000)
+      .searchProjects(null,null,null,null,null,null,null, 0, 1000)
       .then(
-        (http: HttpResponse<OpenSilexResponse<Array<ProjectCreationDTO>>>) => {
+        (http: HttpResponse<OpenSilexResponse<Array<ProjectGetDTO>>>) => {
           for (let i = 0; i < http.response.result.length; i++) {
             let dto = http.response.result[i];
             this.projectList.push({ value: dto.uri, text: dto.label });

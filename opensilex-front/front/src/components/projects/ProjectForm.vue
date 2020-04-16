@@ -46,7 +46,7 @@
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { ProjectCreationDTO } from "../../lib/model/projectCreationDTO";
+import {ProjectGetDTO} from "opensilex-core/index";
 
 @Component
 export default class ProjectForm extends Vue {
@@ -59,7 +59,8 @@ export default class ProjectForm extends Vue {
     return this.$store.state.user;
   }
 
-  form: ProjectCreationDTO = { 'uri': '',
+  form: ProjectGetDTO = {
+     'uri': '',
     'label': '',
     'shortname': '',
     'description': '',
@@ -72,8 +73,7 @@ export default class ProjectForm extends Vue {
     'administrativeContacts': [],
     'coordinators': [],
     'scientificContacts': [],
-    'relatedProjects':[],
-    'groups': []
+    'relatedProjects':[]
   };
 
   title = "";
@@ -94,8 +94,7 @@ export default class ProjectForm extends Vue {
     'administrativeContacts': [],
     'coordinators': [],
     'scientificContacts': [],
-    'relatedProjects':[],
-    'groups': []
+    'relatedProjects':[]
     };
   }
 
@@ -107,7 +106,7 @@ export default class ProjectForm extends Vue {
     modalRef.show();
   }
 
-  showEditForm(form: ProjectCreationDTO) {
+  showEditForm(form: ProjectGetDTO) {
     this.form = form;
     this.editMode = true;
     this.title = this.$i18n.t("component.project.update").toString();

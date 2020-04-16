@@ -94,6 +94,7 @@ public class ProjectAPI {
      * @param dto the Project to create
      * @return a {@link Response} with a {@link ObjectUriResponse} containing
      * the created Project {@link URI}
+     * @throws java.lang.Exception
      */
     @POST
     @Path("create")
@@ -112,8 +113,7 @@ public class ProjectAPI {
 
     public Response createProject(
             @ApiParam("Project description") @Valid ProjectCreationDTO dto
-    ) {
-       
+    ) throws Exception {
         try {
             ProjectDAO dao = new ProjectDAO(sparql);
             ProjectModel createdPjct = dao.create(dto.newModel());
@@ -242,14 +242,13 @@ public class ProjectAPI {
             @ApiParam(value = "Search ended(false) ", example = "true") @QueryParam("isEnded") Boolean isEnded,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "label=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
-            @Context SecurityContext securityContext
+            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         
           try {
             ProjectDAO prjctDao = new ProjectDAO(sparql);
 
-            UserModel userModel = authentication.getCurrentUser(securityContext);
+           // UserModel userModel = authentication.getCurrentUser(securityContext);
            // List<URI> groupUris = new ArrayList<>();
 //            for (String groupUri : authentication.decodeStringArrayClaim(userModel.getToken(), CoreModule.TOKEN_USER_GROUP_URIS)) {
 //                groupUris.add(new URI(groupUri));

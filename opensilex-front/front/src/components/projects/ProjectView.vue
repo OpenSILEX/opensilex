@@ -39,8 +39,7 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import { ProjectsService } from "../../lib/api/projects.service";
-import { ProjectCreationDTO } from "../../lib/model/projectCreationDTO";
+import {ProjectGetDTO,ProjectsService} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
 
 @Component
@@ -62,15 +61,15 @@ export default class ProjectView extends Vue {
     projectForm.showCreateForm();
   }
 
-  editProject(form: ProjectCreationDTO) {
+  editProject(form: ProjectGetDTO) {
     let projectForm: any = this.$refs.projectForm;
     projectForm.showEditForm(form);
   }
 
-  callCreateProjectService(form: ProjectCreationDTO, done) {
+  callCreateProjectService(form: ProjectGetDTO, done) {
     done(
       this.service
-        .createProject(this.user.getAuthorizationHeader(), form)
+        .createProject( form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Project created", uri);
@@ -80,10 +79,10 @@ export default class ProjectView extends Vue {
     );
   }
 
-  callUpdateProjectService(form: ProjectCreationDTO, done) {
+  callUpdateProjectService(form: ProjectGetDTO, done) {
     done(
       this.service
-        .updateProject(this.user.getAuthorizationHeader(), form)
+        .updateProject(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Project updated", uri);
@@ -94,7 +93,7 @@ export default class ProjectView extends Vue {
   }
 
    deleteProject(uri: string) {
-    this.service.deleteProject(this.user.getAuthorizationHeader(), uri)
+    this.service.deleteProject( uri)
       .then(() => {
         let projectTable: any = this.$refs.projectTable;
         projectTable.refresh();

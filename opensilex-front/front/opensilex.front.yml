@@ -35,13 +35,7 @@ menu:
       credentials: []
   - id: installations
     label: component.menu.installations
-  - id: projects
-    label: component.menu.projects
-    route: 
-      path: /users
-      component: opensilex-UserView
-      credentials: []
-    icon: ik-globe
+ 
   - id: scientificObjects
     label: component.menu.scientificObjects
     route: 

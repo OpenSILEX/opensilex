@@ -266,9 +266,7 @@ public class ProjectAPI {
                     pageSize
             );
 
-            if (resultList.getList().isEmpty()) {
-                return new ErrorResponse(Response.Status.NO_CONTENT, "No project found", "").getResponse();
-            }
+           
             // Convert paginated list to DTO
             ListWithPagination<ProjectGetDTO> resultDTOList = resultList.convert(ProjectGetDTO.class, ProjectGetDTO::fromModel);
             return new PaginatedListResponse<>(resultDTOList).getResponse();

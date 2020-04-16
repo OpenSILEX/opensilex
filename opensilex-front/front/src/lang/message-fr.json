@@ -268,7 +268,7 @@
                 },
                 "filter": {
                     "alias": "Filtrer par Alias",
-                    "campains": "Filtrer par Campagne(s)",
+                    "campaign": "Filtrer par Campagne(s)",
                     "installations": "Filtrer par Installation(s)",
                     "projects": "Filtrer par Projet(s)",
                     "places": "Filtrer par Lieux",

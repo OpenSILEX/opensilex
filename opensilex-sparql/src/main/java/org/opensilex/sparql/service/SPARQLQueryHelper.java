@@ -221,7 +221,7 @@ public class SPARQLQueryHelper {
      * @see SelectBuilder#addWhereValueVar(Object, Object...)
      * @see SPARQLDeserializers#getForClass(Class)
      */
-    public static void addWhereValues(WhereClause<?> where, String varName, List<?> values) throws Exception {
+    public static void addWhereValues(WhereClause<?> where, String varName, Collection<?> values) throws Exception {
 
         if (values.isEmpty()) {
             return;
@@ -231,26 +231,10 @@ public class SPARQLQueryHelper {
         Object[] nodes = new Node[values.size()];
         int i = 0;
         for (Object object : values) {
-            nodes[i++] = SPARQLDeserializers.getForClass(object.getClass()).getNode(object);
+            nodes[i++] = SPARQLDeserializers.getForClass(object.getClass()).getNodeFromString(object.toString());
         }
         where.addWhereValueVar(varName, nodes);
     }
-
-    public static void addWhereUriValues(WhereClause<?> where, String varName, Collection<URI> uris) {
-
-        if (uris.isEmpty()) {
-            return;
-        }
-
-        // convert list to JENA node array and return the new SelectBuilder
-        Object[] nodes = new Node[uris.size()];
-        int i = 0;
-        for (URI uri : uris) {
-            nodes[i++] = NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString()));
-        }
-        where.addWhereValueVar(varName, nodes);
-    }
-
 
         /**
          * Update the given {@link SelectBuilder} by adding a list of FILTER clause

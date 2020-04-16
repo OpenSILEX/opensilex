@@ -963,7 +963,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         Resource typeDef = mapper.getRDFType();
 
         SelectBuilder select = new SelectBuilder();
-        SPARQLQueryHelper.addWhereUriValues(select,uriVar.getVarName(),uris);
+        SPARQLQueryHelper.addWhereValues(select,uriVar.getVarName(),uris);
 
         WhereBuilder where = new WhereBuilder()
             .addWhere(uriVar,makeVar("p"),makeVar("o"))

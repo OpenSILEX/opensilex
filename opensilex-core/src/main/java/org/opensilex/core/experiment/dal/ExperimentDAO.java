@@ -241,7 +241,7 @@ public class ExperimentDAO {
 
     protected void appendSpeciesFilter(SelectBuilder select, URI species) throws Exception {
         if (species != null) {
-            select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.SPECIES_SPARQL_VAR, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(species.toString()))));
+            select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.SPECIES_SPARQL_VAR, species));
         }
     }
 

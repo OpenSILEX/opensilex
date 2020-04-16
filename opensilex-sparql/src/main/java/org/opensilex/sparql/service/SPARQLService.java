@@ -1109,9 +1109,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             SPARQLClassObjectMapper<SPARQLResourceModel> modelMapper = urisByMapper.getKey();
             Set<URI> uris = urisByMapper.getValue();
 
-            if (uriListExists(modelMapper.getObjectClass(), uris)) {
+            if (! uriListExists(modelMapper.getObjectClass(), uris)) {
                 // TODO: better exception for validation
-                throw new Exception("Invalid URI list !!");
+               // throw new Exception("Invalid URI list !!");
             }
         }
     }

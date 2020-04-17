@@ -202,7 +202,7 @@
         "experiment": {
             "uri" : "uri",
             "uri-help" :"Identifiant unique de l'expérimentation",
-            "label" : "Label",
+            "label" : "Nom",
             "label-placeholder" : "ZA17",
             "label-help" :"Nom utilisé pour identifier l'expérimentation",
             "objective" : "Objectif",

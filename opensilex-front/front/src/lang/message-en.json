@@ -204,7 +204,7 @@
         "experiment": {
             "uri" : "uri",
             "uri-help" :"Unique experiment identifier",
-            "label" : "Label",
+            "label" : "Name",
             "label-placeholder" : "ZA17",
             "label-help" :"Experiment name",
             "objective" : "Objective",

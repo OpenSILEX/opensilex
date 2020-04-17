@@ -41,44 +41,7 @@
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
-
-        <!-- Objective -->
-         <b-form-group  required  >
-          <opensilex-FormInputLabelHelper label=component.experiment.objective helpMessage="component.experiment.objective-help" >
-          </opensilex-FormInputLabelHelper>
-          <ValidationProvider :name="$t('component.experiment.objective')" v-slot="{ errors }">
-            <b-form-input  id="objective"  v-model="form.objective"  type="text"
-              :placeholder="$t('component.experiment.objective-placeholder')" >
-            </b-form-input>
-            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-          </ValidationProvider>
-        </b-form-group>
-
-          <!-- Campaign -->
-        <b-form-group  required  >
-            <opensilex-FormInputLabelHelper label=component.experiment.campaign helpMessage="component.experiment.campaign-help" >
-            </opensilex-FormInputLabelHelper>
-            <ValidationProvider :name="$t('component.experiment.campaign')"  v-slot="{ errors }">
-            <b-form-input  id="campaign"  v-model="form.campaign"  type="number "
-              :placeholder="$t('component.experiment.campaign-placeholder')" >
-            </b-form-input>
-            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-          </ValidationProvider>
-        </b-form-group>
-
-        <!-- Comment -->
-        <b-form-group  required  >
-           <opensilex-FormInputLabelHelper label=component.experiment.comment helpMessage="component.experiment.comment-help" >
-           </opensilex-FormInputLabelHelper>
-           <ValidationProvider :name="$t('component.experiment.comment')" v-slot="{ errors }">
-            <b-form-input  id="comment"  v-model="form.comment"  type="text"
-              :placeholder="$t('component.experiment.comment-placeholder')" >
-            </b-form-input>
-            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-          </ValidationProvider>
-        </b-form-group>
-
-       
+          
         <!-- StartDate -->
         <b-form-group  required  > 
             <opensilex-FormInputLabelHelper label="component.experiment.startDate"  helpMessage="component.experiment.startDate-help">
@@ -89,7 +52,6 @@
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
-
 
        <!-- EndDate -->
         <b-form-group  required  >
@@ -111,6 +73,42 @@
           <ValidationProvider :name="$t('component.experiment.species')" v-slot="{ errors }">
           <b-form-select id="speciesList" v-model="form.species" :options="speciesList" > </b-form-select>
           <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+          </ValidationProvider>
+        </b-form-group>
+
+        <!-- Objective -->
+         <b-form-group  required  >
+          <opensilex-FormInputLabelHelper label=component.experiment.objective helpMessage="component.experiment.objective-help" >
+          </opensilex-FormInputLabelHelper>
+          <ValidationProvider :name="$t('component.experiment.objective')" v-slot="{ errors }">
+            <b-form-textarea  id="objective"  v-model="form.objective"  type="textarea"
+              :placeholder="$t('component.experiment.objective-placeholder')" >
+            </b-form-textarea>
+            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+          </ValidationProvider>
+        </b-form-group>
+
+        <!-- Comment -->
+        <b-form-group  required  >
+           <opensilex-FormInputLabelHelper label=component.experiment.comment helpMessage="component.experiment.comment-help" >
+           </opensilex-FormInputLabelHelper>
+           <ValidationProvider :name="$t('component.experiment.comment')" v-slot="{ errors }">
+            <b-form-textarea  id="comment"  v-model="form.comment"  type="textarea"
+              :placeholder="$t('component.experiment.comment-placeholder')" >
+            </b-form-textarea>
+            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+          </ValidationProvider>
+        </b-form-group>
+
+        <!-- Campaign -->
+        <b-form-group  required  >
+            <opensilex-FormInputLabelHelper label=component.experiment.campaign helpMessage="component.experiment.campaign-help" >
+            </opensilex-FormInputLabelHelper>
+            <ValidationProvider :name="$t('component.experiment.campaign')"  v-slot="{ errors }">
+            <b-form-input  id="campaign"  v-model="form.campaign"  type="number "
+              :placeholder="$t('component.experiment.campaign-placeholder')" >
+            </b-form-input>
+            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
 

@@ -1,6 +1,6 @@
 <template v-slot:label>
   <span>
-    <span>{{$t(label)}}:</span>
+    <span> <b> {{$t(label)}} </b> </span>
     <font-awesome-icon icon="question-circle" v-b-tooltip.hover :title="$t(helpMessage)" />
   </span>
 </template>

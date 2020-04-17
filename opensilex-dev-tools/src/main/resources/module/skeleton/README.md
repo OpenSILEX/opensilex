@@ -5,8 +5,8 @@ Prerequisites
 
 - Install mustache : ``npm install -g mustache``
 
-- Replace config parameters
+- Replace config parameters in  ``./generateModule.sh``
 
-- go to ``opensilex-doc/src/main/resources/examples/module/skeleton/`` folder
- 
+- Go to ``opensilex-doc/src/main/resources/examples/module/skeleton/`` folder
+
 - Execute ``./generateModule.sh`` script

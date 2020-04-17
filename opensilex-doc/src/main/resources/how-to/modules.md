@@ -23,7 +23,7 @@ opensilex
 ├── opensilex-swagger-codegen-maven-plugin
 ```
 
-1. Module skeleton
+2. Module skeleton
 
 How to create module front part:
 
@@ -66,7 +66,7 @@ How to create module front part:
 ```
 See [Theme file](theme.md)  for more details.
 
-2. Add a pom file to configure the maven project **pom.xml** in module directory ``opensilex/{module_name}``
+3. Add a pom file to configure the maven project **pom.xml** in module directory ``opensilex/{module_name}``
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -104,7 +104,7 @@ See [Theme file](theme.md)  for more details.
 </project>
 ```
 
-3. Add a class with the module name which will describe interfaces, services and config that it implements.
+4. Add a class with the module name which will describe interfaces, services and config that it implements.
 
 The minimal OpenSilexModule configuration is the following :
 
@@ -122,7 +122,7 @@ public class {module_name}Module extends OpenSilexModule implements APIExtension
 }
 ```
 
-4. Update global ***pom.xml definition**
+5. Update global ***pom.xml definition**
 
 You need to the new module to the full build stage you need to add it to the global pom.xml
  ```xml

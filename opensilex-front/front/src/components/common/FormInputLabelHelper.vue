@@ -25,5 +25,3 @@ export default class FormInputLabelHelper extends Vue {
 <style scoped lang="scss">
 </style>
 
-
-

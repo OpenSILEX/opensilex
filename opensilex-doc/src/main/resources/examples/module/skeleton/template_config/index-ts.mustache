@@ -1,0 +1,22 @@
+/// <reference path="../../../opensilex-security/front/types/opensilex-security.d.ts" />
+import {{Module_name}}LoginComponent from "./components/layout/{{Module_name}}LoginComponent.vue";
+import {{Module_name}}FooterComponent from "./components/layout/{{Module_name}}FooterComponent.vue";
+import {{Module_name}}MenuComponent from "./components/layout/{{Module_name}}MenuComponent.vue";
+import {{Module_name}}HeaderComponent from "./components/layout/{{Module_name}}HeaderComponent.vue";
+import {{Module_name}}HomeComponent from "./components/layout/{{Module_name}}HomeComponent.vue";
+
+export default {
+    install(Vue, options) {
+    },
+    components: {
+        "{{module_name}}-{{Module_name}}HomeComponent": {{Module_name}}HomeComponent,
+        "{{module_name}}-{{Module_name}}LoginComponent": {{Module_name}}LoginComponent,
+        "{{module_name}}-{{Module_name}}FooterComponent": {{Module_name}}FooterComponent,
+        "{{module_name}}-{{Module_name}}MenuComponent": {{Module_name}}MenuComponent,
+        "{{module_name}}-{{Module_name}}HeaderComponent": {{Module_name}}HeaderComponent
+    },
+    lang: {
+        "fr": require("./lang/{{short_module_name}}-fr.json"),
+        "en": require("./lang/{{short_module_name}}-en.json"),
+    }
+};

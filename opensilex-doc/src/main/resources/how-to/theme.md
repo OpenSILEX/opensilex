@@ -1,13 +1,13 @@
 Theme
 =============
 
-# How to create a module theme 
+## How to create a module theme 
 
 ```bash
-# full-module-name  => .e.g : inrae-sixtine
+# full_module_name  => .e.g : inrae-sixtine
 # Module_name  => .e.g : Sixtine
 # module_name  => .e.g : sixtine
-{full-module-name} # module
+{full_module_name} # module
 ├── front # front
 │   ├── babel.config.js # translation config
 │   ├── package.json # module javascript packages description
@@ -36,9 +36,9 @@ Theme
 │   └── yarn.lock # yarn packages
 ```
 
-# Layout theme example
+### Layout Component
 ```bash
-{full-module-name} # module
+{full_module_name} # module
 ├── front # front
 │   ├── src # javascript sources
 │   │   ├── components # vue components
@@ -48,4 +48,24 @@ Theme
 │   │   │       ├── {Module_name}HomeComponent.vue
 │   │   │       ├── {Module_name}LoginComponent.vue
 │   │   │       └── {Module_name}MenuComponent.vue
+```
+
+#### index.ts file 
+
+```bash
+{full_module_name} # module
+├── front # front
+│   ├── src # javascript sources
+│   │   ├── index.ts # register vue components
+```
+
+### Theme directory 
+
+```bash
+│   ├── theme # theme files imgs, scss variables, fonts etc...
+│   │   └── {module_name}
+│   │       ├── {module_name}.yml
+│   │       ├── fonts
+│   │       ├── images
+│   │       └── variables.scss
 ```

@@ -236,38 +236,40 @@ public class SPARQLQueryHelper {
         where.addWhereValueVar(varName, nodes);
     }
 
-        /**
-         * Update the given {@link SelectBuilder} by adding a list of FILTER clause
-         * or a VALUES ( ?var1 ?var2 ). <br>
-         * If each {@link List} from varValuesMap has the same {@link List#size()},
-         * then a VALUES clause is build. <br>
-         * <p>
-         * e.g. given the following map : { var1 -> {v1,v2} , var2 -> {v3,v4}}, the
-         * following VALUES clause will be built
-         * <pre>
-         * VALUES (?var1 ?var2) { (v1 v3) (v2 v4)}
-         * </pre>
-         * <p>
-         * Else we use a FILTER clause e.g. given the following map { var1 ->
-         * {v1,v2} , var2 -> {v3,v4,v5}}, the following list of FILTER clause will
-         * be built
-         *
-         * <pre>
-         * FILTER(?v1 = v1 || ?v1 = v2)
-         * FILTER(?v2 = v3 || ?v2 = v4 || ?v2 = v5)
-         * </pre>
-         *
-         * @param select the SelectBuilder to update
-         * @param varValuesMap a map between variable name and the list of values
-         * for this variable
-         * @throws Exception
-         * @see <a href=www.w3.org/TR/2013/REC-sparql11-query-20130321/#inline-data>
-         * SPARQL VALUES</a>
-         * @see <a href=https://www.w3.org/TR/sparql11-query/#func-logical-or>
-         * SPARQL LOGICAL OR</a>
-         * @see <a href=https://www.w3.org/TR/sparql11-query/#expressions> SPARQL
-         * FILTER </a>
-         */
+    /**
+     * <pre>
+     * Update the given {@link SelectBuilder} by adding a list of FILTER clause
+     * or a VALUES ( ?var1 ?var2 ).
+     *
+     * If each {@link List} from varValuesMap has the same {@link List#size()},
+     * then a VALUES clause is build.
+     *
+     * e.g. given the following map : ( var1 : (v1,v2) , var2 : (v3,v4)), the
+     * following VALUES clause will be built
+     *
+     * VALUES (?var1 ?var2) { (v1 v3) (v2 v4)}
+     *
+     * Else we use a FILTER clause e.g. given the following map
+     * (var1 : (v1,v2) , var2 : (v3,v4,v5)), the following list of FILTER clause will
+     * be built
+     * </pre>
+     *
+     * <pre>
+     * FILTER(?v1 = v1 || ?v1 = v2)
+     * FILTER(?v2 = v3 || ?v2 = v4 || ?v2 = v5)
+     * </pre>
+     *
+     * @param select the SelectBuilder to update
+     * @param varValuesMap a map between variable name and the list of values
+     * for this variable
+
+     * @see <a href=www.w3.org/TR/2013/REC-sparql11-query-20130321/#inline-data>
+     * SPARQL VALUES</a>
+     * @see <a href=https://www.w3.org/TR/sparql11-query/#func-logical-or>
+     * SPARQL LOGICAL OR</a>
+     * @see <a href=https://www.w3.org/TR/sparql11-query/#expressions> SPARQL
+     * FILTER </a>
+     */
     public static void addWhereValues(SelectBuilder select, Map<String, List<?>> varValuesMap) throws Exception {
 
         if (varValuesMap.isEmpty()) {

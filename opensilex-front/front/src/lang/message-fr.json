@@ -198,6 +198,15 @@
             "errors": {
                 "group-already-exists": "Un groupe existe déjà avec cette URI ou ce nom."
             }
+        }, 
+        "project":{
+            "search-description":"Manage and configure projects ",
+            "add":"Add",
+            "update":"update",
+            "form-acronym-placeholder":"form-acronym-placeholder",
+            "form-comment-placeholder":"form-comment-placeholder",
+            "label" : "label",
+            "comment" : "comment"
         },
         "experiment": {
             "uri" : "uri",

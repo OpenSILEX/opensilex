@@ -5,17 +5,8 @@
 
     <template v-slot:modal-title>{{title}}</template>
     <b-form ref="formRef">
-
-       <b-form-group :label="$t('component.project.uri') + ':'" label-for="uri">
-       
-        <b-form-input
-          id="uri"
-          v-model="form.uri"
-          :disabled="true"
-          type="text"
-          required
-        ></b-form-input>
-
+      <b-form-group :label="$t('component.project.uri') + ':'" label-for="uri">
+        <b-form-input id="uri" v-model="form.uri" :disabled="true" type="text"></b-form-input>
       </b-form-group>
 
       <b-form-group :label="$t('component.project.label') + ':'" label-for="acronym" required>
@@ -33,11 +24,9 @@
           id="comment"
           v-model="form.comment"
           type="text"
-          required
           :placeholder="$t('component.project.form-comment-placeholder')"
         ></b-form-input>
       </b-form-group>
-
     </b-form>
   </b-modal>
 </template>
@@ -46,7 +35,7 @@
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import {ProjectGetDTO} from "opensilex-core/index";
+import { ProjectGetDTO } from "opensilex-core/index";
 
 @Component
 export default class ProjectForm extends Vue {
@@ -59,21 +48,23 @@ export default class ProjectForm extends Vue {
     return this.$store.state.user;
   }
 
+  uriGenerated = true;
+
   form: ProjectGetDTO = {
-     'uri': '',
-    'label': '',
-    'shortname': '',
-    'description': '',
-    'objective': '',
-    'startDate': '',
-    'endDate': '',
-    'keywords': [],
-    'homePage': '',
-    'experiments': [],
-    'administrativeContacts': [],
-    'coordinators': [],
-    'scientificContacts': [],
-    'relatedProjects':[]
+    uri: "",
+    label: "",
+    shortname: "",
+    description: "",
+    objective: "",
+    startDate: "",
+    endDate: "",
+    keywords: [],
+    homePage: "",
+    experiments: [],
+    administrativeContacts: [],
+    coordinators: [],
+    scientificContacts: [],
+    relatedProjects: []
   };
 
   title = "";
@@ -82,26 +73,30 @@ export default class ProjectForm extends Vue {
 
   clearForm() {
     this.form = {
-       'label': '',
-    'shortname': '',
-    'description': '',
-    'objective': '',
-    'startDate': '',
-    'endDate': '',
-    'keywords': [],
-    'homePage': '',
-    'experiments': [],
-    'administrativeContacts': [],
-    'coordinators': [],
-    'scientificContacts': [],
-    'relatedProjects':[]
+      uri: "",
+      label: "",
+      shortname: undefined,
+      description: undefined,
+      objective: undefined,
+      startDate: "",
+      endDate: "",
+      keywords: undefined,
+      homePage: undefined,
+      experiments: undefined,
+      administrativeContacts: undefined,
+      coordinators: undefined,
+      scientificContacts: undefined,
+      relatedProjects:undefined
     };
   }
 
   showCreateForm() {
     this.clearForm();
+    this.form.startDate = "2000-12-01";
+    this.form.endDate = "2000-12-02";
     this.editMode = false;
-    this.title =  this.$i18n.t("component.project.add").toString();
+    this.title = this.$i18n.t("component.project.add").toString();
+    this.uriGenerated = true;
     let modalRef: any = this.$refs.modalRef;
     modalRef.show();
   }
@@ -110,6 +105,7 @@ export default class ProjectForm extends Vue {
     this.form = form;
     this.editMode = true;
     this.title = this.$i18n.t("component.project.update").toString();
+    this.uriGenerated = true;
     let modalRef: any = this.$refs.modalRef;
     modalRef.show();
   }
@@ -143,8 +139,13 @@ export default class ProjectForm extends Vue {
 
   validate() {
     let formRef: any = this.$refs.formRef;
+    if (this.uriGenerated && !this.editMode) {
+        this.form.uri = undefined;
+      }
     if (formRef.checkValidity()) {
-
+      if (this.uriGenerated && !this.editMode) {
+        this.form.uri = undefined;
+      }
       this.onValidate()
         .then(() => {
           this.$nextTick(() => {

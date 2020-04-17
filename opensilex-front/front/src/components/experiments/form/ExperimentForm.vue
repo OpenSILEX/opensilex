@@ -305,10 +305,4 @@ export default class ExperimentForm extends Vue {
 }
 </script>
 <style scoped lang="scss">
-
-input[required] {
-  border-left-color: red;
-  border-left-width: 5px;
-}
-
 </style>

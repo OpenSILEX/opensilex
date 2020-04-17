@@ -1,8 +1,8 @@
-<template v-slot:label> 
-    <span>
-      <span>{{$t(label)}}: </span>
-      <font-awesome-icon icon="question-circle" v-b-tooltip.hover :title="$t(helpMessage)"/>
-    </span>
+<template v-slot:label>
+  <span>
+    <span>{{$t(label)}}:</span>
+    <font-awesome-icon icon="question-circle" v-b-tooltip.hover :title="$t(helpMessage)" />
+  </span>
 </template>
 
 <script lang="ts">

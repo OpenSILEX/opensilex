@@ -40,8 +40,7 @@ public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> {
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasDevice",
-            inverse = true
+            property = "hasDevice"
     )
     private List<InfrastructureDeviceModel> devices;
     public static final String DEVICE_FIELD = "devices";

@@ -2,6 +2,11 @@
     display: inline-block;
 }
 
+th.capitalize-first-letter,
+td.capitalize-first-letter {
+  display: table-cell;
+}
+
 .capitalize-first-letter::first-letter,
 button::first-letter,
 h1::first-letter,
@@ -99,4 +104,8 @@ label::first-letter {
   color: #D00;
   content: "*";
   margin-left: 3px;
+}
+
+.uri {
+  word-break: keep-all;
 }

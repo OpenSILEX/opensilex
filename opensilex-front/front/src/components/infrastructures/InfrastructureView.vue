@@ -1,10 +1,37 @@
 <template>
-  <div>
-    <b-button
-      @click="showCreateForm(null)"
-      variant="success"
-      v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
-    >{{$t('component.infrastructure.add')}}</b-button>
+  <div class="container-fluid">
+    <opensilex-PageHeader icon="ik-globe" title="component.menu.infrastructures" description="component.infrastructure.description"></opensilex-PageHeader>
+    <div class="card">
+      <div class="card-header row clearfix">
+        <div class="col col-sm-3">
+          <div class="card-options d-inline-block">
+            <b-button
+              @click="showCreateForm(null)"
+              variant="primary"
+              v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+            >
+              <i class="ik ik-plus"></i>
+              {{$t('component.infrastructure.add')}}
+            </b-button>
+            <b-tooltip
+              target="create-experiment"
+            >{{ $t('component.experiment.search.buttons.create-experiment-help') }}</b-tooltip>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <opensilex-InfrastructureTree
+          v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_READ_ID)"
+          ref="infrastructureTree"
+          @onEdit="editInfrastructure"
+          @onDelete="deleteInfrastructure"
+          @onAddChild="showCreateForm"
+          @onSelect="getNodeDetails"
+        ></opensilex-InfrastructureTree>
+      </div>
+    </div>
     <opensilex-InfrastructureForm
       ref="infrastructureForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
@@ -12,14 +39,6 @@
       @onCreate="callCreateInfrastructureService"
       @onUpdate="callUpdateInfrastructureService"
     ></opensilex-InfrastructureForm>
-    <opensilex-InfrastructureTree
-      v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_READ_ID)"
-      ref="infrastructureTree"
-      @onEdit="editInfrastructure"
-      @onDelete="deleteInfrastructure"
-      @onAddChild="showCreateForm"
-      @onSelect="getNodeDetails"
-    ></opensilex-InfrastructureTree>
   </div>
 </template>
 
@@ -80,8 +99,7 @@ export default class InfrastructureView extends Vue {
   }
 
   showCreateForm(parentURI) {
-    let infrastructureForm: any = this.infrastructureForm;
-    infrastructureForm.showCreateForm(parentURI);
+    this.infrastructureForm.showCreateForm(parentURI);
   }
 
   callCreateInfrastructureService(form: any, done) {

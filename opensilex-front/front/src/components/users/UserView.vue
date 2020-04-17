@@ -1,22 +1,42 @@
 <template>
-  <div>
-    <b-button
-      @click="showCreateForm"
-      variant="success"
-      v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
-    >{{$t('component.user.add')}}</b-button>
+  <div class="container-fluid">
+    <opensilex-PageHeader
+      icon="ik-user"
+      title="component.menu.security.users"
+      description="component.user.description"
+    ></opensilex-PageHeader>
+    <div class="card">
+      <div class="card-header row clearfix">
+        <div class="col col-sm-3">
+          <div class="card-options d-inline-block">
+            <b-button
+              @click="showCreateForm"
+              variant="primary"
+              v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
+            >
+              <i class="ik ik-plus"></i>
+              {{$t('component.user.add')}}
+            </b-button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <opensilex-UserList
+          v-if="user.hasCredential(credentials.CREDENTIAL_USER_READ_ID)"
+          ref="userList"
+          @onEdit="editUser"
+          @onDelete="deleteUser"
+        ></opensilex-UserList>
+      </div>
+    </div>
     <opensilex-UserForm
       ref="userForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
       @onCreate="callCreateUserService"
       @onUpdate="callUpdateUserService"
     ></opensilex-UserForm>
-    <opensilex-UserList
-      v-if="user.hasCredential(credentials.CREDENTIAL_USER_READ_ID)"
-      ref="userList"
-      @onEdit="editUser"
-      @onDelete="deleteUser"
-    ></opensilex-UserList>
   </div>
 </template>
 
@@ -50,9 +70,7 @@ export default class UserView extends Vue {
   }
 
   created() {
-    this.service = this.$opensilex.getService(
-      "opensilex.SecurityService"
-    );
+    this.service = this.$opensilex.getService("opensilex.SecurityService");
   }
 
   showCreateForm() {

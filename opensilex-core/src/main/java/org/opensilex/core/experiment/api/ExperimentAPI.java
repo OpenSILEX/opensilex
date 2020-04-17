@@ -94,8 +94,8 @@ public class ExperimentAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Create an experiment", response = ObjectUriResponse.class),
         @ApiResponse(code = 409, message = "An experiment with the same URI already exists", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)}
+    )
     public Response createExperiment(
             @ApiParam("Experiment description") @Valid ExperimentCreationDTO xpDto
     ) {

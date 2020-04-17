@@ -70,14 +70,14 @@
                 "server-error": "An error occured at server level, please contact your local support..",
                 "unexpected-error": "An unexpected error occured, please contact your local support.",
                 "unauthorized-error": "Your session expired, please login again.",
-                "form-step-errors" : "Some field are required in order to go to the next step"
+                "form-step-errors": "Some field are required in order to go to the next step"
             },
-            "form-wizard" :{
-                "external-ontologies" : "(Optional) External ontologies references",
-                "previous" : "Previous",
-                "next" : "Next",
-                "done" : "Done",
-                "cancel" : "Cancel"
+            "form-wizard": {
+                "external-ontologies": "(Optional) External ontologies references",
+                "previous": "Previous",
+                "next": "Next",
+                "done": "Done",
+                "cancel": "Cancel"
             }
         },
         "copyToClipboard": {
@@ -97,9 +97,9 @@
         "menu": {
             "dashboard": "Dashboard",
             "backToDashboard": "Return to the dashboard",
-            "data":{
-                "label":"Data",
-                "images":"Images"
+            "data": {
+                "label": "Data",
+                "images": "Images"
             },
             "experiments": "Experiments",
             "infrastructure": "Infrastructure",
@@ -152,6 +152,7 @@
             "copyright": "Copyright © 2019 - 2020 INRA All Rights Reserved. PHIS {version} released on {date}"
         },
         "user": {
+            "description": "Manage and configure users",
             "user-uri": "User URI",
             "form-first-name-placeholder": "Enter user first name",
             "form-last-name-placeholder": "Enter user last name",
@@ -160,7 +161,7 @@
             "form-admin-option-label": "Enable this option to create a super administrator",
             "filter-placeholder": "Use this field to filter users",
             "users": "users",
-            "add": "add user",
+            "add": "Create user",
             "update": "update user",
             "label": "no user | 1 user | {count} users",
             "password": "password",
@@ -176,10 +177,11 @@
             }
         },
         "profile": {
+            "description": "Manage and configure profiles",
             "profile-uri": "Profile URI",
             "form-name-placeholder": "Enter profile name",
             "label": "profile",
-            "add": "add profile",
+            "add": "Create profile",
             "update": "update profile",
             "filter-placeholder": "Use this field to filter profiles",
             "credentials": "credentials",
@@ -189,12 +191,13 @@
             }
         },
         "group": {
+            "description": "Manage and configure groups",
             "group-uri": "Group URI",
             "form-name-placeholder": "Enter group name",
             "form-description-placeholder": "Enter group description",
             "form-all-users-title": "Global users list",
             "form-selected-users-title": "Selected users list",
-            "add": "add group",
+            "add": "Create group",
             "update": "update group",
             "filter-placeholder": "Use this field to filter groups",
             "errors": {
@@ -202,28 +205,22 @@
             }
         },
         "experiment": {
-            "uri" : "uri",
-            "uri-help" :"Unique experiment identifier",
             "label" : "Name",
-            "label-placeholder" : "ZA17",
-            "label-help" :"Experiment name",
-            "objective" : "Objective",
-            "objective-placeholder" : "",
             "objective-help": "A clear description of the objective of the experiment",
-            "comment" : "Comment",
-            "comment-placeholder" : "",
-            "comment-help" : "A description of the experiment",
-            "startDate" : "Start date",
+            "comment": "Comment",
+            "comment-placeholder": "",
+            "comment-help": "A description of the experiment",
+            "startDate": "Start date",
             "startDate-help": "The beginning of an experiment (required)",
-            "endDate" : "End date",
+            "endDate": "End date",
             "endDate-help": "The end of an experiment, could be empty",
-            "campaign" : "Campaign",
-            "campaign-placeholder" : "2020",
+            "campaign": "Campaign",
+            "campaign-placeholder": "2020",
             "campaign-help": "The campaign year of an experiment concerning a field",
-            "species" : "Species",
-            "species-help" : "The cultivated species",
-            "keywords" : "Keywords",
-            "keywords-placeholder" : "Opensilex Irrigation",
+            "species": "Species",
+            "species-help": "The cultivated species",
+            "keywords": "Keywords",
+            "keywords-placeholder": "Opensilex Irrigation",
             "groups": "Groups",
             "groups-help": "The list of experiment groups",
             "places": "Places",
@@ -232,10 +229,10 @@
             "installations": "Installations",
             "context": "Context",
             "alias": "Alias",
-            "technicalSupervisors" : "Technical Supervisors",
-            "scientificSupervisors" : "Scientific Supervisors",
-            "infrastructures" : "Infrastructures",
-            "infrastructures-help" : "The list of experiment infrastructures",
+            "technicalSupervisors": "Technical Supervisors",
+            "scientificSupervisors": "Scientific Supervisors",
+            "infrastructures": "Infrastructures",
+            "infrastructures-help": "The list of experiment infrastructures",
             "contacts": "Contacts",
             "period": "Periode",
             "description": "Description",
@@ -263,7 +260,7 @@
                 "description": "Manage and configure experiments",
                 "buttons": {
                     "create-experiment": "Create experiment",
-                    "create-experiment-help" : " Create an experiment (experimental informations, sensors/variables/factors linked)"
+                    "create-experiment-help": " Create an experiment (experimental informations, sensors/variables/factors linked)"
                 },
                 "column": {
                     "alias": "Alias",
@@ -290,20 +287,20 @@
                     "state": "Filter par state"
                 }
             },
-            "form" : {
-                "groups-selection-list-title":"Global group list",
-                "groups-selected-list-title":"Experiment groups",
-                "projects-selection-list-title":"Global projects list",
-                "projects-selected-list-title":"Experiment projects",
-                "infrastructures-selection-list-title":"Global infrastructures list",
-                "infrastructures-selected-list-title":"Experiment infrastructures"
+            "form": {
+                "groups-selection-list-title": "Global group list",
+                "groups-selected-list-title": "Experiment groups",
+                "projects-selection-list-title": "Global projects list",
+                "projects-selected-list-title": "Experiment projects",
+                "infrastructures-selection-list-title": "Global infrastructures list",
+                "infrastructures-selected-list-title": "Experiment infrastructures"
             },
             "form-wizard": {
-                "label" : "Experiment creation wizard",
-                "general-informations" : "General informations",
-                "infra-groups-projects" : "Infrastructures, groups and projects",
+                "label": "Experiment creation wizard",
+                "general-informations": "General informations",
+                "infra-groups-projects": "Infrastructures, groups and projects",
                 "scientific-technical-users": "Scientific and technical users",
-                "variables-sensors-factors" : "Variables, factors and sensors"
+                "variables-sensors-factors": "Variables, factors and sensors"
             }
         },
         "infrastructure": {
@@ -312,9 +309,18 @@
             "form-type-placeholder": "Enter infrastructure type",
             "form-parent-placeholder": "Enter parent infrastructure",
             "filter-placeholder": "Use this field to filter infrastructures",
-            "add": "add infrastructure",
+            "add": "Create infrastructure",
             "update": "update infrastructure",
             "detail": "Infrastructure details",
+            "description": "Manage and configure infrastructures",
+            "devices": "Devices",
+            "device": {
+                "device-uri": "Infrastructure device URI",
+                "add": "Create an infrastructure device",
+                "update": "Update infrastructure device",
+                "form-name-placeholder": "Enter infrastructure device name",
+                "form-type-placeholder": "Enter infrastructure device type"
+            },
             "errors": {
                 "infrastructure-already-exists": "Infrastructure already exists with this URI or this name"
             }
@@ -332,13 +338,13 @@
             "form-alias-placeholder": "Irrigation, Shading, Variety, etc.",
             "comment": "comment",
             "comment-help": "Description associated to this factors (protocol, amount of component)",
-            "details" : "Factor details",
+            "details": "Factor details",
             "form-comment-placeholder": "Protocol n°1289 - Amount of water 5 ml/Days.",
             "errors": {
                 "user-already-exists": "Factor already exists with this URI."
             },
-            "form-wizard" :{
-                "general-informations" : "Factor description"
+            "form-wizard": {
+                "general-informations": "Factor description"
             }
         },
         "factorLevel": {
@@ -347,7 +353,7 @@
             "selector-placeholder": "Please select a factor to filter factor levels",
             "filter-placeholder": "Use this field to filter factor levels",
             "factorLevel": "factor level",
-            "add": "add factor level",
+            "add": "Create factor level",
             "update": "update factor level",
             "alias": "alias",
             "factor": "factor",
@@ -357,23 +363,23 @@
                 "user-already-exists": "Factor level already exists with this URI."
             }
         },
-        "skos" :{
-            "uri" : "reference URI",
-            "uri-help" : "reference identifier URI",
-            "uri-placeholder" : "http://aims.fao.org/aos/agrovoc/c_8332",
-            "relation" : "relation",
-            "relation-help" : "relation associated between Reference URI and this local individual",
-            "relation-placeholder" : "exactMatch",
-            "add" : "add new relation",
-            "update" : "update relations",
-            "exactMatch" : "exactmatch",
-            "closeMatch" : "closematch",
-            "broader" : "broader",
-            "narrower" : "narrower",
-            "no-relation" : "Please choose a relation type",
-            "ontologies-references-label" :"Ontologies References",
-            "link-external" :"Add external references to",
-            "link-external-button" :"Add external references"
+        "skos": {
+            "uri": "reference URI",
+            "uri-help": "reference identifier URI",
+            "uri-placeholder": "http://aims.fao.org/aos/agrovoc/c_8332",
+            "relation": "relation",
+            "relation-help": "relation associated between Reference URI and this local individual",
+            "relation-placeholder": "exactMatch",
+            "add": "Create new relation",
+            "update": "update relations",
+            "exactMatch": "exactmatch",
+            "closeMatch": "closematch",
+            "broader": "broader",
+            "narrower": "narrower",
+            "no-relation": "Please choose a relation type",
+            "ontologies-references-label": "Ontologies References",
+            "link-external": "Add external references to",
+            "link-external-button": "Add external references"
         },
         "germplasm": {
             "uri": "Germplasm URI",
@@ -381,7 +387,7 @@
             "alias-placeholder": "Enter germplasm label",
             "filter-placeholder": "Use this field to filter germplasm",
             "germplasm": "germplasm",
-            "add": "add germplasm",
+            "add": "Create germplasm",
             "update": "update germplasm",
             "alias": "label",
             "alias-help": "Name used to define this germplasm",
@@ -456,7 +462,7 @@
                 "dashboard": "ik-grid",
                 "data": {
                     "label": "ik-bar-chart-line"
-                }, 
+                },
                 "equipments": {
                     "label": "ik-aperture"
                 },
@@ -465,7 +471,10 @@
                 "infrastructure": "ik-globe",
                 "projects": "ik-folder",
                 "security": {
-                    "label": "ik-lock"
+                    "label": "ik-lock",
+                    "users": "ik-user",
+                    "groups": "ik-users",
+                    "profiles": "ik-settings"
                 },
                 "scientificObjects": "ik-target",
                 "experimentalDesign": {

@@ -63,7 +63,7 @@
         </sl-vue-tree>
       </div>
       <div class="col-md">
-        <table class="table table-striped table-hover">
+        <table class="table table-striped">
           <thead class="thead-dark">
             <tr>
               <th colspan="2">{{$t("component.infrastructure.detail")}}</th>
@@ -81,32 +81,62 @@
             <tr>
               <td class="capitalize-first-letter">{{$t("component.common.type")}}</td>
               <td v-if="selected != null">
-                <font-awesome-icon :icon="$opensilex.getRDFIcon(selected.type)" size="sm" />
-                &nbsp;
-                <span class="capitalize-first-letter">
-                  {{selected.typeLabel}}
-                  <small>({{selected.type}})</small>
-                </span>
+                <font-awesome-icon :icon="$opensilex.getRDFIcon(selected.type)" size="sm" />&nbsp;
+                <span class="capitalize-first-letter">{{selected.typeLabel}}</span>&nbsp;
+                <small class="uri">({{selected.type}})</small>
               </td>
             </tr>
             <tr>
-              <td class="capitalize-first-letter">{{$t("component.infrastructure.devices")}}</td>
-              <td v-if="selected != null">
-                <div class="text-center">
-                  <b-button
-                    @click="showCreateForm(null)"
-                    variant="success"
-                    v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
-                  >{{$t('component.infrastructure.device.add')}}</b-button>
+              <td colspan="2" class="capitalize-first-letter">
+                <div>
+                  <div class="device-split-cell">{{$t("component.infrastructure.devices")}}</div>
+                  <div class="device-split-cell add-device-button-container">
+                    <b-button
+                      @click="showCreateForm"
+                      variant="success"
+                      v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+                    >{{$t('component.infrastructure.device.add')}}</b-button>
+                  </div>
                 </div>
-                <ul class="device-list">
-                  <li v-for="device in selected.devices" v-bind:key="device.uri">
-                    <span class="capitalize-first-letter">
-                      {{device.name}}
-                      <small>{{device.uri}}</small>
-                    </span>
-                  </li>
-                </ul>
+                <div v-if="selected != null">
+                  <table
+                    v-if="selected.devices.length > 0"
+                    class="table table-sm table-hover table-device"
+                  >
+                    <tr v-for="device in selected.devices" v-bind:key="device.uri">
+                      <td>
+                        <font-awesome-icon :icon="$opensilex.getRDFIcon(device.type)" size="sm" />&nbsp;
+                        <span class="capitalize-first-letter">{{device.name}}</span>
+                        &nbsp;-&nbsp;
+                        <span
+                          class="capitalize-first-letter"
+                        >{{device.typeLabel}}</span>
+                        &nbsp;
+                        <small class="uri">({{device.uri}})</small>
+                      </td>
+                      <td>
+                        <b-button-group class="tree-button-group" size="sm">
+                          <b-button
+                            size="sm"
+                            v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+                            @click.prevent="editDevice(device.uri)"
+                            variant="outline-primary"
+                          >
+                            <font-awesome-icon icon="edit" size="sm" />
+                          </b-button>
+                          <b-button
+                            size="sm"
+                            v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID)"
+                            @click.prevent="deleteDevice(device.uri)"
+                            variant="danger"
+                          >
+                            <font-awesome-icon icon="trash-alt" size="sm" />
+                          </b-button>
+                        </b-button-group>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
               </td>
             </tr>
             <tr>
@@ -123,17 +153,25 @@
         </table>
       </div>
     </div>
+    <opensilex-InfrastructureDeviceForm
+      ref="infrastructureDeviceForm"
+      :parentURI="selectedURI"
+      v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+      @onUpdate="refresh(selectedURI)"
+      @onCreate="refresh(selectedURI)"
+    ></opensilex-InfrastructureDeviceForm>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
   InfrastructuresService,
   ResourceTreeDTO,
-  InfrastructureGetDTO
+  InfrastructureGetDTO,
+  InfrastructureDeviceGetDTO
 } from "opensilex-core/index";
 
 @Component
@@ -141,6 +179,8 @@ export default class InfrastructureTree extends Vue {
   $opensilex: any;
   $store: any;
   service: InfrastructuresService;
+
+  @Ref("infrastructureDeviceForm") readonly infrastructureDeviceForm!: any;
 
   get user() {
     return this.$store.state.user;
@@ -166,12 +206,14 @@ export default class InfrastructureTree extends Vue {
     );
 
     this.refresh();
+  }
 
+  mounted() {
     this.$store.watch(
       () => this.$store.getters.language,
       lang => {
         if (this.selected != null) {
-          this.displayNodeDetail(this.selected.uri);
+          this.displayNodeDetail(this.selected.uri, true);
         }
       }
     );
@@ -188,11 +230,12 @@ export default class InfrastructureTree extends Vue {
           let resourceTree: ResourceTreeDTO = http.response.result[i];
           let node = this.dtoToNode(resourceTree, first, uri);
           treeNode.push(node);
+
           if (first && uri == null) {
-            this.displayNodeDetail(node.data.uri);
+            this.displayNodeDetail(node.data.uri, true);
             first = false;
           } else if (uri != null && uri == node.data.uri) {
-            this.displayNodeDetail(node.data.uri);
+            this.displayNodeDetail(node.data.uri, true);
           }
         }
 
@@ -243,6 +286,7 @@ export default class InfrastructureTree extends Vue {
   public nodes = [];
 
   private selected: InfrastructureGetDTO = null;
+  private selectedURI: string = null;
 
   public displayNodesDetail(nodes: any[]) {
     if (nodes.length > 0) {
@@ -251,14 +295,40 @@ export default class InfrastructureTree extends Vue {
     }
   }
 
-  public displayNodeDetail(uri: string) {
-    return this.service
-      .getInfrastructure(uri)
+  public displayNodeDetail(uri: string, forceRefresh?: boolean) {
+    if (forceRefresh || this.selected == null || this.selected.uri != uri) {
+      return this.service
+        .getInfrastructure(uri)
+        .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
+          let detailDTO: InfrastructureGetDTO = http.response.result;
+          this.selected = detailDTO;
+          this.selectedURI = detailDTO.uri;
+          this.$emit("onSelect", detailDTO);
+        });
+    }
+  }
+
+  public showCreateForm() {
+    this.infrastructureDeviceForm.showCreateForm();
+  }
+
+  public deleteDevice(uri) {
+    this.service
+      .deleteInfrastructureDevice(uri)
       .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
-        let detailDTO: InfrastructureGetDTO = http.response.result;
-        this.selected = detailDTO;
-        this.$emit("onSelect", detailDTO);
+        this.refresh(this.selectedURI);
       });
+  }
+
+  public editDevice(uri) {
+    this.service
+      .getInfrastructureDevice(uri)
+      .then(
+        (http: HttpResponse<OpenSilexResponse<InfrastructureDeviceGetDTO>>) => {
+          this.infrastructureDeviceForm.showEditForm(http.response.result);
+        }
+      )
+      .catch(this.$opensilex.errorHandler);
   }
 }
 </script>
@@ -270,11 +340,7 @@ export default class InfrastructureTree extends Vue {
   border-collapse: separate;
 }
 .table th {
-  text-align: center;
-}
-
-.table td {
-  width: 100%;
+  text-align: left;
 }
 
 .sl-vue-tree-root {
@@ -290,6 +356,19 @@ export default class InfrastructureTree extends Vue {
 .leaf-spacer {
   display: inline-block;
   width: 23px;
+}
+
+.device-split-cell {
+  width: 50%;
+  display: inline-block;
+}
+
+.add-device-button-container {
+  text-align: right;
+}
+
+.table-device {
+  margin-top: 10px;
 }
 
 @media (max-width: 768px) {

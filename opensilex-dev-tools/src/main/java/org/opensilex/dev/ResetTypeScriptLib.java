@@ -75,7 +75,7 @@ public class ResetTypeScriptLib {
                     LOGGER.info("Build TS library: " + moduleID);
                     CodegenConfigurator configurator = new CodegenConfigurator();
                     configurator.setInputSpec(swaggerPath.toString());
-                    configurator.setTemplateDir(modulePath.resolve("../opensilex/src/main/resources/swagger/templates/typescript-inversify").toFile().getCanonicalPath());
+                    configurator.setTemplateDir(modulePath.resolve("../opensilex-main/src/main/resources/swagger/templates/typescript-inversify").toFile().getCanonicalPath());
                     configurator.setLang("typescript-inversify");
                     configurator.setOutputDir(swaggerJsonLibPath.toString());
                     configurator.addAdditionalProperty("packageName", moduleID);

@@ -1,10 +1,36 @@
 <template>
-  <div>
-    <b-button
-      v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
-      @click="showCreateForm"
-      variant="success"
-    >{{$t('component.profile.add')}}</b-button>
+  <div class="container-fluid">
+    <opensilex-PageHeader
+      icon="ik-settings"
+      title="component.menu.security.profiles"
+      description="component.profile.description"
+    ></opensilex-PageHeader>
+    <div class="card">
+      <div class="card-header row clearfix">
+        <div class="col col-sm-3">
+          <div class="card-options d-inline-block">
+            <b-button
+              v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
+              @click="showCreateForm"
+              variant="primary"
+            >
+              <i class="ik ik-plus"></i>
+              {{$t('component.profile.add')}}
+            </b-button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <opensilex-UserList
+          v-if="user.hasCredential(credentials.CREDENTIAL_USER_READ_ID)"
+          ref="userList"
+          @onEdit="editUser"
+          @onDelete="deleteUser"
+        ></opensilex-UserList>
+      </div>
+    </div>
     <opensilex-ProfileForm
       ref="profileForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
@@ -12,13 +38,6 @@
       @onCreate="callCreateProfileService"
       @onUpdate="callUpdateProfileService"
     ></opensilex-ProfileForm>
-    <opensilex-ProfileList
-      ref="profileList"
-      v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_READ_ID)"
-      v-bind:credentialsGroups="credentialsGroups"
-      @onEdit="editProfile"
-      @onDelete="deleteProfile"
-    ></opensilex-ProfileList>
   </div>
 </template>
 
@@ -33,7 +52,9 @@ import {
   CredentialsGroupDTO,
   AuthenticationService
 } from "opensilex-security/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
+import HttpResponse, {
+  OpenSilexResponse
+} from "opensilex-security/HttpResponse";
 
 @Component
 export default class ProfileView extends Vue {
@@ -117,7 +138,7 @@ export default class ProfileView extends Vue {
 
   deleteProfile(uri: string) {
     this.service
-      .deleteProfile( uri)
+      .deleteProfile(uri)
       .then(() => {
         let profileList: any = this.profileList;
         profileList.refresh();

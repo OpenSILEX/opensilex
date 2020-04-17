@@ -53,9 +53,9 @@ public class OntologyAPI {
     @Path("/subclass-of")
     @ApiOperation("Search sub-classes tree of an RDF class")
     @ApiProtected
-    @ApiCache(
-            category = ApiCacheService.STATIC_CATEGORY
-    )
+//    @ApiCache(
+//            category = ApiCacheService.STATIC_CATEGORY
+//    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -81,9 +81,9 @@ public class OntologyAPI {
     @Path("/subproperties-of")
     @ApiOperation("Search sub-properties tree of an RDF property")
     @ApiProtected
-    @ApiCache(
-            category = ApiCacheService.STATIC_CATEGORY
-    )
+//    @ApiCache(
+//            category = ApiCacheService.STATIC_CATEGORY
+//    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

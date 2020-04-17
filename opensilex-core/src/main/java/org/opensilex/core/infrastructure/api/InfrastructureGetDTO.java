@@ -22,6 +22,8 @@ public class InfrastructureGetDTO extends NamedResourceDTO {
 
     protected List<URI> children;
 
+    protected List<InfrastructureDeviceGetDTO> devices;
+
     protected List<GroupUserProfileDTO> userProfiles;
 
     public URI getParent() {
@@ -46,6 +48,14 @@ public class InfrastructureGetDTO extends NamedResourceDTO {
 
     public void setUserProfiles(List<GroupUserProfileDTO> userProfiles) {
         this.userProfiles = userProfiles;
+    }
+
+    public List<InfrastructureDeviceGetDTO> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(List<InfrastructureDeviceGetDTO> devices) {
+        this.devices = devices;
     }
 
     public static InfrastructureGetDTO fromModel(InfrastructureModel model) {
@@ -75,6 +85,14 @@ public class InfrastructureGetDTO extends NamedResourceDTO {
             });
         }
         dto.setUserProfiles(userProfilesList);
+
+        List<InfrastructureDeviceGetDTO> deviceList = new ArrayList<>();
+        if (model.getDevices() != null) {
+            model.getDevices().forEach(device -> {
+                deviceList.add(InfrastructureDeviceGetDTO.fromModel(device));
+            });
+        }
+        dto.setDevices(deviceList);
 
         return dto;
     }

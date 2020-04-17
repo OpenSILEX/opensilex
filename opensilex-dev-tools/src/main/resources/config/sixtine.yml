@@ -37,9 +37,7 @@ front:
         - sensors
         - equipments
         - scientificObjects
-        - projects
         - installations
-        - experiments
         - data
         - dashboard
     

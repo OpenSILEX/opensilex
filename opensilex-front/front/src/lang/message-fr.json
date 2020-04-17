@@ -150,6 +150,7 @@
             "copyright": "Copyright © 2019 - 2020 INRA Tous Droits Déservés. PHIS {version} version du {date}"
         },
         "user": {
+            "description": "Gérer et configurer les utilisateurs",
             "user-uri": "URI de l'utilisateur",
             "form-first-name-placeholder": "Saisir le prénom de l'utilisateur",
             "form-last-name-placeholder": "Saisir le nom de l'utilisateur",
@@ -159,7 +160,7 @@
             "filter-placeholder": "Utiliser ce champ pour filtrer les utilisateurs",
             "users": "utilisateurs",
             "label": "aucun utilisateur | 1 utilisateur | {count} utilisateurs",
-            "add": "Ajouter un utilisateur",
+            "add": "Créer un utilisateur",
             "update": "Modifier l'utilisateur",
             "password": "mot de passe",
             "first-name": "prénom",
@@ -174,10 +175,11 @@
             }
         },
         "profile": {
+            "description": "Gérer et configurer les profils",
             "profile-uri": "URI du profil",
             "form-name-placeholder": "Saisir le nom du profil",
             "label": "profil",
-            "add": "Ajouter un profil",
+            "add": "Créer un profil",
             "update": "Modifier le profil",
             "filter-placeholder": "Utiliser ce champ pour filtrer les profils",
             "credentials": "Droits",
@@ -187,12 +189,13 @@
             }
         },
         "group": {
+            "description": "Gérer et configurer les groupes",
             "group-uri": "URI du group",
             "form-name-placeholder": "Saisir le nom du groupe",
             "form-description-placeholder": "Saisir la description du groupe",
             "form-all-users-title": "Liste globale des utilisateurs",
             "form-selected-users-title": "Liste des utilisateurs sélectionnés",
-            "add": "Ajouter un groupe",
+            "add": "Créer un groupe",
             "update": "Modifier le groupe",
             "filter-placeholder": "Utiliser ce champ pour filtrer les groupes",
             "errors": {
@@ -301,12 +304,17 @@
             "form-type-placeholder": "Saisir le type d'infrastructure",
             "form-parent-placeholder": "Saisir l'infrastructure parente",
             "filter-placeholder": "Utiliser ce champ pour filtrer les infrastructures",
-            "add": "Ajouter une infrastructure",
+            "add": "Créer une infrastructure",
             "update": "Modifier l'infrastructure",
             "detail": "Détail de l'infrastructure",
+            "description": "Gérer et configurer les infrastructures",
             "devices": "Dispositifs",
             "device": {
-                "add": "Ajouter un dispositif"
+                "device-uri": "URI du dispositif",
+                "add": "Créer un dispositif",
+                "update": "Mettre à jour le dispositif",
+                "form-name-placeholder": "Saisir le nom du dispositif",
+                "form-type-placeholder": "Saisir le type de dispositif"
             },
             "errors": {
                 "infrastructure-already-exists": "Une utilisateur existe déjà avec cette URI ou cette adresse email."
@@ -318,7 +326,7 @@
             "alias-placeholder": "Renseignez un alias de facteur",
             "filter-placeholder": "Utiliser ce filter pour filter les facteurs",
             "factors": "facteur",
-            "add": "Ajouter un facteur",
+            "add": "Créer un facteur",
             "update": "Modifier un facteur",
             "alias": "alias",
             "alias-help": "alias",
@@ -340,7 +348,7 @@
             "factor-selector-placeholder": "Sélectionnez un alias de facteur",
             "filter-placeholder": "Utilisez ce change pour filter vos niveau de facteur",
             "factorLevel": "niveau de facteur",
-            "add": "Ajouter un niveau de facteur",
+            "add": "Créer un niveau de facteur",
             "update": "Modifier un niveau de facteur",
             "alias": "alias",
             "factor": "facteur",
@@ -374,7 +382,7 @@
             "alias-placeholder": "Entrer le label du germplasm ",
             "filter-placeholder": "Utiliser ce champ pour filtrer les germplasm",
             "germplasm": "germplasm",
-            "add": "ajouter un germplasm",
+            "add": "Créer un germplasm",
             "update": "meettre à jour un germplasm",
             "alias": "alias",
             "alias-help": "alias",

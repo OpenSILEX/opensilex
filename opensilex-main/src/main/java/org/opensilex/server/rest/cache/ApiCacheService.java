@@ -15,7 +15,7 @@ import org.opensilex.service.ServiceDefaultDefinition;
  * @author Vincent Migot
  */
 @ServiceDefaultDefinition(
-        implementation = JCSApiCacheService.class
+        implementation = NoApiCacheService.class
 )
 public interface ApiCacheService extends Service {
 

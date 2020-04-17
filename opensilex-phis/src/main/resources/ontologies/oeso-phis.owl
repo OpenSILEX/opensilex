@@ -45,13 +45,4 @@
         <rdfs:label xml:lang="fr">infrastructure locale</rdfs:label>
         <rdfs:label xml:lang="en">local infrastructure</rdfs:label>
     </owl:Class>
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Installation -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Installation">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Infrastructure"/>
-        <rdfs:comment xml:lang="en">An INSTALLATION is the elementary level for data acquisition in a specific type of experiments. It stands for other frequently used terms such as ‘platform’, ‘facility’ or others.</rdfs:comment>
-        <rdfs:label xml:lang="en">installation</rdfs:label>
-        <rdfs:label xml:lang="fr">installation</rdfs:label>
-    </owl:Class>
 </rdf:RDF>

@@ -1,22 +1,42 @@
 <template>
-  <div>
-    <b-button
-      v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
-      @click="showCreateForm"
-      variant="success"
-    >{{$t('component.group.add')}}</b-button>
+  <div class="container-fluid">
+    <opensilex-PageHeader
+      icon="ik-users"
+      title="component.menu.security.groups"
+      description="component.group.description"
+    ></opensilex-PageHeader>
+    <div class="card">
+      <div class="card-header row clearfix">
+        <div class="col col-sm-3">
+          <div class="card-options d-inline-block">
+            <b-button
+              v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
+              @click="showCreateForm"
+              variant="primary"
+            >
+              <i class="ik ik-plus"></i>
+              {{$t('component.group.add')}}
+            </b-button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <opensilex-GroupList
+          ref="groupList"
+          v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_READ_ID)"
+          @onEdit="editGroup"
+          @onDelete="deleteGroup"
+        ></opensilex-GroupList>
+      </div>
+    </div>
     <opensilex-GroupForm
       ref="groupForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
       @onCreate="callCreateGroupService"
       @onUpdate="callUpdateGroupService"
     ></opensilex-GroupForm>
-    <opensilex-GroupList
-      ref="groupList"
-      v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_READ_ID)"
-      @onEdit="editGroup"
-      @onDelete="deleteGroup"
-    ></opensilex-GroupList>
   </div>
 </template>
 
@@ -47,9 +67,7 @@ export default class GroupView extends Vue {
   }
 
   async created() {
-    this.service = this.$opensilex.getService(
-      "opensilex.SecurityService"
-    );
+    this.service = this.$opensilex.getService("opensilex.SecurityService");
   }
 
   @Ref("groupForm") readonly groupForm!: any;
@@ -64,7 +82,7 @@ export default class GroupView extends Vue {
   callCreateGroupService(form: GroupCreationDTO, done) {
     done(
       this.service
-        .createGroup( form)
+        .createGroup(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Group created", uri);
@@ -94,7 +112,7 @@ export default class GroupView extends Vue {
 
   deleteGroup(uri: string) {
     this.service
-      .deleteGroup( uri)
+      .deleteGroup(uri)
       .then(() => {
         let groupList: any = this.groupList;
         groupList.refresh();

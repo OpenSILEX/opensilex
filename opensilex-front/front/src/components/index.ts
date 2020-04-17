@@ -21,6 +21,8 @@ import ToDoComponent from './layout/ToDoComponent.vue';
 import InfrastructureView from './infrastructures/InfrastructureView.vue';
 import InfrastructureTree from './infrastructures/InfrastructureTree.vue';
 import InfrastructureForm from './infrastructures/InfrastructureForm.vue';
+import InfrastructureDeviceForm from './infrastructures/InfrastructureDeviceForm.vue';
+
 // factors levels
 import FactorView from './factors/FactorView.vue';
 import FactorList from './factors/FactorList.vue';
@@ -35,6 +37,7 @@ import FactorLevelForm from './factors/FactorLevelForm.vue';
 import FormInputLabelHelper from './common/FormInputLabelHelper.vue'
 import ExternalReferencesForm from './common/ExternalReferencesForm.vue'
 import ExternalReferencesDetails from './common/ExternalReferencesDetails.vue'
+import PageHeader from './common/PageHeader.vue'
 
 import ExperimentForm from './experiments/form/ExperimentForm.vue';
 import ExperimentForm2 from './experiments/form/ExperimentForm2.vue';
@@ -67,12 +70,22 @@ import SciObjectTypeSearch from './phis/images/searchComponents/SciObjectTypeSea
 import TimeSearch from './phis/images/searchComponents/TimeSearch.vue';
 
 export default {
+    // Common layout
     'opensilex-DefaultFooterComponent': DefaultFooterComponent,
     'opensilex-DefaultHeaderComponent': DefaultHeaderComponent,
     'opensilex-DefaultLoginComponent': DefaultLoginComponent,
     'opensilex-DefaultMenuComponent': DefaultMenuComponent,
     'opensilex-DefaultHomeComponent': DefaultHomeComponent,
     'opensilex-DefaultNotFoundComponent': DefaultNotFoundComponent,
+
+    // Common components
+    'opensilex-FormInputLabelHelper': FormInputLabelHelper,
+    'opensilex-ExternalReferencesForm': ExternalReferencesForm,
+    'opensilex-ExternalReferencesDetails': ExternalReferencesDetails,
+    'opensilex-PageHeader': PageHeader,
+    'opensilex-ToDoComponent': ToDoComponent,
+
+    // Security
     'opensilex-UserForm': UserForm,
     'opensilex-UserList': UserList,
     'opensilex-UserView': UserView,
@@ -85,6 +98,7 @@ export default {
     'opensilex-GroupView': GroupView,
     'opensilex-GroupList': GroupList,
 
+    // Experiments
     'opensilex-ExperimentForm': ExperimentForm,
     'opensilex-ExperimentForm2': ExperimentForm2,
     'opensilex-ExperimentForm3' : ExperimentForm3,
@@ -98,10 +112,12 @@ export default {
 
     
 
+    // Germplasm
     'opensilex-GermplasmView': GermplasmView,
     'opensilex-GermplasmForm': GermplasmForm,
     'opensilex-GermplasmList': GermplasmList,
 
+    // Images
     'opensilex-ImageList': ImageList,
     'opensilex-ImageView': ImageView,
     'opensilex-ImageSearch': ImageSearch,
@@ -115,23 +131,21 @@ export default {
     'opensilex-SciObjectTypeSearch': SciObjectTypeSearch,
     'opensilex-TimeSearch': TimeSearch,
 
-    // infrastructures
+    // Infrastructures
     "opensilex-InfrastructureView": InfrastructureView,
     "opensilex-InfrastructureTree": InfrastructureTree,
     "opensilex-InfrastructureForm": InfrastructureForm,
-    // factors
+    "opensilex-InfrastructureDeviceForm": InfrastructureDeviceForm,
+
+    // Factors
     "opensilex-FactorView": FactorView,
     "opensilex-FactorList": FactorList,
     "opensilex-FactorForm": FactorForm,
     "opensilex-FactorDetails": FactorDetails,
-    // factors levels
+
+    // Factors levels
     "opensilex-FactorLevelView": FactorLevelView,
     "opensilex-FactorLevelList": FactorLevelList,
-    "opensilex-FactorLevelForm": FactorLevelForm,
-    //common
-    'opensilex-FormInputLabelHelper': FormInputLabelHelper,
-    'opensilex-ExternalReferencesForm': ExternalReferencesForm,
-    'opensilex-ExternalReferencesDetails': ExternalReferencesDetails,
-    'opensilex-ToDoComponent': ToDoComponent
+    "opensilex-FactorLevelForm": FactorLevelForm
 
 };

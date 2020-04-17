@@ -1478,6 +1478,14 @@
         <rdfs:label xml:lang="fr">infrastructure</rdfs:label>
     </owl:Class>
     
+    <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureDevice -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureDevice">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
+        <rdfs:label xml:lang="en">Infrastructure device</rdfs:label>
+        <rdfs:label xml:lang="fr">Dispositif</rdfs:label>
+    </owl:Class>
+    
     <!-- http://www.opensilex.org/vocabulary/oeso#IrrigationSystem -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#IrrigationSystem">
@@ -1486,8 +1494,6 @@
         <rdfs:label xml:lang="fr">système d&apos;irrigation</rdfs:label>
     </owl:Class>
     
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Leaf -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Leaf">

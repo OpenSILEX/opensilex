@@ -15,6 +15,7 @@ import org.apache.jena.sparql.core.Var;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -85,6 +86,24 @@ public class InfrastructureDAO {
     }
 
     public InfrastructureModel update(InfrastructureModel instance) throws Exception {
+        sparql.update(instance);
+        return instance;
+    }
+
+    public InfrastructureDeviceModel createDevice(InfrastructureDeviceModel instance) throws Exception {
+        sparql.create(instance);
+        return instance;
+    }
+
+    public InfrastructureDeviceModel getDevice(URI uri, String lang) throws Exception {
+        return sparql.getByURI(InfrastructureDeviceModel.class, uri, lang);
+    }
+
+    public void deleteDevice(URI instanceURI) throws Exception {
+        sparql.delete(InfrastructureDeviceModel.class, instanceURI);
+    }
+
+    public InfrastructureDeviceModel updateDevice(InfrastructureDeviceModel instance) throws Exception {
         sparql.update(instance);
         return instance;
     }

@@ -6,6 +6,7 @@
 package org.opensilex.core.infrastructure.dal;
 
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
@@ -17,9 +18,25 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 )
 public class InfrastructureDeviceModel extends SPARQLNamedResourceModel<InfrastructureDeviceModel> {
 
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasDevice",
+            inverse = true
+    )
+    private InfrastructureModel infrastructure;
+
+    public InfrastructureModel getInfrastructure() {
+        return infrastructure;
+    }
+
+    public void setInfrastructure(InfrastructureModel infrastructure) {
+        this.infrastructure = infrastructure;
+    }
+
     @Override
     public String[] getUriSegments(InfrastructureDeviceModel instance) {
         return new String[]{
+            instance.getInfrastructure().getName(),
             "devices",
             instance.getName()
         };

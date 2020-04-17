@@ -79,7 +79,7 @@ public class ResourceTreeDTO extends NamedResourceDTO {
         dto.setType(model.getType());
         dto.setName(model.getName());
         dto.setSelected(enableSelection && tree.isSelected(model));
-
+        
         List<ResourceTreeDTO> childrenDTOs = new ArrayList<>();
         tree.listChildren(model, child -> {
             ResourceTreeDTO childDTO = fromResourceTreeRecursive(child, tree, enableSelection, handler);

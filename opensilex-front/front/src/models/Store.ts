@@ -142,6 +142,8 @@ let store = new Vuex.Store({
         console.debug("Automatically call logout");
         let method: any = "logout";
         this.commit(method);
+        let message = getOpenSilexPlugin().$i18n.t("component.common.errors.unauthorized-error");
+        getOpenSilexPlugin().showErrorToast(message + " - " + Date.now());
       }, exipreAfter);
 
       let inactivityRenewDelay = user.getInactivityRenewDelayMs();
@@ -229,7 +231,7 @@ let store = new Vuex.Store({
     }
   },
   actions: {
-    
+
   },
   modules: {
   }

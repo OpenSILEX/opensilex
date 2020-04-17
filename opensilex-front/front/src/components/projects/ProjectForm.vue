@@ -19,7 +19,28 @@
         ></b-form-input>
       </b-form-group>
 
-      <b-form-group :label="$t('component.project.comment') + ':'" label-for="comment" required>
+    
+      <opensilex-TimeSearch></opensilex-TimeSearch>
+
+        <b-form-group :label="$t('component.project.comment') + ':'" label-for="comment" required>
+        <b-form-input
+          id="shortname"
+          v-model="form.shortname"
+          type="text"
+          :placeholder="$t('component.project.form-comment-placeholder')"
+        ></b-form-input>
+      </b-form-group>
+
+        <b-form-group :label="$t('component.project.comment') + ':'" label-for="comment" required>
+        <b-form-input
+          id="comment"
+          v-model="form.comment"
+          type="text"
+          :placeholder="$t('component.project.form-comment-placeholder')"
+        ></b-form-input>
+      </b-form-group>
+
+        <b-form-group :label="$t('component.project.comment') + ':'" label-for="comment" required>
         <b-form-input
           id="comment"
           v-model="form.comment"
@@ -169,6 +190,10 @@ export default class ProjectForm extends Vue {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
+@media (min-width: 576px){
+div >>> .modal-dialog {
+    max-width: 600px ;
+}}
 </style>
 

@@ -35,7 +35,6 @@ import FactorLevelForm from './factors/FactorLevelForm.vue';
 import FormInputLabelHelper from './common/FormInputLabelHelper.vue'
 import ExternalReferencesForm from './common/ExternalReferencesForm.vue'
 import ExternalReferencesDetails from './common/ExternalReferencesDetails.vue'
-import ListSelector from './common/ListSelector.vue';
 
 import ExperimentForm from './experiments/form/ExperimentForm.vue';
 import ExperimentForm2 from './experiments/form/ExperimentForm2.vue';
@@ -133,7 +132,6 @@ export default {
     'opensilex-FormInputLabelHelper': FormInputLabelHelper,
     'opensilex-ExternalReferencesForm': ExternalReferencesForm,
     'opensilex-ExternalReferencesDetails': ExternalReferencesDetails,
-    'opensilex-ListSelector' : ListSelector,
     'opensilex-ToDoComponent': ToDoComponent
 
 };

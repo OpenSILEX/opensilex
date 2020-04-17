@@ -235,8 +235,13 @@
 
         },
         "experiment": {
-            "uri": "Experiment URI",
+            "uri" : "uri",
+            "uri-help" :"Unique experiment identifier",
             "label" : "Name",
+            "label-placeholder" : "ZA17",
+            "label-help" :"Experiment name",
+            "objective" : "Objective",
+            "objective-placeholder" : "",
             "objective-help": "A clear description of the objective of the experiment",
             "comment": "Comment",
             "comment-placeholder": "",

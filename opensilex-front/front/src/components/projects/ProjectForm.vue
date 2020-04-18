@@ -36,6 +36,10 @@ import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import { ProjectGetDTO } from "opensilex-core/index";
+import { SecurityService, UserGetDTO } from "opensilex-security/index";
+import HttpResponse, {
+  OpenSilexResponse
+} from "opensilex-security/HttpResponse";
 
 @Component
 export default class ProjectForm extends Vue {
@@ -79,7 +83,7 @@ export default class ProjectForm extends Vue {
       description: undefined,
       objective: undefined,
       startDate: "",
-      endDate: "",
+      endDate: undefined,
       keywords: undefined,
       homePage: undefined,
       experiments: undefined,
@@ -88,6 +92,13 @@ export default class ProjectForm extends Vue {
       scientificContacts: undefined,
       relatedProjects:undefined
     };
+  }
+  onScContactsSelected(value) {
+    this.form.scientificContacts = value;
+  }
+
+  onAdminContactsSelected(value) {
+    this.form.administrativeContacts = value;
   }
 
   showCreateForm() {

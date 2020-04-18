@@ -71,6 +71,7 @@ import ProjectForm from './projects/ProjectForm.vue';
 import ProjectTable from './projects/ProjectTable.vue';
 
 import FilterTable from './projects/FilterTable.vue';
+
 import ProjectView from './projects/ProjectView.vue';
 
 

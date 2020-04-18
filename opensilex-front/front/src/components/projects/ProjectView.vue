@@ -26,13 +26,13 @@
 
     <b-button @click="showCreateForm" variant="phis">{{$t('component.project.add')}}</b-button>
 
-    <opensilex-core-ProjectForm
+    <opensilex-ProjectForm
       ref="projectForm"
       @onCreate="callCreateProjectService"
       @onUpdate="callUpdateProjectService"
-    ></opensilex-core-ProjectForm>
+    ></opensilex-ProjectForm>
 <br><br>
-    <opensilex-core-ProjectTable ref="projectTable" @onEdit="editProject" @onDelete="deleteProject"></opensilex-core-ProjectTable>
+    <opensilex-ProjectTable ref="projectTable" @onEdit="editProject" @onDelete="deleteProject"></opensilex-ProjectTable>
   </div>
 </template>
 

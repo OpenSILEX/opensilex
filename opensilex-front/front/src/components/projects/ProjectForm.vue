@@ -81,21 +81,14 @@
 
           <label class="mr-sm-2 ml-4 required" for="inline-2">End Date</label>
           <b-input-group class="mt-3 mb-3" size="sm" id="inline-2">
-            <ValidationProvider
-              :name="$t('component.common.endDate')"
-              rules="required"
-              v-slot="{ errors }"
-            >
-              <datePicker
-                v-model="form.endDate"
-                input-class="form-control"
-                placeholder="Select a date"
-                :clear-button="true"
-                @input="onEndDateSelected"
-                @cleared="onEndDateCleared"
-              ></datePicker>
-              <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-            </ValidationProvider>
+            <datePicker
+              v-model="form.endDate"
+              input-class="form-control"
+              placeholder="Select a date"
+              :clear-button="true"
+              @input="onEndDateSelected"
+              @cleared="onEndDateCleared"
+            ></datePicker>
           </b-input-group>
         </b-form>
 
@@ -124,6 +117,18 @@
           ></b-form-input>
         </b-form-group>
 
+        <!-- Scientific contacts -->
+        <opensilex-ScientificContactsProjectForm
+          :label="$t('component.project.scientificContacts')"
+          @onSelect="onScContactsSelected"
+        ></opensilex-ScientificContactsProjectForm>
+
+        <!-- Administrative contacts -->
+        <opensilex-ScientificContactsProjectForm
+          :label="$t('component.project.administrativeContacts')"
+          @onSelect="onAdminContactsSelected"
+        ></opensilex-ScientificContactsProjectForm>
+
         <!-- Description -->
         <b-form-group :label="$t('component.project.description') + ':'" label-for="description">
           <b-form-textarea
@@ -145,6 +150,10 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import { ProjectGetDTO } from "opensilex-core/index";
+import { SecurityService, UserGetDTO } from "opensilex-security/index";
+import HttpResponse, {
+  OpenSilexResponse
+} from "opensilex-security/HttpResponse";
 
 @Component
 export default class ProjectForm extends Vue {
@@ -193,7 +202,7 @@ export default class ProjectForm extends Vue {
       description: undefined,
       objective: undefined,
       startDate: "",
-      endDate: "",
+      endDate: undefined,
       keywords: undefined,
       homePage: undefined,
       experiments: undefined,
@@ -202,6 +211,13 @@ export default class ProjectForm extends Vue {
       scientificContacts: undefined,
       relatedProjects: undefined
     };
+  }
+  onScContactsSelected(value) {
+    this.form.scientificContacts = value;
+  }
+
+  onAdminContactsSelected(value) {
+    this.form.administrativeContacts = value;
   }
 
   showCreateForm() {

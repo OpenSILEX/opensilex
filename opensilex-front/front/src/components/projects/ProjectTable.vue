@@ -30,12 +30,10 @@
 
       <template v-slot:row-details="data">
         <strong class="capitalize-first-letter">{{ data.item.description }}</strong>
-       
       </template>
 
       <template v-slot:cell(actions)="data">
         <b-button-group>
-
           <b-button size="sm" @click="data.toggleDetails" variant="outline-success">
             <font-awesome-icon v-if="!data.detailsShowing" icon="eye" size="sm" />
             <font-awesome-icon v-if="data.detailsShowing" icon="eye-slash" size="sm" />
@@ -48,7 +46,6 @@
           <b-button size="sm" @click="$emit('onDelete', data.item.uri)" variant="danger">
             <font-awesome-icon icon="trash-alt" size="sm" />
           </b-button>
-          
         </b-button-group>
       </template>
     </b-table>
@@ -193,15 +190,19 @@ export default class ProjectTable extends Vue {
   }
 
   format(date) {
-    var d = new Date(date),
-      month = "" + (d.getMonth() + 1),
-      day = "" + d.getDate(),
-      year = d.getFullYear();
+    if (date) {
+      var d = new Date(date),
+        month = "" + (d.getMonth() + 1),
+        day = "" + d.getDate(),
+        year = d.getFullYear();
 
-    if (month.length < 2) month = "0" + month;
-    if (day.length < 2) day = "0" + day;
+      if (month.length < 2) month = "0" + month;
+      if (day.length < 2) day = "0" + day;
 
-    return [day, month, year].join("-");
+      return [day, month, year].join("-");
+    } else {
+      return  this.$i18n.t("component.project.inProgress");
+    }
   }
 }
 </script>

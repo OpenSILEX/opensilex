@@ -212,7 +212,10 @@
             "form-financialFunding-placeholder": "Saisir le support financier",
             "name" : "Nom",
             "description" : "Description",
-            "financialFunding":"Support financier"
+            "financialFunding":"Support financier",
+            "scientificContacts":"Contacts scientifiques",
+            "administrativeContacts":"Contacts administratifs",
+            "inProgress":"En cours .."
         },
         "experiment": {
             "uri" : "uri",

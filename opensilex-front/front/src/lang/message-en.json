@@ -214,7 +214,10 @@
             "form-financialFunding-placeholder": "Enter group financial funding",
             "name" : "Name",
             "description" : "Description",
-            "financialFunding":"Financial funding"
+            "financialFunding":"Financial funding",
+            "scientificContacts":"Scientific contacts",
+            "administrativeContacts":"Administrative contacts",
+            "inProgress":"In progress .."
 
         },
         "experiment": {

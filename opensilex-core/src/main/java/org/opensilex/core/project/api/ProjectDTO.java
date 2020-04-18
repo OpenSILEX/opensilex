@@ -119,9 +119,6 @@ public abstract class ProjectDTO {
         return this;
     }
 
-    @Required
-    @ApiModelProperty(example = "2020-02-20")
-    @DateConstraint
     public String getEndDate() {
         return endDate;
     }

@@ -11,9 +11,11 @@
       :sort-desc.sync="sortDesc"
       no-provider-paging
     >
-      <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
       <template v-slot:head(label)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(comment)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(hasFinancialFunding)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(startDate)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(endDate)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
       <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
 
       <template v-slot:cell(uri)="data">
@@ -22,14 +24,31 @@
         </a>
       </template>
 
+      <template v-slot:cell(startDate)="data">{{ format(data.item.startDate)}}</template>
+
+      <template v-slot:cell(endDate)="data">{{ format(data.item.endDate)}}</template>
+
+      <template v-slot:row-details="data">
+        <strong class="capitalize-first-letter">{{ data.item.description }}</strong>
+       
+      </template>
+
       <template v-slot:cell(actions)="data">
         <b-button-group>
+
+          <b-button size="sm" @click="data.toggleDetails" variant="outline-success">
+            <font-awesome-icon v-if="!data.detailsShowing" icon="eye" size="sm" />
+            <font-awesome-icon v-if="data.detailsShowing" icon="eye-slash" size="sm" />
+          </b-button>
+
           <b-button size="sm" @click="$emit('onEdit', data.item)" variant="outline-primary">
             <font-awesome-icon icon="edit" size="sm" />
           </b-button>
+
           <b-button size="sm" @click="$emit('onDelete', data.item.uri)" variant="danger">
             <font-awesome-icon icon="trash-alt" size="sm" />
           </b-button>
+          
         </b-button-group>
       </template>
     </b-table>
@@ -46,7 +65,7 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import {ProjectGetDTO,ProjectsService} from "opensilex-core/index";
+import { ProjectGetDTO, ProjectsService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
 
 @Component
@@ -87,18 +106,28 @@ export default class ProjectTable extends Vue {
 
   fields = [
     {
-      key: "uri",
-      label: "component.common.uri",
-      sortable: true
-    },
-    {
       key: "label",
       label: "component.common.name",
       sortable: true
     },
     {
-      key: "comment",
-      label: "component.common.description",
+      key: "hasFinancialFunding",
+      label: "component.project.financialFunding",
+      sortable: true
+    },
+    {
+      key: "startDate",
+      label: "component.common.startDate",
+      sortable: true
+    },
+    {
+      key: "endDate",
+      label: "component.common.endDate",
+      sortable: true
+    },
+    {
+      key: "uri",
+      label: "component.common.uri",
       sortable: true
     },
     {
@@ -161,6 +190,18 @@ export default class ProjectTable extends Vue {
         return http.response.result;
       })
       .catch(this.$opensilex.errorHandler);
+  }
+
+  format(date) {
+    var d = new Date(date),
+      month = "" + (d.getMonth() + 1),
+      day = "" + d.getDate(),
+      year = d.getFullYear();
+
+    if (month.length < 2) month = "0" + month;
+    if (day.length < 2) day = "0" + day;
+
+    return [day, month, year].join("-");
   }
 }
 </script>

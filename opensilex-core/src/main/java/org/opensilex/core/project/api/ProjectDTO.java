@@ -13,47 +13,44 @@ import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.server.rest.validation.DateConstraint;
 import org.opensilex.server.rest.validation.Required;
 
-
 /**
- * @author Julien BONNEFONT
- * A basic DTO class about an {@link ProjectModel}
+ * @author Julien BONNEFONT A basic DTO class about an {@link ProjectModel}
  */
 public abstract class ProjectDTO {
 
     protected URI uri;
-    
+
     protected String label;
-    
+
     protected String shortname;
-    
+
+    private String hasFinancialFunding;
+
     protected String description;
-    
+
     protected String objective;
-    
+
     protected String startDate;
-    
+
     protected String endDate;
-    
+
     protected List<String> keywords = new LinkedList<>();
-    
+
     protected URI homePage;
-    
+
     protected List<URI> experiments = new LinkedList<>();
-    
+
     protected List<URI> administrativeContacts = new LinkedList<>();
-     
+
     protected List<URI> coordinators = new LinkedList<>();
-    
+
     protected List<URI> scientificContacts = new LinkedList<>();
-    
+
     protected List<URI> relatedProjects = new LinkedList<>();
 
 //    protected List<URI> groups = new LinkedList<>();
 //
 //    protected Boolean isPublic;
-    
-    
-    
     public URI getUri() {
         return uri;
     }
@@ -82,7 +79,16 @@ public abstract class ProjectDTO {
         this.shortname = shortname;
         return this;
     }
-    
+
+    public String getHasFinancialFunding() {
+        return hasFinancialFunding;
+    }
+
+    public ProjectDTO setHasFinancialFunding(String hasFinancialFunding) {
+        this.hasFinancialFunding = hasFinancialFunding;
+        return this;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -91,7 +97,7 @@ public abstract class ProjectDTO {
         this.description = description;
         return this;
     }
-    
+
     public String getObjective() {
         return objective;
     }
@@ -142,9 +148,9 @@ public abstract class ProjectDTO {
         this.homePage = homePage;
         return this;
     }
-    
+
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/id/species/zeamays")
-     public List<URI> getExperiments() {
+    public List<URI> getExperiments() {
         return experiments;
     }
 
@@ -188,8 +194,7 @@ public abstract class ProjectDTO {
         this.relatedProjects = relatedProjects;
         return this;
     }
-    
-    
+
 //    public List<URI> getGroups() {
 //        return groups;
 //    }
@@ -208,7 +213,4 @@ public abstract class ProjectDTO {
 //        this.isPublic = isPublic;
 //        return this;
 //    }
-
-
-
 }

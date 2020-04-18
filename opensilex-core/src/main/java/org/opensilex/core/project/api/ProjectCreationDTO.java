@@ -25,6 +25,7 @@ public class ProjectCreationDTO extends ProjectDTO {
         
         model.setUri(getUri());
         model.setLabel(getLabel());
+        model.setHasFinancialFunding(getHasFinancialFunding());
         model.setStartDate(LocalDate.parse(startDate));
         if (endDate != null) {
             model.setEndDate(LocalDate.parse(endDate));

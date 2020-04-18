@@ -31,6 +31,8 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 )
 public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerator<ProjectModel> {
 
+    
+   
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "label",
@@ -45,6 +47,13 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
     )
     private String shortname;
     public static final String SHORTNAME_SPARQL_VAR = "shortname";
+    
+     @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasFinancialFunding"
+    )
+    private String hasFinancialFunding;
+    public static final String FINANCIALFUNDING_SPARQL_VAR = "hasFinancialFunding";
 
     @SPARQLProperty(
             ontology = DCTerms.class,
@@ -118,20 +127,6 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
     )
     private List<ProjectModel> relatedProjects;
     
-//      @SPARQLProperty(
-//            ontology = Oeso.class,
-//            property = "hasGroup"
-//    )
-//    List<GroupModel> groups = new LinkedList<>();
-//    public static final String GROUP_SPARQL_VAR = "group";
-    
-//      @SPARQLProperty(
-//            ontology = Oeso.class,
-//            property = "isPublic"
-//    )
-//    protected Boolean isPublic;
-//    public static final String IS_PUBLIC_SPARQL_VAR = "isPublic";
-    
 
     public String getLabel() {
         return label;
@@ -147,6 +142,14 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
 
     public void setShortname(String shortname) {
         this.shortname = shortname;
+    }
+
+     public String getHasFinancialFunding() {
+        return hasFinancialFunding;
+    }
+
+    public void setHasFinancialFunding(String hasFinancialFunding) {
+        this.hasFinancialFunding = hasFinancialFunding;
     }
 
     public List<ExperimentModel> getExperiments() {

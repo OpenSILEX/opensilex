@@ -70,8 +70,9 @@ public class Oeso {
     public static final Property hasAdministrativeContact = Ontology.property(NS, "hasAdministrativeContact");
     public static final Property hasCoordinator = Ontology.property(NS, "hasCoordinator");
     public static final Property hasScientificContact = Ontology.property(NS, "hasScientificContact");
-
     public static final Property hasRelatedProject = Ontology.property(NS, "hasRelatedProject");
+    public static final Property hasFinancialFunding = Ontology.property(NS, "hasFinancialFunding");
+    
 
     // ---- EXPERIMENTS ----
     public static final Resource Experiment = Ontology.resource(NS, "Experiment");

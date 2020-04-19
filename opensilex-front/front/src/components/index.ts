@@ -140,6 +140,7 @@ export default {
     "opensilex-core-ProjectTable": ProjectTable,
     "opensilex-core-ProjectForm": ProjectForm,
     "opensilex-core-FilterTable": FilterTable,
+    "opensilex-CoordinatorsProjectForm":CoordinatorsProjectForm,
     "opensilex-ContactsProjectForm":ContactsProjectForm,
     "opensilex-ScientificContactsProjectForm":ScientificContactsProjectForm,
     "opensilex-AdminContactsProjectForm":AdminContactsProjectForm,

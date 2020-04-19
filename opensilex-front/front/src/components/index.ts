@@ -136,16 +136,16 @@ export default {
 
     // Germplasm
     "opensilex-CoordinatorsProjectForm":CoordinatorsProjectForm,
+    "opensilex-core-ProjectView":ProjectView,
+    "opensilex-core-ProjectTable": ProjectTable,
+    "opensilex-core-ProjectForm": ProjectForm,
+    "opensilex-core-FilterTable": FilterTable,
     "opensilex-ContactsProjectForm":ContactsProjectForm,
     "opensilex-ScientificContactsProjectForm":ScientificContactsProjectForm,
     "opensilex-AdminContactsProjectForm":AdminContactsProjectForm,
     "opensilex-ProjectView":ProjectView,
     "opensilex-ProjectTable": ProjectTable,
     "opensilex-ProjectForm": ProjectForm,
-    "opensilex-core-ProjectView":ProjectView,
-    "opensilex-core-ProjectTable": ProjectTable,
-    "opensilex-core-ProjectForm": ProjectForm,
-    "opensilex-core-FilterTable": FilterTable,
 
     'opensilex-GermplasmView': GermplasmView,
     'opensilex-GermplasmForm': GermplasmForm,

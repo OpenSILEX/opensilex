@@ -26,10 +26,13 @@
       :sort-desc.sync="sortDesc"
       no-provider-paging
     >
+      <template v-slot:head(shortname)="data">{{$t(data.label)}}</template>
       <template v-slot:head(label)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(objective)="data">{{$t(data.label)}}</template>
       <template v-slot:head(hasFinancialFunding)="data">{{$t(data.label)}}</template>
       <template v-slot:head(startDate)="data">{{$t(data.label)}}</template>
       <template v-slot:head(endDate)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(homePage)="data">{{$t(data.label)}}</template>
       <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
       <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
 
@@ -46,6 +49,16 @@
       <template v-slot:row-details="data">
         <div v-if="data.item.description">
           DESCRIPTION: <strong class="capitalize-first-letter">{{ data.item.description }}</strong>
+        </div>
+        
+       <div v-if="data.item.coordinators">
+          Coordinators :
+          <b-badge
+            v-for="(item, index) in data.item.coordinators"
+            :key="index"
+            pill
+            variant="info"
+          >{{item}}</b-badge>
         </div>
         <div v-if="data.item.scientificContacts">
           Scientific contact :
@@ -150,9 +163,19 @@ export default class ProjectTable extends Vue {
   }
 
   fields = [
+      {
+      key: "shortname",
+      label: "component.common.acronym",
+      sortable: true
+    },
     {
       key: "label",
       label: "component.common.name",
+      sortable: true
+    }, 
+    {
+      key: "objective",
+      label: "component.project.objective",
       sortable: true
     },
     {

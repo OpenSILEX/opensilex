@@ -1,5 +1,5 @@
 <template>
-  <b-form-group :label="$t('component.project.scientificContacts')">
+  <b-form-group :label="$t('component.project.coordinators')">
     <b-form-tags v-model="value" no-outer-focus class="mb-2">
       <template v-slot="{ tags, disabled }">
         <ul v-if="tags.length > 0" class="list-inline d-inline-block mb-2">
@@ -14,14 +14,14 @@
         </ul>
         <b-form-input
           v-model="search"
-          list="alias-input-list"
-          id="alias-input-with-list"
+          list="alias-input-list3"
+          id="alias-input-with-list3"
           placeholder="Enter contact to search "
           autocomplete="off"
           @input="onWrite($event)"
           @focus.native="onFocus"
         ></b-form-input>
-        <datalist id="alias-input-list">
+        <datalist id="alias-input-list3">
           <option v-for="option in options" :key="option">{{ option }}</option>
         </datalist>
       </template>
@@ -39,7 +39,7 @@ import HttpResponse, {
 } from "opensilex-security/HttpResponse";
 
 @Component
-export default class ScientificContactsProjectForm extends Vue {
+export default class CoordinatorsProjectForm extends Vue {
   $opensilex: any;
   service: SecurityService;
   $i18n: any;
@@ -61,9 +61,6 @@ export default class ScientificContactsProjectForm extends Vue {
   pageSize = 800;
   created() {
     this.options = [];
-    console.log("SCFORM CREATED");
-    console.log(this.sendValues);
-
     this.service = this.$opensilex.getService("opensilex.SecurityService");
     let orderBy = [];
     if (this.sortBy) {
@@ -78,7 +75,6 @@ export default class ScientificContactsProjectForm extends Vue {
       .searchUsers("", orderBy, this.currentPage - 1, this.pageSize)
       .then((http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) => {
         const res = http.response.result as any;
-        console.log(res);
         this.options = [];
         res.forEach(element => {
           this.options.push(element.firstName + " " + element.lastName);
@@ -88,10 +84,7 @@ export default class ScientificContactsProjectForm extends Vue {
             element.firstName + " " + element.lastName;
         });
         if (this.sendValues) {
-          console.log("HEREHERE");
-          console.log(this.sendValues);
           this.sendValues.forEach(element => {
-            console.log(this.URIWithValue[element]);
             this.value.push(this.URIWithValue[element]);
           });
         }
@@ -99,21 +92,23 @@ export default class ScientificContactsProjectForm extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
-  edit(scientificContacts){
-   this.sendValues=scientificContacts;
+
+  edit(coordinatorsContacts){
+    this.sendValues=coordinatorsContacts;
      if (this.sendValues) {
           this.sendValues.forEach(element => {
             console.log(this.URIWithValue[element]);
             this.value.push(this.URIWithValue[element]);
           });
         }
-  }
 
+  }
   reset(){
     this.value=[];
-    this.sendValues=[];
     this.search="";
+    this.sendValues=[];
   }
+
   onFocus(){
     this.search = "";
     this.options = [];
@@ -153,15 +148,15 @@ export default class ScientificContactsProjectForm extends Vue {
   }
 
   onChange(selectedValue) {
-    this.search = "";
-    this.options = [];
-    console.log("onChange");
+    console.log("onChange : values");
+    console.log(this.value);
     this.value.push(selectedValue);
     console.log("Values: " + this.value);
     let uriValues = [];
     this.value.forEach(element => {
       uriValues.push(this.valueWithURI[element]);
     });
+    this.search = "";
     this.$emit("onSelect", uriValues);
   }
 

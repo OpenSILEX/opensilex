@@ -19,6 +19,7 @@
           placeholder="Enter contact to search "
           autocomplete="off"
           @input="onWrite($event)"
+          @focus.native="onFocus"
         ></b-form-input>
         <datalist id="alias-input-list2">
           <option v-for="option in options" :key="option">{{ option }}</option>
@@ -59,6 +60,7 @@ export default class AdminContactsProjectForm extends Vue {
   currentPage: number = 1;
   pageSize = 800;
   created() {
+    this.options = [];
     this.service = this.$opensilex.getService("opensilex.SecurityService");
     let orderBy = [];
     if (this.sortBy) {
@@ -73,7 +75,6 @@ export default class AdminContactsProjectForm extends Vue {
       .searchUsers("", orderBy, this.currentPage - 1, this.pageSize)
       .then((http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) => {
         const res = http.response.result as any;
-        console.log(res);
         this.options = [];
         res.forEach(element => {
           this.options.push(element.firstName + " " + element.lastName);
@@ -83,10 +84,7 @@ export default class AdminContactsProjectForm extends Vue {
             element.firstName + " " + element.lastName;
         });
         if (this.sendValues) {
-          console.log("HEREHERE");
-          console.log(this.sendValues);
           this.sendValues.forEach(element => {
-            console.log(this.URIWithValue[element]);
             this.value.push(this.URIWithValue[element]);
           });
         }
@@ -109,6 +107,12 @@ export default class AdminContactsProjectForm extends Vue {
     this.value=[];
     this.search="";
     this.sendValues=[];
+  }
+
+  onFocus(){
+    this.search = "";
+    this.options = [];
+
   }
 
   onWrite(value) {

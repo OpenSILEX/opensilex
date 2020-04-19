@@ -33,6 +33,18 @@
           </ValidationProvider>
         </b-form-group>
 
+        <!-- ShortName  -->
+
+        <b-form-group :label="$t('component.common.acronym') + ':'" label-for="acronym">
+          <b-form-input
+            id="acronym"
+            v-model="form.shortname"
+            type="text"
+            :placeholder="$t('component.project.form-acronym-placeholder')"
+          ></b-form-input>
+        </b-form-group>
+        
+       
         <!-- Name -->
         <b-form-group
           :label="$t('component.project.name') + ':'"
@@ -79,7 +91,7 @@
             </ValidationProvider>
           </b-input-group>
 
-          <label class="mr-sm-2 ml-4 " for="inline-2">End Date</label>
+          <label class="mr-sm-2 ml-4" for="inline-2">End Date</label>
           <b-input-group class="mt-3 mb-3" size="sm" id="inline-2">
             <datePicker
               v-model="form.endDate"
@@ -92,17 +104,17 @@
           </b-input-group>
         </b-form>
 
-        <!-- ShortName 
-        <b-form-group :label="$t('component.common.acronym') + ':'" label-for="acronym">
+        <!-- Objective -->
+        <b-form-group :label="$t('component.project.objective') + ':'" label-for="objective">
           <b-form-input
-            id="acronym"
-            v-model="form.shortname"
+            id="objective"
+            v-model="form.objective"
             type="text"
-            :placeholder="$t('component.project.form-comment-placeholder')"
+            :placeholder="$t('component.project.form-objective-placeholder')"
           ></b-form-input>
         </b-form-group>
         
-        -->
+        
 
         <!-- Financial funding -->
         <b-form-group
@@ -117,9 +129,18 @@
           ></b-form-input>
         </b-form-group>
 
+
+        <!--Coordinators -->
+        <opensilex-CoordinatorsProjectForm
+          ref="coordinatorsProjectFormRef"
+          :sendValues="form.coordinators"
+          :label="$t('component.project.coordinators')"
+          @onSelect="onCoordinatorsSelected"
+        ></opensilex-CoordinatorsProjectForm>
+
         <!-- Scientific contacts -->
         <opensilex-ScientificContactsProjectForm
-          ref="scientificContactsProjectFormRef"  
+          ref="scientificContactsProjectFormRef"
           :sendValues="form.scientificContacts"
           :label="$t('component.project.scientificContacts')"
           @onSelect="onScContactsSelected"
@@ -127,7 +148,7 @@
 
         <!-- Administrative contacts -->
         <opensilex-AdminContactsProjectForm
-          ref="adminContactsProjectFormRef"  
+          ref="adminContactsProjectFormRef"
           :sendValues="form.administrativeContacts"
           :label="$t('component.project.administrativeContacts')"
           @onSelect="onAdminContactsSelected"
@@ -210,11 +231,16 @@ export default class ProjectForm extends Vue {
       homePage: undefined,
       experiments: undefined,
       administrativeContacts: [],
-      coordinators: undefined,
+      coordinators: [],
       scientificContacts: [],
       relatedProjects: undefined
     };
   }
+
+  onCoordinatorsSelected(value) {
+    this.form.coordinators = value;
+  }
+
   onScContactsSelected(value) {
     this.form.scientificContacts = value;
   }
@@ -229,9 +255,14 @@ export default class ProjectForm extends Vue {
     this.title = this.$i18n.t("component.project.add").toString();
     this.uriGenerated = true;
     this.validatorRef.reset();
-    let adminContactsProjectFormRef:any = this.$refs.adminContactsProjectFormRef;
+    let coordinatorsProjectFormRef: any = this.$refs
+      .coordinatorsProjectFormRef;
+    coordinatorsProjectFormRef.reset();
+    let adminContactsProjectFormRef: any = this.$refs
+      .adminContactsProjectFormRef;
     adminContactsProjectFormRef.reset();
-    let scientificContactsProjectFormRef:any = this.$refs.scientificContactsProjectFormRef;
+    let scientificContactsProjectFormRef: any = this.$refs
+      .scientificContactsProjectFormRef;
     scientificContactsProjectFormRef.reset();
     let modalRef: any = this.$refs.modalRef;
     modalRef.show();
@@ -241,10 +272,15 @@ export default class ProjectForm extends Vue {
     this.form = form;
     this.editMode = true;
     this.title = this.$i18n.t("component.project.update").toString();
-    this.uriGenerated = true;
-     let adminContactsProjectFormRef:any = this.$refs.adminContactsProjectFormRef;
+    this.uriGenerated = true; 
+     let coordinatorsProjectFormRef: any = this.$refs
+      .coordinatorsProjectFormRef;
+    coordinatorsProjectFormRef.edit(this.form.coordinators);
+    let adminContactsProjectFormRef: any = this.$refs
+      .adminContactsProjectFormRef;
     adminContactsProjectFormRef.edit(this.form.administrativeContacts);
-    let scientificContactsProjectFormRef:any = this.$refs.scientificContactsProjectFormRef;
+    let scientificContactsProjectFormRef: any = this.$refs
+      .scientificContactsProjectFormRef;
     scientificContactsProjectFormRef.edit(this.form.scientificContacts);
     this.validatorRef.reset();
     let modalRef: any = this.$refs.modalRef;

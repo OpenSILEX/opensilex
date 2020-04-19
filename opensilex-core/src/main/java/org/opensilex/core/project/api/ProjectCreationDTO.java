@@ -64,7 +64,7 @@ public class ProjectCreationDTO extends ProjectDTO {
             user.setUri(u);
             scientList.add(user);
         });
-        model.setCoordinators(scientList);
+        model.setScientificContacts(scientList);
         
         List<ProjectModel> projectList = new ArrayList<>(relatedProjects.size());
         relatedProjects.forEach((URI u) -> {

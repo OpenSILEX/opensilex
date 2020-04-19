@@ -94,7 +94,7 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
             ontology = Oeso.class,
             property = "hasKeyword"
     )
-    private List<String> keywords;
+    private List<String> keywords = new LinkedList<>();;
 
     @SPARQLProperty(
             ontology = FOAF.class,
@@ -107,25 +107,25 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
             ontology = Oeso.class,
             property = "hasAdministrativeContact"
     )
-    private List<UserModel> administrativeContacts;
+    private List<UserModel> administrativeContacts = new LinkedList<>();;
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasCoordinator"
     )
-    private List<UserModel> coordinators;
+    private List<UserModel> coordinators = new LinkedList<>();;
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasScientificContact"
     )
-    private List<UserModel> scientificContacts;
+    private List<UserModel> scientificContacts = new LinkedList<>();
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasRelatedProject"
     )
-    private List<ProjectModel> relatedProjects;
+    private List<ProjectModel> relatedProjects = new LinkedList<>();;
     
 
     public String getLabel() {

@@ -45,7 +45,7 @@ public class ProjectCreationDTO extends ProjectDTO {
         List<UserModel> adminList= new ArrayList<>(administrativeContacts.size());
         administrativeContacts.forEach((URI u )-> {
             UserModel user = new UserModel();
-            user.setUri(uri);
+            user.setUri(u);
             adminList.add(user);
         });
         model.setAdministrativeContacts(adminList);
@@ -53,7 +53,7 @@ public class ProjectCreationDTO extends ProjectDTO {
         List<UserModel> coordList= new ArrayList<>(coordinators.size());
         coordinators.forEach((URI u )-> {
             UserModel user = new UserModel();
-            user.setUri(uri);
+            user.setUri(u);
             coordList.add(user);
         });
         model.setCoordinators(coordList);
@@ -61,7 +61,7 @@ public class ProjectCreationDTO extends ProjectDTO {
         List<UserModel> scientList= new ArrayList<>(scientificContacts.size());
         scientificContacts.forEach((URI u )-> {
             UserModel user = new UserModel();
-            user.setUri(uri);
+            user.setUri(u);
             scientList.add(user);
         });
         model.setCoordinators(scientList);

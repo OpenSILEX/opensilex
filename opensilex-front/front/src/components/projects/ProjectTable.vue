@@ -48,7 +48,7 @@
 
       <template v-slot:row-details="data">
         <div v-if="data.item.description">
-          DESCRIPTION: <strong class="capitalize-first-letter">{{ data.item.description }}</strong>
+          DESCRIPTION:<br> <div class="capitalize-first-letter">{{ data.item.description }}</div>
         </div>
         
        <div v-if="data.item.coordinators">

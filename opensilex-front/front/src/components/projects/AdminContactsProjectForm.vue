@@ -1,6 +1,5 @@
 <template>
   <b-form-group :label="$t('component.project.administrativeContacts')">
-    
     <b-form-tags v-model="value" no-outer-focus class="mb-2">
       <template v-slot="{ tags, disabled }">
         <ul v-if="tags.length > 0" class="list-inline d-inline-block mb-2">
@@ -30,7 +29,7 @@
 </template>
 
 <script lang="ts">
-import { Component,Prop } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 
 import { SecurityService, UserGetDTO } from "opensilex-security/index";
@@ -46,12 +45,14 @@ export default class AdminContactsProjectForm extends Vue {
 
   @Prop()
   label: any;
-  selectedSoType: any;
+  @Prop()
+  sendValues: any;
   alias: any = undefined;
+  value = [];
   options = [];
   search = "";
-  value = [];
   valueWithURI = {};
+  URIWithValue = {};
 
   sortBy = "firstName";
   sortDesc = false;
@@ -59,11 +60,60 @@ export default class AdminContactsProjectForm extends Vue {
   pageSize = 800;
   created() {
     this.service = this.$opensilex.getService("opensilex.SecurityService");
+    let orderBy = [];
+    if (this.sortBy) {
+      let orderByText = this.sortBy + "=";
+      if (this.sortDesc) {
+        orderBy.push(orderByText + "desc");
+      } else {
+        orderBy.push(orderByText + "asc");
+      }
+    }
+    this.service
+      .searchUsers("", orderBy, this.currentPage - 1, this.pageSize)
+      .then((http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) => {
+        const res = http.response.result as any;
+        console.log(res);
+        this.options = [];
+        res.forEach(element => {
+          this.options.push(element.firstName + " " + element.lastName);
+          this.valueWithURI[element.firstName + " " + element.lastName] =
+            element.uri;
+          this.URIWithValue[element.uri] =
+            element.firstName + " " + element.lastName;
+        });
+        if (this.sendValues) {
+          console.log("HEREHERE");
+          console.log(this.sendValues);
+          this.sendValues.forEach(element => {
+            console.log(this.URIWithValue[element]);
+            this.value.push(this.URIWithValue[element]);
+          });
+        }
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
+
+
+  edit(adminContacts){
+    this.sendValues=adminContacts;
+     if (this.sendValues) {
+          this.sendValues.forEach(element => {
+            console.log(this.URIWithValue[element]);
+            this.value.push(this.URIWithValue[element]);
+          });
+        }
+
+  }
+  reset(){
+    this.value=[];
+    this.search="";
+    this.sendValues=[];
   }
 
   onWrite(value) {
-     console.log("onWrite");
-     console.log(value);
+    console.log("onWrite");
+    console.log(value);
 
     if (this.options.includes(value)) {
       this.onChange(value);
@@ -94,7 +144,8 @@ export default class AdminContactsProjectForm extends Vue {
   }
 
   onChange(selectedValue) {
-    console.log("onChange");
+    console.log("onChange : values");
+    console.log(this.value);
     this.value.push(selectedValue);
     console.log("Values: " + this.value);
     let uriValues = [];
@@ -115,6 +166,7 @@ export default class AdminContactsProjectForm extends Vue {
       uriValues.push(this.valueWithURI[element]);
     });
     this.search = "";
+    this.$emit("onSelect", uriValues);
   }
 }
 </script>

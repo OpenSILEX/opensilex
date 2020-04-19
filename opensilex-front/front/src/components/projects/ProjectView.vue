@@ -73,6 +73,7 @@ export default class ProjectView extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Project created", uri);
+
           let projectTable: any = this.$refs.projectTable;
           projectTable.refresh();
         })

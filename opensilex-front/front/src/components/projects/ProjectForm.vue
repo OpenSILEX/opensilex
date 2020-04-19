@@ -79,7 +79,7 @@
             </ValidationProvider>
           </b-input-group>
 
-          <label class="mr-sm-2 ml-4 required" for="inline-2">End Date</label>
+          <label class="mr-sm-2 ml-4 " for="inline-2">End Date</label>
           <b-input-group class="mt-3 mb-3" size="sm" id="inline-2">
             <datePicker
               v-model="form.endDate"
@@ -119,13 +119,16 @@
 
         <!-- Scientific contacts -->
         <opensilex-ScientificContactsProjectForm
+          ref="scientificContactsProjectFormRef"  
+          :sendValues="form.scientificContacts"
           :label="$t('component.project.scientificContacts')"
           @onSelect="onScContactsSelected"
         ></opensilex-ScientificContactsProjectForm>
 
         <!-- Administrative contacts -->
         <opensilex-AdminContactsProjectForm
-        idc="admin"
+          ref="adminContactsProjectFormRef"  
+          :sendValues="form.administrativeContacts"
           :label="$t('component.project.administrativeContacts')"
           @onSelect="onAdminContactsSelected"
         ></opensilex-AdminContactsProjectForm>
@@ -171,7 +174,6 @@ export default class ProjectForm extends Vue {
   }
 
   uriGenerated = true;
-
   form: ProjectGetDTO = {
     uri: "",
     label: "",
@@ -207,9 +209,9 @@ export default class ProjectForm extends Vue {
       keywords: undefined,
       homePage: undefined,
       experiments: undefined,
-      administrativeContacts: undefined,
+      administrativeContacts: [],
       coordinators: undefined,
-      scientificContacts: undefined,
+      scientificContacts: [],
       relatedProjects: undefined
     };
   }
@@ -226,8 +228,11 @@ export default class ProjectForm extends Vue {
     this.editMode = false;
     this.title = this.$i18n.t("component.project.add").toString();
     this.uriGenerated = true;
-
     this.validatorRef.reset();
+    let adminContactsProjectFormRef:any = this.$refs.adminContactsProjectFormRef;
+    adminContactsProjectFormRef.reset();
+    let scientificContactsProjectFormRef:any = this.$refs.scientificContactsProjectFormRef;
+    scientificContactsProjectFormRef.reset();
     let modalRef: any = this.$refs.modalRef;
     modalRef.show();
   }
@@ -237,6 +242,10 @@ export default class ProjectForm extends Vue {
     this.editMode = true;
     this.title = this.$i18n.t("component.project.update").toString();
     this.uriGenerated = true;
+     let adminContactsProjectFormRef:any = this.$refs.adminContactsProjectFormRef;
+    adminContactsProjectFormRef.edit(this.form.administrativeContacts);
+    let scientificContactsProjectFormRef:any = this.$refs.scientificContactsProjectFormRef;
+    scientificContactsProjectFormRef.edit(this.form.scientificContacts);
     this.validatorRef.reset();
     let modalRef: any = this.$refs.modalRef;
     modalRef.show();

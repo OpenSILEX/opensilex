@@ -124,10 +124,11 @@
         ></opensilex-ScientificContactsProjectForm>
 
         <!-- Administrative contacts -->
-        <opensilex-ScientificContactsProjectForm
+        <opensilex-AdminContactsProjectForm
+        idc="admin"
           :label="$t('component.project.administrativeContacts')"
           @onSelect="onAdminContactsSelected"
-        ></opensilex-ScientificContactsProjectForm>
+        ></opensilex-AdminContactsProjectForm>
 
         <!-- Description -->
         <b-form-group :label="$t('component.project.description') + ':'" label-for="description">

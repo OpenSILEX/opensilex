@@ -1,6 +1,6 @@
 <template>
-  <b-form-group :label="$t('component.project.scientificContacts')">
-    
+  <b-form-group >
+    {{label}}:
     <b-form-tags v-model="value" no-outer-focus class="mb-2">
       <template v-slot="{ tags, disabled }">
         <ul v-if="tags.length > 0" class="list-inline d-inline-block mb-2">
@@ -15,13 +15,13 @@
         </ul>
         <b-form-input
           v-model="search"
-          list="alias-input-list"
-          id="alias-input-with-list"
+          :list="idc"
+          :id="idc"
           placeholder="Enter contact to search "
           autocomplete="off"
           @input="onWrite($event)"
         ></b-form-input>
-        <datalist id="alias-input-list">
+        <datalist :id="idc">
           <option v-for="option in options" :key="option">{{ option }}</option>
         </datalist>
       </template>
@@ -30,7 +30,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop} from "vue-property-decorator";
+import { Component,Prop  } from "vue-property-decorator";
 import Vue from "vue";
 
 import { SecurityService, UserGetDTO } from "opensilex-security/index";
@@ -46,6 +46,8 @@ export default class ScientificContactsProjectForm extends Vue {
 
   @Prop()
   label: any;
+  @Prop()
+  idc: any;
   alias: any = undefined;
   options = [];
   search = "";

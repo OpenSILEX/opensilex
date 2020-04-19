@@ -1,5 +1,5 @@
 <template>
-  <b-form-group :label="$t('component.project.scientificContacts')">
+  <b-form-group :label="$t('component.project.administrativeContacts')">
     
     <b-form-tags v-model="value" no-outer-focus class="mb-2">
       <template v-slot="{ tags, disabled }">
@@ -15,13 +15,13 @@
         </ul>
         <b-form-input
           v-model="search"
-          list="alias-input-list"
-          id="alias-input-with-list"
+          list="alias-input-list2"
+          id="alias-input-with-list2"
           placeholder="Enter contact to search "
           autocomplete="off"
           @input="onWrite($event)"
         ></b-form-input>
-        <datalist id="alias-input-list">
+        <datalist id="alias-input-list2">
           <option v-for="option in options" :key="option">{{ option }}</option>
         </datalist>
       </template>
@@ -30,7 +30,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop} from "vue-property-decorator";
+import { Component,Prop } from "vue-property-decorator";
 import Vue from "vue";
 
 import { SecurityService, UserGetDTO } from "opensilex-security/index";
@@ -39,13 +39,14 @@ import HttpResponse, {
 } from "opensilex-security/HttpResponse";
 
 @Component
-export default class ScientificContactsProjectForm extends Vue {
+export default class AdminContactsProjectForm extends Vue {
   $opensilex: any;
   service: SecurityService;
   $i18n: any;
 
   @Prop()
   label: any;
+  selectedSoType: any;
   alias: any = undefined;
   options = [];
   search = "";

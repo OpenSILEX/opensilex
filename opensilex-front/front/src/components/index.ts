@@ -45,6 +45,7 @@ import GermplasmView from './germplasm/GermplasmView.vue';
 import GermplasmForm from './germplasm/GermplasmForm.vue';
 import GermplasmList from './germplasm/GermplasmList.vue';
 
+import CoordinatorsProjectForm from './projects/CoordinatorsProjectForm.vue';
 import ContactsProjectForm from './projects/ContactsProjectForm.vue';
 import ScientificContactsProjectForm from './projects/ScientificContactsProjectForm.vue';
 import AdminContactsProjectForm from './projects/AdminContactsProjectForm.vue';
@@ -90,6 +91,7 @@ export default {
     'opensilex-ExperimentCreate': ExperimentCreate,
     'opensilex-ExperimentView': ExperimentView,
 
+    "opensilex-CoordinatorsProjectForm":CoordinatorsProjectForm,
     "opensilex-ContactsProjectForm":ContactsProjectForm,
     "opensilex-ScientificContactsProjectForm":ScientificContactsProjectForm,
     "opensilex-AdminContactsProjectForm":AdminContactsProjectForm,

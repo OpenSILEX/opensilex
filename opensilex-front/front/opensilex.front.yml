@@ -25,7 +25,7 @@ menu:
     icon: ik-layers
     route: 
       path: /projects
-      component: opensilex-core-ProjectView
+      component: opensilex-ProjectView
       credentials: []
   - id: experiments
     label: component.menu.experiments

@@ -250,6 +250,7 @@
             "form-description-placeholder": "Saisir la description du projet",
             "form-objective-placeholder": "Saisir l'objectif du projet",
             "form-homePage-placeholder": "Saisir l'adresse du website du projet",
+            "form-contact-placeholder":"Saisir les contacts",
             "form-acronym-placeholder": "Saisir un acronyme au projet",
             "form-financialFunding-placeholder": "Saisir le support financier du projet",
             "filter-placeholder": "Utiliser ce champ pour filtrer les projets par nom",

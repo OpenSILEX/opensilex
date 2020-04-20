@@ -39,12 +39,12 @@
         </b-form-group>
 
          <!-- fullname -->
-         <b-form-group  required  >
+         <b-form-group >
           <opensilex-FormInputLabelHelper label=component.variable.fullname helpMessage="component.variable.fullname-help" >
           </opensilex-FormInputLabelHelper>
           <ValidationProvider :name="$t('component.variable.fullname')" v-slot="{ errors }">
-            <b-form-textinput  id="fullname"  v-model="form.fullname"  type="textinput">
-            </b-form-textinput>
+            <b-form-input  id="fullname"  v-model="form.fullname"  type="textinput">
+            </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
@@ -54,9 +54,9 @@
           <opensilex-FormInputLabelHelper label=component.variable.label helpMessage="component.variable.label-help" >
           </opensilex-FormInputLabelHelper>
           <ValidationProvider :name="$t('component.variable.label')" v-slot="{ errors }">
-            <b-form-textinput  id="label"  v-model="form.label"  type="textinput"
+            <b-form-input  id="label"  v-model="form.label"  type="textinput"
               :placeholder="$t('component.variable.label-placeholder')" >
-            </b-form-textinput>
+            </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
@@ -66,9 +66,9 @@
           <opensilex-FormInputLabelHelper label=component.variable.trait-name helpMessage="component.variable.trait-name-help" >
           </opensilex-FormInputLabelHelper>
           <ValidationProvider :name="$t('component.variable.trait-name')" v-slot="{ errors }">
-            <b-form-textinput  id="traitName"  v-model="form.traitName"  type="textinput"
+            <b-form-input  id="traitName"  v-model="form.traitName"  type="textinput"
               :placeholder="$t('component.variable.trait-name-placeholder')" >
-            </b-form-textinput>
+            </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
@@ -78,9 +78,9 @@
           <opensilex-FormInputLabelHelper label=component.variable.trait-uri helpMessage="component.variable.trait-uri-help" >
           </opensilex-FormInputLabelHelper>
           <ValidationProvider :name="$t('component.variable.trait-uri')" v-slot="{ errors }">
-            <b-form-textinput  id="traitUri"  v-model="form.traitUri"  type="textinput"
+            <b-form-input  id="traitUri"  v-model="form.traitUri"  type="textinput"
               :placeholder="$t('component.variable.trait-uri-placeholder')" >
-            </b-form-textinput>
+            </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
@@ -90,9 +90,9 @@
           <opensilex-FormInputLabelHelper label=component.variable.method-name helpMessage="component.variable.method-name-help" >
           </opensilex-FormInputLabelHelper>
           <ValidationProvider :name="$t('component.variable.method-name')" v-slot="{ errors }">
-            <b-form-textinput  id="methodName"  v-model="form.methodName"  type="textinput"
-              :placeholder="$t('component.variable.trait-name-placeholder')" >
-            </b-form-textinput>
+            <b-form-input  id="methodName"  v-model="form.methodName"  type="textinput"
+              :placeholder="$t('component.variable.method-name-placeholder')" >
+            </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
@@ -102,13 +102,36 @@
           <opensilex-FormInputLabelHelper label=component.variable.method-uri helpMessage="component.variable.method-uri-help" >
           </opensilex-FormInputLabelHelper>
           <ValidationProvider :name="$t('component.variable.method-uri')" v-slot="{ errors }">
-            <b-form-textinput  id="methodUri"  v-model="form.methodUri"  type="textinput"
-              :placeholder="$t('component.variable.trait-uri-placeholder')" >
-            </b-form-textinput>
+            <b-form-input  id="methodUri"  v-model="form.methodUri"  type="textinput"
+              :placeholder="$t('component.variable.method-uri-placeholder')" >
+            </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
 
+        <!-- Method description -->
+         <b-form-group  required  >
+          <opensilex-FormInputLabelHelper label=component.variable.method-description helpMessage="component.variable.method-description-help" >
+          </opensilex-FormInputLabelHelper>
+          <ValidationProvider :name="$t('component.variable.method-description')" v-slot="{ errors }">
+            <b-form-input  id="methodDescription"  v-model="form.methodDescription"  type="textinput"
+              :placeholder="$t('component.variable.method-description-placeholder')" >
+            </b-form-input>
+            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+          </ValidationProvider>
+        </b-form-group>
+
+        <!-- Method external reference -->
+        <!-- <b-form-group  required  >
+          <opensilex-FormInputLabelHelper label=component.variable.method-reference helpMessage="component.variable.method-reference-help" >
+          </opensilex-FormInputLabelHelper>
+          <ValidationProvider :name="$t('component.variable.method-reference')" v-slot="{ errors }">
+            <b-form-textinput  id="methodRe"  v-model="form.methodDescription"  type="textinput"
+              :placeholder="$t('component.variable.method-description-placeholder')" >
+            </b-form-textinput>
+            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+          </ValidationProvider>
+        </b-form-group> -->
 
     </b-form>
     </ValidationObserver>
@@ -134,7 +157,7 @@ traitList: any;
 
 created(){
 
-    this.entityList = ["entityA","entityB"];
+    this.entityList = ["entityA","entityB","entityC"];
     this.qualityList = ["qualityA","qualityB"];
     this.methodList = ["methodA","methodB"];
     this.traitList = ["traitA","traitB"];
@@ -148,7 +171,8 @@ created(){
         traitName : null,
         traitUri : null,
         methodName: null,
-        methodUri: null
+        methodUri: null,
+        methodDescription: null
     }
 }
 

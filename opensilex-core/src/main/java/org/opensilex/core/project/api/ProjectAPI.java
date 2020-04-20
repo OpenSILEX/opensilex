@@ -75,12 +75,10 @@ public class ProjectAPI {
     public static final String CREDENTIAL_PROJECT_READ_ID = "project-read";
     public static final String CREDENTIAL_PROJECT_READ_LABEL_KEY = "credential.project.read";
 
-    
     protected static final String PROJECT_EXAMPLE_URI = "http://opensilex/set/project/BW1";
 
     @CurrentUser
     UserModel currentUser;
-   
 
     @Inject
     private SPARQLService sparql;
@@ -92,8 +90,7 @@ public class ProjectAPI {
      * Create a Project
      *
      * @param dto the Project to create
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing
-     * the created Project {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing the created Project {@link URI}
      * @throws java.lang.Exception
      */
     @POST
@@ -128,8 +125,7 @@ public class ProjectAPI {
 
     /**
      * @param dto the Project to update
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing
-     * the updated Project {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing the updated Project {@link URI}
      */
     @PUT
     @Path("update")
@@ -141,7 +137,7 @@ public class ProjectAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    
+
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Project updated", response = ObjectUriResponse.class),
         @ApiResponse(code = 400, message = "Invalid or unknown Project URI", response = ErrorResponse.class),
@@ -165,8 +161,7 @@ public class ProjectAPI {
 
     /**
      * @param prjctUri the Project URI
-     * @return a {@link Response} with a {@link SingleObjectResponse} containing
-     * the {@link ExperimentGetDTO}
+     * @return a {@link Response} with a {@link SingleObjectResponse} containing the {@link ExperimentGetDTO}
      */
     @GET
     @Path("get/{uri}")
@@ -202,7 +197,7 @@ public class ProjectAPI {
         }
     }
 
-      /**
+    /**
      * Search projects
      *
      * @param uri
@@ -229,14 +224,14 @@ public class ProjectAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-       @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return Project list", response = ProjectGetDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return Project list", response = ProjectGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     public Response searchProjects(
-           @ApiParam(value = "Search by uri", example = PROJECT_EXAMPLE_URI) @QueryParam("uri") URI uri,
-            @ApiParam(value = "Search by start date", example = "2017-06-15") @QueryParam("startDate") @DateConstraint String startDate,
-            @ApiParam(value = "Search by end date", example = "2017-06-15") @QueryParam("endDate") @DateConstraint String endDate,
+            @ApiParam(value = "Search by uri", example = PROJECT_EXAMPLE_URI) @QueryParam("uri") URI uri,
+            @ApiParam(value = "Search by start date", example = "2017-06-15") @QueryParam("startDate") String startDate,
+            @ApiParam(value = "Search by end date", example = "2017-06-15") @QueryParam("endDate") String endDate,
             @ApiParam(value = "Regex pattern for filtering by label", example = "PJ17") @QueryParam("label") String label,
             @ApiParam(value = "Search by related experiment uri", example = "http://www.phenome-fppn.fr/experiments/ZA17\nhttp://www.phenome-fppn.fr/id/expe/ZA18") @QueryParam("experiments") List<URI> experiments,
             @ApiParam(value = "Search ended(false) ", example = "true") @QueryParam("isEnded") Boolean isEnded,
@@ -244,16 +239,15 @@ public class ProjectAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        
-          try {
+
+        try {
             ProjectDAO prjctDao = new ProjectDAO(sparql);
 
-           // UserModel userModel = authentication.getCurrentUser(securityContext);
-           // List<URI> groupUris = new ArrayList<>();
+            // UserModel userModel = authentication.getCurrentUser(securityContext);
+            // List<URI> groupUris = new ArrayList<>();
 //            for (String groupUri : authentication.decodeStringArrayClaim(userModel.getToken(), CoreModule.TOKEN_USER_GROUP_URIS)) {
 //                groupUris.add(new URI(groupUri));
 //            }
-
             ListWithPagination<ProjectModel> resultList = prjctDao.search(
                     uri,
                     label,
@@ -266,7 +260,6 @@ public class ProjectAPI {
                     pageSize
             );
 
-           
             // Convert paginated list to DTO
             ListWithPagination<ProjectGetDTO> resultDTOList = resultList.convert(ProjectGetDTO.class, ProjectGetDTO::fromModel);
             return new PaginatedListResponse<>(resultDTOList).getResponse();
@@ -275,15 +268,12 @@ public class ProjectAPI {
             return new ErrorResponse(e).getResponse();
         }
     }
-    
-    
-    
+
     /**
      * Remove a project
      *
      * @param prjctUri the project URI
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing
-     * the deleted Project {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing the deleted Project {@link URI}
      */
     @DELETE
     @Path("delete/{uri}")
@@ -296,12 +286,11 @@ public class ProjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Project deleted", response = ObjectUriResponse.class),
-            @ApiResponse(code = 400, message = "Invalid or unknown Project URI", response = ErrorResponse.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+        @ApiResponse(code = 200, message = "Project deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 400, message = "Invalid or unknown Project URI", response = ErrorResponse.class),
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response deleteProject(
             @ApiParam(value = "Project URI", example = PROJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI prjctUri
-           
     ) {
         try {
             ProjectDAO dao = new ProjectDAO(sparql);

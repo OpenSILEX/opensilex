@@ -64,6 +64,7 @@
             "parent": "parent",
             "type": "type",
             "select-lang": "Choose a language",
+            "select-date": "Choose a date",
             "next": "Next",
             "previous": "Previous",
             "colon": ":",

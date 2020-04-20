@@ -43,10 +43,12 @@
 
       <template v-slot:row-details="data">
         <div v-if="data.item.description">
-          DESCRIPTION:<br> <div class="capitalize-first-letter">{{ data.item.description }}</div>
+          DESCRIPTION:
+          <br />
+          <div class="capitalize-first-letter">{{ data.item.description }}</div>
         </div>
-        
-       <div v-if="data.item.coordinators">
+
+        <div v-if="data.item.coordinators">
           Coordinators :
           <b-badge
             v-for="(item, index) in data.item.coordinators"

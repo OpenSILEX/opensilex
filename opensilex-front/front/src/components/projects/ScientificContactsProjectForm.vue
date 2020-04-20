@@ -1,5 +1,5 @@
 <template>
-  <b-form-group :label="$t('component.project.scientificContacts')">
+  <b-form-group :label="$t('component.project.scientificContacts')+':'" label-class="recommanded">
     <b-form-tags v-model="value" no-outer-focus class="mb-2">
       <template v-slot="{ tags, disabled }">
         <ul v-if="tags.length > 0" class="list-inline d-inline-block mb-2">
@@ -16,7 +16,7 @@
           v-model="search"
           list="alias-input-list"
           id="alias-input-with-list"
-          placeholder="Enter contact to search "
+          :placeholder="$t('component.project.form-contact-placeholder')"
           autocomplete="off"
           @input="onWrite($event)"
           @focus.native="onFocus"

@@ -436,6 +436,23 @@
             "errors": {
                 "germplasm-already-exists": "Germplasm already exists with this URI."
             }
+        },
+        "variables": {
+            "uri": "uri",
+            "uri-help": "Variable unique identifier",
+            "entity": "Variable entity",
+            "entity-help": "Entity Unique identifier",
+            "quality": "Variable quality",
+            "quality-help": "Quality unique identifier",
+            "label": "name",
+            "label-help": "Commonly used variable name",
+            "label-placeholder": "",
+            "fullname" : "Full Variable name",
+            "fullname-help" : "",
+            "trait-name" : "trait name",
+            "trait-name-help":"Variable trait name",
+            "trait-uri" : "trait uri",
+            "trait-uri-help":"Variable trait unique identifier"
         }
     },
     "credential-groups": {

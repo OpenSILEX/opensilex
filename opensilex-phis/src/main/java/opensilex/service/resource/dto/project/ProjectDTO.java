@@ -67,7 +67,7 @@ public class ProjectDTO extends AbstractVerifiedClass {
 
     public ProjectDTO(ProjectModel project, SPARQLService sparql, String lang) throws Exception {
         uri = project.getUri().toString();
-        name = project.getName();
+        name = project.getLabel();
         shortname = project.getShortname();
 
         description = project.getDescription();

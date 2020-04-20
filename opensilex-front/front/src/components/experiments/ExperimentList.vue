@@ -243,7 +243,7 @@
     import copy from "copy-to-clipboard"; 
     import VueI18n from 'vue-i18n';
     import { 
-        ProjectCreationDTO, 
+        ProjectGetDTO, 
         SpeciesDTO, 
         ExperimentGetDTO, 
         ResourceTreeDTO,
@@ -277,7 +277,7 @@
         private _startDate: string;
         private _endDate: string;
         private _campaign: number;
-        private _projects: Array<ProjectCreationDTO>;
+        private _projects: Array<ProjectGetDTO>;
         private _installations: Array<any>;
         private _infrastructures: Array<ResourceTreeDTO>;
         private _species: SpeciesDTO;
@@ -362,7 +362,8 @@
             return this._campaign;
         }
 
-        set projects(values: Array<ProjectCreationDTO>) {
+        set projects(values: Array<ProjectGetDTO>) {
+            console.log(values);
             this._projects = values;
             this._experimentList.loadExperiments();
         }
@@ -422,7 +423,7 @@
         infrastructuresByUri: Map<String, ResourceTreeDTO> = new Map<String, ResourceTreeDTO>();
 
         projectsList = [];
-        projectsByUri: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
+        projectsByUri: Map<String, ProjectGetDTO> = new Map<String, ProjectGetDTO>();
 
         installationsList = [];
         installationsByUri: Map<String, any> = new Map<String, any>();
@@ -558,16 +559,13 @@
             let service: ProjectsService = this.$opensilex.getService(
                 "opensilex.ProjectsService"
             );
-
-            service.searchProjects(
-                null,
-                0,
-                1000
-            )
-            .then((http: HttpResponse<OpenSilexResponse<Array<ProjectCreationDTO>>>) => {
-                let results: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
-                let resultsList = [];
-                for(let i=0; i<http.response.result.length; i++) {
+            
+                service.searchProjects(null,null,null,null,null,null,null, 0, 1000
+                )
+                .then((http: HttpResponse<OpenSilexResponse<Array<ProjectGetDTO>>>) => {
+                  let results: Map<String, ProjectGetDTO> = new Map<String, ProjectGetDTO>();
+                  let resultsList = [];
+                  for(let i=0; i<http.response.result.length; i++) {
                     results.set(http.response.result[i].uri, http.response.result[i]);
                     resultsList.push(http.response.result[i]);
                 }
@@ -602,6 +600,8 @@
             );
 
             service.getAllSpecies().then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
+                let results: Map<String, ProjectGetDTO> = new Map<String, ProjectGetDTO>();
+                let resultsList = [];
                 for(let i=0; i<http.response.result.length; i++) {
                     this.speciesByUri.set(http.response.result[i].uri, http.response.result[i]);
                     this.speciesList.push(http.response.result[i]);

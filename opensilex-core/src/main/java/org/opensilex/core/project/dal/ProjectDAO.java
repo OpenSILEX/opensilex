@@ -75,7 +75,8 @@ public class ProjectDAO {
         }
 
         // append regex filter
-        filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.NAME_SPARQL_VAR, name));
+        filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.LABEL_VAR, name));
+        
         filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.SHORTNAME_SPARQL_VAR, shortname));
         filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.DESCRIPTION_SPARQL_VAR, description));
         filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.OBJECTIVE_SPARQL_VAR, objective));
@@ -116,4 +117,39 @@ public class ProjectDAO {
                 pageSize
         );
     }
+
+    public ListWithPagination<ProjectModel> search(URI uri, String label, String startDate, String endDate, Boolean ended, List<URI> experiments, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+            List<Expr> filterList = new ArrayList<>();
+
+        // append uri regex filter
+        if (uri != null) {
+            Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+            Expr strUriExpr = SPARQLQueryHelper.getExprFactory().str(uriVar);
+            filterList.add(SPARQLQueryHelper.regexFilter(strUriExpr, uri.toString(),null));
+        }
+      
+
+        // append regex filter
+        filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.LABEL_VAR, label));
+        // append date filters
+        if (!StringUtils.isEmpty(startDate)) {
+            filterList.add(SPARQLQueryHelper.eq(ProjectModel.START_DATE_SPARQL_VAR, LocalDate.parse(startDate)));
+        }
+        if (!StringUtils.isEmpty(endDate)) {
+            filterList.add(SPARQLQueryHelper.eq(ProjectModel.END_DATE_SPARQL_VAR, LocalDate.parse(endDate)));
+        }
+        
+        return sparql.searchWithPagination(
+                ProjectModel.class,
+                null,
+                (SelectBuilder select) -> {
+                    filterList.stream().filter(Objects::nonNull).forEach(select::addFilter);
+                },
+                orderByList,
+                page,
+                pageSize
+        );
+    }
+
+   
 }

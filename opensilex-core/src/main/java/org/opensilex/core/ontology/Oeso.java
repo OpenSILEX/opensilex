@@ -66,12 +66,13 @@ public class Oeso {
 
     public static final Property hasShortname = Ontology.property(NS, "hasShortname");
     public static final Property hasObjective = Ontology.property(NS, "hasObjective");
-
+    public static final Property hasExperiment = Ontology.property(NS, "hasExperiment");
     public static final Property hasAdministrativeContact = Ontology.property(NS, "hasAdministrativeContact");
     public static final Property hasCoordinator = Ontology.property(NS, "hasCoordinator");
     public static final Property hasScientificContact = Ontology.property(NS, "hasScientificContact");
-
     public static final Property hasRelatedProject = Ontology.property(NS, "hasRelatedProject");
+    public static final Property hasFinancialFunding = Ontology.property(NS, "hasFinancialFunding");
+    
 
     // ---- EXPERIMENTS ----
     public static final Resource Experiment = Ontology.resource(NS, "Experiment");

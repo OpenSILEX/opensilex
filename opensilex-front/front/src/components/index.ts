@@ -63,6 +63,15 @@ import GermplasmView from './germplasm/GermplasmView.vue';
 import GermplasmForm from './germplasm/GermplasmForm.vue';
 import GermplasmList from './germplasm/GermplasmList.vue';
 
+import CoordinatorsProjectForm from './projects/CoordinatorsProjectForm.vue';
+import ContactsProjectForm from './projects/ContactsProjectForm.vue';
+import ScientificContactsProjectForm from './projects/ScientificContactsProjectForm.vue';
+import AdminContactsProjectForm from './projects/AdminContactsProjectForm.vue';
+import ProjectForm from './projects/ProjectForm.vue';
+import ProjectTable from './projects/ProjectTable.vue';
+import ProjectView from './projects/ProjectView.vue';
+
+
 import ImageList from './phis/images/ImageList.vue';
 import ImageView from './phis/images/ImageView.vue';
 import ImageSearch from './phis/images/ImageSearch.vue';
@@ -123,6 +132,14 @@ export default {
     'opensilex-SepeciesEdit': SepeciesEdit,
 
     // Germplasm
+    "opensilex-CoordinatorsProjectForm":CoordinatorsProjectForm,
+    "opensilex-ContactsProjectForm":ContactsProjectForm,
+    "opensilex-ScientificContactsProjectForm":ScientificContactsProjectForm,
+    "opensilex-AdminContactsProjectForm":AdminContactsProjectForm,
+    "opensilex-ProjectView":ProjectView,
+    "opensilex-ProjectTable": ProjectTable,
+    "opensilex-ProjectForm": ProjectForm,
+
     'opensilex-GermplasmView': GermplasmView,
     'opensilex-GermplasmForm': GermplasmForm,
     'opensilex-GermplasmList': GermplasmList,

@@ -84,7 +84,19 @@
           <opensilex-FormInputLabelHelper label=component.experiment.species helpMessage="component.experiment.species-help" >
           </opensilex-FormInputLabelHelper>
           <ValidationProvider :name="$t('component.experiment.species')" v-slot="{ errors }">
-          <b-form-select id="speciesList" v-model="form.species" :options="speciesList" > </b-form-select>
+
+            <multiselect
+              track-by="uri"
+              multiple="true"
+              :closeOnSelect="false"
+              v-model="form.species"
+              :options="speciesList"
+              :custom-label="species => species.label"
+              selectLabel=""
+              selectedLabel="X"
+              deselectLabel="X"
+              :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})
+          "/>
           <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>

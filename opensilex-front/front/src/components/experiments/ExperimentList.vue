@@ -85,8 +85,8 @@
                             <td width="200">
                                 <multiselect
                                         :limit="1"
-                                        track-by="uri"
                                         multiple="true"
+                                        track-by="uri"
                                         :placeholder="$t('component.experiment.search.filter.species')"
                                         :closeOnSelect="false"
                                         v-model="filter.species"

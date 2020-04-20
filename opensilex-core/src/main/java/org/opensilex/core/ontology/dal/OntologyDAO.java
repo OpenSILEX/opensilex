@@ -6,6 +6,8 @@
 package org.opensilex.core.ontology.dal;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
@@ -60,5 +62,15 @@ public final class OntologyDAO {
                     }
                 }
         );
+    }
+
+    public List<PropertyMappingModel> getClassPropertiesMapping(URI classURI, UserModel currentUser) throws Exception {
+        ClassModel classModel = sparql.getByURI(ClassModel.class, classURI, currentUser.getLanguage());
+        
+        if (classModel != null) {
+            return classModel.getPropertyMapping();
+        }
+        
+        return new ArrayList<>();
     }
 }

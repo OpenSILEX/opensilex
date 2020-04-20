@@ -78,6 +78,10 @@ export class OpenSilexRouter {
         return () => {
             return new Promise((resolve, reject) => {
                 let componentDef = ModuleComponentDefinition.fromString(componentId);
+                let override = $opensilex.themeConfig.componentOverrides[componentId];
+                if (override) {
+                    componentDef = ModuleComponentDefinition.fromString(override);
+                }
                 $opensilex.loadComponentModule(componentDef)
                     .then(() => {
                         let component: any = Vue.component(componentDef.getId());

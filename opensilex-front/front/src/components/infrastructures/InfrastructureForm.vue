@@ -78,8 +78,6 @@
             v-model="form.parent"
           />
         </b-form-group>
-        <!-- Users -->
-        <opensilex-GroupUserProfileForm ref="userProfilesRef" :userProfiles="form.userProfiles"></opensilex-GroupUserProfileForm>
       </b-form>
     </ValidationObserver>
   </b-modal>
@@ -91,7 +89,6 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import Oeso from "../../ontologies/Oeso";
-import GroupUserProfileForm from "../groups/GroupUserProfileForm.vue";
 import {
   OntologyService,
   InfrastructureGetDTO,
@@ -114,8 +111,6 @@ export default class InfrastructureForm extends Vue {
   @Prop()
   public parentOptions: Array<any>;
 
-  @Ref("userProfilesRef") readonly userProfilesRef!: any;
-
   @Ref("modalRef") readonly modalRef!: any;
 
   @Ref("validatorRef") readonly validatorRef!: any;
@@ -130,8 +125,7 @@ export default class InfrastructureForm extends Vue {
     uri: "",
     type: null,
     name: "",
-    parent: null,
-    userProfiles: []
+    parent: null
   };
 
   infraTypesOptions = null;
@@ -182,10 +176,8 @@ export default class InfrastructureForm extends Vue {
       uri: "",
       type: null,
       name: "",
-      parent: parentURI,
-      userProfiles: []
+      parent: parentURI
     };
-    this.userProfilesRef.clearForm();
   }
 
   showCreateForm(parentURI) {
@@ -201,7 +193,6 @@ export default class InfrastructureForm extends Vue {
 
   showEditForm(form: InfrastructureCreationDTO) {
     this.form = form;
-    this.userProfilesRef.initFormProfiles(form.userProfiles);
     this.editMode = true;
     this.title = this.$t("component.infrastructure.update").toString();
     this.uriGenerated = true;

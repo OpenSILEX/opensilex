@@ -10,7 +10,8 @@
          xmlns:skos="http://www.w3.org/2004/02/skos/core#"
          xmlns:terms="http://purl.org/dc/terms/"
          xmlns:object="http://www.mistea.supagro.inra.fr/object#"
-         xmlns:vocabulary="http://www.opensilex.org/vocabulary/oeso#">
+         xmlns:vocabulary="http://www.opensilex.org/vocabulary/oeso#"
+         xmlns:oxapi="http://www.opensilex.org/vocabulary/opensilex-api#">
     <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeso">
         <owl:versionIRI rdf:resource="http://www.opensilex.org/vocabulary/oeso"/>
         <rdfs:comment>Authors : Anne TIREAU, Llorenç CABRERA-BOSQUET, Morgane VIDAL, Pascal NEVEU</rdfs:comment>
@@ -1205,8 +1206,6 @@
         <rdfs:label xml:lang="en">electrical resistance humidity sensor</rdfs:label>
     </owl:Class>
     
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceThermometer -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceThermometer">
@@ -1216,8 +1215,6 @@
         <rdfs:label xml:lang="en">electrical resistance thermometer</rdfs:label>
     </owl:Class>
     
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Equipement -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Equipement">
@@ -1226,10 +1223,6 @@
         <rdfs:label xml:lang="en">equipment</rdfs:label>
         <rdfs:label xml:lang="fr">équipement</rdfs:label>
     </owl:Class>
-    
-
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Experiment -->
 
@@ -1239,6 +1232,24 @@
         <rdfs:label xml:lang="fr">expérimentation</rdfs:label>
     </owl:Class>
     
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VegetalExperiment">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
+        <rdfs:label xml:lang="en">vegetal experiment</rdfs:label>
+        <rdfs:label xml:lang="fr">expérimentation végétale</rdfs:label>
+        <oxapi:propertyMapping
+            rdf:type="http://www.opensilex.org/vocabulary/opensilex-api#PropertyMapping"
+            oxapi:about="http://www.opensilex.org/vocabulary/oeso#hasSpecies"
+            oxapi:type="org.opensilex.core.species.dal.SpeciesModel"
+            oxapi:isList="true"
+            oxapi:isRequired="false"
+            oxapi:isInverse="false"
+            oxapi:ignoreUpdateIfNull="false"
+            oxapi:cascadeDelete="false"
+            oxapi:order="10"
+            oxapi:viewComponent="opensilex-SpeciesView"
+            oxapi:editComponent="opensilex-SpeciesEdit"
+        />
+    </owl:Class>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition -->
@@ -1476,6 +1487,12 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
         <rdfs:label xml:lang="en">infrastructure</rdfs:label>
         <rdfs:label xml:lang="fr">infrastructure</rdfs:label>
+    </owl:Class>
+    
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/security#Group"/>
+        <rdfs:label xml:lang="fr">Equipe</rdfs:label>
+        <rdfs:label xml:lang="en">Team</rdfs:label>
     </owl:Class>
     
     <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureDevice -->

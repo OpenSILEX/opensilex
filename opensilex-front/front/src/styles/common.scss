@@ -100,7 +100,26 @@ label::first-letter {
   width: 100%;
 }
 
-.form-group[required="required"] > label:after {
+textarea:invalid,
+input:invalid {
+  box-shadow: none;
+}
+
+.form-group {
+  position: relative;
+}
+
+.form-group .error-message {
+  position: absolute;
+  padding: 4px;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin: 0;
+  top: 0;
+  right: 0;
+}
+
+.form-group[required="required"] label.form-label:after {
   color: #D00;
   content: "*";
   margin-left: 3px;

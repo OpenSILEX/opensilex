@@ -11,7 +11,7 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
  *
  * @author vince
  */
-public class NamedResourceDTO extends ResourceDTO {
+public class NamedResourceDTO<T extends SPARQLNamedResourceModel> extends ResourceDTO<T> {
 
     protected String name;
 
@@ -23,12 +23,27 @@ public class NamedResourceDTO extends ResourceDTO {
         this.name = name;
     }
 
-    public static NamedResourceDTO fromModel(SPARQLNamedResourceModel model) {
+    @Override
+    public void toModel(T model) {
+        super.toModel(model);
+        model.setName(getName());
+    }
+
+    @Override
+    public void fromModel(T model) {
+        super.fromModel(model);
+        setName(model.getName());
+    }
+
+    @Override
+    public T newModelInstance() {
+        return (T) new SPARQLNamedResourceModel();
+    }
+
+    public static NamedResourceDTO getDTOFromModel(SPARQLNamedResourceModel model) {
         NamedResourceDTO dto = new NamedResourceDTO();
-        dto.setUri(model.getUri());
-        dto.setType(model.getType());
-        dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
-        dto.setName(model.getName());
+        dto.fromModel(model);
+
         return dto;
     }
 }

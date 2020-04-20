@@ -17,7 +17,7 @@ public class NamedResourcePaginatedListResponse<T extends SPARQLNamedResourceMod
 
     public NamedResourcePaginatedListResponse(ListWithPagination<T> paginatedList) {
         super();
-        ListWithPagination<NamedResourceDTO> dtoList = paginatedList.convert(NamedResourceDTO.class, NamedResourceDTO::fromModel);
+        ListWithPagination<NamedResourceDTO> dtoList = paginatedList.convert(NamedResourceDTO.class, NamedResourceDTO::getDTOFromModel);
         this.setResult(dtoList.getList());
         this.metadata = new MetadataDTO(new PaginationDTO(paginatedList.getPageSize(), paginatedList.getPage(), paginatedList.getTotal()));
     }

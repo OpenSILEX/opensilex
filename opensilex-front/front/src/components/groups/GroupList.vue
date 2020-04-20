@@ -83,7 +83,7 @@ import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
-import { SecurityService, GroupGetDTO } from "opensilex-security/index";
+import { SecurityService, GroupDTO } from "opensilex-security/index";
 
 @Component
 export default class GroupList extends Vue {
@@ -183,7 +183,7 @@ export default class GroupList extends Vue {
         this.currentPage - 1,
         this.pageSize
       )
-      .then((http: HttpResponse<OpenSilexResponse<Array<GroupGetDTO>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<GroupDTO>>>) => {
         this.totalRow = http.response.metadata.pagination.totalCount;
         this.pageSize = http.response.metadata.pagination.pageSize;
         setTimeout(() => {

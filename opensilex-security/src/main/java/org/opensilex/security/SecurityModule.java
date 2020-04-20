@@ -11,6 +11,7 @@ import java.net.URI;
 import java.util.*;
 import javax.inject.Singleton;
 import javax.mail.internet.InternetAddress;
+import org.apache.jena.riot.Lang;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -29,6 +30,7 @@ import org.opensilex.security.group.dal.GroupDAO;
 import org.opensilex.security.user.dal.UserDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.extensions.APIExtension;
+import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
@@ -169,5 +171,17 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
     @Override
     public void inMemoryInitialization() throws Exception {
         createDefaultSuperAdmin();
+    }
+    
+    @Override
+    public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
+        List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
+        list.add(new OntologyFileDefinition(
+                "http://www.opensilex.org/security#",
+                "ontologies/os-sec.owl",
+                Lang.RDFXML,
+                "os-sec"
+        ));
+        return list;
     }
 }

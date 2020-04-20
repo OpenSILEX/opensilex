@@ -23,12 +23,13 @@
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
-        <opensilex-UserList
-          v-if="user.hasCredential(credentials.CREDENTIAL_USER_READ_ID)"
-          ref="userList"
-          @onEdit="editUser"
-          @onDelete="deleteUser"
-        ></opensilex-UserList>
+        <opensilex-ProfileList
+          v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_READ_ID)"
+          ref="profileList"
+          v-bind:credentialsGroups="credentialsGroups"
+          @onEdit="editProfile"
+          @onDelete="deleteProfile"
+        ></opensilex-ProfileList>
       </div>
     </div>
     <opensilex-ProfileForm

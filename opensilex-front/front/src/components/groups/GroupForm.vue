@@ -87,8 +87,7 @@ import {
   GroupUpdateDTO,
   SecurityService,
   UserGetDTO,
-  ProfileGetDTO,
-  GroupUserProfileModificationDTO
+  ProfileGetDTO
 } from "opensilex-security/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import GroupUserProfileForm from "./GroupUserProfileForm.vue";

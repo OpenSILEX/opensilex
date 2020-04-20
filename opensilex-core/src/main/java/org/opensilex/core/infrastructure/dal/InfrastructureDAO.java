@@ -15,7 +15,6 @@ import org.apache.jena.sparql.core.Var;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -91,6 +90,8 @@ public class InfrastructureDAO {
     }
 
     public InfrastructureDeviceModel createDevice(InfrastructureDeviceModel instance) throws Exception {
+        InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), null);
+        instance.setInfrastructure(infra);
         sparql.create(instance);
         return instance;
     }
@@ -99,12 +100,37 @@ public class InfrastructureDAO {
         return sparql.getByURI(InfrastructureDeviceModel.class, uri, lang);
     }
 
-    public void deleteDevice(URI instanceURI) throws Exception {
-        sparql.delete(InfrastructureDeviceModel.class, instanceURI);
+    public void deleteDevice(URI uri) throws Exception {
+        sparql.delete(InfrastructureDeviceModel.class, uri);
     }
 
     public InfrastructureDeviceModel updateDevice(InfrastructureDeviceModel instance) throws Exception {
+        InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), null);
+        instance.setInfrastructure(infra);
         sparql.update(instance);
         return instance;
     }
+
+    public InfrastructureTeamModel getTeam(URI uri, String language) throws Exception {
+        return sparql.getByURI(InfrastructureTeamModel.class, uri, language);
+    }
+
+    public void deleteTeam(URI uri) throws Exception {
+        sparql.delete(InfrastructureTeamModel.class, uri);
+    }
+
+    public InfrastructureTeamModel createTeam(InfrastructureTeamModel instance) throws Exception {
+        InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), null);
+        instance.setInfrastructure(infra);
+        sparql.create(instance);
+        return instance;
+    }
+
+    public InfrastructureTeamModel updateTeam(InfrastructureTeamModel instance) throws Exception {
+        InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), null);
+        instance.setInfrastructure(infra);
+        sparql.update(instance);
+        return instance;
+    }
+
 }

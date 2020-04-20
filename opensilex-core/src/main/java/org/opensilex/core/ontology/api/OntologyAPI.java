@@ -12,6 +12,8 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -27,12 +29,12 @@ import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.ontology.dal.PropertyMappingModel;
 import org.opensilex.core.ontology.dal.PropertyModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.rest.cache.ApiCache;
-import org.opensilex.server.rest.cache.ApiCacheService;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.response.ResourceTreeResponse;
 
 /**
@@ -103,5 +105,32 @@ public class OntologyAPI {
         );
 
         return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree)).getResponse();
+    }
+
+    @GET
+    @Path("/class-properties-mapping")
+    @ApiOperation("Search class properties of an RDF property")
+    @ApiProtected
+//    @ApiCache(
+//            category = ApiCacheService.STATIC_CATEGORY
+//    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return group", response = PropertyMappingDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response getClassPropertiesMapping(
+            @ApiParam(value = "Class RDF Property URI", example = "oeso:VegetalExperiment") @QueryParam("class") @ValidURI URI classURI
+    ) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        List<PropertyMappingModel> properties = dao.getClassPropertiesMapping(
+                classURI,
+                currentUser
+        );
+
+        List<PropertyMappingDTO> dtoList = properties.stream().map(PropertyMappingDTO::fromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 }

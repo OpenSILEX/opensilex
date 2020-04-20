@@ -40,4 +40,9 @@ public interface ThemeConfig {
             value = "Map of icon class by ontology URI"
     )
     Map<String, String> iconClassesRDF();
+
+    @ConfigDescription(
+            value = "Theme components overrides"
+    )
+    public Map<String, String> componentOverrides();
 }

@@ -1,165 +1,85 @@
 <template>
-  <div>
-    <div class="row">
-      <b-input-group class="mt-3 mb-3 col-md" size="sm">
-        <b-input-group>
-          <b-form-input
-            v-model="filterPattern"
-            debounce="300"
-            :placeholder="$t('component.infrastructure.filter-placeholder')"
-          ></b-form-input>
-          <template v-slot:append>
-            <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
-              <font-awesome-icon icon="times" size="sm" />
-            </b-btn>
-          </template>
-        </b-input-group>
+  <div class="card">
+    <div class="card-header">
+      <h3>
+        <i class="ik ik-globe"></i>
+        {{$t("component.infrastructure.list")}}
+      </h3>
+      <div class="card-header-right">
+        <b-button
+          @click="showCreateForm(null)"
+          variant="primary"
+          v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+        >
+          <i class="ik ik-plus"></i>
+          {{$t('component.infrastructure.add')}}
+        </b-button>
+      </div>
+    </div>
+    <div class="card-body">
+      <b-input-group>
+        <b-form-input
+          v-model="filterPattern"
+          debounce="300"
+          :placeholder="$t('component.infrastructure.filter-placeholder')"
+        ></b-form-input>
+        <template v-slot:append>
+          <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
+            <font-awesome-icon icon="times" size="sm" />
+          </b-btn>
+        </template>
       </b-input-group>
-    </div>
-    <div class="row">
-      <div class="col-md">
-        <sl-vue-tree v-model="nodes" @select="displayNodesDetail">
-          <template slot="toggle" slot-scope="{ node }">
-            <span v-if="!node.isLeaf">
-              <font-awesome-icon v-if="node.isExpanded" icon="chevron-down" size="sm" />
-              <font-awesome-icon v-if="!node.isExpanded" icon="chevron-right" size="sm" />
-            </span>
-          </template>
+      <sl-vue-tree v-model="nodes" @select="displayNodesDetail">
+        <template slot="toggle" slot-scope="{ node }">
+          <span v-if="!node.isLeaf">
+            <font-awesome-icon v-if="node.isExpanded" icon="chevron-down" size="sm" />
+            <font-awesome-icon v-if="!node.isExpanded" icon="chevron-right" size="sm" />
+          </span>
+        </template>
 
-          <template slot="title" slot-scope="{ node }">
-            <div v-if="node.isLeaf && node.data.parent" class="leaf-spacer"></div>
-            <span class="item-icon">
-              <font-awesome-icon :icon="$opensilex.getRDFIcon(node.data.type)" size="sm" />
-            </span>&nbsp;
-            <strong v-if="node.data.selected">{{ node.title }}</strong>
-            <span v-if="!node.data.selected">{{ node.title }}</span>
-            <b-button-group class="tree-button-group" size="sm">
-              <b-button
-                size="sm"
-                v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
-                @click.prevent="$emit('onEdit', node.data.uri)"
-                variant="outline-primary"
-              >
-                <font-awesome-icon icon="edit" size="sm" />
-              </b-button>
-              <b-button
-                size="sm"
-                v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
-                @click.prevent="$emit('onAddChild', node.data.uri)"
-                variant="outline-success"
-              >
-                <font-awesome-icon icon="plus" size="sm" />
-              </b-button>
-              <b-button
-                size="sm"
-                v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID)"
-                @click.prevent="$emit('onDelete', node.data.uri)"
-                variant="danger"
-              >
-                <font-awesome-icon icon="trash-alt" size="sm" />
-              </b-button>
-            </b-button-group>
-          </template>
-        </sl-vue-tree>
-      </div>
-      <div class="col-md">
-        <table class="table table-striped">
-          <thead class="thead-dark">
-            <tr>
-              <th colspan="2">{{$t("component.infrastructure.detail")}}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="capitalize-first-letter">{{$t("component.common.uri")}}</td>
-              <td v-if="selected != null">{{selected.uri}}</td>
-            </tr>
-            <tr>
-              <td class="capitalize-first-letter">{{$t("component.common.name")}}</td>
-              <td v-if="selected != null">{{selected.name}}</td>
-            </tr>
-            <tr>
-              <td class="capitalize-first-letter">{{$t("component.common.type")}}</td>
-              <td v-if="selected != null">
-                <font-awesome-icon :icon="$opensilex.getRDFIcon(selected.type)" size="sm" />&nbsp;
-                <span class="capitalize-first-letter">{{selected.typeLabel}}</span>&nbsp;
-                <small class="uri">({{selected.type}})</small>
-              </td>
-            </tr>
-            <tr>
-              <td colspan="2" class="capitalize-first-letter">
-                <div>
-                  <div class="device-split-cell">{{$t("component.infrastructure.devices")}}</div>
-                  <div class="device-split-cell add-device-button-container">
-                    <b-button
-                      @click="showCreateForm"
-                      variant="success"
-                      v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
-                    >{{$t('component.infrastructure.device.add')}}</b-button>
-                  </div>
-                </div>
-                <div v-if="selected != null">
-                  <table
-                    v-if="selected.devices.length > 0"
-                    class="table table-sm table-hover table-device"
-                  >
-                    <tr v-for="device in selected.devices" v-bind:key="device.uri">
-                      <td>
-                        <font-awesome-icon :icon="$opensilex.getRDFIcon(device.type)" size="sm" />&nbsp;
-                        <span class="capitalize-first-letter">{{device.name}}</span>
-                        &nbsp;-&nbsp;
-                        <span
-                          class="capitalize-first-letter"
-                        >{{device.typeLabel}}</span>
-                        &nbsp;
-                        <small class="uri">({{device.uri}})</small>
-                      </td>
-                      <td>
-                        <b-button-group class="tree-button-group" size="sm">
-                          <b-button
-                            size="sm"
-                            v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
-                            @click.prevent="editDevice(device.uri)"
-                            variant="outline-primary"
-                          >
-                            <font-awesome-icon icon="edit" size="sm" />
-                          </b-button>
-                          <b-button
-                            size="sm"
-                            v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID)"
-                            @click.prevent="deleteDevice(device.uri)"
-                            variant="danger"
-                          >
-                            <font-awesome-icon icon="trash-alt" size="sm" />
-                          </b-button>
-                        </b-button-group>
-                      </td>
-                    </tr>
-                  </table>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td class="capitalize-first-letter">{{$t("component.user.users")}}</td>
-              <td v-if="selected != null">
-                <ul class="user-list">
-                  <li v-for="userProfile in selected.userProfiles" v-bind:key="userProfile.uri">
-                    <small>{{userProfile.userName}} - {{userProfile.profileName}}</small>
-                  </li>
-                </ul>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <template slot="title" slot-scope="{ node }">
+          <div v-if="node.isLeaf && node.data.parent" class="leaf-spacer"></div>
+          <span class="item-icon">
+            <font-awesome-icon :icon="$opensilex.getRDFIcon(node.data.type)" size="sm" />
+          </span>&nbsp;
+          <strong v-if="node.data.selected">{{ node.title }}</strong>
+          <span v-if="!node.data.selected">{{ node.title }}</span>
+          <b-button-group class="tree-button-group" size="sm">
+            <b-button
+              size="sm"
+              v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+              @click.prevent="editInfrastructure(node.data.uri)"
+              variant="outline-primary"
+            >
+              <font-awesome-icon icon="edit" size="sm" />
+            </b-button>
+            <b-button
+              size="sm"
+              v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+              @click.prevent="showCreateForm(node.data.uri)"
+              variant="outline-success"
+            >
+              <font-awesome-icon icon="plus" size="sm" />
+            </b-button>
+            <b-button
+              size="sm"
+              v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID)"
+              @click.prevent="deleteInfrastructure(node.data.uri)"
+              variant="danger"
+            >
+              <font-awesome-icon icon="trash-alt" size="sm" />
+            </b-button>
+          </b-button-group>
+        </template>
+      </sl-vue-tree>
     </div>
-    <opensilex-InfrastructureDeviceForm
-      ref="infrastructureDeviceForm"
-      :parentURI="selectedURI"
+    <opensilex-InfrastructureForm
+      ref="infrastructureForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
-      @onUpdate="refresh(selectedURI)"
-      @onCreate="refresh(selectedURI)"
-    ></opensilex-InfrastructureDeviceForm>
+      :parentOptions="parentOptions"
+      @onCreate="callCreateInfrastructureService"
+      @onUpdate="callUpdateInfrastructureService"
+    ></opensilex-InfrastructureForm>
   </div>
 </template>
 
@@ -171,16 +91,17 @@ import {
   InfrastructuresService,
   ResourceTreeDTO,
   InfrastructureGetDTO,
-  InfrastructureDeviceGetDTO
+  InfrastructureDeviceGetDTO,
+  InfrastructureTeamDTO,
+  InfrastructureUpdateDTO
 } from "opensilex-core/index";
+import { GroupCreationDTO, GroupUpdateDTO } from "opensilex-security/index";
 
 @Component
 export default class InfrastructureTree extends Vue {
   $opensilex: any;
   $store: any;
   service: InfrastructuresService;
-
-  @Ref("infrastructureDeviceForm") readonly infrastructureDeviceForm!: any;
 
   get user() {
     return this.$store.state.user;
@@ -205,6 +126,12 @@ export default class InfrastructureTree extends Vue {
       "opensilex-core.InfrastructuresService"
     );
 
+    let query: any = this.$route.query;
+    if (query.filterPattern) {
+      this.filterPatternValue = decodeURI(query.filterPattern);
+    }
+
+    this.initParentOptions();
     this.refresh();
   }
 
@@ -219,9 +146,23 @@ export default class InfrastructureTree extends Vue {
     );
   }
 
-  refresh(uri?) {
+  parentOptions = [];
+  private initParentOptions() {
     this.service
-      .searchInfrastructuresTree(this.filterPattern)
+      .searchInfrastructuresTree()
+      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+        let infrastructures = http.response.result;
+        this.parentOptions = this.$opensilex.buildTreeListOptions(
+          infrastructures
+        );
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
+
+  refresh(uri?) {
+    let pattern = this.filterPattern;
+    this.service
+      .searchInfrastructuresTree(pattern)
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
         let treeNode = [];
 
@@ -234,9 +175,11 @@ export default class InfrastructureTree extends Vue {
           if (first && uri == null) {
             this.displayNodeDetail(node.data.uri, true);
             first = false;
-          } else if (uri != null && uri == node.data.uri) {
-            this.displayNodeDetail(node.data.uri, true);
           }
+        }
+
+        if (uri != null) {
+          this.displayNodeDetail(uri, true);
         }
 
         if (http.response.result.length == 0) {
@@ -249,7 +192,7 @@ export default class InfrastructureTree extends Vue {
           .push({
             path: this.$route.fullPath,
             query: {
-              filterPattern: encodeURI(this.filterPattern)
+              filterPattern: encodeURI(pattern)
             }
           })
           .catch(function() {});
@@ -285,8 +228,7 @@ export default class InfrastructureTree extends Vue {
 
   public nodes = [];
 
-  private selected: InfrastructureGetDTO = null;
-  private selectedURI: string = null;
+  private selected: InfrastructureGetDTO;
 
   public displayNodesDetail(nodes: any[]) {
     if (nodes.length > 0) {
@@ -302,32 +244,55 @@ export default class InfrastructureTree extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
           let detailDTO: InfrastructureGetDTO = http.response.result;
           this.selected = detailDTO;
-          this.selectedURI = detailDTO.uri;
           this.$emit("onSelect", detailDTO);
         });
     }
   }
 
-  public showCreateForm() {
-    this.infrastructureDeviceForm.showCreateForm();
+  @Ref("infrastructureForm") readonly infrastructureForm!: any;
+
+  showCreateForm(parentURI) {
+    this.infrastructureForm.showCreateForm(parentURI);
   }
 
-  public deleteDevice(uri) {
+  callCreateInfrastructureService(form: any, done) {
+    done(
+      this.service
+        .createInfrastructure(form)
+        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+          let uri = http.response.result;
+          console.debug("Infrastructure created", uri);
+          this.refresh(uri);
+        })
+    );
+  }
+
+  callUpdateInfrastructureService(form: InfrastructureUpdateDTO, done) {
+    done();
     this.service
-      .deleteInfrastructureDevice(uri)
-      .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
-        this.refresh(this.selectedURI);
+      .updateInfrastructure(form)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        let uri = http.response.result;
+        console.debug("Infrastructure updated", uri);
+        this.refresh(uri);
       });
   }
 
-  public editDevice(uri) {
+  editInfrastructure(uri) {
     this.service
-      .getInfrastructureDevice(uri)
-      .then(
-        (http: HttpResponse<OpenSilexResponse<InfrastructureDeviceGetDTO>>) => {
-          this.infrastructureDeviceForm.showEditForm(http.response.result);
-        }
-      )
+      .getInfrastructure(uri)
+      .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
+        let detailDTO: InfrastructureGetDTO = http.response.result;
+        this.infrastructureForm.showEditForm(detailDTO);
+      });
+  }
+
+  deleteInfrastructure(uri: string) {
+    this.service
+      .deleteInfrastructure(uri)
+      .then(() => {
+        this.refresh(uri);
+      })
       .catch(this.$opensilex.errorHandler);
   }
 }
@@ -344,8 +309,8 @@ export default class InfrastructureTree extends Vue {
 }
 
 .sl-vue-tree-root {
-  min-height: 400px;
-  max-height: 600px;
+  min-height: 100px;
+  max-height: 300px;
   overflow-y: auto;
 }
 
@@ -369,6 +334,11 @@ export default class InfrastructureTree extends Vue {
 
 .table-device {
   margin-top: 10px;
+}
+
+.button-cell {
+  padding-top: 1px;
+  padding-bottom: 1px;
 }
 
 @media (max-width: 768px) {

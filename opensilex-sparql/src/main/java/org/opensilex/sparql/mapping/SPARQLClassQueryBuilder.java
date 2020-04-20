@@ -11,7 +11,6 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
-import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.TriplePath;
@@ -27,6 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -35,14 +36,17 @@ import java.util.function.BiConsumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Seq;
+import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.OpenSilex;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.utils.SHACL;
@@ -79,46 +83,76 @@ class SPARQLClassQueryBuilder {
         analyzer.forEachLabelProperty((Field field, Property property) -> {
             selectBuilder.addVar(field.getName());
         });
-        initializeQueryBuilder(selectBuilder, graph, lang);
+        initializeQueryBuilder(selectBuilder, graph, lang, analyzer.allowBlankNode());
         return selectBuilder;
     }
 
     public AskBuilder getAskBuilder(Node graph, String lang) {
         AskBuilder askBuilder = new AskBuilder();
-        initializeQueryBuilder(askBuilder, graph, lang);
+        initializeQueryBuilder(askBuilder, graph, lang, analyzer.allowBlankNode());
         return askBuilder;
     }
 
-    public void initializeQueryBuilder(AbstractQueryBuilder<?> builder, Node graph, String lang) {
+    public void initializeQueryBuilder(AbstractQueryBuilder<?> builder, Node graph, String lang, boolean allowBlankNode) {
         String uriFieldName = analyzer.getURIFieldName();
         WhereHandler rootWhereHandler = new WhereHandler();
+
+        Map<Node, WhereHandler> requiredHandlersByGraph = new HashMap<>();
+        Map<Node, List<WhereHandler>> optionalHandlersByGraph = new HashMap<>();
+        requiredHandlersByGraph.put(graph, rootWhereHandler);
 
         addQueryBuilderModelWhereProperties(
                 builder,
                 rootWhereHandler,
                 lang,
                 (field, property) -> {
-                    addSelectProperty(builder, uriFieldName, property, field, rootWhereHandler, null);
+                    addSelectProperty(builder, graph, uriFieldName, property, field, requiredHandlersByGraph, optionalHandlersByGraph, null, false);
                 },
                 (field, property) -> {
-                    addSelectProperty(builder, uriFieldName, property, field, rootWhereHandler, null);
+                    addSelectProperty(builder, graph, uriFieldName, property, field, requiredHandlersByGraph, optionalHandlersByGraph, null, true);
                 },
                 (field, property) -> {
-                    addSelectProperty(builder, uriFieldName, property, field, rootWhereHandler, lang);
+                    addSelectProperty(builder, graph, uriFieldName, property, field, requiredHandlersByGraph, optionalHandlersByGraph, lang, false);
                 }
         );
 
-        ExprFactory exprFactory = new ExprFactory();
-        Expr noBlankNodeFilter = exprFactory.not(exprFactory.isBlank(makeVar(uriFieldName)));
-        rootWhereHandler.addFilter(noBlankNodeFilter);
-
-        // add the rootWhereHandler inside a GRAPH clause
-        if (graph != null) {
-            ElementNamedGraph elementNamedGraph = new ElementNamedGraph(graph, rootWhereHandler.getElement());
-            builder.getWhereHandler().getClause().addElement(elementNamedGraph);
-        } else {
-            builder.getHandlerBlock().addAll(rootWhereHandler);
+        if (!allowBlankNode) {
+            ExprFactory exprFactory = new ExprFactory();
+            Expr noBlankNodeFilter = exprFactory.not(exprFactory.isBlank(makeVar(uriFieldName)));
+            rootWhereHandler.addFilter(noBlankNodeFilter);
         }
+
+        requiredHandlersByGraph.forEach((handlerGraph, handler) -> {
+            if (handlerGraph != null) {
+                ElementNamedGraph elementNamedGraph = new ElementNamedGraph(handlerGraph, handler.getElement());
+                builder.getWhereHandler().getClause().addElement(elementNamedGraph);
+            } else {
+                builder.getHandlerBlock().addAll(handler);
+            }
+        });
+
+        optionalHandlersByGraph.forEach((handlerGraph, handlerList) -> {
+
+            if (handlerGraph != null) {
+                WhereHandler optionalHandler = new WhereHandler();
+                handlerList.forEach(handler -> {
+                    WhereHandler graphHandler = new WhereHandler();
+                    ElementNamedGraph elementNamedGraph = new ElementNamedGraph(handlerGraph, handler.getElement());
+                    graphHandler.getClause().addElement(elementNamedGraph);
+                    optionalHandler.addOptional(graphHandler);
+                });
+                builder.getHandlerBlock().addAll(optionalHandler);
+            } else {
+                handlerList.forEach(handler -> {
+                    WhereHandler optionalHandler = new WhereHandler();
+                    optionalHandler.addOptional(handler);
+                    builder.getHandlerBlock().addAll(optionalHandler);
+                });
+
+            }
+
+        });
+
     }
 
     public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang) {
@@ -133,7 +167,7 @@ class SPARQLClassQueryBuilder {
             LOGGER.error("Error while building count query (should never happend)", ex);
         }
 
-        initializeQueryBuilder(countBuilder, graph, lang);
+        initializeQueryBuilder(countBuilder, graph, lang, analyzer.allowBlankNode());
 
         return countBuilder;
     }
@@ -197,8 +231,12 @@ class SPARQLClassQueryBuilder {
     }
 
     public <T extends SPARQLResourceModel> void addCreateBuilder(Node graph, T instance, UpdateBuilder create) throws Exception {
-        executeOnInstanceTriples(instance, (Triple triple, Field field) -> {
-            addCreateBuilderHelper(graph, triple, field, create);
+        executeOnInstanceTriples(graph, instance, (Quad quad, Field field) -> {
+            if (graph == null) {
+                create.addInsert(quad.asTriple());
+            } else {
+                create.addInsert(quad);
+            }
         }, false);
 
         URI uri = instance.getUri();
@@ -214,28 +252,7 @@ class SPARQLClassQueryBuilder {
             if (relation.getGraph() != null) {
                 relationGraph = SPARQLDeserializers.nodeURI(relation.getGraph());
             }
-            addCreateBuilderHelper(relationGraph, triple, null, create);
-        }
-    }
-
-    private void addCreateBuilderHelper(Node graph, Triple triple, Field field, UpdateBuilder create) {
-        boolean isReverse = false;
-        if (field != null) {
-            isReverse = analyzer.isReverseRelation(field);
-        }
-
-        if (graph != null) {
-            if (isReverse) {
-                create.addInsert(graph, triple.getObject(), triple.getPredicate(), triple.getSubject());
-            } else {
-                create.addInsert(graph, triple);
-            }
-        } else {
-            if (isReverse) {
-                create.addInsert(triple.getObject(), triple.getPredicate(), triple.getSubject());
-            } else {
-                create.addInsert(triple);
-            }
+            create.addInsert(relationGraph, triple);
         }
     }
 
@@ -250,7 +267,7 @@ class SPARQLClassQueryBuilder {
 
         final AtomicInteger i = new AtomicInteger(0);
 
-        executeOnInstanceTriples(oldInstance, (Triple triple, Field field) -> {
+        executeOnInstanceTriples(graph, oldInstance, (Quad quad, Field field) -> {
             boolean isReverse = false;
             boolean ignoreUpdate = false;
 
@@ -271,19 +288,19 @@ class SPARQLClassQueryBuilder {
 
                 if (graph != null) {
                     if (isReverse) {
-                        update.addDelete(graph, var, triple.getPredicate(), triple.getSubject());
-                        update.addWhere(var, triple.getPredicate(), triple.getSubject());
+                        update.addDelete(quad.getGraph(), var, quad.getPredicate(), quad.getSubject());
+                        update.addWhere(var, quad.getPredicate(), quad.getSubject());
                     } else {
-                        update.addDelete(graph, triple.getSubject(), triple.getPredicate(), var);
-                        update.addWhere(triple.getSubject(), triple.getPredicate(), var);
+                        update.addDelete(quad.getGraph(), quad.getSubject(), quad.getPredicate(), var);
+                        update.addWhere(quad.getSubject(), quad.getPredicate(), var);
                     }
                 } else {
                     if (isReverse) {
-                        update.addDelete(var, triple.getPredicate(), triple.getSubject());
-                        update.addWhere(var, triple.getPredicate(), triple.getSubject());
+                        update.addDelete(var, quad.getPredicate(), quad.getSubject());
+                        update.addWhere(var, quad.getPredicate(), quad.getSubject());
                     } else {
-                        update.addDelete(triple.getSubject(), triple.getPredicate(), var);
-                        update.addWhere(triple.getSubject(), triple.getPredicate(), var);
+                        update.addDelete(quad.getSubject(), quad.getPredicate(), var);
+                        update.addWhere(quad.getSubject(), quad.getPredicate(), var);
                     }
                 }
             }
@@ -294,69 +311,57 @@ class SPARQLClassQueryBuilder {
 
                     if (graph != null) {
                         if (isReverse) {
-                            update.addDelete(graph, var, triple.getPredicate(), triple.getSubject());
-                            update.addWhere(var, triple.getPredicate(), triple.getSubject());
+                            update.addDelete(quad.getGraph(), var, quad.getPredicate(), quad.getSubject());
+                            update.addWhere(var, quad.getPredicate(), quad.getSubject());
                         } else {
-                            update.addDelete(graph, triple.getSubject(), triple.getPredicate(), var);
-                            update.addWhere(triple.getSubject(), triple.getPredicate(), var);
+                            update.addDelete(quad.getGraph(), quad.getSubject(), quad.getPredicate(), var);
+                            update.addWhere(quad.getSubject(), quad.getPredicate(), var);
                         }
                     } else {
                         if (isReverse) {
-                            update.addDelete(var, triple.getPredicate(), triple.getSubject());
-                            update.addWhere(var, triple.getPredicate(), triple.getSubject());
+                            update.addDelete(var, quad.getPredicate(), quad.getSubject());
+                            update.addWhere(var, quad.getPredicate(), quad.getSubject());
                         } else {
-                            update.addDelete(triple.getSubject(), triple.getPredicate(), var);
-                            update.addWhere(triple.getSubject(), triple.getPredicate(), var);
+                            update.addDelete(quad.getSubject(), quad.getPredicate(), var);
+                            update.addWhere(quad.getSubject(), quad.getPredicate(), var);
                         }
                     }
                 };
             }
         }, true);
 
-        executeOnInstanceTriples(newInstance, (Triple triple, Field field) -> {
-            addCreateBuilderHelper(graph, triple, field, update);
+        executeOnInstanceTriples(graph, newInstance, (Quad quad, Field field) -> {
+            if (graph == null) {
+                update.addInsert(quad.asTriple());
+            } else {
+                update.addInsert(quad);
+            }
         }, true);
     }
 
     public <T extends SPARQLResourceModel> void addDeleteBuilder(Node graph, T instance, UpdateBuilder delete) throws Exception {
-        executeOnInstanceTriples(instance, (Triple triple, Field field) -> {
-            boolean isReverse = false;
-            if (field != null) {
-                isReverse = analyzer.isReverseRelation(field);
-            }
-
-            if (graph != null) {
-                if (isReverse) {
-                    delete.addDelete(graph, triple.getObject(), triple.getPredicate(), triple.getSubject());
-                } else {
-                    delete.addDelete(graph, triple);
-                }
+        executeOnInstanceTriples(graph, instance, (Quad quad, Field field) -> {
+            if (graph == null) {
+                delete.addDelete(quad.asTriple());
             } else {
-                if (isReverse) {
-                    delete.addDelete(triple.getObject(), triple.getPredicate(), triple.getSubject());
-                } else {
-                    delete.addDelete(triple);
-                }
+                delete.addDelete(quad);
             }
         }, false);
     }
 
     /**
-     * Add the WHERE clause into handler, depending if the given field is
-     * optional or not, according {@link #analyzer}
+     * Add the WHERE clause into handler, depending if the given field is optional or not, according {@link #analyzer}
      *
-     * @param select the root {@link SelectBuilder}, needed in order to create
-     * the {@link TriplePath} to add to the handler
+     * @param select the root {@link SelectBuilder}, needed in order to create the {@link TriplePath} to add to the handler
      * @param uriFieldName name of the uri SPARQL variable
      * @param property the {@link Property} to add
      * @param field the property corresponding {@link Field}
-     * @param handler the {@link WhereHandler} in which the where clause is
-     * added when the field is required
+     * @param handler the {@link WhereHandler} in which the where clause is added when the field is required
      * @see SPARQLClassAnalyzer#isOptional(Field)
      * @see SelectBuilder#makeTriplePath(Object, Object, Object)
      */
-    private void addSelectProperty(AbstractQueryBuilder<?> select, String uriFieldName, Property property, Field field,
-            WhereHandler handler, String lang) {
+    private void addSelectProperty(AbstractQueryBuilder<?> select, Node graph, String uriFieldName, Property property, Field field,
+            Map<Node, WhereHandler> requiredHandlersByGraph, Map<Node, List<WhereHandler>> optionalHandlersByGraph, String lang, boolean isObject) {
 
         Var uriFieldVar = makeVar(uriFieldName);
         Var propertyFieldVar = makeVar(field.getName());
@@ -367,7 +372,14 @@ class SPARQLClassQueryBuilder {
         TriplePath triple;
         if (isReverseRelation) {
             triple = select.makeTriplePath(propertyFieldVar, property, uriFieldVar);
+            if (isObject) {
+                try {
+                    graph = mapperIndex.getForResource(analyzer.getFieldRDFType(field)).getDefaultGraph();
+                } catch (Exception ex) {
+                    LOGGER.error("Unexpected exception", ex);
 
+                }
+            }
         } else {
             triple = select.makeTriplePath(uriFieldVar, property, propertyFieldVar);
         }
@@ -377,27 +389,31 @@ class SPARQLClassQueryBuilder {
             rdtTypeTriple = select.makeTriplePath(propertyFieldVar, RDF.type, OWL.Class);
         }
 
+        WhereHandler handler;
+
         if (isOptional) {
-            WhereHandler optionalHandler = new WhereHandler();
-            optionalHandler.addWhere(triple);
-            if (lang != null) {
-                addLangFilter(field.getName(), lang, optionalHandler);
+            if (!optionalHandlersByGraph.containsKey(graph)) {
+                optionalHandlersByGraph.put(graph, new LinkedList<>());
             }
-
-            if (rdtTypeTriple != null) {
-                optionalHandler.addWhere(rdtTypeTriple);
-            }
-
-            handler.addOptional(optionalHandler);
+            handler = new WhereHandler();
+            optionalHandlersByGraph.get(graph).add(handler);
         } else {
-            handler.addWhere(triple);
-            if (lang != null) {
-                addLangFilter(field.getName(), lang, handler);
+            if (!requiredHandlersByGraph.containsKey(graph)) {
+                requiredHandlersByGraph.put(graph, new WhereHandler());
             }
-            if (rdtTypeTriple != null) {
-                handler.addWhere(rdtTypeTriple);
-            }
+            handler = requiredHandlersByGraph.get(graph);
+        }
 
+        handler.addWhere(triple);
+        if (lang != null) {
+            if (lang.isEmpty()) {
+                lang = OpenSilex.DEFAULT_LANGUAGE;
+            }
+            addLangFilter(field.getName(), lang, handler);
+        }
+
+        if (rdtTypeTriple != null) {
+            handler.addWhere(rdtTypeTriple);
         }
     }
 
@@ -407,7 +423,7 @@ class SPARQLClassQueryBuilder {
         handler.addFilter(SPARQLQueryHelper.langFilter(fieldName, locale.getLanguage()));
     }
 
-    private <T extends SPARQLResourceModel> void executeOnInstanceTriples(T instance, BiConsumer<Triple, Field> tripleHandler, boolean ignoreNullFields) throws Exception {
+    private <T extends SPARQLResourceModel> void executeOnInstanceTriples(Node graph, T instance, BiConsumer<Quad, Field> tripleHandler, boolean ignoreNullFields) throws Exception {
         URI uri = analyzer.getURI(instance);
         Node uriNode = SPARQLDeserializers.nodeURI(uri);
 
@@ -415,7 +431,9 @@ class SPARQLClassQueryBuilder {
             instance.setType(new URI(analyzer.getRDFType().getURI()));
         }
 
-        tripleHandler.accept(new Triple(uriNode, RDF.type.asNode(), SPARQLDeserializers.nodeURI(instance.getType())), analyzer.getURIField());
+        Triple triple = new Triple(uriNode, RDF.type.asNode(), SPARQLDeserializers.nodeURI(instance.getType()));
+        Quad quad = new Quad(graph, triple);
+        tripleHandler.accept(quad, analyzer.getURIField());
 
         for (Field field : analyzer.getDataPropertyFields()) {
             Object fieldValue = analyzer.getFieldValue(field, instance);
@@ -428,7 +446,13 @@ class SPARQLClassQueryBuilder {
             } else {
                 Property property = analyzer.getDataPropertyByField(field);
                 Node fieldNodeValue = SPARQLDeserializers.getForClass(fieldValue.getClass()).getNode(fieldValue);
-                tripleHandler.accept(new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), fieldNodeValue), field);
+                if (analyzer.isReverseRelation(field)) {
+                    triple = new Triple(fieldNodeValue, property.asNode(), SPARQLDeserializers.nodeURI(uri));
+                } else {
+                    triple = new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), fieldNodeValue);
+                }
+                quad = new Quad(graph, triple);
+                tripleHandler.accept(quad, field);
             }
         }
 
@@ -441,13 +465,22 @@ class SPARQLClassQueryBuilder {
                     throw new Exception("Field value can't be null: " + field.getName());
                 }
             } else {
-                URI propertyFieldURI = mapperIndex.getForClass(fieldValue.getClass()).getURI(fieldValue);
+                SPARQLClassObjectMapper<SPARQLResourceModel> fieldMapper = mapperIndex.getForClass(fieldValue.getClass());
+                URI propertyFieldURI = fieldMapper.getURI(fieldValue);
                 if (!ignoreNullFields && propertyFieldURI == null) {
                     // TODO change exception type
                     throw new Exception("Object URI value can't be null: " + field.getName());
                 } else {
                     Property property = analyzer.getObjectPropertyByField(field);
-                    tripleHandler.accept(new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), SPARQLDeserializers.nodeURI(propertyFieldURI)), field);
+                    if (analyzer.isReverseRelation(field)) {
+                        triple = new Triple(SPARQLDeserializers.nodeURI(propertyFieldURI), property.asNode(), SPARQLDeserializers.nodeURI(uri));
+                        quad = new Quad(fieldMapper.getDefaultGraph(), triple);
+                    } else {
+                        triple = new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), SPARQLDeserializers.nodeURI(propertyFieldURI));
+                        quad = new Quad(graph, triple);
+                    }
+
+                    tripleHandler.accept(quad, field);
                 }
             }
         }
@@ -464,7 +497,13 @@ class SPARQLClassQueryBuilder {
                 Property property = analyzer.getLabelPropertyByField(field);
                 for (Map.Entry<String, String> translation : label.getAllTranslations().entrySet()) {
                     Node translationNode = NodeFactory.createLiteral(translation.getValue(), translation.getKey());
-                    tripleHandler.accept(new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), translationNode), field);
+                    if (analyzer.isReverseRelation(field)) {
+                        triple = new Triple(translationNode, property.asNode(), SPARQLDeserializers.nodeURI(uri));
+                    } else {
+                        triple = new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), translationNode);
+                    }
+                    quad = new Quad(graph, triple);
+                    tripleHandler.accept(quad, field);
                 }
             }
         }
@@ -477,7 +516,13 @@ class SPARQLClassQueryBuilder {
 
                 for (Object listValue : fieldValues) {
                     Node listNodeValue = SPARQLDeserializers.getForClass(listValue.getClass()).getNode(listValue);
-                    tripleHandler.accept(new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), listNodeValue), field);
+                    if (analyzer.isReverseRelation(field)) {
+                        triple = new Triple(listNodeValue, property.asNode(), SPARQLDeserializers.nodeURI(uri));
+                    } else {
+                        triple = new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), listNodeValue);
+                    }
+                    quad = new Quad(graph, triple);
+                    tripleHandler.accept(quad, field);
                 }
             }
         }
@@ -493,13 +538,23 @@ class SPARQLClassQueryBuilder {
                             throw new Exception("Field value can't be null");
                         }
                     } else {
-                        URI propertyFieldURI = mapperIndex.getForClass(listValue.getClass()).getURI(listValue);
+                        SPARQLClassObjectMapper<SPARQLResourceModel> fieldMapper = mapperIndex.getForClass(listValue.getClass());
+                        URI propertyFieldURI = fieldMapper.getURI(listValue);
                         if (!ignoreNullFields && propertyFieldURI == null) {
                             // TODO change exception type
                             throw new Exception("Object URI value can't be null");
                         } else {
                             Property property = analyzer.getObjectListPropertyByField(field);
-                            tripleHandler.accept(new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), SPARQLDeserializers.nodeURI(propertyFieldURI)), field);
+
+                            if (analyzer.isReverseRelation(field)) {
+                                triple = new Triple(SPARQLDeserializers.nodeURI(propertyFieldURI), property.asNode(), SPARQLDeserializers.nodeURI(uri));
+                                quad = new Quad(fieldMapper.getDefaultGraph(), triple);
+                            } else {
+                                triple = new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), SPARQLDeserializers.nodeURI(propertyFieldURI));
+                                quad = new Quad(graph, triple);
+                            }
+
+                            tripleHandler.accept(quad, field);
                         }
 
                     }
@@ -520,9 +575,10 @@ class SPARQLClassQueryBuilder {
             Seq seq = model.createSeq();
 
             if (analyzer.isReverseRelation(field)) {
-                Seq pathSeq = model.createSeq();
-                pathSeq.addProperty(SHACL.inversePath, property);
-                seq.addProperty(SHACL.path, pathSeq);
+// /!\ DISABLED BECAUSE RDF4J DON'T SUPPORT inversePath
+//                Seq pathSeq = model.createSeq();
+//                pathSeq.addProperty(SHACL.inversePath, property);
+//                seq.addProperty(SHACL.path, pathSeq);
             } else {
                 seq.addProperty(SHACL.path, property);
             }
@@ -548,9 +604,10 @@ class SPARQLClassQueryBuilder {
             Seq seq = model.createSeq();
 
             if (analyzer.isReverseRelation(field)) {
-                Seq pathSeq = model.createSeq();
-                pathSeq.addProperty(SHACL.inversePath, property);
-                seq.addProperty(SHACL.path, pathSeq);
+// /!\ DISABLED BECAUSE RDF4J DON'T SUPPORT inversePath
+//                Seq pathSeq = model.createSeq();
+//                pathSeq.addProperty(SHACL.inversePath, property);
+//                seq.addProperty(SHACL.path, pathSeq);
             } else {
                 seq.addProperty(SHACL.path, property);
             }
@@ -570,9 +627,10 @@ class SPARQLClassQueryBuilder {
             Seq seq = model.createSeq();
 
             if (analyzer.isReverseRelation(field)) {
-                Seq pathSeq = model.createSeq();
-                pathSeq.addProperty(SHACL.inversePath, property);
-                seq.addProperty(SHACL.path, pathSeq);
+// /!\ DISABLED BECAUSE RDF4J DON'T SUPPORT inversePath                
+//                Seq pathSeq = model.createSeq();
+//                pathSeq.addProperty(SHACL.inversePath, property);
+//                seq.addProperty(SHACL.path, pathSeq);
             } else {
                 seq.addProperty(SHACL.path, property);
             }
@@ -591,9 +649,10 @@ class SPARQLClassQueryBuilder {
             Seq seq = model.createSeq();
 
             if (analyzer.isReverseRelation(field)) {
-                Seq pathSeq = model.createSeq();
-                pathSeq.addProperty(SHACL.inversePath, property);
-                seq.addProperty(SHACL.path, pathSeq);
+// /!\ DISABLED BECAUSE RDF4J DON'T SUPPORT inversePath                
+//                Seq pathSeq = model.createSeq();
+//                pathSeq.addProperty(SHACL.inversePath, property);
+//                seq.addProperty(SHACL.path, pathSeq);
             } else {
                 seq.addProperty(SHACL.path, property);
             }
@@ -618,9 +677,10 @@ class SPARQLClassQueryBuilder {
             Seq seq = model.createSeq();
 
             if (analyzer.isReverseRelation(field)) {
-                Seq pathSeq = model.createSeq();
-                pathSeq.addProperty(SHACL.inversePath, property);
-                seq.addProperty(SHACL.path, pathSeq);
+// /!\ DISABLED BECAUSE RDF4J DON'T SUPPORT inversePath                
+//                Seq pathSeq = model.createSeq();
+//                pathSeq.addProperty(SHACL.inversePath, property);
+//                seq.addProperty(SHACL.path, pathSeq);
             } else {
                 seq.addProperty(SHACL.path, property);
             }

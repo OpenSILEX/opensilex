@@ -6,12 +6,15 @@
 package org.opensilex.sparql.response;
 
 import java.net.URI;
+import org.opensilex.OpenSilex;
+import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
  *
  * @author vince
  */
-public class ResourceDTO {
+public abstract class ResourceDTO<T extends SPARQLResourceModel> {
 
     protected URI uri;
 
@@ -41,6 +44,25 @@ public class ResourceDTO {
 
     public void setTypeLabel(String typeLabel) {
         this.typeLabel = typeLabel;
+    }
+
+    public abstract T newModelInstance();
+
+    public T newModel() {
+        T instance = newModelInstance();
+        toModel(instance);
+        return instance;
+    }
+
+    public void fromModel(T model) {
+        setUri(model.getUri());
+        setType(model.getType());
+        setTypeLabel(model.getTypeLabel().getDefaultValue());
+    }
+
+    public void toModel(T model) {
+        model.setUri(getUri());
+        model.setType(getType());
     }
 
 }

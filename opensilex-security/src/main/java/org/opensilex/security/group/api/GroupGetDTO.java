@@ -5,23 +5,19 @@
  */
 package org.opensilex.security.group.api;
 
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.group.dal.GroupUserProfileModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  *
- * @author vidalmor
+ * @author vince
  */
-@ApiModel
-public class GroupGetDTO {
-
-    protected URI uri;
-
-    protected String name;
+public class GroupGetDTO extends NamedResourceDTO<GroupModel> {
 
     protected String description;
 
@@ -32,17 +28,9 @@ public class GroupGetDTO {
         return uri;
     }
 
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
-
     @ApiModelProperty(value = "Group name", example = "Experiment manager")
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     @ApiModelProperty(value = "Group description", example = "Group for all experiments managers")
@@ -63,19 +51,48 @@ public class GroupGetDTO {
         this.userProfiles = userProfiles;
     }
 
-    public static GroupGetDTO fromModel(GroupModel group) {
-        GroupGetDTO dto = new GroupGetDTO();
-        dto.setUri(group.getUri());
-        dto.setName(group.getName());
-        dto.setDescription(group.getDescription());
+    @Override
+    public GroupModel newModelInstance() {
+        return new GroupModel();
+    }
 
-        List<GroupUserProfileDTO> userProfiles = new ArrayList<>();
-        group.getUserProfiles().forEach((userProfile) -> {
-            GroupUserProfileDTO userProfileDTO = GroupUserProfileDTO.fromModel(userProfile);
-            userProfiles.add(userProfileDTO);
-        });
-        dto.setUserProfiles(userProfiles);
+    @Override
+    public void toModel(GroupModel group) {
+        super.toModel(group);
+
+        group.setDescription(getDescription());
+
+        List<GroupUserProfileModel> userProfilesModel = new LinkedList<>();
+        for (GroupUserProfileDTO userProfile : getUserProfiles()) {
+            GroupUserProfileModel userProfileModel = userProfile.newModel();
+            userProfilesModel.add(userProfileModel);
+        }
+        group.setUserProfiles(userProfilesModel);
+    }
+
+    @Override
+    public void fromModel(GroupModel model) {
+        super.fromModel(model);
+
+        setDescription(model.getDescription());
+
+        List<GroupUserProfileDTO> userProfilesDTO = new LinkedList<>();
+        for (GroupUserProfileModel userProfile : model.getUserProfiles()) {
+            GroupUserProfileDTO dto = getUserProfileDtoInstance();
+            dto.fromModel(userProfile);
+            userProfilesDTO.add(dto);
+        }
+        setUserProfiles(userProfilesDTO);
+    }
+
+    public static GroupGetDTO getDTOFromModel(GroupModel model) {
+        GroupGetDTO dto = new GroupGetDTO();
+        dto.fromModel(model);
 
         return dto;
+    }
+    
+    public GroupUserProfileDTO getUserProfileDtoInstance() {
+        return new GroupUserProfileDTO();
     }
 }

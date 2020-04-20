@@ -205,7 +205,7 @@ public class GroupAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return group", response = GroupGetDTO.class),
+        @ApiResponse(code = 200, message = "Return group", response = GroupDTO.class),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
         @ApiResponse(code = 404, message = "Group not found", response = ErrorDTO.class)
     })
@@ -221,7 +221,7 @@ public class GroupAPI {
         if (model != null) {
             // Return group converted in GroupGetDTO
             return new SingleObjectResponse<>(
-                    GroupGetDTO.fromModel(model)
+                    GroupDTO.getDTOFromModel(model)
             ).getResponse();
         } else {
             // Otherwise return a 404 - NOT_FOUND error response
@@ -256,7 +256,7 @@ public class GroupAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return group list", response = GroupGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Return group list", response = GroupDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchGroups(
@@ -283,9 +283,9 @@ public class GroupAPI {
         );
 
         // Convert paginated list to DTO
-        ListWithPagination<GroupGetDTO> resultDTOList = resultList.convert(
-                GroupGetDTO.class,
-                GroupGetDTO::fromModel
+        ListWithPagination<GroupDTO> resultDTOList = resultList.convert(
+                GroupDTO.class,
+                GroupDTO::getDTOFromModel
         );
 
         // Return paginated list of user DTO

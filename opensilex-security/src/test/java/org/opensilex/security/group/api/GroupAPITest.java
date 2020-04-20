@@ -63,7 +63,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         dto.setName("Group 1");
         dto.setDescription("Description 1");
 
-        ArrayList<GroupUserProfileModificationDTO> userProfiles = new ArrayList<GroupUserProfileModificationDTO>();
+        ArrayList<GroupUserProfileDTO> userProfiles = new ArrayList<>();
         GroupUserProfileModificationDTO userProfile = new GroupUserProfileModificationDTO();
         userProfile.setUserURI(new URI(USER1_URI));
         userProfile.setProfileURI(new URI(PROFILE1_URI));
@@ -106,7 +106,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         dto.setName("new group name");
         dto.setDescription("New description");
 
-        ArrayList<GroupUserProfileModificationDTO> userProfiles = new ArrayList<GroupUserProfileModificationDTO>();
+        ArrayList<GroupUserProfileDTO> userProfiles = new ArrayList<>();
         GroupUserProfileModificationDTO userProfile = new GroupUserProfileModificationDTO();
 
         userProfile = new GroupUserProfileModificationDTO();
@@ -125,9 +125,9 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
         ObjectMapper mapper = new ObjectMapper();
-        SingleObjectResponse<GroupGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<GroupGetDTO>>() {
+        SingleObjectResponse<GroupDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<GroupDTO>>() {
         });
-        GroupGetDTO dtoFromApi = getResponse.getResult();
+        GroupDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
         compareGroupsDTO(dto, dtoFromApi);
@@ -159,7 +159,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         dto.setName("Group 2");
         dto.setDescription("Description 2");
 
-        ArrayList<GroupUserProfileModificationDTO> userProfiles = new ArrayList<GroupUserProfileModificationDTO>();
+        ArrayList<GroupUserProfileDTO> userProfiles = new ArrayList<>();
         GroupUserProfileModificationDTO userProfile = new GroupUserProfileModificationDTO();
         userProfile.setUserURI(new URI(USER1_URI));
         userProfile.setProfileURI(new URI(PROFILE2_URI));
@@ -187,9 +187,9 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
 
         JsonNode node = getSearchResult.readEntity(JsonNode.class);
         ObjectMapper mapper = new ObjectMapper();
-        PaginatedListResponse<GroupGetDTO> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GroupGetDTO>>() {
+        PaginatedListResponse<GroupDTO> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GroupDTO>>() {
         });
-        List<GroupGetDTO> users = listResponse.getResult();
+        List<GroupDTO> users = listResponse.getResult();
 
         assertFalse(users.isEmpty());
         assertEquals(2, users.size());
@@ -200,13 +200,13 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), getSearchResult.getStatus());
 
         node = getSearchResult.readEntity(JsonNode.class);
-        listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GroupGetDTO>>() {
+        listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GroupDTO>>() {
         });
         users = listResponse.getResult();
         assertEquals(1, users.size());
     }
 
-    private void compareGroupsDTO(GroupUpdateDTO expectedGroupDTO, GroupGetDTO actualGroupDTO) {
+    private void compareGroupsDTO(GroupUpdateDTO expectedGroupDTO, GroupDTO actualGroupDTO) {
         assertEquals(expectedGroupDTO.getUri(), actualGroupDTO.getUri());
         assertEquals(expectedGroupDTO.getName(), actualGroupDTO.getName());
         assertEquals(expectedGroupDTO.getUserProfiles().size(), actualGroupDTO.getUserProfiles().size());

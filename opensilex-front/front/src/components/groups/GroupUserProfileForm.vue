@@ -124,7 +124,6 @@ import {
   SecurityService,
   UserGetDTO,
   ProfileGetDTO,
-  GroupUserProfileModificationDTO,
   GroupUserProfileDTO
 } from "opensilex-security/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";

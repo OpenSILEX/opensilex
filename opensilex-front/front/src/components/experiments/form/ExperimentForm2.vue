@@ -77,7 +77,7 @@ import {
 } from "opensilex-core/index";
 import {
   SecurityService,
-  GroupGetDTO,
+  GroupDTO,
 } from "opensilex-security/index";
 
 @Component
@@ -116,7 +116,7 @@ export default class ExperimentForm2 extends ExperimentForm {
     );
     service
       .searchGroups(undefined, null, 0, 100)
-      .then((http: HttpResponse<OpenSilexResponse<Array<GroupGetDTO>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<GroupDTO>>>) => {
         for (let i = 0; i < http.response.result.length; i++) {
           let dto = http.response.result[i];
           this.groupList.push({ value: dto.uri, text: dto.name });

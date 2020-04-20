@@ -47,7 +47,7 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
   GroupCreationDTO,
   GroupUpdateDTO,
-  GroupGetDTO,
+  GroupDTO,
   SecurityService,
   ProfileGetDTO
 } from "opensilex-security/index";
@@ -105,7 +105,7 @@ export default class GroupView extends Vue {
     );
   }
 
-  editGroup(form: GroupGetDTO) {
+  editGroup(form: GroupDTO) {
     let groupForm: any = this.groupForm;
     groupForm.showEditForm(form);
   }

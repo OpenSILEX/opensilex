@@ -190,7 +190,7 @@
         },
         "group": {
             "description": "Gérer et configurer les groupes",
-            "group-uri": "URI du group",
+            "group-uri": "URI du groupe",
             "form-name-placeholder": "Saisir le nom du groupe",
             "form-description-placeholder": "Saisir la description du groupe",
             "form-all-users-title": "Liste globale des utilisateurs",
@@ -254,7 +254,7 @@
             "search": {
                 "description": "Gérer et configurer les expérimentations",
                 "buttons": {
-                    "create-experiment": "Créer expérimentation",
+                    "create-experiment": "Créer une expérimentation",
                     "create-experiment-help" : "Créer une expérimentation (informations expérimentales, variables/capteurs/facteurs associés)"
                 },
                 "column": {

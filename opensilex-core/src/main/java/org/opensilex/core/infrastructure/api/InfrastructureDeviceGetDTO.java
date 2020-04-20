@@ -7,13 +7,15 @@ package org.opensilex.core.infrastructure.api;
 
 import java.net.URI;
 import org.opensilex.core.infrastructure.dal.InfrastructureDeviceModel;
+import org.opensilex.core.infrastructure.dal.InfrastructureModel;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  *
  * @author vince
  */
-public class InfrastructureDeviceGetDTO extends NamedResourceDTO {
+public class InfrastructureDeviceGetDTO extends NamedResourceDTO<InfrastructureDeviceModel> {
 
     protected URI infrastructure;
 
@@ -25,17 +27,28 @@ public class InfrastructureDeviceGetDTO extends NamedResourceDTO {
         this.infrastructure = infrastructure;
     }
 
-    public static InfrastructureDeviceGetDTO fromModel(InfrastructureDeviceModel model) {
-        InfrastructureDeviceGetDTO dto = new InfrastructureDeviceGetDTO();
-        dto.setUri(model.getUri());
-        dto.setType(model.getType());
-        dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
-        dto.setName(model.getName());
+    @Override
+    public void toModel(InfrastructureDeviceModel model) {
+        super.toModel(model);
+        InfrastructureModel infra = new InfrastructureModel();
+        infra.setUri(getInfrastructure());
+        model.setInfrastructure(infra);
+    }
 
-        if (model.getInfrastructure() != null) {
-            URI parentURI = model.getInfrastructure().getUri();
-            dto.setInfrastructure(parentURI);
-        }
+    @Override
+    public void fromModel(InfrastructureDeviceModel model) {
+        super.fromModel(model);
+        setInfrastructure(model.getInfrastructure().getUri());
+    }
+
+    @Override
+    public InfrastructureDeviceModel newModelInstance() {
+        return new InfrastructureDeviceModel();
+    }
+
+    public static InfrastructureDeviceGetDTO getDTOFromModel(InfrastructureDeviceModel model) {
+        InfrastructureDeviceGetDTO dto = new InfrastructureDeviceGetDTO();
+        dto.fromModel(model);
 
         return dto;
     }

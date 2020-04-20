@@ -161,7 +161,11 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                 URI objURI = uriDeserializer.fromString(result.getStringValue(field.getName()));
 
                 Class<? extends SPARQLResourceModel> fieldType = (Class<? extends SPARQLResourceModel>) field.getType();
-                SPARQLProxyResource<?> proxy = new SPARQLProxyResource<>(mapperIndex, graph, objURI, fieldType, lang, service);
+                Node propertyGraph = graph;
+                if (classAnalizer.isReverseRelation(field)) {
+                    propertyGraph = mapperIndex.getForClass(fieldType).getDefaultGraph();
+                }
+                SPARQLProxyResource<?> proxy = new SPARQLProxyResource<>(mapperIndex, propertyGraph, objURI, fieldType, lang, service);
                 setter.invoke(instance, proxy.getInstance());
             }
         }
@@ -189,7 +193,11 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             Method setter = classAnalizer.getSetterFromField(field);
 
             Class<? extends SPARQLResourceModel> model = (Class<? extends SPARQLResourceModel>) ClassUtils.getGenericTypeFromField(field);
-            SPARQLProxyListObject<? extends SPARQLResourceModel> proxy = new SPARQLProxyListObject<>(mapperIndex, graph, uri, classAnalizer.getObjectListPropertyByField(field), model, classAnalizer.isReverseRelation(field), lang, service);
+            Node propertyGraph = graph;
+            if (classAnalizer.isReverseRelation(field)) {
+                propertyGraph = mapperIndex.getForClass(model).getDefaultGraph();
+            }
+            SPARQLProxyListObject<? extends SPARQLResourceModel> proxy = new SPARQLProxyListObject<>(mapperIndex, propertyGraph, uri, classAnalizer.getObjectListPropertyByField(field), model, classAnalizer.isReverseRelation(field), lang, service);
             setter.invoke(instance, proxy.getInstance());
         }
 

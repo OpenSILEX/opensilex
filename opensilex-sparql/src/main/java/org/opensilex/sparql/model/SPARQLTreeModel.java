@@ -6,7 +6,6 @@
 package org.opensilex.sparql.model;
 
 import java.util.List;
-import org.opensilex.sparql.utils.ClassURIGenerator;
 
 /**
  *

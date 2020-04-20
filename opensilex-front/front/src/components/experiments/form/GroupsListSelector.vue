@@ -99,7 +99,7 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import {
   SecurityService,
-  GroupGetDTO,
+  GroupDTO,
 } from "opensilex-security/index";
 
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
@@ -177,7 +177,7 @@ export default class GroupsListSelector extends Vue {
         this.currentPage - 1,
         this.pageSize
       )
-      .then((http: HttpResponse<OpenSilexResponse<Array<GroupGetDTO>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<GroupDTO>>>) => {
         this.totalRow = http.response.metadata.pagination.totalCount;
         this.pageSize = http.response.metadata.pagination.pageSize;
         setTimeout(() => {

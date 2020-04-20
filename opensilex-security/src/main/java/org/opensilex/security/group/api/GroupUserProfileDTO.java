@@ -9,27 +9,18 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
+import org.opensilex.security.profile.dal.ProfileModel;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.response.ResourceDTO;
 
 /**
  *
  * @author vidalmor
  */
 @ApiModel
-public class GroupUserProfileDTO {
+public class GroupUserProfileDTO extends ResourceDTO<GroupUserProfileModel> {
 
-    public static GroupUserProfileDTO fromModel(GroupUserProfileModel userProfile) {
-            GroupUserProfileDTO userProfileDTO = new GroupUserProfileDTO();
-            userProfileDTO.setProfileURI(userProfile.getProfile().getUri());
-            userProfileDTO.setProfileName(userProfile.getProfile().getName());
-            userProfileDTO.setUserURI(userProfile.getUser().getUri());
-            userProfileDTO.setUserName(userProfile.getUser().getName());
-            userProfileDTO.setUri(userProfile.getUri());
-            return userProfileDTO;
-    }
-
-    protected URI uri;
-    
     protected URI profileURI;
 
     protected String profileName;
@@ -44,10 +35,6 @@ public class GroupUserProfileDTO {
         return uri;
     }
 
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
-    
     @ValidURI
     @ApiModelProperty(value = "User associated profile URI")
     public URI getProfileURI() {
@@ -86,4 +73,33 @@ public class GroupUserProfileDTO {
         this.userName = userName;
     }
 
+    @Override
+    public void toModel(GroupUserProfileModel model) {
+        super.toModel(model);
+
+        ProfileModel profile = new ProfileModel();
+        profile.setUri(getProfileURI());
+        profile.setName(getProfileName());
+        model.setProfile(profile);
+
+        UserModel user = new UserModel();
+        user.setUri(userURI);
+        model.setUser(user);
+    }
+
+    @Override
+    public void fromModel(GroupUserProfileModel model) {
+        super.fromModel(model);
+
+        setProfileURI(model.getProfile().getUri());
+        setProfileName(model.getProfile().getName());
+
+        setUserURI(model.getUser().getUri());
+        setUserName(model.getUser().getName());
+    }
+
+    @Override
+    public GroupUserProfileModel newModelInstance() {
+        return new GroupUserProfileModel();
+    }
 }

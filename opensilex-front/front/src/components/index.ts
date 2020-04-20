@@ -22,6 +22,9 @@ import InfrastructureView from './infrastructures/InfrastructureView.vue';
 import InfrastructureTree from './infrastructures/InfrastructureTree.vue';
 import InfrastructureForm from './infrastructures/InfrastructureForm.vue';
 import InfrastructureDeviceForm from './infrastructures/InfrastructureDeviceForm.vue';
+import InfrastructureDevicesView from './infrastructures/InfrastructureDevicesView.vue';
+import InfrastructureGroupsView from './infrastructures/InfrastructureGroupsView.vue';
+import InfrastructureDetail from './infrastructures/InfrastructureDetail.vue';
 
 // factors levels
 import FactorView from './factors/FactorView.vue';
@@ -35,6 +38,7 @@ import FactorLevelList from './factors/FactorLevelList.vue';
 import FactorLevelForm from './factors/FactorLevelForm.vue';
 //common
 import FormInputLabelHelper from './common/FormInputLabelHelper.vue'
+import FormAutogenerateURI from './common/FormAutogenerateURI.vue'
 import ExternalReferencesForm from './common/ExternalReferencesForm.vue'
 import ExternalReferencesDetails from './common/ExternalReferencesDetails.vue'
 import PageHeader from './common/PageHeader.vue'
@@ -47,6 +51,9 @@ import ProjectsListSelector from './experiments/form/ProjectsListSelector.vue';
 import GroupsListSelector from './experiments/form/GroupsListSelector.vue';
 import InfrastructuresListSelector from './experiments/form/InfrastructuresListSelector.vue';
 
+// species
+import SepeciesView from './species/SpeciesView.vue';
+import SepeciesEdit from './species/SpeciesEdit.vue';
 
 import ExperimentList from './experiments/ExperimentList.vue';
 import ExperimentCreate from './experiments/ExperimentCreate.vue';
@@ -80,6 +87,7 @@ export default {
 
     // Common components
     'opensilex-FormInputLabelHelper': FormInputLabelHelper,
+    'opensilex-FormAutogenerateURI': FormAutogenerateURI,
     'opensilex-ExternalReferencesForm': ExternalReferencesForm,
     'opensilex-ExternalReferencesDetails': ExternalReferencesDetails,
     'opensilex-PageHeader': PageHeader,
@@ -101,7 +109,7 @@ export default {
     // Experiments
     'opensilex-ExperimentForm': ExperimentForm,
     'opensilex-ExperimentForm2': ExperimentForm2,
-    'opensilex-ExperimentForm3' : ExperimentForm3,
+    'opensilex-ExperimentForm3': ExperimentForm3,
     'opensilex-ExperimentList': ExperimentList,
     'opensilex-ExperimentCreate': ExperimentCreate,
     'opensilex-ExperimentView': ExperimentView,
@@ -110,7 +118,9 @@ export default {
     'opensilex-GroupsListSelector': GroupsListSelector,
     'opensilex-InfrastructuresListSelector': InfrastructuresListSelector,
 
-    
+    // species
+    'opensilex-SepeciesView': SepeciesView,
+    'opensilex-SepeciesEdit': SepeciesEdit,
 
     // Germplasm
     'opensilex-GermplasmView': GermplasmView,
@@ -136,7 +146,10 @@ export default {
     "opensilex-InfrastructureTree": InfrastructureTree,
     "opensilex-InfrastructureForm": InfrastructureForm,
     "opensilex-InfrastructureDeviceForm": InfrastructureDeviceForm,
-
+    "opensilex-InfrastructureDevicesView": InfrastructureDevicesView,
+    "opensilex-InfrastructureGroupsView": InfrastructureGroupsView,
+    "opensilex-InfrastructureDetail": InfrastructureDetail,
+    
     // Factors
     "opensilex-FactorView": FactorView,
     "opensilex-FactorList": FactorList,

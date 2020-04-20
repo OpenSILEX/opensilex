@@ -50,15 +50,15 @@ public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> {
             property = "hasGroup",
             cascadeDelete = true
     )
-    private GroupModel group;
-    public static final String GROUP_FIELD = "group";
+    private List<InfrastructureTeamModel> groups;
+    public static final String GROUP_FIELD = "groups";
 
-    public GroupModel getGroup() {
-        return group;
+    public List<InfrastructureTeamModel> getGroups() {
+        return groups;
     }
 
-    public void setGroup(GroupModel group) {
-        this.group = group;
+    public void setGroups(List<InfrastructureTeamModel> group) {
+        this.groups = group;
     }
 
     public List<InfrastructureDeviceModel> getDevices() {

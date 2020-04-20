@@ -35,4 +35,6 @@ public @interface SPARQLResource {
     public String prefix() default "";
 
     public boolean ignoreValidation() default false;
+
+    public boolean allowBlankNode() default false;
 }

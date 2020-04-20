@@ -93,7 +93,7 @@ import VueRouter from "vue-router";
 import {
   SecurityService,
   UserGetDTO,
-  GroupGetDTO,
+  GroupDTO,
   NamedResourceDTO
 } from "opensilex-security/index";
 import HttpResponse, {

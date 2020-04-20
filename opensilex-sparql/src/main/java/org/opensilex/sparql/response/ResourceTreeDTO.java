@@ -74,12 +74,10 @@ public class ResourceTreeDTO extends NamedResourceDTO {
 
     private static <T extends SPARQLTreeModel<T>> ResourceTreeDTO fromResourceTreeRecursive(T model, SPARQLTreeListModel<T> tree, boolean enableSelection, BiConsumer<T, ResourceTreeDTO> handler) {
         ResourceTreeDTO dto = new ResourceTreeDTO();
+        dto.fromModel(model);
 
-        dto.setUri(model.getUri());
-        dto.setType(model.getType());
-        dto.setName(model.getName());
         dto.setSelected(enableSelection && tree.isSelected(model));
-        
+
         List<ResourceTreeDTO> childrenDTOs = new ArrayList<>();
         tree.listChildren(model, child -> {
             ResourceTreeDTO childDTO = fromResourceTreeRecursive(child, tree, enableSelection, handler);

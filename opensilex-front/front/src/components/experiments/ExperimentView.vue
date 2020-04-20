@@ -197,7 +197,7 @@ import {
 } from "opensilex-core/index";
 import {
   SecurityService,
-  GroupGetDTO,
+  GroupDTO,
   UserGetDTO
 } from "opensilex-security/index";
 import VueI18n from 'vue-i18n';
@@ -303,7 +303,7 @@ export default class ExperimentView extends Vue {
       this.experiment.groups.forEach(group => {
         service.getGroup(
           group
-        ).then((http: HttpResponse<OpenSilexResponse<GroupGetDTO>>) => {
+        ).then((http: HttpResponse<OpenSilexResponse<GroupDTO>>) => {
           this.groupsList.push(http.response.result);
         }).catch(this.$opensilex.errorHandler);
       });

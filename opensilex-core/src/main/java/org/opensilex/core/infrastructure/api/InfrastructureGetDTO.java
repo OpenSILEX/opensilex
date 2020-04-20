@@ -5,49 +5,30 @@
  */
 package org.opensilex.core.infrastructure.api;
 
-import java.net.URI;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import org.opensilex.core.infrastructure.dal.InfrastructureDeviceModel;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
-import org.opensilex.security.group.api.GroupUserProfileDTO;
-import org.opensilex.sparql.response.NamedResourceDTO;
+import org.opensilex.core.infrastructure.dal.InfrastructureTeamModel;
+import org.opensilex.security.group.api.GroupDTO;
+import org.opensilex.security.group.dal.GroupModel;
 
 /**
  *
  * @author vince
  */
-public class InfrastructureGetDTO extends NamedResourceDTO {
+public class InfrastructureGetDTO extends InfrastructureDTO {
 
-    protected URI parent;
-
-    protected List<URI> children;
+    protected List<InfrastructureTeamDTO> groups;
 
     protected List<InfrastructureDeviceGetDTO> devices;
 
-    protected List<GroupUserProfileDTO> userProfiles;
-
-    public URI getParent() {
-        return parent;
+    public List<InfrastructureTeamDTO> getGroups() {
+        return groups;
     }
 
-    public void setParent(URI parent) {
-        this.parent = parent;
-    }
-
-    public List<URI> getChildren() {
-        return children;
-    }
-
-    public void setChildren(List<URI> children) {
-        this.children = children;
-    }
-
-    public List<GroupUserProfileDTO> getUserProfiles() {
-        return userProfiles;
-    }
-
-    public void setUserProfiles(List<GroupUserProfileDTO> userProfiles) {
-        this.userProfiles = userProfiles;
+    public void setGroups(List<InfrastructureTeamDTO> groups) {
+        this.groups = groups;
     }
 
     public List<InfrastructureDeviceGetDTO> getDevices() {
@@ -58,41 +39,57 @@ public class InfrastructureGetDTO extends NamedResourceDTO {
         this.devices = devices;
     }
 
-    public static InfrastructureGetDTO fromModel(InfrastructureModel model) {
-        InfrastructureGetDTO dto = new InfrastructureGetDTO();
-        dto.setUri(model.getUri());
-        dto.setType(model.getType());
-        dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
-        dto.setName(model.getName());
+    @Override
+    public InfrastructureModel newModelInstance() {
+        return new InfrastructureModel();
+    }
 
-        if (model.getParent() != null) {
-            URI parentURI = model.getParent().getUri();
-            dto.setParent(parentURI);
-        }
+    @Override
+    public void fromModel(InfrastructureModel model) {
+        super.fromModel(model);
 
-        List<URI> children = new ArrayList<>();
-        if (model.getChildren() != null) {
-            model.getChildren().forEach(child -> {
-                children.add(child.getUri());
+        List<InfrastructureTeamDTO> groups = new LinkedList<>();
+        if (model.getGroups() != null) {
+            model.getGroups().forEach(group -> {
+                groups.add(InfrastructureTeamDTO.getDTOFromModel(group));
             });
-        }
-        dto.setChildren(children);
 
-        List<GroupUserProfileDTO> userProfilesList = new ArrayList<>();
-        if (model.getGroup() != null) {
-            model.getGroup().getUserProfiles().forEach(userProfile -> {
-                userProfilesList.add(GroupUserProfileDTO.fromModel(userProfile));
-            });
         }
-        dto.setUserProfiles(userProfilesList);
+        setGroups(groups);
 
-        List<InfrastructureDeviceGetDTO> deviceList = new ArrayList<>();
+        List<InfrastructureDeviceGetDTO> devices = new LinkedList<>();
         if (model.getDevices() != null) {
             model.getDevices().forEach(device -> {
-                deviceList.add(InfrastructureDeviceGetDTO.fromModel(device));
+                devices.add(InfrastructureDeviceGetDTO.getDTOFromModel(device));
             });
         }
-        dto.setDevices(deviceList);
+        setDevices(devices);
+    }
+
+    @Override
+    public void toModel(InfrastructureModel model) {
+        super.toModel(model);
+
+        List<InfrastructureTeamModel> groups = new LinkedList<>();
+        if (getGroups() != null) {
+            getGroups().forEach(group -> {
+                groups.add(group.newModel());
+            });
+        }
+        model.setGroups(groups);
+
+        List<InfrastructureDeviceModel> devices = new LinkedList<>();
+        if (getDevices() != null) {
+            getDevices().forEach(device -> {
+                devices.add(device.newModel());
+            });
+        }
+        model.setDevices(devices);
+    }
+
+    public static InfrastructureGetDTO getDTOFromModel(InfrastructureModel model) {
+        InfrastructureGetDTO dto = new InfrastructureGetDTO();
+        dto.fromModel(model);
 
         return dto;
     }

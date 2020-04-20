@@ -15,7 +15,7 @@ import org.opensilex.sparql.utils.Ontology;
 public class Oeso {
 
     public static final String DOMAIN = "http://www.opensilex.org/vocabulary/oeso";
-    
+
     public static final String PREFIX = "vocabulary";
 
     /**
@@ -91,6 +91,7 @@ public class Oeso {
     // ---- INFRASTRUCTURES AND INSTALLATION
     public static final Resource Infrastructure = Ontology.resource(NS, "Infrastructure");
     public static final Resource InfrastructureDevice = Ontology.resource(NS, "InfrastructureDevice");
+    public static final Resource InfrastructureTeam = Ontology.resource(NS, "InfrastructureTeam");
     public static final Resource Installation = Ontology.resource(NS, "Installation");
 
     // ---- SPECIES ----

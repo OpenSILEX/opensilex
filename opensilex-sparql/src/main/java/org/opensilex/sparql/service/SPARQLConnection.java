@@ -84,7 +84,6 @@ public interface SPARQLConnection extends Service {
             Statement statement = iterator.nextStatement();
             insertQuery.addInsert(graphNode, statement.asTriple());
         }
-        insertQuery.buildRequest().toString();
         executeUpdateQuery(insertQuery);
     }
 

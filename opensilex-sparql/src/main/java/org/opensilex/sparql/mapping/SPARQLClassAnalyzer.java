@@ -97,6 +97,8 @@ final class SPARQLClassAnalyzer {
     private final URIGenerator<? extends SPARQLResourceModel> uriGenerator;
 
     private final boolean ignoreValidation;
+    
+    private final boolean allowBlankNode;
 
     @SuppressWarnings("unchecked")
     public SPARQLClassAnalyzer(SPARQLClassObjectMapperIndex mapperIndex, Class<?> objectClass) throws SPARQLInvalidClassDefinitionException {
@@ -128,6 +130,7 @@ final class SPARQLClassAnalyzer {
             Class<?> resourceOntology = resourceAnnotation.ontology();
             Field resourceField = resourceOntology.getField(resourceAnnotation.resource());
             resource = (Resource) resourceField.get(null);
+            allowBlankNode = resourceAnnotation.allowBlankNode();
             LOGGER.debug("RDF Type for class: " + objectClass.getName() + " is: " + resource.toString());
             if (!resourceAnnotation.graph().isEmpty()) {
                 graphSuffix = resourceAnnotation.graph();
@@ -751,4 +754,9 @@ final class SPARQLClassAnalyzer {
 
         return map;
     }
+
+    boolean allowBlankNode() {
+        return allowBlankNode;
+    }
+
 }

@@ -49,12 +49,6 @@
                 </td>
                 <td>{{ experiment.campaign }}</td>
                 <td>
-                  <span :key="index" v-for="(uri, index) in experiment.infrastructures">
-                    <span :title="uri">{{ getInfrastructureName(uri) }}</span>
-                    <span v-if="index + 1 < experiment.infrastructures.length">,</span>
-                  </span>
-                </td>
-                <td>
                   <span :title="experiment.species">{{ getSpeciesName(experiment.species) }}</span>
                 </td>
                 <td>{{ formatDate(experiment.startDate) }}</td>

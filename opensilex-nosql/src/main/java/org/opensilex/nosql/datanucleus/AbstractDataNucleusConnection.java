@@ -6,23 +6,25 @@
 //******************************************************************************
 package org.opensilex.nosql.datanucleus;
 
-import java.util.Collection;
-import java.util.List;
+import java.lang.invoke.MethodHandles;
+import java.rmi.RemoteException;
+import java.util.Map;
 import java.util.Properties;
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.ejb.SessionBean;
 import javax.jdo.JDOEnhancer;
 import javax.jdo.JDOHelper;
-import javax.jdo.JDOObjectNotFoundException;
-import javax.jdo.JDOQLTypedQuery;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
-import javax.jdo.Query;
-import javax.jdo.Transaction;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.datanucleus.metadata.PersistenceUnitMetaData;
+import org.opensilex.nosql.NoSQLConfig;
+import org.opensilex.nosql.exceptions.NoSQLTransactionException;
 import org.opensilex.nosql.service.NoSQLConnection;
-import org.opensilex.service.BaseService;
-import org.opensilex.service.Service;
+import org.opensilex.service.ServiceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +40,15 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractDataNucleusConnection extends BaseService implements Service, NoSQLConnection {
 
-    public final static Logger LOGGER = LoggerFactory.getLogger(AbstractDataNucleusConnection.class);
+    public final static Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    /**
+     * static final for the JNDI name of the PersistenceManagerFactory
+     */
+    public static final String persistenceManagerFactoryName = "java:/datanucleus1";
+
+    protected static PersistenceManagerFactory persistenceManagerFactory;
+    protected final PersistenceUnitMetaData PMF_PROPERTIES;
+
     /**
      * static final for the JNDI name of the PersistenceManagerFactory
      */
@@ -68,12 +78,15 @@ public abstract class AbstractDataNucleusConnection extends BaseService implemen
     /**
      * Method to get a PersistenceManager
      *
-     * @return
-     * @throws javax.naming.NamingException
+     * @param config
      */
-    @Override
-    public PersistenceManager getPersistentConnectionManager() throws NamingException {
-        return PMF.getPersistenceManager();
+    public AbstractDataNucleusConnection(ServiceConfig config) {
+        PMF_PROPERTIES = this.getConfigProperties(config);
+        PMF_PROPERTIES.addProperty("javax.jdo.option.ConnectionFactoryName", persistenceManagerFactoryName); 
+        PMF_PROPERTIES.addProperty("datanucleus.PersistenceUnitName", "MyPersistenceUnit");
+
+        LOGGER.debug(PMF_PROPERTIES.toString());
+        persistenceManagerFactory = new JDOPersistenceManagerFactory(PMF_PROPERTIES, null);  
     }
 
     @Override
@@ -151,4 +164,34 @@ public abstract class AbstractDataNucleusConnection extends BaseService implemen
         }
     }
 
+    abstract protected PersistenceUnitMetaData getConfigProperties(ServiceConfig config);
+
+    // convenience methods to get a PersistenceManager 
+
+    /**
+     * Method to get a PersistenceManager
+     *
+     * @return
+     * @throws javax.naming.NamingException
+     */
+    public PersistenceManager getPersistenceManager()
+            throws NamingException {
+        return persistenceManagerFactory.getPersistenceManager();
+    }
+
+    public void closePersistanteManagerFactory() {
+        persistenceManagerFactory.close();
+    }
+    // Now finally the bean method within a transaction
+    public void testDataNucleusTrans()
+            throws Exception {
+        PersistenceManager pm = getPersistenceManager();
+        try {
+            // Do something with your PersistenceManager
+        } finally {
+            // close the PersistenceManager
+            pm.close();
+        }
+    } 
+    
 }

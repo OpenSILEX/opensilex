@@ -31,175 +31,22 @@
           <table class="table table-striped table-hover">
             <thead>
               <tr>
-                <th>Actions</th>
                 <th>{{ $t('component.experiment.search.column.alias') }}</th>
-                <th>{{ $t('component.experiment.search.column.projects') }}</th>
-                <th>{{ $t('component.experiment.search.column.installations') }}</th>
                 <th>{{ $t('component.experiment.search.column.campaign') }}</th>
-                <th>{{ $t('component.experiment.search.column.places') }}</th>
                 <th>{{ $t('component.experiment.search.column.species') }}</th>
                 <th>{{ $t('component.experiment.search.column.startDate') }}</th>
                 <th>{{ $t('component.experiment.search.column.uri') }}</th>
                 <th>{{ $t('component.experiment.search.column.state') }}</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr class="cell-filters"></tr>
-
-              <tr class="cell-filters">
-                <td>Edit</td>
-                <td>
-                  <b-form-input
-                    v-model="filter.alias"
-                    debounce="300"
-                    class="form-control"
-                    :placeholder="$t('component.experiment.search.filter.alias')"
-                  ></b-form-input>
-                </td>
-                <td width="190">
-                  <multiselect
-                    :limit="1"
-                    :multiple="true"
-                    track-by="uri"
-                    :placeholder="$t('component.experiment.search.filter.projects')"
-                    :closeOnSelect="false"
-                    v-model="filter.projects"
-                    :options="projectsList"
-                    :custom-label="project => project.label"
-                    selectLabel
-                    selectedLabel="X"
-                    deselectLabel="X"
-                    :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"
-                  />
-                </td>
-                <td width="220">
-                  <multiselect
-                    :limit="1"
-                    :multiple="true"
-                    :placeholder="$t('component.experiment.search.filter.installations')"
-                    :closeOnSelect="false"
-                    v-model="filter.installations"
-                    :options="installationsList"
-                    selectLabel
-                    selectedLabel="X"
-                    deselectLabel="X"
-                    :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"
-                  />
-                </td>
-                <td width="220">
-                  <multiselect
-                    :limit="1"
-                    :placeholder="$t('component.experiment.search.filter.campaign')"
-                    :closeOnSelect="false"
-                    v-model="filter.campaign"
-                    :options="campaigns"
-                    selectLabel
-                    selectedLabel="X"
-                    deselectLabel="X"
-                    :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"
-                  />
-                </td>
-                <td width="180">
-                  <multiselect
-                    :limit="1"
-                    track-by="uri"
-                    :multiple="true"
-                    :placeholder="$t('component.experiment.search.filter.places')"
-                    :closeOnSelect="false"
-                    v-model="filter.infrastructures"
-                    :options="infrastructuresList"
-                    :custom-label="infrastructure => infrastructure.name"
-                    selectLabel
-                    selectedLabel="X"
-                    deselectLabel="X"
-                    :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"
-                  />
-                </td>
-                <td width="200">
-                  <multiselect
-                    :limit="1"
-                    track-by="uri"
-                    :placeholder="$t('component.experiment.search.filter.species')"
-                    :closeOnSelect="false"
-                    v-model="filter.species"
-                    :options="speciesList"
-                    :custom-label="species => species.label"
-                    selectLabel
-                    selectedLabel="X"
-                    deselectLabel="X"
-                    :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"
-                  />
-                </td>
-                <td>
-                  <div class="datepicker-trigger">
-                    <input
-                      type="text"
-                      id="datepicker1"
-                      class="form-control"
-                      name="daterange"
-                      debounce="300"
-                      v-model="filter.beginDate"
-                      :placeholder="$t('component.experiment.search.filter.startDate')"
-                    />
-                    <AirbnbStyleDatepicker
-                      :trigger-element-id="'datepicker1'"
-                      :date-one="filter.startDate"
-                      :date-two="filter.endDate"
-                      v-on:date-one-selected="function(value) { filter.startDate = value }"
-                      v-on:date-two-selected="function(value) { filter.endDate = value }"
-                      @apply="filter.updateBeginDate()"
-                    />
-                  </div>
-                </td>
-                <td>
-                  <b-form-input
-                    v-model="filter.uri"
-                    debounce="300"
-                    class="form-control"
-                    :placeholder="$t('component.experiment.search.filter.uri')"
-                  ></b-form-input>
-                </td>
-                <td width="170">
-                  <multiselect
-                    track-by="code"
-                    :custom-label="state => state.label"
-                    :limit="1"
-                    :placeholder="$t('component.experiment.search.filter.state')"
-                    :closeOnSelect="false"
-                    v-model="filter.state"
-                    :options="experimentStates"
-                    selectLabel
-                    selectedLabel="X"
-                    deselectLabel="X"
-                    :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"
-                  />
-                </td>
-              </tr>
-
               <tr v-for="experiment in experiments" v-bind:key="experiment.id">
-                <td>
-                  <b-button-group size="sm">
-                    <b-button
-                      size="sm"
-                      @click="goToExperimentUpdateComponent(experiment)"
-                      variant="outline-primary"
-                    >
-                      <font-awesome-icon icon="edit" size="sm" />
-                    </b-button>
-                  </b-button-group>
-                </td>
                 <td>
                   <router-link
                     :to="{path: '/experiment/' + encodeURIComponent(experiment.uri)}"
                   >{{ experiment.label }}</router-link>
                 </td>
-                <td>
-                  <span :key="index" v-for="(uri, index) in experiment.projects">
-                    <span :title="uri">{{ getProjectName(uri) }}</span>
-                    <span v-if="index + 1 < experiment.projects.length">,</span>
-                  </span>
-                </td>
-                <td></td>
                 <td>{{ experiment.campaign }}</td>
                 <td>
                   <span :key="index" v-for="(uri, index) in experiment.infrastructures">
@@ -240,6 +87,17 @@
                     class="ik ik-users badge-icon badge-info"
                     :title="$t('component.experiment.common.status.public')"
                   ></i>
+                </td>
+                 <td>
+                  <b-button-group size="sm">
+                    <b-button
+                      size="sm"
+                      @click="goToExperimentUpdateComponent(experiment)"
+                      variant="outline-primary"
+                    >
+                      <font-awesome-icon icon="edit" size="sm" />
+                    </b-button>
+                  </b-button-group>
                 </td>
               </tr>
             </tbody>
@@ -614,7 +472,17 @@ export default class ExperimentList extends Vue {
     );
 
     service
-      .searchProjects(undefined, undefined, undefined, undefined, undefined, undefined, undefined, 0, 1000)
+      .searchProjects(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        0,
+        1000
+      )
       .then((http: HttpResponse<OpenSilexResponse<Array<ProjectGetDTO>>>) => {
         let results: Map<String, ProjectGetDTO> = new Map<
           String,

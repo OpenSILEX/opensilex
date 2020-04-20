@@ -165,7 +165,7 @@
               <opensilex-UserSelector
                 id="coordinators"
                 ref="coordinatorsRef"
-                @onSelect="updateCoordinators"
+                @updateUsers="updateCoordinators"
               ></opensilex-UserSelector>
             </b-form-group>
 
@@ -177,7 +177,7 @@
               <opensilex-UserSelector
                 id="scientificContacts"
                 ref="scientificContactsRef"
-                @onSelect="updateScientificContacts"
+                @updateUsers="updateScientificContacts"
               ></opensilex-UserSelector>
             </b-form-group>
 
@@ -189,7 +189,7 @@
               <opensilex-UserSelector
                 id="administrativeContacts"
                 ref="administrativeContactsRef"
-                @onSelect="updateAdminContacts"
+                @updateUsers="updateAdminContacts"
               ></opensilex-UserSelector>
             </b-form-group>
           </tab-content>

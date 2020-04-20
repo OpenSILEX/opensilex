@@ -160,6 +160,7 @@
             "form-email-placeholder": "Saisir l'adresse email de l'utilisateur",
             "form-password-placeholder": "Saisir le mot de passe de l'utilisateur",
             "form-admin-option-label": "Activer cette option pour créer un super-administrateur",
+            "filter-search-no-result": "Désolé, aucun utilisateur ne correspond à votre recherche.",
             "filter-placeholder": "Utiliser ce champ pour chercher des utilisateurs",
             "users": "utilisateurs",
             "label": "aucun utilisateur | 1 utilisateur | {count} utilisateurs",
@@ -175,6 +176,9 @@
             "user-groups": "groupes de l'utilisateur",
             "errors": {
                 "user-already-exists": "Un utilisateur existe déjà avec cette URI ou cette adresse email."
+            },
+            "form-wizard": {
+                "funding-contacts": "Financeurs et contacts"
             }
         },
         "profile": {
@@ -331,7 +335,7 @@
             "filter-placeholder": "Utiliser ce champ pour chercher des infrastructures",
             "add": "Créer une infrastructure",
             "update": "Modifier l'infrastructure",
-            "detail": "Détail de l'infrastructure",
+            "detail": "Détails",
             "description": "Gérer et configurer les infrastructures",
             "devices": "Dispositifs",
             "list": "Liste",

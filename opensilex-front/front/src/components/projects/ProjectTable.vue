@@ -1,5 +1,20 @@
 <template>
   <div>
+    <b-input-group class="mt-3 mb-3" size="sm">
+      <b-input-group>
+        <b-form-input
+          v-model="filterPattern"
+          debounce="300"
+          :placeholder="$t('component.project.filter-placeholder')"
+        ></b-form-input>
+        <template v-slot:append>
+          <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
+            <font-awesome-icon icon="times" size="sm" />
+          </b-btn>
+        </template>
+      </b-input-group>
+    </b-input-group>
+
     <b-table
       ref="tableRef"
       striped
@@ -22,8 +37,51 @@
         </a>
       </template>
 
+      <template v-slot:cell(startDate)="data">{{ format(data.item.startDate)}}</template>
+
+      <template v-slot:cell(endDate)="data">{{ format(data.item.endDate)}}</template>
+
+      <template v-slot:row-details="data">
+        <div v-if="data.item.description">
+          DESCRIPTION:<br> <div class="capitalize-first-letter">{{ data.item.description }}</div>
+        </div>
+        
+       <div v-if="data.item.coordinators">
+          Coordinators :
+          <b-badge
+            v-for="(item, index) in data.item.coordinators"
+            :key="index"
+            pill
+            variant="info"
+          >{{item}}</b-badge>
+        </div>
+        <div v-if="data.item.scientificContacts">
+          Scientific contact :
+          <b-badge
+            v-for="(item, index) in data.item.scientificContacts"
+            :key="index"
+            pill
+            variant="info"
+          >{{item}}</b-badge>
+        </div>
+        <div v-if="data.item.administrativeContacts">
+          Administrative contact :
+          <b-badge
+            v-for="(item, index) in data.item.administrativeContacts"
+            :key="index"
+            pill
+            variant="info"
+          >{{item}}</b-badge>
+        </div>
+      </template>
+
       <template v-slot:cell(actions)="data">
-        <b-button-group>
+        <b-button-group size="sm" >
+          <b-button size="sm" @click="data.toggleDetails" variant="outline-success">
+            <font-awesome-icon v-if="!data.detailsShowing" icon="eye" size="sm" />
+            <font-awesome-icon v-if="data.detailsShowing" icon="eye-slash" size="sm" />
+          </b-button>
+
           <b-button size="sm" @click="$emit('onEdit', data.item)" variant="outline-primary">
             <font-awesome-icon icon="edit" size="sm" />
           </b-button>
@@ -69,8 +127,21 @@ export default class ProjectTable extends Vue {
   sortBy = "uri";
   sortDesc = false;
 
+  private filterPatternValue: any = "";
+  set filterPattern(value: string) {
+    this.filterPatternValue = value;
+    this.refresh();
+  }
+
+  get filterPattern() {
+    return this.filterPatternValue;
+  }
+
   created() {
     let query: any = this.$route.query;
+    if (query.filterPattern) {
+      this.filterPatternValue = decodeURI(query.filterPattern);
+    }
     if (query.pageSize) {
       this.pageSize = parseInt(query.pageSize);
     }
@@ -131,7 +202,7 @@ export default class ProjectTable extends Vue {
         undefined,
         undefined,
         undefined,
-        undefined,
+        this.filterPattern,
         undefined,
         undefined,
         undefined,
@@ -150,6 +221,7 @@ export default class ProjectTable extends Vue {
           .push({
             path: this.$route.fullPath,
             query: {
+              filterPattern: encodeURI(this.filterPattern),
               sortBy: encodeURI(this.sortBy),
               sortDesc: "" + this.sortDesc,
               currentPage: "" + this.currentPage,

@@ -69,9 +69,6 @@ import ScientificContactsProjectForm from './projects/ScientificContactsProjectF
 import AdminContactsProjectForm from './projects/AdminContactsProjectForm.vue';
 import ProjectForm from './projects/ProjectForm.vue';
 import ProjectTable from './projects/ProjectTable.vue';
-
-import FilterTable from './projects/FilterTable.vue';
-
 import ProjectView from './projects/ProjectView.vue';
 
 
@@ -139,8 +136,6 @@ export default {
     "opensilex-core-ProjectView":ProjectView,
     "opensilex-core-ProjectTable": ProjectTable,
     "opensilex-core-ProjectForm": ProjectForm,
-    "opensilex-core-FilterTable": FilterTable,
-    "opensilex-CoordinatorsProjectForm":CoordinatorsProjectForm,
     "opensilex-ContactsProjectForm":ContactsProjectForm,
     "opensilex-ScientificContactsProjectForm":ScientificContactsProjectForm,
     "opensilex-AdminContactsProjectForm":AdminContactsProjectForm,

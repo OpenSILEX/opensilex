@@ -17,7 +17,7 @@
     @search-change="asyncFind"
     @input="updateURIList"
   >
-    <span slot="noResult">"$t('component.user.filter-search-no-result')"</span>
+    <span slot="noResult">{{$t('component.user.filter-search-no-result')}}</span>
   </multiselect>
 </template>
 

@@ -79,8 +79,19 @@ export default class OpenSilexVuePlugin {
         return icon;
     }
 
+    loaderEnabled = true;
+    enableLoader() {
+        this.loaderEnabled = true;
+    }
+
+    disableLoader() {
+        this.loaderEnabled = false;
+    }
+
     showLoader() {
-        this.$store.commit("showLoader");
+        if (this.loaderEnabled) {
+            this.$store.commit("showLoader");
+        }
     }
 
     hideLoader() {
@@ -352,6 +363,7 @@ export default class OpenSilexVuePlugin {
     }
 
     private handleError(error, message?) {
+        this.enableLoader();
         switch (error.status) {
             case 400:
                 console.error("Constraint validation error", error);

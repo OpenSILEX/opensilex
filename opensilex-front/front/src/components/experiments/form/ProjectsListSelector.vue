@@ -158,6 +158,12 @@ export default class ProjectsListSelector extends Vue {
 
     return this.service
       .searchProjects(
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
         orderBy,
         this.currentPage - 1,
         this.pageSize

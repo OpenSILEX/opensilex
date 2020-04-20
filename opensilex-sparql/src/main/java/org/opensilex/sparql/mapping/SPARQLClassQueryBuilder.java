@@ -575,10 +575,9 @@ class SPARQLClassQueryBuilder {
             Seq seq = model.createSeq();
 
             if (analyzer.isReverseRelation(field)) {
-// /!\ DISABLED BECAUSE RDF4J DON'T SUPPORT inversePath
-//                Seq pathSeq = model.createSeq();
-//                pathSeq.addProperty(SHACL.inversePath, property);
-//                seq.addProperty(SHACL.path, pathSeq);
+                Seq pathSeq = model.createSeq();
+                pathSeq.addProperty(SHACL.inversePath, property);
+                seq.addProperty(SHACL.path, pathSeq);
             } else {
                 seq.addProperty(SHACL.path, property);
             }
@@ -604,10 +603,9 @@ class SPARQLClassQueryBuilder {
             Seq seq = model.createSeq();
 
             if (analyzer.isReverseRelation(field)) {
-// /!\ DISABLED BECAUSE RDF4J DON'T SUPPORT inversePath
-//                Seq pathSeq = model.createSeq();
-//                pathSeq.addProperty(SHACL.inversePath, property);
-//                seq.addProperty(SHACL.path, pathSeq);
+                Seq pathSeq = model.createSeq();
+                pathSeq.addProperty(SHACL.inversePath, property);
+                seq.addProperty(SHACL.path, pathSeq);
             } else {
                 seq.addProperty(SHACL.path, property);
             }
@@ -627,10 +625,9 @@ class SPARQLClassQueryBuilder {
             Seq seq = model.createSeq();
 
             if (analyzer.isReverseRelation(field)) {
-// /!\ DISABLED BECAUSE RDF4J DON'T SUPPORT inversePath                
-//                Seq pathSeq = model.createSeq();
-//                pathSeq.addProperty(SHACL.inversePath, property);
-//                seq.addProperty(SHACL.path, pathSeq);
+                Seq pathSeq = model.createSeq();
+                pathSeq.addProperty(SHACL.inversePath, property);
+                seq.addProperty(SHACL.path, pathSeq);
             } else {
                 seq.addProperty(SHACL.path, property);
             }
@@ -649,10 +646,9 @@ class SPARQLClassQueryBuilder {
             Seq seq = model.createSeq();
 
             if (analyzer.isReverseRelation(field)) {
-// /!\ DISABLED BECAUSE RDF4J DON'T SUPPORT inversePath                
-//                Seq pathSeq = model.createSeq();
-//                pathSeq.addProperty(SHACL.inversePath, property);
-//                seq.addProperty(SHACL.path, pathSeq);
+                Seq pathSeq = model.createSeq();
+                pathSeq.addProperty(SHACL.inversePath, property);
+                seq.addProperty(SHACL.path, pathSeq);
             } else {
                 seq.addProperty(SHACL.path, property);
             }
@@ -677,10 +673,9 @@ class SPARQLClassQueryBuilder {
             Seq seq = model.createSeq();
 
             if (analyzer.isReverseRelation(field)) {
-// /!\ DISABLED BECAUSE RDF4J DON'T SUPPORT inversePath                
-//                Seq pathSeq = model.createSeq();
-//                pathSeq.addProperty(SHACL.inversePath, property);
-//                seq.addProperty(SHACL.path, pathSeq);
+                Seq pathSeq = model.createSeq();
+                pathSeq.addProperty(SHACL.inversePath, property);
+                seq.addProperty(SHACL.path, pathSeq);
             } else {
                 seq.addProperty(SHACL.path, property);
             }

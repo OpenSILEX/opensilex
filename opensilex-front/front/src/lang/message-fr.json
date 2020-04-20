@@ -160,7 +160,7 @@
             "form-email-placeholder": "Saisir l'adresse email de l'utilisateur",
             "form-password-placeholder": "Saisir le mot de passe de l'utilisateur",
             "form-admin-option-label": "Activer cette option pour créer un super-administrateur",
-            "filter-placeholder": "Utiliser ce champ pour filtrer les utilisateurs",
+            "filter-placeholder": "Utiliser ce champ pour chercher des utilisateurs",
             "users": "utilisateurs",
             "label": "aucun utilisateur | 1 utilisateur | {count} utilisateurs",
             "add": "Créer un utilisateur",
@@ -184,7 +184,7 @@
             "label": "profil",
             "add": "Créer un profil",
             "update": "Modifier le profil",
-            "filter-placeholder": "Utiliser ce champ pour filtrer les profils",
+            "filter-placeholder": "Utiliser ce champ pour chercher des profils",
             "credentials": "Droits",
             "credential": "aucun droit | 1 droit | {count} droits",
             "errors": {
@@ -200,15 +200,16 @@
             "form-selected-users-title": "Liste des utilisateurs sélectionnés",
             "add": "Créer un groupe",
             "update": "Modifier le groupe",
-            "filter-placeholder": "Utiliser ce champ pour filtrer les groupes",
+            "filter-placeholder": "Utiliser ce champ pour chercher des groupes",
             "errors": {
                 "group-already-exists": "Un groupe existe déjà avec cette URI ou ce nom."
             }
         }, 
         "project":{
-            "search-description":"Manage and configure projects ",
-            "add":"Add",
-            "update":"update",
+            "uri": "URI du projet",
+            "search-description":"Gérer et configurer les projets",
+            "add":"Créer un projet",
+            "update":"Mettre à jour un project",
             "form-name-placeholder": "Saisir le nom du projet",
             "form-description-placeholder":"Saisir la description du projet",
             "form-objective-placeholder":"Saisir l'objectif du projet",
@@ -227,7 +228,7 @@
             "inProgress":"En cours .."
         },
         "experiment": {
-            "uri" : "uri",
+            "uri" : "URI de l'expérimentation",
             "uri-help" :"Identifiant unique de l'expérimentation",
             "label" : "Nom",
             "label-placeholder" : "ZA17",
@@ -327,7 +328,7 @@
             "form-name-placeholder": "Saisir le nom de l'infrastructure",
             "form-type-placeholder": "Saisir le type d'infrastructure",
             "form-parent-placeholder": "Saisir l'infrastructure parente",
-            "filter-placeholder": "Utiliser ce champ pour filtrer les infrastructures",
+            "filter-placeholder": "Utiliser ce champ pour chercher des infrastructures",
             "add": "Créer une infrastructure",
             "update": "Modifier l'infrastructure",
             "detail": "Détail de l'infrastructure",
@@ -404,7 +405,7 @@
             "uri": "URI du germplasm",
             "uri-help": "Identifiant unique du germplasm",
             "alias-placeholder": "Entrer le label du germplasm ",
-            "filter-placeholder": "Utiliser ce champ pour filtrer les germplasm",
+            "filter-placeholder": "Utiliser ce champ pour chercher des germplasm",
             "germplasm": "germplasm",
             "add": "Créer un germplasm",
             "update": "meettre à jour un germplasm",

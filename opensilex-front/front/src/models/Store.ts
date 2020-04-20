@@ -211,6 +211,9 @@ let store = new Vuex.Store({
       if (loaderCount == 0) {
         state.loaderVisible = false
       }
+      if (loaderCount < 0) {
+        loaderCount = 0;
+      }
     },
     toggleMenu(state) {
       state.menuVisible = !state.menuVisible;

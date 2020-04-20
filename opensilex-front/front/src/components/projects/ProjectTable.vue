@@ -81,7 +81,7 @@
       </template>
 
       <template v-slot:cell(actions)="data">
-        <b-button-group>
+        <b-button-group size="sm">
           <b-button size="sm" @click="data.toggleDetails" variant="outline-success">
             <font-awesome-icon v-if="!data.detailsShowing" icon="eye" size="sm" />
             <font-awesome-icon v-if="data.detailsShowing" icon="eye-slash" size="sm" />

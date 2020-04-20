@@ -7,6 +7,7 @@ import DefaultNotFoundComponent from './layout/DefaultNotFoundComponent.vue';
 import UserForm from './users/UserForm.vue';
 import UserList from './users/UserList.vue';
 import UserView from './users/UserView.vue';
+import UserSelector from './users/UserSelector.vue';
 
 import ProfileForm from './profiles/ProfileForm.vue';
 import ProfileView from './profiles/ProfileView.vue';
@@ -38,7 +39,6 @@ import FactorLevelList from './factors/FactorLevelList.vue';
 import FactorLevelForm from './factors/FactorLevelForm.vue';
 //common
 import FormInputLabelHelper from './common/FormInputLabelHelper.vue'
-import FormAutogenerateURI from './common/FormAutogenerateURI.vue'
 import ExternalReferencesForm from './common/ExternalReferencesForm.vue'
 import ExternalReferencesDetails from './common/ExternalReferencesDetails.vue'
 import PageHeader from './common/PageHeader.vue'
@@ -96,7 +96,6 @@ export default {
 
     // Common components
     'opensilex-FormInputLabelHelper': FormInputLabelHelper,
-    'opensilex-FormAutogenerateURI': FormAutogenerateURI,
     'opensilex-ExternalReferencesForm': ExternalReferencesForm,
     'opensilex-ExternalReferencesDetails': ExternalReferencesDetails,
     'opensilex-PageHeader': PageHeader,
@@ -106,6 +105,7 @@ export default {
     'opensilex-UserForm': UserForm,
     'opensilex-UserList': UserList,
     'opensilex-UserView': UserView,
+    'opensilex-UserSelector': UserSelector,
 
     'opensilex-ProfileForm': ProfileForm,
     'opensilex-ProfileView': ProfileView,

@@ -187,8 +187,6 @@ public class SPARQLQueryHelper {
             ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
 
             // get ressource with relation specified in the given list
-            ElementGroup rootFilteringElem = new ElementGroup();
-            ElementGroup elementGroup = new ElementGroup();
 
             Expr resourceInUrisExpr = exprFactory.in(makeVar(uriField), uris.stream()
                     .map(uri -> {
@@ -196,10 +194,7 @@ public class SPARQLQueryHelper {
                     })
                     .toArray());
 
-            rootFilteringElem.addElement(elementGroup);
-
-            rootFilteringElem.addElementFilter(new ElementFilter(resourceInUrisExpr));
-            select.getWhereHandler().getClause().addElement(rootFilteringElem);
+            select.getWhereHandler().addFilter(resourceInUrisExpr);
         }
     }
 

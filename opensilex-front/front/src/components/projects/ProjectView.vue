@@ -1,45 +1,39 @@
 <template>
-  <div>
-     <div class="page-header">
-        <div class="row align-items-end">
-            <div class="col-lg-8">
-                <div class="page-header-title">
-                    <i class="ik ik-layers bg-phis-green"></i>
-                    <div class="d-inline">
-                        <h5>{{ $t('component.menu.projects') }}</h5>
-                        <span>{{ $t('component.project.search-description') }}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <nav class="breadcrumb-container" aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a href="#" title="Revenir au tableau de bord"><i class="ik ik-grid mr-1"></i>{{ $t('component.menu.dashboard') }}</a>
-                        </li>
-                        <li class="breadcrumb-item active"><i class="ik ik-layers mr-1"></i>{{ $t('component.menu.projects') }}</li>
-                    </ol>
-                </nav>
-            </div>
+  <div class="container-fluid">
+    <opensilex-PageHeader
+      icon="ik-folder"
+      title="component.menu.projects"
+      description="component.project.search-description"
+    ></opensilex-PageHeader>
+    <div class="card">
+      <div class="card-header row clearfix">
+        <div class="col col-sm-3">
+          <div class="card-options d-inline-block">
+            <b-button @click="showCreateForm" variant="primary">
+              <i class="ik ik-plus"></i>
+              {{$t('component.project.add')}}
+            </b-button>
+          </div>
         </div>
-    </div>  
-
-    <b-button @click="showCreateForm" variant="phis">{{$t('component.project.add')}}</b-button>
-
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <opensilex-ProjectTable ref="projectTable" @onEdit="editProject" @onDelete="deleteProject"></opensilex-ProjectTable>
+      </div>
+    </div>
     <opensilex-ProjectForm
       ref="projectForm"
       @onCreate="callCreateProjectService"
       @onUpdate="callUpdateProjectService"
     ></opensilex-ProjectForm>
-<br><br>
-    <opensilex-ProjectTable ref="projectTable" @onEdit="editProject" @onDelete="deleteProject"></opensilex-ProjectTable>
   </div>
 </template>
 
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import {ProjectGetDTO,ProjectsService} from "opensilex-core/index";
+import { ProjectGetDTO, ProjectsService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
 
 @Component
@@ -69,7 +63,7 @@ export default class ProjectView extends Vue {
   callCreateProjectService(form: ProjectGetDTO, done) {
     done(
       this.service
-        .createProject( form)
+        .createProject(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Project created", uri);
@@ -93,8 +87,9 @@ export default class ProjectView extends Vue {
     );
   }
 
-   deleteProject(uri: string) {
-    this.service.deleteProject( uri)
+  deleteProject(uri: string) {
+    this.service
+      .deleteProject(uri)
       .then(() => {
         let projectTable: any = this.$refs.projectTable;
         projectTable.refresh();

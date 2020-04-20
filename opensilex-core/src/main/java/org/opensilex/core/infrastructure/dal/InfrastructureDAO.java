@@ -60,9 +60,9 @@ public class InfrastructureDAO {
         Set<URI> userInfras = new HashSet<>();
         List<URI> infras = sparql.searchURIs(InfrastructureModel.class, lang, (SelectBuilder select) -> {
             Var userProfileVar = makeVar("_userProfile");
+            select.addWhere(makeVar(InfrastructureModel.URI_FIELD), SecurityOntology.hasGroup, makeVar(InfrastructureModel.GROUP_FIELD));
             select.addWhere(makeVar(InfrastructureModel.GROUP_FIELD), SecurityOntology.hasUserProfile, userProfileVar);
             select.addWhere(userProfileVar, SecurityOntology.hasUser, SPARQLDeserializers.nodeURI(user.getUri()));
-            select.addFilter(SPARQLQueryHelper.eq(InfrastructureModel.GROUP_FIELD, user.getUri()));
         });
 
         userInfras.addAll(infras);

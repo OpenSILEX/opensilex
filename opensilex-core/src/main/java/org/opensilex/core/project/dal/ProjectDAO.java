@@ -55,7 +55,7 @@ public class ProjectDAO {
     public ProjectModel get(URI instanceURI, String lang) throws Exception {
         return sparql.getByURI(ProjectModel.class, instanceURI, lang);
     }
-
+    
     public ListWithPagination<ProjectModel> search(URI uri,
                                                    String name, String shortname, String description, String startDate, String endDate, URI homePage, String objective,
                                                    List<OrderBy> orderByList, Integer page, Integer pageSize, String lang) throws Exception {

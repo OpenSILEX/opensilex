@@ -78,8 +78,7 @@ public class ExperimentAPI {
      * Create an Experiment
      *
      * @param xpDto the Experiment to create
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing
-     * the created Experiment {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing the created Experiment {@link URI}
      */
     @POST
     @Path("create")
@@ -113,8 +112,7 @@ public class ExperimentAPI {
 
     /**
      * @param xpDto the Experiment to update
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing
-     * the updated Experiment {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing the updated Experiment {@link URI}
      */
     @PUT
     @Path("update")
@@ -150,8 +148,7 @@ public class ExperimentAPI {
 
     /**
      * @param xpUri the Experiment URI
-     * @return a {@link Response} with a {@link SingleObjectResponse} containing
-     * the {@link ExperimentGetDTO}
+     * @return a {@link Response} with a {@link SingleObjectResponse} containing the {@link ExperimentGetDTO}
      */
     @GET
     @Path("get/{uri}")
@@ -209,8 +206,8 @@ public class ExperimentAPI {
     })
     public Response searchExperiments(
             @ApiParam(value = "Search by uri", example = EXPERIMENT_EXAMPLE_URI) @QueryParam("uri") URI uri,
-            @ApiParam(value = "Search by start date", example = "2017-06-15") @QueryParam("startDate") @DateConstraint String startDate,
-            @ApiParam(value = "Search by end date", example = "2017-06-15") @QueryParam("endDate") @DateConstraint String endDate,
+            @ApiParam(value = "Search by start date", example = "2017-06-15") @QueryParam("startDate") String startDate,
+            @ApiParam(value = "Search by end date", example = "2017-06-15") @QueryParam("endDate") String endDate,
             @ApiParam(value = "Search by campaign", example = "2019") @QueryParam("campaign") Integer campaign,
             @ApiParam(value = "Regex pattern for filtering by label", example = "ZA17") @QueryParam("label") String label,
             @ApiParam(value = "Search by involved species", example = "http://www.phenome-fppn.fr/id/species/zeamays") @QueryParam("species") URI species,
@@ -263,8 +260,7 @@ public class ExperimentAPI {
      * Remove an experiment
      *
      * @param xpUri the experiment URI
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing
-     * the deleted Experiment {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing the deleted Experiment {@link URI}
      */
     @DELETE
     @Path("delete/{uri}")
@@ -303,10 +299,8 @@ public class ExperimentAPI {
      * @param factors
      * @return the query result
      * @example [ "http://www.phenome-fppn.fr/opensilex/2018/s18001" ]
-     * @example { "metadata": { "pagination": null, "status": [ { "message":
-     * "Resources updated", "exception": { "type": "Info", "href": null,
-     * "details": "The experiment http://www.opensilex.fr/platform/OSL2018-1 has
-     * now 1 linked sensors" } } ], "datafiles": [
+     * @example { "metadata": { "pagination": null, "status": [ { "message": "Resources updated", "exception": { "type": "Info", "href": null,
+     * "details": "The experiment http://www.opensilex.fr/platform/OSL2018-1 has now 1 linked sensors" } } ], "datafiles": [
      * "http://www.opensilex.fr/platform/OSL2015-1" ] } }
      */
     @PUT

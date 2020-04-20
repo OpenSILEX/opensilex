@@ -163,6 +163,7 @@
             "form-password-placeholder": "Enter user password",
             "form-admin-option-label": "Enable this option to create a super administrator",
             "filter-placeholder": "Use this field to search users",
+            "filter-search-no-result": "Sorry, no user is matching your research.",
             "users": "users",
             "add": "Create user",
             "update": "update user",
@@ -227,7 +228,10 @@
             "financialFunding":"Financial funding",
             "scientificContacts":"Scientific contacts",
             "administrativeContacts":"Administrative contacts",
-            "inProgress":"In progress .."
+            "inProgress":"In progress ..",
+            "form-wizard": {
+                "funding-contacts": "Financial funding and contacts"
+            }
 
         },
         "experiment": {
@@ -338,9 +342,10 @@
             "filter-placeholder": "Use this field to search infrastructures",
             "add": "Create infrastructure",
             "update": "update infrastructure",
-            "detail": "Infrastructure details",
+            "detail": "Details",
             "description": "Manage and configure infrastructures",
             "devices": "Devices",
+            "list": "List",
             "device": {
                 "device-uri": "Infrastructure device URI",
                 "add": "Create an infrastructure device",

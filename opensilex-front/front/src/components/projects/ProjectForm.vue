@@ -110,6 +110,12 @@ export default class ProjectForm extends Vue {
     this.uriGenerated = true;
     let modalRef: any = this.$refs.modalRef;
     modalRef.show();
+    this.administrativeContactsRef.selectUsers(
+      this.form.administrativeContacts
+    );
+    this.scientificContactsRef.selectUsers(this.form.scientificContacts);
+    this.coordinatorsRef.selectUsers(this.form.coordinators);
+    this.wizardRef.reset();
   }
 
   showEditForm(form: ProjectGetDTO) {
@@ -119,11 +125,31 @@ export default class ProjectForm extends Vue {
     this.uriGenerated = true;
     let modalRef: any = this.$refs.modalRef;
     modalRef.show();
+    this.administrativeContactsRef.selectUsers(
+      this.form.administrativeContacts
+    );
+    this.scientificContactsRef.selectUsers(this.form.scientificContacts);
+    this.coordinatorsRef.selectUsers(this.form.coordinators);
+
+    this.wizardRef.tabs.forEach(tab => {
+      tab.checked = true;
+    });
+    this.wizardRef.navigateToTab(0);
   }
 
   hideForm() {
     let modalRef: any = this.$refs.modalRef;
     modalRef.hide();
+  }
+
+  updateAdminContacts(contacts) {
+    this.form.administrativeContacts = contacts;
+  }
+  updateScientificContacts(contacts) {
+    this.form.scientificContacts = contacts;
+  }
+  updateCoordinators(contacts) {
+    this.form.coordinators = contacts;
   }
 
   onValidate() {
@@ -144,6 +170,14 @@ export default class ProjectForm extends Vue {
             resolve(result);
           }
         });
+      }
+    });
+  }
+
+  validateStep(props) {
+    this.validatorRef.validate().then(isValid => {
+      if (isValid) {
+        props.nextTab();
       }
     });
   }
@@ -178,7 +212,6 @@ export default class ProjectForm extends Vue {
     }
   }
 }
-</script>
 
 <style scoped lang="scss">
 </style>

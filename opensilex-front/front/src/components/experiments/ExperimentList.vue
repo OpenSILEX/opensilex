@@ -24,64 +24,221 @@
             >{{ $t('component.experiment.search.buttons.create-experiment-help') }}</b-tooltip>
           </div>
         </div>
+
+        <div class="card">
+            
+            <div class="card-header row clearfix">
+                <div class="col col-sm-3">
+                    <div class="card-options d-inline-block">
+                        <b-button id="create-experiment" @click="goToExperimentCreateComponent()" variant="primary"><i class="ik ik-plus"></i>{{ $t('component.experiment.search.buttons.create-experiment') }}</b-button>
+                        <!-- todo: add theming color -->
+                        <b-tooltip target="create-experiment" >{{ $t('component.experiment.search.buttons.create-experiment-help') }}</b-tooltip>
+                    </div>
+                </div>
+            </div>
+    
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th>Actions</th>
+                            <th>{{ $t('component.experiment.search.column.alias') }}</th>
+                            <th>{{ $t('component.experiment.search.column.projects') }}</th>
+                            <!-- <th>{{ $t('component.experiment.search.column.installations') }}</th> -->
+                            <!-- <th>{{ $t('component.experiment.search.column.campaign') }}</th> -->
+                            <!-- <th>{{ $t('component.experiment.search.column.places') }}</th> -->
+                            <th>{{ $t('component.experiment.search.column.species') }}</th>
+                            <th>{{ $t('component.experiment.search.column.startDate') }}</th>
+                            <th>{{ $t('component.experiment.search.column.endDate') }}</th>
+                            <th>{{ $t('component.experiment.search.column.uri') }}</th>
+                            <th>{{ $t('component.experiment.search.column.state') }}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr class="cell-filters"></tr>
+
+                        <tr class="cell-filters">
+                            <td>
+                                Edit
+                            </td>
+                            <td>
+                                <b-form-input v-model="filter.alias" debounce="300" class="form-control" 
+                                :placeholder="$t('component.experiment.search.filter.alias')"></b-form-input>
+                            </td>
+                            <td width="190">
+                                <multiselect
+                                        :limit="1"
+                                        :multiple="true"
+                                        track-by="uri"
+                                        :placeholder="$t('component.experiment.search.filter.projects')"
+                                        :closeOnSelect="false"
+                                        v-model="filter.projects"
+                                        :options="projectsList"
+                                        :custom-label="project => project.label"
+                                        selectLabel=""
+                                        selectedLabel="X"
+                                        deselectLabel="X"
+                                        :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"/>
+                            </td>
+                            <td width="200">
+                                <multiselect
+                                        :limit="1"
+                                        track-by="uri"
+                                        multiple="true"
+                                        :placeholder="$t('component.experiment.search.filter.species')"
+                                        :closeOnSelect="false"
+                                        v-model="filter.species"
+                                        :options="speciesList"
+                                        :custom-label="species => species.label"
+                                        selectLabel=""
+                                        selectedLabel="X"
+                                        deselectLabel="X"
+                                        :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"/>
+                            </td>
+                            <td>
+                                <div class="datepicker-trigger">
+                                    <input type="text" id="datepicker1" class="form-control" name="daterange" debounce="300" v-model="filter.beginDate" :placeholder="$t('component.experiment.search.filter.date')"  />
+                                    <AirbnbStyleDatepicker
+                                            :trigger-element-id="'datepicker1'"
+                                            :date-one="filter.startDate"
+                                            :date-two="filter.endDate"
+                                            v-on:date-one-selected="function(value) { filter.startDate = value }"
+                                            v-on:date-two-selected="function(value) { filter.endDate = value }"
+                                            @apply="filter.updateBeginDate()"
+                                    />
+                                </div>
+                            </td>
+                            <td></td>
+                            <td>
+                                <b-form-input v-model="filter.uri" debounce="300" class="form-control" :placeholder="$t('component.experiment.search.filter.uri')"></b-form-input>
+                            </td>
+                            <td width="170">
+                                <multiselect
+                                        track-by="code"
+                                        :custom-label="state => state.label"
+                                        :limit="1"
+                                        :placeholder="$t('component.experiment.search.filter.state')"
+                                        :closeOnSelect="false"
+                                        v-model="filter.state"
+                                        :options="experimentStates"
+                                        selectLabel=""
+                                        selectedLabel="X"
+                                        deselectLabel="X"
+                                        :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})" />
+                            </td>
+                        </tr>
+
+                        <tr v-for="experiment in experiments" v-bind:key="experiment.id">
+                            <td>
+                                    <b-button-group size="sm">
+                                        <b-button size="sm" @click="goToExperimentUpdateComponent(experiment)" variant="outline-primary">
+                                            <font-awesome-icon icon="edit" size="sm" />
+                                        </b-button>
+                                    </b-button-group>
+                            </td>
+                            <td>
+                                <router-link :to="{path: '/experiment/' + encodeURIComponent(experiment.uri)}">
+                                    {{ experiment.label }}
+                                </router-link>
+                            </td>
+                            <td>
+                                <span :key="index" v-for="(uri, index) in experiment.projects">
+                                    <span :title="uri">{{ getProjectName(uri) }}</span><span v-if="index + 1 < experiment.projects.length">, </span>
+                                </span>
+                            </td>
+                            <!-- <td></td> -->
+                            <!-- <td>{{ experiment.campaign }}</td>
+                            <td>
+                                <span :key="index" v-for="(uri, index) in experiment.infrastructures">
+                                    <span :title="uri">{{ getInfrastructureName(uri) }}</span><span v-if="index + 1 < experiment.infrastructures.length">, </span>
+                                </span>
+                            </td> -->
+                             <td>
+                                <span :key="index" v-for="(uri, index) in experiment.species">
+                                    <span :title="uri">{{ getSpeciesName(uri) }}</span><span v-if="index + 1 < experiment.species.length">, </span>
+                                </span>
+                            </td>
+
+                            <!-- <td><span :title="experiment.species">{{ getSpeciesName(experiment.species) }}</span></td> -->
+                            <td>{{ formatDate(experiment.startDate) }}</td>
+                            <td>{{ formatDate(experiment.endDate) }}</td>
+                            <td>
+                                <span class="uri">
+                                    {{ experiment.uri }}
+                                    <a href="#" v-on:click="copyUri(experiment.uri, $event)" class="uri-copy" :title="$t('component.copyToClipboard.copyUri')"><i class="ik ik-copy"></i></a>
+                                </span>
+                            </td>
+                            <td>
+                                <i v-if="!experiment.isEnded" class="ik ik-activity badge-icon badge-info-phis" :title="$t('component.experiment.common.status.in-progress')"></i>
+                                <i v-else class="ik ik-archive badge-icon badge-light" :title="$t('component.experiment.common.status.finished')"></i>
+                                <i v-if="experiment.isPublic" class="ik ik-users badge-icon badge-info" :title="$t('component.experiment.common.status.public')"></i>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div v-if="totalRow > pageSize" class="card-footer">
+                <nav class="float-right">
+                    <b-pagination
+                        v-model="currentPage"
+                        :total-rows="totalRow"
+                        :per-page="pageSize"
+                        @change="loadExperiments()"
+                        class="pagination mb-0"
+                    >
+                      <i class="ik ik-copy"></i>
+                    </a>
+                  </span>
+                </td>
+                <td>
+                  <i
+                    v-if="!experiment.isEnded"
+                    class="ik ik-activity badge-icon badge-info-phis"
+                    :title="$t('component.experiment.common.status.in-progress')"
+                  ></i>
+                  <i
+                    v-else
+                    class="ik ik-archive badge-icon badge-light"
+                    :title="$t('component.experiment.common.status.finished')"
+                  ></i>
+                  <i
+                    v-if="experiment.isPublic"
+                    class="ik ik-users badge-icon badge-info"
+                    :title="$t('component.experiment.common.status.public')"
+                  ></i>
+                </td>
+                 <td>
+                  <b-button-group size="sm">
+                    <b-button
+                      size="sm"
+                      @click="goToExperimentUpdateComponent(experiment)"
+                      variant="outline-primary"
+                    >
+                      <font-awesome-icon icon="edit" size="sm" />
+                    </b-button>
+                  </b-button-group>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <b-table
-        ref="tableRef"
-        striped
-        hover
-        small
-        :items="loadDatas"
-        :fields="fields"
-        :sort-by.sync="sortBy"
-        :sort-desc.sync="sortDesc"
-        no-provider-paging
-      >
-        <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
-        <template v-slot:head(label)="data">{{$t(data.label)}}</template>
-        <template v-slot:head(projects)="data">{{$t(data.label)}}</template>
-        <template v-slot:head(species)="data">{{$t(data.label)}}</template>
-        <template v-slot:head(startDate)="data">{{$t(data.label)}}</template>
-        <template v-slot:head(endDate)="data">{{$t(data.label)}}</template> 
-        <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
-
-        <template v-slot:cell(uri)="data">
-           <a class="uri-info">
-            <router-link
-            :to="{path: '/experiment/'+ encodeURIComponent(data.item.uri)}">{{ data.item.uri }}</router-link>
-           </a>
-        </template>
-
-        <template v-slot:cell(label)="data">{{data.item.label}}</template>
-
-        <template v-slot:cell(projects)="data">
-          <span :key="index" v-for="(uri, index) in data.item.projects">
-              <span :title="uri">{{ getProjectName(uri) }}</span><span v-if="index + 1 < data.item.projects.length">, </span>
-          </span>
-        </template>
-
-        <template v-slot:cell(species)="data">
-          <span :key="index" v-for="(uri, index) in data.item.species">
-              <span :title="uri">{{ getSpeciesName(uri) }}</span><span v-if="index + 1 < data.item.species.length">, </span>
-          </span>
-        </template>
-
-        <template v-slot:cell(startDate)="data">{{ formatDate(data.item.startDate)}}</template>
-        <template v-slot:cell(endDate)="data">{{ formatDate(data.item.endDate)}}</template>
-
-       <template v-slot:cell(actions)="data">
-        <b-button-group size="sm" >
-          <b-button size="sm" @click="data.toggleDetails" variant="outline-success">
-            <font-awesome-icon v-if="!data.detailsShowing" icon="eye" size="sm" />
-            <font-awesome-icon v-if="data.detailsShowing" icon="eye-slash" size="sm" />
-          </b-button>
-
-          <b-button @click="goToExperimentUpdateComponent(experiment)" size="sm" variant="outline-primary">
-            <font-awesome-icon icon="edit" size="sm" />
-          </b-button>    
-        </b-button-group>
-      </template>
-      </b-table>
+      <div v-if="totalRow > pageSize" class="card-footer">
+        <nav class="float-right">
+          <b-pagination
+            v-model="currentPage"
+            :total-rows="totalRow"
+            :per-page="pageSize"
+            @change="loadExperiments()"
+            class="pagination mb-0"
+          ></b-pagination>
+        </nav>
+      </div>
     </div>
      <b-pagination
       v-model="currentPage"
@@ -123,224 +280,210 @@ export class ExperimentState {
   }
 }
 
-// export class ExperimentFilter {
-//   private _experimentList: ExperimentList;
+export class ExperimentFilter {
+  private _experimentList: ExperimentList;
 
-//   private _alias: string;
-//   private _uri: string;
-//   private _beginDate: string;
-//   private _startDate: string;
-//   private _endDate: string;
-//   private _campaign: number;
-//   private _projects: Array<ProjectGetDTO>;
-//   private _installations: Array<any>;
-//   private _infrastructures: Array<ResourceTreeDTO>;
-//   private _species: SpeciesDTO;
-//   private _state: ExperimentState;
+  private _alias: string;
+  private _uri: string;
+  private _beginDate: string;
+  private _startDate: string;
+  private _endDate: string;
+  private _campaign: number;
+  private _projects: Array<ProjectGetDTO>;
+  private _installations: Array<any>;
+  private _infrastructures: Array<ResourceTreeDTO>;
+  private _species: SpeciesDTO;
+  private _state: ExperimentState;
 
-//   constructor(experimentList: ExperimentList) {
-//     this._experimentList = experimentList;
-//   }
-
-//   get alias() {
-//     return this._alias;
-//   }
-
-//   set alias(value: string) {
-//     this._alias = value;
-//     this._experimentList.loadExperiments();
-//   }
-
-//   set uri(value: string) {
-//     this._uri = value;
-//     this._experimentList.loadExperiments();
-//   }
-
-//   get uri() {
-//     return this._uri;
-//   }
-
-//   updateBeginDate() {
-//     let startDate = moment(this.startDate, "YYYY-MM-DD");
-//     let endDate = moment(this.endDate, "YYYY-MM-DD");
-//     this.beginDate =
-//       startDate.format("DD/MM/YYYY") + " - " + endDate.format("DD/MM/YYYY");
-//   }
-
-//   set beginDate(value: string) {
-//     this._beginDate = value;
-
-//     let dates = value.split(" - ");
-
-//     this._endDate = undefined;
-//     this._startDate = undefined;
-
-//     if (dates.length == 2 && dates[0].length == 10 && dates[1].length == 10) {
-//       let startDate = moment(dates[0], "DD/MM/YYYY");
-//       let endDate = moment(dates[1], "DD/MM/YYYY");
-
-//       if (startDate.isValid() && endDate.isValid()) {
-//         this._startDate = startDate.format("YYYY-MM-DD");
-//         this._endDate = endDate.format("YYYY-MM-DD");
-//       }
-//     }
-
-//     this._experimentList.loadExperiments();
-//   }
-
-//   get beginDate() {
-//     return this._beginDate;
-//   }
-//   set startDate(value) {
-//     this._startDate = value;
-//   }
-
-//   get startDate() {
-//     return this._startDate;
-//   }
-
-//   set endDate(value) {
-//     this._endDate = value;
-//   }
-
-//   get endDate() {
-//     return this._endDate;
-//   }
-
-//   set campaign(value: number) {
-//     this._campaign = value;
-//     this._experimentList.loadExperiments();
-//   }
-
-//   get campaign() {
-//     return this._campaign;
-//   }
-
-//   set projects(values: Array<ProjectGetDTO>) {
-//     this._projects = values;
-//     this._experimentList.loadExperiments();
-//   }
-
-//   get projects() {
-//     return this._projects;
-//   }
-
-//   set installations(values: Array<string>) {
-//     this._installations = values;
-//     this._experimentList.loadExperiments();
-//   }
-
-//   get installations() {
-//     return this._installations;
-//   }
-
-//   set infrastructures(values: Array<ResourceTreeDTO>) {
-//     this._infrastructures = values;
-//     this._experimentList.loadExperiments();
-//   }
-
-//   get infrastructures() {
-//     return this._infrastructures;
-//   }
-
-//   set species(value: SpeciesDTO) {
-//     this._species = value;
-//     this._experimentList.loadExperiments();
-//   }
-
-//   get species() {
-//     return this._species;
-//   }
-
-//   get state() {
-//     return this._state;
-//   }
-
-//   set state(value: ExperimentState) {
-//     this._state = value;
-//     this._experimentList.loadExperiments();
-//   }
-// }
-
-@Component
-export default class ExperimentList extends Vue {
-  $opensilex: any;
-  $store: any;
-  $router: VueRouter;
-
-  speciesList = [];
-  speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
-
-  projectsList = [];
-  projectsByUri: Map<String, ProjectGetDTO> = new Map<String, ProjectGetDTO>();
-
-  experimentStates: Array<ExperimentState> = new Array<ExperimentState>();
-  campaigns: Array<Number> = new Array<Number>();
-
-  // experiments: Array<ExperimentGetDTO> = new Array<ExperimentGetDTO>();
-
-  sortBy = "label";
-  sortDesc: boolean = false;
-
-  orderBy: Array<string> = [];
-  currentPage: number = 1;
-  pageSize = 10;
-  totalRow = 0;
-
-  // filter: ExperimentFilter;
-
-  private filterPatternValue: any = "";
-  set filterPattern(value: string) {
-    this.filterPatternValue = value;
-    this.refresh();
+  constructor(experimentList: ExperimentList) {
+    this._experimentList = experimentList;
   }
 
-  get filterPattern() {
-    return this.filterPatternValue;
+  get alias() {
+    return this._alias;
   }
 
-  created() {
-    let query: any = this.$route.query;
-    if (query.filterPattern) {
-      this.filterPatternValue = decodeURI(query.filterPattern);
-    }
-    if (query.pageSize) {
-      this.pageSize = parseInt(query.pageSize);
-    }
-    if (query.currentPage) {
-      this.currentPage = parseInt(query.currentPage);
-    }
-    if (query.sortBy) {
-      this.sortBy = decodeURI(query.sortBy);
-    }
-    if (query.sortDesc) {
-      this.sortDesc = query.sortDesc == "true";
-    }
-    // this.loadDatas();
+  set alias(value: string) {
+    this._alias = value;
+    this._experimentList.loadExperiments();
   }
 
-  get user() {
-    return this.$store.state.user;
+  set uri(value: string) {
+    this._uri = value;
+    this._experimentList.loadExperiments();
   }
 
-  refresh() {
-    let tableRef: any = this.$refs.tableRef;
-    tableRef.refresh();
+  get uri() {
+    return this._uri;
   }
 
-  loadDatas() {
+  updateBeginDate() {
+    let startDate = moment(this.startDate, "YYYY-MM-DD");
+    let endDate = moment(this.endDate, "YYYY-MM-DD");
+    this.beginDate =
+      startDate.format("DD/MM/YYYY") + " - " + endDate.format("DD/MM/YYYY");
+  }
 
-    this.loadProjects();
-    this.loadSpecies();
+  set beginDate(value: string) {
+    console.log(value);
+    this._beginDate = value;
 
-    let service: ExperimentsService = this.$opensilex.getService(
-      "opensilex.ExperimentsService"
-    );
+    let dates = value.split(" - ");
 
-    let projects = undefined;
-    // if (this.filter.projects && this.filter.projects.length > 0) {
-    //   projects = this.filter.projects.map(project => project.uri);
-    // }
+    this._endDate = undefined;
+    this._startDate = undefined;
+
+    if (dates.length == 2 && dates[0].length == 10 && dates[1].length == 10) {
+      let startDate = moment(dates[0], "DD/MM/YYYY");
+      let endDate = moment(dates[1], "DD/MM/YYYY");
+
+      if (startDate.isValid() && endDate.isValid()) {
+        this._startDate = startDate.format("YYYY-MM-DD");
+        this._endDate = endDate.format("YYYY-MM-DD");
+      }
+    }
+
+    export class ExperimentFilter {
+
+        private _experimentList: ExperimentList;
+
+        private _alias: string;
+        private _uri: string;
+        private _beginDate: string;
+        private _startDate: string;
+        private _endDate: string;
+        private _campaign: number;
+        private _projects: Array<ProjectCreationDTO>;
+        private _installations: Array<any>;
+        private _infrastructures: Array<ResourceTreeDTO>;
+        private _species: Array<SpeciesDTO>;
+        private _state: ExperimentState;
+
+        constructor(experimentList: ExperimentList) {
+            this._experimentList = experimentList;
+        }
+
+        get alias() {
+            return this._alias;
+        }
+
+        set alias(value: string) {
+            this._alias = value;
+            this._experimentList.loadExperiments();
+        }
+
+        set uri(value: string) {
+            this._uri = value;
+            this._experimentList.loadExperiments();
+        }
+
+        get uri() {
+            return this._uri;
+        }
+
+        updateBeginDate() {
+            let startDate = moment(this.startDate, 'YYYY-MM-DD');
+            let endDate = moment(this.endDate, 'YYYY-MM-DD');
+            this.beginDate = startDate.format("DD/MM/YYYY") + " - " + endDate.format("DD/MM/YYYY");
+        }
+
+        set beginDate(value: string) {
+            console.log(value);
+            this._beginDate = value;
+
+            let dates = value.split(" - ");
+
+            this._endDate = undefined;
+            this._startDate = undefined;
+            
+            if(dates.length == 2 && dates[0].length == 10 && dates[1].length == 10) {
+                let startDate = moment(dates[0], 'DD/MM/YYYY');
+                let endDate = moment(dates[1], 'DD/MM/YYYY');
+
+                if(startDate.isValid() && endDate.isValid()) {
+                    this._startDate = startDate.format('YYYY-MM-DD');
+                    this._endDate = endDate.format('YYYY-MM-DD');
+                }  
+            }
+
+            this._experimentList.loadExperiments();
+        }
+
+        get beginDate() {
+            return this._beginDate;
+        }
+        set startDate(value) {
+            this._startDate = value;
+        }
+
+        get startDate() {
+            return this._startDate;
+        }
+
+        set endDate(value) {
+            this._endDate = value;
+        }
+
+        get endDate() {
+            return this._endDate;
+        }
+
+        set campaign(value: number) {
+            console.log(value);
+            this._campaign = value;
+            this._experimentList.loadExperiments();
+        }
+
+        get campaign() {
+            return this._campaign;
+        }
+
+        set projects(values: Array<ProjectCreationDTO>) {
+            this._projects = values;
+            this._experimentList.loadExperiments();
+        }
+
+        get projects() {
+            return this._projects;
+        }
+
+        set installations(values: Array<string>) {
+            this._installations = values;
+            this._experimentList.loadExperiments();
+        }
+
+        get installations() {
+            return this._installations;
+        }
+
+        set infrastructures(values: Array<ResourceTreeDTO>) {
+            this._infrastructures = values;
+            this._experimentList.loadExperiments();
+        }
+
+        get infrastructures() {
+            return this._infrastructures;
+        }
+
+        set species(values: Array<SpeciesDTO>) {
+            this._species = values
+            this._experimentList.loadExperiments();
+        }
+
+        get species() {
+            return this._species;
+        }
+
+        get state() {
+            return this._state;
+        }
+
+        set state(value: ExperimentState) {
+            this._state = value;
+            this._experimentList.loadExperiments();
+        }
+
+    }
 
     let isEnded = undefined;
     let isPublic = undefined;
@@ -405,108 +548,194 @@ export default class ExperimentList extends Vue {
       )
       .then((http: HttpResponse<OpenSilexResponse<Array<ExperimentGetDTO>>>) => {
           this.totalRow = http.response.metadata.pagination.totalCount;
-          this.pageSize = http.response.metadata.pagination.pageSize;
-          setTimeout(() => {
-            this.currentPage = http.response.metadata.pagination.currentPage + 1;
-          }, 0);
+          this.experiments = http.response.result;
 
-          this.$router
-          .push({
-            path: this.$route.fullPath,
-            query: {
-              filterPattern: encodeURI(this.filterPattern),
-              sortBy: encodeURI(this.sortBy),
-              sortDesc: "" + this.sortDesc,
-              currentPage: "" + this.currentPage,
-              pageSize: "" + this.pageSize
+          if (this.campaigns.length == 0) {
+            let allCampaigns = this.experiments.map(
+              experiment => experiment.campaign
+            );
+
+            let projects = undefined;
+            if(this.filter.projects && this.filter.projects.length > 0) {
+                projects = this.filter.projects.map(project => project.uri);
             }
-          })
-          .catch(function() {});
 
-          return http.response.result;
-      }).catch(this.$opensilex.errorHandler);
+            let isEnded = undefined;
+            let isPublic = undefined;
+            if(this.filter.state) {
+                if(this.filter.state.code === "finished") {
+                    isEnded = true;
+                } else if(this.filter.state.code === "in-progress") {
+                    isEnded = false;
+                } else if(this.filter.state.code === "public") {
+                    isPublic = true;
+                }
+            }
 
-  }
+            let startDate = undefined;
+            let endDate = undefined;
+            if(this.filter.startDate && this.filter.startDate.length > 0) {
+                startDate = this.filter.startDate;
+            }
+            if(this.filter.endDate && this.filter.endDate.length > 0) {
+                endDate = this.filter.endDate;
+            }
 
-  loadExperimentStates() {
-    this.experimentStates = new Array<ExperimentState>();
-    this.experimentStates.push(
-      new ExperimentState(
-        "in-progress",
-        this.$i18n
-          .t("component.experiment.common.status.in-progress")
-          .toString()
-      )
-    );
-    this.experimentStates.push(
-      new ExperimentState(
-        "finished",
-        this.$i18n.t("component.experiment.common.status.finished").toString()
-      )
-    );
-    this.experimentStates.push(
-      new ExperimentState(
-        "public",
-        this.$i18n.t("component.experiment.common.status.public").toString()
-      )
-    );
-  }
+            let species = undefined;
+            if(this.filter.species && this.filter.species.length > 0 ) {
+                species = this.filter.species.map(_species => _species.uri);
+            }
 
-  loadProjects() {
-    let service: ProjectsService = this.$opensilex.getService(
-      "opensilex.ProjectsService"
-    );
+            let uri = undefined;
+            if(this.filter.uri && this.filter.uri.length > 0) {
+                uri = this.filter.uri;
+            }
 
-    service
-      .searchProjects(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        0,
-        1000
-      )
-      .then((http: HttpResponse<OpenSilexResponse<Array<ProjectGetDTO>>>) => {     
-        for (let i = 0; i < http.response.result.length; i++) {
-          this.projectsByUri.set(http.response.result[i].uri, http.response.result[i]);
-          this.projectsList.push(http.response.result[i]);
+            let alias = undefined;
+            if(this.filter.alias && this.filter.alias.length > 0) {
+                alias = this.filter.alias;
+            }
+
+            let campaign = undefined;
+            if(this.filter.campaign) {
+                campaign = this.filter.campaign;
+            }
+                
+            service.searchExperiments(
+                uri,
+                startDate,
+                endDate,
+                campaign,
+                alias,
+                species,
+                projects,
+                isPublic,
+                isEnded,
+                this.orderBy,
+                this.currentPage - 1,
+                this.pageSize
+            )
+            .then((http: HttpResponse<OpenSilexResponse<Array<ExperimentGetDTO>>>) => {
+                this.totalRow = http.response.metadata.pagination.totalCount;
+                this.experiments = http.response.result;
+
+                if(this.campaigns.length == 0) {
+                    let allCampaigns = this.experiments.map(experiment => experiment.campaign);
+                    this.campaigns = allCampaigns.filter((campaign, index) => {
+                        return allCampaigns.indexOf(campaign) === index;
+                    });
+                }
+
+                this.$store.state.search.results = this.experiments.map(experiment => experiment.uri);
+            }).catch(error => {
+                this.resetExperiments(error);
+            });
         }
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
 
-  loadSpecies() {
-    let service: SpeciesService = this.$opensilex.getService(
-      "opensilex.SpeciesService"
-    );
-
-    service
-      .getAllSpecies()
-      .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
-        for (let i = 0; i < http.response.result.length; i++) {
-          this.speciesByUri.set(http.response.result[i].uri,http.response.result[i]);
-          this.speciesList.push(http.response.result[i]);
+        resetExperiments(error) {
+            this.totalRow = 0;
+            this.experiments = new Array<ExperimentGetDTO>();
         }
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
 
-  formatDate(value: string): string {
-    if(value != undefined && value != null){
-        return moment(value, 'YYYY-MM-dd').format('DD/MM/YYYY');
-    }
-    return null;
-  }
+        loadExperimentStates() {
+            this.experimentStates = new Array<ExperimentState>();
+            this.experimentStates.push(new ExperimentState("in-progress", this.$i18n.t("component.experiment.common.status.in-progress").toString()));
+            this.experimentStates.push(new ExperimentState("finished", this.$i18n.t("component.experiment.common.status.finished").toString()));
+            this.experimentStates.push(new ExperimentState("public", this.$i18n.t("component.experiment.common.status.public").toString()));
+        }
 
-  getProjectName(uri: String): String {
-    if (this.projectsByUri.has(uri)) {
-      return this.projectsByUri.get(uri).label;
-    }
-    return null;
-  }
+        loadProjects() {
+            let service: ProjectsService = this.$opensilex.getService(
+                "opensilex.ProjectsService"
+            );
+
+            service.searchProjects(
+                null,
+                0,
+                1000
+            )
+            .then((http: HttpResponse<OpenSilexResponse<Array<ProjectCreationDTO>>>) => {
+                let results: Map<String, ProjectCreationDTO> = new Map<String, ProjectCreationDTO>();
+                let resultsList = [];
+                for(let i=0; i<http.response.result.length; i++) {
+                    results.set(http.response.result[i].uri, http.response.result[i]);
+                    resultsList.push(http.response.result[i]);
+                }
+                this.projectsList = resultsList;
+                this.projectsByUri = results;
+            }).catch(this.$opensilex.errorHandler);
+        }
+
+        loadInfrastructures() {
+            let service: InfrastructuresService = this.$opensilex.getService(
+                "opensilex.InfrastructuresService"
+            );
+
+            service.searchInfrastructuresTree(
+                this.user.getAuthorizationHeader(),
+                undefined
+            ).then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+                let results: Map<String, ResourceTreeDTO> = new Map<String, ResourceTreeDTO>();
+                let resultsList = [];
+                for(let i=0; i<http.response.result.length; i++) {
+                    results.set(http.response.result[i].uri, http.response.result[i]);
+                    resultsList.push(http.response.result[i]);
+                }
+                this.infrastructuresList = resultsList;
+                this.infrastructuresByUri = results;
+            }).catch(this.$opensilex.errorHandler);
+        }
+
+        loadSpecies() {
+            let service: SpeciesService = this.$opensilex.getService(
+                "opensilex.SpeciesService"
+            );
+
+            service.getAllSpecies().then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
+                for(let i=0; i<http.response.result.length; i++) {
+                    this.speciesByUri.set(http.response.result[i].uri, http.response.result[i]);
+                    this.speciesList.push(http.response.result[i]);
+                }
+            }).catch(this.$opensilex.errorHandler);
+        }
+
+        formatDate(value: string): string {
+            if(value != undefined && value != null){
+                return moment(value, 'YYYY-MM-dd').format('DD/MM/YYYY');
+            }
+            return null;
+        }
+
+        getProjectName(uri: String): String {
+            if(this.projectsByUri.has(uri)) {
+                return this.projectsByUri.get(uri).label;
+            }
+            return null;
+        }
+
+        getSpeciesName(uri: String): String {
+            if(this.speciesByUri.has(uri)){
+                return this.speciesByUri.get(uri).label;
+            }
+            return null
+        }
+
+        getInfrastructureName(uri: String): String {
+            if(this.infrastructuresByUri.has(uri)){
+                return this.infrastructuresByUri.get(uri).name;
+            }
+            return null
+        }
+
+        goToExperimentCreateComponent(){
+            this.$router.push({ path: '/experiments/create' });
+        }
+        
+        goToExperimentUpdateComponent(experimentDto: ExperimentGetDTO){
+            this.$store.xpToUpdate = experimentDto;
+            this.$store.editXp = true;
+            this.$router.push({  path: '/experiments/create' });
+        }
 
   getSpeciesName(uri: String): String {
     if (this.speciesByUri.has(uri)) {

@@ -281,6 +281,14 @@
             <artifactId>datanucleus-mongodb</artifactId>
             <version>${data.nucleus.mongodb.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.datanucleus/datanucleus-accessplatform-jdo-mongodb -->
+        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-accessplatform-jdo-mongodb</artifactId>
+            <version>${data.nucleus.mongodb.version}</version>
+            <type>pom</type>
+        </dependency>
+
         
         <!--DataNucleus - JTA Transaction--> 
         <dependency>
@@ -730,6 +738,23 @@
                                 <port>37017</port>
                                 <bindIp>127.0.0.1</bindIp>
                             </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.datanucleus</groupId>
+                    <artifactId>datanucleus-maven-plugin</artifactId>
+                    <version>5.2.1</version>
+                    <configuration>
+                        <!--<jdkLogConfiguration>${basedir}/log4j.properties</jdkLogConfiguration>-->
+                        <verbose>false</verbose>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <phase>process-classes</phase>
+                            <goals>
+                                <goal>enhance</goal>
+                            </goals>
                         </execution>
                     </executions>
                 </plugin>

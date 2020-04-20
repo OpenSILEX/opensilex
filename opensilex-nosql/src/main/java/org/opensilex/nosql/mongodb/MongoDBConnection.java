@@ -6,10 +6,17 @@
 //******************************************************************************
 package org.opensilex.nosql.mongodb;
 
+import org.opensilex.nosql.sample.FileModel;
 import java.util.HashMap;
+import java.util.Properties;
+import javax.jdo.PersistenceManager;
+import javax.naming.NamingException;
+import org.datanucleus.metadata.PersistenceUnitMetaData;
 import org.opensilex.OpenSilex;
+import org.opensilex.nosql.NoSQLConfig;
 import org.opensilex.nosql.datanucleus.AbstractDataNucleusConnection;
 import org.opensilex.service.Service;
+import org.opensilex.service.ServiceConfig;
 import org.opensilex.service.ServiceConstructorArguments;
 import org.opensilex.service.ServiceDefaultDefinition;
 
@@ -27,6 +34,8 @@ import org.opensilex.service.ServiceDefaultDefinition;
 )
 public class MongoDBConnection extends AbstractDataNucleusConnection implements Service {
 
+    private MongoDBConfig config;
+
     /**
      * Constructor for MongoDB connection
      * <pre>
@@ -36,17 +45,20 @@ public class MongoDBConnection extends AbstractDataNucleusConnection implements 
      * @param config MongoDB configuration
      */
     public MongoDBConnection(MongoDBConfig config) {
-        // TODO setup correct configuration
-        super(new HashMap<>());
+        super(config);
     }
 
     @Override
-    public void startup() {
-        // TODO implement mongodb startup mechanism
+    public void startup() throws NamingException {
+        try ( // TODO implement mongodb startup mechanism
+            PersistenceManager persistenceManager = this.getPersistenceManager()) {
+            persistenceManager.makePersistent(new FileModel("test"));
+        }
     }
 
     @Override
     public void shutdown() {
+        closePersistanteManagerFactory();
         // TODO implement mongodb shutdown mechanism
     }
 
@@ -72,5 +84,20 @@ public class MongoDBConnection extends AbstractDataNucleusConnection implements 
     @Override
     public OpenSilex getOpenSilex() {
         return this.opensilex;
+    }
+
+    @Override
+    protected PersistenceUnitMetaData getConfigProperties(ServiceConfig config) {
+        MongoDBConfig mongoConfig = (MongoDBConfig) config;
+        PersistenceUnitMetaData pumd = new PersistenceUnitMetaData("MyPersistenceUnit", "RESOURCE_LOCAL", null);
+
+        pumd.addProperty("javax.jdo.option.ConnectionURL", "org.datanucleus.api.jdo.JDOPersistenceManagerFactory");
+        pumd.addProperty("javax.jdo.option.ConnectionURL", "mongodb:" + mongoConfig.host() + ":" + mongoConfig.port() + "/" + mongoConfig.database());
+        LOGGER.debug("javax.jdo.option.ConnectionURL" + "mongodb:" + mongoConfig.host() + ":" + mongoConfig.port() + "/" + mongoConfig.database());
+
+        pumd.addProperty("javax.jdo.option.Mapping", "mongodb");
+        pumd.addProperty("datanucleus.schema.autoCreateAll", "true"); 
+
+        return pumd;
     }
 }

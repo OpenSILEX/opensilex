@@ -307,6 +307,7 @@
                     "species": "Filtrer par Espèce(s)",
                     "startDate": "Filtrer par Date de début",
                     "endDate": "Filtrer par Date de fin",
+                    "date": "Filtrer par date",
                     "uri": "Filtrer par URI",
                     "state": "Filtrer par état"
                 }

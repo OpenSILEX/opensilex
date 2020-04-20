@@ -346,9 +346,9 @@ export default class ExperimentView extends Vue {
     if(this.experiment.species) {
       service.getAllSpecies().then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
           for(let i=0; i<http.response.result.length; i++) {
-              if(this.experiment.species === http.response.result[i].uri) {
+            if(this.experiment.species.find( species => species == http.response.result[i].uri )){
                 this.speciesList.push(http.response.result[i]);
-              }
+            }
           }
       }).catch(this.$opensilex.errorHandler);
     }

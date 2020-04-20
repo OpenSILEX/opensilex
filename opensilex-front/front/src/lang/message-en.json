@@ -440,82 +440,22 @@
                 "germplasm-already-exists": "Germplasm already exists with this URI."
             }
         },
-        "variable": {
-            "uri": "Variable URI",
+        "variables": {
+            "uri": "uri",
             "uri-help": "Variable unique identifier",
+            "entity": "Variable entity",
+            "entity-help": "Entity Unique identifier",
+            "quality": "Variable quality",
+            "quality-help": "Quality unique identifier",
             "label": "name",
             "label-help": "Commonly used variable name",
             "label-placeholder": "",
-            "longname" : "long name",
-            "longname-help" : "Long variable name",
-            "description": "description",
-            "description-help": "Full description of your variable",
-
-            "entity": "entity",
-            "entity-help": "Variable entity",
-            "entity-uri" : "Entity uri",
-            "entity-uri-help" : "Entity unique identifier",
-            "entity-name" : "name",
-            "entity-name-help": "The entity measured by the variable",
-            "entity-name-placeholder": "Wind",
-
-            "quality": "quality",
-            "quality-help": "Variable quality",
-            "quality-uri" : "Quality uri",
-            "quality-uri-help" : "Quality unique identifier",
-            "quality-name" : "name",
-            "quality-name-help": "",
-            "quality-name-placeholder": "Speed",
-
-            "trait": "Variable trait",
-            "trait-help": "Variable trait",
+            "fullname" : "Full Variable name",
+            "fullname-help" : "",
             "trait-name" : "trait name",
             "trait-name-help":"Variable trait name",
             "trait-uri" : "trait uri",
-            "trait-uri-help":"Variable trait unique identifier",
-            "trait-uri-placeholder": "",
-
-            "method": "method",
-            "method-help": "Variable method",
-            "method-uri" : "method uri",
-            "method-uri-help":"Method unique identifier",
-            "method-name" : "method name",
-            "method-name-help":"method name",
-            "method-name-placeholder":"",
-            "method-description": "method description",
-            "method-description-help": "",
-            "method-description-placeholder": "",
-
-            "scale" : "Scale",
-            "scale-help": "Name of the scale associated with the variable",
-            "scale-uri" : "Scale URI",
-            "scale-uri-help":"Method unique identifier",
-            "scale-name" : "scale name",
-            "scale-name-help":"scale name",
-            "scale-name-placeholder":"Millimeter",
-            "scale-description": "Scale description",
-            "scale-description-help": "",
-            "scale-description-placeholder": "",
-            "scale-dimension" :"integration dimension",
-            "scale-dimension-help": "Integration dimension associated to the unit",
-            "scale-dimension-placeholder":  "Select a dimension",
-
-            "form" : {
-                "placeholder": {
-                    "quality": "Select quality",
-                    "entity": "Select entity",
-                    "method": "Select method",
-                    "trait": "Select trait",
-                    "scale": "Select scale"
-                },
-                "add": {
-                    "entity": "Add an entity",
-                    "quality": "Add a quality",
-                    "method":"Add a method",
-                    "scale": "Add a scale"
-                }
-            }
-
+            "trait-uri-help":"Variable trait unique identifier"
         }
     },
     "credential-groups": {

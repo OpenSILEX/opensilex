@@ -84,7 +84,19 @@
           <opensilex-FormInputLabelHelper label=component.experiment.species helpMessage="component.experiment.species-help" >
           </opensilex-FormInputLabelHelper>
           <ValidationProvider :name="$t('component.experiment.species')" v-slot="{ errors }">
-          <b-form-select id="speciesList" v-model="form.species" :options="speciesList" > </b-form-select>
+
+            <multiselect
+              track-by="uri"
+              multiple="true"
+              :closeOnSelect="false"
+              v-model="form.species"
+              :options="speciesList"
+              :custom-label="species => species.label"
+              selectLabel=""
+              selectedLabel="X"
+              deselectLabel="X"
+              :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})
+          "/>
           <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
@@ -182,7 +194,8 @@ export default class ExperimentForm extends Vue {
     infrastructures: [],
     installations: [],
     variables: [],
-    sensors: []
+    sensors: [],
+    species: []
     // lang: "en-US"
   };
 
@@ -201,7 +214,7 @@ export default class ExperimentForm extends Vue {
       groups: [],
       infrastructures: [],
       installations: [],
-      species: null,
+      species: [],
       isPublic: null,
       variables: [],
       sensors: []
@@ -230,19 +243,14 @@ export default class ExperimentForm extends Vue {
     }
   }
 
-  loadSpecies() {
-    let service: SpeciesService = this.$opensilex.getService(
-      "opensilex.SpeciesService"
-    );
-    service
-      .getAllSpecies()
-      .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
-        for (let i = 0; i < http.response.result.length; i++) {
-          let speciesDto = http.response.result[i];
-          this.speciesList.push({
-            value: speciesDto.uri,
-            text: speciesDto.label
-          });
+  loadSpecies(){
+
+    let service: SpeciesService = this.$opensilex.getService("opensilex.SpeciesService");
+    service.getAllSpecies()
+    .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
+
+        for(let i=0; i<http.response.result.length; i++) {
+          this.speciesList.push(http.response.result[i]);
         }
       })
       .catch(this.$opensilex.errorHandler);
@@ -308,6 +316,5 @@ export default class ExperimentForm extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 </style>

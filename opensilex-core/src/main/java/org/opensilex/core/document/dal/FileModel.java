@@ -1,10 +1,11 @@
-package org.opensilex.nosql.sample;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.opensilex.core.document.dal;
 
-
-import java.io.Serializable;
-import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 /**
@@ -12,15 +13,15 @@ import javax.jdo.annotations.PrimaryKey;
  * @author charlero
  */
 @PersistenceCapable()
-public class FileModel implements Serializable {
+public class FileModel{
 
-    @PrimaryKey  
+    @PrimaryKey 
     String name; 
 
     public FileModel( String name) {
         this.name = name;
-    }
- 
+    } 
+
     public String getName() {
         return name;
     }

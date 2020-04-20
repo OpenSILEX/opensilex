@@ -198,7 +198,7 @@ public class ExperimentDAO {
     }
 
     protected void appendSpeciesFilter(SelectBuilder select, List<URI> species) throws Exception {
-        if (species != null) {
+        if (species != null && ! species.isEmpty()) {
             addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasSpecies, ExperimentModel.SPECIES_SPARQL_VAR);
             SPARQLQueryHelper.addWhereValues(select, ExperimentModel.SPECIES_SPARQL_VAR, species);
         }

@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 /**
@@ -245,7 +246,7 @@ public class Experiment {
 
         if (!StringUtils.isEmpty(xp.getCropSpecies())) {
             try {
-                xpModel.setSpecies(new URI(xp.getCropSpecies()));
+                xpModel.setSpecies(Collections.singletonList(new URI(xp.getCropSpecies())));
             } catch (URISyntaxException e) {
                 Species searchSpecies = new Species();
                 searchSpecies.setLabel(xp.getCropSpecies());
@@ -254,7 +255,7 @@ public class Experiment {
                 if (daoSpecies.isEmpty()) {
                     throw new IllegalArgumentException("Unknown species label " + xp.getCropSpecies());
                 }
-                xpModel.setSpecies(new URI(daoSpecies.get(0).getUri()));
+                xpModel.setSpecies(Collections.singletonList(new URI(daoSpecies.get(0).getUri())));
             }
         }
 

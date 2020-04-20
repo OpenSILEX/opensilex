@@ -100,10 +100,6 @@ public class NoSQLService extends BaseService implements NoSQLConnection, Servic
     public Long count(JDOQLTypedQuery query) throws NamingException {
         return this.connection.count(query);
     }
-
-    @Override
-    public Object create(Object instance) throws NamingException {
-        return this.connection.create(instance);
-    }
-
+ 
+ 
 }

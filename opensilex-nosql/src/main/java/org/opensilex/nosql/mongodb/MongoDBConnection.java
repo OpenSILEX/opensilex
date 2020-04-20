@@ -6,14 +6,19 @@
 //******************************************************************************
 package org.opensilex.nosql.mongodb;
 
-import org.opensilex.nosql.sample.FileModel;
-import java.util.HashMap;
-import java.util.Properties;
-import javax.jdo.PersistenceManager;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.gridfs.GridFSBucket;
+import com.mongodb.client.gridfs.GridFSBuckets;
+import com.mongodb.client.gridfs.model.GridFSUploadOptions;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import javax.naming.NamingException;
+import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.datanucleus.metadata.PersistenceUnitMetaData;
 import org.opensilex.OpenSilex;
-import org.opensilex.nosql.NoSQLConfig;
 import org.opensilex.nosql.datanucleus.AbstractDataNucleusConnection;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceConfig;
@@ -37,7 +42,8 @@ import org.slf4j.LoggerFactory;
 )
 public class MongoDBConnection extends AbstractDataNucleusConnection implements NoSQLConnection {
 
-    private MongoDBConfig config;
+    
+    private final GridFSBucket gridFSBucket ;
 
     /**
      * Constructor for MongoDB connection
@@ -47,16 +53,21 @@ public class MongoDBConnection extends AbstractDataNucleusConnection implements 
      *
      * @param config MongoDB configuration
      */
-    public MongoDBConnection(MongoDBConfig config) {
+    public MongoDBConnection(MongoDBConfig config) throws NamingException {
         super(config);
+        
+        MongoDatabase myDatabase =  null;
+        try (MongoClient persistenceManager = (MongoClient) this.getPersistenceManager()) {
+            myDatabase = persistenceManager.getDatabase(config.database());
+            gridFSBucket = GridFSBuckets.create(myDatabase, "files");
+        }; 
     }
+    
+ 
 
     @Override
     public void startup() throws NamingException {
-        try ( // TODO implement mongodb startup mechanism
-            PersistenceManager persistenceManager = this.getPersistenceManager()) {
-            persistenceManager.makePersistent(new FileModel("test"));
-        }
+     
     }
 
     @Override
@@ -97,5 +108,13 @@ public class MongoDBConnection extends AbstractDataNucleusConnection implements 
         pumd.addProperty("datanucleus.schema.autoCreateAll", "true"); 
 
         return pumd;
+    }
+    
+    public ObjectId createFileFromStream(String name, InputStream streamToUploadFrom){
+        // Create some custom options
+        GridFSUploadOptions options = new GridFSUploadOptions()
+                .chunkSizeBytes(358400)
+                .metadata(new Document("uri", "presentation"));
+        return gridFSBucket.uploadFromStream("mongodb-tutorial", streamToUploadFrom, options); 
     }
 }

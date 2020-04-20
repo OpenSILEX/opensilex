@@ -121,7 +121,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             ontology = Oeso.class,
             property = "hasSpecies"
     )
-    URI species;
+    List<URI> species = new LinkedList<>();
     public static final String SPECIES_SPARQL_VAR = "species";
 
 
@@ -259,11 +259,11 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
         this.campaign = campaign;
     }
 
-    public URI getSpecies() {
+    public List<URI>  getSpecies() {
         return species;
     }
 
-    public void setSpecies(URI species) {
+    public void setSpecies(List<URI>  species) {
         this.species = species;
     }
 

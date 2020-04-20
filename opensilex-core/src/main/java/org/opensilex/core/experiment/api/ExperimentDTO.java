@@ -50,7 +50,7 @@ public abstract class ExperimentDTO {
 
     protected  List<URI> installations = new LinkedList<>();
 
-    protected URI species;
+    protected List<URI>  species;
 
     protected Boolean isPublic;
 
@@ -180,11 +180,11 @@ public abstract class ExperimentDTO {
         return this;
     }
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/id/species/zeamays")
-    public URI getSpecies() {
+    public List<URI>  getSpecies() {
         return species;
     }
 
-    public ExperimentDTO setSpecies(URI species) {
+    public ExperimentDTO setSpecies(List<URI>  species) {
         this.species = species;
         return this;
     }

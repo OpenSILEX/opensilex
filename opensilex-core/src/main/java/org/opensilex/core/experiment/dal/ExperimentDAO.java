@@ -160,7 +160,7 @@ public class ExperimentDAO {
     public ListWithPagination<ExperimentModel> search(URI uri,
             Integer campaign,
             String label,
-            URI species,
+            List<URI> species,
             String startDate, String endDate,
             Boolean isEnded,
             List<URI> projects,
@@ -197,9 +197,10 @@ public class ExperimentDAO {
         }
     }
 
-    protected void appendSpeciesFilter(SelectBuilder select, URI species) throws Exception {
+    protected void appendSpeciesFilter(SelectBuilder select, List<URI> species) throws Exception {
         if (species != null) {
-            select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.SPECIES_SPARQL_VAR, species));
+            addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasSpecies, ExperimentModel.SPECIES_SPARQL_VAR);
+            SPARQLQueryHelper.addWhereValues(select, ExperimentModel.SPECIES_SPARQL_VAR, species);
         }
     }
 

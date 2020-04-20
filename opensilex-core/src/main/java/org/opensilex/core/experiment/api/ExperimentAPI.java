@@ -210,7 +210,7 @@ public class ExperimentAPI {
             @ApiParam(value = "Search by end date", example = "2017-06-15") @QueryParam("endDate") String endDate,
             @ApiParam(value = "Search by campaign", example = "2019") @QueryParam("campaign") Integer campaign,
             @ApiParam(value = "Regex pattern for filtering by label", example = "ZA17") @QueryParam("label") String label,
-            @ApiParam(value = "Search by involved species", example = "http://www.phenome-fppn.fr/id/species/zeamays") @QueryParam("species") URI species,
+            @ApiParam(value = "Search by involved species", example = "http://www.phenome-fppn.fr/id/species/zeamays") @QueryParam("species") List<URI> species,
             @ApiParam(value = "Search by related project uri", example = "http://www.phenome-fppn.fr/projects/ZA17\nhttp://www.phenome-fppn.fr/id/projects/ZA18") @QueryParam("projects") List<URI> projects,
             //            @ApiParam(value = "Search by infrastructure(s)") @QueryParam("infrastructures") List<URI> infrastructures,
             //            @ApiParam(value = "Search by devices(s)") @QueryParam("devices") List<URI> installations,

@@ -341,6 +341,7 @@
             "detail": "Infrastructure details",
             "description": "Manage and configure infrastructures",
             "devices": "Devices",
+            "list": "List",
             "device": {
                 "device-uri": "Infrastructure device URI",
                 "add": "Create an infrastructure device",

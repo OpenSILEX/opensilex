@@ -22,7 +22,6 @@
             <span class="static-field-line">
               <font-awesome-icon :icon="$opensilex.getRDFIcon(selected.type)" size="sm" />&nbsp;
               <span class="capitalize-first-letter">{{selected.typeLabel}}</span>&nbsp;
-              <small>({{selected.type}})</small>
             </span>
           </div>
         </div>

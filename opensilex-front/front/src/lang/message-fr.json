@@ -334,6 +334,7 @@
             "detail": "Détail de l'infrastructure",
             "description": "Gérer et configurer les infrastructures",
             "devices": "Dispositifs",
+            "list": "Liste",
             "device": {
                 "device-uri": "URI du dispositif",
                 "add": "Créer un dispositif",

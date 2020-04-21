@@ -6,40 +6,40 @@
 //******************************************************************************
 package org.opensilex.nosql.service;
 
-import org.opensilex.nosql.exceptions.NoSQLTransactionException;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Properties;
+import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
+import javax.naming.NamingException;
+import org.opensilex.nosql.NoSQLConfig;
 import org.opensilex.service.Service;
 
 /**
  * Interface to describe big data connection required features.
  * <pre>
- * TODO: Only implement transaction for the moment, datanucleus integration
+ * ObjectODO: Only implement transaction for the moment, datanucleus integration
  * to achieve: http://www.datanucleus.org/
  * </pre>
  *
  * @see org.opensilex.nosql.service.NoSQLService
  * @author Vincent Migot
  */
-public interface NoSQLConnection extends Service {
+public interface NoSQLConnection<Object> extends Service {
 
-    /**
-     * Start a transaction
-     *
-     * @throws NoSQLTransactionException if transaction initialization failed
-     */
-    public void startTransaction() throws NoSQLTransactionException;
+    Properties getConfigProperties(NoSQLConfig config);
 
-    /**
-     * Commit a transaction
-     *
-     * @throws NoSQLTransactionException if transaction commit failed
-     */
-    public void commitTransaction() throws NoSQLTransactionException;
+    public Object create(Object instance) throws NamingException;
 
-    /**
-     * Rollback a transaction
-     *
-     * @throws NoSQLTransactionException if transaction rollback failed
-     */
-    public void rollbackTransaction(Exception ex) throws Exception;
+    public void remove(Object instance) throws NamingException;
 
+    public Object findById(Class cls, Object key) throws NamingException;
+
+    public Collection find(Query<Object> query, Map parameters) throws NamingException;
+
+    public Object update(Object instance) throws NamingException;
+
+    public void createAll(Collection<Object> instances) throws NamingException;
+
+    public PersistenceManager getPersistenceManager()throws NamingException;
 }

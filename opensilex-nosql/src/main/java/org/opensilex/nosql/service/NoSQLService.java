@@ -6,7 +6,13 @@
 //******************************************************************************
 package org.opensilex.nosql.service;
 
-import org.opensilex.nosql.exceptions.NoSQLTransactionException;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Properties;
+import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
+import javax.naming.NamingException;
+import org.opensilex.nosql.NoSQLConfig;
 import org.opensilex.nosql.mongodb.MongoDBConnection;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
@@ -40,21 +46,6 @@ public class NoSQLService extends BaseService implements NoSQLConnection, Servic
     private final NoSQLConnection connection;
 
     @Override
-    public void startTransaction() throws NoSQLTransactionException {
-        connection.startTransaction();
-    }
-
-    @Override
-    public void commitTransaction() throws NoSQLTransactionException {
-        connection.commitTransaction();
-    }
-
-    @Override
-    public void rollbackTransaction(Exception ex) throws Exception {
-        connection.rollbackTransaction(ex);
-    }
-
-    @Override
     public void setup() throws Exception {
         connection.setOpenSilex(getOpenSilex());
         connection.setup();
@@ -68,6 +59,46 @@ public class NoSQLService extends BaseService implements NoSQLConnection, Servic
     @Override
     public void shutdown() throws Exception {
         connection.shutdown();
+    }
+
+    @Override
+    public Properties getConfigProperties(NoSQLConfig config) {
+        return this.connection.getConfigProperties(config);
+    }
+
+    @Override
+    public Object create(Object instance) throws NamingException {
+       return this.connection.create(instance);
+    }
+
+    @Override
+    public void remove(Object instance) throws NamingException {
+        this.connection.remove(instance);
+    }
+
+    @Override
+    public Object findById(Class cls, Object key) throws NamingException {
+        return this.connection.findById(cls, key);
+    }
+
+    @Override
+    public Collection find(Query query, Map parameters) throws NamingException {
+       return this.connection.find(query, parameters);
+    }
+
+    @Override
+    public Object update(Object instance) throws NamingException {
+        return this.connection.update(instance);
+    }
+
+    @Override
+    public void createAll(Collection instances) throws NamingException {
+        this.connection.createAll(instances);
+    }
+
+    @Override
+    public PersistenceManager getPersistenceManager() throws NamingException {
+        return this.connection.getPersistenceManager();
     }
  
  

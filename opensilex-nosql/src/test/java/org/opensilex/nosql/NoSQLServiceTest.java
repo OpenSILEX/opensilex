@@ -8,7 +8,7 @@ package org.opensilex.nosql;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import org.opensilex.nosql.service.NoSQLService;
+import org.opensilex.nosql.service.NoSQLConnection;
 import org.opensilex.unit.test.AbstractUnitTest;
 
 /**
@@ -17,15 +17,21 @@ import org.opensilex.unit.test.AbstractUnitTest;
  */
 public abstract class NoSQLServiceTest extends AbstractUnitTest  {
 
-    protected static NoSQLService service;
+    protected static NoSQLModule module;
 
-    public static void initialize(NoSQLService service) throws Exception {
-        // TODO implement connecion init
+    protected static NoSQLConnection connection;
+
+    public static void initialize() throws Exception {
+        module = opensilex.getModuleByClass(NoSQLModule.class);
+        module.setup();
     }
 
+    
+    
+      
     @AfterClass
-    public static void destroy() {
-        // Implement connection destruction
+    public static void destroy() throws Exception {
+        module.shutdown(); 
     }
 
     @Test
@@ -34,4 +40,6 @@ public abstract class NoSQLServiceTest extends AbstractUnitTest  {
         assertTrue("Fake test", true);
     }
 
+    
+    
 }

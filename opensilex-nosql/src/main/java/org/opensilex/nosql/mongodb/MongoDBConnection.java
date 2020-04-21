@@ -6,24 +6,17 @@
 //******************************************************************************
 package org.opensilex.nosql.mongodb;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.gridfs.GridFSBucket;
-import com.mongodb.client.gridfs.GridFSBuckets;
-import com.mongodb.client.gridfs.model.GridFSUploadOptions;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.util.Properties;
 import javax.naming.NamingException;
-import org.bson.Document;
-import org.bson.types.ObjectId;
-import org.datanucleus.metadata.PersistenceUnitMetaData;
 import org.opensilex.OpenSilex;
+import org.opensilex.nosql.NoSQLConfig;
 import org.opensilex.nosql.datanucleus.AbstractDataNucleusConnection;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceConfig;
 import org.opensilex.service.ServiceConstructorArguments;
 import org.opensilex.service.ServiceDefaultDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MongoDB connection for DataNucleus.
@@ -39,8 +32,7 @@ import org.opensilex.service.ServiceDefaultDefinition;
 )
 public class MongoDBConnection extends AbstractDataNucleusConnection implements Service {
 
-    
-    private final GridFSBucket gridFSBucket ;
+    public final static Logger LOGGER = LoggerFactory.getLogger(MongoDBConnection.class);
 
     /**
      * Constructor for MongoDB connection
@@ -49,28 +41,10 @@ public class MongoDBConnection extends AbstractDataNucleusConnection implements 
      * </pre>
      *
      * @param config MongoDB configuration
+     * @throws javax.naming.NamingException
      */
-    public MongoDBConnection(MongoDBConfig config) throws NamingException {
+    public MongoDBConnection(NoSQLConfig config) throws NamingException {
         super(config);
-        
-        MongoDatabase myDatabase =  null;
-        try (MongoClient persistenceManager = (MongoClient) this.getPersistenceManager()) {
-            myDatabase = persistenceManager.getDatabase(config.database());
-            gridFSBucket = GridFSBuckets.create(myDatabase, "files");
-        }; 
-    }
-    
- 
-
-    @Override
-    public void startup() throws NamingException {
-     
-    }
-
-    @Override
-    public void shutdown() {
-        closePersistanteManagerFactory();
-        // TODO implement mongodb shutdown mechanism
     }
 
     private ServiceConstructorArguments constructorArgs;
@@ -98,25 +72,18 @@ public class MongoDBConnection extends AbstractDataNucleusConnection implements 
     }
 
     @Override
-    protected PersistenceUnitMetaData getConfigProperties(ServiceConfig config) {
+    public Properties getConfigProperties(NoSQLConfig config) {
         MongoDBConfig mongoConfig = (MongoDBConfig) config;
-        PersistenceUnitMetaData pumd = new PersistenceUnitMetaData("MyPersistenceUnit", "RESOURCE_LOCAL", null);
+        Properties props = new Properties();
+        props.setProperty("javax.jdo.option.ConnectionURL", "mongodb:" + mongoConfig.host() + ":" + mongoConfig.port() + "/" + mongoConfig.database());
+        props.setProperty("javax.jdo.option.Mapping", "mongodb");
+        props.setProperty("datanucleus.schema.autoCreateAll", "true");
 
-        pumd.addProperty("javax.jdo.option.ConnectionURL", "org.datanucleus.api.jdo.JDOPersistenceManagerFactory");
-        pumd.addProperty("javax.jdo.option.ConnectionURL", "mongodb:" + mongoConfig.host() + ":" + mongoConfig.port() + "/" + mongoConfig.database());
-        LOGGER.debug("javax.jdo.option.ConnectionURL" + "mongodb:" + mongoConfig.host() + ":" + mongoConfig.port() + "/" + mongoConfig.database());
-
-        pumd.addProperty("javax.jdo.option.Mapping", "mongodb");
-        pumd.addProperty("datanucleus.schema.autoCreateAll", "true"); 
-
-        return pumd;
+        return props;
     }
-    
-    public ObjectId createFileFromStream(String name, InputStream streamToUploadFrom){
-        // Create some custom options
-        GridFSUploadOptions options = new GridFSUploadOptions()
-                .chunkSizeBytes(358400)
-                .metadata(new Document("uri", "presentation"));
-        return gridFSBucket.uploadFromStream("mongodb-tutorial", streamToUploadFrom, options); 
+
+    @Override
+    public void startup() {
     }
+
 }

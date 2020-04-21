@@ -7,22 +7,16 @@
 package org.opensilex.nosql.datanucleus;
 
 import java.lang.invoke.MethodHandles;
-import java.rmi.RemoteException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
 import javax.jdo.JDOEnhancer;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
-import javax.naming.InitialContext;
+import javax.jdo.Query;
 import javax.naming.NamingException;
-import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
-import org.datanucleus.metadata.PersistenceUnitMetaData;
 import org.opensilex.nosql.NoSQLConfig;
-import org.opensilex.nosql.exceptions.NoSQLTransactionException;
 import org.opensilex.nosql.service.NoSQLConnection;
 import org.opensilex.service.ServiceConfig;
 import org.slf4j.Logger;
@@ -31,7 +25,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Datanucleus connection implementation.
  * <pre>
- * TODO: Implement it
+ * ObjectODO: Implement it
  * </pre>
  *
  * @see org.opensilex.nosql.service.NoSQLConnection
@@ -39,14 +33,17 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractDataNucleusConnection implements NoSQLConnection {
 
-    public final static Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    public final static Logger LOGGER = LoggerFactory.getLogger(AbstractDataNucleusConnection.class);
     /**
      * static final for the JNDI name of the PersistenceManagerFactory
      */
-    public static final String persistenceManagerFactoryName = "java:/datanucleus1";
+    protected static final String PMF_PERSISANT_UNIT_NAME = "myPersistenceUnit";
+    protected static final String PMF_NAME = "MongoStore";
 
-    protected static PersistenceManagerFactory persistenceManagerFactory;
-    protected final PersistenceUnitMetaData PMF_PROPERTIES;
+    protected PersistenceManagerFactory PMF;
+    public Properties PMF_PROPERTIES;
+
+    NoSQLConfig config;
 
     /**
      * Constructor for datanucleus allowing any Map of properties for
@@ -54,60 +51,82 @@ public abstract class AbstractDataNucleusConnection implements NoSQLConnection {
      *
      * @param config
      */
-    public AbstractDataNucleusConnection(ServiceConfig config) {
+    public AbstractDataNucleusConnection(NoSQLConfig config) {
+        this.config = config;
+    }
+
+    @Override
+    public void setup() throws Exception {
         PMF_PROPERTIES = this.getConfigProperties(config);
-        PMF_PROPERTIES.addProperty("javax.jdo.option.ConnectionFactoryName", persistenceManagerFactoryName); 
-        PMF_PROPERTIES.addProperty("datanucleus.PersistenceUnitName", "MyPersistenceUnit");
-
-        LOGGER.debug(PMF_PROPERTIES.toString());
-        persistenceManagerFactory = new JDOPersistenceManagerFactory(PMF_PROPERTIES, null);  
+        PMF_PROPERTIES.setProperty("javax.jdo.PersistenceManagerFactoryClass", "org.datanucleus.api.jdo.JDOPersistenceManagerFactory"); 
+        LOGGER.debug(PMF_PROPERTIES.get("javax.jdo.option.ConnectionURL").toString());
+        PMF = JDOHelper.getPersistenceManagerFactory(PMF_PROPERTIES);
+        // NOT WORKING
+//        JDOEnhancer enhancer = JDOHelper.getEnhancer();
+//        enhancer.setVerbose(true);
+//        enhancer.addPersistenceUnit(PMF.getPersistenceUnitName());
+//        enhancer.enhance();
     }
 
     @Override
-    public void startTransaction() throws NoSQLTransactionException {
-
+    public void startup() throws Exception {
     }
 
+    /**
+     *
+     * @param config
+     * @return
+     */
     @Override
-    public void commitTransaction() throws NoSQLTransactionException {
-
-    }
-
-    @Override
-    public void rollbackTransaction(Exception ex) throws Exception {
-        if (ex != null) {
-            throw ex;
-        }
-    }
-
-    abstract protected PersistenceUnitMetaData getConfigProperties(ServiceConfig config);
+    abstract public Properties getConfigProperties(NoSQLConfig config);
 
     // convenience methods to get a PersistenceManager 
-
     /**
      * Method to get a PersistenceManager
      *
      * @return
      * @throws javax.naming.NamingException
      */
-    public PersistenceManager getPersistenceManager()
-            throws NamingException {
-        return persistenceManagerFactory.getPersistenceManager();
+    @Override
+    public PersistenceManager getPersistenceManager() throws NamingException {
+        return PMF.getPersistenceManager();
     }
 
-    public void closePersistanteManagerFactory() {
-        persistenceManagerFactory.close();
+    @Override
+    public Object create(Object instance) throws NamingException {
+        return getPersistenceManager().makePersistent(instance);
     }
-    // Now finally the bean method within a transaction
-    public void testDataNucleusTrans()
-            throws Exception {
-        PersistenceManager pm = getPersistenceManager();
-        try {
-            // Do something with your PersistenceManager
-        } finally {
-            // close the PersistenceManager
-            pm.close();
+
+    @Override
+    public void remove(Object instance) throws NamingException {
+        getPersistenceManager().deletePersistent(instance);
+    }
+
+    @Override
+    public Object findById(Class cls, Object key) throws NamingException {
+        return getPersistenceManager().getObjectById(cls, key);
+    }
+
+    @Override
+    public Collection find(Query query, Map parameters) throws NamingException {
+        return (Collection) query.executeWithMap(parameters);
+    }
+
+    @Override
+    public Object update(Object instance) throws NamingException {
+        return getPersistenceManager().makePersistent(instance);
+    }
+
+    @Override
+    public void createAll(Collection instances) throws NamingException {
+        getPersistenceManager().makeTransactionalAll(instances);
+    }
+
+    @Override
+    public void shutdown() {
+        if (PMF == null) {
+            PMF.close();
         }
-    } 
-    
+    }
+
 }

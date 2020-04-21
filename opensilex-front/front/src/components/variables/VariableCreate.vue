@@ -19,70 +19,135 @@
         </b-form-group>
 
 
-        <div >
-          <!-- Entity -->
+    <div class="row">
+            <div class="col-lg-3">
+
+          <!-- label -->
+          <b-form-group  required  >
+              <opensilex-FormInputLabelHelper label=component.variable.label helpMessage="component.variable.label-help" >
+              </opensilex-FormInputLabelHelper>
+              <ValidationProvider :name="$t('component.variable.label')" v-slot="{ errors }">                
+              <b-form-input  id="label"  v-model="form.label"  type="textinput"
+                  :placeholder="$t('component.variable.label-placeholder')" >
+              </b-form-input>
+              <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+              </ValidationProvider>
+          </b-form-group>
+
+          </div>
+
+          <div class="col-lg-3">
+             <!-- fullname -->
+              <b-form-group >
+                  <opensilex-FormInputLabelHelper label=component.variable.fullname helpMessage="component.variable.fullname-help" >
+                  </opensilex-FormInputLabelHelper>
+                  <ValidationProvider :name="$t('component.variable.fullname')" v-slot="{ errors }">
+                    <b-form-input  id="fullname"  v-model="form.fullname"  type="textinput">
+                    </b-form-input>
+                    <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+                  </ValidationProvider>
+            </b-form-group>
+          </div>
+      </div>
+
+        <div class="row">
+            <div class="col-lg-3">
+            <!-- Entity -->
             <b-form-group  required  >
                 <opensilex-FormInputLabelHelper label=component.variable.entity helpMessage="component.variable.entity-help" >
                 </opensilex-FormInputLabelHelper>
                 <ValidationProvider :name="$t('component.variable.entity')" v-slot="{ errors }">
-                <b-form-select id="entityList" v-model="form.entity" :options="entityList" > </b-form-select>
+                <multiselect
+                        :limit="1"
+                        :closeOnSelect="false"
+                        :placeholder="$t('component.variable.form.placeholder.entity')"
+                        v-model="form.entity"
+                        :options="entityList"
+                        selectLabel=""
+                        selectedLabel="X"
+                        deselectLabel="X"
+                        :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"
+                />
                 <div class="error-message alert alert-danger">{{ errors[0] }}</div>
                 </ValidationProvider>   
-                
-                  <b-button-group class="entity-button-add" size="sm">
-                    <b-button size="sm">
-                      <font-awesome-icon icon="plus" size="sm" />
-                  </b-button>
-                </b-button-group>        
-              </b-form-group>             
-          </div>
-      
-           <div > 
-                <!-- Quality -->
-               <b-form-group  required  >
-                    <opensilex-FormInputLabelHelper label=component.variable.quality helpMessage="component.variable.quality-help" >
-                    </opensilex-FormInputLabelHelper>
-                    <ValidationProvider :name="$t('component.variable.quality')" v-slot="{ errors }">
-                    <b-form-select id="qualityList" v-model="form.quality" :options="qualityList" > </b-form-select>
-                    <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-                    </ValidationProvider>
-              </b-form-group>
-            </div>  
+              <b-button variant="primary">{{$t('component.variable.form.add.entity')}}</b-button>        
+              </b-form-group>   
+              </div>
 
+               <div class="col-lg-3">  
+                  <!-- Quality -->
+              <b-form-group  required  >
+                  <opensilex-FormInputLabelHelper label=component.variable.quality helpMessage="component.variable.quality-help" >
+                  </opensilex-FormInputLabelHelper>
+                  <ValidationProvider :name="$t('component.variable.quality')" v-slot="{ errors }">
+                  <multiselect
+                          :placeholder="$t('component.variable.form.placeholder.quality')"
+                          :limit="1"
+                          :closeOnSelect="false"
+                          v-model="form.quality"
+                          :options="qualityList"
+                          selectLabel=""
+                          selectedLabel="X"
+                          deselectLabel="X"
+                          :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"
+                  />
+              <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+              </ValidationProvider>
+              <b-button variant="primary">{{$t('component.variable.form.add.quality')}}</b-button>        
+            </b-form-group>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-3">
+              <!-- Method uri -->
+         <b-form-group  required  >
+          <opensilex-FormInputLabelHelper label=component.variable.method helpMessage="component.variable.method-uri-help" >
+          </opensilex-FormInputLabelHelper>
+          <ValidationProvider :name="$t('component.variable.method-uri')" v-slot="{ errors }">
+          <multiselect
+                  :placeholder="$t('component.variable.form.placeholder.method')"
+                  :limit="1"
+                  :closeOnSelect="false"
+                  v-model="form.method"
+                  :options="methodList"
+                  selectLabel=""
+                  selectedLabel="X"
+                  deselectLabel="X"
+                  :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"
+          />
+          <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+          </ValidationProvider>
+          <b-button variant="primary">{{$t('component.variable.form.add.method')}}</b-button>        
+        </b-form-group>
+
+         </div>
+            <div class="col-lg-3">
               <!-- Scale -->
               <b-form-group  required  >
                 <opensilex-FormInputLabelHelper label=component.variable.scale helpMessage="component.variable.scale-help" >
                 </opensilex-FormInputLabelHelper>
                 <ValidationProvider :name="$t('component.variable.scale')" v-slot="{ errors }">
-
-                  <b-form-select id="scaleList" v-model="form.scale" :options="scaleList" > </b-form-select>
-
+                <multiselect
+                        :placeholder="$t('component.variable.form.placeholder.scale')"
+                        :limit="1"
+                        :closeOnSelect="false"
+                        v-model="form.scale"
+                        :options="scaleList"
+                        selectLabel=""
+                        selectedLabel="X"
+                        deselectLabel="X"
+                        :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"
+                />
                   <div class="error-message alert alert-danger">{{ errors[0] }}</div>
                 </ValidationProvider>
-              </b-form-group>
+                <b-button variant="primary">{{$t('component.variable.form.add.scale')}}</b-button>        
+              </b-form-group>   
+          </div>
+        </div>         
 
-             <!-- label -->
-            <b-form-group  required  >
-                <opensilex-FormInputLabelHelper label=component.variable.label helpMessage="component.variable.label-help" >
-                </opensilex-FormInputLabelHelper>
-                <ValidationProvider :name="$t('component.variable.label')" v-slot="{ errors }">
-                <b-form-input  id="label"  v-model="form.label"  type="textinput"
-                    :placeholder="$t('component.variable.label-placeholder')" >
-                </b-form-input>
-                <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-                </ValidationProvider>
-            </b-form-group>
-
-            <!-- fullname -->
-            <b-form-group >
-                <opensilex-FormInputLabelHelper label=component.variable.fullname helpMessage="component.variable.fullname-help" >
-                </opensilex-FormInputLabelHelper>
-                <ValidationProvider :name="$t('component.variable.fullname')" v-slot="{ errors }">
-                  <b-form-input  id="fullname"  v-model="form.fullname"  type="textinput">
-                  </b-form-input>
-                  <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-                </ValidationProvider>
-            </b-form-group>
+        <div>
+          <div class="col-lg-3">
 
              <!-- description -->
           <b-form-group >
@@ -95,33 +160,38 @@
               </ValidationProvider>
           </b-form-group>
 
+          </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-3">
+
         <!-- Trait uri -->
          <b-form-group  >
           <opensilex-FormInputLabelHelper label=component.variable.trait-uri helpMessage="component.variable.trait-uri-help" >
           </opensilex-FormInputLabelHelper>
           <ValidationProvider :name="$t('component.variable.trait-uri')" v-slot="{ errors }">
 
-            <b-form-input  id="traitUri"  v-model="form.trait"  type="textinput"
-              :placeholder="$t('component.variable.trait-uri-placeholder')" >
-            </b-form-input>
+          <multiselect
+                        :placeholder="$t('component.variable.form.placeholder.trait')"
+                        :limit="1"
+                        :closeOnSelect="false"
+                        v-model="form.trait"
+                        :options="traitList"
+                        selectLabel=""
+                        selectedLabel="X"
+                        deselectLabel="X"
+                        :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"
+            />
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
 
+        </div>
+        </div>
 
-        <!-- Method uri -->
-         <b-form-group  required  >
-          <opensilex-FormInputLabelHelper label=component.variable.method-uri helpMessage="component.variable.method-uri-help" >
-          </opensilex-FormInputLabelHelper>
-          <ValidationProvider :name="$t('component.variable.method-uri')" v-slot="{ errors }">
 
-            <b-form-select id="methodList" v-model="form.method" :options="methodList" > </b-form-select>
-
-            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-          </ValidationProvider>
-        </b-form-group>
-
-      
+        
 
     </b-form>
     </ValidationObserver>
@@ -148,11 +218,11 @@ scaleList : any;
 
 created(){
 
-    this.entityList = ["entityA","entityB","entityC"];
-    this.qualityList = ["qualityA","qualityB"];
-    this.methodList = ["methodA","methodB"];
-    this.traitList = ["traitA","traitB"];
-    this.scaleList = ["cm","nm","m³"]
+    this.entityList = ["Air","Leaf","Precipitation","Wind"];
+    this.qualityList = ["Temperature","Diameter","Speed","Area"];
+    this.methodList = ["Sensor","Pressure chamber","Rainfall 10 minutes","Area per dry mass unit"];
+    this.traitList = ["Air relative humidity","Leaf Area","Wind speed"];
+    this.scaleList = ["Celcius degree","cm","m","km","Bar","Gram per liter","Percentage"];
 
     this.form = {
         uri: null,
@@ -164,9 +234,6 @@ created(){
         trait: null,
         method : null,
         scale : null
-        // methodName: null,
-        // methodUri: null,
-        // methodDescription: null
     }
 }
 

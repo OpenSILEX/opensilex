@@ -438,12 +438,8 @@
             }
         },
         "variable": {
-            "uri": "uri",
+            "uri": "Variable uri",
             "uri-help": "Variable unique identifier",
-            "entity": "entity",
-            "entity-help": "Entity Unique identifier",
-            "quality": "quality",
-            "quality-help": "Quality unique identifier",
             "label": "name",
             "label-help": "Commonly used variable name",
             "label-placeholder": "",
@@ -451,18 +447,50 @@
             "fullname-help" : "Full Variable name",
             "description": "description",
             "description-help": "Full description of your variable",
+
+            "entity": "entity",
+            "entity-help": "Variable entity",
+
+            "quality": "quality",
+            "quality-help": "Variable quality",
+
+            "trait": "Variable trait",
+            "trait-help": "Variable trait",
+
             "trait-name" : "trait name",
             "trait-name-help":"Variable trait name",
             "trait-uri" : "trait uri",
             "trait-uri-help":"Variable trait unique identifier",
-            "method-name" : "method name",
-            "method-name-help":"Variable method name",
+
+            "method": "method",
+            "method-help": "Variable method",
+            
             "method-uri" : "method uri",
-            "method-uri-help":"Variable method unique identifier",
+            "method-uri-help":"Method unique identifier",
+            "method-name" : "method name",
+            "method-name-help":"method name",
             "method-description": "method description",
             "method-description-help": "",
+
             "scale" : "scale",
-            "scale-help": "Name of the scale associated with the variable"
+            "scale-help": "Name of the scale associated with the variable",
+
+            "form" : {
+                "placeholder": {
+                    "quality": "Select quality",
+                    "entity": "Select entity",
+                    "method": "Select method",
+                    "trait": "Select trait",
+                    "scale": "Select scale"
+                },
+                "add": {
+                    "entity": "Add an entity",
+                    "quality": "Add a quality",
+                    "method":"Add a method",
+                    "scale": "Add a scale"
+                }
+            }
+
         }
     },
     "credential-groups": {

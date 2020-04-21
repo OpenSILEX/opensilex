@@ -51,6 +51,10 @@ import ProjectsListSelector from './experiments/form/ProjectsListSelector.vue';
 import GroupsListSelector from './experiments/form/GroupsListSelector.vue';
 import InfrastructuresListSelector from './experiments/form/InfrastructuresListSelector.vue';
 
+// species
+import SepeciesView from './species/SpeciesView.vue';
+import SepeciesEdit from './species/SpeciesEdit.vue';
+
 import ExperimentList from './experiments/ExperimentList.vue';
 import ExperimentCreate from './experiments/ExperimentCreate.vue';
 import ExperimentView from './experiments/ExperimentView.vue';
@@ -125,6 +129,22 @@ export default {
     'opensilex-GroupsListSelector': GroupsListSelector,
     'opensilex-InfrastructuresListSelector': InfrastructuresListSelector,
 
+    // species
+    'opensilex-SepeciesView': SepeciesView,
+    'opensilex-SepeciesEdit': SepeciesEdit,
+
+    // Germplasm
+    "opensilex-CoordinatorsProjectForm":CoordinatorsProjectForm,
+    "opensilex-core-ProjectView":ProjectView,
+    "opensilex-core-ProjectTable": ProjectTable,
+    "opensilex-core-ProjectForm": ProjectForm,
+    "opensilex-ContactsProjectForm":ContactsProjectForm,
+    "opensilex-ScientificContactsProjectForm":ScientificContactsProjectForm,
+    "opensilex-AdminContactsProjectForm":AdminContactsProjectForm,
+    "opensilex-ProjectView":ProjectView,
+    "opensilex-ProjectTable": ProjectTable,
+    "opensilex-ProjectForm": ProjectForm,
+
     'opensilex-GermplasmView': GermplasmView,
     'opensilex-GermplasmForm': GermplasmForm,
     'opensilex-GermplasmList': GermplasmList,
@@ -161,12 +181,6 @@ export default {
     // Factors levels
     "opensilex-FactorLevelView": FactorLevelView,
     "opensilex-FactorLevelList": FactorLevelList,
-    "opensilex-FactorLevelForm": FactorLevelForm,
-    //common
-    'opensilex-FormInputLabelHelper': FormInputLabelHelper,
-    'opensilex-ExternalReferencesForm': ExternalReferencesForm,
-    'opensilex-ExternalReferencesDetails': ExternalReferencesDetails,
-    'opensilex-ToDoComponent': ToDoComponent,
 
     //variables
     'opensilex-VariableCreate': VariableCreate

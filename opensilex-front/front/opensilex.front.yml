@@ -134,6 +134,10 @@ routes:
   - path: /experiment/:uri
     component: opensilex-ExperimentView
     credentials: []
+  - path: /VariableCreate
+    component: opensilex-VariableCreate
+    credentials: []
+
 # Route item example:
 #  - path: /users/create
 #    component: opensilex-UserCreate

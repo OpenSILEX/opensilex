@@ -35,6 +35,7 @@
                 <th>{{ $t('component.experiment.search.column.campaign') }}</th>
                 <th>{{ $t('component.experiment.search.column.species') }}</th>
                 <th>{{ $t('component.experiment.search.column.startDate') }}</th>
+                <th>{{ $t('component.experiment.search.column.endDate') }}</th>
                 <th>{{ $t('component.experiment.search.column.uri') }}</th>
                 <th>{{ $t('component.experiment.search.column.state') }}</th>
                 <th>Actions</th>
@@ -52,6 +53,7 @@
                   <span :title="experiment.species">{{ getSpeciesName(experiment.species) }}</span>
                 </td>
                 <td>{{ formatDate(experiment.startDate) }}</td>
+                <td>{{ formatDate(experiment.endDate) }}</td>
                 <td>
                   <span class="uri">
                     {{ experiment.uri }}
@@ -541,7 +543,10 @@ export default class ExperimentList extends Vue {
   }
 
   formatDate(value: string): string {
-    return moment(value, "YYYY-MM-dd").format("DD/MM/YYYY");
+    if(value != undefined && value != null){
+        return moment(value, 'YYYY-MM-dd').format('DD/MM/YYYY');
+    }
+    return null;
   }
 
   getProjectName(uri: String): String {
@@ -552,6 +557,7 @@ export default class ExperimentList extends Vue {
   }
 
   getSpeciesName(uri: String): String {
+    console.log("getSpeciesName "+uri);
     if (this.speciesByUri.has(uri)) {
       return this.speciesByUri.get(uri).label;
     }

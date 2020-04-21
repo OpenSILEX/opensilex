@@ -458,7 +458,9 @@
             "method-uri" : "method uri",
             "method-uri-help":"Variable method unique identifier",
             "method-description": "method description",
-            "method-description-help": ""
+            "method-description-help": "",
+            "scale" : "scale",
+            "scale-help": "Name of the scale associated with the variable"
         }
     },
     "credential-groups": {

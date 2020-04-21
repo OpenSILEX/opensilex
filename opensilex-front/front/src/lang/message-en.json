@@ -452,6 +452,8 @@
             "label-placeholder": "",
             "fullname" : "full name",
             "fullname-help" : "Full Variable name",
+            "description": "description",
+            "description-help": "Full description of your variable",
             "trait-name" : "trait name",
             "trait-name-help":"Variable trait name",
             "trait-uri" : "trait uri",

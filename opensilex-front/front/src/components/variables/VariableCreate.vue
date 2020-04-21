@@ -19,23 +19,23 @@
         </b-form-group>
 
 
-            <div >
-                <!-- Entity -->
-                <b-form-group  required  >
-                    <opensilex-FormInputLabelHelper label=component.variable.entity helpMessage="component.variable.entity-help" >
-                    </opensilex-FormInputLabelHelper>
-                    <ValidationProvider :name="$t('component.variable.entity')" v-slot="{ errors }">
-                    <b-form-select id="entityList" v-model="form.entity" :options="entityList" > </b-form-select>
-                    <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-                    </ValidationProvider>   
-                    
-                     <b-button-group class="entity-button-add" size="sm">
-                        <b-button size="sm">
-                          <font-awesome-icon icon="plus" size="sm" />
-                      </b-button>
-                    </b-button-group>        
-                </b-form-group>             
-            </div>
+        <div >
+          <!-- Entity -->
+            <b-form-group  required  >
+                <opensilex-FormInputLabelHelper label=component.variable.entity helpMessage="component.variable.entity-help" >
+                </opensilex-FormInputLabelHelper>
+                <ValidationProvider :name="$t('component.variable.entity')" v-slot="{ errors }">
+                <b-form-select id="entityList" v-model="form.entity" :options="entityList" > </b-form-select>
+                <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+                </ValidationProvider>   
+                
+                  <b-button-group class="entity-button-add" size="sm">
+                    <b-button size="sm">
+                      <font-awesome-icon icon="plus" size="sm" />
+                  </b-button>
+                </b-button-group>        
+              </b-form-group>             
+          </div>
       
            <div > 
                 <!-- Quality -->
@@ -47,7 +47,19 @@
                     <div class="error-message alert alert-danger">{{ errors[0] }}</div>
                     </ValidationProvider>
               </b-form-group>
-            </div>       
+            </div>  
+
+              <!-- Scale -->
+              <b-form-group  required  >
+                <opensilex-FormInputLabelHelper label=component.variable.scale helpMessage="component.variable.scale-help" >
+                </opensilex-FormInputLabelHelper>
+                <ValidationProvider :name="$t('component.variable.scale')" v-slot="{ errors }">
+
+                  <b-form-select id="scaleList" v-model="form.scale" :options="scaleList" > </b-form-select>
+
+                  <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+                </ValidationProvider>
+              </b-form-group>
 
              <!-- label -->
             <b-form-group  required  >
@@ -73,27 +85,15 @@
             </b-form-group>
 
              <!-- description -->
-            <b-form-group >
-                <opensilex-FormInputLabelHelper label=component.variable.fullname helpMessage="component.variable.fullname-help" >
-                </opensilex-FormInputLabelHelper>
-                <ValidationProvider :name="$t('component.variable.fullname')" v-slot="{ errors }">
-                  <b-textarea  id="description"  v-model="form.description"  type="textarea">
-                  </b-textarea>
-                  <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-                </ValidationProvider>
-            </b-form-group>
-        
-         <!-- Trait name
-         <b-form-group  required  >
-          <opensilex-FormInputLabelHelper label=component.variable.trait-name helpMessage="component.variable.trait-name-help" >
-          </opensilex-FormInputLabelHelper>
-          <ValidationProvider :name="$t('component.variable.trait-name')" v-slot="{ errors }">
-            <b-form-input  id="traitName"  v-model="form.traitName"  type="textinput"
-              :placeholder="$t('component.variable.trait-name-placeholder')" >
-            </b-form-input>
-            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-          </ValidationProvider>
-        </b-form-group> -->
+          <b-form-group >
+              <opensilex-FormInputLabelHelper label=component.variable.description helpMessage="component.variable.description-help" >
+              </opensilex-FormInputLabelHelper>
+              <ValidationProvider :name="$t('component.variable.description')" v-slot="{ errors }">
+                <b-textarea  id="description"  v-model="form.description"  type="textarea">
+                </b-textarea>
+                <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+              </ValidationProvider>
+          </b-form-group>
 
         <!-- Trait uri -->
          <b-form-group  >
@@ -108,17 +108,6 @@
           </ValidationProvider>
         </b-form-group>
 
-         <!-- Method name -->
-         <!-- <b-form-group  required  >
-          <opensilex-FormInputLabelHelper label=component.variable.method-name helpMessage="component.variable.method-name-help" >
-          </opensilex-FormInputLabelHelper>
-          <ValidationProvider :name="$t('component.variable.method-name')" v-slot="{ errors }">
-            <b-form-input  id="methodName"  v-model="form.methodName"  type="textinput"
-              :placeholder="$t('component.variable.method-name-placeholder')" >
-            </b-form-input>
-            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-          </ValidationProvider>
-        </b-form-group> -->
 
         <!-- Method uri -->
          <b-form-group  required  >
@@ -132,40 +121,7 @@
           </ValidationProvider>
         </b-form-group>
 
-         <b-form-group  required  >
-          <opensilex-FormInputLabelHelper label=component.variable.scale helpMessage="component.variable.scale-help" >
-          </opensilex-FormInputLabelHelper>
-          <ValidationProvider :name="$t('component.variable.scale')" v-slot="{ errors }">
-
-            <b-form-select id="scaleList" v-model="form.scale" :options="scaleList" > </b-form-select>
-
-            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-          </ValidationProvider>
-        </b-form-group>
-
-        <!-- Method description -->
-         <!-- <b-form-group  required  >
-          <opensilex-FormInputLabelHelper label=component.variable.method-description helpMessage="component.variable.method-description-help" >
-          </opensilex-FormInputLabelHelper>
-          <ValidationProvider :name="$t('component.variable.method-description')" v-slot="{ errors }">
-            <b-form-input  id="methodDescription"  v-model="form.methodDescription"  type="textinput"
-              :placeholder="$t('component.variable.method-description-placeholder')" >
-            </b-form-input>
-            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-          </ValidationProvider>
-        </b-form-group> -->
-
-        <!-- Method external reference -->
-        <!-- <b-form-group  required  >
-          <opensilex-FormInputLabelHelper label=component.variable.method-reference helpMessage="component.variable.method-reference-help" >
-          </opensilex-FormInputLabelHelper>
-          <ValidationProvider :name="$t('component.variable.method-reference')" v-slot="{ errors }">
-            <b-form-textinput  id="methodRe"  v-model="form.methodDescription"  type="textinput"
-              :placeholder="$t('component.variable.method-description-placeholder')" >
-            </b-form-textinput>
-            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-          </ValidationProvider>
-        </b-form-group> -->
+      
 
     </b-form>
     </ValidationObserver>

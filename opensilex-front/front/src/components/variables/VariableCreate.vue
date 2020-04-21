@@ -70,7 +70,13 @@
                 />
                 <div class="error-message alert alert-danger">{{ errors[0] }}</div>
                 </ValidationProvider>   
-              <b-button variant="primary">{{$t('component.variable.form.add.entity')}}</b-button>        
+                <b-button @click="showEntityCreateForm"
+                  variant="primary">{{$t('component.variable.form.add.entity')}}              
+                </b-button>   
+
+                <opensilex-EntityForm
+                  ref="entityForm">
+                </opensilex-EntityForm>     
               </b-form-group>   
               </div>
 
@@ -118,7 +124,10 @@
           />
           <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
-          <b-button variant="primary">{{$t('component.variable.form.add.method')}}</b-button>        
+          <b-button @click="showMethodCreateForm" variant="primary">{{$t('component.variable.form.add.method')}}</b-button>   
+           <opensilex-MethodForm
+                ref="methodForm">
+            </opensilex-MethodForm>          
         </b-form-group>
 
          </div>
@@ -199,7 +208,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 
@@ -215,6 +224,18 @@ qualityList: any;
 methodList: any;
 traitList: any;
 scaleList : any;
+
+@Ref("entityForm") readonly entityForm!: any;
+@Ref("methodForm") readonly methodForm!: any;
+
+
+showEntityCreateForm() {
+    this.entityForm.showCreateForm();
+}
+
+showMethodCreateForm(){
+  this.methodForm.showCreateForm();
+}
 
 created(){
 

@@ -453,13 +453,22 @@
 
             "entity": "entity",
             "entity-help": "Variable entity",
+            "entity-uri" : "Entity uri",
+            "entity-uri-help" : "Entity unique identifier",
+            "entity-name" : "name",
+            "entity-name-help": "The entity measured by the variable",
+            "entity-name-placeholder": "Wind",
 
             "quality": "quality",
             "quality-help": "Variable quality",
+            "quality-uri" : "Quality uri",
+            "quality-uri-help" : "Quality unique identifier",
+            "quality-name" : "name",
+            "quality-name-help": "",
+            "quality-name-placeholder": "Speed",
 
             "trait": "Variable trait",
             "trait-help": "Variable trait",
-
             "trait-name" : "trait name",
             "trait-name-help":"Variable trait name",
             "trait-uri" : "trait uri",
@@ -467,13 +476,14 @@
 
             "method": "method",
             "method-help": "Variable method",
-            
             "method-uri" : "method uri",
             "method-uri-help":"Method unique identifier",
             "method-name" : "method name",
             "method-name-help":"method name",
+            "method-name-placeholder":"",
             "method-description": "method description",
             "method-description-help": "",
+            "method-description-placeholder": "",
 
             "scale" : "scale",
             "scale-help": "Name of the scale associated with the variable",

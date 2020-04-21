@@ -7,9 +7,12 @@
 package org.opensilex.nosql.service;
 
 import java.util.Collection;
-import javax.jdo.JDOQLTypedQuery;
+import java.util.Map;
+import java.util.Properties;
 import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
 import javax.naming.NamingException;
+import org.opensilex.nosql.NoSQLConfig;
 import org.opensilex.service.Service;
 
 /**
@@ -22,24 +25,21 @@ import org.opensilex.service.Service;
  * @see org.opensilex.nosql.service.NoSQLService
  * @author Vincent Migot
  */
-public interface NoSQLConnection extends Service {
+public interface NoSQLConnection<Object> extends Service {
+
+    Properties getConfigProperties(NoSQLConfig config);
 
     public Object create(Object instance) throws NamingException;
 
-    public void delete(Class cls, Object key) throws NamingException;
+    public void remove(Object instance) throws NamingException;
 
-    public <T> T findById(Class cls, Object key) throws NamingException;
+    public Object findById(Class cls, Object key) throws NamingException;
 
-    public Long count(JDOQLTypedQuery query) throws NamingException;
+    public Collection find(Query<Object> query, Map parameters) throws NamingException;
 
     public Object update(Object instance) throws NamingException;
 
     public void createAll(Collection<Object> instances) throws NamingException;
 
-    public void deleteAll(Collection<Object> instances) throws NamingException;
-    
-    public Long deleteAll(JDOQLTypedQuery query) throws NamingException;
-    
-    public PersistenceManager getPersistentConnectionManager()throws NamingException;
-   
+    public PersistenceManager getPersistenceManager()throws NamingException;
 }

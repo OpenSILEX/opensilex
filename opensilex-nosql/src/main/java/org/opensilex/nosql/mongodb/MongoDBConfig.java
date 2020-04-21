@@ -8,6 +8,7 @@ package org.opensilex.nosql.mongodb;
 
 import java.util.Map;
 import org.opensilex.config.ConfigDescription;
+import org.opensilex.nosql.NoSQLConfig;
 import org.opensilex.service.ServiceConfig;
 
 /**
@@ -15,7 +16,7 @@ import org.opensilex.service.ServiceConfig;
  *
  * @author Vincent Migot
  */
-public interface MongoDBConfig extends ServiceConfig {
+public interface MongoDBConfig extends NoSQLConfig {
 
     @ConfigDescription(
             value = "MongoDB main host",

@@ -5,11 +5,12 @@
  */
 package org.opensilex.nosql;
 
-import java.util.HashMap;
-import java.util.Map;
+import javax.jdo.PersistenceManager;
+import javax.naming.NamingException;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.experimental.categories.Category;
-import org.opensilex.integration.test.IntegrationTestCategory;
+import org.junit.Test;
+import org.opensilex.nosql.model.TestMongoDocument;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBConnection;
 
@@ -17,50 +18,39 @@ import org.opensilex.nosql.mongodb.MongoDBConnection;
  *
  * @author charlero
  */
-@Category(IntegrationTestCategory.class)
 public class MongoConnectionTest extends NoSQLServiceTest {
 
     @BeforeClass
     public static void setupMongo() throws Exception {
-        MongoDBConnection connection = new MongoDBConnection(new MongoDBConfig() {
-            @Override
-            public String host() {
-                return "127.0.0.1";
-            }
-
-            @Override
-            public int port() {
-                return 37017;
-            }
-
-            @Override
-            public String database() {
-                return "test";
-            }
-
-            @Override
-            public String username() {
-                return null;
-            }
-
-            @Override
-            public String password() {
-                return null;
-            }
-
-            @Override
-            public String authDB() {
-                return null;
-            }
-
-            @Override
-            public Map<String, String> options() {
-                return new HashMap<>();
-            }
-        });
+        NoSQLServiceTest.initialize();
+//        MongoDBConnection mongoDBConnection = opensilex.getServiceInstance("mongodb", MongoDBConnection.class);
+        MongoDBConfig config = opensilex.loadConfigPath("big-data.nosql.mongodb", MongoDBConfig.class);
+        System.out.println("org.opensilex.nosql.MongoConnectionTest.setupMongo()");
+        System.out.println(connection.getOpenSilex().getDefaultLanguage());
+        connection = new MongoDBConnection(config);
         connection.setOpenSilex(opensilex);
         connection.setup();
         connection.startup();
-        initialize(connection);
+//        
+//        service = new NoSQLService( new MongoDBConnection(config));
+//        service.setOpenSilex(opensilex);
+//        service.setup();
+//        service.startup();
+//        NoSQLServiceTest.initialize();
+
+    }
+
+    @AfterClass
+    public static void cleanMongo() throws Exception {
+        connection.shutdown();
+    }
+
+    @Test
+    public void createTest() throws NamingException {
+        try ( // TODO implement mongodb startup mechanism
+                PersistenceManager persistenceManager = connection.getPersistenceManager()) {
+            persistenceManager.makePersistent(new TestMongoDocument("test", 1));
+        }
+
     }
 }

@@ -7,10 +7,12 @@
 package org.opensilex.nosql.service;
 
 import java.util.Collection;
-import javax.jdo.JDOQLTypedQuery;
+import java.util.Map;
+import java.util.Properties;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.naming.NamingException;
+import org.opensilex.nosql.NoSQLConfig;
 import org.opensilex.nosql.mongodb.MongoDBConnection;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
@@ -50,26 +52,47 @@ public class NoSQLService extends BaseService implements NoSQLConnection, Servic
     }
 
     @Override
+    public void setup() throws Exception {
+        connection.setOpenSilex(getOpenSilex());
+        connection.setup();
+    }
+
+    @Override
     public void startup() throws Exception {
         connection.startup();
     }
+
+ 
 
     @Override
     public void shutdown() throws Exception {
         connection.shutdown();
     }
 
- 
-
     @Override
-    public void delete(Class cls, Object key) throws NamingException {
-        this.connection.delete(cls, key);
+    public Properties getConfigProperties(NoSQLConfig config) {
+        return this.connection.getConfigProperties(config);
     }
 
     @Override
-    public <T> T findById(Class cls, Object key) throws NamingException {
+    public Object create(Object instance) throws NamingException {
+       return this.connection.create(instance);
+    }
+
+    @Override
+    public void remove(Object instance) throws NamingException {
+        this.connection.remove(instance);
+    }
+
+    @Override
+    public Object findById(Class cls, Object key) throws NamingException {
         return this.connection.findById(cls, key);
-    } 
+    }
+
+    @Override
+    public Collection find(Query query, Map parameters) throws NamingException {
+       return this.connection.find(query, parameters);
+    }
 
     @Override
     public Object update(Object instance) throws NamingException {
@@ -80,25 +103,10 @@ public class NoSQLService extends BaseService implements NoSQLConnection, Servic
     public void createAll(Collection instances) throws NamingException {
         this.connection.createAll(instances);
     }
-    
-    @Override
-    public void deleteAll(Collection instances) throws NamingException {
-        this.connection.deleteAll(instances);
-    }
-    
-    @Override
-    public Long deleteAll(JDOQLTypedQuery query) throws NamingException {
-        return this.connection.deleteAll(query);
-    }
-    
-    @Override
-    public PersistenceManager getPersistentConnectionManager() throws NamingException {
-        return this.connection.getPersistentConnectionManager();
-    }
 
     @Override
-    public Long count(JDOQLTypedQuery query) throws NamingException {
-        return this.connection.count(query);
+    public PersistenceManager getPersistenceManager() throws NamingException {
+        return this.connection.getPersistenceManager();
     }
  
  

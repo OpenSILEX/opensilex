@@ -86,6 +86,8 @@ import SciObjectTypeSearch from './phis/images/searchComponents/SciObjectTypeSea
 import TimeSearch from './phis/images/searchComponents/TimeSearch.vue';
 
 import VariableCreate from './variables/VariableCreate.vue';
+import EntityForm from './variables/EntityForm.vue';
+import MethodForm from './variables/MethodForm.vue';
 
 export default {
     // Common layout
@@ -183,5 +185,8 @@ export default {
     "opensilex-FactorLevelList": FactorLevelList,
 
     //variables
-    'opensilex-VariableCreate': VariableCreate
+    'opensilex-VariableCreate': VariableCreate,
+    'opensilex-EntityForm': EntityForm,
+    'opensilex-MethodForm': MethodForm
+
 };

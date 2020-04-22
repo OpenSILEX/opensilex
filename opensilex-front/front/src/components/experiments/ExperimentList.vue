@@ -26,83 +26,63 @@
         </div>
       </div>
 
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-striped table-hover">
-            <thead>
-              <tr>
-                <th>{{ $t('component.experiment.search.column.uri') }}</th>
-                <th>{{ $t('component.experiment.search.column.alias') }}</th>
-                <th>{{ $t('component.experiment.search.column.campaign') }}</th>
-                <th>{{ $t('component.experiment.search.column.species') }}</th>
-                <th>{{ $t('component.experiment.search.column.startDate') }}</th>
-                <th>{{ $t('component.experiment.search.column.endDate') }}</th>
-                <th>{{ $t('component.experiment.search.column.state') }}</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="experiment in experiments" v-bind:key="experiment.id">
-                 <td>
-                  <span class="uri">
-                    <router-link
-                    :to="{path: '/experiment/' + encodeURIComponent(experiment.uri)}"
-                   >{{ experiment.uri }}</router-link>
-                    <a
-                      href="#"
-                      v-on:click="copyUri(experiment.uri, $event)"
-                      class="uri-copy"
-                      :title="$t('component.copyToClipboard.copyUri')"
-                    >
-                      <i class="ik ik-copy"></i>
-                    </a>
-                  </span>
+      <b-table
+        ref="tableRef"
+        striped
+        hover
+        small
+        :items="loadExperiments"
+        :fields="fields"
+        
+        no-provider-paging
+      >
+        <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
+        <template v-slot:head(label)="data">{{$t(data.label)}}</template>
+        <template v-slot:head(projects)="data">{{$t(data.label)}}</template>
+        <template v-slot:head(species)="data">{{$t(data.label)}}</template>
+        <template v-slot:head(startDate)="data">{{$t(data.label)}}</template>
+        <template v-slot:head(endDate)="data">{{$t(data.label)}}</template> 
+        <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
 
-                 
-                </td>
-                <td>{{ experiment.label}} </td>
-                <td>{{ experiment.campaign }}</td>
-                <td>
-                    <span :key="index" v-for="(uri, index) in experiment.species">
-                        <span :title="uri">{{ getSpeciesName(uri) }}</span><span v-if="index + 1 < experiment.species.length">, </span>
-                    </span>
-                </td>
-                <td>{{ formatDate(experiment.startDate) }}</td>
-                <td>{{ formatDate(experiment.endDate) }}</td>
-               
-                <td>
-                  <i
-                    v-if="!experiment.isEnded"
-                    class="ik ik-activity badge-icon badge-info-phis"
-                    :title="$t('component.experiment.common.status.in-progress')"
-                  ></i>
-                  <i
-                    v-else
-                    class="ik ik-archive badge-icon badge-light"
-                    :title="$t('component.experiment.common.status.finished')"
-                  ></i>
-                  <i
-                    v-if="experiment.isPublic"
-                    class="ik ik-users badge-icon badge-info"
-                    :title="$t('component.experiment.common.status.public')"
-                  ></i>
-                </td>
-                 <td>
-                  <b-button-group size="sm">
-                    <b-button
-                      size="sm"
-                      @click="goToExperimentUpdateComponent(experiment)"
-                      variant="outline-primary"
-                    >
-                      <font-awesome-icon icon="edit" size="sm" />
-                    </b-button>
-                  </b-button-group>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+        <template v-slot:cell(uri)="data">
+          <a class="uri-info">
+            <small>{{ data.item.uri }}</small>
+          </a>
+        </template>
+
+        <template v-slot:cell(label)="data">{{data.item.label}}</template>
+
+        <template v-slot:cell(projects)="data">
+          <span :key="index" v-for="(uri, index) in data.item.projects">
+              <span :title="uri">{{ getProjectName(uri) }}</span><span v-if="index + 1 < data.item.projects.length">, </span>
+          </span>
+        </template>
+
+        <template v-slot:cell(species)="data">
+          <span :key="index" v-for="(uri, index) in data.item.species">
+              <span :title="uri">{{ getSpeciesName(uri) }}</span><span v-if="index + 1 < data.item.species.length">, </span>
+          </span>
+        </template>
+
+        <template v-slot:cell(startDate)="data">{{ formatDate(data.item.startDate)}}</template>
+        <template v-slot:cell(endDate)="data">{{ formatDate(data.item.endDate)}}</template>
+
+       <template v-slot:cell(actions)="data">
+        <b-button-group size="sm" >
+          <b-button size="sm" @click="data.toggleDetails" variant="outline-success">
+            <font-awesome-icon v-if="!data.detailsShowing" icon="eye" size="sm" />
+            <font-awesome-icon v-if="data.detailsShowing" icon="eye-slash" size="sm" />
+          </b-button>
+
+          <b-button size="sm" @click="$emit('onEdit', data.item)" variant="outline-primary">
+            <font-awesome-icon icon="edit" size="sm" />
+          </b-button>    
+        </b-button-group>
+      </template>
+      </b-table>
+
+
+
 
       <div v-if="totalRow > pageSize" class="card-footer">
         <nav class="float-right">
@@ -394,7 +374,7 @@ export default class ExperimentList extends Vue {
       campaign = this.filter.campaign;
     }
 
-    service
+    return service
       .searchExperiments(
         uri,
         startDate,
@@ -409,25 +389,25 @@ export default class ExperimentList extends Vue {
         this.currentPage - 1,
         this.pageSize
       )
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<ExperimentGetDTO>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<ExperimentGetDTO>>>) => {
           this.totalRow = http.response.metadata.pagination.totalCount;
+          this.pageSize = http.response.metadata.pagination.pageSize;
+          setTimeout(() => {
+            this.currentPage = http.response.metadata.pagination.currentPage + 1;
+          }, 0);
+
           this.experiments = http.response.result;
 
-          if (this.campaigns.length == 0) {
-            let allCampaigns = this.experiments.map(
-              experiment => experiment.campaign
-            );
-            this.campaigns = allCampaigns.filter((campaign, index) => {
-              return allCampaigns.indexOf(campaign) === index;
-            });
-          }
-
-          this.$store.state.search.results = this.experiments.map(
-            experiment => experiment.uri
-          );
-        }
-      )
+          // if (this.campaigns.length == 0) {
+          //   let allCampaigns = this.experiments.map(
+          //     experiment => experiment.campaign
+          //   );
+          //   this.campaigns = allCampaigns.filter((campaign, index) => {
+          //     return allCampaigns.indexOf(campaign) === index;
+          //   });
+          // }
+          return http.response.result;
+      })
       .catch(error => {
         this.resetExperiments(error);
       });
@@ -479,41 +459,11 @@ export default class ExperimentList extends Vue {
         0,
         1000
       )
-      .then((http: HttpResponse<OpenSilexResponse<Array<ProjectGetDTO>>>) => {
-        let results: Map<String, ProjectGetDTO> = new Map<
-          String,
-          ProjectGetDTO
-        >();
-        let resultsList = [];
+      .then((http: HttpResponse<OpenSilexResponse<Array<ProjectGetDTO>>>) => {     
         for (let i = 0; i < http.response.result.length; i++) {
-          results.set(http.response.result[i].uri, http.response.result[i]);
-          resultsList.push(http.response.result[i]);
+          this.projectsByUri.set(http.response.result[i].uri, http.response.result[i]);
+          this.projectsList.push(http.response.result[i]);
         }
-        this.projectsList = resultsList;
-        this.projectsByUri = results;
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-
-  loadInfrastructures() {
-    let service: InfrastructuresService = this.$opensilex.getService(
-      "opensilex.InfrastructuresService"
-    );
-
-    service
-      .searchInfrastructuresTree(this.user.getAuthorizationHeader(), undefined)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        let results: Map<String, ResourceTreeDTO> = new Map<
-          String,
-          ResourceTreeDTO
-        >();
-        let resultsList = [];
-        for (let i = 0; i < http.response.result.length; i++) {
-          results.set(http.response.result[i].uri, http.response.result[i]);
-          resultsList.push(http.response.result[i]);
-        }
-        this.infrastructuresList = resultsList;
-        this.infrastructuresByUri = results;
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -555,13 +505,6 @@ export default class ExperimentList extends Vue {
     return null;
   }
 
-  getInfrastructureName(uri: String): String {
-    if (this.infrastructuresByUri.has(uri)) {
-      return this.infrastructuresByUri.get(uri).name;
-    }
-    return null;
-  }
-
   goToExperimentCreateComponent() {
     this.$router.push({ path: "/experiments/create" });
   }
@@ -578,8 +521,55 @@ export default class ExperimentList extends Vue {
       event.preventDefault();
     }
   }
+
+  fields = [
+    {
+      key: "uri",
+      label: "component.common.uri",
+      sortable: true
+    },
+    {
+      key: "label",
+      label: "component.common.name",
+      sortable: true
+    },
+    {
+      key: "projects",
+      label: "component.experiment.projects",
+      sortable: true
+    },
+    {
+      key: "species",
+      label: "component.experiment.species",
+      // sortable: true
+    },
+    {
+      key: "startDate",
+      label: "component.experiment.startDate",
+      // sortable: true
+    },
+    {
+      key: "endDate",
+      label: "component.experiment.endDate",
+      // sortable: true
+    },
+    {
+      label: "component.common.actions",
+      key: "actions"
+    }
+  ];
+
 }
 </script>
 
+
 <style scoped lang="scss">
+.uri-info {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  max-width: 300px;
+}
 </style>

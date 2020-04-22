@@ -46,9 +46,10 @@
         <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
 
         <template v-slot:cell(uri)="data">
-          <a class="uri-info">
-            <small>{{ data.item.uri }}</small>
-          </a>
+           <a class="uri-info">
+            <router-link
+            :to="{path: '/experiment/'+ encodeURIComponent(data.item.uri)}">{{ data.item.uri }}</router-link>
+           </a>
         </template>
 
         <template v-slot:cell(label)="data">{{data.item.label}}</template>
@@ -75,7 +76,7 @@
             <font-awesome-icon v-if="data.detailsShowing" icon="eye-slash" size="sm" />
           </b-button>
 
-          <b-button size="sm" @click="$emit('onEdit', data.item)" variant="outline-primary">
+          <b-button @click="goToExperimentUpdateComponent(experiment)" size="sm" variant="outline-primary">
             <font-awesome-icon icon="edit" size="sm" />
           </b-button>    
         </b-button-group>

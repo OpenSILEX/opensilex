@@ -11,6 +11,7 @@
           </opensilex-FormInputLabelHelper>
 
           <ValidationProvider :name="$t('component.experiment.groups')" v-slot="{ errors }">
+
           <opensilex-GroupsListSelector ref="groupListSelector" 
             :selectedTableData="form.groups" 
           ></opensilex-GroupsListSelector>
@@ -98,7 +99,7 @@ export default class ExperimentForm2 extends ExperimentForm {
       "opensilex.ProjectsService"
     );
     service
-      .searchProjects(null,null,null,null,null,null,null, 0, 1000)
+      .searchProjects(undefined,undefined,undefined,undefined,undefined,undefined,null, 0, 1000)
       .then(
         (http: HttpResponse<OpenSilexResponse<Array<ProjectGetDTO>>>) => {
           for (let i = 0; i < http.response.result.length; i++) {

@@ -31,32 +31,23 @@
           <table class="table table-striped table-hover">
             <thead>
               <tr>
+                <th>{{ $t('component.experiment.search.column.uri') }}</th>
                 <th>{{ $t('component.experiment.search.column.alias') }}</th>
                 <th>{{ $t('component.experiment.search.column.campaign') }}</th>
                 <th>{{ $t('component.experiment.search.column.species') }}</th>
                 <th>{{ $t('component.experiment.search.column.startDate') }}</th>
                 <th>{{ $t('component.experiment.search.column.endDate') }}</th>
-                <th>{{ $t('component.experiment.search.column.uri') }}</th>
                 <th>{{ $t('component.experiment.search.column.state') }}</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="experiment in experiments" v-bind:key="experiment.id">
-                <td>
-                  <router-link
-                    :to="{path: '/experiment/' + encodeURIComponent(experiment.uri)}"
-                  >{{ experiment.label }}</router-link>
-                </td>
-                <td>{{ experiment.campaign }}</td>
-                <td>
-                  <span :title="experiment.species">{{ getSpeciesName(experiment.species) }}</span>
-                </td>
-                <td>{{ formatDate(experiment.startDate) }}</td>
-                <td>{{ formatDate(experiment.endDate) }}</td>
-                <td>
+                 <td>
                   <span class="uri">
-                    {{ experiment.uri }}
+                    <router-link
+                    :to="{path: '/experiment/' + encodeURIComponent(experiment.uri)}"
+                   >{{ experiment.uri }}</router-link>
                     <a
                       href="#"
                       v-on:click="copyUri(experiment.uri, $event)"
@@ -66,7 +57,19 @@
                       <i class="ik ik-copy"></i>
                     </a>
                   </span>
+
+                 
                 </td>
+                <td>{{ experiment.label}} </td>
+                <td>{{ experiment.campaign }}</td>
+                <td>
+                    <span :key="index" v-for="(uri, index) in experiment.species">
+                        <span :title="uri">{{ getSpeciesName(uri) }}</span><span v-if="index + 1 < experiment.species.length">, </span>
+                    </span>
+                </td>
+                <td>{{ formatDate(experiment.startDate) }}</td>
+                <td>{{ formatDate(experiment.endDate) }}</td>
+               
                 <td>
                   <i
                     v-if="!experiment.isEnded"
@@ -192,7 +195,6 @@ export class ExperimentFilter {
   }
 
   set beginDate(value: string) {
-    console.log(value);
     this._beginDate = value;
 
     let dates = value.split(" - ");
@@ -233,7 +235,6 @@ export class ExperimentFilter {
   }
 
   set campaign(value: number) {
-    console.log(value);
     this._campaign = value;
     this._experimentList.loadExperiments();
   }
@@ -243,7 +244,6 @@ export class ExperimentFilter {
   }
 
   set projects(values: Array<ProjectGetDTO>) {
-    console.log(values);
     this._projects = values;
     this._experimentList.loadExperiments();
   }
@@ -338,7 +338,7 @@ export default class ExperimentList extends Vue {
   loadDatas() {
     this.loadProjects();
     this.loadSpecies();
-    this.loadInfrastructures();
+    // this.loadInfrastructures();
     this.loadExperiments();
     this.loadExperimentStates();
   }
@@ -526,16 +526,8 @@ export default class ExperimentList extends Vue {
     service
       .getAllSpecies()
       .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
-        let results: Map<String, ProjectGetDTO> = new Map<
-          String,
-          ProjectGetDTO
-        >();
-        let resultsList = [];
         for (let i = 0; i < http.response.result.length; i++) {
-          this.speciesByUri.set(
-            http.response.result[i].uri,
-            http.response.result[i]
-          );
+          this.speciesByUri.set(http.response.result[i].uri,http.response.result[i]);
           this.speciesList.push(http.response.result[i]);
         }
       })
@@ -557,7 +549,6 @@ export default class ExperimentList extends Vue {
   }
 
   getSpeciesName(uri: String): String {
-    console.log("getSpeciesName "+uri);
     if (this.speciesByUri.has(uri)) {
       return this.speciesByUri.get(uri).label;
     }

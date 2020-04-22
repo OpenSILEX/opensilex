@@ -330,7 +330,10 @@
                 "projects-selection-list-title": "Global projects list",
                 "projects-selected-list-title": "Experiment projects",
                 "infrastructures-selection-list-title": "Global infrastructures list",
-                "infrastructures-selected-list-title": "Experiment infrastructures"
+                "infrastructures-selected-list-title": "Experiment infrastructures",
+                "placeholder":{
+                    "species": "Select one or more species"
+                }
             },
             "form-wizard": {
                 "label": "Experiment creation wizard",

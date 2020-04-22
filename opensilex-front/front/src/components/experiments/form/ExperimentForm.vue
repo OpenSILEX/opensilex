@@ -97,7 +97,18 @@
             helpMessage="component.experiment.species-help"
           ></opensilex-FormInputLabelHelper>
           <ValidationProvider :name="$t('component.experiment.species')" v-slot="{ errors }">
-            <b-form-select id="speciesList" v-model="form.species" :options="speciesList"></b-form-select>
+
+          <multiselect
+              :placeholder="$t('component.experiment.form.placeholder.species')"
+              v-model="form.species"
+              :options="speciesList"
+              track-by="uri"
+              :custom-label="species => species.label"
+              :multiple="true"
+              :close-on-select="false"
+              :preserve-search="true"
+              :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"
+            />
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
         </b-form-group>
@@ -112,7 +123,6 @@
             <b-form-textarea
               id="objective"
               v-model="form.objective"
-              type="textarea"
               :placeholder="$t('component.experiment.objective-placeholder')"
             ></b-form-textarea>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
@@ -129,7 +139,6 @@
             <b-form-textarea
               id="comment"
               v-model="form.comment"
-              type="textarea"
               :placeholder="$t('component.experiment.comment-placeholder')"
             ></b-form-textarea>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
@@ -146,7 +155,7 @@
             <b-form-input
               id="campaign"
               v-model="form.campaign"
-              type="number "
+              type="number"
               :placeholder="$t('component.experiment.campaign-placeholder')"
             ></b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>

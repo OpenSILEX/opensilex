@@ -31,9 +31,10 @@
         striped
         hover
         small
-        :items="loadExperiments"
+        :items="loadDatas"
         :fields="fields"
-        
+        :sort-by.sync="sortBy"
+        :sort-desc.sync="sortDesc"
         no-provider-paging
       >
         <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
@@ -80,21 +81,6 @@
         </b-button-group>
       </template>
       </b-table>
-
-
-
-
-      <div v-if="totalRow > pageSize" class="card-footer">
-        <nav class="float-right">
-          <b-pagination
-            v-model="currentPage"
-            :total-rows="totalRow"
-            :per-page="pageSize"
-            @change="loadExperiments()"
-            class="pagination mb-0"
-          ></b-pagination>
-        </nav>
-      </div>
     </div>
      <b-pagination
       v-model="currentPage"
@@ -136,144 +122,144 @@ export class ExperimentState {
   }
 }
 
-export class ExperimentFilter {
-  private _experimentList: ExperimentList;
+// export class ExperimentFilter {
+//   private _experimentList: ExperimentList;
 
-  private _alias: string;
-  private _uri: string;
-  private _beginDate: string;
-  private _startDate: string;
-  private _endDate: string;
-  private _campaign: number;
-  private _projects: Array<ProjectGetDTO>;
-  private _installations: Array<any>;
-  private _infrastructures: Array<ResourceTreeDTO>;
-  private _species: SpeciesDTO;
-  private _state: ExperimentState;
+//   private _alias: string;
+//   private _uri: string;
+//   private _beginDate: string;
+//   private _startDate: string;
+//   private _endDate: string;
+//   private _campaign: number;
+//   private _projects: Array<ProjectGetDTO>;
+//   private _installations: Array<any>;
+//   private _infrastructures: Array<ResourceTreeDTO>;
+//   private _species: SpeciesDTO;
+//   private _state: ExperimentState;
 
-  constructor(experimentList: ExperimentList) {
-    this._experimentList = experimentList;
-  }
+//   constructor(experimentList: ExperimentList) {
+//     this._experimentList = experimentList;
+//   }
 
-  get alias() {
-    return this._alias;
-  }
+//   get alias() {
+//     return this._alias;
+//   }
 
-  set alias(value: string) {
-    this._alias = value;
-    this._experimentList.loadExperiments();
-  }
+//   set alias(value: string) {
+//     this._alias = value;
+//     this._experimentList.loadExperiments();
+//   }
 
-  set uri(value: string) {
-    this._uri = value;
-    this._experimentList.loadExperiments();
-  }
+//   set uri(value: string) {
+//     this._uri = value;
+//     this._experimentList.loadExperiments();
+//   }
 
-  get uri() {
-    return this._uri;
-  }
+//   get uri() {
+//     return this._uri;
+//   }
 
-  updateBeginDate() {
-    let startDate = moment(this.startDate, "YYYY-MM-DD");
-    let endDate = moment(this.endDate, "YYYY-MM-DD");
-    this.beginDate =
-      startDate.format("DD/MM/YYYY") + " - " + endDate.format("DD/MM/YYYY");
-  }
+//   updateBeginDate() {
+//     let startDate = moment(this.startDate, "YYYY-MM-DD");
+//     let endDate = moment(this.endDate, "YYYY-MM-DD");
+//     this.beginDate =
+//       startDate.format("DD/MM/YYYY") + " - " + endDate.format("DD/MM/YYYY");
+//   }
 
-  set beginDate(value: string) {
-    this._beginDate = value;
+//   set beginDate(value: string) {
+//     this._beginDate = value;
 
-    let dates = value.split(" - ");
+//     let dates = value.split(" - ");
 
-    this._endDate = undefined;
-    this._startDate = undefined;
+//     this._endDate = undefined;
+//     this._startDate = undefined;
 
-    if (dates.length == 2 && dates[0].length == 10 && dates[1].length == 10) {
-      let startDate = moment(dates[0], "DD/MM/YYYY");
-      let endDate = moment(dates[1], "DD/MM/YYYY");
+//     if (dates.length == 2 && dates[0].length == 10 && dates[1].length == 10) {
+//       let startDate = moment(dates[0], "DD/MM/YYYY");
+//       let endDate = moment(dates[1], "DD/MM/YYYY");
 
-      if (startDate.isValid() && endDate.isValid()) {
-        this._startDate = startDate.format("YYYY-MM-DD");
-        this._endDate = endDate.format("YYYY-MM-DD");
-      }
-    }
+//       if (startDate.isValid() && endDate.isValid()) {
+//         this._startDate = startDate.format("YYYY-MM-DD");
+//         this._endDate = endDate.format("YYYY-MM-DD");
+//       }
+//     }
 
-    this._experimentList.loadExperiments();
-  }
+//     this._experimentList.loadExperiments();
+//   }
 
-  get beginDate() {
-    return this._beginDate;
-  }
-  set startDate(value) {
-    this._startDate = value;
-  }
+//   get beginDate() {
+//     return this._beginDate;
+//   }
+//   set startDate(value) {
+//     this._startDate = value;
+//   }
 
-  get startDate() {
-    return this._startDate;
-  }
+//   get startDate() {
+//     return this._startDate;
+//   }
 
-  set endDate(value) {
-    this._endDate = value;
-  }
+//   set endDate(value) {
+//     this._endDate = value;
+//   }
 
-  get endDate() {
-    return this._endDate;
-  }
+//   get endDate() {
+//     return this._endDate;
+//   }
 
-  set campaign(value: number) {
-    this._campaign = value;
-    this._experimentList.loadExperiments();
-  }
+//   set campaign(value: number) {
+//     this._campaign = value;
+//     this._experimentList.loadExperiments();
+//   }
 
-  get campaign() {
-    return this._campaign;
-  }
+//   get campaign() {
+//     return this._campaign;
+//   }
 
-  set projects(values: Array<ProjectGetDTO>) {
-    this._projects = values;
-    this._experimentList.loadExperiments();
-  }
+//   set projects(values: Array<ProjectGetDTO>) {
+//     this._projects = values;
+//     this._experimentList.loadExperiments();
+//   }
 
-  get projects() {
-    return this._projects;
-  }
+//   get projects() {
+//     return this._projects;
+//   }
 
-  set installations(values: Array<string>) {
-    this._installations = values;
-    this._experimentList.loadExperiments();
-  }
+//   set installations(values: Array<string>) {
+//     this._installations = values;
+//     this._experimentList.loadExperiments();
+//   }
 
-  get installations() {
-    return this._installations;
-  }
+//   get installations() {
+//     return this._installations;
+//   }
 
-  set infrastructures(values: Array<ResourceTreeDTO>) {
-    this._infrastructures = values;
-    this._experimentList.loadExperiments();
-  }
+//   set infrastructures(values: Array<ResourceTreeDTO>) {
+//     this._infrastructures = values;
+//     this._experimentList.loadExperiments();
+//   }
 
-  get infrastructures() {
-    return this._infrastructures;
-  }
+//   get infrastructures() {
+//     return this._infrastructures;
+//   }
 
-  set species(value: SpeciesDTO) {
-    this._species = value;
-    this._experimentList.loadExperiments();
-  }
+//   set species(value: SpeciesDTO) {
+//     this._species = value;
+//     this._experimentList.loadExperiments();
+//   }
 
-  get species() {
-    return this._species;
-  }
+//   get species() {
+//     return this._species;
+//   }
 
-  get state() {
-    return this._state;
-  }
+//   get state() {
+//     return this._state;
+//   }
 
-  set state(value: ExperimentState) {
-    this._state = value;
-    this._experimentList.loadExperiments();
-  }
-}
+//   set state(value: ExperimentState) {
+//     this._state = value;
+//     this._experimentList.loadExperiments();
+//   }
+// }
 
 @Component
 export default class ExperimentList extends Vue {
@@ -284,60 +270,76 @@ export default class ExperimentList extends Vue {
   speciesList = [];
   speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
 
-  infrastructuresList = [];
-  infrastructuresByUri: Map<String, ResourceTreeDTO> = new Map<
-    String,
-    ResourceTreeDTO
-  >();
-
   projectsList = [];
   projectsByUri: Map<String, ProjectGetDTO> = new Map<String, ProjectGetDTO>();
-
-  installationsList = [];
-  installationsByUri: Map<String, any> = new Map<String, any>();
 
   experimentStates: Array<ExperimentState> = new Array<ExperimentState>();
   campaigns: Array<Number> = new Array<Number>();
 
-  experiments: Array<ExperimentGetDTO> = new Array<ExperimentGetDTO>();
+  // experiments: Array<ExperimentGetDTO> = new Array<ExperimentGetDTO>();
 
-  orderBy: Array<string>;
+  sortBy = "label";
+  sortDesc: boolean = false;
+
+  orderBy: Array<string> = [];
   currentPage: number = 1;
   pageSize = 10;
   totalRow = 0;
 
-  filter: ExperimentFilter;
+  // filter: ExperimentFilter;
 
-  constructor() {
-    super();
-    this.filter = new ExperimentFilter(this);
+  private filterPatternValue: any = "";
+  set filterPattern(value: string) {
+    this.filterPatternValue = value;
+    this.refresh();
+  }
+
+  get filterPattern() {
+    return this.filterPatternValue;
   }
 
   created() {
-    this.loadDatas();
+    let query: any = this.$route.query;
+    if (query.filterPattern) {
+      this.filterPatternValue = decodeURI(query.filterPattern);
+    }
+    if (query.pageSize) {
+      this.pageSize = parseInt(query.pageSize);
+    }
+    if (query.currentPage) {
+      this.currentPage = parseInt(query.currentPage);
+    }
+    if (query.sortBy) {
+      this.sortBy = decodeURI(query.sortBy);
+    }
+    if (query.sortDesc) {
+      this.sortDesc = query.sortDesc == "true";
+    }
+    // this.loadDatas();
   }
 
   get user() {
     return this.$store.state.user;
   }
 
-  loadDatas() {
-    this.loadProjects();
-    this.loadSpecies();
-    // this.loadInfrastructures();
-    this.loadExperiments();
-    this.loadExperimentStates();
+  refresh() {
+    let tableRef: any = this.$refs.tableRef;
+    tableRef.refresh();
   }
 
-  loadExperiments() {
+  loadDatas() {
+
+    this.loadProjects();
+    this.loadSpecies();
+
     let service: ExperimentsService = this.$opensilex.getService(
       "opensilex.ExperimentsService"
     );
 
     let projects = undefined;
-    if (this.filter.projects && this.filter.projects.length > 0) {
-      projects = this.filter.projects.map(project => project.uri);
-    }
+    // if (this.filter.projects && this.filter.projects.length > 0) {
+    //   projects = this.filter.projects.map(project => project.uri);
+    // }
 
     let isEnded = undefined;
     let isPublic = undefined;
@@ -407,26 +409,22 @@ export default class ExperimentList extends Vue {
             this.currentPage = http.response.metadata.pagination.currentPage + 1;
           }, 0);
 
-          this.experiments = http.response.result;
+          this.$router
+          .push({
+            path: this.$route.fullPath,
+            query: {
+              filterPattern: encodeURI(this.filterPattern),
+              sortBy: encodeURI(this.sortBy),
+              sortDesc: "" + this.sortDesc,
+              currentPage: "" + this.currentPage,
+              pageSize: "" + this.pageSize
+            }
+          })
+          .catch(function() {});
 
-          // if (this.campaigns.length == 0) {
-          //   let allCampaigns = this.experiments.map(
-          //     experiment => experiment.campaign
-          //   );
-          //   this.campaigns = allCampaigns.filter((campaign, index) => {
-          //     return allCampaigns.indexOf(campaign) === index;
-          //   });
-          // }
           return http.response.result;
-      })
-      .catch(error => {
-        this.resetExperiments(error);
-      });
-  }
+      }).catch(this.$opensilex.errorHandler);
 
-  resetExperiments(error) {
-    this.totalRow = 0;
-    this.experiments = new Array<ExperimentGetDTO>();
   }
 
   loadExperimentStates() {
@@ -537,7 +535,7 @@ export default class ExperimentList extends Vue {
     {
       key: "uri",
       label: "component.common.uri",
-      sortable: true
+      sortable: true,
     },
     {
       key: "label",
@@ -547,22 +545,20 @@ export default class ExperimentList extends Vue {
     {
       key: "projects",
       label: "component.experiment.projects",
-      sortable: true
     },
     {
       key: "species",
       label: "component.experiment.species",
-      // sortable: true
     },
     {
       key: "startDate",
       label: "component.experiment.startDate",
-      // sortable: true
+      sortable: true
     },
     {
       key: "endDate",
       label: "component.experiment.endDate",
-      // sortable: true
+      sortable: true
     },
     {
       label: "component.common.actions",

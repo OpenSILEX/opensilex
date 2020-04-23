@@ -971,7 +971,7 @@
                 <configuration>
                     <source>${java.compiler.version}</source>
                     <target>${java.compiler.version}</target>
-                    <!--<compilerArgument>-proc:none</compilerArgument>-->
+                    <compilerArgument>-proc:none</compilerArgument>
                     <!--                    <compilerArgs>
                         <arg>-Xlint:all</arg>
                     </compilerArgs>-->

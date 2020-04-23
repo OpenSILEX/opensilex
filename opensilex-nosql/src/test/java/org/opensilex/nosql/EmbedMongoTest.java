@@ -15,6 +15,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import static org.opensilex.nosql.NoSQLServiceTest.connection;
 import static org.opensilex.nosql.NoSQLServiceTest.initialize;
 import org.opensilex.nosql.model.TestMongoDocument;
@@ -81,7 +82,7 @@ public class EmbedMongoTest extends NoSQLServiceTest {
         connection.shutdown();
     }
 
-//    @Test
+    @Test
     public void createEmbedMongoTest() throws NamingException {
         String docTestname = "test" + UUID.randomUUID().toString();
         try ( // TODO implement mongodb startup mechanism

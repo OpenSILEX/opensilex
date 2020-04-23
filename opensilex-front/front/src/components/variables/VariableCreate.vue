@@ -328,6 +328,8 @@ export default class VariableForm extends Vue{
       done(
           this.service.createEntity(dto)
           .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+              dto.uri = http.response.result;
+              this.entityList.push(dto);
         }).catch(this.$opensilex.errorHandler)
       );
   }
@@ -336,6 +338,8 @@ export default class VariableForm extends Vue{
       done(
           this.service.createQuality(dto)
           .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+              dto.uri = http.response.result;
+              this.qualityList.push(dto);
         }).catch(this.$opensilex.errorHandler)
       );
   }
@@ -344,6 +348,8 @@ export default class VariableForm extends Vue{
       done(
           this.service.createMethod(dto)
           .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+              dto.uri = http.response.result;
+              this.methodList.push(dto);
         }).catch(this.$opensilex.errorHandler)
       );
   }
@@ -352,10 +358,11 @@ export default class VariableForm extends Vue{
       done(
           this.service.createUnit(dto)
           .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+              dto.uri = http.response.result;
+              this.scaleList.push(dto);
         }).catch(this.$opensilex.errorHandler)
       );
   }
-
 
 }
 

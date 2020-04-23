@@ -14,14 +14,9 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 import javax.naming.NamingException;
-import org.opensilex.OpenSilex;
-import org.opensilex.nosql.NoSQLConfig;
-import org.opensilex.nosql.NoSQLDBConfig;
-import org.opensilex.nosql.mongodb.MongoDBConnection;
 import org.opensilex.nosql.service.NoSQLConnection;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
-import org.opensilex.service.ServiceConstructorArguments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * </pre>
  *
  * @see org.opensilex.nosql.service.NoSQLConnection
- * @author Vincent Migot, Arnaud Charleroy  
+ * @author Vincent Migot, Arnaud Charleroy
  * @link https://cloud.google.com/appengine/docs/standard/java/datastore/jdo/creatinggettinganddeletingdata
  */
 public abstract class AbstractDataNucleusConnection extends BaseService implements Service, NoSQLConnection {
@@ -41,28 +36,24 @@ public abstract class AbstractDataNucleusConnection extends BaseService implemen
     /**
      * static final for the JNDI name of the PersistenceManagerFactory
      */
-    protected static final String PMF_PERSISANT_UNIT_NAME = "myPersistenceUnit";
-    protected static final String PMF_NAME = "MongoStore";
+//    protected static final String PMF_PERSISANT_UNIT_NAME = "myPersistenceUnit";
+//    protected static final String PMF_NAME = "MongoStore";
 
     protected PersistenceManagerFactory PMF;
 
     protected Properties PMF_PROPERTIES;
 
-    protected NoSQLDBConfig config;
- 
-
     @Override
     public void setup() throws Exception {
         PMF_PROPERTIES = new Properties();
-        PMF_PROPERTIES.setProperty("javax.jdo.PersistenceManagerFactoryClass", "org.datanucleus.api.jdo.JDOPersistenceManagerFactory"); 
+        PMF_PROPERTIES.setProperty("javax.jdo.PersistenceManagerFactoryClass", "org.datanucleus.api.jdo.JDOPersistenceManagerFactory");
     }
 
     @Override
-    public void startup() throws Exception { 
+    public void startup() throws Exception {
         PMF = JDOHelper.getPersistenceManagerFactory(PMF_PROPERTIES);
     }
 
-    
     // convenience methods to get a PersistenceManager 
     /**
      * Method to get a PersistenceManager
@@ -111,6 +102,5 @@ public abstract class AbstractDataNucleusConnection extends BaseService implemen
             PMF.close();
         }
     }
-  
 
 }

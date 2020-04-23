@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>CUSTOM-Integration tests</actionName>
+            <displayName>Integration tests</displayName>
+            <goals>
+                <goal>pre-integration-test</goal>
+                <goal>failsafe:integration-test</goal>
+            </goals>
+        </action>
+    </actions>

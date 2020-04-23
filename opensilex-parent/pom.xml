@@ -643,6 +643,7 @@
                                 <goal>java</goal>
                             </goals>
                             <configuration>
+                                <cleanupDaemonThreads>false</cleanupDaemonThreads>
                                 <mainClass>org.opensilex.utils.SwaggerAPIGenerator</mainClass>
                                 <arguments>
                                     <argument>${project.basedir}/src/main/java/</argument>
@@ -942,7 +943,7 @@
                             <version>${hibernate.validator.version}</version>
                         </path>
                     </annotationProcessorPaths>
-                     <annotationProcessorPaths>
+                    <annotationProcessorPaths>
                         <path>
                             <groupId>org.datanucleus</groupId>
                             <artifactId>datanucleus-jdo-query</artifactId>
@@ -1144,8 +1145,8 @@
                 <configuration>
                     <api>JDO</api>
                     <!--<fork>false</fork>-->
-                    <!--<log4jConfiguration>${basedir}/log4j.properties</log4jConfiguration>-->
-                    <verbose>true</verbose>
+                    <log4jConfiguration>${project.basedir}/../opensilex-main/src/main/resources/log4j.properties</log4jConfiguration>
+                    <!--<verbose>true</verbose>-->
                 </configuration>
                 <executions>
                     <execution>

@@ -441,13 +441,13 @@
             }
         },
         "variable": {
-            "uri": "Variable uri",
+            "uri": "Variable URI",
             "uri-help": "Variable unique identifier",
             "label": "name",
             "label-help": "Commonly used variable name",
             "label-placeholder": "",
-            "fullname" : "full name",
-            "fullname-help" : "Full Variable name",
+            "longname" : "long name",
+            "longname-help" : "Long variable name",
             "description": "description",
             "description-help": "Full description of your variable",
 
@@ -473,6 +473,7 @@
             "trait-name-help":"Variable trait name",
             "trait-uri" : "trait uri",
             "trait-uri-help":"Variable trait unique identifier",
+            "trait-uri-placeholder": "",
 
             "method": "method",
             "method-help": "Variable method",
@@ -485,8 +486,19 @@
             "method-description-help": "",
             "method-description-placeholder": "",
 
-            "scale" : "scale",
+            "scale" : "Scale",
             "scale-help": "Name of the scale associated with the variable",
+            "scale-uri" : "Scale URI",
+            "scale-uri-help":"Method unique identifier",
+            "scale-name" : "scale name",
+            "scale-name-help":"scale name",
+            "scale-name-placeholder":"Millimeter",
+            "scale-description": "Scale description",
+            "scale-description-help": "",
+            "scale-description-placeholder": "",
+            "scale-dimension" :"integration dimension",
+            "scale-dimension-help": "Integration dimension associated to the unit",
+            "scale-dimension-placeholder":  "Select a dimension",
 
             "form" : {
                 "placeholder": {

@@ -16,7 +16,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         resource = "Quality",
         graph = "variable"
 )
-public class QualityModel extends BaseVariableModel implements ClassURIGenerator<MethodModel> {
+public class QualityModel extends BaseVariableModel implements ClassURIGenerator<QualityModel> {
 
     public QualityModel() {
 
@@ -27,7 +27,7 @@ public class QualityModel extends BaseVariableModel implements ClassURIGenerator
     }
 
     @Override
-    public String[] getUriSegments(MethodModel instance) {
+    public String[] getUriSegments(QualityModel instance) {
         return new String[]{
             "variable",
             "quality",

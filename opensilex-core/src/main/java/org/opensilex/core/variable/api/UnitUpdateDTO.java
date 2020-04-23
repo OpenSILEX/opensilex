@@ -17,6 +17,8 @@ public class UnitUpdateDTO {
 
     protected String comment;
 
+    protected String dimension;
+
     protected List<OntologyReference> relations;
 
     public String getLabel() {
@@ -35,6 +37,14 @@ public class UnitUpdateDTO {
         this.comment = comment;
     }
 
+    public String getDimension() {
+        return dimension;
+    }
+
+    public void setDimension(String dimension) {
+        this.dimension = dimension;
+    }
+
     public List<OntologyReference> getRelations() {
         return relations;
     }
@@ -50,7 +60,7 @@ public class UnitUpdateDTO {
     public UnitModel defineModel(UnitModel model) {
         model.setLabel(getLabel());
         model.setComment(getComment());
-
+        model.setDimension(getDimension());
         return model;
     }
 }

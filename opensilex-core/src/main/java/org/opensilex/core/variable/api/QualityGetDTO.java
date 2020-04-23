@@ -21,6 +21,7 @@ public class QualityGetDTO {
 
     private String comment;
 
+
     public URI getUri() {
         return uri;
     }

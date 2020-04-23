@@ -29,18 +29,19 @@
             <opensilex-FormInputLabelHelper label=component.variable.method-name helpMessage="component.variable.method-name-help" >
             </opensilex-FormInputLabelHelper>
             <ValidationProvider :name="$t('component.variable.method-name')" v-slot="{ errors }">                
-            <b-form-input  id="label"  v-model="form.label"  type="textinput"
+            <b-form-input  id="label"  v-model="form.label"
                 :placeholder="$t('component.variable.method-name-placeholder')" >
             </b-form-input>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
             </ValidationProvider>
         </b-form-group>
 
-        <b-form-group  required  >
+        <!-- Comment -->
+        <b-form-group >
             <opensilex-FormInputLabelHelper label=component.variable.method-description helpMessage="component.variable.method-description-help" >
             </opensilex-FormInputLabelHelper>
             <ValidationProvider :name="$t('component.variable.method-description')" v-slot="{ errors }">                
-            <b-textarea  id="description"  v-model="form.description"  type="textarea"
+            <b-textarea  id="description"  v-model="form.comment" 
                 :placeholder="$t('component.variable.method-description-placeholder')" >
             </b-textarea>
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
@@ -57,18 +58,25 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
+import { MethodCreationDTO } from "opensilex-core/index";
 
 @Component
-export default class Method extends Vue {
+export default class MethodForm extends Vue {
 
     title = "";
     uriGenerated = true;
     editMode = false;
 
-    form: any = {
+    $opensilex: any;
+
+    @Ref("modalRef") readonly modalRef!: any;
+    @Ref("validatorRef") readonly validatorRef!: any;
+
+
+    form: MethodCreationDTO = {
         uri: null,
-        name: null,
-        description: null
+        label: null,
+        comment: null
     }
 
     showCreateForm() {
@@ -76,6 +84,64 @@ export default class Method extends Vue {
         let modalRef: any = this.$refs.modalRef;
         modalRef.show();
     }
+
+    hideForm() {
+        let modalRef: any = this.modalRef;
+        modalRef.hide();
+    }
+
+    onValidate() {
+      return new Promise((resolve, reject) => {
+
+        if (this.editMode) {
+          this.$emit("onUpdate", this.form, result => {
+            if (result instanceof Promise) {
+              result.then(resolve).catch(reject);
+            } else {
+              resolve(result);
+            }
+          });
+        } else {
+          return this.$emit("onCreate", this.form, result => {
+            if (result instanceof Promise) {
+              result.then(resolve).catch(reject);
+            } else {
+              resolve(result);
+            }
+          });
+        }
+    });
+  }
+
+    validate() {
+
+        let validatorRef: any = this.validatorRef;
+        validatorRef.validate().then(isValid => {
+        if (isValid) {
+            if (this.uriGenerated && !this.editMode) {
+            this.form.uri = null;
+            }
+
+            this.onValidate()
+            .then(() => {
+                this.$nextTick(() => {
+                let modalRef: any = this.modalRef;
+                modalRef.hide();
+                });
+            })
+            .catch(error => {
+                if (error.status == 409) {
+                this.$opensilex.errorHandler(
+                    error,
+                    this.$i18n.t("component.user.errors.user-already-exists")
+                );
+                } else {
+                this.$opensilex.errorHandler(error);
+                }
+            });
+        }
+    });
+  }
 }
 
 </script>

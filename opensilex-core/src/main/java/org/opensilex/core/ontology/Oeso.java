@@ -56,6 +56,7 @@ public class Oeso {
     public static final Property hasQuality = Ontology.property(NS, "hasQuality");
     public static final Property hasMethod = Ontology.property(NS, "hasMethod");
     public static final Property hasUnit = Ontology.property(NS, "hasUnit");
+    public static final Property hasDimension = Ontology.property(NS, "hasDimension");
 
     // ----- USERS ------
     public static final Resource ScientificSupervisor = Ontology.resource(NS, "ScientificSupervisor");

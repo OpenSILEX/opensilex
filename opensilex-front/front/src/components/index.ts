@@ -88,6 +88,9 @@ import TimeSearch from './phis/images/searchComponents/TimeSearch.vue';
 import VariableCreate from './variables/VariableCreate.vue';
 import EntityForm from './variables/EntityForm.vue';
 import MethodForm from './variables/MethodForm.vue';
+import QualityForm from './variables/QualityForm.vue';
+import ScaleForm from './variables/ScaleForm.vue';
+
 
 export default {
     // Common layout
@@ -187,6 +190,8 @@ export default {
     //variables
     'opensilex-VariableCreate': VariableCreate,
     'opensilex-EntityForm': EntityForm,
-    'opensilex-MethodForm': MethodForm
-
+    'opensilex-QualityForm': QualityForm,
+    'opensilex-MethodForm': MethodForm,
+    'opensilex-ScaleForm': ScaleForm
+    
 };

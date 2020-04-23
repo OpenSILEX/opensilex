@@ -21,6 +21,8 @@ public class UnitGetDTO {
 
     private String comment;
 
+    private String dimension;
+
     public URI getUri() {
         return uri;
     }
@@ -45,12 +47,21 @@ public class UnitGetDTO {
         this.comment = comment;
     }
 
+    public String getDimension() {
+        return dimension;
+    }
+
+    public void setDimension(String dimension) {
+        this.dimension = dimension;
+    }
+
     public static UnitGetDTO fromModel(UnitModel model) {
         UnitGetDTO dto = new UnitGetDTO();
 
         dto.setUri(model.getUri());
         dto.setLabel(model.getLabel());
         dto.setComment(model.getComment());
+        dto.setDimension(model.getDimension());
 
         return dto;
     }

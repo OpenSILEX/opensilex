@@ -5,9 +5,8 @@
 //******************************************************************************
 package org.opensilex.core.variable.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
+
 import java.net.URI;
 import java.util.List;
 import javax.inject.Inject;
@@ -31,6 +30,7 @@ import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MO
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_READ_ID;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_READ_LABEL_KEY;
+
 import org.opensilex.core.variable.dal.EntityDAO;
 import org.opensilex.core.variable.dal.EntityModel;
 import org.opensilex.server.response.ErrorResponse;
@@ -166,6 +166,10 @@ public class EntityAPI {
             credentialId = CREDENTIAL_VARIABLE_READ_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
     )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return Entity list", response = EntityGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+    })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchEntities(

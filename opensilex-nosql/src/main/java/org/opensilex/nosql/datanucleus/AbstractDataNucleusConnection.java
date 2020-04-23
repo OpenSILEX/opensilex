@@ -6,19 +6,22 @@
 //******************************************************************************
 package org.opensilex.nosql.datanucleus;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
-import javax.jdo.JDOEnhancer;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 import javax.naming.NamingException;
+import org.opensilex.OpenSilex;
 import org.opensilex.nosql.NoSQLConfig;
+import org.opensilex.nosql.NoSQLDBConfig;
+import org.opensilex.nosql.mongodb.MongoDBConnection;
 import org.opensilex.nosql.service.NoSQLConnection;
-import org.opensilex.service.ServiceConfig;
+import org.opensilex.service.BaseService;
+import org.opensilex.service.Service;
+import org.opensilex.service.ServiceConstructorArguments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,9 +32,10 @@ import org.slf4j.LoggerFactory;
  * </pre>
  *
  * @see org.opensilex.nosql.service.NoSQLConnection
- * @author Vincent Migot
+ * @author Vincent Migot, Arnaud Charleroy  
+ * @link https://cloud.google.com/appengine/docs/standard/java/datastore/jdo/creatinggettinganddeletingdata
  */
-public abstract class AbstractDataNucleusConnection implements NoSQLConnection {
+public abstract class AbstractDataNucleusConnection extends BaseService implements Service, NoSQLConnection {
 
     public final static Logger LOGGER = LoggerFactory.getLogger(AbstractDataNucleusConnection.class);
     /**
@@ -41,45 +45,24 @@ public abstract class AbstractDataNucleusConnection implements NoSQLConnection {
     protected static final String PMF_NAME = "MongoStore";
 
     protected PersistenceManagerFactory PMF;
-    public Properties PMF_PROPERTIES;
 
-    NoSQLConfig config;
+    protected Properties PMF_PROPERTIES;
 
-    /**
-     * Constructor for datanucleus allowing any Map of properties for
-     * configuration depending of concrete implementation requirements.
-     *
-     * @param config
-     */
-    public AbstractDataNucleusConnection(NoSQLConfig config) {
-        this.config = config;
-    }
+    protected NoSQLDBConfig config;
+ 
 
     @Override
     public void setup() throws Exception {
-        PMF_PROPERTIES = this.getConfigProperties(config);
+        PMF_PROPERTIES = new Properties();
         PMF_PROPERTIES.setProperty("javax.jdo.PersistenceManagerFactoryClass", "org.datanucleus.api.jdo.JDOPersistenceManagerFactory"); 
-        LOGGER.debug(PMF_PROPERTIES.get("javax.jdo.option.ConnectionURL").toString());
+    }
+
+    @Override
+    public void startup() throws Exception { 
         PMF = JDOHelper.getPersistenceManagerFactory(PMF_PROPERTIES);
-        // NOT WORKING
-//        JDOEnhancer enhancer = JDOHelper.getEnhancer();
-//        enhancer.setVerbose(true);
-//        enhancer.addPersistenceUnit(PMF.getPersistenceUnitName());
-//        enhancer.enhance();
     }
 
-    @Override
-    public void startup() throws Exception {
-    }
-
-    /**
-     *
-     * @param config
-     * @return
-     */
-    @Override
-    abstract public Properties getConfigProperties(NoSQLConfig config);
-
+    
     // convenience methods to get a PersistenceManager 
     /**
      * Method to get a PersistenceManager
@@ -98,7 +81,7 @@ public abstract class AbstractDataNucleusConnection implements NoSQLConnection {
     }
 
     @Override
-    public void remove(Object instance) throws NamingException {
+    public void delete(Object instance) throws NamingException {
         getPersistenceManager().deletePersistent(instance);
     }
 
@@ -128,5 +111,6 @@ public abstract class AbstractDataNucleusConnection implements NoSQLConnection {
             PMF.close();
         }
     }
+  
 
 }

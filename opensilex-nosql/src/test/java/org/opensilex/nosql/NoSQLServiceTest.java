@@ -15,23 +15,22 @@ import org.opensilex.unit.test.AbstractUnitTest;
  *
  * @author vincent
  */
-public abstract class NoSQLServiceTest extends AbstractUnitTest  {
+public abstract class NoSQLServiceTest extends AbstractUnitTest {
 
-    protected static NoSQLModule module;
+    protected static NoSQLModule NoSQLModule;
 
     protected static NoSQLConnection connection;
 
     public static void initialize() throws Exception {
-        module = opensilex.getModuleByClass(NoSQLModule.class);
-        module.setup();
+        NoSQLModule = opensilex.getModuleByClass(NoSQLModule.class);
+        NoSQLModule.setOpenSilex(opensilex);
+        NoSQLModule.setup();
+        NoSQLModule.startup();
     }
 
-    
-    
-      
     @AfterClass
     public static void destroy() throws Exception {
-        module.shutdown(); 
+        NoSQLModule.shutdown();
     }
 
     @Test
@@ -40,6 +39,4 @@ public abstract class NoSQLServiceTest extends AbstractUnitTest  {
         assertTrue("Fake test", true);
     }
 
-    
-    
 }

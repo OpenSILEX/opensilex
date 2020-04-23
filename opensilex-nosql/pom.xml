@@ -43,6 +43,17 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
-    </dependencies>    
+    </dependencies>
+    
+    <build>
+        <plugins>
+            <!--mongodb embed testing server--> 
+            <plugin>
+                <groupId>com.github.joelittlejohn.embedmongo</groupId>
+                <artifactId>embedmongo-maven-plugin</artifactId>
+            </plugin>
+        </plugins> 
+       
+    </build>
 </project>
 

@@ -785,26 +785,6 @@
                     </executions>
                 </plugin>
                 <plugin>
-                    <groupId>org.datanucleus</groupId>
-                    <artifactId>datanucleus-maven-plugin</artifactId>
-                    <version>${data.nucleus.maven.plugin.version}</version>
-                    <configuration>
-                        <api>JDO</api>
-                        <!--<fork>false</fork>-->
-                        <!--<log4jConfiguration>${basedir}/log4j.properties</log4jConfiguration>-->
-                        <verbose>true</verbose>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>enhance</id>
-                            <phase>process-classes</phase>
-                            <goals>
-                                <goal>enhance</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
                     <version>3.1.1</version>
@@ -991,7 +971,7 @@
                 <configuration>
                     <source>${java.compiler.version}</source>
                     <target>${java.compiler.version}</target>
-                    <compilerArgument>-proc:none</compilerArgument>
+                    <!--<compilerArgument>-proc:none</compilerArgument>-->
                     <!--                    <compilerArgs>
                         <arg>-Xlint:all</arg>
                     </compilerArgs>-->
@@ -1001,6 +981,13 @@
                             <groupId>org.hibernate.validator</groupId>
                             <artifactId>hibernate-validator-annotation-processor</artifactId>
                             <version>${hibernate.validator.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                     <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.datanucleus</groupId>
+                            <artifactId>datanucleus-jdo-query</artifactId>
+                            <version>${datanucleus-jdo-query.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
@@ -1232,8 +1219,8 @@
                 <configuration>
                     <api>JDO</api>
                     <!--<fork>false</fork>-->
-                    <log4jConfiguration>${project.basedir}/../opensilex-main/src/main/resources/log4j.properties</log4jConfiguration>
-                    <verbose>false</verbose>
+                    <!--<log4jConfiguration>${basedir}/log4j.properties</log4jConfiguration>-->
+                    <verbose>true</verbose>
                 </configuration>
                 <executions>
                     <execution>
@@ -1242,9 +1229,6 @@
                         <goals>
                             <goal>enhance</goal>
                         </goals>
-                        <configuration>
-                            <targetDirectory>${project.build.outputDirectory}</targetDirectory>
-                        </configuration>
                     </execution>
                     <execution>
                         <id>process-test-classes</id>
@@ -1253,7 +1237,6 @@
                             <goal>enhance</goal>
                         </goals>
                         <configuration>
-                            <targetDirectory>${project.build.testOutputDirectory}</targetDirectory>
                             <metadataDirectory>${project.build.testOutputDirectory}</metadataDirectory>
                         </configuration>
                     </execution>

@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 public class CoreModule extends OpenSilexModule implements APIExtension, LoginExtension, SPARQLExtension, JCSApiCacheExtension {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(CoreModule.class);
-
     @Override
     public Class<?> getConfigClass() {
         return CoreConfig.class;
@@ -39,7 +38,6 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
     public String getConfigId() {
         return "core";
     }
-
     @Override
     public void login(UserModel user, JWTCreator.Builder tokenBuilder) throws Exception {
 

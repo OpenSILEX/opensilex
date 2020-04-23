@@ -8,11 +8,9 @@ package org.opensilex.nosql.service;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Properties;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.naming.NamingException;
-import org.opensilex.nosql.NoSQLConfig;
 import org.opensilex.nosql.mongodb.MongoDBConnection;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
@@ -33,6 +31,7 @@ import org.opensilex.service.ServiceDefaultDefinition;
 )
 public class NoSQLService extends BaseService implements NoSQLConnection, Service {
 
+    public final static String DEFAULT_NOSQL_SERVICE = "sparql";
     private final NoSQLConnection connection;
 
     /**
@@ -43,12 +42,6 @@ public class NoSQLService extends BaseService implements NoSQLConnection, Servic
      */
     public NoSQLService(NoSQLConnection connection) {
         this.connection = connection;
-    }
-
-    @Override
-    public void setup() throws Exception {
-        connection.setOpenSilex(getOpenSilex());
-        connection.setup();
     }
 
     @Override
@@ -70,18 +63,13 @@ public class NoSQLService extends BaseService implements NoSQLConnection, Servic
     }
 
     @Override
-    public Properties getConfigProperties(NoSQLConfig config) {
-        return this.connection.getConfigProperties(config);
-    }
-
-    @Override
     public Object create(Object instance) throws NamingException {
-       return this.connection.create(instance);
+        return this.connection.create(instance);
     }
 
     @Override
-    public void remove(Object instance) throws NamingException {
-        this.connection.remove(instance);
+    public void delete(Object instance) throws NamingException {
+        this.connection.delete(instance);
     }
 
     @Override
@@ -91,7 +79,7 @@ public class NoSQLService extends BaseService implements NoSQLConnection, Servic
 
     @Override
     public Collection find(Query query, Map parameters) throws NamingException {
-       return this.connection.find(query, parameters);
+        return this.connection.find(query, parameters);
     }
 
     @Override
@@ -108,6 +96,5 @@ public class NoSQLService extends BaseService implements NoSQLConnection, Servic
     public PersistenceManager getPersistenceManager() throws NamingException {
         return this.connection.getPersistenceManager();
     }
- 
- 
+
 }

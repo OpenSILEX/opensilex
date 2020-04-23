@@ -47,35 +47,6 @@
     
     <build>
         <plugins>
-            <!-- exclude integration test from default test goal -->
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <excludedGroups>org.opensilex.integration.test.IntegrationTestCategory</excludedGroups>
-                </configuration>
-            </plugin>
-            
-            <!-- include integration test into integration-test -->
-            <plugin>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <configuration>
-                    <includes>
-                        <include>**/*</include>
-                    </includes>
-                    <groups>org.opensilex.integration.test.IntegrationTestCategory</groups>
-                    <argLine>${failsafeArgLine}</argLine>
-                    <skip>${skipIntegrationTest}</skip>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            
             <!--mongodb embed testing server--> 
             <plugin>
                 <groupId>com.github.joelittlejohn.embedmongo</groupId>

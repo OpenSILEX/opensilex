@@ -13,7 +13,9 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.naming.NamingException;
 import org.opensilex.nosql.NoSQLConfig;
+import org.opensilex.nosql.NoSQLDBConfig;
 import org.opensilex.service.Service;
+import org.opensilex.service.ServiceConfig;
 
 /**
  * Interface to describe big data connection required features.
@@ -25,13 +27,11 @@ import org.opensilex.service.Service;
  * @see org.opensilex.nosql.service.NoSQLService
  * @author Vincent Migot
  */
-public interface NoSQLConnection<Object> extends Service {
-
-    Properties getConfigProperties(NoSQLConfig config);
+public interface NoSQLConnection extends Service {
 
     public Object create(Object instance) throws NamingException;
 
-    public void remove(Object instance) throws NamingException;
+    public void delete(Object instance) throws NamingException;
 
     public Object findById(Class cls, Object key) throws NamingException;
 

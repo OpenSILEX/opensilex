@@ -8,14 +8,10 @@ package org.opensilex.nosql.service;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Properties;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.naming.NamingException;
-import org.opensilex.nosql.NoSQLConfig;
-import org.opensilex.nosql.NoSQLDBConfig;
 import org.opensilex.service.Service;
-import org.opensilex.service.ServiceConfig;
 
 /**
  * Interface to describe big data connection required features.

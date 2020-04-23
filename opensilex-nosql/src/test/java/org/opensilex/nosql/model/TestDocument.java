@@ -13,7 +13,7 @@ import javax.jdo.annotations.PrimaryKey;
  * @author charlero
  */
 @PersistenceCapable
-public class TestMongoDocument {
+public class TestDocument {
     @PrimaryKey
     String name;
     
@@ -21,7 +21,7 @@ public class TestMongoDocument {
     
     Integer value;
 
-    public TestMongoDocument(String name, Integer value) {
+    public TestDocument(String name, Integer value) {
         this.name = name;
         this.value = value;
     }

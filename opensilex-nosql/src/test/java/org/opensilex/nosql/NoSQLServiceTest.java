@@ -6,19 +6,19 @@
 package org.opensilex.nosql;
 
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
-import java.util.Random;
+import java.util.UUID;
 import javax.jdo.JDOQLTypedQuery;
 import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
 import javax.naming.NamingException;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import org.opensilex.nosql.model.TestDocument;
 import org.opensilex.nosql.service.NoSQLConnection;
+import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.unit.test.AbstractUnitTest;
 
 /**
@@ -27,41 +27,40 @@ import org.opensilex.unit.test.AbstractUnitTest;
  */
 public abstract class NoSQLServiceTest extends AbstractUnitTest {
 
-    protected static NoSQLModule NoSQLModule;
+    protected static NoSQLService service;
 
-    protected static NoSQLConnection connection;
-
-    public static void initialize() throws Exception {
-        NoSQLModule = opensilex.getModuleByClass(NoSQLModule.class);
-        NoSQLModule.setOpenSilex(opensilex);
-        NoSQLModule.setup();
-        NoSQLModule.startup();
+    public static void initialize(NoSQLConnection connection) throws Exception {
+        service = new NoSQLService(connection);
+        Assert.assertTrue(service.getPersistenceManager() != null);
     }
 
     @AfterClass
     public static void destroy() throws Exception {
-        NoSQLModule.shutdown();
+        try (PersistenceManager persistenceManager = service.getPersistenceManager()) {
+            JDOQLTypedQuery<TestDocument> tq = persistenceManager.newJDOQLTypedQuery(TestDocument.class);
+            tq.deletePersistentAll();
+        }
+
+        service.shutdown();
     }
 
     @Test
     public void createTest() throws NamingException, IOException {
-        int size = 0;
-
-        TestModel testModel = createModel();
-        service.create(testModel);
-
-        try (PersistenceManager persistenceManager = service.getPersistentConnectionManager()) {
-            try (JDOQLTypedQuery<TestModel> tq = persistenceManager.newJDOQLTypedQuery(TestModel.class)) {
-                QTestModel cand = QTestModel.candidate();
-                List<TestModel> results = tq.filter(cand.name.eq(testModel.getName()))
-                        .executeList();
-                size = results.size();
-            }
+        String docTestname = "test" + UUID.randomUUID().toString();
+        try (PersistenceManager persistenceManager = service.getPersistenceManager()) {
+            persistenceManager.makePersistent(new TestDocument(docTestname, 1));
+            Query q = persistenceManager.newQuery(TestDocument.class);
+            q.setFilter("name == '" + docTestname + "'");
+            List<TestDocument> results = q.executeList();
+            assertTrue(!results.isEmpty());
+//            try (JDOQLTypedQuery<TestMongoDocument> tq = persistenceManager.newJDOQLTypedQuery(TestDocument.class)) {
+//                QTestMongoDocument cand = QTestMongoDocument.candidate();
+//                List<TestMongoDocument> results = tq.filter(cand.name.eq(name).and(cand.value.eq(1)))
+//                        .executeList();
+//                assertTrue(!results.isEmpty());
+//            }
         }
-        assertTrue(size == 1);
 
-        TestModel modelFind = service.findById(TestModel.class, testModel.getName());
-        assertTrue(modelFind.getName().equals(testModel.getName()));
     }
 
 }

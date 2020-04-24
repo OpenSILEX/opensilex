@@ -7,12 +7,15 @@
 package org.opensilex.nosql.datanucleus;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 import java.util.Properties;
 import javax.jdo.JDOHelper;
+import javax.jdo.JDOObjectNotFoundException;
+import javax.jdo.JDOQLTypedQuery;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
+import javax.jdo.Transaction;
 import javax.naming.NamingException;
 import org.opensilex.nosql.service.NoSQLConnection;
 import org.opensilex.service.BaseService;
@@ -62,38 +65,76 @@ public abstract class AbstractDataNucleusConnection extends BaseService implemen
      * @throws javax.naming.NamingException
      */
     @Override
-    public PersistenceManager getPersistenceManager() throws NamingException {
+    public PersistenceManager getPersistentConnectionManager() throws NamingException {
         return PMF.getPersistenceManager();
     }
 
     @Override
     public Object create(Object instance) throws NamingException {
-        return getPersistenceManager().makePersistent(instance);
+        try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
+            Transaction tx1 = persistenceManager.currentTransaction();
+            tx1.begin();
+            persistenceManager.makePersistent(instance);
+            tx1.commit();
+            return JDOHelper.getObjectId(instance);
+        }
     }
 
     @Override
-    public void delete(Object instance) throws NamingException {
-        getPersistenceManager().deletePersistent(instance);
+    public void delete(Class cls, Object key) throws NamingException {
+        Object foundedObject  = findById(cls, key);
+
+        if (foundedObject != null) {
+            try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
+                Transaction transaction = persistenceManager.currentTransaction();
+                persistenceManager.deletePersistent(foundedObject);
+                transaction.commit();
+            }
+        }
+    }
+    
+  
+
+
+    @Override
+    public <T> T findById(Class cls, Object key) throws NamingException {
+        try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
+            try {
+                return (T) persistenceManager.getObjectById(cls, key);
+            } catch (JDOObjectNotFoundException e) {
+                return null;
+            }
+        }
     }
 
     @Override
-    public Object findById(Class cls, Object key) throws NamingException {
-        return getPersistenceManager().getObjectById(cls, key);
+    public Long count(JDOQLTypedQuery query) throws NamingException {
+        return (Long) query.executeResultUnique();
     }
 
-    @Override
-    public Collection find(Query query, Map parameters) throws NamingException {
-        return (Collection) query.executeWithMap(parameters);
-    }
-
-    @Override
+     @Override
     public Object update(Object instance) throws NamingException {
-        return getPersistenceManager().makePersistent(instance);
+        return  create(instance);
     }
 
     @Override
     public void createAll(Collection instances) throws NamingException {
-        getPersistenceManager().makeTransactionalAll(instances);
+        try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
+            persistenceManager.makeTransactionalAll(instances);
+        }
+    }
+
+    @Override
+    public void deleteAll(Collection instances) throws NamingException {
+        try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
+            persistenceManager.deletePersistentAll(instances);
+        }
+    }
+
+    @Override
+    public Long deleteAll(JDOQLTypedQuery query) throws NamingException {
+        return (Long) query.deletePersistentAll();
+
     }
 
     @Override

@@ -34,9 +34,9 @@ public class LogsDao {
         return instance;
     }
 
-    public void delete(LogModel instanceURI) throws Exception {
-        nosql.delete(instanceURI);
-    }
+//    public void delete(LogModel instanceURI) throws Exception {
+//        nosql.delete(instanceURI);
+//    }
 
 //    public LogModel get(URI instanceURI) throws Exception {
 //        return nosql.findById(LogModel.class, instanceURI);

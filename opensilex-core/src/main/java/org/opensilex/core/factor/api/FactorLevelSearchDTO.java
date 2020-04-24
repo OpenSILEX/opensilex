@@ -24,7 +24,6 @@ public class FactorLevelSearchDTO {
     @Required
     private String alias;
 
-    @Required
     private URI hasFactor;
     
     private String comment;

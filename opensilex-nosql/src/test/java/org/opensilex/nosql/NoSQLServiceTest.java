@@ -6,17 +6,22 @@
 package org.opensilex.nosql;
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import javax.jdo.JDOQLTypedQuery;
 import javax.jdo.PersistenceManager;
-import javax.jdo.Query;
 import javax.naming.NamingException;
+import javax.validation.constraints.AssertFalse;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import org.opensilex.nosql.model.TestDocument;
+import org.opensilex.nosql.model.QTestModel;
+import org.opensilex.nosql.model.TestModel;
 import org.opensilex.nosql.service.NoSQLConnection;
 import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.unit.test.AbstractUnitTest;
@@ -29,15 +34,28 @@ public abstract class NoSQLServiceTest extends AbstractUnitTest {
 
     protected static NoSQLService service;
 
+    protected TestModel createModel() {
+        Date date = new Date();
+        Timestamp timestamp = new Timestamp(date.getTime());
+
+        String docTestname = "test-" + timestamp.toString();
+        return new TestModel(docTestname, getRandomIntegerBetweenRange(5, 10));
+    }
+
+    protected static int getRandomIntegerBetweenRange(int min, int max) {
+        Random r = new Random();
+        return r.nextInt((max - min) + 1) + min;
+    }
+
     public static void initialize(NoSQLConnection connection) throws Exception {
         service = new NoSQLService(connection);
-        Assert.assertTrue(service.getPersistenceManager() != null);
+        Assert.assertTrue(service.getPersistentConnectionManager() != null);
     }
 
     @AfterClass
     public static void destroy() throws Exception {
-        try (PersistenceManager persistenceManager = service.getPersistenceManager()) {
-            JDOQLTypedQuery<TestDocument> tq = persistenceManager.newJDOQLTypedQuery(TestDocument.class);
+        try (PersistenceManager persistenceManager = service.getPersistentConnectionManager()) {
+            JDOQLTypedQuery<TestModel> tq = persistenceManager.newJDOQLTypedQuery(TestModel.class);
             tq.deletePersistentAll();
         }
 
@@ -46,21 +64,65 @@ public abstract class NoSQLServiceTest extends AbstractUnitTest {
 
     @Test
     public void createTest() throws NamingException, IOException {
-        String docTestname = "test" + UUID.randomUUID().toString();
-        try (PersistenceManager persistenceManager = service.getPersistenceManager()) {
-            persistenceManager.makePersistent(new TestDocument(docTestname, 1));
-            Query q = persistenceManager.newQuery(TestDocument.class);
-            q.setFilter("name == '" + docTestname + "'");
-            List<TestDocument> results = q.executeList();
-            assertTrue(!results.isEmpty());
-//            try (JDOQLTypedQuery<TestMongoDocument> tq = persistenceManager.newJDOQLTypedQuery(TestDocument.class)) {
-//                QTestMongoDocument cand = QTestMongoDocument.candidate();
-//                List<TestMongoDocument> results = tq.filter(cand.name.eq(name).and(cand.value.eq(1)))
-//                        .executeList();
-//                assertTrue(!results.isEmpty());
-//            }
+        int size = 0;
+
+        TestModel testModel = createModel();
+        service.create(testModel);
+
+        try (PersistenceManager persistenceManager = service.getPersistentConnectionManager()) {
+            try (JDOQLTypedQuery<TestModel> tq = persistenceManager.newJDOQLTypedQuery(TestModel.class)) {
+                QTestModel cand = QTestModel.candidate();
+                List<TestModel> results = tq.filter(cand.name.eq(testModel.getName()))
+                        .executeList();
+                size = results.size();
+            }
         }
+        assertTrue(size == 1);
+
+        TestModel modelFind = service.findById(TestModel.class, testModel.getName());
+        assertTrue(modelFind.getName().equals(testModel.getName()));
+    }
+
+    @Test
+    public void findTest() throws NamingException, IOException {
+        int size = 0;
+        TestModel testModel = createModel();
+
+        service.create(testModel);
+        service.create(createModel());
+
+
+        TestModel modelFind = service.findById(TestModel.class, testModel.getName());
+        assertTrue(modelFind != null);
+        assertTrue(modelFind.getName().equals(testModel.getName()));
+
+        TestModel modelFind2 = service.findById(TestModel.class, testModel.getName() + "test2");
+        assertNull(modelFind2);
+        
+         try (PersistenceManager persistenceManager = service.getPersistentConnectionManager()) {
+            try (JDOQLTypedQuery<TestModel> tq = persistenceManager.newJDOQLTypedQuery(TestModel.class)) {
+                QTestModel cand = QTestModel.candidate();
+                List<TestModel> results = tq.executeList();
+                size = results.size();
+            }
+        }
+        assertTrue(size == 2);
 
     }
 
+//    @Test
+    public void deleteObjectTest() throws NamingException, IOException {
+        TestModel testModel = createModel();
+        service.create(testModel);
+        service.create(createModel());
+        service.create(createModel());
+
+        TestModel modelFind = service.findById(TestModel.class, testModel.getName());
+        assertTrue(modelFind != null);
+
+        service.delete(TestModel.class, testModel.getName());
+        TestModel modelFind2 = service.findById(TestModel.class, testModel.getName());
+        assertTrue(modelFind2 != null);
+
+    }
 }

@@ -46,10 +46,7 @@ public class DataQueryLogFilter implements ContainerRequestFilter {
     private HttpServletRequest servletRequest;
 
     @Inject
-    private OpenSilex opensilex;
-    
-     @Inject
-    private NoSQLService nosql;
+    private OpenSilex opensilex; 
 
     final static String MAP_FIELD_QUERY_PARAMETERS = "queryParameters";
     final static String MAP_FIELD_RESSOURCE_PATH = "ressourcePath";
@@ -82,8 +79,10 @@ public class DataQueryLogFilter implements ContainerRequestFilter {
 
                     // 5. load user model
                     UserModel user = (UserModel) requestContext.getSecurityContext().getUserPrincipal();
+                    NoSQLService nosql = opensilex.getServiceInstance(NoSQLService.DEFAULT_NOSQL_SERVICE, NoSQLService.class);
+
                     // 6. save data search query
-//                    LogsDao logsDao = new LogsDao(nosql);
+                    LogsDao logsDao = new LogsDao(nosql);
                     LogModel log = new LogModel();
                     Map<String, Object> queryParmeters = new HashMap<>();
                     queryParmeters.put(MAP_FIELD_QUERY_PARAMETERS, queryPathParameters);
@@ -94,7 +93,7 @@ public class DataQueryLogFilter implements ContainerRequestFilter {
                     log.setUserUri(user.getUri());
                     log.setRemoteAdress(servletRequest.getRemoteAddr());
                     try {
-//                        logsDao.create(log);
+                        logsDao.create(log);
                     } catch (Exception ex) {
                         LOGGER.error(ex.getMessage(), ex);
                     }

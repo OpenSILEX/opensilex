@@ -14,22 +14,19 @@ import javax.jdo.annotations.PrimaryKey;
  */
 @PersistenceCapable
 public class TestModel {
-
     @PrimaryKey
     String name;
-
+    
     String description;
-
+    
     Integer value;
-
-    public TestModel() {
-    }
 
     public TestModel(String name) {
         this.name = name;
         this.value = 0;
     }
 
+    
     public TestModel(String name, Integer value) {
         this.name = name;
         this.value = value;
@@ -58,4 +55,10 @@ public class TestModel {
     public void setValue(Integer value) {
         this.value = value;
     }
+    
+    
+
+    
+    
+    
 }

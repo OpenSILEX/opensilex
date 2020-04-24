@@ -1,5 +1,5 @@
 ////******************************************************************************
-////                               DataLogAccessUserDTO.java 
+////                               AccessUserLogDTO.java 
 //// SILEX-PHIS
 //// Copyright © INRAE 2020
 //// Creation date: February 2020
@@ -10,33 +10,31 @@
 //import io.swagger.annotations.ApiModelProperty;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
-//import opensilex.service.documentation.DocumentationAnnotation;
-//import opensilex.service.resource.dto.manager.AbstractVerifiedClass;
-//import opensilex.service.model.User;
+//
 //
 ///**
 // * DataLogAccessUser DTO.
 //* @author Arnaud Charleroy
 // */
-//public class DataLogAccessUserDTO extends AbstractVerifiedClass {
+//public class AccessUserLogDTO  {
 //
-//    final static Logger LOGGER = LoggerFactory.getLogger(DataLogAccessUserDTO.class);
+//    final static Logger LOGGER = LoggerFactory.getLogger(AccessUserLogDTO.class);
 //    
 //    private String email;
 //    private String firstName;
 //    private String familyName;
 //    private String uri;
-//    
-//    @Override
-//    public User createObjectFromDTO() {
-//        User user = new User(email);
-//        user.setFirstName(firstName);
-//        user.setFamilyName(familyName);
-//        
-//        return user;
+//
+//    public AccessUserLogDTO(String email, String firstName, String familyName, String uri) {
+//        this.email = email;
+//        this.firstName = firstName;
+//        this.familyName = familyName;
+//        this.uri = uri;
 //    }
+//    
+//  
 //     
-//    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_EMAIL)
+//    @ApiModelProperty()
 //    public String getEmail() {
 //        return email;
 //    }
@@ -45,7 +43,7 @@
 //        this.email = email;
 //    }
 //    
-//    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_FIRST_NAME)
+//    @ApiModelProperty()
 //    public String getFirstName() {
 //        return firstName;
 //    }
@@ -54,7 +52,7 @@
 //        this.firstName = firstName;
 //    }
 //    
-//    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_LASTNAME)
+//    @ApiModelProperty()
 //    public String getFamilyName() {
 //        return familyName;
 //    }
@@ -63,7 +61,7 @@
 //        this.familyName = familyName;
 //    }
 //    
-//    @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_URI)
+//    @ApiModelProperty()
 //    public String getUri() {
 //        return uri;
 //    }

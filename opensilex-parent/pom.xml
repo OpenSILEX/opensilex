@@ -72,6 +72,7 @@
         <datanucleus-jdo-query.version>5.0.9</datanucleus-jdo-query.version>
         <data.nucleus.jta.version>5.10.4.Final</data.nucleus.jta.version>
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
+        <data.nucleus.accessplatform.mongodb.version>5.2.3</data.nucleus.accessplatform.mongodb.version>
         <data.nucleus.maven.plugin.version>5.2.1</data.nucleus.maven.plugin.version>
         <bytebuddy.version>1.10.9</bytebuddy.version>
         <java.jwt.version>3.10.2</java.jwt.version>
@@ -292,7 +293,7 @@
         <dependency>
             <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-accessplatform-jdo-mongodb</artifactId>
-            <version>${data.nucleus.mongodb.version}</version>
+            <version>${data.nucleus.accessplatform.mongodb.version}</version>
             <type>pom</type>
         </dependency>
 

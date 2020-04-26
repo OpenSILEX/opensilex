@@ -1,18 +1,32 @@
 <template>
   <div>
-    <b-input-group class="mt-3 mb-3" size="sm">
-      <b-input-group>
-        <b-form-input
-          v-model="filterPattern"
-          debounce="300"
-          :placeholder="$t('component.project.filter-placeholder')"
-        ></b-form-input>
-        <template v-slot:append>
-          <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
-            <font-awesome-icon icon="times" size="sm" />
-          </b-btn>
-        </template>
-      </b-input-group>
+    <b-form-group label="Using options array:">
+      <b-form-radio-group
+        id="checkbox-group-1"
+        v-model="selected"
+        :options="options"
+        name="flavour-1"
+      ></b-form-radio-group>
+    </b-form-group>
+    <b-input-group v-if="selected==='year'">
+      <b-form-input v-model="yearFilterPattern" debounce="300" placeholder="year"></b-form-input>
+      <template v-slot:append>
+        <b-btn :disabled="!yearFilterPattern" variant="primary" @click="yearFilterPattern = ''">
+          <font-awesome-icon icon="times" size="sm" />
+        </b-btn>
+      </template>
+    </b-input-group>
+    <b-input-group v-if="selected==='name'">
+      <b-form-input
+        v-model="nameFilterPattern"
+        debounce="300"
+        :placeholder="$t('component.project.filter-placeholder')"
+      ></b-form-input>
+      <template v-slot:append>
+        <b-btn :disabled="!nameFilterPattern" variant="primary" @click="nameFilterPattern = ''">
+          <font-awesome-icon icon="times" size="sm" />
+        </b-btn>
+      </template>
     </b-input-group>
 
     <b-table
@@ -48,10 +62,12 @@
 
       <template v-slot:row-details="data">
         <div v-if="data.item.description">
-          DESCRIPTION:<br> <div class="capitalize-first-letter">{{ data.item.description }}</div>
+          DESCRIPTION:
+          <br />
+          <div class="capitalize-first-letter">{{ data.item.description }}</div>
         </div>
-        
-       <div v-if="data.item.coordinators">
+
+        <div v-if="data.item.coordinators">
           Coordinators :
           <b-badge
             v-for="(item, index) in data.item.coordinators"
@@ -118,6 +134,7 @@ export default class ProjectTable extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;
+  $i18n: any;
 
   get user() {
     return this.$store.state.user;
@@ -133,20 +150,49 @@ export default class ProjectTable extends Vue {
   sortBy = "uri";
   sortDesc = false;
 
-  private filterPatternValue: any = "";
-  set filterPattern(value: string) {
-    this.filterPatternValue = value;
+  selected = "year"; // Must be an array reference!
+  optionsValue = [
+    { text: "Année", value: "year" },
+    { text: "Finance", value: "finance" },
+    { text: "Nom", value: "name" }
+  ];
+  set options(value: any) {
+    this.optionsValue = value;
+  }
+
+  get options() {
+    return this.optionsValue;
+  }
+
+  private yearFilterPatternValue: any = "";
+  set yearFilterPattern(value: string) {
+    this.yearFilterPatternValue = value;
     this.refresh();
   }
 
-  get filterPattern() {
-    return this.filterPatternValue;
+  get yearFilterPattern() {
+    return this.yearFilterPatternValue;
+  }
+
+  private nameFilterPatternValue: any = "";
+  set nameFilterPattern(value: string) {
+    this.nameFilterPatternValue = value;
+    this.refresh();
+  }
+
+  get nameFilterPattern() {
+    return this.nameFilterPatternValue;
   }
 
   created() {
     let query: any = this.$route.query;
-    if (query.filterPattern) {
-      this.filterPatternValue = decodeURI(query.filterPattern);
+    if (query.nameFilterPattern) {
+      this.nameFilterPatternValue = decodeURI(query.nameFilterPattern);
+      this.selected = "name";
+    }
+    if (query.yearFilterPattern) {
+      this.yearFilterPatternValue = decodeURI(query.yearFilterPattern);
+      this.selected = "year";
     }
     if (query.pageSize) {
       this.pageSize = parseInt(query.pageSize);
@@ -163,7 +209,7 @@ export default class ProjectTable extends Vue {
   }
 
   fields = [
-      {
+    {
       key: "shortname",
       label: "component.common.acronym",
       sortable: true
@@ -172,7 +218,7 @@ export default class ProjectTable extends Vue {
       key: "label",
       label: "component.common.name",
       sortable: true
-    }, 
+    },
     {
       key: "objective",
       label: "component.project.objective",
@@ -228,10 +274,10 @@ export default class ProjectTable extends Vue {
         undefined,
         undefined,
         undefined,
-        this.filterPattern,
+        this.nameFilterPattern,
         undefined,
         undefined,
-        undefined,
+        orderBy,
         this.currentPage - 1,
         this.pageSize
       )
@@ -242,12 +288,13 @@ export default class ProjectTable extends Vue {
         setTimeout(() => {
           this.currentPage = http.response.metadata.pagination.currentPage + 1;
         }, 0);
-
-        this.$router
+       if(this.selected==="name"){
+          this.$router
           .push({
             path: this.$route.fullPath,
             query: {
-              filterPattern: encodeURI(this.filterPattern),
+              nameFilterPattern: encodeURI(this.nameFilterPattern),
+              yearFilterPattern: null,
               sortBy: encodeURI(this.sortBy),
               sortDesc: "" + this.sortDesc,
               currentPage: "" + this.currentPage,
@@ -255,6 +302,23 @@ export default class ProjectTable extends Vue {
             }
           })
           .catch(function() {});
+
+       } 
+       if(this.selected==="year"){
+          this.$router
+          .push({
+            path: this.$route.fullPath,
+            query: {
+              nameFilterPattern: null,
+              yearFilterPattern: encodeURI(this.yearFilterPattern),
+              sortBy: encodeURI(this.sortBy),
+              sortDesc: "" + this.sortDesc,
+              currentPage: "" + this.currentPage,
+              pageSize: "" + this.pageSize
+            }
+          })
+          .catch(function() {});
+       }
 
         return http.response.result;
       })

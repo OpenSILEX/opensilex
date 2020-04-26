@@ -244,9 +244,9 @@
         },
         "project": {
             "uri": "Project URI",
-            "search-description": "Manage and configure projects ",
-            "add": "Create a project",
-            "update": "Update a project",
+            "search-description":"Manage and configure projects ",
+            "add":"Create project",
+            "update":"Update project",
             "form-name-placeholder": "Enter project name",
             "form-description-placeholder":"Enter project description",
             "form-contact-placeholder":"Enter contacts to search",

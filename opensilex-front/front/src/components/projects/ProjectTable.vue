@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-form-group label="Using options array:">
+    <b-form-group label="Choose a filter type:">
       <b-form-radio-group
         id="checkbox-group-1"
         v-model="selected"
@@ -8,14 +8,21 @@
         name="flavour-1"
       ></b-form-radio-group>
     </b-form-group>
-    <b-input-group v-if="selected==='year'">
-      <b-form-input v-model="yearFilterPattern" debounce="300" placeholder="year"></b-form-input>
-      <template v-slot:append>
-        <b-btn :disabled="!yearFilterPattern" variant="primary" @click="yearFilterPattern = ''">
-          <font-awesome-icon icon="times" size="sm" />
-        </b-btn>
-      </template>
-    </b-input-group>
+
+    <div role="group" v-if="selected==='year'">
+      <b-form-input
+        id="input-live"
+        v-model="yearFilterPattern"
+        :state="yearState"
+        aria-describedby="input-live-feedback"
+        placeholder="Enter a year"
+        trim
+      ></b-form-input>
+
+      <!-- This will only be shown if the preceding input has an invalid state -->
+      <b-form-invalid-feedback id="input-live-feedback">Enter a valid year to filter project</b-form-invalid-feedback>
+    </div>
+
     <b-input-group v-if="selected==='name'">
       <b-form-input
         v-model="nameFilterPattern"
@@ -28,7 +35,7 @@
         </b-btn>
       </template>
     </b-input-group>
-
+<br><br>
     <b-table
       ref="tableRef"
       striped
@@ -40,14 +47,9 @@
       :sort-desc.sync="sortDesc"
       no-provider-paging
     >
-      <template v-slot:head(shortname)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(label)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(objective)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(hasFinancialFunding)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(startDate)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(endDate)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(homePage)="data">{{$t(data.label)}}</template>
       <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(label)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(comment)="data">{{$t(data.label)}}</template>
       <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
 
       <template v-slot:cell(uri)="data">
@@ -150,28 +152,36 @@ export default class ProjectTable extends Vue {
   sortBy = "uri";
   sortDesc = false;
 
-  selected = "year"; // Must be an array reference!
+  selected = "name";
+
   optionsValue = [
+
+    { text: "Nom", value: "name" },
     { text: "Année", value: "year" },
-    { text: "Finance", value: "finance" },
-    { text: "Nom", value: "name" }
+    { text: "Finance", value: "finance" }
   ];
   set options(value: any) {
     this.optionsValue = value;
   }
-
   get options() {
     return this.optionsValue;
   }
 
-  private yearFilterPatternValue: any = "";
-  set yearFilterPattern(value: string) {
+  private yearFilterPatternValue :any= "";
+  set yearFilterPattern(value: number) {
     this.yearFilterPatternValue = value;
-    this.refresh();
+    if (this.yearFilterPattern > 1000 && this.yearFilterPattern < 4000) { //the user enter a valid year
+    
+      this.refresh();
+    }
   }
-
   get yearFilterPattern() {
     return this.yearFilterPatternValue;
+  }
+  get yearState() {
+    return this.yearFilterPattern > 1000 && this.yearFilterPattern < 4000
+      ? true
+      : false;
   }
 
   private nameFilterPatternValue: any = "";
@@ -179,7 +189,6 @@ export default class ProjectTable extends Vue {
     this.nameFilterPatternValue = value;
     this.refresh();
   }
-
   get nameFilterPattern() {
     return this.nameFilterPatternValue;
   }
@@ -210,8 +219,8 @@ export default class ProjectTable extends Vue {
 
   fields = [
     {
-      key: "shortname",
-      label: "component.common.acronym",
+      key: "uri",
+      label: "component.common.uri",
       sortable: true
     },
     {
@@ -220,28 +229,8 @@ export default class ProjectTable extends Vue {
       sortable: true
     },
     {
-      key: "objective",
-      label: "component.project.objective",
-      sortable: true
-    },
-    {
-      key: "hasFinancialFunding",
-      label: "component.project.financialFunding",
-      sortable: true
-    },
-    {
-      key: "startDate",
-      label: "component.common.startDate",
-      sortable: true
-    },
-    {
-      key: "endDate",
-      label: "component.common.endDate",
-      sortable: true
-    },
-    {
-      key: "uri",
-      label: "component.common.uri",
+      key: "comment",
+      label: "component.common.description",
       sortable: true
     },
     {
@@ -269,11 +258,23 @@ export default class ProjectTable extends Vue {
         orderBy.push(orderByText + "asc");
       }
     }
+
+    let startDateFilter:string;
+    let endDateFilter:string;
+    if(this.yearFilterPatternValue!== ""){
+
+       startDateFilter=this.yearFilterPatternValue.toString()+"-01-01";
+       endDateFilter=this.yearFilterPatternValue.toString()+"-12-31";
+    }else {
+       startDateFilter=undefined;
+       endDateFilter=undefined;
+    }
+
     return service
       .searchProjects(
         undefined,
-        undefined,
-        undefined,
+        startDateFilter,
+        endDateFilter,
         this.nameFilterPattern,
         undefined,
         undefined,
@@ -288,37 +289,38 @@ export default class ProjectTable extends Vue {
         setTimeout(() => {
           this.currentPage = http.response.metadata.pagination.currentPage + 1;
         }, 0);
-       if(this.selected==="name"){
+        if (this.selected === "name") {
           this.$router
-          .push({
-            path: this.$route.fullPath,
-            query: {
-              nameFilterPattern: encodeURI(this.nameFilterPattern),
-              yearFilterPattern: null,
-              sortBy: encodeURI(this.sortBy),
-              sortDesc: "" + this.sortDesc,
-              currentPage: "" + this.currentPage,
-              pageSize: "" + this.pageSize
-            }
-          })
-          .catch(function() {});
+            .push({
+              path: this.$route.fullPath,
+              query: {
+                nameFilterPattern: encodeURI(this.nameFilterPattern),
+                yearFilterPattern: null,
+                sortBy: encodeURI(this.sortBy),
+                sortDesc: "" + this.sortDesc,
+                currentPage: "" + this.currentPage,
+                pageSize: "" + this.pageSize
+              }
+            })
+            .catch(function() {});
 
-       } 
-       if(this.selected==="year"){
+            this.yearFilterPatternValue="";
+        }
+        if (this.selected === "year") {
           this.$router
-          .push({
-            path: this.$route.fullPath,
-            query: {
-              nameFilterPattern: null,
-              yearFilterPattern: encodeURI(this.yearFilterPattern),
-              sortBy: encodeURI(this.sortBy),
-              sortDesc: "" + this.sortDesc,
-              currentPage: "" + this.currentPage,
-              pageSize: "" + this.pageSize
-            }
-          })
-          .catch(function() {});
-       }
+            .push({
+              path: this.$route.fullPath,
+              query: {
+                nameFilterPattern: null,
+                yearFilterPattern: this.yearFilterPattern? encodeURI(this.yearFilterPattern.toString()):null,
+                sortBy: encodeURI(this.sortBy),
+                sortDesc: "" + this.sortDesc,
+                currentPage: "" + this.currentPage,
+                pageSize: "" + this.pageSize
+              }
+            })
+            .catch(function() {});
+        }
 
         return http.response.result;
       })

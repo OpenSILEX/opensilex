@@ -5,8 +5,10 @@
     :small="small"
     :label="label"
     :disabled="disabled"
-    icon="fa#trash-alt"
   >
+    <template v-slot:icon>
+      <font-awesome-icon icon="trash-alt" size="sm" />
+    </template>
   </opensilex-Button>
 </template>
 
@@ -27,15 +29,12 @@ export default class DeleteButton extends Vue {
 
   deleteAction() {
     this.$bvModal
-      .msgBoxConfirm(
-        this.$t("component.common.delete-confirmation").toString(),
-        {
-          cancelTitle: this.$t("component.common.cancel").toString(),
-          okTitle: this.$t("component.common.delete").toString(),
-          okVariant: "danger",
-          centered: true
-        }
-      )
+      .msgBoxConfirm(this.$t("component.common.delete-confirmation").toString(), {
+        "cancelTitle": this.$t('component.common.cancel').toString(),
+        "okTitle": this.$t('component.common.delete').toString(),
+        okVariant: 'danger',
+        centered: true
+      })
       .then(confirmation => {
         if (confirmation) {
           this.$emit("click");

@@ -1,38 +1,42 @@
 <template>
-  <b-form>
-    <!-- URI -->
-    <opensilex-UriForm
-      :uri.sync="form.uri"
-      label="component.group.group-uri"
-      helpMessage="component.common.uri.help-message"
-      :editMode="editMode"
-      :generated.sync="uriGenerated"
-    ></opensilex-UriForm>
+  <b-modal ref="modalRef" @ok.prevent="validate" size="xl" :static="true">
+    <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
+    <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
 
-    <!-- Name -->
-    <opensilex-InputForm
-      :value.sync="form.name"
-      label="component.common.name"
-      type="text"
-      :required="true"
-      placeholder="component.group.form-name-placeholder"
-    ></opensilex-InputForm>
+    <template v-slot:modal-title>{{title}}</template>
+    <ValidationObserver ref="validatorRef">
+      <b-form>
+        <!-- URI -->
+        <opensilex-UriForm
+          :uri.sync="form.uri"
+          label="component.group.group-uri"
+          helpMessage="component.common.uri.help-message"
+          :editMode="editMode"
+        ></opensilex-UriForm>
 
-    <!-- Description -->
-    <opensilex-TextAreaForm
-      :value.sync="form.description"
-      label="component.common.description"
-      :required="true"
-      placeholder="component.group.form-description-placeholder"
-    ></opensilex-TextAreaForm>
+        <!-- Name -->
+        <opensilex-InputForm
+          :value.sync="form.name"
+          label="component.common.name"
+          type="text"
+          :required="true"
+          placeholder="component.group.form-name-placeholder"
+        ></opensilex-InputForm>
 
-    <!-- User profile selection -->
-    <opensilex-GroupUserProfileForm
-      v-if="form.userProfiles"
-      ref="userProfilesRef"
-      :profiles.sync="form.userProfiles"
-    ></opensilex-GroupUserProfileForm>
-  </b-form>
+        <!-- Description -->
+        <opensilex-TextAreaForm
+          :value.sync="form.description"
+          label="component.common.description"
+          type="text"
+          :required="true"
+          placeholder="component.group.form-description-placeholder"
+        ></opensilex-TextAreaForm>
+
+        <!-- User profile selection -->
+        <opensilex-GroupUserProfileForm ref="userProfilesRef" :userProfiles="form.userProfiles"></opensilex-GroupUserProfileForm>
+      </b-form>
+    </ValidationObserver>
+  </b-modal>
 </template>
 
 <script lang="ts">

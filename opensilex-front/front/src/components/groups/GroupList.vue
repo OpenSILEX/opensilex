@@ -1,21 +1,31 @@
 <template>
   <div>
     <opensilex-StringFilter
-      :filter.sync="filter"
-      @update="updateFilter()"
+      :filter.sync="filterPattern"
       placeholder="component.group.filter-placeholder"
     ></opensilex-StringFilter>
-
-    <opensilex-TableAsyncView
+    <b-table
       ref="tableRef"
-      :searchMethod="searchGroups"
+      striped
+      hover
+      small
+      responsive
+      primary-key="uri"
+      :busy="isSearching"
+      :items="loadData"
       :fields="fields"
     >
-      <template v-slot:cell(uri)="{data}">
+      <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(name)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(description)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(userProfiles)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
+
+      <template v-slot:cell(uri)="data">
         <opensilex-UriLink :uri="data.item.uri"></opensilex-UriLink>
       </template>
 
-      <template v-slot:cell(userProfiles)="{data}">
+      <template v-slot:cell(userProfiles)="data">
         <div>{{$tc("component.user.label", data.item.userProfiles.length, {count: data.item.userProfiles.length})}}</div>
       </template>
 
@@ -45,7 +55,7 @@
           ></opensilex-EditButton>
           <opensilex-DeleteButton
             v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_DELETE_ID)"
-            @click="deleteGroup(data.item.uri)"
+            @click="$emit('onDelete', data.item.uri)"
             label="component.group.delete"
             :small="true"
           ></opensilex-DeleteButton>
@@ -58,6 +68,7 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
+import VueRouter from "vue-router";
 import HttpResponse, {
   OpenSilexResponse
 } from "opensilex-security/HttpResponse";
@@ -76,7 +87,22 @@ export default class GroupList extends Vue {
     return this.$store.state.credentials;
   }
 
-  private filter: any = "";
+  currentPage: number = 1;
+  pageSize = 20;
+  totalRow = 0;
+  sortBy = "name";
+  sortDesc = false;
+  isSearching = false;
+
+  private filterPatternValue: any = "";
+  set filterPattern(value: string) {
+    this.filterPatternValue = value;
+    this.refresh();
+  }
+
+  get filterPattern() {
+    return this.filterPatternValue;
+  }
 
   created() {
     let query: any = this.$route.query;
@@ -123,24 +149,49 @@ export default class GroupList extends Vue {
     this.tableRef.refresh();
   }
 
-  searchGroups(options) {
-    return this.$opensilex
-      .getService("opensilex.SecurityService")
-      .searchGroups(
-        this.filter,
-        options.orderBy,
-        options.currentPage,
-        options.pageSize
-      );
-  }
+  loadData() {
+    let service: SecurityService = this.$opensilex.getService(
+      "opensilex.SecurityService"
+    );
 
-  deleteGroup(uri: string) {
-    this.$opensilex
-      .getService("opensilex.SecurityService")
-      .deleteGroup(uri)
-      .then(() => {
-        this.refresh();
-        this.$emit("onDelete", uri);
+    let orderBy = [];
+    if (this.sortBy) {
+      let orderByText = this.sortBy + "=";
+      if (this.sortDesc) {
+        orderBy.push(orderByText + "desc");
+      } else {
+        orderBy.push(orderByText + "asc");
+      }
+    }
+
+    this.$opensilex.updateURLParameters({
+      filterPattern: encodeURI(this.filterPattern),
+      sortBy: encodeURI(this.sortBy),
+      sortDesc: "" + this.sortDesc,
+      currentPage: "" + this.currentPage,
+      pageSize: "" + this.pageSize
+    });
+
+    this.$opensilex.disableLoader();
+    this.isSearching = true;
+    return service
+      .searchGroups(
+        this.filterPattern,
+        orderBy,
+        this.currentPage - 1,
+        this.pageSize
+      )
+      .then((http: HttpResponse<OpenSilexResponse<Array<GroupDTO>>>) => {
+        this.totalRow = http.response.metadata.pagination.totalCount;
+        this.pageSize = http.response.metadata.pagination.pageSize;
+        setTimeout(() => {
+          this.currentPage = http.response.metadata.pagination.currentPage + 1;
+        }, 0);
+
+        this.isSearching = false;
+        this.$opensilex.enableLoader();
+
+        return http.response.result;
       })
       .catch(this.$opensilex.errorHandler);
   }

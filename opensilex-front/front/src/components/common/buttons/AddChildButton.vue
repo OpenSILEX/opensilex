@@ -2,11 +2,14 @@
   <opensilex-Button
     @click="$emit('click')"
     variant="outline-success"
-    icon="fa#plus"
     :small="small"
     :label="label"
     :disabled="disabled"
-  ></opensilex-Button>
+  >
+    <template v-slot:icon>
+      <font-awesome-icon icon="plus" size="sm" />
+    </template>
+  </opensilex-Button>
 </template>
 
 <script lang="ts">

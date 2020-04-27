@@ -7,8 +7,8 @@
     :disabled="disabled"
   >
     <template v-slot:icon>
-      <opensilex-Icon v-if="!detailVisible" icon="fa#eye" />
-      <opensilex-Icon v-if="detailVisible" icon="fa#eye-slash" />
+      <font-awesome-icon v-if="!detailVisible" icon="eye" size="sm" />
+      <font-awesome-icon v-if="detailVisible" icon="eye-slash" size="sm" />
     </template>
   </opensilex-Button>
 </template>

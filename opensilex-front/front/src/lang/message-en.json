@@ -68,7 +68,6 @@
             "previous": "Previous",
             "colon": ":",
             "uri-copy": "URI copied to clipboard",
-            "search-prompt-text": "Type to search...",
             "errors": {
                 "error-title": "Error",
                 "constraint-error": "A data validation error occured, please check the validity of the submited fields.",
@@ -245,11 +244,11 @@
             }
         },
         "experiment": {
-            "uri-help": "Unique experiment identifier",
-            "label-placeholder": "ZA17",
-            "label-help": "Experiment name",
-            "objective": "Objective",
-            "objective-placeholder": "",
+            "uri-help" :"Unique experiment identifier",
+            "label-placeholder" : "ZA17",
+            "label-help" :"Experiment name",
+            "objective" : "Objective",
+            "objective-placeholder" : "",
             "uri": "Experiment URI",
             "label": "Name",
             "objective-help": "A clear description of the objective of the experiment",

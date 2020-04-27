@@ -1,11 +1,6 @@
 <template>
   <b-form-group :required="required">
-    <opensilex-FormInputLabelHelper
-      v-if="label"
-      :label="label"
-      :helpMessage="helpMessage"
-      :labelFor="id"
-    ></opensilex-FormInputLabelHelper>
+    <opensilex-FormInputLabelHelper :label="label" :helpMessage="helpMessage" :labelFor="id"></opensilex-FormInputLabelHelper>
     <ValidationProvider
       ref="validatorRef"
       v-if="required || rules"

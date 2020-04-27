@@ -43,8 +43,21 @@ export default class ExperimentForm2 extends Vue {
   @PropSync("form")
   experiment: ExperimentCreationDTO;
 
-  reset() {
-    return this.validatorRef.reset();
+  loadProjects() {
+    let service: ProjectsService = this.$opensilex.getService(
+      "opensilex.ProjectsService"
+    );
+    service
+      .searchProjects(undefined,undefined,undefined,undefined,undefined,undefined,undefined, 0, 1000)
+      .then(
+        (http: HttpResponse<OpenSilexResponse<Array<ProjectGetDTO>>>) => {
+          for (let i = 0; i < http.response.result.length; i++) {
+            let dto = http.response.result[i];
+            this.projectList.push({ value: dto.uri, text: dto.label });
+          }
+        }
+      )
+      .catch(this.$opensilex.errorHandler);
   }
 
   validate() {

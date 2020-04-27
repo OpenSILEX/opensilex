@@ -5,17 +5,15 @@
       title="component.menu.security.profiles"
       description="component.profile.description"
     ></opensilex-PageHeader>
-
     <opensilex-PageActions>
       <template v-slot>
         <opensilex-CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
-          @click="profileForm.showCreateForm()"
+          @click="showCreateForm"
           label="component.profile.add"
         ></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
-
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-ProfileList
@@ -26,8 +24,8 @@
         ></opensilex-ProfileList>
       </template>
     </opensilex-PageContent>
-
-    <opensilex-ModalForm
+    <opensilex-ProfileForm
+      ref="profileForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
       ref="profileForm"
       component="opensilex-ProfileForm"

@@ -9,7 +9,7 @@
       <div class="card-header-right">
         <opensilex-CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
-          @click="createInfrastructure()"
+          @click="showCreateForm"
           label="component.infrastructure.add"
         ></opensilex-CreateButton>
       </div>
@@ -17,21 +17,17 @@
     <!-- Card body -->
     <!-- Infrastructure filter -->
     <opensilex-StringFilter
-      :filter.sync="filter"
-      @update="updateFilter()"
+      :filter.sync="filterPattern"
       placeholder="component.infrastructure.filter-placeholder"
     ></opensilex-StringFilter>
-
     <opensilex-TreeView :nodes.sync="nodes" @select="displayNodesDetail">
-
       <template v-slot:node="{ node }">
         <span class="item-icon">
-          <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.type)" />
+          <font-awesome-icon :icon="$opensilex.getRDFIcon(node.data.type)" size="sm" />
         </span>&nbsp;
         <strong v-if="node.data.selected">{{ node.title }}</strong>
         <span v-if="!node.data.selected">{{ node.title }}</span>
       </template>
-
       <template v-slot:buttons="{ node }">
         <opensilex-EditButton
           v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
@@ -41,7 +37,7 @@
         ></opensilex-EditButton>
         <opensilex-AddChildButton
           v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
-          @click="createInfrastructure(node.data.uri)"
+          @click="showCreateForm(node.data.uri)"
           label="component.infrastructure.facility.add-child"
           :small="true"
         ></opensilex-AddChildButton>
@@ -53,18 +49,13 @@
         ></opensilex-DeleteButton>
       </template>
     </opensilex-TreeView>
-
-    <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+    <opensilex-InfrastructureForm
       ref="infrastructureForm"
-      component="opensilex-InfrastructureForm"
-      createTitle="component.infrastructure.add"
-      editTitle="component.infrastructure.update"
-      icon="ik#ik-globe"
-      @onCreate="refresh($event.uri)"
-      @onUpdate="refresh($event.uri)"
-      :initForm="setParent"
-    ></opensilex-ModalForm>
+      v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+      :parentOptions="parentOptions"
+      @onCreate="callCreateInfrastructureService"
+      @onUpdate="callUpdateInfrastructureService"
+    ></opensilex-InfrastructureForm>
   </b-card>
 </template>
 
@@ -250,6 +241,11 @@ export default class InfrastructureTree extends Vue {
 .leaf-spacer {
   display: inline-block;
   width: 23px;
+}
+
+.button-cell {
+  padding-top: 1px;
+  padding-bottom: 1px;
 }
 
 @media (max-width: 768px) {

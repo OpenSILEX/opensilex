@@ -34,7 +34,7 @@ export default class CheckboxForm extends Vue {
   $opensilex: any;
 
   @PropSync("value")
-  booleanValue: boolean;
+  booleanValue: string;
 
   @Prop()
   label: string;

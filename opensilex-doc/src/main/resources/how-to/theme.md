@@ -1,6 +1,33 @@
 Theme
 =============
 
+### Modify a logo
+
+There are two ways to modify logo :
+
+First way modifiy Login component.
+
+1. Find component
+```bash
+{module_name} # module
+├── front # front
+│   ├── src # javascript sources 
+│   │   ├── components # vue components
+│   │   │   └── layout 
+│   │   │       ├── {Module_name}LoginComponent.vue 
+```
+
+2. Change image path
+
+```html
+    <div
+    class="lavalite-bg"
+    v-bind:style="{ 'background-image': 'url(' + $opensilex.getResourceURI('images/opensilex-login-bg.jpg') + ')' }"
+    >
+```
+
+
+
 ### Modify a theme
 
 In this directory you can modify theme style or override existing one.

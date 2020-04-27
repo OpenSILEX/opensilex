@@ -27,6 +27,7 @@ opensilex
 
 How to create module front part:
 
+Notes : *We use these naming conventions as examples, but **they are not mandatory.***
 ```bash
 # module_name  => .e.g : inrae-sixtine
 # Module_name  => .e.g : Sixtine
@@ -64,7 +65,7 @@ How to create module front part:
 │       ├── java
 │       └── resources
 ```
-See [Theme file](theme.md)  for more details.
+See [Theme subject](theme.md) for more details.
 
 3. Add a pom file to configure the maven project **pom.xml** in module directory ``opensilex/{module_name}``
 

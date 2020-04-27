@@ -17,7 +17,7 @@ First way modifiy Login component.
 │   │   │       ├── {Module_name}LoginComponent.vue 
 ```
 
-2. Change image path
+2. Change image path in the html tag used to define the background image
 
 ```html
     <div

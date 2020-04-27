@@ -1,12 +1,12 @@
 # module_name  => .e.g : inrae-sixtine
 # Module_name  => .e.g : Sixtine
 # short_module_name  => .e.g : sixtine
-module_name="inrae-sixtine"
-Module_name="Sixtine"
-short_module_name="sixtine"
+module_name="inrae-module"
+Module_name="Module"
+short_module_name="module"
 module_revision="INSTANCE-SNAPSHOT"
 
-java_module_path="src/main/java/inrae/inrae-sixtine"
+java_module_path="src/main/java/inrae/inrae-module"
 
 config_dir_path="template_config"
 

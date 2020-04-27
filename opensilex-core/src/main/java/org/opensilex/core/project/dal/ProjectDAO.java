@@ -22,6 +22,11 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
  * @author vidalmor
@@ -119,36 +124,50 @@ public class ProjectDAO {
     }
 
     public ListWithPagination<ProjectModel> search(URI uri, String label, String startDate, String endDate, Boolean ended, List<URI> experiments, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
-            List<Expr> filterList = new ArrayList<>();
+         
 
-        // append uri regex filter
-        if (uri != null) {
-            Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
-            Expr strUriExpr = SPARQLQueryHelper.getExprFactory().str(uriVar);
-            filterList.add(SPARQLQueryHelper.regexFilter(strUriExpr, uri.toString(),null));
-        }
-      
-
-        // append regex filter
-        filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.LABEL_VAR, label));
-        // append date filters
-        if (!StringUtils.isEmpty(startDate)) {
-            filterList.add(SPARQLQueryHelper.eq(ProjectModel.START_DATE_SPARQL_VAR, LocalDate.parse(startDate)));
-        }
-        if (!StringUtils.isEmpty(endDate)) {
-            filterList.add(SPARQLQueryHelper.eq(ProjectModel.END_DATE_SPARQL_VAR, LocalDate.parse(endDate)));
-        }
         
         return sparql.searchWithPagination(
                 ProjectModel.class,
                 null,
                 (SelectBuilder select) -> {
-                    filterList.stream().filter(Objects::nonNull).forEach(select::addFilter);
+                    
+                    appendUriRegexFilter(select, uri);
+                    appendRegexLabelFilter(select, label);
+                    appendIntervalDateFilters(select, startDate, endDate);
                 },
                 orderByList,
                 page,
                 pageSize
         );
+    }
+    
+     protected void appendRegexLabelFilter(SelectBuilder select, String label) {
+        if (!StringUtils.isEmpty(label)) {
+            select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.LABEL_VAR, label));
+        }
+    }
+
+    protected void appendUriRegexFilter(SelectBuilder select, URI uri) {
+        if (uri != null) {
+            Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+            Expr strUriExpr = SPARQLQueryHelper.getExprFactory().str(uriVar);
+            select.addFilter(SPARQLQueryHelper.regexFilter(strUriExpr, uri.toString(), null));
+        }
+    }
+
+    protected void appendIntervalDateFilters(SelectBuilder select, String startDate, String endDate) throws Exception {
+
+        
+        if(startDate == null && endDate == null){
+            return;
+        }
+
+        LocalDate startLocateDate = startDate == null ? null : LocalDate.parse(startDate);
+        LocalDate endLocalDate = endDate == null ? null : LocalDate.parse(endDate);
+
+        Expr dateRangeExpr = SPARQLQueryHelper.intervalDateRange(ExperimentModel.START_DATE_SPARQL_VAR,startLocateDate,ExperimentModel.END_DATE_SPARQL_VAR,endLocalDate);
+        select.addFilter(dateRangeExpr);
     }
 
    

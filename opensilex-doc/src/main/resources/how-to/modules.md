@@ -3,7 +3,7 @@ Modules How-to
 
 # Create a new module for opensilex 
 
-1. Create a directory in ``opensilex`` directory with the name of the module, here {module_name}.
+1. Create a directory in ``opensilex`` directory with the name of the module, here {module_name} ``Example : inrae-sixtine``.
 
 ```
 opensilex
@@ -14,7 +14,7 @@ opensilex
 ├── opensilex-doc
 ├── opensilex-front
 ├── opensilex-fs
-├── opensilex-module
+├── {module_name}
 ├── opensilex-nosql
 ├── opensilex-parent
 ├── opensilex-release
@@ -23,7 +23,51 @@ opensilex
 ├── opensilex-swagger-codegen-maven-plugin
 ```
 
-2. Add a pom file to configure the maven project **pom.xml** in module directory ``opensilex/{module_name}``
+2. Module skeleton
+
+How to create module front part:
+
+Notes : *We use these naming conventions as examples, but **they are not mandatory.***
+```bash
+# module_name  => .e.g : inrae-sixtine
+# Module_name  => .e.g : Sixtine
+# short_module_name  => .e.g : sixtine
+{module_name} # module
+├── front # front
+│   ├── babel.config.js # translation config
+│   ├── package.json # module javascript packages description
+│   ├── src # javascript sources
+│   │   ├── components # vue components
+│   │   │   └── layout
+│   │   │       ├── {Module_name}FooterComponent.vue
+│   │   │       ├── {Module_name}HeaderComponent.vue
+│   │   │       ├── {Module_name}HomeComponent.vue
+│   │   │       ├── {Module_name}LoginComponent.vue
+│   │   │       └── {Module_name}MenuComponent.vue
+│   │   ├── index.ts # register vue components
+│   │   ├── lang # lang translation
+│   │   │   ├── {short_module_name}-en.json
+│   │   │   └── {short_module_name}-fr.json
+│   │   ├── lib # need to build archive
+│   │   └── shims-vue.d.ts # ??
+│   ├── theme # theme files imgs, scss variables, fonts etc...
+│   │   └── {short_module_name}
+│   │       ├── {short_module_name}.yml
+│   │       ├── fonts
+│   │       ├── images
+│   │       └── variables.scss
+│   ├── tsconfig.json # typescript config
+│   ├── vue.config.js # vue config
+│   └── yarn.lock # yarn packages
+├── pom.xml  # module pom file
+├── src # back end java sources
+│   └── main
+│       ├── java
+│       └── resources
+```
+See [Theme subject](theme.md) for more details.
+
+3. Add a pom file to configure the maven project **pom.xml** in module directory ``opensilex/{module_name}``
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -47,16 +91,21 @@ opensilex
     <packaging>jar</packaging>
     <name>{module_name}</name>
 
+    <properties>
+        <revision>BUILD-SNAPSHOT</revision>
+        <skipFrontTypesGeneration>true</skipFrontTypesGeneration>
+    </properties>
+
     <parent>
         <groupId>org.opensilex</groupId>
-        <artifactId>opensilex-module</artifactId>
+        <artifactId>{module_name}</artifactId>
         <version>${revision}</version>
-        <relativePath>../opensilex-module/pom.xml</relativePath>
+        <relativePath>../{module_name}/pom.xml</relativePath>
     </parent>
 </project>
 ```
 
-3. Add a class with the module name which will describe interfaces, services and config that it implements.
+4. Add a class with the module name which will describe interfaces, services and config that it implements.
 
 The minimal OpenSilexModule configuration is the following :
 
@@ -74,7 +123,7 @@ public class {module_name}Module extends OpenSilexModule implements APIExtension
 }
 ```
 
-4. Update global ***pom.xml definition**
+5. Update global ***pom.xml definition**
 
 You need to the new module to the full build stage you need to add it to the global pom.xml
  ```xml
@@ -100,12 +149,12 @@ You need to the new module to the full build stage you need to add it to the glo
         <module>opensilex-nosql</module>
         <module>opensilex-fs</module>
         <module>opensilex-security</module>
-        <module>opensilex-module</module>
+        <module>{module_name}</module>
         <module>opensilex-core</module>
         <module>opensilex-front</module>
         
         <!-- Extension modules -->
-        <module>opensilex-module</module>
+        <module>{module_name}</module>
 
         <!-- Development module -->
         <module>opensilex-dev-tools</module>
@@ -174,9 +223,10 @@ You need to the new module to the full build stage you need to add it to the glo
         <!--Other extension modules must be declared as dependencies-->
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-module</artifactId>
+            <artifactId>{module_name}</artifactId>
             <version>${revision}</version>
         </dependency>
     </dependencies>
     [....]
 ```
+

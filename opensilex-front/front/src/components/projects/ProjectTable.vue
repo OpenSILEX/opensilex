@@ -74,9 +74,9 @@
             </b-input-group>
           </div>
           <div class="filter-group col col-xl-3 col-sm-6 col-12">
-            <label>Filtrer par Alias / URI :</label>
+            <label>Filtrer par URI :</label>
             <div>
-              <input type="text" class="form-control" placeholder="Tous les Alias / URI" />
+              <input type="text" class="form-control" placeholder="URI" />
             </div>
           </div>
         </div>

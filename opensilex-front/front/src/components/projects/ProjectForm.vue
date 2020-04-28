@@ -33,18 +33,6 @@
           </ValidationProvider>
         </b-form-group>
 
-        <!-- ShortName  -->
-
-        <b-form-group :label="$t('component.common.acronym') + ':'" label-for="acronym">
-          <b-form-input
-            id="acronym"
-            v-model="form.shortname"
-            type="text"
-            :placeholder="$t('component.project.form-acronym-placeholder')"
-          ></b-form-input>
-        </b-form-group>
-        
-       
         <!-- Name -->
         <b-form-group
           :label="$t('component.project.name') + ':'"
@@ -59,7 +47,7 @@
           >
             <b-form-input
               id="name"
-              v-model="form.label"
+              v-model="form.shortname"
               type="text"
               required
               :placeholder="$t('component.project.form-name-placeholder')"
@@ -67,6 +55,17 @@
 
             <div class="error-message alert alert-danger">{{ errors[0] }}</div>
           </ValidationProvider>
+        </b-form-group>
+
+        <!-- Longname  -->
+
+        <b-form-group :label="$t('component.project.longname') + ':'" label-for="longname">
+          <b-form-input
+            id="longname"
+            v-model="form.label"
+            type="text"
+            :placeholder="$t('component.project.form-longname-placeholder')"
+          ></b-form-input>
         </b-form-group>
 
         <!-- Period -->
@@ -104,18 +103,6 @@
           </b-input-group>
         </b-form>
 
-        <!-- Objective -->
-        <b-form-group :label="$t('component.project.objective') + ':'" label-for="objective">
-          <b-form-input
-            id="objective"
-            v-model="form.objective"
-            type="text"
-            :placeholder="$t('component.project.form-objective-placeholder')"
-          ></b-form-input>
-        </b-form-group>
-        
-        
-
         <!-- Financial funding -->
         <b-form-group
           :label="$t('component.project.financialFunding') + ':'"
@@ -129,6 +116,18 @@
           ></b-form-input>
         </b-form-group>
 
+         <!-- Website -->
+        <b-form-group
+          :label="$t('component.project.website') + ':'"
+          label-for="website"
+        >
+          <b-form-input
+            id="website"
+            v-model="form.homePage"
+            type="text"
+            :placeholder="$t('component.project.form-website-placeholder')"
+          ></b-form-input>
+        </b-form-group>
 
         <!--Coordinators -->
         <opensilex-CoordinatorsProjectForm
@@ -153,6 +152,16 @@
           :label="$t('component.project.administrativeContacts')"
           @onSelect="onAdminContactsSelected"
         ></opensilex-AdminContactsProjectForm>
+
+        <!-- Objective -->
+        <b-form-group :label="$t('component.project.objective') + ':'" label-for="objective">
+          <b-form-input
+            id="objective"
+            v-model="form.objective"
+            type="text"
+            :placeholder="$t('component.project.form-objective-placeholder')"
+          ></b-form-input>
+        </b-form-group>
 
         <!-- Description -->
         <b-form-group :label="$t('component.project.description') + ':'" label-for="description">
@@ -255,8 +264,7 @@ export default class ProjectForm extends Vue {
     this.title = this.$i18n.t("component.project.add").toString();
     this.uriGenerated = true;
     this.validatorRef.reset();
-    let coordinatorsProjectFormRef: any = this.$refs
-      .coordinatorsProjectFormRef;
+    let coordinatorsProjectFormRef: any = this.$refs.coordinatorsProjectFormRef;
     coordinatorsProjectFormRef.reset();
     let adminContactsProjectFormRef: any = this.$refs
       .adminContactsProjectFormRef;
@@ -272,9 +280,8 @@ export default class ProjectForm extends Vue {
     this.form = form;
     this.editMode = true;
     this.title = this.$i18n.t("component.project.update").toString();
-    this.uriGenerated = true; 
-     let coordinatorsProjectFormRef: any = this.$refs
-      .coordinatorsProjectFormRef;
+    this.uriGenerated = true;
+    let coordinatorsProjectFormRef: any = this.$refs.coordinatorsProjectFormRef;
     coordinatorsProjectFormRef.edit(this.form.coordinators);
     let adminContactsProjectFormRef: any = this.$refs
       .adminContactsProjectFormRef;

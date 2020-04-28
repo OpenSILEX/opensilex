@@ -117,7 +117,6 @@ export default class ScientificContactsProjectForm extends Vue {
   onFocus(){
     this.search = "";
     this.options = [];
-
   }
 
   onWrite(value) {

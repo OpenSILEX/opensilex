@@ -9,7 +9,7 @@
           </h3>
         </div>
         <div class="card-body row">
-          <div class="filter-group col col-xl-3 col-sm-6 col-12">
+          <div class="filter-group col col-xl-4 col-sm-6 col-12">
             <label>{{$t('component.project.filter-year')}}:</label>
             <div class="input-group input-group-button">
               <b-input-group>
@@ -28,7 +28,7 @@
             </div>
           </div>
 
-          <div class="filter-group col col-xl-3 col-sm-6 col-12">
+          <div class="filter-group col col-xl-4 col-sm-6 col-12">
             <label>{{$t('component.project.filter-label')}}:</label>
             <b-input-group>
               <b-form-input
@@ -48,7 +48,7 @@
             </b-input-group>
           </div>
 
-          <div class="filter-group col col-xl-3 col-sm-6 col-12">
+          <div class="filter-group col col-xl-4 col-sm-6 col-12">
             <label>{{$t('component.project.filter-financial')}}</label>
             <b-input-group>
               <b-form-input
@@ -67,12 +67,7 @@
               </template>
             </b-input-group>
           </div>
-          <div class="filter-group col col-xl-3 col-sm-6 col-12">
-            <label>Search by URI :</label>
-            <div>
-              <input type="text" class="form-control" placeholder="Enter an URI" />
-            </div>
-          </div>
+         
         </div>
       </div>
     </div>
@@ -91,8 +86,8 @@
           no-provider-paging
         >
           <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
-          <template v-slot:head(label)="data">{{$t(data.label)}}</template>
           <template v-slot:head(shortname)="data">{{$t(data.label)}}</template>
+          <template v-slot:head(label)="data">{{$t(data.label)}}</template>
           <template v-slot:head(startDate)="data">{{$t(data.label)}}</template>
           <template v-slot:head(endDate)="data">{{$t(data.label)}}</template>
           <template v-slot:head(hasFinancialFunding)="data">{{$t(data.label)}}</template>
@@ -189,13 +184,11 @@ export default class ProjectTable extends Vue {
   get user() {
     return this.$store.state.user;
   }
-
   get credentials() {
     return this.$store.state.credentials;
   }
 
-  pageSize = 2;
-
+  pageSize = 20;
   currentPage: number = 1;
   totalRow = 0;
   sortBy = "uri";
@@ -263,13 +256,13 @@ export default class ProjectTable extends Vue {
       sortable: true
     },
     {
-      key: "label",
+      key: "shortname",
       label: "component.common.name",
       sortable: true
     },
     {
-      key: "shortname",
-      label: "component.common.acronym",
+      key: "label",
+      label: "component.project.longname",
       sortable: true
     },
     {
@@ -322,7 +315,6 @@ export default class ProjectTable extends Vue {
       startDateFilter = undefined;
       endDateFilter = undefined;
     }
-    let current = this.currentPage - 1;
 
     return service
       .searchProjects(

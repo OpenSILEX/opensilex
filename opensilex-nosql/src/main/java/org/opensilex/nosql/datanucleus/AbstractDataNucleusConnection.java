@@ -9,6 +9,7 @@ package org.opensilex.nosql.datanucleus;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import javax.jdo.JDOEnhancer;
 import javax.jdo.JDOHelper;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.JDOQLTypedQuery;
@@ -17,6 +18,8 @@ import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.naming.NamingException;
+import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
+import org.datanucleus.metadata.PersistenceUnitMetaData;
 import org.opensilex.nosql.service.NoSQLConnection;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
@@ -54,7 +57,14 @@ public abstract class AbstractDataNucleusConnection extends BaseService implemen
 
     @Override
     public void startup() throws Exception {
-        PMF = JDOHelper.getPersistenceManagerFactory(PMF_PROPERTIES);
+        PersistenceUnitMetaData pumd = new PersistenceUnitMetaData("dynamic-unit", "RESOURCE_LOCAL", null);
+        pumd.setExcludeUnlistedClasses(false);
+        PMF_PROPERTIES.forEach((key, value) -> pumd.addProperty((String) key, (String) value));
+
+        PMF =  new JDOPersistenceManagerFactory(pumd, null);
+       
+     
+        
     }
 
     // convenience methods to get a PersistenceManager 

@@ -74,9 +74,9 @@
             </b-input-group>
           </div>
           <div class="filter-group col col-xl-3 col-sm-6 col-12">
-            <label>Filtrer par URI :</label>
+            <label>Search by URI :</label>
             <div>
-              <input type="text" class="form-control" placeholder="URI" />
+              <input type="text" class="form-control" placeholder="Enter an URI" />
             </div>
           </div>
         </div>

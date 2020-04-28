@@ -13,7 +13,7 @@ import javax.jdo.annotations.PersistenceCapable;
  *
  * @author charlero
  */
-@PersistenceCapable
+@PersistenceCapable(table = "logs")
 public class LogModel {
 
     String userUri;

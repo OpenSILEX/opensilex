@@ -972,7 +972,7 @@
                 <configuration>
                     <source>${java.compiler.version}</source>
                     <target>${java.compiler.version}</target>
-                    <!--<compilerArgument>-proc:none</compilerArgument>-->
+                    <compilerArgument>-proc:none</compilerArgument>
                     <!--                    <compilerArgs>
                         <arg>-Xlint:all</arg>
                     </compilerArgs>-->
@@ -983,65 +983,41 @@
                             <artifactId>hibernate-validator-annotation-processor</artifactId>
                             <version>${hibernate.validator.version}</version>
                         </path>
-                        <path>
-                            <groupId>org.datanucleus</groupId>
-                            <artifactId>datanucleus-jdo-query</artifactId>
-                            <version>${datanucleus-jdo-query.version}</version>
-                        </path>
-                        <path> 
-                            <groupId>org.datanucleus</groupId>
-                            <artifactId>javax.jdo</artifactId>
-                            <version>${data.nucleus.jdo.version}</version> 
-                        </path>
                     </annotationProcessorPaths> 
                 </configuration>
+            </plugin>
+            
+            <!-- Run annotation processors on src/main/java sources -->
+            <plugin>
+                <groupId>org.bsc.maven</groupId>
+                <artifactId>maven-processor-plugin</artifactId>
+                <version>${maven.processor.plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>generate-sources</id>
+                        <id>process</id>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <compilerArgument>-proc:only</compilerArgument>                            
+                            <processors>
+                                <processor>org.datanucleus.jdo.query.JDOQueryProcessor</processor>
+                            </processors>
                         </configuration>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
+                    </execution> 
                     <execution>
-                        <id>generate-test-sources</id>
+                        <id>process-test</id>
+                        <goals>
+                            <goal>process-test</goal>
+                        </goals>
                         <phase>generate-test-sources</phase>
                         <configuration>
-                            <compilerArgument>-proc:only</compilerArgument>                            
-                        </configuration>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>default-compile</id> <!-- using an id of default-compile will override the default execution -->
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <compilerArgs>
-                                <arg>-proc:none</arg>
-                            </compilerArgs>
+                            <processors>
+                                <processor>org.datanucleus.jdo.query.JDOQueryProcessor</processor>
+                            </processors>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>default-test-compile</id> <!-- using an id of default-compile will override the default execution -->
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <compilerArgs>
-                                <arg>-proc:none</arg>
-                            </compilerArgs>
-                        </configuration>
-                    </execution>
-                </executions> 
-                    
+                </executions>
             </plugin>
             
             <!-- Run annotation processors on src/main/java sources -->
@@ -1271,7 +1247,7 @@
                     <api>JDO</api>
                     <!--<fork>false</fork>-->
                     <log4jConfiguration>${project.basedir}/../opensilex-main/src/main/resources/log4j.properties</log4jConfiguration>
-                    <!--<verbose>true</verbose>-->
+                    <verbose>false</verbose>
                 </configuration>
                 <executions>
                     <execution>
@@ -1280,6 +1256,9 @@
                         <goals>
                             <goal>enhance</goal>
                         </goals>
+                            <configuration>
+                                <targetDirectory>${project.build.outputDirectory}</targetDirectory>
+                            </configuration>
                     </execution>
                     <execution>
                         <id>process-test-classes</id>
@@ -1288,6 +1267,7 @@
                             <goal>enhance</goal>
                         </goals>
                         <configuration>
+                            <targetDirectory>${project.build.testOutputDirectory}</targetDirectory>
                             <metadataDirectory>${project.build.testOutputDirectory}</metadataDirectory>
                         </configuration>
                     </execution>

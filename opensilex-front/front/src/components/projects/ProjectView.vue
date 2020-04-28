@@ -18,11 +18,7 @@
         </div>
       </div>
     </div>
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <opensilex-ProjectTable ref="projectTable" @onEdit="editProject" @onDelete="deleteProject"></opensilex-ProjectTable>
-      </div>
-    </div>
+    <opensilex-ProjectTable ref="projectTable" @onEdit="editProject" @onDelete="deleteProject"></opensilex-ProjectTable>
     <opensilex-ProjectForm
       ref="projectForm"
       @onCreate="callCreateProjectService"

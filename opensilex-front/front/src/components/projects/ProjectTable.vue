@@ -1,126 +1,181 @@
 <template>
   <div>
-    <b-form-group label="Choose a filter type:">
-      <b-form-radio-group
-        id="checkbox-group-1"
-        v-model="selected"
-        :options="options"
-        name="flavour-1"
-      ></b-form-radio-group>
-    </b-form-group>
+    <div class="card-vertical-group">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="mr-3">
+            <i class="ik ik-search"></i>Rechercher des Objets Scientifiques
+          </h3>
+        </div>
+        <div class="card-body row">
+          <div class="filter-group col col-xl-3 col-sm-6 col-12">
+            <label>{{$t('component.project.filter-year')}}:</label>
+            <div class="input-group input-group-button">
 
-    <div role="group" v-if="selected==='year'">
-      <b-form-input
-        id="input-live"
-        v-model="yearFilterPattern"
-        :state="yearState"
-        aria-describedby="input-live-feedback"
-        placeholder="Enter a year"
-        trim
-      ></b-form-input>
+            <b-input-group>
+              <b-form-input
+                id="input-live"
+                v-model="yearFilterPattern"
+                :placeholder="$t('component.project.filter-year-placeholder')"
+                trim
+              ></b-form-input>
+                <template v-slot:append>
+                <b-btn
+                  :disabled="!yearState"
+                  variant="primary"
+                  @click="yearFilterPattern = ''"
+                >
+                  <font-awesome-icon icon="times" size="sm" />
+                </b-btn>
+              </template>
+            </b-input-group>
 
-      <!-- This will only be shown if the preceding input has an invalid state -->
-      <b-form-invalid-feedback id="input-live-feedback">Enter a valid year to filter project</b-form-invalid-feedback>
+            </div>
+          </div>
+
+          <div class="filter-group col col-xl-3 col-sm-6 col-12">
+            <label>{{$t('component.project.filter-label')}}:</label>
+            <b-input-group>
+              <b-form-input
+                v-model="nameFilterPattern"
+                debounce="1000"
+                :placeholder="$t('component.project.filter-label-placeholder')"
+              ></b-form-input>
+              <template v-slot:append>
+                <b-btn
+                  :disabled="!nameFilterPattern"
+                  variant="primary"
+                  @click="nameFilterPattern = ''"
+                >
+                  <font-awesome-icon icon="times" size="sm" />
+                </b-btn>
+              </template>
+            </b-input-group>
+          </div>
+
+
+          <div class="filter-group col col-xl-3 col-sm-6 col-12">
+            <label>{{$t('component.project.filter-financial')}}</label>
+            <b-input-group>
+              <b-form-input
+                v-model="financialFilterPattern"
+                debounce="300"
+                :placeholder="$t('component.project.filter-financial-placeholder')"
+              ></b-form-input>
+              <template v-slot:append>
+                <b-btn
+                  :disabled="!financialFilterPattern"
+                  variant="primary"
+                  @click="financialFilterPattern = ''"
+                >
+                  <font-awesome-icon icon="times" size="sm" />
+                </b-btn>
+              </template>
+            </b-input-group>
+          </div>
+          <div class="filter-group col col-xl-3 col-sm-6 col-12">
+            <label>Filtrer par Alias / URI :</label>
+            <div>
+              <input type="text" class="form-control" placeholder="Tous les Alias / URI" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <b-input-group v-if="selected==='name'">
-      <b-form-input
-        v-model="nameFilterPattern"
-        debounce="300"
-        :placeholder="$t('component.project.filter-placeholder')"
-      ></b-form-input>
-      <template v-slot:append>
-        <b-btn :disabled="!nameFilterPattern" variant="primary" @click="nameFilterPattern = ''">
-          <font-awesome-icon icon="times" size="sm" />
-        </b-btn>
-      </template>
-    </b-input-group>
-<br><br>
-    <b-table
-      ref="tableRef"
-      striped
-      hover
-      small
-      :items="loadData"
-      :fields="fields"
-      :sort-by.sync="sortBy"
-      :sort-desc.sync="sortDesc"
-      no-provider-paging
-    >
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <b-table
+          ref="tableRef"
+          striped
+          hover
+          small
+          :items="loadData"
+          :fields="fields"
+          :sort-by.sync="sortBy"
+          :sort-desc.sync="sortDesc"
+          no-provider-paging
+        >
+
       <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
       <template v-slot:head(label)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(comment)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(shortname)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(startDate)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(endDate)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(hasFinancialFunding)="data">{{$t(data.label)}}</template>
+          <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
 
-      <template v-slot:cell(uri)="data">
-        <a class="uri-info">
-          <small>{{ data.item.uri }}</small>
-        </a>
-      </template>
+          <template v-slot:cell(uri)="data">
+            <a class="uri-info">
+              <small>{{ data.item.uri }}</small>
+            </a>
+          </template>
 
-      <template v-slot:cell(startDate)="data">{{ format(data.item.startDate)}}</template>
+          <template v-slot:cell(startDate)="data">{{ format(data.item.startDate)}}</template>
 
-      <template v-slot:cell(endDate)="data">{{ format(data.item.endDate)}}</template>
+          <template v-slot:cell(endDate)="data">{{ format(data.item.endDate)}}</template>
 
-      <template v-slot:row-details="data">
-        <div v-if="data.item.description">
-          DESCRIPTION:
-          <br />
-          <div class="capitalize-first-letter">{{ data.item.description }}</div>
-        </div>
+          <template v-slot:row-details="data">
+            <div v-if="data.item.description">
+              DESCRIPTION:
+              <br />
+              <div class="capitalize-first-letter">{{ data.item.description }}</div>
+            </div>
 
-        <div v-if="data.item.coordinators">
-          Coordinators :
-          <b-badge
-            v-for="(item, index) in data.item.coordinators"
-            :key="index"
-            pill
-            variant="info"
-          >{{item}}</b-badge>
-        </div>
-        <div v-if="data.item.scientificContacts">
-          Scientific contact :
-          <b-badge
-            v-for="(item, index) in data.item.scientificContacts"
-            :key="index"
-            pill
-            variant="info"
-          >{{item}}</b-badge>
-        </div>
-        <div v-if="data.item.administrativeContacts">
-          Administrative contact :
-          <b-badge
-            v-for="(item, index) in data.item.administrativeContacts"
-            :key="index"
-            pill
-            variant="info"
-          >{{item}}</b-badge>
-        </div>
-      </template>
+            <div v-if="data.item.coordinators">
+              Coordinators :
+              <b-badge
+                v-for="(item, index) in data.item.coordinators"
+                :key="index"
+                pill
+                variant="info"
+              >{{item}}</b-badge>
+            </div>
+            <div v-if="data.item.scientificContacts">
+              Scientific contact :
+              <b-badge
+                v-for="(item, index) in data.item.scientificContacts"
+                :key="index"
+                pill
+                variant="info"
+              >{{item}}</b-badge>
+            </div>
+            <div v-if="data.item.administrativeContacts">
+              Administrative contact :
+              <b-badge
+                v-for="(item, index) in data.item.administrativeContacts"
+                :key="index"
+                pill
+                variant="info"
+              >{{item}}</b-badge>
+            </div>
+          </template>
 
-      <template v-slot:cell(actions)="data">
-        <b-button-group>
-          <b-button size="sm" @click="data.toggleDetails" variant="outline-success">
-            <font-awesome-icon v-if="!data.detailsShowing" icon="eye" size="sm" />
-            <font-awesome-icon v-if="data.detailsShowing" icon="eye-slash" size="sm" />
-          </b-button>
+          <template v-slot:cell(actions)="data">
+            <b-button-group>
+              <b-button size="sm" @click="data.toggleDetails" variant="outline-success">
+                <font-awesome-icon v-if="!data.detailsShowing" icon="eye" size="sm" />
+                <font-awesome-icon v-if="data.detailsShowing" icon="eye-slash" size="sm" />
+              </b-button>
 
-          <b-button size="sm" @click="$emit('onEdit', data.item)" variant="outline-primary">
-            <font-awesome-icon icon="edit" size="sm" />
-          </b-button>
+              <b-button size="sm" @click="$emit('onEdit', data.item)" variant="outline-primary">
+                <font-awesome-icon icon="edit" size="sm" />
+              </b-button>
 
-          <b-button size="sm" @click="$emit('onDelete', data.item.uri)" variant="danger">
-            <font-awesome-icon icon="trash-alt" size="sm" />
-          </b-button>
-        </b-button-group>
-      </template>
-    </b-table>
-    <b-pagination
-      v-model="currentPage"
-      :total-rows="totalRow"
-      :per-page="pageSize"
-      @change="refresh()"
-    ></b-pagination>
+              <b-button size="sm" @click="$emit('onDelete', data.item.uri)" variant="danger">
+                <font-awesome-icon icon="trash-alt" size="sm" />
+              </b-button>
+            </b-button-group>
+          </template>
+        </b-table>
+        <b-pagination
+          v-model="currentPage"
+          :total-rows="totalRow"
+          :per-page="pageSize"
+          @change="refresh()"
+        ></b-pagination>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -152,27 +207,17 @@ export default class ProjectTable extends Vue {
   sortBy = "uri";
   sortDesc = false;
 
-  selected = "name";
-
-  optionsValue = [
-
-    { text: "Nom", value: "name" },
-    { text: "Année", value: "year" },
-    { text: "Finance", value: "finance" }
-  ];
-  set options(value: any) {
-    this.optionsValue = value;
-  }
-  get options() {
-    return this.optionsValue;
-  }
-
-  private yearFilterPatternValue :any= "";
+  private yearFilterPatternValue: any = "";
   set yearFilterPattern(value: number) {
     this.yearFilterPatternValue = value;
-    if (this.yearFilterPattern > 1000 && this.yearFilterPattern < 4000) { //the user enter a valid year
-    
+    if (this.yearFilterPattern > 1000 && this.yearFilterPattern < 4000) {
+      //the user enter a valid year
+
       this.refresh();
+    }
+    if(!this.yearFilterPattern){
+       this.refresh();
+
     }
   }
   get yearFilterPattern() {
@@ -197,11 +242,9 @@ export default class ProjectTable extends Vue {
     let query: any = this.$route.query;
     if (query.nameFilterPattern) {
       this.nameFilterPatternValue = decodeURI(query.nameFilterPattern);
-      this.selected = "name";
     }
     if (query.yearFilterPattern) {
       this.yearFilterPatternValue = decodeURI(query.yearFilterPattern);
-      this.selected = "year";
     }
     if (query.pageSize) {
       this.pageSize = parseInt(query.pageSize);
@@ -229,8 +272,23 @@ export default class ProjectTable extends Vue {
       sortable: true
     },
     {
-      key: "comment",
-      label: "component.common.description",
+      key: "shortname",
+      label: "component.common.acronym",
+      sortable: true
+    },
+    {
+      key: "startDate",
+      label: "component.common.startDate",
+      sortable: true
+    },
+    {
+      key: "endDate",
+      label: "component.common.endDate",
+      sortable: true
+    },
+    {
+      key: "hasFinancialFunding",
+      label: "component.project.financialFunding",
       sortable: true
     },
     {
@@ -259,15 +317,14 @@ export default class ProjectTable extends Vue {
       }
     }
 
-    let startDateFilter:string;
-    let endDateFilter:string;
-    if(this.yearFilterPatternValue!== ""){
-
-       startDateFilter=this.yearFilterPatternValue.toString()+"-01-01";
-       endDateFilter=this.yearFilterPatternValue.toString()+"-12-31";
-    }else {
-       startDateFilter=undefined;
-       endDateFilter=undefined;
+    let startDateFilter: string;
+    let endDateFilter: string;
+    if (this.yearFilterPatternValue !== "") {
+      startDateFilter = this.yearFilterPatternValue.toString() + "-01-01";
+      endDateFilter = this.yearFilterPatternValue.toString() + "-12-31";
+    } else {
+      startDateFilter = undefined;
+      endDateFilter = undefined;
     }
 
     return service
@@ -289,38 +346,22 @@ export default class ProjectTable extends Vue {
         setTimeout(() => {
           this.currentPage = http.response.metadata.pagination.currentPage + 1;
         }, 0);
-        if (this.selected === "name") {
-          this.$router
-            .push({
-              path: this.$route.fullPath,
-              query: {
-                nameFilterPattern: encodeURI(this.nameFilterPattern),
-                yearFilterPattern: null,
-                sortBy: encodeURI(this.sortBy),
-                sortDesc: "" + this.sortDesc,
-                currentPage: "" + this.currentPage,
-                pageSize: "" + this.pageSize
-              }
-            })
-            .catch(function() {});
 
-            this.yearFilterPatternValue="";
-        }
-        if (this.selected === "year") {
-          this.$router
-            .push({
-              path: this.$route.fullPath,
-              query: {
-                nameFilterPattern: null,
-                yearFilterPattern: this.yearFilterPattern? encodeURI(this.yearFilterPattern.toString()):null,
-                sortBy: encodeURI(this.sortBy),
-                sortDesc: "" + this.sortDesc,
-                currentPage: "" + this.currentPage,
-                pageSize: "" + this.pageSize
-              }
-            })
-            .catch(function() {});
-        }
+        this.$router
+          .push({
+            path: this.$route.fullPath,
+            query: {
+              nameFilterPattern: null,
+              yearFilterPattern: this.yearFilterPattern
+                ? encodeURI(this.yearFilterPattern.toString())
+                : null,
+              sortBy: encodeURI(this.sortBy),
+              sortDesc: "" + this.sortDesc,
+              currentPage: "" + this.currentPage,
+              pageSize: "" + this.pageSize
+            }
+          })
+          .catch(function() {});
 
         return http.response.result;
       })

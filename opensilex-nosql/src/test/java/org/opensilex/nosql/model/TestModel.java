@@ -21,6 +21,9 @@ public class TestModel {
     
     Integer value;
 
+    public TestModel() {
+    }  
+
     public TestModel(String name) {
         this.name = name;
         this.value = 0;

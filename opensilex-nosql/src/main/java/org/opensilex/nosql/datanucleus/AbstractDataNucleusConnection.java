@@ -62,9 +62,6 @@ public abstract class AbstractDataNucleusConnection extends BaseService implemen
         PMF_PROPERTIES.forEach((key, value) -> pumd.addProperty((String) key, (String) value));
 
         PMF =  new JDOPersistenceManagerFactory(pumd, null);
-       
-     
-        
     }
 
     // convenience methods to get a PersistenceManager 

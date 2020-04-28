@@ -244,9 +244,10 @@
         },
         "project": {
             "uri": "URI du projet",
-            "search-description": "Gérer et configurer les projets",
-            "add": "Créer un projet",
-            "update": "Modifier le project",
+            "filter-description":"Recherche de projets",
+            "search-description":"Gérer et configurer les projets",
+            "add":"Créer un projet",
+            "update":"Mettre à jour un project",
             "form-name-placeholder": "Saisir le nom du projet",
             "form-description-placeholder": "Saisir la description du projet",
             "form-objective-placeholder": "Saisir l'objectif du projet",

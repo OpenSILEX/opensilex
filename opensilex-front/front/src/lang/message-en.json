@@ -244,6 +244,7 @@
         },
         "project": {
             "uri": "Project URI",
+            "filter-description":"Project search",
             "search-description":"Manage and configure projects ",
             "add":"Create project",
             "update":"Update project",

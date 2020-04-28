@@ -4,7 +4,7 @@
       <div class="card">
         <div class="card-header">
           <h3 class="mr-3">
-            <i class="ik ik-search"></i>Rechercher des Objets Scientifiques
+            <i class="ik ik-search"></i>{{$t('component.project.filter-description')}}
           </h3>
         </div>
         <div class="card-body row">

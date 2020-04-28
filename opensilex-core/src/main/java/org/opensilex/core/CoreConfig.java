@@ -15,7 +15,7 @@ public interface CoreConfig {
 
     @ConfigDescription(
         value = "Activate Logs",
-        defaultBoolean = true
+        defaultBoolean = false
     )
     public Boolean enableLogs();
 

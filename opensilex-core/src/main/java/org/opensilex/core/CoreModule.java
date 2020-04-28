@@ -47,14 +47,13 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
     @Override
     public List<String> getPackagesToScan() {
         List<String> list = APIExtension.super.getPackagesToScan();
-
-        if (getConfig(CoreConfig.class).enableLogs()) {
-            list.add("org.opensilex.core.logs.filter");
-        }
+        list.add("org.opensilex.core.logs.filter");
 
         return list;
     }
 
+    
+    
     @Override
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();

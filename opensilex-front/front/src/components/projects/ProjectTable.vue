@@ -4,32 +4,27 @@
       <div class="card">
         <div class="card-header">
           <h3 class="mr-3">
-            <i class="ik ik-search"></i>{{$t('component.project.filter-description')}}
+            <i class="ik ik-search"></i>
+            {{$t('component.project.filter-description')}}
           </h3>
         </div>
         <div class="card-body row">
           <div class="filter-group col col-xl-3 col-sm-6 col-12">
             <label>{{$t('component.project.filter-year')}}:</label>
             <div class="input-group input-group-button">
-
-            <b-input-group>
-              <b-form-input
-                id="input-live"
-                v-model="yearFilterPattern"
-                :placeholder="$t('component.project.filter-year-placeholder')"
-                trim
-              ></b-form-input>
+              <b-input-group>
+                <b-form-input
+                  id="input-live"
+                  v-model="yearFilterPattern"
+                  :placeholder="$t('component.project.filter-year-placeholder')"
+                  trim
+                ></b-form-input>
                 <template v-slot:append>
-                <b-btn
-                  :disabled="!yearState"
-                  variant="primary"
-                  @click="yearFilterPattern = ''"
-                >
-                  <font-awesome-icon icon="times" size="sm" />
-                </b-btn>
-              </template>
-            </b-input-group>
-
+                  <b-btn :disabled="!yearState" variant="primary" @click="yearFilterPattern = ''">
+                    <font-awesome-icon icon="times" size="sm" />
+                  </b-btn>
+                </template>
+              </b-input-group>
             </div>
           </div>
 
@@ -52,7 +47,6 @@
               </template>
             </b-input-group>
           </div>
-
 
           <div class="filter-group col col-xl-3 col-sm-6 col-12">
             <label>{{$t('component.project.filter-financial')}}</label>
@@ -96,13 +90,12 @@
           :sort-desc.sync="sortDesc"
           no-provider-paging
         >
-
-      <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(label)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(shortname)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(startDate)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(endDate)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(hasFinancialFunding)="data">{{$t(data.label)}}</template>
+          <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
+          <template v-slot:head(label)="data">{{$t(data.label)}}</template>
+          <template v-slot:head(shortname)="data">{{$t(data.label)}}</template>
+          <template v-slot:head(startDate)="data">{{$t(data.label)}}</template>
+          <template v-slot:head(endDate)="data">{{$t(data.label)}}</template>
+          <template v-slot:head(hasFinancialFunding)="data">{{$t(data.label)}}</template>
           <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
 
           <template v-slot:cell(uri)="data">
@@ -201,8 +194,9 @@ export default class ProjectTable extends Vue {
     return this.$store.state.credentials;
   }
 
+  pageSize = 2;
+
   currentPage: number = 1;
-  pageSize = 20;
   totalRow = 0;
   sortBy = "uri";
   sortDesc = false;
@@ -212,12 +206,10 @@ export default class ProjectTable extends Vue {
     this.yearFilterPatternValue = value;
     if (this.yearFilterPattern > 1000 && this.yearFilterPattern < 4000) {
       //the user enter a valid year
-
       this.refresh();
     }
-    if(!this.yearFilterPattern){
-       this.refresh();
-
+    if (!this.yearFilterPattern) {
+      this.refresh();
     }
   }
   get yearFilterPattern() {
@@ -238,6 +230,15 @@ export default class ProjectTable extends Vue {
     return this.nameFilterPatternValue;
   }
 
+  private financialFilterPatternValue: any = "";
+  set financialFilterPattern(value: string) {
+    this.financialFilterPatternValue = value;
+    this.refresh();
+  }
+  get financialFilterPattern() {
+    return this.financialFilterPatternValue;
+  }
+
   created() {
     let query: any = this.$route.query;
     if (query.nameFilterPattern) {
@@ -246,12 +247,7 @@ export default class ProjectTable extends Vue {
     if (query.yearFilterPattern) {
       this.yearFilterPatternValue = decodeURI(query.yearFilterPattern);
     }
-    if (query.pageSize) {
-      this.pageSize = parseInt(query.pageSize);
-    }
-    if (query.currentPage) {
-      this.currentPage = parseInt(query.currentPage);
-    }
+
     if (query.sortBy) {
       this.sortBy = decodeURI(query.sortBy);
     }
@@ -326,6 +322,7 @@ export default class ProjectTable extends Vue {
       startDateFilter = undefined;
       endDateFilter = undefined;
     }
+    let current = this.currentPage - 1;
 
     return service
       .searchProjects(
@@ -343,9 +340,6 @@ export default class ProjectTable extends Vue {
         console.log(http);
         this.totalRow = http.response.metadata.pagination.totalCount;
         this.pageSize = http.response.metadata.pagination.pageSize;
-        setTimeout(() => {
-          this.currentPage = http.response.metadata.pagination.currentPage + 1;
-        }, 0);
 
         this.$router
           .push({
@@ -356,9 +350,7 @@ export default class ProjectTable extends Vue {
                 ? encodeURI(this.yearFilterPattern.toString())
                 : null,
               sortBy: encodeURI(this.sortBy),
-              sortDesc: "" + this.sortDesc,
-              currentPage: "" + this.currentPage,
-              pageSize: "" + this.pageSize
+              sortDesc: "" + this.sortDesc
             }
           })
           .catch(function() {});

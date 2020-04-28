@@ -25,7 +25,7 @@ public interface MongoDBConfig extends ServiceConfig {
 
     @ConfigDescription(
             value = "MongoDB main host port",
-            defaultInt = 8668
+            defaultInt = 27017
     )
     public int port();
 

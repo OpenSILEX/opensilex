@@ -10,11 +10,9 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 import javax.jdo.JDOQLTypedQuery;
 import javax.jdo.PersistenceManager;
 import javax.naming.NamingException;
-import javax.validation.constraints.AssertFalse;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import static org.junit.Assert.assertNull;
@@ -91,15 +89,14 @@ public abstract class NoSQLServiceTest extends AbstractUnitTest {
         service.create(testModel);
         service.create(createModel());
 
-
         TestModel modelFind = service.findById(TestModel.class, testModel.getName());
         assertTrue(modelFind != null);
         assertTrue(modelFind.getName().equals(testModel.getName()));
 
         TestModel modelFind2 = service.findById(TestModel.class, testModel.getName() + "test2");
         assertNull(modelFind2);
-        
-         try (PersistenceManager persistenceManager = service.getPersistentConnectionManager()) {
+
+        try (PersistenceManager persistenceManager = service.getPersistentConnectionManager()) {
             try (JDOQLTypedQuery<TestModel> tq = persistenceManager.newJDOQLTypedQuery(TestModel.class)) {
                 QTestModel cand = QTestModel.candidate();
                 List<TestModel> results = tq.executeList();

@@ -30,7 +30,7 @@ public abstract class SPARQLResourceModel implements SPARQLModel {
     @SPARQLTypeRDFLabel()
     protected SPARQLLabel typeLabel;
 
-    protected List<SPARQLModelRelation> relations = new LinkedList<>();
+    protected List<SPARQLModelRelation> relations = new ArrayList<>();
 
     public URI getUri() {
         return uri;

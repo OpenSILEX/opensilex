@@ -18,7 +18,9 @@ export default class CreateButton extends Vue {
   @Prop()
   label: string;
 
-  @Prop()
+  @Prop({
+    default: false
+  })
   small: boolean;
 
   @Prop()

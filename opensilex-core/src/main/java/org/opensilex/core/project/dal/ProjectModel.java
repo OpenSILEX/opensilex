@@ -32,8 +32,7 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
 
     @SPARQLProperty(
             ontology = RDFS.class,
-            property = "label",
-            required = true
+            property = "label"
     )
     String label;
     public static final String LABEL_VAR = "label";

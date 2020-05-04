@@ -57,8 +57,6 @@ public abstract class ProjectDTO {
         return this;
     }
 
-    @Required
-    @ApiModelProperty(example = "Blair witch")
     public String getLabel() {
         return label;
     }

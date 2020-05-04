@@ -52,6 +52,8 @@ public class ResetNodeModules {
             FileUtils.deleteQuietly(rf);
         }
 
+        yarnCleanCache(baseDirectory);
+        
         for (OpenSilexModule module : opensilex.getModules()) {
             String projectId = ClassUtils.getProjectIdFromClass(module.getClass());
             LOGGER.debug("Purge front node_modules folder for: " + projectId);
@@ -87,6 +89,21 @@ public class ResetNodeModules {
         }
 
         countDownLatch.await();
+    }
+
+    private static void yarnCleanCache(Path baseDirectory) throws IOException, InterruptedException {
+        List<String> args = new ArrayList<>();
+        args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
+        args.add(baseDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
+        args.add("cache");
+        args.add("clean");
+        ProcessBuilder yarnCleanCacheProcess = new ProcessBuilder(args);
+
+        yarnCleanCacheProcess.inheritIO();
+
+        Process process = yarnCleanCacheProcess.start();
+        process.waitFor();
+
     }
 
     private static void createYarnInstallProcess(Path baseDirectory, Path moduleDirectory) throws IOException {

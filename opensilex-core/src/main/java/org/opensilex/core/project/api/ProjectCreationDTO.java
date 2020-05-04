@@ -24,13 +24,14 @@ public class ProjectCreationDTO extends ProjectDTO {
         ProjectModel model = new ProjectModel();
         
         model.setUri(getUri());
-        model.setLabel(getLabel());
-        model.setHasFinancialFunding(getHasFinancialFunding());
+        
+        model.setShortname(getShortname());
+        model.setHasFinancialFunding(hasFinancialFunding);
         model.setStartDate(LocalDate.parse(startDate));
         if (endDate != null) {
             model.setEndDate(LocalDate.parse(endDate));
         }
-        model.setShortname(shortname);
+        model.setLabel(label);
         model.setDescription(description);
         model.setObjective(objective);
         
@@ -82,15 +83,6 @@ public class ProjectCreationDTO extends ProjectDTO {
         });
         model.setExperiments(expeList);
         
-//         List<GroupModel> groupList = new ArrayList<>(groups.size());
-//        groups.forEach((URI u) -> {
-//            GroupModel group = new GroupModel();
-//            group.setUri(u);
-//            groupList.add(group);
-//        });
-//        model.setGroups(groupList);
-        
-
         return model;
     }
 

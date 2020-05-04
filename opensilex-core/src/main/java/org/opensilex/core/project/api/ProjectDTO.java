@@ -24,7 +24,7 @@ public abstract class ProjectDTO {
 
     protected String shortname;
 
-    private String hasFinancialFunding;
+    protected String hasFinancialFunding;
 
     protected String description;
 

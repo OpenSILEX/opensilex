@@ -235,21 +235,7 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
     public void setScientificContacts(List<UserModel> scientificContacts) {
         this.scientificContacts = scientificContacts;
     }
-
-//     public List<GroupModel> getGroups() {
-//        return groups;
-//    }
-//
-//    public void setGroups(List<GroupModel> groups) {
-//        this.groups = groups;
-//    }
-//     public Boolean getIsPublic() {
-//        return isPublic;
-//    }
-//
-//    public void setIsPublic(Boolean isPublic) {
-//        this.isPublic = isPublic;
-//    }
+    
     @Override
     public String[] getUriSegments(ProjectModel instance) {
         return new String[]{

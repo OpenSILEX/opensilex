@@ -308,7 +308,7 @@ export default class ProjectTable extends Vue {
 
     let startDateFilter: string;
     let endDateFilter: string;
-    if (this.yearFilterPatternValue !== "") {
+    if (this.yearFilterPatternValue !== ""&&this.yearFilterPattern > 1000 && this.yearFilterPattern < 4000) {
       startDateFilter = this.yearFilterPatternValue.toString() + "-01-01";
       endDateFilter = this.yearFilterPatternValue.toString() + "-12-31";
     } else {
@@ -318,12 +318,11 @@ export default class ProjectTable extends Vue {
 
     return service
       .searchProjects(
-        undefined,
         startDateFilter,
         endDateFilter,
         this.nameFilterPattern,
-        undefined,
-        undefined,
+        this.nameFilterPattern,
+        this.financialFilterPattern,
         orderBy,
         this.currentPage - 1,
         this.pageSize
@@ -337,7 +336,9 @@ export default class ProjectTable extends Vue {
           .push({
             path: this.$route.fullPath,
             query: {
-              nameFilterPattern: null,
+              nameFilterPattern: this.nameFilterPattern
+                ? encodeURI(this.nameFilterPattern)
+                : null,
               yearFilterPattern: this.yearFilterPattern
                 ? encodeURI(this.yearFilterPattern.toString())
                 : null,

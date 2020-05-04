@@ -187,7 +187,6 @@ public class SPARQLQueryHelper {
             ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
 
             // get ressource with relation specified in the given list
-
             Expr resourceInUrisExpr = exprFactory.in(makeVar(uriField), uris.stream()
                     .map(uri -> {
                         return NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString()));
@@ -257,7 +256,7 @@ public class SPARQLQueryHelper {
      * @param select the SelectBuilder to update
      * @param varValuesMap a map between variable name and the list of values
      * for this variable
-
+     *
      * @see <a href=www.w3.org/TR/2013/REC-sparql11-query-20130321/#inline-data>
      * SPARQL VALUES</a>
      * @see <a href=https://www.w3.org/TR/sparql11-query/#func-logical-or>
@@ -349,33 +348,20 @@ public class SPARQLQueryHelper {
         }
         return endDateExpr;
     }
-    
-     public static Expr intervalDateRange(String startDateVarName, LocalDate startDate, String endDateVarName, LocalDate endDate) throws Exception {
 
-        boolean startDateNull = startDate == null;
-        boolean endDateNull = endDate == null;
-        if (startDateNull && endDateNull) {
-            return null;
-        }
+    public static Expr intervalDateRange(String startDateVarName, LocalDate startDate, String endDateVarName, LocalDate endDate) throws Exception {
+
+       
 
         DateDeserializer dateDeserializer = new DateDeserializer();
-        Node endVar;
-        Expr endDateExpr = null;
+        Node startVar = NodeFactory.createVariable(startDateVarName);
+        Node endVar = NodeFactory.createVariable(endDateVarName);
+        Expr startDateExpr = exprFactory.ge(endVar, dateDeserializer.getNode(startDate));
+        Expr endDateExpr = exprFactory.le(startVar, dateDeserializer.getNode(endDate));
+        Expr withEndDateExpr = exprFactory.and(startDateExpr, endDateExpr);
+        Expr noEndDateExpr = exprFactory.not(exprFactory.bound(endVar));
+        Expr withoutEndDateExpr = exprFactory.and(endDateExpr, noEndDateExpr);
 
-        if (!endDateNull) {
-            Node startVar = NodeFactory.createVariable(startDateVarName);
-            endDateExpr = exprFactory.le(startVar, dateDeserializer.getNode(endDate));
-        }
-
-        if (!startDateNull) {
-            endVar = NodeFactory.createVariable(endDateVarName);
-            Expr startDateExpr = exprFactory.ge(endVar, dateDeserializer.getNode(startDate));
-
-            if (!endDateNull) {
-                return exprFactory.and(startDateExpr, endDateExpr);
-            }
-            return startDateExpr;
-        }
-        return endDateExpr;
+        return exprFactory.or(withEndDateExpr, withoutEndDateExpr);
     }
 }

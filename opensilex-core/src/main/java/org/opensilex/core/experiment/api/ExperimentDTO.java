@@ -4,20 +4,19 @@
 // Copyright © INRAE 2020
 // Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
-
 package org.opensilex.core.experiment.api;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.DateConstraint;
 
 /**
- * @author Renaud COLIN
- * A basic DTO class about an {@link ExperimentModel}
+ * @author Renaud COLIN A basic DTO class about an {@link ExperimentModel}
  */
 public abstract class ExperimentDTO {
 
@@ -25,7 +24,7 @@ public abstract class ExperimentDTO {
 
     protected String label;
 
-    protected List<URI> projects;
+    protected List<URI> projects = new ArrayList<>();
 
     protected String startDate;
 
@@ -37,28 +36,27 @@ public abstract class ExperimentDTO {
 
     protected Integer campaign;
 
-    protected List<String> keywords;
+    protected List<String> keywords = new ArrayList<>();
 
-    protected List<URI> scientificSupervisors;
+    protected List<URI> scientificSupervisors = new ArrayList<>();
 
-    protected List<URI> technicalSupervisors;
+    protected List<URI> technicalSupervisors = new ArrayList<>();
 
-    protected List<URI> groups;
+    protected List<URI> groups = new ArrayList<>();
 
-    protected List<URI> infrastructures;
+    protected List<URI> infrastructures = new ArrayList<>();
 
-    protected  List<URI> installations;
+    protected List<URI> installations = new ArrayList<>();
 
-    protected List<URI>  species;
+    protected List<URI> species = new ArrayList<>();
 
     protected Boolean isPublic;
 
-    protected List<URI> variables;
+    protected List<URI> variables = new ArrayList<>();
 
-    protected List<URI> sensors;
+    protected List<URI> sensors = new ArrayList<>();
 
-    protected List<URI> factors;
-
+    protected List<URI> factors = new ArrayList<>();
 
     public URI getUri() {
         return uri;
@@ -178,12 +176,13 @@ public abstract class ExperimentDTO {
         this.groups = groups;
         return this;
     }
+
     @ApiModelProperty(example = "http://www.phenome-fppn.fr/id/species/zeamays")
-    public List<URI>  getSpecies() {
+    public List<URI> getSpecies() {
         return species;
     }
 
-    public ExperimentDTO setSpecies(List<URI>  species) {
+    public ExperimentDTO setSpecies(List<URI> species) {
         this.species = species;
         return this;
     }
@@ -224,7 +223,7 @@ public abstract class ExperimentDTO {
         this.sensors = sensors;
         return this;
     }
-    
+
     public List<URI> getFactors() {
         return factors;
     }

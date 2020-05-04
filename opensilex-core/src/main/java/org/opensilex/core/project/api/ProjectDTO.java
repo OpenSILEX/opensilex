@@ -7,6 +7,7 @@ package org.opensilex.core.project.api;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.server.rest.validation.DateConstraint;
@@ -33,19 +34,19 @@ public abstract class ProjectDTO {
 
     protected String endDate;
 
-    protected List<String> keywords;
+    protected List<String> keywords = new ArrayList<>();
 
     protected URI homePage;
 
-    protected List<URI> experiments;
+    protected List<URI> experiments = new ArrayList<>();
 
-    protected List<URI> administrativeContacts;
+    protected List<URI> administrativeContacts = new ArrayList<>();
 
-    protected List<URI> coordinators;
+    protected List<URI> coordinators = new ArrayList<>();
 
-    protected List<URI> scientificContacts;
+    protected List<URI> scientificContacts = new ArrayList<>();
 
-    protected List<URI> relatedProjects;
+    protected List<URI> relatedProjects = new ArrayList<>();
 
     public URI getUri() {
         return uri;

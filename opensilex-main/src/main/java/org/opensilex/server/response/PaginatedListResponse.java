@@ -6,7 +6,7 @@
 //******************************************************************************
 package org.opensilex.server.response;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import org.opensilex.utils.ListWithPagination;
 
@@ -49,7 +49,7 @@ public class PaginatedListResponse<T> extends JsonResponse<List<T>> {
      * Constructor for an empty list.
      */
     public PaginatedListResponse() {
-        this(Status.OK, new ArrayList<>());
+        this(Status.OK, new LinkedList<>());
     }
 
     /**

@@ -1,40 +1,21 @@
 <template>
   <div>
-    <b-input-group class="mt-3 mb-3" size="sm">
-      <b-input-group>
-        <b-form-input
-          v-model="filterPattern"
-          debounce="300"
-          :placeholder="$t('component.profile.filter-placeholder')"
-        ></b-form-input>
-        <template v-slot:append>
-          <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
-            <font-awesome-icon icon="times" size="sm" />
-          </b-btn>
-        </template>
-      </b-input-group>
-    </b-input-group>
-    <b-table
-      ref="tableRef"
-      striped
-      hover
-      small
-      :items="loadData"
-      :fields="fields"
-      :sort-by.sync="sortBy"
-      :sort-desc.sync="sortDesc"
-      no-provider-paging
-    >
-      <template v-slot:head(name)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(credentials)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
+    <opensilex-StringFilter
+      :filter.sync="filter"
+      @update="updateFilter()"
+      placeholder="component.profile.filter-placeholder"
+    ></opensilex-StringFilter>
 
-      <template v-slot:cell(credentials)="data">
+    <opensilex-TableAsyncView
+      ref="tableRef"
+      :searchMethod="searchProfiles"
+      :fields="fields"
+    >
+      <template v-slot:cell(credentials)="{data}">
         <div>{{$tc("component.profile.credential", data.item.credentials.length, {count: data.item.credentials.length})}}</div>
       </template>
 
-      <template v-slot:row-details="data">
+      <template v-slot:row-details="{data}">
         <strong class="capitalize-first-letter">{{$t("component.profile.credentials")}}:</strong>
         <b-card-group columns>
           <b-card
@@ -52,59 +33,47 @@
         </b-card-group>
       </template>
 
-      <template v-slot:cell(uri)="data">
-        <a class="uri-info">{{ data.item.uri }}</a>
+      <template v-slot:cell(uri)="{data}">
+        <opensilex-UriLink :uri="data.item.uri"></opensilex-UriLink>
       </template>
 
-      <template v-slot:cell(actions)="data">
+      <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
-          <b-button size="sm" @click="data.toggleDetails" variant="outline-success">
-            <font-awesome-icon v-if="!data.detailsShowing" icon="eye" size="sm" />
-            <font-awesome-icon v-if="data.detailsShowing" icon="eye-slash" size="sm" />
-          </b-button>
-          <b-button
-            size="sm"
+          <opensilex-DetailButton
+            @click="data.toggleDetails"
+            label="component.profile.details"
+            :detailVisible="data.detailsShowing"
+            :small="true"
+          ></opensilex-DetailButton>
+          <opensilex-EditButton
             v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
             @click="$emit('onEdit', data.item)"
-            variant="outline-primary"
-          >
-            <font-awesome-icon icon="edit" size="sm" />
-          </b-button>
-          <b-button
-            size="sm"
+            label="component.profile.update"
+            :small="true"
+          ></opensilex-EditButton>
+          <opensilex-DeleteButton
             v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_DELETE_ID)"
-            @click="$emit('onDelete', data.item.uri)"
-            variant="danger"
-          >
-            <font-awesome-icon icon="trash-alt" size="sm" />
-          </b-button>
+            @click="deleteProfile(data.item.uri)"
+            label="component.profile.delete"
+            :small="true"
+          ></opensilex-DeleteButton>
         </b-button-group>
       </template>
-    </b-table>
-    <b-pagination
-      v-model="currentPage"
-      :total-rows="totalRow"
-      :per-page="pageSize"
-      @change="refresh()"
-    ></b-pagination>
+    </opensilex-TableAsyncView>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
-import {
-  SecurityService,
-  ProfileGetDTO
-} from "opensilex-security/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
+import { SecurityService, ProfileGetDTO } from "opensilex-security/index";
+import HttpResponse, {
+  OpenSilexResponse
+} from "opensilex-security/HttpResponse";
 
 @Component
 export default class ProfileList extends Vue {
   $opensilex: any;
-  $store: any;
-  $router: VueRouter;
 
   get user() {
     return this.$store.state.user;
@@ -114,13 +83,6 @@ export default class ProfileList extends Vue {
     return this.$store.state.credentials;
   }
 
-  currentPage: number = 1;
-  pageSize = 20;
-  totalRow = 0;
-  sortBy = "name";
-  sortDesc = false;
-
-  @Prop()
   credentialsGroups: any;
 
   filterCredentialGroups(credentialsFiltered) {
@@ -151,36 +113,30 @@ export default class ProfileList extends Vue {
     return credentialsDetails;
   }
 
-  private filterPatternValue: any = "";
-  set filterPattern(value: string) {
-    this.filterPatternValue = value;
+  private filter: any = "";
+
+  created() {
+    this.$opensilex.getCredentials().then(credentials => {
+      this.credentialsGroups = credentials;
+    });
+
+    let query: any = this.$route.query;
+    if (query.filter) {
+      this.filter = decodeURI(query.filter);
+    }
+  }
+
+  updateFilter() {
+    this.$opensilex.updateURLParameter("filter", this.filter, "");
     this.refresh();
   }
 
-  get filterPattern() {
-    return this.filterPatternValue;
-  }
-
-  created() {
-    let query: any = this.$route.query;
-    if (query.filterPattern) {
-      this.filterPatternValue = decodeURI(query.filterPattern);
-    }
-    if (query.pageSize) {
-      this.pageSize = parseInt(query.pageSize);
-    }
-    if (query.currentPage) {
-      this.currentPage = parseInt(query.currentPage);
-    }
-    if (query.sortBy) {
-      this.sortBy = decodeURI(query.sortBy);
-    }
-    if (query.sortDesc) {
-      this.sortDesc = query.sortDesc == "true";
-    }
-  }
-
   fields = [
+    {
+      key: "uri",
+      label: "component.common.uri",
+      sortable: true
+    },
     {
       key: "name",
       label: "component.common.name",
@@ -190,14 +146,11 @@ export default class ProfileList extends Vue {
       label: "component.profile.credentials",
       key: "credentials"
     },
-    {
-      key: "uri",
-      label: "component.common.uri",
-      sortable: true
-    },
+
     {
       label: "component.common.actions",
-      key: "actions"
+      key: "actions",
+      class: "table-actions"
     }
   ];
 
@@ -207,49 +160,24 @@ export default class ProfileList extends Vue {
     this.tableRef.refresh();
   }
 
-  loadData() {
-    let service: SecurityService = this.$opensilex.getService(
-      "opensilex.SecurityService"
-    );
-
-    let orderBy = [];
-    if (this.sortBy) {
-      let orderByText = this.sortBy + "=";
-      if (this.sortDesc) {
-        orderBy.push(orderByText + "desc");
-      } else {
-        orderBy.push(orderByText + "asc");
-      }
-    }
-
-    return service
+  searchProfiles(options) {
+    return this.$opensilex
+      .getService("opensilex.SecurityService")
       .searchProfiles(
-        this.filterPattern,
-        orderBy,
-        this.currentPage - 1,
-        this.pageSize
-      )
-      .then((http: HttpResponse<OpenSilexResponse<Array<ProfileGetDTO>>>) => {
-        this.totalRow = http.response.metadata.pagination.totalCount;
-        this.pageSize = http.response.metadata.pagination.pageSize;
-        setTimeout(() => {
-          this.currentPage = http.response.metadata.pagination.currentPage + 1;
-        }, 0);
+        this.filter,
+        options.orderBy,
+        options.currentPage,
+        options.pageSize
+      );
+  }
 
-        this.$router
-          .push({
-            path: this.$route.fullPath,
-            query: {
-              filterPattern: encodeURI(this.filterPattern),
-              sortBy: encodeURI(this.sortBy),
-              sortDesc: "" + this.sortDesc,
-              currentPage: "" + this.currentPage,
-              pageSize: "" + this.pageSize
-            }
-          })
-          .catch(function() {});
-
-        return http.response.result;
+  deleteProfile(uri: string) {
+    this.$opensilex
+      .getService("opensilex.SecurityService")
+      .deleteProfile(uri)
+      .then(() => {
+        this.refresh();
+        this.$emit("onDelete", uri);
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -257,12 +185,4 @@ export default class ProfileList extends Vue {
 </script>
 
 <style scoped lang="scss">
-.uri-info {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: inline-block;
-  max-width: 300px;
-}
 </style>

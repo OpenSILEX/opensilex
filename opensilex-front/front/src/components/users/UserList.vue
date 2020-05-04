@@ -1,46 +1,26 @@
 <template>
   <div>
-    <b-input-group class="mt-3 mb-3" size="sm">
-      <b-input-group>
-        <b-form-input
-          v-model="filterPattern"
-          debounce="300"
-          :placeholder="$t('component.user.filter-placeholder')"
-        ></b-form-input>
-        <template v-slot:append>
-          <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
-            <font-awesome-icon icon="times" size="sm" />
-          </b-btn>
-        </template>
-      </b-input-group>
-    </b-input-group>
-    <b-table
-      ref="tableRef"
-      striped
-      hover
-      small
-      :items="loadData"
-      :fields="fields"
-      :sort-by.sync="sortBy"
-      :sort-desc.sync="sortDesc"
-      no-provider-paging
-    >
-      <template v-slot:head(firstName)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(lastName)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(email)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(admin)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
+    <opensilex-StringFilter
+      :filter.sync="filter"
+      @update="updateFilter()"
+      placeholder="component.user.filter-placeholder"
+    ></opensilex-StringFilter>
 
-      <template v-slot:cell(email)="data">
+    <opensilex-TableAsyncView
+      ref="tableRef"
+      :searchMethod="searchUsers"
+      :fields="fields"
+      defaultSortBy="email"
+    >
+      <template v-slot:cell(email)="{data}">
         <a :href="'mailto:' + data.item.email">{{ data.item.email }}</a>
       </template>
 
-      <template v-slot:cell(uri)="data">
-        <a class="uri-info">{{ data.item.uri }}</a>
+      <template v-slot:cell(uri)="{data}">
+        <opensilex-UriLink :uri="data.item.uri"></opensilex-UriLink>
       </template>
 
-      <template v-slot:cell(admin)="data">
+      <template v-slot:cell(admin)="{data}">
         <span class="capitalize-first-letter" v-if="data.item.admin">{{$t("component.common.yes")}}</span>
         <span class="capitalize-first-letter" v-if="!data.item.admin">{{$t("component.common.no")}}</span>
       </template>
@@ -52,44 +32,35 @@
         </ul>
       </template>
 
-      <template v-slot:cell(actions)="data">
+      <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
-          <b-button size="sm" @click="loadUserDetail(data)" variant="outline-success">
-            <font-awesome-icon v-if="!data.detailsShowing" icon="eye" size="sm" />
-            <font-awesome-icon v-if="data.detailsShowing" icon="eye-slash" size="sm" />
-          </b-button>
-          <b-button
-            size="sm"
+          <opensilex-DetailButton
+            @click="loadUserDetail(data)"
+            label="component.user.details"
+            :detailVisible="data.detailsShowing"
+            :small="true"
+          ></opensilex-DetailButton>
+          <opensilex-EditButton
             v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
             @click="$emit('onEdit', data.item)"
-            variant="outline-primary"
-          >
-            <font-awesome-icon icon="edit" size="sm" />
-          </b-button>
-          <b-button
-            size="sm"
+            label="component.user.update"
+            :small="true"
+          ></opensilex-EditButton>
+          <opensilex-DeleteButton
             v-if="user.hasCredential(credentials.CREDENTIAL_USER_DELETE_ID) && user.email != data.item.email"
-            @click="$emit('onDelete', data.item.uri)"
-            variant="danger"
-          >
-            <font-awesome-icon icon="trash-alt" size="sm" />
-          </b-button>
+            @click="deleteUser(data.item.uri)"
+            label="component.user.delete"
+            :small="true"
+          ></opensilex-DeleteButton>
         </b-button-group>
       </template>
-    </b-table>
-    <b-pagination
-      v-model="currentPage"
-      :total-rows="totalRow"
-      :per-page="pageSize"
-      @change="refresh()"
-    ></b-pagination>
+    </opensilex-TableAsyncView>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
 import {
   SecurityService,
   UserGetDTO,
@@ -103,8 +74,6 @@ import HttpResponse, {
 @Component
 export default class UserList extends Vue {
   $opensilex: any;
-  $store: any;
-  $router: VueRouter;
   service: SecurityService;
 
   get user() {
@@ -115,44 +84,33 @@ export default class UserList extends Vue {
     return this.$store.state.credentials;
   }
 
-  currentPage: number = 1;
-  pageSize = 20;
-  totalRow = 0;
-  sortBy = "firstName";
-  sortDesc = false;
-
-  private filterPatternValue: any = "";
-  set filterPattern(value: string) {
-    this.filterPatternValue = value;
-    this.refresh();
-  }
-
-  get filterPattern() {
-    return this.filterPatternValue;
-  }
+  private filter: any = "";
 
   created() {
     let query: any = this.$route.query;
-    if (query.filterPattern) {
-      this.filterPatternValue = decodeURI(query.filterPattern);
-    }
-    if (query.pageSize) {
-      this.pageSize = parseInt(query.pageSize);
-    }
-    if (query.currentPage) {
-      this.currentPage = parseInt(query.currentPage);
-    }
-    if (query.sortBy) {
-      this.sortBy = decodeURI(query.sortBy);
-    }
-    if (query.sortDesc) {
-      this.sortDesc = query.sortDesc == "true";
+    if (query.filter) {
+      this.filter = decodeURI(query.filter);
     }
 
     this.service = this.$opensilex.getService("opensilex.SecurityService");
   }
 
+  updateFilter() {
+    this.$opensilex.updateURLParameter("filter", this.filter, "");
+    this.refresh();
+  }
+
   fields = [
+    {
+      key: "uri",
+      label: "component.common.uri",
+      sortable: true
+    },
+    {
+      key: "email",
+      label: "component.user.email",
+      sortable: true
+    },
     {
       key: "firstName",
       label: "component.user.first-name",
@@ -163,16 +121,7 @@ export default class UserList extends Vue {
       label: "component.user.last-name",
       sortable: true
     },
-    {
-      key: "email",
-      label: "component.user.email",
-      sortable: true
-    },
-    {
-      key: "uri",
-      label: "component.common.uri",
-      sortable: true
-    },
+
     {
       key: "admin",
       label: "component.user.admin",
@@ -180,7 +129,8 @@ export default class UserList extends Vue {
     },
     {
       label: "component.common.actions",
-      key: "actions"
+      key: "actions",
+      class: "table-actions"
     }
   ];
 
@@ -190,51 +140,16 @@ export default class UserList extends Vue {
     this.tableRef.refresh();
   }
 
-  loadData() {
-    let orderBy = [];
-    if (this.sortBy) {
-      let orderByText = this.sortBy + "=";
-      if (this.sortDesc) {
-        orderBy.push(orderByText + "desc");
-      } else {
-        orderBy.push(orderByText + "asc");
-      }
-    }
-
-    return this.service
-      .searchUsers(
-        this.filterPattern,
-        orderBy,
-        this.currentPage - 1,
-        this.pageSize
-      )
-      .then((http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) => {
-        this.totalRow = http.response.metadata.pagination.totalCount;
-        this.pageSize = http.response.metadata.pagination.pageSize;
-        setTimeout(() => {
-          this.currentPage = http.response.metadata.pagination.currentPage + 1;
-        }, 0);
-
-        this.$router
-          .push({
-            path: this.$route.fullPath,
-            query: {
-              filterPattern: encodeURI(this.filterPattern),
-              sortBy: encodeURI(this.sortBy),
-              sortDesc: "" + this.sortDesc,
-              currentPage: "" + this.currentPage,
-              pageSize: "" + this.pageSize
-            }
-          })
-          .catch(function() {});
-
-        return http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler);
+  searchUsers(options) {
+    return this.service.searchUsers(
+      this.filter,
+      options.orderBy,
+      options.currentPage,
+      options.pageSize
+    );
   }
 
   groupDetails = [];
-
   loadUserDetail(data) {
     if (!data.detailsShowing) {
       this.groupDetails = [];
@@ -248,19 +163,21 @@ export default class UserList extends Vue {
         )
         .catch(this.$opensilex.errorHandler);
     } else {
-       data.toggleDetails();
+      data.toggleDetails();
     }
+  }
+
+  deleteUser(uri: string) {
+    this.service
+      .deleteUser(uri)
+      .then(() => {
+        this.refresh();
+        this.$emit("onDelete", uri);
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 }
 </script>
 
 <style scoped lang="scss">
-.uri-info {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: inline-block;
-  max-width: 300px;
-}
 </style>

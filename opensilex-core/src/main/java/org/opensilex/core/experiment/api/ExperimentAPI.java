@@ -7,7 +7,6 @@
 package org.opensilex.core.experiment.api;
 
 import io.swagger.annotations.*;
-import org.opensilex.core.CoreModule;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.server.response.ErrorResponse;
@@ -37,7 +36,6 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.rest.validation.DateConstraint;
 
 /**
  * @author Vincent MIGOT

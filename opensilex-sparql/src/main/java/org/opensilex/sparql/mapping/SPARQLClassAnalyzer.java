@@ -13,10 +13,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -88,16 +88,16 @@ final class SPARQLClassAnalyzer {
     private final Map<Class<? extends SPARQLResourceModel>, Set<String>> relatedModelsFields;
 
     private final Map<String, SPARQLProperty> annotationsByField = new HashMap<>();
-    private final List<String> optionalFields = new ArrayList<>();
+    private final List<String> optionalFields = new LinkedList<>();
 
-    private final List<String> reverseRelationFields = new ArrayList<>();
+    private final List<String> reverseRelationFields = new LinkedList<>();
 
     private final Map<Class<? extends SPARQLResourceModel>, String> cascadeDeleteClassesField = new HashMap<>();
 
     private final URIGenerator<? extends SPARQLResourceModel> uriGenerator;
 
     private final boolean ignoreValidation;
-    
+
     private final boolean allowBlankNode;
 
     @SuppressWarnings("unchecked")
@@ -332,6 +332,7 @@ final class SPARQLClassAnalyzer {
 
         LOGGER.debug("Determine if field " + field.getName() + " is a reversed property or not");
         if (sProperty.inverse()) {
+            checkAllowedReverseField(field);
             reverseRelationFields.add(field.getName());
         }
 
@@ -341,6 +342,21 @@ final class SPARQLClassAnalyzer {
         fieldsByName.put(field.getName(), field);
 
         managedProperties.add(property);
+    }
+
+    private void checkAllowedReverseField(Field field) throws SPARQLInvalidClassDefinitionException {
+        Type fType = field.getGenericType();
+        if (dataProperties.containsKey(field.getName()) && ((Class<?>) fType != URI.class)) {
+            throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " of literal type are not allowed to be a reverse property");
+        } else if (dataPropertiesLists.containsKey(field.getName())) {
+            ParameterizedType genericReturnType = (ParameterizedType) fType;
+            Class<?> genericParameter = (Class<?>) genericReturnType.getActualTypeArguments()[0];
+            if (genericParameter != URI.class) {
+                throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " List of literal type are not allowed to be a reverse property");
+            }
+        } else if (labelProperties.containsKey(field.getName())) {
+            throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " of SPARQLLabel type is not allowed to be a reverse property");
+        }
     }
 
     private void addRelatedModelProperty(Field field, Class<? extends SPARQLResourceModel> model) {

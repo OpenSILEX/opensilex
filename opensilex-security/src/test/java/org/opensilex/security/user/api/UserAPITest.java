@@ -33,7 +33,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
     protected String getPath = path + "/get/{uri}";
     protected String deletePath = path + "/delete/{uri}";
     protected String searchPath = path + "/search";
-    protected String urisListPath = path + "/get-list-by-uris";
+    protected String urisListPath = path + "/get-by-uris";
 
     private int userCount = 0;
 
@@ -219,7 +219,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        ArrayList<Class<? extends SPARQLResourceModel>> modelList = new ArrayList<>();
+        List<Class<? extends SPARQLResourceModel>> modelList = new LinkedList<>();
         modelList.add(UserModel.class);
         return modelList;
     }

@@ -8,7 +8,6 @@ package org.opensilex.core.infrastructure.dal;
 import java.util.List;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.authentication.SecurityOntology;
-import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
@@ -34,21 +33,24 @@ public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> {
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasPart"
+            property = "hasPart",
+            ignoreUpdateIfNull = true
     )
     protected List<InfrastructureModel> children;
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasDevice"
+            property = "hasFacility",
+            ignoreUpdateIfNull = true
     )
-    private List<InfrastructureDeviceModel> devices;
-    public static final String DEVICE_FIELD = "devices";
+    private List<InfrastructureFacilityModel> facilities;
+    public static final String FACILITIES_FIELD = "facilities";
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,
             property = "hasGroup",
-            cascadeDelete = true
+            cascadeDelete = true,
+            ignoreUpdateIfNull = true
     )
     private List<InfrastructureTeamModel> groups;
     public static final String GROUP_FIELD = "groups";
@@ -61,12 +63,12 @@ public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> {
         this.groups = group;
     }
 
-    public List<InfrastructureDeviceModel> getDevices() {
-        return devices;
+    public List<InfrastructureFacilityModel> getFacilities() {
+        return facilities;
     }
 
-    public void setDevices(List<InfrastructureDeviceModel> devices) {
-        this.devices = devices;
+    public void setFacilities(List<InfrastructureFacilityModel> facilities) {
+        this.facilities = facilities;
     }
 
 }

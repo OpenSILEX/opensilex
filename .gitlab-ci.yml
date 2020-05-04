@@ -55,7 +55,7 @@ variables:
     paths:
       - $YARN_CACHE_FOLDER
       - $MAVEN_CACHE_FOLDER
-      - $NODE_CACHE
+#      - $NODE_CACHE
       - $EMBDED_MONGO_CACHE
 
 

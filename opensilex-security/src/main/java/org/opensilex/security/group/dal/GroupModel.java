@@ -55,11 +55,4 @@ public class GroupModel extends SPARQLNamedResourceModel<GroupModel> {
     public void setUserProfiles(List<GroupUserProfileModel> userProfiles) {
         this.userProfiles = userProfiles;
     }
-
-    public void copyToModel(GroupModel model) {
-        super.copyToModel(model);
-        model.setDescription(getDescription());
-        model.setUserProfiles(getUserProfiles());
-    }
-
 }

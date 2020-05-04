@@ -5,7 +5,7 @@
 //******************************************************************************
 package org.opensilex.utils;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -116,7 +116,7 @@ public class ListWithPagination<T> {
      * @return new paginated list of conversion result class
      */
     public <U> ListWithPagination<U> convert(Class<U> resultClass, Function<T, U> converter) {
-        List<U> resultList = new ArrayList<>();
+        List<U> resultList = new LinkedList<>();
 
         this.list.forEach((T element) -> {
             resultList.add(converter.apply(element));

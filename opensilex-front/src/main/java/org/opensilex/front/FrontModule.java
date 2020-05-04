@@ -8,11 +8,10 @@ package org.opensilex.front;
 import org.opensilex.front.config.FrontRoutingConfig;
 import org.opensilex.front.config.Route;
 import org.opensilex.front.config.MenuItem;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import org.apache.catalina.Context;
 import org.apache.catalina.valves.rewrite.RewriteValve;
-import org.opensilex.OpenSilex;
 import org.opensilex.config.ConfigManager;
 import org.opensilex.front.api.FrontConfigDTO;
 import org.opensilex.front.api.MenuItemDTO;
@@ -83,8 +82,8 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                 config.setThemeName(themeId[1]);
             }
 
-            List<MenuItemDTO> globalMenu = new ArrayList<>();
-            List<RouteDTO> globalRoutes = new ArrayList<>();
+            List<MenuItemDTO> globalMenu = new LinkedList<>();
+            List<RouteDTO> globalRoutes = new LinkedList<>();
 
             List<String> menuExclusions = frontConfig.menuExclusions();
 

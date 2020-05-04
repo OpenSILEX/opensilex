@@ -8,15 +8,14 @@ package org.opensilex.sparql.deserializer;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import org.apache.jena.graph.Node;
 import org.opensilex.OpenSilex;
-import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +56,7 @@ public class SPARQLDeserializers {
     private static Map<Class<?>, SPARQLDeserializer<?>> buildDeserializersMap() {
         HashMap<Class<?>, SPARQLDeserializer<?>> deserializersMap = new HashMap<>();
 
-        List<SPARQLDeserializer<?>> deserializers = new ArrayList<>();
+        List<SPARQLDeserializer<?>> deserializers = new LinkedList<>();
         ServiceLoader.load(SPARQLDeserializer.class, OpenSilex.getClassLoader())
                 .forEach(deserializers::add);
 
@@ -116,9 +115,9 @@ public class SPARQLDeserializers {
         return URIDeserializer.formatURI(value);
     }
 
-    public static List<Node> nodeListURI(List<URI> uris) throws Exception {
+    public static Collection<Node> nodeListURI(Collection<URI> uris) throws Exception {
         SPARQLDeserializer<URI> uriParser = SPARQLDeserializers.getForClass(URI.class);
-        List<Node> uriNodes = new ArrayList<>();
+        List<Node> uriNodes = new LinkedList<>();
         for (URI uri : uris) {
             uriNodes.add(uriParser.getNodeFromString(uri.toString()));
         }

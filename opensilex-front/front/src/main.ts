@@ -22,6 +22,9 @@ Vue.config.productionTip = false;
 import * as LATEST_UPDATE from "./opensilex.dev";
 Vue.prototype.LATEST_UPDATE = LATEST_UPDATE.default
 
+import AsyncComputed from 'vue-async-computed'
+Vue.use(AsyncComputed)
+
 let urlParams = new URLSearchParams(window.location.search);
 
 // Define if script in debug mode
@@ -121,13 +124,6 @@ import VueI18n from 'vue-i18n'
 import en from './lang/message-en.json';
 import fr from './lang/message-fr.json';
 
-export const languages = {
-  "en": en,
-  "fr": fr
-};
-
-const messages = Object.assign(languages);
-
 let lang = navigator.language;
 
 if (urlParams.has('lang')) {
@@ -135,12 +131,17 @@ if (urlParams.has('lang')) {
 }
 
 console.debug("Detected language", lang);
-
-const i18n = new VueI18n({
+let i18nOptions = {
   fallbackLocale: 'en',
   locale: lang,
-  messages
-});
+  silentTranslationWarn: !isDebug,
+  silentFallbackWarn: !isDebug,
+  messages: {
+    "en": {},
+    "fr": {}
+  }
+}
+const i18n = new VueI18n(i18nOptions);
 
 //Initialise validation 
 //https://logaretm.github.io/vee-validate/
@@ -184,11 +185,13 @@ let validationTranslations = {
 }
 
 i18n.mergeLocaleMessage("en", validationTranslations);
+i18n.mergeLocaleMessage("en", en);
 
 validationTranslations = {
   "validations": validationMessagesFR.messages
 }
 i18n.mergeLocaleMessage("fr", validationTranslations);
+i18n.mergeLocaleMessage("fr", fr);
 
 configure({
   classes: {

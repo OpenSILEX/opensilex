@@ -121,7 +121,9 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
     }
 
     private synchronized void closeService(SPARQLService sparql) throws Exception {
-        sparql.shutdown();
+        if (sparql != null) {
+            sparql.shutdown();
+        }
     }
 
     @Override

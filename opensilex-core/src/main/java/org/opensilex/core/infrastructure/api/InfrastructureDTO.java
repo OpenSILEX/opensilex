@@ -67,15 +67,15 @@ public class InfrastructureDTO extends NamedResourceDTO<InfrastructureModel> {
             model.setParent(parentModel);
         }
 
-        List<InfrastructureModel> children = new LinkedList<>();
         if (getChildren() != null) {
+            List<InfrastructureModel> children = new LinkedList<>();
             getChildren().forEach(child -> {
                 InfrastructureModel childModel = new InfrastructureModel();
                 childModel.setUri(child);
                 children.add(childModel);
             });
+            model.setChildren(children);
         }
-        model.setChildren(children);
 
     }
 

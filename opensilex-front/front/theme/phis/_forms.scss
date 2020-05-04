@@ -1,5 +1,5 @@
 .form-group {
-    margin-bottom: 1.25em;
+    margin-bottom: 1em;
 
     .form-control-lg {
         font-size: 1.25em;
@@ -90,7 +90,7 @@ select.form-control {
     height: 35px !important;
 }
 textarea.form-control {
-    padding: 10px 15px;
+    padding: 10px;
     @include border-radius(4px);
 }
 .custom-radio {

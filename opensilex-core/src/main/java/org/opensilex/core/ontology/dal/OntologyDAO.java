@@ -6,7 +6,7 @@
 package org.opensilex.core.ontology.dal;
 
 import java.net.URI;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -71,6 +71,6 @@ public final class OntologyDAO {
             return classModel.getPropertyMapping();
         }
         
-        return new ArrayList<>();
+        return new LinkedList<>();
     }
 }

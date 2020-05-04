@@ -7,7 +7,7 @@
 package org.opensilex.server.response;
 
 import java.net.URI;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -50,12 +50,12 @@ public class MetadataDTO {
     /**
      * Array of custom status message.
      */
-    private final List<StatusDTO> status = new ArrayList<>();
+    private final List<StatusDTO> status = new LinkedList<>();
 
     /**
      * Array of result URI.
      */
-    private final List<URI> datafiles = new ArrayList<>();
+    private final List<URI> datafiles = new LinkedList<>();
 
     /**
      * Constructor with pagination.

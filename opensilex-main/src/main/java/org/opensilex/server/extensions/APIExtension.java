@@ -6,8 +6,8 @@
 //******************************************************************************
 package org.opensilex.server.extensions;
 
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.ws.rs.Path;
@@ -35,7 +35,7 @@ public interface APIExtension extends OpenSilexExtension {
      * @return List of packages to scan
      */
     public default List<String> getPackagesToScan() {
-        List<String> list = new ArrayList<>();
+        List<String> list = new LinkedList<>();
         list.addAll(apiPackages());
 
         return list;

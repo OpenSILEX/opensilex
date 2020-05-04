@@ -38,7 +38,7 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
 
         ProfileCreationDTO dto = new ProfileCreationDTO();
         dto.setName("profile 1");
-        dto.setCredentials(new ArrayList<String>() {
+        dto.setCredentials(new LinkedList<String>() {
             {
                 add("cred1");
                 add("cred2");
@@ -71,7 +71,7 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
         ProfileUpdateDTO dto = new ProfileUpdateDTO();
         dto.setUri(uri);
         dto.setName("new name");
-        dto.setCredentials(new ArrayList<String>() {
+        dto.setCredentials(new LinkedList<String>() {
             {
                 add("new-cred1");
                 add("new-cred2");
@@ -119,7 +119,7 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
 
         ProfileCreationDTO profile2 = new ProfileCreationDTO();
         profile2.setName("profile 2");
-        profile2.setCredentials(new ArrayList<String>() {
+        profile2.setCredentials(new LinkedList<String>() {
             {
                 add("cred2");
                 add("cred3");
@@ -169,7 +169,7 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
 
         ProfileCreationDTO profile2 = new ProfileCreationDTO();
         profile2.setName("profile 2");
-        profile2.setCredentials(new ArrayList<String>() {
+        profile2.setCredentials(new LinkedList<String>() {
             {
                 add("cred2");
                 add("cred3");
@@ -206,7 +206,7 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        ArrayList<Class<? extends SPARQLResourceModel>> modelList = new ArrayList<>();
+        List<Class<? extends SPARQLResourceModel>> modelList = new LinkedList<>();
         modelList.add(ProfileModel.class);
         return modelList;
     }

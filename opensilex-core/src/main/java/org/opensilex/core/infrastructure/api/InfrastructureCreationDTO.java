@@ -5,8 +5,6 @@
  */
 package org.opensilex.core.infrastructure.api;
 
-import org.opensilex.sparql.service.SPARQLService;
-
 /**
  *
  * @author vince

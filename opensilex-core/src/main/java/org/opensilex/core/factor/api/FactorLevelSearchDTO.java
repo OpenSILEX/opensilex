@@ -12,6 +12,7 @@ package org.opensilex.core.factor.api;
 import java.net.URI;
 import org.opensilex.core.factor.dal.FactorLevelModel;
 import org.opensilex.server.rest.validation.Required;
+import org.opensilex.server.rest.validation.ValidURI;
 
 /**
  * 
@@ -24,7 +25,7 @@ public class FactorLevelSearchDTO {
     @Required
     private String alias;
 
-    @Required
+    @ValidURI
     private URI hasFactor;
     
     private String comment;

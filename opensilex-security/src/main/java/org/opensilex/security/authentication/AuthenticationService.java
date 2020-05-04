@@ -205,6 +205,7 @@ public class AuthenticationService extends BaseService implements Service {
      *
      * @param user User to build token on
      * @param credentialsList Credential list to setup for user in token
+     * @throws Exception
      */
     public void generateToken(UserModel user, List<String> credentialsList) throws Exception {
         // Set issue date a now
@@ -250,6 +251,7 @@ public class AuthenticationService extends BaseService implements Service {
      * </pre>
      *
      * @param user User having token to renew
+     * @throws Exception
      */
     public boolean renewToken(UserModel user) throws Exception {
         if (user.getToken() != null) {
@@ -284,8 +286,7 @@ public class AuthenticationService extends BaseService implements Service {
                             tokenBuilder.withClaim(key, claim.asString());
                             break;
                     }
-                } else {
-                    LOGGER.warn("Unmanaged token claim, try to read as string: " + key + " -> " + claim.asString());
+                } else if (claim.asString() != null) {
                     tokenBuilder.withClaim(key, claim.asString());
                 }
             });
@@ -313,8 +314,7 @@ public class AuthenticationService extends BaseService implements Service {
      * @param tokenValue JWT token string
      * @return User uri
      * @throws JWTVerificationException In case of token validation error
-     * @throws URISyntaxException In case of invalid user URI in token (should
-     * never happend)
+     * @throws URISyntaxException In case of invalid user URI in token (should never happend)
      */
     public URI decodeTokenUserURI(String tokenValue) throws JWTVerificationException, URISyntaxException {
         JWTVerifier verifier = JWT.require(algoRSA)
@@ -390,11 +390,11 @@ public class AuthenticationService extends BaseService implements Service {
     }
 
     /**
-     * Add a user with an authentication delay. Create a thread per user which
-     * just sleep until delay is expired.
+     * Add a user with an authentication delay. Create a thread per user which just sleep until delay is expired.
      *
      * @param user Userto add
      * @param expireMs authentication delay in milliseconds
+     * @throws Exception
      */
     public synchronized void addUser(UserModel user, long expireMs) throws Exception {
         URI userURI = user.getUri();
@@ -432,6 +432,7 @@ public class AuthenticationService extends BaseService implements Service {
      *
      * @param user User to remove from registry
      * @return removed user or null
+     * @throws Exception
      */
     public synchronized UserModel removeUser(UserModel user) throws Exception {
         return removeUserByURI(user.getUri());
@@ -442,6 +443,7 @@ public class AuthenticationService extends BaseService implements Service {
      *
      * @param userURI User URI to remove from registry
      * @return removed user or null if not found
+     * @throws Exception
      */
     public synchronized UserModel removeUserByURI(URI userURI) throws Exception {
         boolean allowMultiConnection = getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class).allowMultiConnection();

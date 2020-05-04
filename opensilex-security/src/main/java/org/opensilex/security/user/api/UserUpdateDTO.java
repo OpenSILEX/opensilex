@@ -30,8 +30,6 @@ import org.opensilex.server.rest.validation.ValidURI;
  * }
  * </pre>
  *
- * @see
- * org.opensilex.rest.user.api.UserAPI#updateUser(org.opensilex.rest.user.api.UserUpdateDTO)
  * @author Vincent Migot
  */
 @ApiModel

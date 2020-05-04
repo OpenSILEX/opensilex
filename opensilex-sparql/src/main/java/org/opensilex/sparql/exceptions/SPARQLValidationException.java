@@ -6,8 +6,8 @@
 package org.opensilex.sparql.exceptions;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +28,7 @@ public class SPARQLValidationException  extends SPARQLException {
         
         List<URI> propertyBrokenConstraints = objectErrors.get(invalidObjectProperty);
         if (propertyBrokenConstraints == null) {
-            propertyBrokenConstraints = new ArrayList<>();
+            propertyBrokenConstraints = new LinkedList<>();
             objectErrors.put(invalidObjectProperty, propertyBrokenConstraints);
         }
         

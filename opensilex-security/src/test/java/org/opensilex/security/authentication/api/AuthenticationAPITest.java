@@ -1,11 +1,9 @@
 package org.opensilex.security.authentication.api;
 
-import org.opensilex.security.authentication.api.TokenGetDTO;
-import org.opensilex.security.authentication.api.CredentialsGroupDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import org.junit.Test;
 import javax.ws.rs.core.Response;
@@ -82,7 +80,7 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
         PaginatedListResponse<CredentialsGroupDTO> getResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<CredentialsGroupDTO>>() {
         });
 
-        List<String> userCredentialsMap = new ArrayList<String>() {
+        List<String> userCredentialsMap = new LinkedList<String>() {
             {
                 add(UserAPI.CREDENTIAL_USER_DELETE_ID);
                 add(UserAPI.CREDENTIAL_USER_MODIFICATION_ID);
@@ -90,7 +88,7 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
             }
         };
 
-        List<String> profileCredentialsMap = new ArrayList<String>() {
+        List<String> profileCredentialsMap = new LinkedList<String>() {
             {
                 add(ProfileAPI.CREDENTIAL_PROFILE_DELETE_ID);
                 add(ProfileAPI.CREDENTIAL_PROFILE_MODIFICATION_ID);
@@ -98,7 +96,7 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
             }
         };
 
-        List<String> groupCredentialsMap = new ArrayList<String>() {
+        List<String> groupCredentialsMap = new LinkedList<String>() {
             {
                 add(GroupAPI.CREDENTIAL_GROUP_DELETE_ID);
                 add(GroupAPI.CREDENTIAL_GROUP_MODIFICATION_ID);

@@ -38,8 +38,4 @@ public class SPARQLNamedResourceModel<T extends SPARQLNamedResourceModel> extend
         };
     }
     
-    public void copyToModel(SPARQLNamedResourceModel model) {
-        super.copyToModel(model);
-        model.setName(getName());
-    }
 }

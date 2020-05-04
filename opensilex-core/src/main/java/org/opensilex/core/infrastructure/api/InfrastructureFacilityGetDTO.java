@@ -6,7 +6,7 @@
 package org.opensilex.core.infrastructure.api;
 
 import java.net.URI;
-import org.opensilex.core.infrastructure.dal.InfrastructureDeviceModel;
+import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
@@ -15,7 +15,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  *
  * @author vince
  */
-public class InfrastructureDeviceGetDTO extends NamedResourceDTO<InfrastructureDeviceModel> {
+public class InfrastructureFacilityGetDTO extends NamedResourceDTO<InfrastructureFacilityModel> {
 
     protected URI infrastructure;
 
@@ -28,7 +28,7 @@ public class InfrastructureDeviceGetDTO extends NamedResourceDTO<InfrastructureD
     }
 
     @Override
-    public void toModel(InfrastructureDeviceModel model) {
+    public void toModel(InfrastructureFacilityModel model) {
         super.toModel(model);
         InfrastructureModel infra = new InfrastructureModel();
         infra.setUri(getInfrastructure());
@@ -36,18 +36,18 @@ public class InfrastructureDeviceGetDTO extends NamedResourceDTO<InfrastructureD
     }
 
     @Override
-    public void fromModel(InfrastructureDeviceModel model) {
+    public void fromModel(InfrastructureFacilityModel model) {
         super.fromModel(model);
         setInfrastructure(model.getInfrastructure().getUri());
     }
 
     @Override
-    public InfrastructureDeviceModel newModelInstance() {
-        return new InfrastructureDeviceModel();
+    public InfrastructureFacilityModel newModelInstance() {
+        return new InfrastructureFacilityModel();
     }
 
-    public static InfrastructureDeviceGetDTO getDTOFromModel(InfrastructureDeviceModel model) {
-        InfrastructureDeviceGetDTO dto = new InfrastructureDeviceGetDTO();
+    public static InfrastructureFacilityGetDTO getDTOFromModel(InfrastructureFacilityModel model) {
+        InfrastructureFacilityGetDTO dto = new InfrastructureFacilityGetDTO();
         dto.fromModel(model);
 
         return dto;

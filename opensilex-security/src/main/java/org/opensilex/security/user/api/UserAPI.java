@@ -12,7 +12,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.mail.internet.InternetAddress;
@@ -226,7 +226,7 @@ public class UserAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("get-list-by-uris")
+    @Path("get-by-uris")
     @ApiOperation("Get a list of users by their URIs")
     @ApiProtected
     @ApiCredential(
@@ -250,7 +250,7 @@ public class UserAPI {
         // Check if users are found
         if (!models.isEmpty()) {
             // Return user list converted in UserGetDTO
-            List<UserGetDTO> resultDTOList = new ArrayList<>();
+            List<UserGetDTO> resultDTOList = new LinkedList<>();
             models.forEach(result -> {
                 resultDTOList.add(UserGetDTO.fromModel(result));
             });

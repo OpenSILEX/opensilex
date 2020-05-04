@@ -62,12 +62,14 @@ public class GroupDTO extends NamedResourceDTO<GroupModel> {
 
         group.setDescription(getDescription());
 
-        List<GroupUserProfileModel> userProfilesModel = new LinkedList<>();
-        for (GroupUserProfileDTO userProfile : getUserProfiles()) {
-            GroupUserProfileModel userProfileModel = userProfile.newModel();
-            userProfilesModel.add(userProfileModel);
+        if (getUserProfiles() != null) {
+            List<GroupUserProfileModel> userProfilesModel = new LinkedList<>();
+            for (GroupUserProfileDTO userProfile : getUserProfiles()) {
+                GroupUserProfileModel userProfileModel = userProfile.newModel();
+                userProfilesModel.add(userProfileModel);
+            }
+            group.setUserProfiles(userProfilesModel);
         }
-        group.setUserProfiles(userProfilesModel);
     }
 
     @Override

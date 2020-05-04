@@ -139,5 +139,4 @@ export class OpenSilexRouter {
 
         return menu;
     }
-
 }

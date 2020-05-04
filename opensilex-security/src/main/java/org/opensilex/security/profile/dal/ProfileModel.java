@@ -34,7 +34,8 @@ public class ProfileModel extends SPARQLNamedResourceModel<ProfileModel> {
             ontology = SecurityOntology.class,
             property = "hasProfile",
             inverse = true,
-            cascadeDelete = true
+            cascadeDelete = true,
+            ignoreUpdateIfNull = true
     )
     private List<GroupUserProfileModel> userProfiles;
 

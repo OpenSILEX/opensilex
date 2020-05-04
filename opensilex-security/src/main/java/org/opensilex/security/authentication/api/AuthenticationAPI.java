@@ -13,7 +13,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
@@ -45,7 +45,6 @@ import org.opensilex.security.user.dal.UserDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.opensilex.security.authentication.ApiTranslatable;
 
 /**
  * <pre>
@@ -81,8 +80,7 @@ public class AuthenticationAPI {
     private SPARQLService sparql;
 
     /**
-     * Authenticate a user with it's identifier (email or URI) and password
-     * returning a JWT token
+     * Authenticate a user with it's identifier (email or URI) and password returning a JWT token
      *
      * @see org.opensilex.security.user.dal.UserDAO
      * @param authenticationDTO suer identifier and password message
@@ -129,8 +127,7 @@ public class AuthenticationAPI {
     }
 
     /**
-     * Renew a user token if the provided one is still valid extending it's
-     * validity
+     * Renew a user token if the provided one is still valid extending it's validity
      *
      * @see org.opensilex.security.user.dal.UserDAO
      * @param userToken actual valid token for user
@@ -160,6 +157,7 @@ public class AuthenticationAPI {
      * @see org.opensilex.security.user.dal.UserDAO
      * @param securityContext Security context to get current user
      * @return Empty ok response
+     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @DELETE
     @Path("logout")
@@ -194,6 +192,7 @@ public class AuthenticationAPI {
      *
      * @see org.opensilex.rest.security.dal.SecurityAccessDAO
      * @return Map of existing application credential.
+     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
     @Path("credentials")
@@ -203,13 +202,13 @@ public class AuthenticationAPI {
     })
     public Response getCredentialsGroups() throws Exception {
         if (credentialsGroupList == null) {
-            credentialsGroupList = new ArrayList<>();
+            credentialsGroupList = new LinkedList<>();
             AuthenticationDAO securityDAO = new AuthenticationDAO(sparql);
             Map<String, String> groupLabels = securityDAO.getCredentialsGroupLabels();
             securityDAO.getCredentialsGroups().forEach((String groupId, Map<String, String> credentialMap) -> {
                 CredentialsGroupDTO credentialsGroup = new CredentialsGroupDTO();
                 credentialsGroup.setGroupId(groupId);
-                List<CredentialDTO> credentials = new ArrayList<>();
+                List<CredentialDTO> credentials = new LinkedList<>();
                 credentialMap.forEach((id, label) -> {
                     CredentialDTO credential = new CredentialDTO();
                     credential.setId(id);

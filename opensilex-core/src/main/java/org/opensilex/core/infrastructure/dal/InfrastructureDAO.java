@@ -89,22 +89,22 @@ public class InfrastructureDAO {
         return instance;
     }
 
-    public InfrastructureDeviceModel createDevice(InfrastructureDeviceModel instance) throws Exception {
+    public InfrastructureFacilityModel createFacility(InfrastructureFacilityModel instance) throws Exception {
         InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), null);
         instance.setInfrastructure(infra);
         sparql.create(instance);
         return instance;
     }
 
-    public InfrastructureDeviceModel getDevice(URI uri, String lang) throws Exception {
-        return sparql.getByURI(InfrastructureDeviceModel.class, uri, lang);
+    public InfrastructureFacilityModel getFacility(URI uri, String lang) throws Exception {
+        return sparql.getByURI(InfrastructureFacilityModel.class, uri, lang);
     }
 
-    public void deleteDevice(URI uri) throws Exception {
-        sparql.delete(InfrastructureDeviceModel.class, uri);
+    public void deleteFacility(URI uri) throws Exception {
+        sparql.delete(InfrastructureFacilityModel.class, uri);
     }
 
-    public InfrastructureDeviceModel updateDevice(InfrastructureDeviceModel instance) throws Exception {
+    public InfrastructureFacilityModel updateFacility(InfrastructureFacilityModel instance) throws Exception {
         InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), null);
         instance.setInfrastructure(infra);
         sparql.update(instance);

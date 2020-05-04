@@ -1,36 +1,33 @@
 <template>
-  <div id="page-wrapper" class="wrapper customized" v-bind:class="{ embed: embed }">
-    <component
-      class="header-logo"
-      v-bind:is="headerComponent"
-      v-if="user.isLoggedIn() && !disconnected &&!embed"
-    ></component>
+  <opensilex-Overlay :show="isLoaderVisible" :noFade="false" zIndex="32000">
+    <div id="page-wrapper" class="wrapper customized" v-bind:class="{ embed: embed }">
+      <component
+        class="header-logo"
+        v-bind:is="headerComponent"
+        v-if="user.isLoggedIn() && !disconnected &&!embed"
+      ></component>
 
-    <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
-      <component class="header-login" v-bind:is="loginComponent"></component>
-    </header>
+      <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
+        <component class="header-login" v-bind:is="loginComponent"></component>
+      </header>
 
-    <section id="content-wrapper" class="page-wrap" v-if="user.isLoggedIn() && !disconnected">
-      <component id="menu-container" v-if="!embed" v-bind:is="menuComponent"></component>
+      <section id="content-wrapper" class="page-wrap" v-if="user.isLoggedIn() && !disconnected">
+        <div>
+          <component id="menu-container" v-if="!embed" v-bind:is="menuComponent"></component>
+        </div>
 
-      <div id="main-content">
-        <main class="main-content">
-          <router-view :key="$route.fullPath" />
-        </main>
+        <div id="main-content">
+          <main class="main-content">
+            <router-view :key="$route.fullPath" />
+          </main>
 
-        <footer v-if="!embed">
-          <component v-bind:is="footerComponent"></component>
-        </footer>
-      </div>
-    </section>
-
-    <div id="loader" v-bind:class="{'visible':isLoaderVisible}">
-      <div class="lds-ripple">
-        <div></div>
-        <div></div>
-      </div>
+          <footer v-if="!embed">
+            <component v-bind:is="footerComponent"></component>
+          </footer>
+        </div>
+      </section>
     </div>
-  </div>
+  </opensilex-Overlay>
 </template>
 
 <script lang="ts">
@@ -73,63 +70,6 @@ export default class App extends Vue {
 
 <style lang="scss">
 @import "./styles/common.scss";
-
-#loader {
-  visibility: hidden;
-  opacity: 0;
-  transition: visibility 0.2s linear, opacity 0.5s linear;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 100%;
-  width: 100%;
-  z-index: 32000;
-  background-color: rgba(255, 255, 255, 0.7);
-  text-align: center;
-}
-
-#loader .lds-ripple {
-  display: inline-block;
-  position: relative;
-  width: 80px;
-  height: 80px;
-  top: 50%;
-  transform: translateY(-50%);
-  margin: auto;
-}
-#loader .lds-ripple div {
-  position: absolute;
-  border: 4px solid #000;
-  opacity: 1;
-  border-radius: 50%;
-  animation: lds-ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
-}
-#loader .lds-ripple div:nth-child(2) {
-  animation-delay: -0.5s;
-}
-@keyframes lds-ripple {
-  0% {
-    top: 36px;
-    left: 36px;
-    width: 0;
-    height: 0;
-    opacity: 1;
-  }
-  100% {
-    top: 0px;
-    left: 0px;
-    width: 72px;
-    height: 72px;
-    opacity: 0;
-  }
-}
-
-#loader.visible {
-  visibility: visible;
-  opacity: 1;
-}
 
 header {
   display: flex;

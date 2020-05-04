@@ -14,10 +14,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -45,7 +45,7 @@ public class OpenSilexModuleManager {
     /**
      * List of build-in modules ordered by their loading order.
      */
-    private final static List<String> BUILD_IN_MODULES_ORDER = new ArrayList<String>() {
+    private final static List<String> BUILD_IN_MODULES_ORDER = new LinkedList<String>() {
         {
             add("opensilex-main");
             add("opensilex-fs");
@@ -136,7 +136,7 @@ public class OpenSilexModuleManager {
         // If some modules are not listed in dependencies or no dependencies were read
         if (!readDependencies.containsAll(urls)) {
             // If some modules have not been previously registred
-            List<URL> missingModules = new ArrayList<URL>(urls);
+            List<URL> missingModules = new LinkedList<URL>(urls);
             missingModules.removeAll(readDependencies);
 
             // Get modules dependencies and load them
@@ -292,7 +292,7 @@ public class OpenSilexModuleManager {
     public Iterable<OpenSilexModule> getModules() {
         if (modules == null) {
 
-            modules = new ArrayList<>();
+            modules = new LinkedList<>();
             Iterator<OpenSilexModule> i = ServiceLoader.load(OpenSilexModule.class, OpenSilex.getClassLoader()).iterator();
             while (i.hasNext()) {
                 modules.add(i.next());
@@ -464,7 +464,7 @@ public class OpenSilexModuleManager {
      */
     @SuppressWarnings("unchecked")
     public <T> List<T> getModulesImplementingInterface(Class<T> extensionInterface) {
-        List<T> modules = new ArrayList<>();
+        List<T> modules = new LinkedList<>();
         forEachModule((OpenSilexModule m) -> {
             if (extensionInterface.isAssignableFrom(m.getClass())) {
                 modules.add((T) m);

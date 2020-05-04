@@ -15,9 +15,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.opensilex.OpenSilex;
@@ -423,7 +423,7 @@ public class ConfigProxyHandler implements InvocationHandler {
      * @throws InvalidConfigException
      */
     private List<?> getList(Type genericParameter, JsonNode value, Method method) throws IOException, InvalidConfigException {
-        List<Object> list = new ArrayList<>();
+        List<Object> list = new LinkedList<>();
 
         JsonNode currentValue = value;
         if (value.isMissingNode()) {

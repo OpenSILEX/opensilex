@@ -49,35 +49,11 @@
     text-decoration: none;
 }
 
-.table-responsive {
-    overflow-x:  visible;
-}
-
-.table-responsive .uri {
-    display: block;
-    position: relative;
-    margin-right: 10px;
-}
-
-.table-responsive .uri:hover .uri-copy {
-    display: block;
-}
-
-.table-responsive .uri .uri-copy {
-    border: 1px solid #d8dde5;
-    border-radius: 5px;
-    color: #212121;
-    display: none;
-    padding: 3px 3px 0 3px;
-    position: absolute;
-    right: -20px;
-    top: -3px;
-}
-
 .table-responsive .table thead th {
     font-weight: normal;
 }
 
+.table-responsive a:visited,
 .table-responsive a {
     color: #007bff;
 }

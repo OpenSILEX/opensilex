@@ -118,7 +118,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
         ProfileModel profile = new ProfileModel();
         profile.setUri(new URI(DEFAULT_PROFILE_URI));
         profile.setName(DEFAULT_PROFILE_NAME);
-        profile.setCredentials(new ArrayList<>(securityDAO.getCredentialsIdList()));
+        profile.setCredentials(new LinkedList<>(securityDAO.getCredentialsIdList()));
         sparql.create(profile);
         factory.dispose(sparql);
     }

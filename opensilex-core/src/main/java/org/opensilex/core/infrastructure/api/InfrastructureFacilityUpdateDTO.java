@@ -9,6 +9,6 @@ package org.opensilex.core.infrastructure.api;
  *
  * @author vince
  */
-public class InfrastructureDeviceUpdateDTO extends InfrastructureDeviceCreationDTO {
+public class InfrastructureFacilityUpdateDTO extends InfrastructureFacilityCreationDTO {
 
 }

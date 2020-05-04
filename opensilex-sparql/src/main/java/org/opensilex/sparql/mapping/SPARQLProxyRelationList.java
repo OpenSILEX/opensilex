@@ -6,7 +6,7 @@
 package org.opensilex.sparql.mapping;
 
 import java.net.URI;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,7 +44,7 @@ class SPARQLProxyRelationList extends SPARQLProxy<List> {
     protected List loadData() throws Exception {
         List<SPARQLStatement> results = this.service.describe(graph, uri);
 
-        List<SPARQLModelRelation> list = new ArrayList<>();
+        List<SPARQLModelRelation> list = new LinkedList<>();
         
         for (SPARQLStatement statement : results) {
             if (!propertiesToIgnore.contains(statement.getPredicate())) {

@@ -5,7 +5,7 @@
  */
 package org.opensilex.sparql.extensions;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import org.opensilex.OpenSilexExtension;
 
@@ -16,7 +16,7 @@ import org.opensilex.OpenSilexExtension;
 public interface SPARQLExtension extends OpenSilexExtension {
 
     public default List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
-        List<OntologyFileDefinition> list = new ArrayList<>();
+        List<OntologyFileDefinition> list = new LinkedList<>();
         return list;
     }
 

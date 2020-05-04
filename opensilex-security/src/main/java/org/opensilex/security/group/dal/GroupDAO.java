@@ -102,4 +102,8 @@ public final class GroupDAO {
                 name
         );
     }
+
+    public List<GroupModel> getList(List<URI> uri) throws Exception {
+        return sparql.getListByURIs(GroupModel.class, uri, null);
+    }
 }

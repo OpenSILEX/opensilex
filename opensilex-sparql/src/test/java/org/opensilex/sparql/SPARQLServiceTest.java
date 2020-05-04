@@ -139,7 +139,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         b.setDoubleVar(0d);
         b.setCharVar('Z');
         b.setShortVar((short) 0);
-        List<String> stringList = new ArrayList<>();
+        List<String> stringList = new LinkedList<>();
         stringList.add("V1");
         stringList.add("V2");
         b.setStringList(stringList);

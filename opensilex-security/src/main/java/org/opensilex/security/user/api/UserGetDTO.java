@@ -26,9 +26,6 @@ import org.opensilex.security.user.dal.UserModel;
  * }
  * </pre>
  *
- * @see org.opensilex.rest.user.api.UserAPI#getUser(java.net.URI)
- * @see org.opensilex.rest.user.api.UserAPI#searchUsers(java.lang.String,
- * java.util.List, int, int)
  * @author Vincent Migot
  */
 @ApiModel

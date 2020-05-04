@@ -14,7 +14,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.OpenSilex;
@@ -99,7 +99,7 @@ public class ResetTypeScriptLib {
     }
 
     private static Process createFrontTypes(Path baseDirectory, Path libDirectory) throws Exception {
-        List<String> args = new ArrayList<>();
+        List<String> args = new LinkedList<>();
         args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
         args.add(baseDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
         args.add("run");

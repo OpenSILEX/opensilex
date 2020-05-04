@@ -6,7 +6,7 @@
 package org.opensilex.sparql.mapping;
 
 import java.net.URI;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -46,7 +46,7 @@ class SPARQLProxyListData<T> extends SPARQLProxyList<T> {
             select.addWhere(SPARQLDeserializers.nodeURI(uri), property, value);
         }
 
-        List<T> results = new ArrayList<>();
+        List<T> results = new LinkedList<>();
         SPARQLDeserializer<T> deserializer = SPARQLDeserializers.getForClass(genericType);
 
         service.executeSelectQuery(select, (SPARQLResult result) -> {

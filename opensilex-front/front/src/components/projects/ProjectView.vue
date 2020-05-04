@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <opensilex-PageHeader
-      icon="ik-folder"
+      icon="ik#ik-folder"
       title="component.menu.projects"
       description="component.project.search-description"
     ></opensilex-PageHeader>

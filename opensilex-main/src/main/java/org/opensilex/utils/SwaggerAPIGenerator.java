@@ -191,6 +191,8 @@ public final class SwaggerAPIGenerator {
             swaggerFile.createNewFile();
             mapper.writeValue(swaggerFile, swagger);
         }
+        
+        instance.shutdown();
     }
 
     /**

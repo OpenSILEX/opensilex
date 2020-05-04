@@ -8,7 +8,7 @@ package org.opensilex.server.response;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -75,8 +75,8 @@ public class ErrorDTO {
         this.message = message;
 
         if (t != null) {
-            stack = new ArrayList<>();
-            fullstack = new ArrayList<>();
+            stack = new LinkedList<>();
+            fullstack = new LinkedList<>();
             for (StackTraceElement stackElement : t.getStackTrace()) {
                 String stackMessage = stackElement.toString();
                 if (stackMessage.startsWith("org.opensilex")) {

@@ -5,7 +5,7 @@
         <div class="page-header-title">
           <div class="d-inline">
             <h5>
-              <i class="ik" :class="icon"></i>
+              <opensilex-Icon :icon="icon" class="title-icon" />
               &nbsp;{{ $t(title) }}
             </h5>
             <span>{{ $t(description) }}</span>
@@ -17,12 +17,13 @@
           <ol class="breadcrumb">
             <li class="breadcrumb-item">
               <router-link :to="{path: '/dashboard'}" :title="$t('component.menu.backToDashboard')">
-                <i class="ik ik-grid mr-1"></i>
+                <opensilex-Icon icon="ik#ik-grid" />
+                
                 {{ $t('component.menu.dashboard') }}
               </router-link>
             </li>
             <li class="breadcrumb-item active">
-              <i class="ik mr-1" :class="icon"></i>
+              <opensilex-Icon :icon="icon" />
               {{ $t(title) }}
             </li>
           </ol>
@@ -52,7 +53,7 @@ export default class PageHeader extends Vue {
 </script>
 
 <style scoped lang="scss">
-.page-header-title i {
+.title-icon {
   float: left;
   width: 40px;
   height: 40px;

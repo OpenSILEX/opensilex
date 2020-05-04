@@ -8,6 +8,7 @@ import IHttpClient from '../lib/IHttpClient';
 import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import { User } from './User';
 import OpenSilexHttpClient from './OpenSilexHttpClient';
+import Oeso from '../ontologies/Oeso';
 import { FrontConfigDTO, ThemeConfigDTO, IAPIConfiguration, ApiServiceBinder } from '../lib';
 
 declare var $cookies: VueCookies;
@@ -26,6 +27,7 @@ export default class OpenSilexVuePlugin {
     public $moment: any;
     public $bvToast: any;
 
+    public Oeso = Oeso;
     constructor(baseApi: string, store: Store<any>, i18n: VueI18n) {
         this.container = new Container();
         this.container.bind<OpenSilexVuePlugin>(OpenSilexVuePlugin).toConstantValue(this);
@@ -387,6 +389,8 @@ export default class OpenSilexVuePlugin {
                 this.handleUnexpectedError(error, message);
                 break;
         }
+
+        throw error;
     }
 
     public errorHandler = this.handleError.bind(this);
@@ -430,10 +434,21 @@ export default class OpenSilexVuePlugin {
     public showErrorToast(message: string) {
         this.showToast(message, {
             variant: "danger",
-            toaster: "b-toaster-bottom-full",
+            toaster: "b-toaster-top-center",
             appendToast: true,
             solid: true,
             title: this.$i18n.t("component.common.errors.error-title")
+        });
+    }
+
+    public showSuccessToast(message: string) {
+        this.showToast(message, {
+            variant: "success",
+            toaster: "b-toaster-top-center",
+            appendToast: true,
+            solid: true,
+            autoHideDelay: 1500,
+            noCloseButton: true
         });
     }
 
@@ -451,49 +466,49 @@ export default class OpenSilexVuePlugin {
         return "OPENSILEX-TOAST" + OpenSilexVuePlugin.hashCode(message + "|" + options.title + "|" + options.variant);
     }
 
-    public buildTreeListOptions(resourceTrees: Array<any>) {
+    public buildTreeListOptions(resourceTrees: Array<any>, buildOptions?) {
         let options = [];
-        resourceTrees.forEach((resourceTree: any) => {
-            options.push(this.buildTreeOptions(resourceTree));
-        });
+
+        buildOptions = buildOptions || {
+            expanded: null,
+            disableSubTree: null
+        };
+
+        if (buildOptions.expanded == null) {
+            buildOptions.expanded = true;
+        }
+
+        if (resourceTrees != null) {
+            resourceTrees.forEach((resourceTree: any) => {
+                options.push(this.buildTreeOptions(resourceTree, buildOptions));
+            });
+        }
 
         return options;
     }
 
-    public buildTreeOptions(resourceTree: any) {
+    public buildTreeOptions(resourceTree: any, buildOptions: any, disabled?: boolean) {
+
         let option = {
             id: resourceTree.uri,
             label: resourceTree.name,
-            isDefaultExpanded: true,
+            isDefaultExpanded: buildOptions.expanded,
             isDisabled: false,
             children: []
         };
 
+        if (buildOptions.disableSubTree != null) {
+            option.isDisabled = (option.id == buildOptions.disableSubTree) || disabled;
+        }
+
         resourceTree.children.forEach(child => {
-            option.children.push(this.buildTreeOptions(child));
+            option.children.push(this.buildTreeOptions(child, buildOptions, option.isDisabled));
         });
 
         if (option.children.length == 0) {
             delete option.children;
         }
         return option;
-    }
-
-    public filterItemTree(tree, id?, parent?) {
-        for (let i in tree) {
-            let item = tree[i];
-            item.isDisabled = false;
-
-            if (id != null) {
-                item.isDisabled = item.id == id;
-            }
-
-            if (parent != null) {
-                item.isDisabled = item.isDisabled || parent.isDisabled;
-            }
-
-            this.filterItemTree(item.children, id, item);
-        }
     }
 
     private flatOntologies = {};
@@ -509,6 +524,54 @@ export default class OpenSilexVuePlugin {
             return this.flatOntologies[uri].name;
         } else {
             return uri;
+        }
+    }
+
+    public generateID() {
+        return '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    public updateURLParameter(key, value, defaultValue?) {
+        try {
+            let queryParams = new URLSearchParams(window.location.search);
+            let rootQuery = window.location.pathname;
+            if (!value || (defaultValue != null && value == defaultValue)) {
+                queryParams.delete(key);
+            } else {
+                queryParams.set(key, encodeURI(value));
+            }
+
+            let queryParamString = queryParams.toString();
+            let url = rootQuery;
+            if (queryParamString) {
+                url += "?" + queryParamString;
+            }
+            window.history.pushState(queryParams.toString(), document.title, url);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    private credentials = null;
+
+    public getCredentials() {
+        if (this.credentials == null) {
+            this.credentials = new Promise((resolve, reject) => {
+                console.debug("Loading credentials list...");
+                this.getService<any>(
+                    "opensilex-security.AuthenticationService"
+                ).getCredentialsGroups().then((http) => {
+                    this.credentials = http.response.result;
+                    console.debug("Credentials list loaded !", this.credentials);
+                    resolve(http.response.result);
+                }).catch(this.errorHandler)
+
+            })
+            return this.credentials;
+        } else if (this.credentials instanceof Promise) {
+            return this.credentials;
+        } else {
+            return Promise.resolve(this.credentials);
         }
     }
 }

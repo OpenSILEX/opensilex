@@ -25,7 +25,6 @@ import java.time.ZoneOffset;
 import java.util.*;
 
 import static org.junit.Assert.*;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.unit.test.AbstractUnitTest;
 
 /**
@@ -185,7 +184,7 @@ public class SPARQLQueryHelperTest extends AbstractUnitTest {
         testWhereValues(new SelectBuilder(), NodeFactory.createVariable("hasByte"), byteList);
 
         String str = "some str which will be converted to byte[] 4 44978df";
-        List<Byte> byteListFromStr = new ArrayList<>(str.length());
+        List<Byte> byteListFromStr = new LinkedList<Byte>();
         for (byte b : str.getBytes()) {
             byteListFromStr.add(b);
         }
@@ -196,7 +195,7 @@ public class SPARQLQueryHelperTest extends AbstractUnitTest {
     public void testWhereValuesWithChar() throws Exception {
 
         String str = "some str which will be converted to byte[] 4 44978df";
-        List<Character> chars = new ArrayList<>(str.length());
+        List<Character> chars = new LinkedList<>();
         for (int i = 0; i < str.length(); i++) {
             chars.add(str.charAt(i));
         }

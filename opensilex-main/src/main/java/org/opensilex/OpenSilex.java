@@ -20,10 +20,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -156,7 +156,7 @@ public final class OpenSilex {
      * @return OpenSilex setup arguments
      */
     public static OpenSilexSetup createSetup(String[] args, boolean forceDebug) {
-        List<Object> cliArgsList = new ArrayList<>();
+        List<Object> cliArgsList = new LinkedList<>();
 
         // Initialize with existing environment variables
         String baseDirectory = System.getenv(BASE_DIR_ENV_KEY);
@@ -268,7 +268,7 @@ public final class OpenSilex {
      * @return list of transfromed args
      */
     private static String[] getArgs(Map<String, String> args) {
-        List<String> argsList = new ArrayList<>();
+        List<String> argsList = new LinkedList<>();
         args.forEach((String key, String value) -> {
             argsList.add("--" + key + "=" + value);
         });
@@ -286,6 +286,8 @@ public final class OpenSilex {
      */
     public static OpenSilex createInstance(OpenSilexSetup setup, boolean autoStart) throws Exception {
         try {
+            org.glassfish.jersey.server.validation.internal.InjectingConstraintValidatorFactory z;
+            org.hibernate.validator.internal.metadata.provider.AnnotationMetaDataProvider p;
             OpenSilex instance = buildInstance(setup);
 
             instance.initialize();
@@ -583,7 +585,7 @@ public final class OpenSilex {
      * @return List of module instances contained in given project
      */
     public List<OpenSilexModule> getModulesByProjectId(String projectId) {
-        List<OpenSilexModule> modules = new ArrayList<>();
+        List<OpenSilexModule> modules = new LinkedList<>();
         moduleManager.forEachModule((OpenSilexModule m) -> {
             String moduleClass = ClassUtils.getProjectIdFromClass(m.getClass());
             if (moduleClass.equals(projectId)) {

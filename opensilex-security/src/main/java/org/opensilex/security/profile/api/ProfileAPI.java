@@ -12,7 +12,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -299,7 +299,7 @@ public class ProfileAPI {
         ProfileDAO dao = new ProfileDAO(sparql);
         List<ProfileModel> resultList = dao.getAll(orderByList);
         // Convert list to DTO
-        List<ProfileGetDTO> resultDTOList = new ArrayList<>();
+        List<ProfileGetDTO> resultDTOList = new LinkedList<>();
 
         resultList.forEach(result -> {
             resultDTOList.add(ProfileGetDTO.fromModel(result));

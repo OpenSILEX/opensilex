@@ -1,0 +1,31 @@
+<template>
+  <opensilex-Button
+    @click="$emit('click')"
+    variant="primary"
+    icon="ik#ik-plus"
+    :small="small"
+    :label="label"
+    :disabled="disabled"
+  ></opensilex-Button>
+</template>
+
+<script lang="ts">
+import { Component, Prop } from "vue-property-decorator";
+import Vue from "vue";
+
+@Component
+export default class CreateButton extends Vue {
+  @Prop()
+  label: string;
+
+  @Prop()
+  small: boolean;
+
+  @Prop()
+  disabled: boolean;
+}
+</script>
+
+<style scoped lang="scss">
+</style>
+

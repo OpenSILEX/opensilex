@@ -1,29 +1,21 @@
 <template>
-  <multiselect
-    v-model="selectedUserObjects"
-    id="ajax"
-    label="name"
-    track-by="uri"
-    :placeholder="$t('component.user.filter-placeholder')"
-    open-direction="bottom"
-    :options="users"
-    :multiple="true"
-    :searchable="true"
-    :loading="isLoading"
-    :internal-search="false"
-    :options-limit="300"
-    :max-height="600"
-    :hide-selected="true"
-    @search-change="asyncFind"
-    @input="updateURIList"
-  >
-    <span slot="noResult">{{$t('component.user.filter-search-no-result')}}</span>
-  </multiselect>
+  <opensilex-SelectForm
+    :label="label"
+    :selected.sync="usersURI"
+    :multiple="multiple"
+    :itemLoadingMethod="loadUsers"
+    :searchMethod="searchUsers"
+    :conversionMethod="userToSelectNode"
+    placeholder="component.user.filter-placeholder"
+    noResultsText="component.user.filter-search-no-result"
+    @select="select"
+    @deselect="deselect"
+  ></opensilex-SelectForm>
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
-import Vue from "vue";
+import { Component, Prop, PropSync } from "vue-property-decorator";
+import Vue, { PropOptions } from "vue";
 import { SecurityService, UserGetDTO } from "opensilex-security/index";
 import HttpResponse, {
   OpenSilexResponse
@@ -34,58 +26,49 @@ export default class UserSelector extends Vue {
   $opensilex: any;
   service: SecurityService;
 
-  selectedUserObjects = [];
+  @PropSync("users")
+  usersURI;
 
-  selectUsers(values) {
-    this.selectedUserObjects = [];
-    if (values && values.length > 0) {
-      this.service
-        .getUsersByURI(values)
-        .then((http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) => {
-          http.response.result.forEach(userDTO => {
-            this.selectedUserObjects.push(this.getUserSearchModel(userDTO));
-          });
-        })
-        .catch(this.$opensilex.errorHandler);
-    }
+  @Prop()
+  label;
+
+  @Prop()
+  multiple;
+
+  loadUsers(usersURI) {
+    return this.$opensilex
+      .getService("opensilex.SecurityService")
+      .getUsersByURI(usersURI)
+      .then(
+        (http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) =>
+          http.response.result
+      );
   }
 
-  users = [];
-  isLoading = false;
-
-  created() {
-    this.service = this.$opensilex.getService("opensilex.SecurityService");
+  searchUsers(searchQuery) {
+    return this.$opensilex
+      .getService("opensilex.SecurityService")
+      .searchUsers(searchQuery)
+      .then(
+        (http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) =>
+          http.response.result
+      );
   }
 
-  asyncFind(query) {
-    this.$opensilex.disableLoader();
-    this.service
-      .searchUsers(query)
-      .then((http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) => {
-        let newUsers = [];
-        http.response.result.forEach(userDTO => {
-          newUsers.push(this.getUserSearchModel(userDTO));
-        });
-        this.users = newUsers;
-        this.$opensilex.enableLoader();
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-
-  getUserSearchModel(dto: UserGetDTO) {
+  userToSelectNode(dto: UserGetDTO) {
     let userLabel = dto.firstName + " " + dto.lastName + " <" + dto.email + ">";
     return {
-      name: userLabel,
-      uri: dto.uri
+      label: userLabel,
+      id: dto.uri
     };
   }
 
-  updateURIList(values) {
-    let uris = [];
-    values.forEach(element => {
-      uris.push(element.uri);
-    });
-    this.$emit("updateUsers", uris);
+  select(value) {
+    this.$emit("select", value);
+  }
+
+  deselect(value) {
+    this.$emit("deselect", value);
   }
 }
 </script>

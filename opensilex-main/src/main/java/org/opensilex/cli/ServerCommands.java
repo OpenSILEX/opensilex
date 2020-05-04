@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import org.apache.catalina.LifecycleException;
 import org.apache.commons.io.FileUtils;
@@ -116,7 +116,7 @@ public class ServerCommands extends AbstractOpenSilexCommand implements OpenSile
                 OpenSilex instance = getOpenSilex();
                 String debug = instance.isDebug() ? "true" : "false";
 
-                List<String> processArgs = new ArrayList<String>() {
+                List<String> processArgs = new LinkedList<String>() {
                     {
                         add(System.getProperty("java.home") + "/bin/java");
                         add("-jar");

@@ -28,7 +28,6 @@ import org.opensilex.server.rest.validation.ValidURI;
  * }
  * </pre>
  *
- * @see org.opensilex.rest.profile.api.ProfileAPI#updateProfile(org.opensilex.rest.profile.api.ProfileUpdateDTO) 
  * @author Vincent Migot
  */
 @ApiModel

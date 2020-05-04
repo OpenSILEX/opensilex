@@ -237,7 +237,7 @@ class SPARQLClassQueryBuilder {
             } else {
                 create.addInsert(quad);
             }
-        }, false);
+        });
 
         URI uri = instance.getUri();
 
@@ -263,82 +263,6 @@ class SPARQLClassQueryBuilder {
         return delete;
     }
 
-    public <T extends SPARQLResourceModel> void addUpdateBuilder(Node graph, T oldInstance, T newInstance, UpdateBuilder update) throws Exception {
-
-        final AtomicInteger i = new AtomicInteger(0);
-
-        executeOnInstanceTriples(graph, oldInstance, (Quad quad, Field field) -> {
-            boolean isReverse = false;
-            boolean ignoreUpdate = false;
-
-            List<URI> fieldRelationsToDelete = null;
-            if (field != null) {
-                isReverse = analyzer.isReverseRelation(field);
-                try {
-                    Object newFieldValue = analyzer.getFieldValue(field, newInstance);
-                    ignoreUpdate = newFieldValue == null && analyzer.getFieldAnnotation(field).ignoreUpdateIfNull();
-                } catch (Exception ex) {
-                    LOGGER.warn("Unexpected error (should never happend) while reading field: " + field.getName(), ex);
-                }
-
-            }
-
-            if (!ignoreUpdate) {
-                String var = "?x" + i.addAndGet(1);
-
-                if (graph != null) {
-                    if (isReverse) {
-                        update.addDelete(quad.getGraph(), var, quad.getPredicate(), quad.getSubject());
-                        update.addWhere(var, quad.getPredicate(), quad.getSubject());
-                    } else {
-                        update.addDelete(quad.getGraph(), quad.getSubject(), quad.getPredicate(), var);
-                        update.addWhere(quad.getSubject(), quad.getPredicate(), var);
-                    }
-                } else {
-                    if (isReverse) {
-                        update.addDelete(var, quad.getPredicate(), quad.getSubject());
-                        update.addWhere(var, quad.getPredicate(), quad.getSubject());
-                    } else {
-                        update.addDelete(quad.getSubject(), quad.getPredicate(), var);
-                        update.addWhere(quad.getSubject(), quad.getPredicate(), var);
-                    }
-                }
-            }
-
-            if (fieldRelationsToDelete != null) {
-                for (URI uri : fieldRelationsToDelete) {
-                    String var = "?x" + i.addAndGet(1);
-
-                    if (graph != null) {
-                        if (isReverse) {
-                            update.addDelete(quad.getGraph(), var, quad.getPredicate(), quad.getSubject());
-                            update.addWhere(var, quad.getPredicate(), quad.getSubject());
-                        } else {
-                            update.addDelete(quad.getGraph(), quad.getSubject(), quad.getPredicate(), var);
-                            update.addWhere(quad.getSubject(), quad.getPredicate(), var);
-                        }
-                    } else {
-                        if (isReverse) {
-                            update.addDelete(var, quad.getPredicate(), quad.getSubject());
-                            update.addWhere(var, quad.getPredicate(), quad.getSubject());
-                        } else {
-                            update.addDelete(quad.getSubject(), quad.getPredicate(), var);
-                            update.addWhere(quad.getSubject(), quad.getPredicate(), var);
-                        }
-                    }
-                };
-            }
-        }, true);
-
-        executeOnInstanceTriples(graph, newInstance, (Quad quad, Field field) -> {
-            if (graph == null) {
-                update.addInsert(quad.asTriple());
-            } else {
-                update.addInsert(quad);
-            }
-        }, true);
-    }
-
     public <T extends SPARQLResourceModel> void addDeleteBuilder(Node graph, T instance, UpdateBuilder delete) throws Exception {
         executeOnInstanceTriples(graph, instance, (Quad quad, Field field) -> {
             if (graph == null) {
@@ -346,7 +270,7 @@ class SPARQLClassQueryBuilder {
             } else {
                 delete.addDelete(quad);
             }
-        }, false);
+        });
     }
 
     /**
@@ -423,7 +347,9 @@ class SPARQLClassQueryBuilder {
         handler.addFilter(SPARQLQueryHelper.langFilter(fieldName, locale.getLanguage()));
     }
 
-    private <T extends SPARQLResourceModel> void executeOnInstanceTriples(Node graph, T instance, BiConsumer<Quad, Field> tripleHandler, boolean ignoreNullFields) throws Exception {
+    private <T extends SPARQLResourceModel> void executeOnInstanceTriples(Node graph, T instance, BiConsumer<Quad, Field> tripleHandler) throws Exception {
+        Quad quad;
+        Triple triple;
         URI uri = analyzer.getURI(instance);
         Node uriNode = SPARQLDeserializers.nodeURI(uri);
 
@@ -431,15 +357,15 @@ class SPARQLClassQueryBuilder {
             instance.setType(new URI(analyzer.getRDFType().getURI()));
         }
 
-        Triple triple = new Triple(uriNode, RDF.type.asNode(), SPARQLDeserializers.nodeURI(instance.getType()));
-        Quad quad = new Quad(graph, triple);
+        triple = new Triple(uriNode, RDF.type.asNode(), SPARQLDeserializers.nodeURI(instance.getType()));
+        quad = new Quad(graph, triple);
         tripleHandler.accept(quad, analyzer.getURIField());
 
         for (Field field : analyzer.getDataPropertyFields()) {
             Object fieldValue = analyzer.getFieldValue(field, instance);
 
             if (fieldValue == null) {
-                if (!ignoreNullFields && !analyzer.isOptional(field)) {
+                if (!analyzer.isOptional(field)) {
                     // TODO change exception type
                     throw new Exception("Field value can't be null: " + field.getName());
                 }
@@ -460,14 +386,14 @@ class SPARQLClassQueryBuilder {
             Object fieldValue = analyzer.getFieldValue(field, instance);
 
             if (fieldValue == null) {
-                if (!ignoreNullFields && !analyzer.isOptional(field)) {
+                if (!analyzer.isOptional(field)) {
                     // TODO change exception type
                     throw new Exception("Field value can't be null: " + field.getName());
                 }
             } else {
                 SPARQLClassObjectMapper<SPARQLResourceModel> fieldMapper = mapperIndex.getForClass(fieldValue.getClass());
                 URI propertyFieldURI = fieldMapper.getURI(fieldValue);
-                if (!ignoreNullFields && propertyFieldURI == null) {
+                if (propertyFieldURI == null) {
                     // TODO change exception type
                     throw new Exception("Object URI value can't be null: " + field.getName());
                 } else {
@@ -488,7 +414,7 @@ class SPARQLClassQueryBuilder {
         for (Field field : analyzer.getLabelPropertyFields()) {
             Object fieldValue = analyzer.getFieldValue(field, instance);
             if (fieldValue == null) {
-                if (!ignoreNullFields && !analyzer.isOptional(field)) {
+                if (!analyzer.isOptional(field)) {
                     // TODO change exception type
                     throw new Exception("Field value can't be null: " + field.getName());
                 }
@@ -533,14 +459,14 @@ class SPARQLClassQueryBuilder {
             if (fieldValues != null) {
                 for (Object listValue : fieldValues) {
                     if (listValue == null) {
-                        if (!ignoreNullFields && !analyzer.isOptional(field)) {
+                        if (!analyzer.isOptional(field)) {
                             // TODO change exception type
                             throw new Exception("Field value can't be null");
                         }
                     } else {
                         SPARQLClassObjectMapper<SPARQLResourceModel> fieldMapper = mapperIndex.getForClass(listValue.getClass());
                         URI propertyFieldURI = fieldMapper.getURI(listValue);
-                        if (!ignoreNullFields && propertyFieldURI == null) {
+                        if (propertyFieldURI == null) {
                             // TODO change exception type
                             throw new Exception("Object URI value can't be null");
                         } else {

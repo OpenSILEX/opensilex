@@ -76,6 +76,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
             LOGGER.debug("Init SPARQL class query builder: " + objectClass.getName());
             classQueryBuilder = new SPARQLClassQueryBuilder(mapperIndex, classAnalizer);
+        } catch (SPARQLInvalidClassDefinitionException ex) {
+            throw ex;
         } catch (Throwable t) {
             throw new SPARQLInvalidClassDefinitionException(objectClass, "Unexpected error while initializing SPARQL Mapping", t);
         }
@@ -218,7 +220,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     @SuppressWarnings("unchecked")
-    public List<T> createInstanceList(Node graph, List<URI> uris, String lang, SPARQLService service) throws Exception {
+    public List<T> createInstanceList(Node graph, Collection<URI> uris, String lang, SPARQLService service) throws Exception {
         SPARQLProxyResourceList<T> proxy = new SPARQLProxyResourceList<>(mapperIndex, graph, uris, objectClass, lang, service);
         List<T> instances = proxy.loadIfNeeded();
         if (instances != null) {
@@ -281,20 +283,6 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     public UpdateBuilder getCreateBuilder(Node graph, T instance) throws Exception {
         return classQueryBuilder.getCreateBuilder(graph, instance);
-    }
-
-    public UpdateBuilder getUpdateBuilder(T oldInstance, T newInstance) throws Exception {
-        UpdateBuilder builder = new UpdateBuilder();
-        addUpdateBuilder(oldInstance, newInstance, builder);
-        return builder;
-    }
-
-    public void addUpdateBuilder(T oldInstance, T newInstance, UpdateBuilder update) throws Exception {
-        addUpdateBuilder(getDefaultGraph(), oldInstance, newInstance, update);
-    }
-
-    public void addUpdateBuilder(Node graph, T oldInstance, T newInstance, UpdateBuilder update) throws Exception {
-        classQueryBuilder.addUpdateBuilder(graph, oldInstance, newInstance, update);
     }
 
     public void addCreateBuilder(T instance, UpdateBuilder create) throws Exception {
@@ -418,7 +406,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public List<SPARQLResourceModel> getAllDependentResourcesToCreate(T instance) {
-        ArrayList<SPARQLResourceModel> dependentResourcesToCreate = new ArrayList<>();
+        List<SPARQLResourceModel> dependentResourcesToCreate = new LinkedList<>();
 
         classAnalizer.forEachObjectProperty(ThrowingBiConsumer.wrap((field, property) -> {
             SPARQLResourceModel value = (SPARQLResourceModel) classAnalizer.getFieldValue(field, instance);
@@ -569,8 +557,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return statementCount > 0;
     }
 
-    public void updateInstance(T oldInstance, T newInstance) throws Exception {
-        URI uri = classAnalizer.getURI(oldInstance);
+    public void updateInstanceFromOldValues(T oldInstance, T newInstance) throws Exception {
+        if (newInstance.getType() == null) {
+            newInstance.setType(oldInstance.getType());
+        }
 
         for (Field field : classAnalizer.getDataPropertyFields()) {
             Object oldFieldValue = classAnalizer.getFieldValue(field, oldInstance);

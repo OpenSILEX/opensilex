@@ -7,11 +7,9 @@ package org.opensilex.core.infrastructure.api;
 
 import java.util.LinkedList;
 import java.util.List;
-import org.opensilex.core.infrastructure.dal.InfrastructureDeviceModel;
+import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.core.infrastructure.dal.InfrastructureTeamModel;
-import org.opensilex.security.group.api.GroupDTO;
-import org.opensilex.security.group.dal.GroupModel;
 
 /**
  *
@@ -21,7 +19,7 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
 
     protected List<InfrastructureTeamDTO> groups;
 
-    protected List<InfrastructureDeviceGetDTO> devices;
+    protected List<InfrastructureFacilityGetDTO> facilities;
 
     public List<InfrastructureTeamDTO> getGroups() {
         return groups;
@@ -31,12 +29,12 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
         this.groups = groups;
     }
 
-    public List<InfrastructureDeviceGetDTO> getDevices() {
-        return devices;
+    public List<InfrastructureFacilityGetDTO> getFacilities() {
+        return facilities;
     }
 
-    public void setDevices(List<InfrastructureDeviceGetDTO> devices) {
-        this.devices = devices;
+    public void setFacilities(List<InfrastructureFacilityGetDTO> facilities) {
+        this.facilities = facilities;
     }
 
     @Override
@@ -57,13 +55,13 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
         }
         setGroups(groups);
 
-        List<InfrastructureDeviceGetDTO> devices = new LinkedList<>();
-        if (model.getDevices() != null) {
-            model.getDevices().forEach(device -> {
-                devices.add(InfrastructureDeviceGetDTO.getDTOFromModel(device));
+        List<InfrastructureFacilityGetDTO> facilities = new LinkedList<>();
+        if (model.getFacilities() != null) {
+            model.getFacilities().forEach(device -> {
+                facilities.add(InfrastructureFacilityGetDTO.getDTOFromModel(device));
             });
         }
-        setDevices(devices);
+        setFacilities(facilities);
     }
 
     @Override
@@ -78,13 +76,13 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
         }
         model.setGroups(groups);
 
-        List<InfrastructureDeviceModel> devices = new LinkedList<>();
-        if (getDevices() != null) {
-            getDevices().forEach(device -> {
-                devices.add(device.newModel());
+        List<InfrastructureFacilityModel> facilities = new LinkedList<>();
+        if (getFacilities() != null) {
+            getFacilities().forEach(facility -> {
+                facilities.add(facility.newModel());
             });
         }
-        model.setDevices(devices);
+        model.setFacilities(facilities);
     }
 
     public static InfrastructureGetDTO getDTOFromModel(InfrastructureModel model) {

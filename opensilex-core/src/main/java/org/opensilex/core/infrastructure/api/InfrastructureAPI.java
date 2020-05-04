@@ -27,7 +27,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.infrastructure.dal.InfrastructureDAO;
-import org.opensilex.core.infrastructure.dal.InfrastructureDeviceModel;
+import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.core.infrastructure.dal.InfrastructureTeamModel;
 import org.opensilex.server.response.ErrorDTO;
@@ -218,8 +218,8 @@ public class InfrastructureAPI {
     }
 
     @POST
-    @Path("device/create")
-    @ApiOperation("Create an infrastructure device")
+    @Path("facility/create")
+    @ApiOperation("Create an infrastructure facility")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
@@ -228,26 +228,25 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Create an infrastructure device", response = ObjectUriResponse.class),
-        @ApiResponse(code = 409, message = "An infrastructure device with the same URI already exists", response = ErrorResponse.class)
+        @ApiResponse(code = 201, message = "Create an infrastructure facility", response = ObjectUriResponse.class),
+        @ApiResponse(code = 409, message = "An infrastructure facility with the same URI already exists", response = ErrorResponse.class)
     })
-
-    public Response createInfrastructureDevice(
-            @ApiParam("Infrastructure description") @Valid InfrastructureDeviceCreationDTO dto
+    public Response createInfrastructureFacility(
+            @ApiParam("Infrastructure description") @Valid InfrastructureFacilityCreationDTO dto
     ) throws Exception {
         try {
             InfrastructureDAO dao = new InfrastructureDAO(sparql);
-            InfrastructureDeviceModel model = dao.createDevice(dto.newModel());
+            InfrastructureFacilityModel model = dao.createFacility(dto.newModel());
             return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException e) {
-            return new ErrorResponse(Response.Status.CONFLICT, "Infrastructure device already exists", e.getMessage()).getResponse();
+            return new ErrorResponse(Response.Status.CONFLICT, "Infrastructure facility already exists", e.getMessage()).getResponse();
         }
     }
 
     @GET
-    @Path("device/get/{uri}")
-    @ApiOperation("Get an infrastructure device by URI")
+    @Path("facility/get/{uri}")
+    @ApiOperation("Get an infrastructure facility by URI")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_INFRASTRUCTURE_READ_ID,
@@ -257,17 +256,17 @@ public class InfrastructureAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure device retrieved", response = InfrastructureDeviceGetDTO.class),
-        @ApiResponse(code = 404, message = "No infrastructure device found", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Infrastructure facility retrieved", response = InfrastructureFacilityGetDTO.class),
+        @ApiResponse(code = 404, message = "No infrastructure facility found", response = ErrorResponse.class)
     })
-    public Response getInfrastructureDevice(
-            @ApiParam(value = "Infrastructure device URI", example = "http://opensilex.dev/infrastructures/device/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
+    public Response getInfrastructureFacility(
+            @ApiParam(value = "Infrastructure facility URI", example = "http://opensilex.dev/infrastructures/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        InfrastructureDeviceModel model = dao.getDevice(uri, user.getLanguage());
+        InfrastructureFacilityModel model = dao.getFacility(uri, user.getLanguage());
 
         if (model != null) {
-            return new SingleObjectResponse<>(InfrastructureDeviceGetDTO.getDTOFromModel(model)).getResponse();
+            return new SingleObjectResponse<>(InfrastructureFacilityGetDTO.getDTOFromModel(model)).getResponse();
         } else {
             return new ErrorResponse(
                     Response.Status.NOT_FOUND, "Infrastructure not found",
@@ -277,26 +276,26 @@ public class InfrastructureAPI {
     }
 
     @DELETE
-    @Path("device/delete/{uri}")
-    @ApiOperation("Delete an infrastructure device")
+    @Path("facility/delete/{uri}")
+    @ApiOperation("Delete an infrastructure facility")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_DELETE_LABEL_KEY
+            credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteInfrastructureDevice(
-            @ApiParam(value = "Infrastructure device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+    public Response deleteInfrastructureFacility(
+            @ApiParam(value = "Infrastructure facility URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        dao.deleteDevice(uri);
+        dao.deleteFacility(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
     @PUT
-    @Path("device/update")
-    @ApiOperation("Update an infrastructure device")
+    @Path("facility/update")
+    @ApiOperation("Update an infrastructure facility")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
@@ -308,22 +307,22 @@ public class InfrastructureAPI {
         @ApiResponse(code = 200, message = "Return updated infrastructure", response = String.class),
         @ApiResponse(code = 400, message = "Invalid parameters")
     })
-    public Response updateInfrastructureDevice(
+    public Response updateInfrastructureFacility(
             @ApiParam("Infrastructure description")
-            @Valid InfrastructureDeviceUpdateDTO dto
+            @Valid InfrastructureFacilityUpdateDTO dto
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
 
         Response response;
-        if (sparql.uriExists(InfrastructureDeviceModel.class, dto.getUri())) {
-            InfrastructureDeviceModel infrastructure = dao.updateDevice(dto.newModel());
+        if (sparql.uriExists(InfrastructureFacilityModel.class, dto.getUri())) {
+            InfrastructureFacilityModel infrastructure = dao.updateFacility(dto.newModel());
 
             response = new ObjectUriResponse(Response.Status.OK, infrastructure.getUri()).getResponse();
         } else {
             response = new ErrorResponse(
                     Response.Status.NOT_FOUND,
-                    "Infrastructure device not found",
-                    "Unknown infrastructure device URI: " + dto.getUri()
+                    "Infrastructure facility not found",
+                    "Unknown infrastructure facility URI: " + dto.getUri()
             ).getResponse();
         }
 
@@ -371,10 +370,10 @@ public class InfrastructureAPI {
 
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Infrastructure team retrieved", response = InfrastructureTeamDTO.class),
-        @ApiResponse(code = 404, message = "No infrastructure device found", response = ErrorResponse.class)
+        @ApiResponse(code = 404, message = "No infrastructure facility found", response = ErrorResponse.class)
     })
     public Response getInfrastructureTeam(
-            @ApiParam(value = "Infrastructure team URI", example = "http://opensilex.dev/infrastructures/device/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Infrastructure team URI", example = "http://opensilex.dev/infrastructures/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
         InfrastructureTeamModel model = dao.getTeam(uri, user.getLanguage());
@@ -394,8 +393,8 @@ public class InfrastructureAPI {
     @ApiOperation("Delete an infrastructure team")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_DELETE_LABEL_KEY
+            credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -435,8 +434,8 @@ public class InfrastructureAPI {
         } else {
             response = new ErrorResponse(
                     Response.Status.NOT_FOUND,
-                    "Infrastructure device not found",
-                    "Unknown infrastructure device URI: " + dto.getUri()
+                    "Infrastructure facility not found",
+                    "Unknown infrastructure facility URI: " + dto.getUri()
             ).getResponse();
         }
 

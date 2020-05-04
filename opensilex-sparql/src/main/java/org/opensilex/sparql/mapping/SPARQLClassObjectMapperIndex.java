@@ -32,7 +32,6 @@ public class SPARQLClassObjectMapperIndex {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLClassObjectMapperIndex.class);
 
-//    private final SPARQLModule sparqlModule;
     private Set<Class<? extends SPARQLResourceModel>> classes;
 
     private Map<Class<?>, SPARQLClassObjectMapper<? extends SPARQLResourceModel>> classesMapper = new HashMap<>();

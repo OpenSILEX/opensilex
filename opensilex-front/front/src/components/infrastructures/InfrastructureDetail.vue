@@ -1,33 +1,20 @@
 <template>
-  <div>
-    <div class="card">
-      <div class="card-header">
-        <h3>
-          <i class="ik ik-clipboard"></i>
-          {{$t("component.infrastructure.detail")}}
-        </h3>
-      </div>
-      <div class="card-body">
-        <div v-if="selected">
-          <div class="static-field">
-            <span class="static-field-key">{{$t("component.common.uri")}}:</span>
-            <span class="static-field-line">{{selected.uri}}</span>
-          </div>
-          <div class="static-field">
-            <span class="static-field-key">{{$t("component.common.name")}}:</span>
-            <span class="static-field-line">{{selected.name}}</span>
-          </div>
-          <div class="static-field">
-            <span class="static-field-key">{{$t("component.common.type")}}:</span>
-            <span class="static-field-line">
-              <font-awesome-icon :icon="$opensilex.getRDFIcon(selected.type)" size="sm" />&nbsp;
-              <span class="capitalize-first-letter">{{selected.typeLabel}}</span>&nbsp;
-            </span>
-          </div>
-        </div>
-      </div>
+  <b-card v-if="selected">
+    <template v-slot:header>
+      <h3>
+        <opensilex-Icon icon="ik#ik-clipboard" />
+        {{$t("component.infrastructure.detail")}}
+      </h3>
+    </template>
+    <div>
+      <!-- URI -->
+      <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
+      <!-- Name -->
+      <opensilex-StringView label="component.common.name" :value="selected.name"></opensilex-StringView>
+      <!-- Type -->
+      <opensilex-TypeView :type="selected.type" :typeLabel="selected.typeLabel"></opensilex-TypeView>
     </div>
-  </div>
+  </b-card>
 </template>
 
 <script lang="ts">
@@ -38,7 +25,7 @@ import {
   InfrastructuresService,
   ResourceTreeDTO,
   InfrastructureGetDTO,
-  InfrastructureDeviceGetDTO,
+  InfrastructureFacilityGetDTO,
   InfrastructureTeamDTO
 } from "opensilex-core/index";
 import { GroupCreationDTO, GroupUpdateDTO } from "opensilex-security/index";

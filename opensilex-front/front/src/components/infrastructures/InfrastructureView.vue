@@ -1,34 +1,36 @@
 <template>
   <div class="container-fluid">
     <opensilex-PageHeader
-      icon="ik-globe"
+      icon="ik#ik-globe"
       title="component.menu.infrastructures"
       description="component.infrastructure.description"
     ></opensilex-PageHeader>
-    <div class="table-responsive">
-      <div class="row">
-        <div class="col-md-6">
-          <opensilex-InfrastructureTree
-            ref="infrastructureTree"
-            v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_READ_ID)"
-            @onSelect="updateSelected"
-          ></opensilex-InfrastructureTree>
-          <opensilex-InfrastructureDevicesView
-            :selected="selected"
-            @onUpdate="refresh"
-            @onCreate="refresh"
-            @onDelete="refresh"
-          ></opensilex-InfrastructureDevicesView>
-        </div>
-        <div class="col-md-6">
-          <opensilex-InfrastructureDetail :selected="selected"></opensilex-InfrastructureDetail>
-          <opensilex-InfrastructureGroupsView
-            :selected="selected"
-            @onUpdate="refresh"
-            @onCreate="refresh"
-            @onDelete="refresh"
-          ></opensilex-InfrastructureGroupsView>
-        </div>
+    <div class="row">
+      <div class="col-md-6">
+        <!-- Infrastructure tree -->
+        <opensilex-InfrastructureTree
+          ref="infrastructureTree"
+          v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_READ_ID)"
+          @onSelect="updateSelected"
+        ></opensilex-InfrastructureTree>
+        <!-- Infrastructure facilities -->
+        <opensilex-InfrastructureFacilitiesView
+          :selected="selected"
+          @onUpdate="refresh"
+          @onCreate="refresh"
+          @onDelete="refresh"
+        ></opensilex-InfrastructureFacilitiesView>
+      </div>
+      <div class="col-md-6">
+        <!-- Infrastructure detail -->
+        <opensilex-InfrastructureDetail :selected="selected"></opensilex-InfrastructureDetail>
+        <!-- Infrastructure groups -->
+        <opensilex-InfrastructureGroupsView
+          :selected="selected"
+          @onUpdate="refresh"
+          @onCreate="refresh"
+          @onDelete="refresh"
+        ></opensilex-InfrastructureGroupsView>
       </div>
     </div>
   </div>

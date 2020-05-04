@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
+import java.util.LinkedList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -293,4 +294,50 @@ public class GroupAPI {
         return response;
     }
 
+    
+    /**
+     * *
+     * Return a list of groups corresponding to the given URIs
+     *
+     * @param uris list of groups uri
+     * @return Corresponding list of groups
+     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     */
+    @GET
+    @Path("get-by-uris")
+    @ApiOperation("Get a list of groups by their URIs")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_GROUP_READ_ID,
+            credentialLabelKey = CREDENTIAL_GROUP_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return group list", response = GroupDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Group not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response getGroupsByURI(
+            @ApiParam(value = "Groups URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+    ) throws Exception {
+        GroupDAO dao = new GroupDAO(sparql);
+        List<GroupModel> models = dao.getList(uris);
+
+        if (!models.isEmpty()) {
+            List<GroupDTO> resultDTOList = new LinkedList<>();
+            models.forEach(result -> {
+                resultDTOList.add(GroupDTO.getDTOFromModel(result));
+            });
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Groups not found",
+                    "Unknown group URIs"
+            ).getResponse();
+        }
+    }
 }

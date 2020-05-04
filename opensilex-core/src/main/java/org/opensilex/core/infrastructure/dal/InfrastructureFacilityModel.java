@@ -12,15 +12,15 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
 @SPARQLResource(
         ontology = Oeso.class,
-        resource = "InfrastructureDevice",
+        resource = "InfrastructureFacility",
         graph = "infrastructures",
         prefix = "infra"
 )
-public class InfrastructureDeviceModel extends SPARQLNamedResourceModel<InfrastructureDeviceModel> {
+public class InfrastructureFacilityModel extends SPARQLNamedResourceModel<InfrastructureFacilityModel> {
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasDevice",
+            property = "hasFacility",
             inverse = true
     )
     private InfrastructureModel infrastructure;
@@ -34,10 +34,10 @@ public class InfrastructureDeviceModel extends SPARQLNamedResourceModel<Infrastr
     }
 
     @Override
-    public String[] getUriSegments(InfrastructureDeviceModel instance) {
+    public String[] getUriSegments(InfrastructureFacilityModel instance) {
         return new String[]{
             instance.getInfrastructure().getName(),
-            "devices",
+            "facilities",
             instance.getName()
         };
     }

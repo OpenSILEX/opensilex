@@ -1,44 +1,43 @@
 <template>
   <div class="container-fluid">
     <opensilex-PageHeader
-      icon="ik-settings"
+      icon="ik#ik-settings"
       title="component.menu.security.profiles"
       description="component.profile.description"
     ></opensilex-PageHeader>
-    <div class="card">
-      <div class="card-header row clearfix">
-        <div class="col col-sm-3">
-          <div class="card-options d-inline-block">
-            <b-button
-              v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
-              @click="showCreateForm"
-              variant="primary"
-            >
-              <i class="ik ik-plus"></i>
-              {{$t('component.profile.add')}}
-            </b-button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="card-body p-0">
-      <div class="table-responsive">
+
+    <opensilex-PageActions>
+      <template v-slot>
+        <opensilex-CreateButton
+          v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
+          @click="profileForm.showCreateForm()"
+          label="component.profile.add"
+        ></opensilex-CreateButton>
+      </template>
+    </opensilex-PageActions>
+
+    <opensilex-PageContent>
+      <template v-slot>
         <opensilex-ProfileList
           v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_READ_ID)"
           ref="profileList"
           v-bind:credentialsGroups="credentialsGroups"
-          @onEdit="editProfile"
-          @onDelete="deleteProfile"
+          @onEdit="profileForm.showEditForm($event)"
         ></opensilex-ProfileList>
-      </div>
-    </div>
-    <opensilex-ProfileForm
-      ref="profileForm"
+      </template>
+    </opensilex-PageContent>
+
+    <opensilex-ModalForm
       v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
-      v-bind:credentialsGroups="credentialsGroups"
-      @onCreate="callCreateProfileService"
-      @onUpdate="callUpdateProfileService"
-    ></opensilex-ProfileForm>
+      ref="profileForm"
+      component="opensilex-ProfileForm"
+      createTitle="component.profile.add"
+      editTitle="component.profile.update"
+      modalSize="lg"
+      icon="ik#ik-settings"
+      @onCreate="profileList.refresh()"
+      @onUpdate="profileList.refresh()"
+    ></opensilex-ModalForm>
   </div>
 </template>
 
@@ -66,7 +65,6 @@ export default class ProfileView extends Vue {
   credentialsMapping: any = {};
 
   @Ref("profileForm") readonly profileForm!: any;
-
   @Ref("profileList") readonly profileList!: any;
 
   get user() {
@@ -75,76 +73,6 @@ export default class ProfileView extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
-  }
-
-  static credentialsGroups = [];
-  static async asyncInit($opensilex) {
-    console.debug("Loading credentials list...");
-    let security: AuthenticationService = await $opensilex.loadService(
-      "opensilex-security.AuthenticationService"
-    );
-    let http: HttpResponse<OpenSilexResponse<
-      Array<CredentialsGroupDTO>
-    >> = await security.getCredentialsGroups();
-    ProfileView.credentialsGroups = http.response.result;
-    console.debug("Credentials list loaded !", ProfileView.credentialsGroups);
-  }
-
-  created() {
-    this.credentialsGroups = ProfileView.credentialsGroups;
-    for (let i in this.credentialsGroups) {
-      for (let j in this.credentialsGroups[i].credentials) {
-        let credential = this.credentialsGroups[i].credentials[j];
-        this.credentialsMapping[credential.id] = credential.label;
-      }
-    }
-    this.service = this.$opensilex.getService("opensilex.SecurityService");
-  }
-
-  showCreateForm() {
-    let profileForm: any = this.profileForm;
-    profileForm.showCreateForm();
-  }
-
-  callCreateProfileService(form: ProfileCreationDTO, done) {
-    done(
-      this.service
-        .createProfile(form)
-        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-          let uri = http.response.result;
-          console.debug("Profile created", uri);
-          let profileList: any = this.profileList;
-          profileList.refresh();
-        })
-    );
-  }
-
-  callUpdateProfileService(form: ProfileUpdateDTO, done) {
-    done(
-      this.service
-        .updateProfile(form)
-        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-          let uri = http.response.result;
-          console.debug("Profile updated", uri);
-          let profileList: any = this.profileList;
-          profileList.refresh();
-        })
-    );
-  }
-
-  editProfile(form: ProfileGetDTO) {
-    let profileForm: any = this.profileForm;
-    profileForm.showEditForm(form);
-  }
-
-  deleteProfile(uri: string) {
-    this.service
-      .deleteProfile(uri)
-      .then(() => {
-        let profileList: any = this.profileList;
-        profileList.refresh();
-      })
-      .catch(this.$opensilex.errorHandler);
   }
 }
 </script>

@@ -1,86 +1,71 @@
 <template>
-  <div class="card">
-    <div class="card-header">
+  <b-card>
+    <!-- Card header -->
+    <template v-slot:header>
       <h3>
-        <i class="ik ik-globe"></i>
+        <opensilex-Icon icon="ik#ik-globe" />
         {{$t("component.infrastructure.list")}}
       </h3>
       <div class="card-header-right">
-        <b-button
-          @click="showCreateForm(null)"
-          variant="primary"
+        <opensilex-CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
-        >
-          <i class="ik ik-plus"></i>
-          {{$t('component.infrastructure.add')}}
-        </b-button>
+          @click="createInfrastructure()"
+          label="component.infrastructure.add"
+        ></opensilex-CreateButton>
       </div>
-    </div>
-    <div class="card-body">
-      <b-input-group>
-        <b-form-input
-          v-model="filterPattern"
-          debounce="300"
-          :placeholder="$t('component.infrastructure.filter-placeholder')"
-        ></b-form-input>
-        <template v-slot:append>
-          <b-btn :disabled="!filterPattern" variant="primary" @click="filterPattern = ''">
-            <font-awesome-icon icon="times" size="sm" />
-          </b-btn>
-        </template>
-      </b-input-group>
-      <sl-vue-tree v-model="nodes" @select="displayNodesDetail">
-        <template slot="toggle" slot-scope="{ node }">
-          <span v-if="!node.isLeaf">
-            <font-awesome-icon v-if="node.isExpanded" icon="chevron-down" size="sm" />
-            <font-awesome-icon v-if="!node.isExpanded" icon="chevron-right" size="sm" />
-          </span>
-        </template>
+    </template>
+    <!-- Card body -->
+    <!-- Infrastructure filter -->
+    <opensilex-StringFilter
+      :filter.sync="filter"
+      @update="updateFilter()"
+      placeholder="component.infrastructure.filter-placeholder"
+    ></opensilex-StringFilter>
 
-        <template slot="title" slot-scope="{ node }">
-          <div v-if="node.isLeaf && node.data.parent" class="leaf-spacer"></div>
-          <span class="item-icon">
-            <font-awesome-icon :icon="$opensilex.getRDFIcon(node.data.type)" size="sm" />
-          </span>&nbsp;
-          <strong v-if="node.data.selected">{{ node.title }}</strong>
-          <span v-if="!node.data.selected">{{ node.title }}</span>
-          <b-button-group class="tree-button-group" size="sm">
-            <b-button
-              size="sm"
-              v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
-              @click.prevent="editInfrastructure(node.data.uri)"
-              variant="outline-primary"
-            >
-              <font-awesome-icon icon="edit" size="sm" />
-            </b-button>
-            <b-button
-              size="sm"
-              v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
-              @click.prevent="showCreateForm(node.data.uri)"
-              variant="outline-success"
-            >
-              <font-awesome-icon icon="plus" size="sm" />
-            </b-button>
-            <b-button
-              size="sm"
-              v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID)"
-              @click.prevent="deleteInfrastructure(node.data.uri)"
-              variant="danger"
-            >
-              <font-awesome-icon icon="trash-alt" size="sm" />
-            </b-button>
-          </b-button-group>
-        </template>
-      </sl-vue-tree>
-    </div>
-    <opensilex-InfrastructureForm
-      ref="infrastructureForm"
+    <opensilex-TreeView :nodes.sync="nodes" @select="displayNodesDetail">
+
+      <template v-slot:node="{ node }">
+        <span class="item-icon">
+          <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.type)" />
+        </span>&nbsp;
+        <strong v-if="node.data.selected">{{ node.title }}</strong>
+        <span v-if="!node.data.selected">{{ node.title }}</span>
+      </template>
+
+      <template v-slot:buttons="{ node }">
+        <opensilex-EditButton
+          v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+          @click="editInfrastructure(node.data.uri)"
+          label="component.infrastructure.facility.edit"
+          :small="true"
+        ></opensilex-EditButton>
+        <opensilex-AddChildButton
+          v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+          @click="createInfrastructure(node.data.uri)"
+          label="component.infrastructure.facility.add-child"
+          :small="true"
+        ></opensilex-AddChildButton>
+        <opensilex-DeleteButton
+          v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID)"
+          @click="deleteInfrastructure(node.data.uri)"
+          label="component.infrastructure.facility.delete"
+          :small="true"
+        ></opensilex-DeleteButton>
+      </template>
+    </opensilex-TreeView>
+
+    <opensilex-ModalForm
       v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
-      :parentOptions="parentOptions"
-      @onCreate="callCreateInfrastructureService"
-      @onUpdate="callUpdateInfrastructureService"
-    ></opensilex-InfrastructureForm>
-  </div>
+      ref="infrastructureForm"
+      component="opensilex-InfrastructureForm"
+      createTitle="component.infrastructure.add"
+      editTitle="component.infrastructure.update"
+      icon="ik#ik-globe"
+      @onCreate="refresh($event.uri)"
+      @onUpdate="refresh($event.uri)"
+      :initForm="setParent"
+    ></opensilex-ModalForm>
+  </b-card>
 </template>
 
 <script lang="ts">
@@ -91,7 +76,7 @@ import {
   InfrastructuresService,
   ResourceTreeDTO,
   InfrastructureGetDTO,
-  InfrastructureDeviceGetDTO,
+  InfrastructureFacilityGetDTO,
   InfrastructureTeamDTO,
   InfrastructureUpdateDTO
 } from "opensilex-core/index";
@@ -111,14 +96,11 @@ export default class InfrastructureTree extends Vue {
     return this.$store.state.credentials;
   }
 
-  private filterPatternValue: any = "";
-  set filterPattern(value: string) {
-    this.filterPatternValue = value;
-    this.refresh();
-  }
+  private filter: any = "";
 
-  get filterPattern() {
-    return this.filterPatternValue;
+  updateFilter() {
+    this.$opensilex.updateURLParameter("filter", this.filter, "");
+    this.refresh();
   }
 
   created() {
@@ -127,11 +109,10 @@ export default class InfrastructureTree extends Vue {
     );
 
     let query: any = this.$route.query;
-    if (query.filterPattern) {
-      this.filterPatternValue = decodeURI(query.filterPattern);
+    if (query.filter) {
+      this.filter = decodeURI(query.filter);
     }
 
-    this.initParentOptions();
     this.refresh();
   }
 
@@ -146,26 +127,15 @@ export default class InfrastructureTree extends Vue {
     );
   }
 
-  parentOptions = [];
-  private initParentOptions() {
-    this.service
-      .searchInfrastructuresTree()
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        let infrastructures = http.response.result;
-        this.parentOptions = this.$opensilex.buildTreeListOptions(
-          infrastructures
-        );
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-
   refresh(uri?) {
-    let pattern = this.filterPattern;
     this.service
-      .searchInfrastructuresTree(pattern)
+      .searchInfrastructuresTree(this.filter)
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        let treeNode = [];
+        this.infrastructureForm
+          .getFormRef()
+          .setParentInfrastructures(http.response.result);
 
+        let treeNode = [];
         let first = true;
         for (let i in http.response.result) {
           let resourceTree: ResourceTreeDTO = http.response.result[i];
@@ -187,15 +157,6 @@ export default class InfrastructureTree extends Vue {
         }
 
         this.nodes = treeNode;
-
-        this.$router
-          .push({
-            path: this.$route.fullPath,
-            query: {
-              filterPattern: encodeURI(pattern)
-            }
-          })
-          .catch(function() {});
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -230,11 +191,8 @@ export default class InfrastructureTree extends Vue {
 
   private selected: InfrastructureGetDTO;
 
-  public displayNodesDetail(nodes: any[]) {
-    if (nodes.length > 0) {
-      let node = nodes[nodes.length - 1];
-      this.displayNodeDetail(node.data.uri);
-    }
+  public displayNodesDetail(node: any) {
+    this.displayNodeDetail(node.data.uri);
   }
 
   public displayNodeDetail(uri: string, forceRefresh?: boolean) {
@@ -251,31 +209,10 @@ export default class InfrastructureTree extends Vue {
 
   @Ref("infrastructureForm") readonly infrastructureForm!: any;
 
-  showCreateForm(parentURI) {
-    this.infrastructureForm.showCreateForm(parentURI);
-  }
-
-  callCreateInfrastructureService(form: any, done) {
-    done(
-      this.service
-        .createInfrastructure(form)
-        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-          let uri = http.response.result;
-          console.debug("Infrastructure created", uri);
-          this.refresh(uri);
-        })
-    );
-  }
-
-  callUpdateInfrastructureService(form: InfrastructureUpdateDTO, done) {
-    done();
-    this.service
-      .updateInfrastructure(form)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let uri = http.response.result;
-        console.debug("Infrastructure updated", uri);
-        this.refresh(uri);
-      });
+  parentURI;
+  createInfrastructure(parentURI?) {
+    this.parentURI = parentURI;
+    this.infrastructureForm.showCreateForm();
   }
 
   editInfrastructure(uri) {
@@ -283,6 +220,7 @@ export default class InfrastructureTree extends Vue {
       .getInfrastructure(uri)
       .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
         let detailDTO: InfrastructureGetDTO = http.response.result;
+        this.parentURI = detailDTO.parent;
         this.infrastructureForm.showEditForm(detailDTO);
       });
   }
@@ -295,27 +233,18 @@ export default class InfrastructureTree extends Vue {
       })
       .catch(this.$opensilex.errorHandler);
   }
+
+  setParent(form) {
+    form.parent = this.parentURI;
+  }
 }
 </script>
 
 <style scoped lang="scss">
-.table {
-  border: 1px solid #dee2e6;
-  border-radius: 3px;
-  border-collapse: separate;
-}
-.table th {
-  text-align: left;
-}
-
 .sl-vue-tree-root {
   min-height: 100px;
   max-height: 300px;
   overflow-y: auto;
-}
-
-.user-list {
-  padding-left: 10px;
 }
 
 .leaf-spacer {
@@ -323,31 +252,9 @@ export default class InfrastructureTree extends Vue {
   width: 23px;
 }
 
-.device-split-cell {
-  width: 50%;
-  display: inline-block;
-}
-
-.add-device-button-container {
-  text-align: right;
-}
-
-.table-device {
-  margin-top: 10px;
-}
-
-.button-cell {
-  padding-top: 1px;
-  padding-bottom: 1px;
-}
-
 @media (max-width: 768px) {
   .sl-vue-tree-root {
     min-height: auto;
-  }
-
-  .table {
-    margin-top: 10px;
   }
 }
 </style>

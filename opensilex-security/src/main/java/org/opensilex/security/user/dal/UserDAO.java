@@ -6,7 +6,7 @@
 package org.opensilex.security.user.dal;
 
 import java.net.URI;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import javax.mail.internet.InternetAddress;
@@ -114,7 +114,7 @@ public final class UserDAO {
         ProfileDAO profileDAO = new ProfileDAO(sparql);
         List<ProfileModel> userProfiles = profileDAO.getByUserURI(uri);
 
-        List<String> accessList = new ArrayList<>();
+        List<String> accessList = new LinkedList<>();
         userProfiles.forEach((ProfileModel profile) -> {
             accessList.addAll(profile.getCredentials());
         });
@@ -144,17 +144,6 @@ public final class UserDAO {
         );
     }
 
-    /**
-     * Old PHIS service mapping, should be removed after migration
-     *
-     * @param email
-     * @param firstName
-     * @param familyName
-     * @param page
-     * @param pageSize
-     * @return
-     * @deprecated
-     */
     @Deprecated
     public ListWithPagination<UserModel> search(String email, String firstName, String familyName, int page, int pageSize) throws Exception {
         return sparql.searchWithPagination(

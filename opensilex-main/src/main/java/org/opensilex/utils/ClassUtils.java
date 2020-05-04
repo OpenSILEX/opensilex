@@ -20,8 +20,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -378,7 +378,7 @@ public final class ClassUtils {
      * @return List of fields
      */
     public static List<Field> getClassFieldsRecursivly(Class<?> type) {
-        List<Field> fieldList = new ArrayList<>();
+        List<Field> fieldList = new LinkedList<>();
 
         getAllFields(fieldList, type);
 

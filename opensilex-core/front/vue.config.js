@@ -13,7 +13,7 @@ module.exports = {
             hints: false
         },
         optimization: {
-            minimize: true,
+            minimize: (process.env.NODE_ENV === 'production'),
             minimizer: [new TerserPlugin()]
         }
     }

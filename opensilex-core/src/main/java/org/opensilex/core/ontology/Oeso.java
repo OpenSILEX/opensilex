@@ -73,7 +73,6 @@ public class Oeso {
     public static final Property hasScientificContact = Ontology.property(NS, "hasScientificContact");
     public static final Property hasRelatedProject = Ontology.property(NS, "hasRelatedProject");
     public static final Property hasFinancialFunding = Ontology.property(NS, "hasFinancialFunding");
-    
 
     // ---- EXPERIMENTS ----
     public static final Resource Experiment = Ontology.resource(NS, "Experiment");
@@ -92,9 +91,10 @@ public class Oeso {
 
     // ---- INFRASTRUCTURES AND INSTALLATION
     public static final Resource Infrastructure = Ontology.resource(NS, "Infrastructure");
-    public static final Resource InfrastructureDevice = Ontology.resource(NS, "InfrastructureDevice");
+    public static final Resource InfrastructureFacility = Ontology.resource(NS, "InfrastructureFacility");
     public static final Resource InfrastructureTeam = Ontology.resource(NS, "InfrastructureTeam");
     public static final Resource Installation = Ontology.resource(NS, "Installation");
+    public static final Property hasFacility = Ontology.property(NS, "hasFacility");
 
     // ---- SPECIES ----
     //public static final Resource Species = Ontology.resource(NS, "Species");

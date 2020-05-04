@@ -9,7 +9,6 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.*;
 import org.opensilex.OpenSilexModule;
@@ -91,7 +90,7 @@ public class ResetNodeModules {
     }
 
     private static void createYarnInstallProcess(Path baseDirectory, Path moduleDirectory) throws IOException {
-        List<String> args = new ArrayList<>();
+        List<String> args = new LinkedList<>();
         args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
         args.add(baseDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
         args.add("install");

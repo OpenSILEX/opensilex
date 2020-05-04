@@ -6,9 +6,9 @@
 package org.opensilex.sparql.model;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -21,12 +21,12 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
 
     private final HashMap<URI, Set<T>> map = new HashMap<URI, Set<T>>();
 
-    private final List<URI> selectionList = new ArrayList<>();
+    private final List<URI> selectionList = new LinkedList<>();
     private final URI root;
     private final boolean excludeRoot;
 
     public SPARQLTreeListModel() {
-        this(new ArrayList<>(), null, false);
+        this(new LinkedList<>(), null, false);
     }
 
     public SPARQLTreeListModel(List<T> selectionList, URI root, boolean excludeRoot) {

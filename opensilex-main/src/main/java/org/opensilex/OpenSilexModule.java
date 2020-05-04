@@ -18,8 +18,8 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -230,7 +230,7 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
         String sourceLocationString = sourceLocation.toString();
         LOGGER.debug(getClass().getCanonicalName() + " - List directory from: " + sourceLocationString + " looking for: " + directoryName);
 
-        List<String> files = new ArrayList<>();
+        List<String> files = new LinkedList<>();
 
         if (sourceLocationString.endsWith(".jar")) {
             // In case if module is a JAR

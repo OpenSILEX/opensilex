@@ -18,7 +18,7 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import org.junit.BeforeClass;
 import org.opensilex.integration.test.AbstractIntegrationTest;
@@ -95,7 +95,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      */
     public void clearGraphs(List<Class<? extends SPARQLResourceModel>> modelsToClear) throws Exception {
         SPARQLService sparqlService = getSparqlService();
-        List<String> graphsToClean = new ArrayList<>();
+        List<String> graphsToClean = new LinkedList<>();
         for (Class<? extends SPARQLResourceModel> modelClass : modelsToClear) {
             URI graphURI = sparqlService.getDefaultGraphURI(modelClass);
             graphsToClean.add(graphURI.toString());
@@ -108,7 +108,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return the List of SPARQL Model to clear after each test execution.
      */
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return new ArrayList<>();
+        return new LinkedList<>();
     }
 
     /**

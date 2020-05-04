@@ -53,8 +53,8 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         userDao.create(new URI(USER2_URI), new InternetAddress("user2@opensilex.org"), "user2", "anonymous", false, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
 
         ProfileDAO profileDao = new ProfileDAO(sparql);
-        profileDao.create(new URI(PROFILE1_URI), "profile1", new ArrayList<>());
-        profileDao.create(new URI(PROFILE2_URI), "profile2", new ArrayList<>());
+        profileDao.create(new URI(PROFILE1_URI), "profile1", new LinkedList<>());
+        profileDao.create(new URI(PROFILE2_URI), "profile2", new LinkedList<>());
     }
 
     protected GroupCreationDTO getGroupCreationDTO() throws URISyntaxException {
@@ -63,7 +63,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         dto.setName("Group 1");
         dto.setDescription("Description 1");
 
-        ArrayList<GroupUserProfileDTO> userProfiles = new ArrayList<>();
+        List<GroupUserProfileDTO> userProfiles = new LinkedList<>();
         GroupUserProfileModificationDTO userProfile = new GroupUserProfileModificationDTO();
         userProfile.setUserURI(new URI(USER1_URI));
         userProfile.setProfileURI(new URI(PROFILE1_URI));
@@ -106,7 +106,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         dto.setName("new group name");
         dto.setDescription("New description");
 
-        ArrayList<GroupUserProfileDTO> userProfiles = new ArrayList<>();
+        List<GroupUserProfileDTO> userProfiles = new LinkedList<>();
         GroupUserProfileModificationDTO userProfile = new GroupUserProfileModificationDTO();
 
         userProfile = new GroupUserProfileModificationDTO();
@@ -159,7 +159,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         dto.setName("Group 2");
         dto.setDescription("Description 2");
 
-        ArrayList<GroupUserProfileDTO> userProfiles = new ArrayList<>();
+        List<GroupUserProfileDTO> userProfiles = new LinkedList<>();
         GroupUserProfileModificationDTO userProfile = new GroupUserProfileModificationDTO();
         userProfile.setUserURI(new URI(USER1_URI));
         userProfile.setProfileURI(new URI(PROFILE2_URI));
@@ -232,7 +232,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        ArrayList<Class<? extends SPARQLResourceModel>> modelList = new ArrayList<>();
+        List<Class<? extends SPARQLResourceModel>> modelList = new LinkedList<>();
         modelList.add(GroupModel.class);
         modelList.add(GroupUserProfileModel.class);
         modelList.add(ProfileModel.class);

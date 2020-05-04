@@ -6,7 +6,7 @@
 package org.opensilex.security.user.dal;
 
 import java.security.Principal;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import javax.mail.internet.AddressException;
@@ -41,7 +41,7 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
         } catch (AddressException ex) {
             // can't happend
         }
-        anonymous.setUserProfiles(new ArrayList<>());
+        anonymous.setUserProfiles(new LinkedList<>());
         anonymous.setAdmin(false);
         anonymous.setAnonymous(true);
         anonymous.setLocale(Locale.forLanguageTag(OpenSilex.DEFAULT_LANGUAGE));
@@ -96,7 +96,8 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
             ontology = SecurityOntology.class,
             property = "hasUser",
             inverse = true,
-            cascadeDelete = true
+            cascadeDelete = true,
+            ignoreUpdateIfNull = true
     )
     private List<GroupUserProfileModel> userProfiles;
 

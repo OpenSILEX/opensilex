@@ -1346,28 +1346,6 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Spectroradiometer"/>
         <rdfs:label xml:lang="en">green seeker</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Greenhouse -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Greenhouse">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ProtectiveStructure"/>
-        <rdfs:label xml:lang="en">greenhouse</rdfs:label>
-        <rdfs:label xml:lang="fr">serre</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#GrowthChamber -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GrowthChamber">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ProtectiveStructure"/>
-        <rdfs:label xml:lang="fr">chambre de culture</rdfs:label>
-        <rdfs:label xml:lang="en">growth chamber</rdfs:label>
-    </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#GypsumBlock -->
 
@@ -1376,8 +1354,6 @@
         <rdfs:label xml:lang="en">gypsum block</rdfs:label>
     </owl:Class>
     
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#HemisphericalCamera -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#HemisphericalCamera">
@@ -1495,11 +1471,11 @@
         <rdfs:label xml:lang="en">Team</rdfs:label>
     </owl:Class>
     
-    <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureDevice -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureDevice">
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
-        <rdfs:label xml:lang="en">Infrastructure device</rdfs:label>
+        <rdfs:label xml:lang="en">Facility</rdfs:label>
         <rdfs:label xml:lang="fr">Dispositif</rdfs:label>
     </owl:Class>
     
@@ -1748,18 +1724,6 @@
         <rdfs:label xml:lang="en">platform</rdfs:label>
     </owl:Class>
     
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Plot -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Plot">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
-        <rdfs:comment>A community of plants located on a defined area of a field.</rdfs:comment>
-        <rdfs:label xml:lang="fr">micro parcelle</rdfs:label>
-        <rdfs:label xml:lang="en">plot</rdfs:label>
-    </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#PrecipitationSensor -->
 

@@ -45,12 +45,12 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.function.Consumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
@@ -303,11 +303,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return instance;
     }
 
-    public <T extends SPARQLResourceModel> List<T> getListByURIs(Class<T> objectClass, List<URI> uris, String lang) throws Exception {
+    public <T extends SPARQLResourceModel> List<T> getListByURIs(Class<T> objectClass, Collection<URI> uris, String lang) throws Exception {
         return getListByURIs(getDefaultGraph(objectClass), objectClass, uris, lang);
     }
 
-    public <T extends SPARQLResourceModel> List<T> getListByURIs(Node graph, Class<T> objectClass, List<URI> uris, String lang) throws Exception {
+    public <T extends SPARQLResourceModel> List<T> getListByURIs(Node graph, Class<T> objectClass, Collection<URI> uris, String lang) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         if (lang == null) {
             lang = getDefaultLang();
@@ -317,7 +317,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
             instances = mapper.createInstanceList(graph, uris, lang, this);
         } else {
-            instances = new ArrayList<>();
+            instances = new LinkedList<>();
         }
         return instances;
     }
@@ -347,22 +347,22 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
-    public <T extends SPARQLResourceModel> List<T> loadListByURIs(Class<T> objectClass, List<URI> uris, String lang) throws Exception {
+    public <T extends SPARQLResourceModel> List<T> loadListByURIs(Class<T> objectClass, Collection<URI> uris, String lang) throws Exception {
         return loadListByURIs(getDefaultGraph(objectClass), objectClass, uris, lang);
     }
 
-    public <T extends SPARQLResourceModel> List<T> loadListByURIs(Node graph, Class<T> objectClass, List<URI> uris, String lang) throws Exception {
+    public <T extends SPARQLResourceModel> List<T> loadListByURIs(Node graph, Class<T> objectClass, Collection<URI> uris, String lang) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         if (lang == null) {
             lang = getDefaultLang();
         }
-        List<T> resultObjects = new ArrayList<>();
+        List<T> resultObjects = new LinkedList<>();
 
         if (uris.size() > 0) {
             SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
             SelectBuilder select = mapper.getSelectBuilder(graph, lang);
 
-            List<Node> uriNodes = SPARQLDeserializers.nodeListURI(uris);
+            Collection<Node> uriNodes = SPARQLDeserializers.nodeListURI(uris);
 
             select.addValueVar(mapper.getURIFieldExprVar(), uriNodes.toArray());
 
@@ -455,7 +455,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             filterHandler.accept(select);
         }
 
-        List<URI> resultList = new ArrayList<>();
+        List<URI> resultList = new LinkedList<>();
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
         executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
             resultList.add(uriDeserializer.fromString((result.getStringValue(mapper.getURIFieldName()))));
@@ -551,7 +551,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             select.setLimit(pageSize);
         }
 
-        List<T> resultList = new ArrayList<>();
+        List<T> resultList = new LinkedList<>();
         executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
             resultList.add(mapper.createInstance(graph, result, language, this));
         }, Exception.class));
@@ -616,7 +616,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         } else if (total > 0 && (page * pageSize) < total) {
             list = search(graph, objectClass, lang, filterHandler, orderByList, page, pageSize);
         } else {
-            list = new ArrayList<>();
+            list = new LinkedList<>();
         }
 
         return new ListWithPagination<>(list, page, pageSize, total);
@@ -718,17 +718,15 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         try {
             startTransaction();
 
-            validate(instance);
-
             URI uri = mapper.getURI(instance);
             T oldInstance = loadByURI(graph, objectClass, uri, getDefaultLang());
             if (oldInstance == null) {
                 throw new SPARQLInvalidURIException(instance.getUri());
             }
 
-            mapper.updateInstance(oldInstance, instance);
-
-            delete(graph, objectClass, uri, false);
+            mapper.updateInstanceFromOldValues(oldInstance, instance);
+            UpdateBuilder delete = mapper.getDeleteBuilder(graph, oldInstance);
+            executeDeleteQuery(delete);
             create(graph, instance, false);
 
             commitTransaction();
@@ -767,10 +765,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void delete(Class<T> objectClass, URI uri) throws Exception {
-        delete(getDefaultGraph(objectClass), objectClass, uri, true);
+        delete(getDefaultGraph(objectClass), objectClass, uri);
     }
 
-    public <T extends SPARQLResourceModel> void delete(Node graph, Class<T> objectClass, URI uri, boolean deleteAllReverseReferences) throws Exception {
+    public <T extends SPARQLResourceModel> void delete(Node graph, Class<T> objectClass, URI uri) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         try {
             startTransaction();
@@ -800,28 +798,25 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 delete(relationToDelete.getKey(), relationToDelete.getValue());
             }
 
-            if (deleteAllReverseReferences) {
-                UpdateBuilder deleteAllReverseReferencesBuilder = new UpdateBuilder();
-                Iterator<Map.Entry<Class<? extends SPARQLResourceModel>, Field>> i = mapperIndex.getReverseReferenceIterator(objectClass);
-                Node uriNode = SPARQLDeserializers.nodeURI(uri);
+            UpdateBuilder deleteAllReverseReferencesBuilder = new UpdateBuilder();
+            Iterator<Map.Entry<Class<? extends SPARQLResourceModel>, Field>> i = mapperIndex.getReverseReferenceIterator(objectClass);
+            Node uriNode = SPARQLDeserializers.nodeURI(uri);
 
-                int statementCount = 0;
-                while (i.hasNext()) {
-                    Map.Entry<Class<? extends SPARQLResourceModel>, Field> entry = i.next();
-                    statementCount++;
-                    String var = "?x" + statementCount;
-                    SPARQLClassObjectMapper<SPARQLResourceModel> reverseMapper = mapperIndex.getForClass(entry.getKey());
-                    Property reverseProp = reverseMapper.getFieldProperty(entry.getValue());
-                    deleteAllReverseReferencesBuilder.addDelete(reverseMapper.getDefaultGraph(), var, reverseProp, uriNode);
-                    deleteAllReverseReferencesBuilder.addWhere(var, reverseProp, uriNode);
-                }
-                if (statementCount > 0) {
-                    executeDeleteQuery(deleteAllReverseReferencesBuilder);
-                }
+            int statementCount = 0;
+            while (i.hasNext()) {
+                Map.Entry<Class<? extends SPARQLResourceModel>, Field> entry = i.next();
+                statementCount++;
+                String var = "?x" + statementCount;
+                SPARQLClassObjectMapper<SPARQLResourceModel> reverseMapper = mapperIndex.getForClass(entry.getKey());
+                Property reverseProp = reverseMapper.getFieldProperty(entry.getValue());
+                deleteAllReverseReferencesBuilder.addDelete(reverseMapper.getDefaultGraph(), var, reverseProp, uriNode);
+                deleteAllReverseReferencesBuilder.addWhere(var, reverseProp, uriNode);
+            }
+            if (statementCount > 0) {
+                executeDeleteQuery(deleteAllReverseReferencesBuilder);
             }
 
             UpdateBuilder delete = mapper.getDeleteBuilder(graph, instance);
-
             executeDeleteQuery(delete);
 
             UpdateBuilder deleteRelations = mapper.getDeleteRelationsBuilder(graph, uri);
@@ -848,7 +843,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             try {
                 startTransaction();
                 for (URI uri : uris) {
-                    delete(graph, objectClass, uri, true);
+                    delete(graph, objectClass, uri);
                 }
                 commitTransaction();
             } catch (Exception ex) {

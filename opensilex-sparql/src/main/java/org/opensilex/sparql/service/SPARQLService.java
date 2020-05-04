@@ -556,7 +556,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             select.setLimit(pageSize);
         }
 
-        List<T> resultList = new ArrayList<>(pageSize);
+        List<T> resultList = new ArrayList<>();
         executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
             resultList.add(mapper.createInstance(graph, result, language, this));
         }, Exception.class));

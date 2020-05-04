@@ -13,10 +13,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -88,9 +88,9 @@ final class SPARQLClassAnalyzer {
     private final Map<Class<? extends SPARQLResourceModel>, Set<String>> relatedModelsFields;
 
     private final Map<String, SPARQLProperty> annotationsByField = new HashMap<>();
-    private final List<String> optionalFields = new LinkedList<>();
+    private final List<String> optionalFields = new ArrayList<>();
 
-    private final List<String> reverseRelationFields = new LinkedList<>();
+    private final List<String> reverseRelationFields = new ArrayList<>();
 
     private final Map<Class<? extends SPARQLResourceModel>, String> cascadeDeleteClassesField = new HashMap<>();
 

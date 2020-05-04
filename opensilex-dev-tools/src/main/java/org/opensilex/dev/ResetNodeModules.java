@@ -90,7 +90,7 @@ public class ResetNodeModules {
     }
 
     private static void createYarnInstallProcess(Path baseDirectory, Path moduleDirectory) throws IOException {
-        List<String> args = new LinkedList<>();
+        List<String> args = new ArrayList<>();
         args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
         args.add(baseDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
         args.add("install");

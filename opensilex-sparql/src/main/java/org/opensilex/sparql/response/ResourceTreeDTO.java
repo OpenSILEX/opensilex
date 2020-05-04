@@ -6,7 +6,7 @@
 package org.opensilex.sparql.response;
 
 import java.net.URI;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -62,7 +62,7 @@ public class ResourceTreeDTO extends NamedResourceDTO {
     }
 
     public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(SPARQLTreeListModel<T> tree, boolean enableSelection, BiConsumer<T, ResourceTreeDTO> handler) {
-        List<ResourceTreeDTO> list = new LinkedList<>();
+        List<ResourceTreeDTO> list = new ArrayList<>(tree.getRootsCount());
 
         tree.listRoots(root -> {
             ResourceTreeDTO rootDto = fromResourceTreeRecursive(root, tree, enableSelection, handler);
@@ -78,7 +78,7 @@ public class ResourceTreeDTO extends NamedResourceDTO {
 
         dto.setSelected(enableSelection && tree.isSelected(model));
 
-        List<ResourceTreeDTO> childrenDTOs = new LinkedList<>();
+        List<ResourceTreeDTO> childrenDTOs = new ArrayList<>(tree.getChildCount(model));
         tree.listChildren(model, child -> {
             ResourceTreeDTO childDTO = fromResourceTreeRecursive(child, tree, enableSelection, handler);
             childDTO.setParent(model.getUri());

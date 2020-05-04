@@ -11,7 +11,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -239,8 +239,7 @@ public class GroupAPI {
      *
      * @see org.opensilex.security.group.dal.GroupDAO
      * @param pattern Regex pattern for filtering list by names or email
-     * @param orderByList List of fields to sort as an array of
-     * fieldName=asc|desc
+     * @param orderByList List of fields to sort as an array of fieldName=asc|desc
      * @param page Page number
      * @param pageSize Page size
      * @return filtered, ordered and paginated list
@@ -294,7 +293,6 @@ public class GroupAPI {
         return response;
     }
 
-    
     /**
      * *
      * Return a list of groups corresponding to the given URIs
@@ -325,7 +323,7 @@ public class GroupAPI {
         List<GroupModel> models = dao.getList(uris);
 
         if (!models.isEmpty()) {
-            List<GroupDTO> resultDTOList = new LinkedList<>();
+            List<GroupDTO> resultDTOList = new ArrayList<>(models.size());
             models.forEach(result -> {
                 resultDTOList.add(GroupDTO.getDTOFromModel(result));
             });

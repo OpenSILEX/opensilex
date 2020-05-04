@@ -9,7 +9,6 @@ package opensilex.service.dao;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -741,7 +740,7 @@ public class EventDAO extends Rdf4jDAO<Event> {
                 )
                 .buildString();
 
-        List<String> annotationUris = new LinkedList<>();
+        List<String> annotationUris = new ArrayList<>();
         TupleQuery getAnnotationQuery = prepareRDF4JTupleQuery(removeAnnotationQuery);
         
         try (TupleQueryResult res = getAnnotationQuery.evaluate()) {

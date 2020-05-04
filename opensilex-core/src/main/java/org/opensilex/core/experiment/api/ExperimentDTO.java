@@ -11,7 +11,6 @@ import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 
 import java.net.URI;
-import java.util.LinkedList;
 import java.util.List;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.DateConstraint;
@@ -26,7 +25,7 @@ public abstract class ExperimentDTO {
 
     protected String label;
 
-    protected List<URI> projects = new LinkedList<>();
+    protected List<URI> projects;
 
     protected String startDate;
 
@@ -38,27 +37,27 @@ public abstract class ExperimentDTO {
 
     protected Integer campaign;
 
-    protected List<String> keywords = new LinkedList<>();
+    protected List<String> keywords;
 
-    protected List<URI> scientificSupervisors = new LinkedList<>();
+    protected List<URI> scientificSupervisors;
 
-    protected List<URI> technicalSupervisors = new LinkedList<>();
+    protected List<URI> technicalSupervisors;
 
-    protected List<URI> groups = new LinkedList<>();
+    protected List<URI> groups;
 
-    protected List<URI> infrastructures = new LinkedList<>();
+    protected List<URI> infrastructures;
 
-    protected  List<URI> installations = new LinkedList<>();
+    protected  List<URI> installations;
 
     protected List<URI>  species;
 
     protected Boolean isPublic;
 
-    protected List<URI> variables = new LinkedList<>();
+    protected List<URI> variables;
 
-    protected List<URI> sensors = new LinkedList<>();
+    protected List<URI> sensors;
 
-    protected List<URI> factors = new LinkedList<>();
+    protected List<URI> factors;
 
 
     public URI getUri() {

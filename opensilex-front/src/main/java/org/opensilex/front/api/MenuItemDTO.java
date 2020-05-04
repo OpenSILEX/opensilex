@@ -7,7 +7,7 @@ package org.opensilex.front.api;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import org.opensilex.front.config.MenuItem;
@@ -21,8 +21,9 @@ public class MenuItemDTO {
         menuDTO.setId(menuItem.id());
         menuDTO.setLabel(menuItem.label());
         
-        List<MenuItemDTO> children = new LinkedList<>();
-        for (MenuItem child: menuItem.children()) {
+        List<MenuItem> mc = menuItem.children();
+        List<MenuItemDTO> children = new ArrayList<>(mc.size());
+        for (MenuItem child: mc) {
             children.add(fromModel(child));
         }
         menuDTO.setChildren(children.toArray(new MenuItemDTO[children.size()]));

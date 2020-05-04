@@ -7,7 +7,7 @@ package org.opensilex.sparql.rdf4j;
 
 import java.io.StringReader;
 import java.net.URI;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -302,7 +302,7 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
     }
 
     private List<SPARQLStatement> statementsToSPARQLResultList(QueryResult<Statement> queryResults) {
-        List<SPARQLStatement> resultList = new LinkedList<>();
+        List<SPARQLStatement> resultList = new ArrayList<>();
 
         while (queryResults.hasNext()) {
             Statement result = queryResults.next();
@@ -314,7 +314,7 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
     }
 
     private List<SPARQLStatement> repoStatementsToSPARQLResultList(RepositoryResult<Statement> queryResults) {
-        List<SPARQLStatement> resultList = new LinkedList<>();
+        List<SPARQLStatement> resultList = new ArrayList<>();
 
         while (queryResults.hasNext()) {
             Statement result = queryResults.next();
@@ -326,7 +326,7 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
     }
 
     private List<SPARQLResult> bindingSetsToSPARQLResultList(QueryResult<BindingSet> queryResults, Consumer<SPARQLResult> resultHandler) {
-        List<SPARQLResult> resultList = new LinkedList<>();
+        List<SPARQLResult> resultList = new ArrayList<>();
 
         while (queryResults.hasNext()) {
             RDF4JResult result = new RDF4JResult(queryResults.next());

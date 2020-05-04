@@ -6,9 +6,9 @@
 package org.opensilex.sparql.model;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -21,15 +21,16 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
 
     private final HashMap<URI, Set<T>> map = new HashMap<URI, Set<T>>();
 
-    private final List<URI> selectionList = new LinkedList<>();
+    private final List<URI> selectionList;
     private final URI root;
     private final boolean excludeRoot;
 
     public SPARQLTreeListModel() {
-        this(new LinkedList<>(), null, false);
+        this(new ArrayList<>(), null, false);
     }
 
     public SPARQLTreeListModel(List<T> selectionList, URI root, boolean excludeRoot) {
+        this.selectionList = new ArrayList<>(selectionList.size());
         for (T instance : selectionList) {
             this.selectionList.add(instance.getUri());
         }
@@ -39,6 +40,22 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
 
     public void listRoots(Consumer<T> handler) {
         this.listChildren(null, handler);
+    }
+
+    public int getRootsCount() {
+        return this.getChildCount(null);
+    }
+    
+    public int getChildCount(T parent) {
+        URI parentURI = null;
+        if (parent != null) {
+            parentURI = parent.getUri();
+        }
+        if (this.map.containsKey(parentURI)) {
+            return this.map.get(parentURI).size();
+        } else {
+            return 0;
+        }
     }
 
     public void listChildren(T parent, Consumer<T> handler) {

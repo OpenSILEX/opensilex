@@ -6,7 +6,7 @@
 package org.opensilex.sparql.model;
 
 import java.net.URI;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.opensilex.sparql.annotations.SPARQLResourceURI;
@@ -30,7 +30,7 @@ public abstract class SPARQLResourceModel implements SPARQLModel {
     @SPARQLTypeRDFLabel()
     protected SPARQLLabel typeLabel;
 
-    protected List<SPARQLModelRelation> relations = new LinkedList<>();
+    protected List<SPARQLModelRelation> relations = new ArrayList<>();
 
     public URI getUri() {
         return uri;

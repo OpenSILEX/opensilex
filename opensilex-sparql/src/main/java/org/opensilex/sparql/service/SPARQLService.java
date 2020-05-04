@@ -45,12 +45,12 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Set;
 import java.util.function.Consumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
@@ -317,7 +317,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
             instances = mapper.createInstanceList(graph, uris, lang, this);
         } else {
-            instances = new LinkedList<>();
+            instances = new ArrayList<>();
         }
         return instances;
     }
@@ -356,7 +356,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if (lang == null) {
             lang = getDefaultLang();
         }
-        List<T> resultObjects = new LinkedList<>();
+
+        List<T> resultObjects;
 
         if (uris.size() > 0) {
             SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
@@ -368,9 +369,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             List<SPARQLResult> results = executeSelectQuery(select);
 
+            resultObjects = new ArrayList<>(results.size());
+
             for (SPARQLResult result : results) {
                 resultObjects.add(mapper.createInstance(graph, result, lang, this));
             }
+        } else {
+            resultObjects = new ArrayList<>();
         }
         return resultObjects;
     }
@@ -455,7 +460,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             filterHandler.accept(select);
         }
 
-        List<URI> resultList = new LinkedList<>();
+        List<URI> resultList = new ArrayList<>();
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
         executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
             resultList.add(uriDeserializer.fromString((result.getStringValue(mapper.getURIFieldName()))));
@@ -551,7 +556,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             select.setLimit(pageSize);
         }
 
-        List<T> resultList = new LinkedList<>();
+        List<T> resultList = new ArrayList<>(pageSize);
         executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
             resultList.add(mapper.createInstance(graph, result, language, this));
         }, Exception.class));
@@ -616,7 +621,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         } else if (total > 0 && (page * pageSize) < total) {
             list = search(graph, objectClass, lang, filterHandler, orderByList, page, pageSize);
         } else {
-            list = new LinkedList<>();
+            list = new ArrayList<>();
         }
 
         return new ListWithPagination<>(list, page, pageSize, total);

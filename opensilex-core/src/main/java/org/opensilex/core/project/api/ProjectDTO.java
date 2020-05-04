@@ -7,7 +7,6 @@ package org.opensilex.core.project.api;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
-import java.util.LinkedList;
 import java.util.List;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.server.rest.validation.DateConstraint;
@@ -34,23 +33,20 @@ public abstract class ProjectDTO {
 
     protected String endDate;
 
-    protected List<String> keywords = new LinkedList<>();
+    protected List<String> keywords;
 
     protected URI homePage;
 
-    protected List<URI> experiments = new LinkedList<>();
+    protected List<URI> experiments;
 
-    protected List<URI> administrativeContacts = new LinkedList<>();
+    protected List<URI> administrativeContacts;
 
-    protected List<URI> coordinators = new LinkedList<>();
+    protected List<URI> coordinators;
 
-    protected List<URI> scientificContacts = new LinkedList<>();
+    protected List<URI> scientificContacts;
 
-    protected List<URI> relatedProjects = new LinkedList<>();
+    protected List<URI> relatedProjects;
 
-//    protected List<URI> groups = new LinkedList<>();
-//
-//    protected Boolean isPublic;
     public URI getUri() {
         return uri;
     }

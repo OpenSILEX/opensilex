@@ -219,7 +219,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        List<Class<? extends SPARQLResourceModel>> modelList = new LinkedList<>();
+        List<Class<? extends SPARQLResourceModel>> modelList = new ArrayList<>();
         modelList.add(UserModel.class);
         return modelList;
     }

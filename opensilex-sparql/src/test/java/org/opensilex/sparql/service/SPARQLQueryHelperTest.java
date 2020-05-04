@@ -184,7 +184,7 @@ public class SPARQLQueryHelperTest extends AbstractUnitTest {
         testWhereValues(new SelectBuilder(), NodeFactory.createVariable("hasByte"), byteList);
 
         String str = "some str which will be converted to byte[] 4 44978df";
-        List<Byte> byteListFromStr = new LinkedList<Byte>();
+        List<Byte> byteListFromStr = new ArrayList<Byte>(str.getBytes().length);
         for (byte b : str.getBytes()) {
             byteListFromStr.add(b);
         }
@@ -195,7 +195,7 @@ public class SPARQLQueryHelperTest extends AbstractUnitTest {
     public void testWhereValuesWithChar() throws Exception {
 
         String str = "some str which will be converted to byte[] 4 44978df";
-        List<Character> chars = new LinkedList<>();
+        List<Character> chars = new ArrayList<>(str.length());
         for (int i = 0; i < str.length(); i++) {
             chars.add(str.charAt(i));
         }

@@ -101,7 +101,7 @@ public class StartServerWithFront {
         createConfigMonitor(moduleDirectory, targetDirectory);
         createThemeMonitor(moduleDirectory, targetDirectory);
 
-        List<String> args = new LinkedList<>();
+        List<String> args = new ArrayList<>();
         args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
         args.add(baseDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
         args.add("run");
@@ -114,7 +114,7 @@ public class StartServerWithFront {
     }
 
     private static Process createFrontModuleBuilder(String moduleId) throws Exception {
-        List<String> args = new LinkedList<>();
+        List<String> args = new ArrayList<>();
         args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
         args.add(baseDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
         args.add("run");

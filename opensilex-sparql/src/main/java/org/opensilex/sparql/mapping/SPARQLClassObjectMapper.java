@@ -406,7 +406,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public List<SPARQLResourceModel> getAllDependentResourcesToCreate(T instance) {
-        List<SPARQLResourceModel> dependentResourcesToCreate = new LinkedList<>();
+        List<SPARQLResourceModel> dependentResourcesToCreate = new ArrayList<>();
 
         classAnalizer.forEachObjectProperty(ThrowingBiConsumer.wrap((field, property) -> {
             SPARQLResourceModel value = (SPARQLResourceModel) classAnalizer.getFieldValue(field, instance);

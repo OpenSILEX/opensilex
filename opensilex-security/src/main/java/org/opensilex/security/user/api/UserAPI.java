@@ -12,7 +12,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.mail.internet.InternetAddress;
@@ -250,7 +250,7 @@ public class UserAPI {
         // Check if users are found
         if (!models.isEmpty()) {
             // Return user list converted in UserGetDTO
-            List<UserGetDTO> resultDTOList = new LinkedList<>();
+            List<UserGetDTO> resultDTOList = new ArrayList<>(models.size());
             models.forEach(result -> {
                 resultDTOList.add(UserGetDTO.fromModel(result));
             });
@@ -271,8 +271,7 @@ public class UserAPI {
      *
      * @see org.opensilex.security.user.dal.UserDAO
      * @param pattern Regex pattern for filtering list by names or email
-     * @param orderByList List of fields to sort as an array of
-     * fieldName=asc|desc
+     * @param orderByList List of fields to sort as an array of fieldName=asc|desc
      * @param page Page number
      * @param pageSize Page size
      * @return filtered, ordered and paginated list

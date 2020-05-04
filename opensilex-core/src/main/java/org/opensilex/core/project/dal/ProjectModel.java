@@ -7,7 +7,6 @@ package org.opensilex.core.project.dal;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.LinkedList;
 import java.util.List;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
@@ -31,8 +30,6 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 )
 public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerator<ProjectModel> {
 
-    
-   
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "label",
@@ -47,8 +44,8 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
     )
     private String shortname;
     public static final String SHORTNAME_SPARQL_VAR = "shortname";
-    
-     @SPARQLProperty(
+
+    @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasFinancialFunding"
     )
@@ -66,7 +63,7 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
             ontology = Oeso.class,
             property = "hasExperiment"
     )
-    List<ExperimentModel> experiments = new LinkedList<>();
+    List<ExperimentModel> experiments;
     public static final String EXPERIMENT_URI_SPARQL_VAR = "experiment";
 
     @SPARQLProperty(
@@ -94,7 +91,7 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
             ontology = Oeso.class,
             property = "hasKeyword"
     )
-    private List<String> keywords = new LinkedList<>();;
+    private List<String> keywords;
 
     @SPARQLProperty(
             ontology = FOAF.class,
@@ -107,26 +104,25 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
             ontology = Oeso.class,
             property = "hasAdministrativeContact"
     )
-    private List<UserModel> administrativeContacts = new LinkedList<>();;
+    private List<UserModel> administrativeContacts;
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasCoordinator"
     )
-    private List<UserModel> coordinators = new LinkedList<>();;
+    private List<UserModel> coordinators;
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasScientificContact"
     )
-    private List<UserModel> scientificContacts = new LinkedList<>();
+    private List<UserModel> scientificContacts;
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasRelatedProject"
     )
-    private List<ProjectModel> relatedProjects = new LinkedList<>();;
-    
+    private List<ProjectModel> relatedProjects;
 
     public String getLabel() {
         return label;
@@ -144,7 +140,7 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
         this.shortname = shortname;
     }
 
-     public String getHasFinancialFunding() {
+    public String getHasFinancialFunding() {
         return hasFinancialFunding;
     }
 
@@ -239,7 +235,7 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
     public void setScientificContacts(List<UserModel> scientificContacts) {
         this.scientificContacts = scientificContacts;
     }
-    
+
 //     public List<GroupModel> getGroups() {
 //        return groups;
 //    }
@@ -247,7 +243,6 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
 //    public void setGroups(List<GroupModel> groups) {
 //        this.groups = groups;
 //    }
-    
 //     public Boolean getIsPublic() {
 //        return isPublic;
 //    }
@@ -258,10 +253,8 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
     @Override
     public String[] getUriSegments(ProjectModel instance) {
         return new String[]{
-                instance.getLabel()
+            instance.getLabel()
         };
     }
-
-
 
 }

@@ -5,7 +5,7 @@
  */
 package org.opensilex.front.api;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.opensilex.front.theme.FontConfig;
@@ -61,7 +61,7 @@ public class ThemeConfigDTO {
         ThemeConfigDTO dto = new ThemeConfigDTO();
         dto.setHasStyle(config.stylesheets().size() > 0);
 
-        List<FontConfigDTO> fonts = new LinkedList<>();
+        List<FontConfigDTO> fonts = new ArrayList<>(config.fonts().size());
         config.fonts().forEach((FontConfig f) -> {
             fonts.add(FontConfigDTO.fromFontConfig(f));
         });

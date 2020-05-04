@@ -9,7 +9,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.filter.ThresholdFilter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.spi.FilterReply;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,17 +39,17 @@ public class LogFilter extends ThresholdFilter {
     /**
      * List of logger to include at custom level.
      */
-    private List<String> loggerIncludeList = new LinkedList<String>();
+    private List<String> loggerIncludeList = new ArrayList<String>();
 
     /**
      * List of logger to exclude from custom level.
      */
-    private List<String> loggerExcludeList = new LinkedList<String>();
+    private List<String> loggerExcludeList = new ArrayList<String>();
 
     /**
      * List of logger to use at debug level.
      */
-    private List<String> debug = new LinkedList<String>();
+    private List<String> debug = new ArrayList<String>();
 
     @Override
     public FilterReply decide(ILoggingEvent event) {

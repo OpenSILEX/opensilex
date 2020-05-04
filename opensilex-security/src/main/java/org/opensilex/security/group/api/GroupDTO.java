@@ -7,7 +7,7 @@ package org.opensilex.security.group.api;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
@@ -63,8 +63,9 @@ public class GroupDTO extends NamedResourceDTO<GroupModel> {
         group.setDescription(getDescription());
 
         if (getUserProfiles() != null) {
-            List<GroupUserProfileModel> userProfilesModel = new LinkedList<>();
-            for (GroupUserProfileDTO userProfile : getUserProfiles()) {
+            List<GroupUserProfileDTO> up = getUserProfiles();
+            List<GroupUserProfileModel> userProfilesModel = new ArrayList<>(up.size());
+            for (GroupUserProfileDTO userProfile : up) {
                 GroupUserProfileModel userProfileModel = userProfile.newModel();
                 userProfilesModel.add(userProfileModel);
             }
@@ -78,8 +79,9 @@ public class GroupDTO extends NamedResourceDTO<GroupModel> {
 
         setDescription(model.getDescription());
 
-        List<GroupUserProfileDTO> userProfilesDTO = new LinkedList<>();
-        for (GroupUserProfileModel userProfile : model.getUserProfiles()) {
+        List<GroupUserProfileModel> up = model.getUserProfiles();
+        List<GroupUserProfileDTO> userProfilesDTO = new ArrayList<>(up.size());
+        for (GroupUserProfileModel userProfile : up) {
             GroupUserProfileDTO dto = newUserProfileDtoInstance();
             dto.fromModel(userProfile);
             userProfilesDTO.add(dto);

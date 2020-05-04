@@ -10,7 +10,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -50,7 +50,7 @@ public interface URIGenerator<T> {
     }
 
     public static String normalize(String[] parts) throws UnsupportedEncodingException {
-        List<String> normalizedString = new LinkedList<>();
+        List<String> normalizedString = new ArrayList<>(parts.length);
         for (int i = 0; i < parts.length; i++) {
             normalizedString.add(normalize(parts[i]));
         }

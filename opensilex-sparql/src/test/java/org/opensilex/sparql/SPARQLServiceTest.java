@@ -139,7 +139,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         b.setDoubleVar(0d);
         b.setCharVar('Z');
         b.setShortVar((short) 0);
-        List<String> stringList = new LinkedList<>();
+        List<String> stringList = new ArrayList<>(2);
         stringList.add("V1");
         stringList.add("V2");
         b.setStringList(stringList);
@@ -233,7 +233,6 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
     }
 
-
     @Test
     public void testUriListExists() throws Exception {
 
@@ -254,18 +253,18 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
         // test one or more good URI
         assertTrue(sparql.uriListExists(B.class, Collections.singletonList(b.getUri())));
-        assertTrue(sparql.uriListExists(B.class, Arrays.asList(b.getUri(),b1.getUri())));
+        assertTrue(sparql.uriListExists(B.class, Arrays.asList(b.getUri(), b1.getUri())));
 
-        URI badUri = new URI(b.getUri().toString()+"prefix");
-        URI badUri2 = new URI(b.getUri().toString()+"prefix2");
+        URI badUri = new URI(b.getUri().toString() + "prefix");
+        URI badUri2 = new URI(b.getUri().toString() + "prefix2");
 
         // test one or more bad URI
-        assertFalse(sparql.uriExists(B.class,badUri));
+        assertFalse(sparql.uriExists(B.class, badUri));
         assertFalse(sparql.uriListExists(B.class, Collections.singletonList(badUri)));
-        assertFalse(sparql.uriListExists(B.class, Arrays.asList(badUri,badUri2)));
+        assertFalse(sparql.uriListExists(B.class, Arrays.asList(badUri, badUri2)));
 
         // test a good and a bad URI
-        assertFalse(sparql.uriListExists(B.class, Arrays.asList(b.getUri(),badUri)));
+        assertFalse(sparql.uriListExists(B.class, Arrays.asList(b.getUri(), badUri)));
     }
 
     @Test
@@ -320,12 +319,9 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
         // this test try to insert an object b with a list and a property p,
         // b has two element in this list ( v1 and v2)
-
         // once this object created, we try to fetch all objects which have v1 or v2 as p value
-
         // if we don't use DISTINCT when selecting objects, then b appears twice in the list since it satisfy the
         // filter twice
-
         B b = new B();
         b.setBool(true);
         b.setFloatVar(45f);
@@ -333,7 +329,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         b.setCharVar('Z');
         b.setShortVar((short) 0);
 
-        List<String> list1 = Arrays.asList("value1","value2");
+        List<String> list1 = Arrays.asList("value1", "value2");
         b.setStringList(list1);
 
         sparql.create(b);
@@ -342,15 +338,15 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
                 B.class,
                 null,
                 (SelectBuilder select) -> {
-                    select.addWhere(makeVar(B.URI_FIELD),TEST_ONTOLOGY.hasStringList.asNode(),makeVar("list"));
-                    SPARQLQueryHelper.addWhereValues(select,"list",b.getStringList());
+                    select.addWhere(makeVar(B.URI_FIELD), TEST_ONTOLOGY.hasStringList.asNode(), makeVar("list"));
+                    SPARQLQueryHelper.addWhereValues(select, "list", b.getStringList());
                 },
                 null,
                 0,
                 10
         ).getList();
 
-        assertEquals(1,results.size());
+        assertEquals(1, results.size());
     }
 
 }

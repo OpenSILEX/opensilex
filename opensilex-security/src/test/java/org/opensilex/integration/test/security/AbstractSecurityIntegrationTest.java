@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
+import java.util.ArrayList;
 import org.junit.After;
 import org.opensilex.server.response.SingleObjectResponse;
 
@@ -18,7 +19,6 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.LinkedList;
 import java.util.List;
 import org.junit.BeforeClass;
 import org.opensilex.integration.test.AbstractIntegrationTest;
@@ -90,12 +90,11 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     /**
      * Clear the list of SPARQL graph to clear after each test execution
      *
-     * @throws SPARQLQueryException if an errors occurs during SPARQL query
-     * execution
+     * @throws SPARQLQueryException if an errors occurs during SPARQL query execution
      */
     public void clearGraphs(List<Class<? extends SPARQLResourceModel>> modelsToClear) throws Exception {
         SPARQLService sparqlService = getSparqlService();
-        List<String> graphsToClean = new LinkedList<>();
+        List<String> graphsToClean = new ArrayList<>(modelsToClear.size());
         for (Class<? extends SPARQLResourceModel> modelClass : modelsToClear) {
             URI graphURI = sparqlService.getDefaultGraphURI(modelClass);
             graphsToClean.add(graphURI.toString());
@@ -108,7 +107,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return the List of SPARQL Model to clear after each test execution.
      */
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return new LinkedList<>();
+        return new ArrayList<>();
     }
 
     /**
@@ -168,8 +167,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      *
      * Get {@link Response} from a {@link ApiProtected} GET{uri} service call.
      *
-     * @param target the {@link WebTarget} on which get an entity with the given
-     * URI
+     * @param target the {@link WebTarget} on which get an entity with the given URI
      * @param uri the URI of the resource to fetch from the given target.
      * @return target invocation response.
      *
@@ -181,8 +179,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
 
     /**
      *
-     * Get {@link Response} from a {@link ApiProtected} DELETE{uri} service
-     * call.
+     * Get {@link Response} from a {@link ApiProtected} DELETE{uri} service call.
      *
      * @param target the {@link WebTarget} on which DELETE the given uri
      * @param uri the URI of the resource to DELETE

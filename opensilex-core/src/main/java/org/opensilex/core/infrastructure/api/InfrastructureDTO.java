@@ -6,7 +6,7 @@
 package org.opensilex.core.infrastructure.api;
 
 import java.net.URI;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
@@ -50,8 +50,9 @@ public class InfrastructureDTO extends NamedResourceDTO<InfrastructureModel> {
             setParent(model.getParent().getUri());
         }
 
-        List<URI> children = new LinkedList<>();
-        model.getChildren().forEach(child -> {
+        List<InfrastructureModel> mc = model.getChildren();
+        List<URI> children = new ArrayList<>(mc.size());
+        mc.forEach(child -> {
             children.add(child.getUri());
         });
 
@@ -67,9 +68,10 @@ public class InfrastructureDTO extends NamedResourceDTO<InfrastructureModel> {
             model.setParent(parentModel);
         }
 
-        if (getChildren() != null) {
-            List<InfrastructureModel> children = new LinkedList<>();
-            getChildren().forEach(child -> {
+        List<URI> mc = getChildren();
+        if (mc != null) {
+            List<InfrastructureModel> children = new ArrayList<>(mc.size());
+            mc.forEach(child -> {
                 InfrastructureModel childModel = new InfrastructureModel();
                 childModel.setUri(child);
                 children.add(childModel);

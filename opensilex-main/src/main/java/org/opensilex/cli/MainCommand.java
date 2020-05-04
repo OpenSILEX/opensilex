@@ -6,7 +6,7 @@
 //******************************************************************************
 package org.opensilex.cli;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 import org.opensilex.OpenSilex;
@@ -135,7 +135,7 @@ public class MainCommand extends AbstractOpenSilexCommand implements IVersionPro
      */
     @Override
     public String[] getVersion() throws Exception {
-        List<String> versionList = new LinkedList<>();
+        List<String> versionList = new ArrayList<>();
 
         // Add version in list for all modules
         getOpenSilex().getModules().forEach((OpenSilexModule module) -> {

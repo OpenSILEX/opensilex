@@ -13,7 +13,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
@@ -202,13 +202,13 @@ public class AuthenticationAPI {
     })
     public Response getCredentialsGroups() throws Exception {
         if (credentialsGroupList == null) {
-            credentialsGroupList = new LinkedList<>();
+            credentialsGroupList = new ArrayList<>();
             AuthenticationDAO securityDAO = new AuthenticationDAO(sparql);
             Map<String, String> groupLabels = securityDAO.getCredentialsGroupLabels();
             securityDAO.getCredentialsGroups().forEach((String groupId, Map<String, String> credentialMap) -> {
                 CredentialsGroupDTO credentialsGroup = new CredentialsGroupDTO();
                 credentialsGroup.setGroupId(groupId);
-                List<CredentialDTO> credentials = new LinkedList<>();
+                List<CredentialDTO> credentials = new ArrayList<>(credentialMap.size());
                 credentialMap.forEach((id, label) -> {
                     CredentialDTO credential = new CredentialDTO();
                     credential.setId(id);

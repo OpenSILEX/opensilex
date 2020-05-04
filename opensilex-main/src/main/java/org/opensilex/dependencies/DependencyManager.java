@@ -10,8 +10,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.apache.maven.model.Model;
@@ -140,7 +140,7 @@ public class DependencyManager {
      * @return list of remote repositories
      */
     private static List<RemoteRepository> getPomRemoteRepositories(Model model) {
-        List<RemoteRepository> remoteRepoList = new LinkedList<>();
+        List<RemoteRepository> remoteRepoList = new ArrayList<>();
         remoteRepoList.add(getCentralMavenRepository());
 
         model.getRepositories().forEach((repo) -> {
@@ -168,12 +168,12 @@ public class DependencyManager {
     /**
      * Loaded dependencies list.
      */
-    private final List<String> loadedDependencies = new LinkedList<>();
+    private final List<String> loadedDependencies = new ArrayList<>();
 
     /**
      * Build-in dependencies list.
      */
-    private final List<String> buildinDependencies = new LinkedList<>();
+    private final List<String> buildinDependencies = new ArrayList<>();
 
     /**
      * Constructor for dependency manager based on a main pom file.
@@ -227,7 +227,7 @@ public class DependencyManager {
      */
     private List<URL> loadDependencies(File pom, boolean downloadWithMaven)
             throws DependencyResolutionException, ModelBuildingException, MalformedURLException {
-        List<URL> resolvedDependencies = new LinkedList<>();
+        List<URL> resolvedDependencies = new ArrayList<>();
 
         // Parse pom.xml to a Model
         Model model = registerPom(pom);

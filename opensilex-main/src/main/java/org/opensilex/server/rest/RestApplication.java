@@ -7,7 +7,7 @@
 package org.opensilex.server.rest;
 
 import io.swagger.jaxrs.config.BeanConfig;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Singleton;
@@ -121,7 +121,7 @@ public class RestApplication extends ResourceConfig {
      * @see https://jersey.github.io/apidocs/2.28/jersey/org/glassfish/jersey/server/ResourceConfig.html#packages-boolean-java.lang.String...-
      */
     private void registerAPI() {
-        List<String> packageList = new LinkedList<>();
+        List<String> packageList = new ArrayList<>();
 
         // Get packages list from every modules implementing APIExtension
         getAPIExtensionModules().forEach((APIExtension api) -> {
@@ -139,7 +139,7 @@ public class RestApplication extends ResourceConfig {
      */
     private void initSwagger() {
         // Load all packages to scan from modules implementing APIExtension
-        List<String> packageList = new LinkedList<>();
+        List<String> packageList = new ArrayList<>();
 
         getAPIExtensionModules().forEach((APIExtension api) -> {
             packageList.addAll(api.apiPackages());

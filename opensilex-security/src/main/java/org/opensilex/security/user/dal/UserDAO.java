@@ -6,7 +6,7 @@
 package org.opensilex.security.user.dal;
 
 import java.net.URI;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import javax.mail.internet.InternetAddress;
@@ -114,7 +114,7 @@ public final class UserDAO {
         ProfileDAO profileDAO = new ProfileDAO(sparql);
         List<ProfileModel> userProfiles = profileDAO.getByUserURI(uri);
 
-        List<String> accessList = new LinkedList<>();
+        List<String> accessList = new ArrayList<>();
         userProfiles.forEach((ProfileModel profile) -> {
             accessList.addAll(profile.getCredentials());
         });

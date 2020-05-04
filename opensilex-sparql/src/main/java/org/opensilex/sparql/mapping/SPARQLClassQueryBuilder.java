@@ -26,12 +26,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.ExprFactory;
@@ -317,7 +316,7 @@ class SPARQLClassQueryBuilder {
 
         if (isOptional) {
             if (!optionalHandlersByGraph.containsKey(graph)) {
-                optionalHandlersByGraph.put(graph, new LinkedList<>());
+                optionalHandlersByGraph.put(graph, new ArrayList<>());
             }
             handler = new WhereHandler();
             optionalHandlersByGraph.get(graph).add(handler);

@@ -5,7 +5,7 @@
  */
 package org.opensilex.core.infrastructure.api;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
@@ -46,20 +46,25 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
     public void fromModel(InfrastructureModel model) {
         super.fromModel(model);
 
-        List<InfrastructureTeamDTO> groups = new LinkedList<>();
+        List<InfrastructureTeamDTO> groups;
         if (model.getGroups() != null) {
+            groups = new ArrayList<>(model.getGroups().size());
             model.getGroups().forEach(group -> {
                 groups.add(InfrastructureTeamDTO.getDTOFromModel(group));
             });
-
+        } else {
+            groups = new ArrayList<>();
         }
         setGroups(groups);
 
-        List<InfrastructureFacilityGetDTO> facilities = new LinkedList<>();
+        List<InfrastructureFacilityGetDTO> facilities;
         if (model.getFacilities() != null) {
+            facilities = new ArrayList<>(model.getFacilities().size());
             model.getFacilities().forEach(device -> {
                 facilities.add(InfrastructureFacilityGetDTO.getDTOFromModel(device));
             });
+        } else {
+            facilities = new ArrayList<>();
         }
         setFacilities(facilities);
     }
@@ -68,19 +73,25 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
     public void toModel(InfrastructureModel model) {
         super.toModel(model);
 
-        List<InfrastructureTeamModel> groups = new LinkedList<>();
+        List<InfrastructureTeamModel> groups;
         if (getGroups() != null) {
+            groups = new ArrayList<>(getGroups().size());
             getGroups().forEach(group -> {
                 groups.add(group.newModel());
             });
+        } else {
+            groups = new ArrayList<>();
         }
         model.setGroups(groups);
 
-        List<InfrastructureFacilityModel> facilities = new LinkedList<>();
+        List<InfrastructureFacilityModel> facilities;
         if (getFacilities() != null) {
+            facilities = new ArrayList<>(getFacilities().size());
             getFacilities().forEach(facility -> {
                 facilities.add(facility.newModel());
             });
+        } else {
+            facilities = new ArrayList<>();
         }
         model.setFacilities(facilities);
     }

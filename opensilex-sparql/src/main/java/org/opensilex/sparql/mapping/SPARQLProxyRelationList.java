@@ -6,7 +6,7 @@
 package org.opensilex.sparql.mapping;
 
 import java.net.URI;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,7 +16,6 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLStatement;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.utils.Ontology;
-
 
 /**
  *
@@ -29,7 +28,7 @@ class SPARQLProxyRelationList extends SPARQLProxy<List> {
     private final URI uri;
 
     public SPARQLProxyRelationList(SPARQLClassObjectMapperIndex repository, Node graph, URI uri, Set<Property> propertiesToIgnore, String lang, SPARQLService service) {
-        super(repository,graph, List.class, lang, service);
+        super(repository, graph, List.class, lang, service);
         this.uri = uri;
         this.propertiesToIgnore = propertiesToIgnore.stream().map(prop -> prop.getURI()).collect(Collectors.toSet());
     }
@@ -44,8 +43,8 @@ class SPARQLProxyRelationList extends SPARQLProxy<List> {
     protected List loadData() throws Exception {
         List<SPARQLStatement> results = this.service.describe(graph, uri);
 
-        List<SPARQLModelRelation> list = new LinkedList<>();
-        
+        List<SPARQLModelRelation> list = new ArrayList<>(results.size());
+
         for (SPARQLStatement statement : results) {
             if (!propertiesToIgnore.contains(statement.getPredicate())) {
                 SPARQLModelRelation relation = new SPARQLModelRelation();
@@ -60,11 +59,11 @@ class SPARQLProxyRelationList extends SPARQLProxy<List> {
                 } else {
                     relation.setValue(statement.getObject());
                 }
-                
+
                 if (statement.getContext() != null) {
                     relation.setGraph(new URI(statement.getContext()));
                 }
-                
+
                 list.add(relation);
             }
 

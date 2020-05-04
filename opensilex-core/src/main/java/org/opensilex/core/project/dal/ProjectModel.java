@@ -39,7 +39,8 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasShortname"
+            property = "hasShortname",
+            required = true
     )
     private String shortname;
     public static final String SHORTNAME_SPARQL_VAR = "shortname";
@@ -238,7 +239,7 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
     @Override
     public String[] getUriSegments(ProjectModel instance) {
         return new String[]{
-            instance.getLabel()
+                instance.getShortname()
         };
     }
 

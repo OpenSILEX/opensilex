@@ -45,7 +45,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
     protected ProjectCreationDTO getCreationDTO() {
 
         ProjectCreationDTO pjctDto = new ProjectCreationDTO();
-        pjctDto.setLabel("pj1");
+        pjctDto.setShortname("prjjj");
 
         LocalDate currentDate = LocalDate.now();
         pjctDto.setStartDate(currentDate.minusDays(3).toString());
@@ -90,7 +90,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
 
         // update the pj
         pjctDto.setUri(extractUriFromResponse(postResult));
-        pjctDto.setLabel("new alias 1");
+        pjctDto.setShortname("new");
         pjctDto.setEndDate(LocalDate.now().toString());
 
         final Response updateResult = getJsonPutResponse(target(updatePath), pjctDto);
@@ -107,7 +107,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
         ProjectCreationDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
-        assertEquals(pjctDto.getLabel(), dtoFromApi.getLabel());
+        assertEquals(pjctDto.getShortname(), dtoFromApi.getShortname());
         assertEquals(pjctDto.getEndDate(), dtoFromApi.getEndDate());
     }
 
@@ -168,7 +168,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
         Map<String, Object> params = new HashMap<String, Object>() {
             {
                 put("startDate", creationDTO.getStartDate());
-                put("label", creationDTO.getLabel());
+                  put("shortname", creationDTO.getShortname());
                 put("uri", uri);
             }
         };

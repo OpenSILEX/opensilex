@@ -1,36 +1,31 @@
 <template>
-  <div id="page-wrapper" class="wrapper customized" v-bind:class="{ embed: embed }">
-    <component
-      class="header-logo"
-      v-bind:is="headerComponent"
-      v-if="user.isLoggedIn() && !disconnected &&!embed"
-    ></component>
+  <opensilex-Overlay :show="isLoaderVisible" :noFade="false" zIndex="32000">
+    <div id="page-wrapper" class="wrapper customized" v-bind:class="{ embed: embed }">
+      <component
+        class="header-logo"
+        v-bind:is="headerComponent"
+        v-if="user.isLoggedIn() && !disconnected &&!embed"
+      ></component>
 
-    <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
-      <component class="header-login" v-bind:is="loginComponent"></component>
-    </header>
+      <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
+        <component class="header-login" v-bind:is="loginComponent"></component>
+      </header>
 
-    <section id="content-wrapper" class="page-wrap" v-if="user.isLoggedIn() && !disconnected">
-      <div>
-        <component id="menu-container" v-if="!embed" v-bind:is="menuComponent"></component>
-      </div>
+      <section id="content-wrapper" class="page-wrap" v-if="user.isLoggedIn() && !disconnected">
+        <div>
+          <component id="menu-container" v-if="!embed" v-bind:is="menuComponent"></component>
+        </div>
 
-      <div id="main-content">
-        <main class="main-content">
-          <router-view :key="$route.fullPath" />
-        </main>
+        <div id="main-content">
+          <main class="main-content">
+            <router-view :key="$route.fullPath" />
+          </main>
 
-        <footer v-if="!embed">
-          <component v-bind:is="footerComponent"></component>
-        </footer>
-      </div>
-    </section>
-
-    <div id="loader" v-bind:class="{'visible':isLoaderVisible}">
-      <div class="lds-ripple">
-        <div></div>
-        <div></div>
-      </div>
+          <footer v-if="!embed">
+            <component v-bind:is="footerComponent"></component>
+          </footer>
+        </div>
+      </section>
     </div>
   </opensilex-Overlay>
 </template>

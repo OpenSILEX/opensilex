@@ -1,20 +1,20 @@
 <template>
-  <b-card>
+  <b-card v-if="selected">
     <template v-slot:header>
       <h3>
-        <i class="ik ik-map"></i>
+        <opensilex-Icon icon="ik#ik-map" />
         {{$t("component.infrastructure.facilities")}}
       </h3>
       <div class="card-header-right">
         <opensilex-CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
-          @click="showCreateForm"
+          @click="facilityForm.showCreateForm()"
           label="component.infrastructure.facility.add"
         ></opensilex-CreateButton>
       </div>
     </template>
+
     <b-table
-      v-if="selected"
       striped
       hover
       small
@@ -28,7 +28,7 @@
       <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
 
       <template v-slot:cell(name)="data">
-        <font-awesome-icon :icon="$opensilex.getRDFIcon(data.item.type)" size="sm" />&nbsp;
+        <opensilex-Icon :icon="$opensilex.getRDFIcon(data.item.type)" />&nbsp;
         <span class="capitalize-first-letter">{{data.item.name}}</span>
       </template>
 
@@ -40,12 +40,12 @@
         <b-button-group class="tree-button-group" size="sm">
           <opensilex-EditButton
             v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
-            @click="infrastructureFacilityForm.showEditForm(data.item)"
+            @click="facilityForm.showEditForm(data.item)"
             label="component.infrastructure.facility.update"
             :small="true"
           ></opensilex-EditButton>
           <opensilex-DeleteButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID)"
+            v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
             @click="deleteFacility(data.item.uri)"
             label="component.infrastructure.facility.delete"
             :small="true"
@@ -53,13 +53,18 @@
         </b-button-group>
       </template>
     </b-table>
-    <opensilex-InfrastructureFacilityForm
-      ref="infrastructureFacilityForm"
-      :parentURI="selected ? selected.uri : null"
+
+    <opensilex-ModalForm
       v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
-      @onUpdate="$emit('onUpdate', selected)"
-      @onCreate="$emit('onCreate', selected)"
-    ></opensilex-InfrastructureFacilityForm>
+      ref="facilityForm"
+      component="opensilex-InfrastructureFacilityForm"
+      createTitle="component.infrastructure.facility.add"
+      editTitle="component.infrastructure.facility.update"
+      icon="ik#ik-map"
+      @onCreate="$emit('onCreate', $event)"
+      @onUpdate="$emit('onUpdate', $event)"
+      :initForm="setInfrastructure"
+    ></opensilex-ModalForm>
   </b-card>
 </template>
 
@@ -79,10 +84,8 @@ import { GroupCreationDTO, GroupUpdateDTO } from "opensilex-security/index";
 @Component
 export default class InfrastructureFacilitiesView extends Vue {
   $opensilex: any;
-  $store: any;
-  service: InfrastructuresService;
 
-  @Ref("infrastructureFacilityForm") readonly infrastructureFacilityForm!: any;
+  @Ref("facilityForm") readonly facilityForm!: any;
 
   get user() {
     return this.$store.state.user;
@@ -90,12 +93,6 @@ export default class InfrastructureFacilitiesView extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
-  }
-
-  created() {
-    this.service = this.$opensilex.getService(
-      "opensilex-core.InfrastructuresService"
-    );
   }
 
   @Prop()
@@ -119,55 +116,20 @@ export default class InfrastructureFacilitiesView extends Vue {
   ];
 
   public deleteFacility(uri) {
-    this.service.deleteInfrastructureFacility(uri).then(() => {
-      this.$emit("onDelete", uri);
-    });
+    this.$opensilex
+      .getService("opensilex-core.InfrastructuresService")
+      .deleteInfrastructureFacility(uri)
+      .then(() => {
+        this.$emit("onDelete", uri);
+      });
   }
 
-  public showCreateForm() {
-    this.infrastructureFacilityForm.showCreateForm();
+  setInfrastructure(form) {
+    form.infrastructure = this.selected.uri;
   }
 }
 </script>
 
 <style scoped lang="scss">
-.table {
-  border: 1px solid #dee2e6;
-  border-radius: 3px;
-  border-collapse: separate;
-}
-.table th {
-  text-align: left;
-}
-
-.sl-vue-tree-root {
-  min-height: 400px;
-  max-height: 600px;
-  overflow-y: auto;
-}
-
-.user-list {
-  padding-left: 10px;
-}
-
-.leaf-spacer {
-  display: inline-block;
-  width: 23px;
-}
-
-.button-cell {
-  padding-top: 1px;
-  padding-bottom: 1px;
-}
-
-@media (max-width: 768px) {
-  .sl-vue-tree-root {
-    min-height: auto;
-  }
-
-  .table {
-    margin-top: 10px;
-  }
-}
 </style>
 

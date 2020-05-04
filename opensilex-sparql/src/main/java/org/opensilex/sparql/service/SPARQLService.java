@@ -627,20 +627,20 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, T instance) throws Exception {
-        create(graph, instance, true, false);
+        create(graph, instance, true);
     }
 
     public <T extends SPARQLResourceModel> void create(T instance, boolean checkUriExist) throws Exception {
-        create(getDefaultGraph(instance.getClass()), instance, checkUriExist, false);
+        create(getDefaultGraph(instance.getClass()), instance, checkUriExist);
     }
 
-    public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist, boolean ignoreType) throws Exception {
+    public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         try {
             startTransaction();
             SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
             prepareInstanceCreation(instance, mapper, checkUriExist);
-            UpdateBuilder create = mapper.getCreateBuilder(graph, instance, ignoreType);
+            UpdateBuilder create = mapper.getCreateBuilder(graph, instance);
             executeUpdateQuery(create);
             commitTransaction();
         } catch (Exception ex) {
@@ -667,10 +667,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public <T extends SPARQLResourceModel> void create(List<T> instances) throws Exception {
         Class<? extends SPARQLResourceModel> genericType = (Class<? extends SPARQLResourceModel>) ClassUtils.getGenericTypeFromClass(instances.getClass());
-        create(getDefaultGraph(genericType), instances, false);
+        create(getDefaultGraph(genericType), instances);
     }
 
-    public <T extends SPARQLResourceModel> void create(Node graph, List<T> instances, boolean ignoreType) throws Exception {
+    public <T extends SPARQLResourceModel> void create(Node graph, List<T> instances) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
 
         if (instances.size() > 0) {
@@ -679,7 +679,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             for (T instance : instances) {
                 SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
                 prepareInstanceCreation(instance, mapper, true);
-                mapper.addCreateBuilder(graph, instance, create, ignoreType);
+                mapper.addCreateBuilder(graph, instance, create);
             }
 
             executeUpdateQuery(create);
@@ -725,9 +725,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             }
 
             mapper.updateInstanceFromOldValues(oldInstance, instance);
-            UpdateBuilder delete = mapper.getDeleteBuilder(graph, oldInstance, true);
+            UpdateBuilder delete = mapper.getDeleteBuilder(graph, oldInstance);
             executeDeleteQuery(delete);
-            create(graph, instance, false, true);
+            create(graph, instance, false);
 
             commitTransaction();
         } catch (Exception ex) {
@@ -816,7 +816,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 executeDeleteQuery(deleteAllReverseReferencesBuilder);
             }
 
-            UpdateBuilder delete = mapper.getDeleteBuilder(graph, instance, false);
+            UpdateBuilder delete = mapper.getDeleteBuilder(graph, instance);
             executeDeleteQuery(delete);
 
             UpdateBuilder deleteRelations = mapper.getDeleteRelationsBuilder(graph, uri);

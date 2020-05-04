@@ -531,12 +531,47 @@ export default class OpenSilexVuePlugin {
         return '_' + Math.random().toString(36).substr(2, 9);
     }
 
-    public updateURLParameters(params) {
-        let queryParams = new URLSearchParams(window.location.search);
-        let rootQuery = window.location.pathname;
-        for (let key in params) {
-            queryParams.set(key, params[key]);
+    public updateURLParameter(key, value, defaultValue?) {
+        try {
+            let queryParams = new URLSearchParams(window.location.search);
+            let rootQuery = window.location.pathname;
+            if (!value || (defaultValue != null && value == defaultValue)) {
+                queryParams.delete(key);
+            } else {
+                queryParams.set(key, encodeURI(value));
+            }
+
+            let queryParamString = queryParams.toString();
+            let url = rootQuery;
+            if (queryParamString) {
+                url += "?" + queryParamString;
+            }
+            window.history.pushState(queryParams.toString(), document.title, url);
+        } catch (error) {
+            console.error(error);
         }
-        window.history.pushState(queryParams, document.title, rootQuery + "?" + queryParams.toString());
+    }
+
+    private credentials = null;
+
+    public getCredentials() {
+        if (this.credentials == null) {
+            this.credentials = new Promise((resolve, reject) => {
+                console.debug("Loading credentials list...");
+                this.getService<any>(
+                    "opensilex-security.AuthenticationService"
+                ).getCredentialsGroups().then((http) => {
+                    this.credentials = http.response.result;
+                    console.debug("Credentials list loaded !", this.credentials);
+                    resolve(http.response.result);
+                }).catch(this.errorHandler)
+
+            })
+            return this.credentials;
+        } else if (this.credentials instanceof Promise) {
+            return this.credentials;
+        } else {
+            return Promise.resolve(this.credentials);
+        }
     }
 }

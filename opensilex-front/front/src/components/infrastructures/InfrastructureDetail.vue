@@ -1,12 +1,12 @@
 <template>
-  <b-card>
+  <b-card v-if="selected">
     <template v-slot:header>
       <h3>
-        <i class="ik ik-clipboard"></i>
+        <opensilex-Icon icon="ik#ik-clipboard" />
         {{$t("component.infrastructure.detail")}}
       </h3>
     </template>
-    <div v-if="selected">
+    <div>
       <!-- URI -->
       <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
       <!-- Name -->

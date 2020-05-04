@@ -1,7 +1,15 @@
 <template>
-  <b-button @click.prevent="$emit('click')" :title="$t(label)" :size="small ? 'sm' : 'md'" :variant="variant" :disabled="disabled">
-    <slot name="icon"><i :class="iconClass"></i></slot>
-    <span v-if="!small">{{$t(label)}}</span>
+  <b-button
+    @click.prevent="$emit('click')"
+    :title="$t(label)"
+    :size="small ? 'sm' : 'md'"
+    :variant="variant"
+    :disabled="disabled"
+  >
+    <slot name="icon">
+      <opensilex-Icon :icon="icon" />
+    </slot>
+    <span class="button-label" v-if="!small">{{$t(label)}}</span>
   </b-button>
 </template>
 
@@ -24,14 +32,13 @@ export default class Button extends Vue {
   disabled: boolean;
 
   @Prop()
-  iconClass: string;
+  icon: string;
 }
 </script>
 
 <style scoped lang="scss">
-
-span {
-    margin-left: 5px;
+.button-label {
+  margin-left: 5px;
 }
 </style>
 

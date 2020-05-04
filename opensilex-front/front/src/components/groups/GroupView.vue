@@ -5,15 +5,17 @@
       title="component.menu.security.groups"
       description="component.group.description"
     ></opensilex-PageHeader>
+
     <opensilex-PageActions>
       <template v-slot>
         <opensilex-CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
-          @click="showCreateForm"
+          @click="groupForm.showCreateForm()"
           label="component.group.add"
         ></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
+
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-GroupList
@@ -23,8 +25,8 @@
         ></opensilex-GroupList>
       </template>
     </opensilex-PageContent>
-    <opensilex-GroupForm
-      ref="groupForm"
+
+    <opensilex-ModalForm
       v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
       ref="groupForm"
       component="opensilex-GroupForm"

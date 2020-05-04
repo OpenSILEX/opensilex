@@ -1,78 +1,70 @@
 <template>
-  <b-modal ref="modalRef" @ok.prevent="validate">
-    <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
-    <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
+  <b-form>
+    <!-- URI -->
+    <opensilex-UriForm
+      :uri.sync="form.uri"
+      label="component.user.user-uri"
+      helpMessage="component.common.uri.help-message"
+      :editMode="editMode"
+      :generated.sync="uriGenerated"
+    ></opensilex-UriForm>
 
-    <template v-slot:modal-title>{{title}}</template>
-    <ValidationObserver ref="validatorRef">
-      <b-form>
-        <!-- URI -->
-        <opensilex-UriForm
-          :uri.sync="form.uri"
-          label="component.user.user-uri"
-          helpMessage="component.common.uri.help-message"
-          :editMode="editMode"
-        ></opensilex-UriForm>
+    <!-- Email -->
+    <opensilex-InputForm
+      :value.sync="form.email"
+      label="component.user.email-address"
+      type="email"
+      :required="true"
+      rules="email"
+      placeholder="component.user.form-email-placeholder"
+      autocomplete="new-password"
+    ></opensilex-InputForm>
 
-        <!-- Email -->
-        <opensilex-InputForm
-          :value.sync="form.email"
-          label="component.user.email-address"
-          type="email"
-          :required="true"
-          rules="email"
-          placeholder="component.user.form-email-placeholder"
-          autocomplete="new-password"
-        ></opensilex-InputForm>
+    <!-- Password -->
+    <opensilex-InputForm
+      :value.sync="form.password"
+      label="component.user.password"
+      type="password"
+      :required="!this.editMode"
+      placeholder="component.user.form-password-placeholder"
+      autocomplete="new-password"
+    ></opensilex-InputForm>
 
-        <!-- Password -->
-        <opensilex-InputForm
-          :value.sync="form.password"
-          label="component.user.password"
-          type="password"
-          :rules="passwordValidationRule()"
-          placeholder="component.user.form-password-placeholder"
-          autocomplete="new-password"
-        ></opensilex-InputForm>
+    <!-- First name -->
+    <opensilex-InputForm
+      :value.sync="form.firstName"
+      label="component.user.first-name"
+      type="text"
+      :required="true"
+      placeholder="component.user.form-first-name-placeholder"
+    ></opensilex-InputForm>
 
-        <!-- First name -->
-        <opensilex-InputForm
-          :value.sync="form.firstName"
-          label="component.user.first-name"
-          type="text"
-          :required="true"
-          placeholder="component.user.form-first-name-placeholder"
-        ></opensilex-InputForm>
+    <!-- Last name -->
+    <opensilex-InputForm
+      :value.sync="form.lastName"
+      label="component.user.last-name"
+      type="text"
+      :required="true"
+      placeholder="component.user.form-last-name-placeholder"
+    ></opensilex-InputForm>
 
-        <!-- Last name -->
-        <opensilex-InputForm
-          :value.sync="form.lastName"
-          label="component.user.last-name"
-          type="text"
-          :required="true"
-          placeholder="component.user.form-last-name-placeholder"
-        ></opensilex-InputForm>
+    <!-- Default language -->
+    <opensilex-SelectForm
+      :selected.sync="form.language"
+      :options="languages"
+      :required="true"
+      label="component.user.default-lang"
+      placeholder="component.common.select-lang"
+    ></opensilex-SelectForm>
 
-        <!-- Default language -->
-        <opensilex-SelectForm
-          :selected.sync="form.language"
-          :options="languages"
-          :required="true"
-          label="component.user.default-lang"
-          placeholder="component.common.select-lang"
-        ></opensilex-SelectForm>
-
-        <!-- Admin flag -->
-        <opensilex-CheckboxForm
-          v-if="user.admin"
-          v-model="form.admin"
-          :options="languages"
-          label="component.user.admin"
-          title="component.user.form-admin-option-label"
-        ></opensilex-CheckboxForm>
-      </b-form>
-    </ValidationObserver>
-  </b-modal>
+    <!-- Admin flag -->
+    <opensilex-CheckboxForm
+      v-if="user.admin"
+      :value.sync="form.admin"
+      label="component.user.admin"
+      title="component.user.form-admin-option-label"
+    ></opensilex-CheckboxForm>
+  </b-form>
 </template>
 
 <script lang="ts">
@@ -85,6 +77,10 @@ import HttpResponse, {
 @Component
 export default class UserForm extends Vue {
   $opensilex: any;
+
+  get user() {
+    return this.$store.state.user;
+  }
 
   get languages() {
     let langs = [];
@@ -133,61 +129,23 @@ export default class UserForm extends Vue {
     };
   }
 
-  showCreateForm() {
-    this.clearForm();
-    this.editMode = false;
-    this.title = this.$t("component.user.add").toString();
-    this.uriGenerated = true;
-    let modalRef: any = this.modalRef;
-    modalRef.show();
-  }
-
-  showEditForm(form: UserCreationDTO) {
-    this.form = form;
-
-    this.editMode = true;
-    this.title = this.$t("component.user.update").toString();
-    this.uriGenerated = true;
-    let modalRef: any = this.modalRef;
-    modalRef.show();
-  }
-
-  hideForm() {
-    let modalRef: any = this.modalRef;
-    modalRef.hide();
-  }
-
-  onValidate() {
-    return new Promise((resolve, reject) => {
-      if (this.form.password == "") {
-        this.form.password = null;
-      }
-      if (this.editMode) {
-        this.$emit("onUpdate", this.form, result => {
-          if (result instanceof Promise) {
-            result.then(resolve).catch(reject);
-          } else {
-            resolve(result);
-          }
-        });
-      } else {
-        return this.$emit("onCreate", this.form, result => {
-          if (result instanceof Promise) {
-            result.then(resolve).catch(reject);
-          } else {
-            resolve(result);
-          }
-        });
-      }
-    });
-  }
-
-  validate() {
-    let validatorRef: any = this.validatorRef;
-    validatorRef.validate().then(isValid => {
-      if (isValid) {
-        if (this.uriGenerated && !this.editMode) {
-          this.form.uri = null;
+  create(form) {
+    return this.$opensilex
+      .getService("opensilex.SecurityService")
+      .createUser(form)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        let uri = http.response.result;
+        console.debug("User created", uri);
+      })
+      .catch(error => {
+        if (error.status == 409) {
+          console.error("User already exists", error);
+          this.$opensilex.errorHandler(
+            error,
+            this.$i18n.t("component.user.errors.user-already-exists")
+          );
+        } else {
+          this.$opensilex.errorHandler(error);
         }
       });
   }

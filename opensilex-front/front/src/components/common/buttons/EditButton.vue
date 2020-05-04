@@ -5,11 +5,8 @@
     :small="small"
     :label="label"
     :disabled="disabled"
-  >
-    <template v-slot:icon>
-      <font-awesome-icon icon="edit" size="sm" />
-    </template>
-  </opensilex-Button>
+    icon="fa#edit"
+  ></opensilex-Button>
 </template>
 
 <script lang="ts">

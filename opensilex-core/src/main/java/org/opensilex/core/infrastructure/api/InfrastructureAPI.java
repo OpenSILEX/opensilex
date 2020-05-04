@@ -231,7 +231,6 @@ public class InfrastructureAPI {
         @ApiResponse(code = 201, message = "Create an infrastructure facility", response = ObjectUriResponse.class),
         @ApiResponse(code = 409, message = "An infrastructure facility with the same URI already exists", response = ErrorResponse.class)
     })
-
     public Response createInfrastructureFacility(
             @ApiParam("Infrastructure description") @Valid InfrastructureFacilityCreationDTO dto
     ) throws Exception {
@@ -257,11 +256,11 @@ public class InfrastructureAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure device retrieved", response = InfrastructureFacilityGetDTO.class),
-        @ApiResponse(code = 404, message = "No infrastructure device found", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Infrastructure facility retrieved", response = InfrastructureFacilityGetDTO.class),
+        @ApiResponse(code = 404, message = "No infrastructure facility found", response = ErrorResponse.class)
     })
     public Response getInfrastructureFacility(
-            @ApiParam(value = "Infrastructure device URI", example = "http://opensilex.dev/infrastructures/device/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Infrastructure facility URI", example = "http://opensilex.dev/infrastructures/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
         InfrastructureFacilityModel model = dao.getFacility(uri, user.getLanguage());
@@ -287,7 +286,7 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteInfrastructureFacility(
-            @ApiParam(value = "Infrastructure device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+            @ApiParam(value = "Infrastructure facility URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
         dao.deleteFacility(uri);

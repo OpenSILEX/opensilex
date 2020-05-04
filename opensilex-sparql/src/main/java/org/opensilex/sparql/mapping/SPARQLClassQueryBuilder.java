@@ -223,21 +223,21 @@ class SPARQLClassQueryBuilder {
 
     }
 
-    public <T extends SPARQLResourceModel> UpdateBuilder getCreateBuilder(Node graph, T instance, boolean ignoreType) throws Exception {
+    public <T extends SPARQLResourceModel> UpdateBuilder getCreateBuilder(Node graph, T instance) throws Exception {
         UpdateBuilder create = new UpdateBuilder();
-        addCreateBuilder(graph, instance, create, ignoreType);
+        addCreateBuilder(graph, instance, create);
 
         return create;
     }
 
-    public <T extends SPARQLResourceModel> void addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean ignoreType) throws Exception {
+    public <T extends SPARQLResourceModel> void addCreateBuilder(Node graph, T instance, UpdateBuilder create) throws Exception {
         executeOnInstanceTriples(graph, instance, (Quad quad, Field field) -> {
             if (graph == null) {
                 create.addInsert(quad.asTriple());
             } else {
                 create.addInsert(quad);
             }
-        }, ignoreType);
+        });
 
         URI uri = instance.getUri();
 
@@ -256,21 +256,21 @@ class SPARQLClassQueryBuilder {
         }
     }
 
-    public <T extends SPARQLResourceModel> UpdateBuilder getDeleteBuilder(Node graph, T instance, boolean ignoreType) throws Exception {
+    public <T extends SPARQLResourceModel> UpdateBuilder getDeleteBuilder(Node graph, T instance) throws Exception {
         UpdateBuilder delete = new UpdateBuilder();
-        addDeleteBuilder(graph, instance, delete, ignoreType);
+        addDeleteBuilder(graph, instance, delete);
 
         return delete;
     }
 
-    public <T extends SPARQLResourceModel> void addDeleteBuilder(Node graph, T instance, UpdateBuilder delete, boolean ignoreType) throws Exception {
+    public <T extends SPARQLResourceModel> void addDeleteBuilder(Node graph, T instance, UpdateBuilder delete) throws Exception {
         executeOnInstanceTriples(graph, instance, (Quad quad, Field field) -> {
             if (graph == null) {
                 delete.addDelete(quad.asTriple());
             } else {
                 delete.addDelete(quad);
             }
-        }, ignoreType);
+        });
     }
 
     /**
@@ -347,7 +347,7 @@ class SPARQLClassQueryBuilder {
         handler.addFilter(SPARQLQueryHelper.langFilter(fieldName, locale.getLanguage()));
     }
 
-    private <T extends SPARQLResourceModel> void executeOnInstanceTriples(Node graph, T instance, BiConsumer<Quad, Field> tripleHandler, boolean ignoreType) throws Exception {
+    private <T extends SPARQLResourceModel> void executeOnInstanceTriples(Node graph, T instance, BiConsumer<Quad, Field> tripleHandler) throws Exception {
         Quad quad;
         Triple triple;
         URI uri = analyzer.getURI(instance);
@@ -357,11 +357,9 @@ class SPARQLClassQueryBuilder {
             instance.setType(new URI(analyzer.getRDFType().getURI()));
         }
 
-        if (!ignoreType) {
-            triple = new Triple(uriNode, RDF.type.asNode(), SPARQLDeserializers.nodeURI(instance.getType()));
-            quad = new Quad(graph, triple);
-            tripleHandler.accept(quad, analyzer.getURIField());
-        }
+        triple = new Triple(uriNode, RDF.type.asNode(), SPARQLDeserializers.nodeURI(instance.getType()));
+        quad = new Quad(graph, triple);
+        tripleHandler.accept(quad, analyzer.getURIField());
 
         for (Field field : analyzer.getDataPropertyFields()) {
             Object fieldValue = analyzer.getFieldValue(field, instance);

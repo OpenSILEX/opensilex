@@ -1,26 +1,17 @@
 <template>
   <div>
     <opensilex-StringFilter
-      :filter.sync="filterPattern"
+      :filter.sync="filter"
+      @update="updateFilter()"
       placeholder="component.profile.filter-placeholder"
     ></opensilex-StringFilter>
-    <b-table
+
+    <opensilex-TableAsyncView
       ref="tableRef"
-      striped
-      hover
-      small
-      responsive
-      primary-key="uri"
-      :busy="isSearching"
-      :items="loadData"
+      :searchMethod="searchProfiles"
       :fields="fields"
     >
-      <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(name)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(credentials)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
-
-      <template v-slot:cell(credentials)="data">
+      <template v-slot:cell(credentials)="{data}">
         <div>{{$tc("component.profile.credential", data.item.credentials.length, {count: data.item.credentials.length})}}</div>
       </template>
 
@@ -42,7 +33,7 @@
         </b-card-group>
       </template>
 
-      <template v-slot:cell(uri)="data">
+      <template v-slot:cell(uri)="{data}">
         <opensilex-UriLink :uri="data.item.uri"></opensilex-UriLink>
       </template>
 
@@ -62,7 +53,7 @@
           ></opensilex-EditButton>
           <opensilex-DeleteButton
             v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_DELETE_ID)"
-            @click="$emit('onDelete', data.item.uri)"
+            @click="deleteProfile(data.item.uri)"
             label="component.profile.delete"
             :small="true"
           ></opensilex-DeleteButton>
@@ -75,7 +66,6 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
 import { SecurityService, ProfileGetDTO } from "opensilex-security/index";
 import HttpResponse, {
   OpenSilexResponse
@@ -93,14 +83,6 @@ export default class ProfileList extends Vue {
     return this.$store.state.credentials;
   }
 
-  currentPage: number = 1;
-  pageSize = 20;
-  totalRow = 0;
-  sortBy = "name";
-  sortDesc = false;
-  isSearching = false;
-
-  @Prop()
   credentialsGroups: any;
 
   filterCredentialGroups(credentialsFiltered) {
@@ -178,47 +160,16 @@ export default class ProfileList extends Vue {
     this.tableRef.refresh();
   }
 
-  loadData() {
-    let service: SecurityService = this.$opensilex.getService(
-      "opensilex.SecurityService"
-    );
-
-    let orderBy = [];
-    if (this.sortBy) {
-      let orderByText = this.sortBy + "=";
-      if (this.sortDesc) {
-        orderBy.push(orderByText + "desc");
-      } else {
-        orderBy.push(orderByText + "asc");
-      }
-    }
-
-    this.$opensilex.updateURLParameters({
-      filterPattern: encodeURI(this.filterPattern),
-      sortBy: encodeURI(this.sortBy),
-      sortDesc: "" + this.sortDesc,
-      currentPage: "" + this.currentPage,
-      pageSize: "" + this.pageSize
-    });
-
-    this.$opensilex.disableLoader();
-    this.isSearching = true;
-    return service
+  searchProfiles(options) {
+    return this.$opensilex
+      .getService("opensilex.SecurityService")
       .searchProfiles(
-        this.filterPattern,
-        orderBy,
-        this.currentPage - 1,
-        this.pageSize
-      )
-      .then((http: HttpResponse<OpenSilexResponse<Array<ProfileGetDTO>>>) => {
-        this.totalRow = http.response.metadata.pagination.totalCount;
-        this.pageSize = http.response.metadata.pagination.pageSize;
-        setTimeout(() => {
-          this.currentPage = http.response.metadata.pagination.currentPage + 1;
-        }, 0);
-
-        this.isSearching = false;
-        this.$opensilex.enableLoader();
+        this.filter,
+        options.orderBy,
+        options.currentPage,
+        options.pageSize
+      );
+  }
 
   deleteProfile(uri: string) {
     this.$opensilex

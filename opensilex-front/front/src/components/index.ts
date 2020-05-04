@@ -19,6 +19,8 @@ import PageActions from './layout/PageActions.vue'
 components["opensilex-PageActions"] = PageActions;
 import PageContent from './layout/PageContent.vue'
 components["opensilex-PageContent"] = PageContent;
+import Overlay from './layout/Overlay.vue'
+components["opensilex-Overlay"] = Overlay;
 import ToDoComponent from './layout/ToDoComponent.vue';
 components["opensilex-ToDoComponent"] = ToDoComponent;
 
@@ -31,8 +33,6 @@ import UserView from './users/UserView.vue';
 components["opensilex-UserView"] = UserView;
 import UserSelector from './users/UserSelector.vue';
 components["opensilex-UserSelector"] = UserSelector;
-import UserListSelector from './experiments/form/UserListSelector.vue';
-components["opensilex-UserListSelector"] = UserListSelector;
 
 // Profiles
 import ProfileForm from './profiles/ProfileForm.vue';
@@ -51,7 +51,8 @@ import GroupView from './groups/GroupView.vue';
 components["opensilex-GroupView"] = GroupView;
 import GroupList from './groups/GroupList.vue';
 components["opensilex-GroupList"] = GroupList;
-
+import GroupSelector from './groups/GroupSelector.vue';
+components["opensilex-GroupSelector"] = GroupSelector;
 
 // Infrastructures
 import InfrastructureView from './infrastructures/InfrastructureView.vue';
@@ -68,6 +69,8 @@ import InfrastructureGroupsView from './infrastructures/InfrastructureGroupsView
 components["opensilex-InfrastructureGroupsView"] = InfrastructureGroupsView;
 import InfrastructureDetail from './infrastructures/InfrastructureDetail.vue';
 components["opensilex-InfrastructureDetail"] = InfrastructureDetail;
+import InfrastructureSelector from './infrastructures/InfrastructureSelector.vue';
+components["opensilex-InfrastructureSelector"] = InfrastructureSelector;
 
 // Factors
 import FactorView from './factors/FactorView.vue';
@@ -98,20 +101,30 @@ import SelectForm from './common/forms/SelectForm.vue'
 components["opensilex-SelectForm"] = SelectForm;
 import CheckboxForm from './common/forms/CheckboxForm.vue'
 components["opensilex-CheckboxForm"] = CheckboxForm;
-import StringView from './common/forms/StringView.vue'
-components["opensilex-StringView"] = StringView;
 
-import UriForm from './common/uri/UriForm.vue'
+import WizardForm from './common/forms/WizardForm.vue'
+components["opensilex-WizardForm"] = WizardForm;
+import ModalForm from './common/forms/ModalForm.vue'
+components["opensilex-ModalForm"] = ModalForm;
+import UriForm from './common/forms/UriForm.vue'
 components["opensilex-UriForm"] = UriForm;
-import UriView from './common/uri/UriView.vue'
-components["opensilex-UriView"] = UriView;
-import UriLink from './common/uri/UriLink.vue'
-components["opensilex-UriLink"] = UriLink;
-
-import TypeForm from './common/type/TypeForm.vue'
+import TypeForm from './common/forms/TypeForm.vue'
 components["opensilex-TypeForm"] = TypeForm;
-import TypeView from './common/type/TypeView.vue'
+
+import StringView from './common/views/StringView.vue'
+components["opensilex-StringView"] = StringView;
+import UriView from './common/views/UriView.vue'
+components["opensilex-UriView"] = UriView;
+import UriLink from './common/views/UriLink.vue'
+components["opensilex-UriLink"] = UriLink;
+import TypeView from './common/views/TypeView.vue'
 components["opensilex-TypeView"] = TypeView;
+import Icon from './common/views/Icon.vue'
+components["opensilex-Icon"] = Icon;
+import TreeView from './common/views/TreeView.vue'
+components["opensilex-TreeView"] = TreeView;
+import TableAsyncView from './common/views/TableAsyncView.vue'
+components["opensilex-TableAsyncView"] = TableAsyncView;
 
 import ExternalReferencesForm from './common/external-references/ExternalReferencesForm.vue'
 components["opensilex-ExternalReferencesForm"] = ExternalReferencesForm;
@@ -134,35 +147,17 @@ components["opensilex-DeleteButton"] = DeleteButton;
 import AddChildButton from './common/buttons/AddChildButton.vue'
 components["opensilex-AddChildButton"] = AddChildButton;
 
-import TreeView from './common/tree/TreeView.vue'
-components["opensilex-TreeView"] = TreeView;
-
-
 // Experiments
 import ExperimentForm from './experiments/form/ExperimentForm.vue';
 components["opensilex-ExperimentForm"] = ExperimentForm;
+import ExperimentForm1 from './experiments/form/ExperimentForm1.vue';
+components["opensilex-ExperimentForm1"] = ExperimentForm1;
 import ExperimentForm2 from './experiments/form/ExperimentForm2.vue';
 components["opensilex-ExperimentForm2"] = ExperimentForm2;
-import ExperimentForm3 from './experiments/form/ExperimentForm3.vue';
-components["opensilex-ExperimentForm3"] = ExperimentForm3;
-import GroupsListSelector from './experiments/form/GroupsListSelector.vue';
-components["opensilex-GroupsListSelector"] = GroupsListSelector;
-import ProjectsListSelector from './experiments/form/ProjectsListSelector.vue';
-components["opensilex-ProjectsListSelector"] = ProjectsListSelector;
-import InfrastructuresListSelector from './experiments/form/InfrastructuresListSelector.vue';
-components["opensilex-InfrastructuresListSelector"] = InfrastructuresListSelector;
 import ExperimentList from './experiments/ExperimentList.vue';
 components["opensilex-ExperimentList"] = ExperimentList;
-import ExperimentCreate from './experiments/ExperimentCreate.vue';
-components["opensilex-ExperimentCreate"] = ExperimentCreate;
 import ExperimentView from './experiments/ExperimentView.vue';
 components["opensilex-ExperimentView"] = ExperimentView;
-
-// Species
-import SepeciesView from './species/SpeciesView.vue';
-components["opensilex-SepeciesView"] = SepeciesView;
-import SepeciesEdit from './species/SpeciesEdit.vue';
-components["opensilex-SepeciesEdit"] = SepeciesEdit;
 
 // Germplasm
 import GermplasmView from './germplasm/GermplasmView.vue';

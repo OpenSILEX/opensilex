@@ -277,36 +277,36 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classQueryBuilder.getCountBuilder(graph, countFieldName, lang);
     }
 
-    public UpdateBuilder getCreateBuilder(T instance, boolean ignoreType) throws Exception {
-        return getCreateBuilder(getDefaultGraph(), instance, ignoreType);
+    public UpdateBuilder getCreateBuilder(T instance) throws Exception {
+        return getCreateBuilder(getDefaultGraph(), instance);
     }
 
-    public UpdateBuilder getCreateBuilder(Node graph, T instance, boolean ignoreType) throws Exception {
-        return classQueryBuilder.getCreateBuilder(graph, instance, ignoreType);
+    public UpdateBuilder getCreateBuilder(Node graph, T instance) throws Exception {
+        return classQueryBuilder.getCreateBuilder(graph, instance);
     }
 
-    public void addCreateBuilder(T instance, UpdateBuilder create, boolean ignoreType) throws Exception {
-        addCreateBuilder(getDefaultGraph(), instance, create, ignoreType);
+    public void addCreateBuilder(T instance, UpdateBuilder create) throws Exception {
+        addCreateBuilder(getDefaultGraph(), instance, create);
     }
 
-    public void addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean ignoreType) throws Exception {
-        classQueryBuilder.addCreateBuilder(graph, instance, create, ignoreType);
+    public void addCreateBuilder(Node graph, T instance, UpdateBuilder create) throws Exception {
+        classQueryBuilder.addCreateBuilder(graph, instance, create);
     }
 
-    public UpdateBuilder getDeleteBuilder(T instance, boolean ignoreType) throws Exception {
-        return getDeleteBuilder(getDefaultGraph(), instance, ignoreType);
+    public UpdateBuilder getDeleteBuilder(T instance) throws Exception {
+        return getDeleteBuilder(getDefaultGraph(), instance);
     }
 
-    public UpdateBuilder getDeleteBuilder(Node graph, T instance, boolean ignoreType) throws Exception {
-        return classQueryBuilder.getDeleteBuilder(graph, instance, ignoreType);
+    public UpdateBuilder getDeleteBuilder(Node graph, T instance) throws Exception {
+        return classQueryBuilder.getDeleteBuilder(graph, instance);
     }
 
-    public void addDeleteBuilder(T instance, UpdateBuilder delete, boolean ignoreType) throws Exception {
-        addDeleteBuilder(getDefaultGraph(), instance, delete, ignoreType);
+    public void addDeleteBuilder(T instance, UpdateBuilder delete) throws Exception {
+        addDeleteBuilder(getDefaultGraph(), instance, delete);
     }
 
-    public void addDeleteBuilder(Node graph, T instance, UpdateBuilder delete, boolean ignoreType) throws Exception {
-        classQueryBuilder.addDeleteBuilder(graph, instance, delete, ignoreType);
+    public void addDeleteBuilder(Node graph, T instance, UpdateBuilder delete) throws Exception {
+        classQueryBuilder.addDeleteBuilder(graph, instance, delete);
     }
 
     public URI getURI(Object instance) {
@@ -558,7 +558,9 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public void updateInstanceFromOldValues(T oldInstance, T newInstance) throws Exception {
-        newInstance.setType(oldInstance.getType());
+        if (newInstance.getType() == null) {
+            newInstance.setType(oldInstance.getType());
+        }
 
         for (Field field : classAnalizer.getDataPropertyFields()) {
             Object oldFieldValue = classAnalizer.getFieldValue(field, oldInstance);

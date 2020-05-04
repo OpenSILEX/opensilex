@@ -1,49 +1,42 @@
 <template>
-  <b-modal ref="modalRef" @ok.prevent="validate" size="lg">
-    <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
-    <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
+  <b-form>
+    <!-- URI -->
+    <opensilex-UriForm
+      :uri.sync="form.uri"
+      label="component.profile.profile-uri"
+      helpMessage="component.common.uri.help-message"
+      :editMode="editMode"
+      :generated.sync="uriGenerated"
+    ></opensilex-UriForm>
 
-    <template v-slot:modal-title>{{title}}</template>
-    <ValidationObserver ref="validatorRef">
-      <b-form>
-        <!-- URI -->
-        <opensilex-UriForm
-          :uri.sync="form.uri"
-          label="component.profile.profile-uri"
-          helpMessage="component.common.uri.help-message"
-          :editMode="editMode"
-        ></opensilex-UriForm>
+    <!-- Name -->
+    <opensilex-InputForm
+      :value.sync="form.name"
+      label="component.common.name"
+      type="text"
+      :required="true"
+      placeholder="component.profile.form-name-placeholder"
+    ></opensilex-InputForm>
 
-        <!-- Name -->
-        <opensilex-InputForm
-          :value.sync="form.name"
-          label="component.common.name"
-          type="text"
-          :required="true"
-          placeholder="component.profile.form-name-placeholder"
-        ></opensilex-InputForm>
-
-        <!-- Profiles categories -->
-        <b-card no-body>
-          <b-tabs pills card>
-            <b-tab
-              v-for="credentialsGroup in credentialsGroups"
-              v-bind:key="credentialsGroup.groupId"
-              v-bind:title="$t(credentialsGroup.groupKeyLabel)"
-            >
-              <!-- Profiles category credentials -->
-              <b-form-checkbox-group
-                v-bind:key="credentialsGroup.groupId"
-                v-model="selectedCredentials[credentialsGroup.groupId]"
-                v-bind:options="credentialOptions[credentialsGroup.groupId]"
-                switches
-              ></b-form-checkbox-group>
-            </b-tab>
-          </b-tabs>
-        </b-card>
-      </b-form>
-    </ValidationObserver>
-  </b-modal>
+    <!-- Profiles categories -->
+    <b-card no-body v-if="form.credentials">
+      <b-tabs pills card>
+        <b-tab
+          v-for="credentialsGroup in credentialsGroups"
+          v-bind:key="credentialsGroup.groupId"
+          v-bind:title="$t(credentialsGroup.groupKeyLabel)"
+        >
+          <!-- Profiles category credentials -->
+          <b-form-checkbox-group
+            v-bind:key="credentialsGroup.groupId"
+            v-model="selectedCredentials[credentialsGroup.groupId]"
+            v-bind:options="credentialOptions[credentialsGroup.groupId]"
+            switches
+          ></b-form-checkbox-group>
+        </b-tab>
+      </b-tabs>
+    </b-card>
+  </b-form>
 </template>
 
 <script lang="ts">

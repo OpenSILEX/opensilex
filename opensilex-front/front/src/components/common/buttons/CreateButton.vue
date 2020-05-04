@@ -2,7 +2,7 @@
   <opensilex-Button
     @click="$emit('click')"
     variant="primary"
-    iconClass="ik ik-plus"
+    icon="ik#ik-plus"
     :small="small"
     :label="label"
     :disabled="disabled"

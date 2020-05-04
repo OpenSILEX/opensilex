@@ -40,7 +40,8 @@ public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> {
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasFacility"
+            property = "hasFacility",
+            ignoreUpdateIfNull = true
     )
     private List<InfrastructureFacilityModel> facilities;
     public static final String FACILITIES_FIELD = "facilities";

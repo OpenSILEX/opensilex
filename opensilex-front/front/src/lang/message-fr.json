@@ -66,6 +66,7 @@
             "previous": "Précédent",
             "colon": " :",
             "uri-copy": "URI copiée dans le presse-papier",
+            "search-prompt-text": "Ecrire pour rechercher...",
             "errors": {
                 "error-title": "Erreur",
                 "constraint-error": "Une erreur de validation s'est produite, merci de vérifier les données saisies.",
@@ -223,7 +224,7 @@
             "uri": "URI du projet",
             "search-description": "Gérer et configurer les projets",
             "add": "Créer un projet",
-            "update": "Mettre à jour un project",
+            "update": "Modifier le project",
             "form-name-placeholder": "Saisir le nom du projet",
             "form-description-placeholder": "Saisir la description du projet",
             "form-objective-placeholder": "Saisir l'objectif du projet",

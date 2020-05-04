@@ -1,45 +1,38 @@
 <template>
-  <b-modal ref="modalRef" @ok.prevent="validate" size="md" :static="true">
-    <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
-    <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
+  <b-form>
+    <!-- URI -->
+    <opensilex-UriForm
+      :uri.sync="form.uri"
+      label="component.infrastructure.infrastructure-uri"
+      :editMode="editMode"
+      :generated.sync="uriGenerated"
+    ></opensilex-UriForm>
 
-    <template v-slot:modal-title>{{title}}</template>
-    <ValidationObserver ref="validatorRef">
-      <b-form>
-        <!-- URI -->
-        <opensilex-UriForm
-          :uri.sync="form.uri"
-          label="component.infrastructure.infrastructure-uri"
-          :editMode="editMode"
-        ></opensilex-UriForm>
+    <!-- Name -->
+    <opensilex-InputForm
+      :value.sync="form.name"
+      label="component.common.name"
+      type="text"
+      :required="true"
+      placeholder="component.infrastructure.form-name-placeholder"
+    ></opensilex-InputForm>
 
-        <!-- Name -->
-        <opensilex-InputForm
-          :value.sync="form.name"
-          label="component.common.name"
-          type="text"
-          :required="true"
-          placeholder="component.infrastructure.form-name-placeholder"
-        ></opensilex-InputForm>
+    <!-- Type -->
+    <opensilex-TypeForm
+      :type.sync="form.type"
+      :baseType="$opensilex.Oeso.INFRASTRUCTURE_TYPE_URI"
+      :required="true"
+      placeholder="component.infrastructure.form-type-placeholder"
+    ></opensilex-TypeForm>
 
-        <!-- Type -->
-        <opensilex-TypeForm
-          :type.sync="form.type"
-          :baseType="$opensilex.Oeso.INFRASTRUCTURE_TYPE_URI"
-          :required="true"
-          placeholder="component.infrastructure.form-type-placeholder"
-        ></opensilex-TypeForm>
-
-        <!-- Parent -->
-        <opensilex-SelectForm
-          :selected.sync="form.parent"
-          :options="parentOptions"
-          label="component.common.parent"
-          placeholder="component.infrastructure.form-parent-placeholder"
-        ></opensilex-SelectForm>
-      </b-form>
-    </ValidationObserver>
-  </b-modal>
+    <!-- Parent -->
+    <opensilex-SelectForm
+      :selected.sync="form.parent"
+      :options="parentOptions"
+      label="component.common.parent"
+      placeholder="component.infrastructure.form-parent-placeholder"
+    ></opensilex-SelectForm>
+  </b-form>
 </template>
 
 <script lang="ts">
@@ -56,75 +49,51 @@ import {
 @Component
 export default class InfrastructureForm extends Vue {
   $opensilex: any;
-  $store: any;
-  $router: VueRouter;
-  $i18n: any;
-  $t: any;
+
+  uriGenerated = true;
 
   @Prop()
-  public defaultParent: InfrastructureGetDTO;
+  editMode;
 
-  @Prop()
-  public parentOptions: Array<any>;
+  @Prop({
+    default: () => {
+      return {
+        uri: null,
+        type: null,
+        name: "",
+        parent: null
+      };
+    }
+  })
+  form;
 
-  @Ref("modalRef") readonly modalRef!: any;
-
-  @Ref("validatorRef") readonly validatorRef!: any;
-
-  get user() {
-    return this.$store.state.user;
+  reset() {
+    this.uriGenerated = true;
+    if (this.parentInfrastructures == null) {
+      this.$opensilex
+        .getService("opensilex-core.InfrastructuresService")
+        .searchInfrastructuresTree()
+        .then(
+          (http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+            this.setParentInfrastructures(http.response.result);
+          }
+        )
+        .catch(this.$opensilex.errorHandler);
+    }
   }
 
-  form: InfrastructureCreationDTO = {
-    uri: "",
-    type: null,
-    name: "",
-    parent: null
-  };
-
-  title = "";
-
-  editMode = false;
-
-  clearForm() {
-    let parentURI = null;
-    if (this.defaultParent) {
-      parentURI = this.defaultParent.uri;
-    }
-    this.form = {
-      uri: "",
+  getEmptyForm() {
+    return {
+      uri: null,
       type: null,
       name: "",
       parent: null
     };
   }
 
-  uriGenerated = true;
-  showCreateForm(parentURI) {
-    this.clearForm();
-    this.form.parent = parentURI;
-    this.editMode = false;
-    this.title = this.$t("component.infrastructure.add").toString();
-    this.uriGenerated = true;
-    this.$opensilex.filterItemTree(this.parentOptions, this.form.uri);
-    this.validatorRef.reset();
-    this.modalRef.show();
-  }
-
-  showEditForm(form: InfrastructureCreationDTO) {
-    this.form = form;
-    this.editMode = true;
-    this.title = this.$t("component.infrastructure.update").toString();
-    this.uriGenerated = true;
-    this.$opensilex.filterItemTree(this.parentOptions, this.form.uri);
-    let modalRef: any = this.modalRef;
-    this.validatorRef.reset();
-    modalRef.show();
-  }
-
-  hideForm() {
-    let modalRef: any = this.modalRef;
-    modalRef.hide();
+  parentInfrastructures = null;
+  setParentInfrastructures(infrastructures) {
+    this.parentInfrastructures = infrastructures;
   }
 
   get parentOptions() {

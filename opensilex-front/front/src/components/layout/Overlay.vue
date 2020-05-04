@@ -1,5 +1,5 @@
 <template>
-  <b-overlay :show="show" :no-fade="noFade" :z-index="zIndex" opacity="0.7">
+  <b-overlay :show="show" :no-fade="noFade" :z-index="zIndex" opacity="0.7" class="overlay">
     <template v-slot:overlay>
       <div class="lds-ripple">
         <div></div>
@@ -35,6 +35,10 @@ export default class Overlay extends Vue {
 </script>
 
 <style scoped lang="scss">
+.overlay {
+  width: 100%;
+}
+
 .lds-ripple {
   display: inline-block;
   position: relative;

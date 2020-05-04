@@ -29,21 +29,6 @@ body {
     background-color: #D8DDE5;
 }
 
-.wrapper .page-wrap .main-content .page-header .page-header-title .uri i {
-    float: none;
-    width: inherit;
-    height: inherit;
-    border-radius: 5px;
-    margin-right: 0;
-    vertical-align: middle;
-    font-size: 1em;
-    color: inherit;
-    display: inline-flex;
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    box-shadow: none;
-}
-
 .badge-icon {
     padding: 4px;
     border-radius: 50%;

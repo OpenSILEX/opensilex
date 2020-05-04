@@ -36,7 +36,9 @@ export default class InputForm extends Vue {
   @PropSync("value")
   stringValue: string;
 
-  @Prop()
+  @Prop({
+    default: "text"
+  })
   type: string;
 
   @Prop()

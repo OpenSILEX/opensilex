@@ -43,7 +43,9 @@ export default class FormField extends Vue {
   @Prop()
   helpMessage: string;
 
-  @Prop()
+  @Prop({
+    default: false
+  })
   required: boolean;
 
   @Prop()

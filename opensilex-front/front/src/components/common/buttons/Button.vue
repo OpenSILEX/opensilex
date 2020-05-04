@@ -25,10 +25,14 @@ export default class Button extends Vue {
   @Prop()
   variant: string;
 
-  @Prop()
+  @Prop({
+    default: true
+  })
   small: boolean;
 
-  @Prop()
+  @Prop({
+    default: false
+  })
   disabled: boolean;
 
   @Prop()

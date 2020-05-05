@@ -151,47 +151,29 @@ export default class ExperimentList extends Vue {
         undefined,
         undefined,
         undefined,
-        0,
-        1000
-      )
-      .then((http: HttpResponse<OpenSilexResponse<Array<ProjectGetDTO>>>) => {
-        let results: Map<String, ProjectGetDTO> = new Map<
-          String,
-          ProjectGetDTO
-        >();
-        let resultsList = [];
-        for (let i = 0; i < http.response.result.length; i++) {
-          results.set(http.response.result[i].uri, http.response.result[i]);
-          resultsList.push(http.response.result[i]);
-        }
-        this.projectsList = resultsList;
-        this.projectsByUri = results;
-      })
-      .catch(this.$opensilex.errorHandler);
+        undefined,
+        undefined,
+        undefined,
+        options.orderBy,
+        options.currentPage,
+        options.pageSize
+      );
   }
 
-  loadInfrastructures() {
-    let service: InfrastructuresService = this.$opensilex.getService(
-      "opensilex.InfrastructuresService"
-    );
-
-    service
-      .searchInfrastructuresTree(this.user.getAuthorizationHeader(), undefined)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        let results: Map<String, ResourceTreeDTO> = new Map<
-          String,
-          ResourceTreeDTO
-        >();
-        let resultsList = [];
-        for (let i = 0; i < http.response.result.length; i++) {
-          results.set(http.response.result[i].uri, http.response.result[i]);
-          resultsList.push(http.response.result[i]);
-        }
-        this.infrastructuresList = resultsList;
-        this.infrastructuresByUri = results;
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
+  experimentStates: Array<ExperimentState> = [
+    {
+      code: "in-progress",
+      label: "component.experiment.common.status.in-progress"
+    },
+    {
+      code: "finished",
+      label: "component.experiment.common.status.finished"
+    },
+    {
+      code: "public",
+      label: "component.experiment.common.status.public"
+    }
+  ];
 
   created() {
     let service: SpeciesService = this.$opensilex.getService(

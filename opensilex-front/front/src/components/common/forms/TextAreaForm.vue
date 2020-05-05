@@ -10,7 +10,6 @@
         :id="field.id"
         v-model="stringValue"
         :disabled="disabled"
-        :type="type"
         :required="required"
         :placeholder="$t(placeholder)"
         :autocomplete="autocomplete"
@@ -36,9 +35,6 @@ export default class TextAreaForm extends Vue {
 
   @PropSync("value")
   stringValue: string;
-
-  @Prop()
-  type: string;
 
   @Prop()
   label: string;

@@ -5,30 +5,29 @@
       title="component.menu.projects"
       description="component.project.search-description"
     ></opensilex-PageHeader>
-    <div class="card">
-      <div class="card-header row clearfix">
-        <div class="col col-sm-3">
-          <div class="card-options d-inline-block">
-            
-            <b-button @click="showCreateForm" variant="primary">
-              <i class="ik ik-plus"></i>
-              {{$t('component.project.add')}}
-            </b-button>
-          </div>
-        </div>
-      </div>
-    </div>
+
+    <opensilex-PageActions>
+      <template v-slot>
+        <opensilex-CreateButton @click="projectForm.showCreateForm()" label="component.project.add"></opensilex-CreateButton>
+      </template>
+    </opensilex-PageActions>
+
     <opensilex-ProjectTable ref="projectTable" @onEdit="editProject" @onDelete="deleteProject"></opensilex-ProjectTable>
-    <opensilex-ProjectForm
+  
+    <opensilex-ModalForm
       ref="projectForm"
-      @onCreate="callCreateProjectService"
-      @onUpdate="callUpdateProjectService"
-    ></opensilex-ProjectForm>
+      component="opensilex-ProjectForm"
+      createTitle="component.project.add"
+      editTitle="component.project.update"
+      icon="ik#ik-folder"
+      @onCreate="projectTable.refresh()"
+      @onUpdate="projectTable.refresh()"
+    ></opensilex-ModalForm>
   </div>
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import { ProjectGetDTO, ProjectsService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
@@ -39,17 +38,13 @@ export default class ProjectView extends Vue {
   $store: any;
   service: ProjectsService;
 
+  @Ref("projectForm") readonly projectForm!: any;
   get user() {
     return this.$store.state.user;
   }
 
   created() {
     this.service = this.$opensilex.getService("opensilex.ProjectsService");
-  }
-
-  showCreateForm() {
-    let projectForm: any = this.$refs.projectForm;
-    projectForm.showCreateForm();
   }
 
   editProject(form: ProjectGetDTO) {

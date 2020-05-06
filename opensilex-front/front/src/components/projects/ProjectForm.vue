@@ -1,9 +1,4 @@
 <template>
-  <b-modal ref="modalRef" @ok.prevent="validate" size="xl" :static="true">
-    <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
-    <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
-
-    <template v-slot:modal-title>{{title}}</template>
     <ValidationObserver ref="validatorRef">
       <!-- URI -->
       <b-form>
@@ -176,7 +171,6 @@
         </b-form-group>
       </b-form>
     </ValidationObserver>
-  </b-modal>
 </template>
 
 <script lang="ts">
@@ -222,8 +216,6 @@ export default class ProjectForm extends Vue {
     relatedProjects: []
   };
 
-  title = "";
-
   editMode = false;
 
   clearForm() {
@@ -261,7 +253,6 @@ export default class ProjectForm extends Vue {
   showCreateForm() {
     this.clearForm();
     this.editMode = false;
-    this.title = this.$i18n.t("component.project.add").toString();
     this.uriGenerated = true;
     this.validatorRef.reset();
     let coordinatorsProjectFormRef: any = this.$refs.coordinatorsProjectFormRef;
@@ -279,7 +270,6 @@ export default class ProjectForm extends Vue {
   showEditForm(form: ProjectGetDTO) {
     this.form = form;
     this.editMode = true;
-    this.title = this.$i18n.t("component.project.update").toString();
     this.uriGenerated = true;
     let coordinatorsProjectFormRef: any = this.$refs.coordinatorsProjectFormRef;
     coordinatorsProjectFormRef.edit(this.form.coordinators);

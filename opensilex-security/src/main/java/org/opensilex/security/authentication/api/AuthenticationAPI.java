@@ -131,7 +131,6 @@ public class AuthenticationAPI {
      *
      * @see org.opensilex.security.user.dal.UserDAO
      * @param userToken actual valid token for user
-     * @param securityContext injected security context to get current user
      * @return Renewed JWT token
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
@@ -155,7 +154,6 @@ public class AuthenticationAPI {
      * Logout current user
      *
      * @see org.opensilex.security.user.dal.UserDAO
-     * @param securityContext Security context to get current user
      * @return Empty ok response
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
@@ -190,7 +188,6 @@ public class AuthenticationAPI {
      * }
      * </pre>
      *
-     * @see org.opensilex.rest.security.dal.SecurityAccessDAO
      * @return Map of existing application credential.
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */

@@ -28,6 +28,7 @@ public interface LoginExtension extends OpenSilexExtension {
      *
      * @param user Current user
      * @param tokenBuilder Token builder on which to add claims
+     * @throws Exception in case of login error
      */
     public default void login(UserModel user, JWTCreator.Builder tokenBuilder) throws Exception {
         LOGGER.debug(this.getClass().getCanonicalName() + " - User logged in: " + user.getEmail());
@@ -38,6 +39,7 @@ public interface LoginExtension extends OpenSilexExtension {
      * default
      *
      * @param user User logged out
+     * @throws Exception in case of logout error
      */
     public default void logout(UserModel user) throws Exception {
         LOGGER.debug(this.getClass().getCanonicalName() + " - User logged out: " + user.getEmail());

@@ -106,7 +106,6 @@ public class UserAPI {
      *
      * @see org.opensilex.security.user.dal.UserDAO
      * @param userDTO user model to create
-     * @param securityContext injected security context to get current user
      * @return User URI
      * @throws Exception If creation failed
      */

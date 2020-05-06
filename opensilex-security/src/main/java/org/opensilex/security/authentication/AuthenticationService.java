@@ -205,7 +205,7 @@ public class AuthenticationService extends BaseService implements Service {
      *
      * @param user User to build token on
      * @param credentialsList Credential list to setup for user in token
-     * @throws Exception
+     * @throws Exception in case of token generation failure
      */
     public void generateToken(UserModel user, List<String> credentialsList) throws Exception {
         // Set issue date a now
@@ -251,7 +251,8 @@ public class AuthenticationService extends BaseService implements Service {
      * </pre>
      *
      * @param user User having token to renew
-     * @throws Exception
+     * @return true if token has been renewed and false if not (in case user has no previous token) 
+     * @throws Exception in case of token renew failure
      */
     public boolean renewToken(UserModel user) throws Exception {
         if (user.getToken() != null) {
@@ -394,7 +395,7 @@ public class AuthenticationService extends BaseService implements Service {
      *
      * @param user Userto add
      * @param expireMs authentication delay in milliseconds
-     * @throws Exception
+     * @throws Exception in case previous user connection can't be cleared
      */
     public synchronized void addUser(UserModel user, long expireMs) throws Exception {
         URI userURI = user.getUri();
@@ -432,7 +433,7 @@ public class AuthenticationService extends BaseService implements Service {
      *
      * @param user User to remove from registry
      * @return removed user or null
-     * @throws Exception
+     * @throws Exception in case user connection can't be cleared
      */
     public synchronized UserModel removeUser(UserModel user) throws Exception {
         return removeUserByURI(user.getUri());
@@ -443,7 +444,7 @@ public class AuthenticationService extends BaseService implements Service {
      *
      * @param userURI User URI to remove from registry
      * @return removed user or null if not found
-     * @throws Exception
+     * @throws Exception in case user connection can't be cleared
      */
     public synchronized UserModel removeUserByURI(URI userURI) throws Exception {
         boolean allowMultiConnection = getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class).allowMultiConnection();

@@ -42,6 +42,7 @@ public class UserCommands extends AbstractOpenSilexCommand implements OpenSilexC
      * @param email Email of the user
      * @param password Password of the user
      * @param isAdmin Flag to determine if user is admin or not
+     * @param lang Default user language
      * @param help Helper to generate automatically command help message
      * @throws Exception if command fail
      */

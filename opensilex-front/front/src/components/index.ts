@@ -178,6 +178,13 @@ components["opensilex-ProjectTable"] = ProjectTable;
 import ProjectView from './projects/ProjectView.vue';
 components["opensilex-ProjectView"] = ProjectView;
 
+import CoordinatorsProjectForm from './projects/CoordinatorsProjectForm.vue';
+components["opensilex-CoordinatorsProjectForm"] = CoordinatorsProjectForm;
+import ScientificContactsProjectForm from './projects/ScientificContactsProjectForm.vue';
+components["opensilex-ScientificContactsProjectForm"] = ScientificContactsProjectForm;
+import AdminContactsProjectForm from './projects/AdminContactsProjectForm.vue';
+components["opensilex-AdminContactsProjectForm"] = AdminContactsProjectForm;
+
 // PHIS
 import ImageList from './phis/images/ImageList.vue';
 components["opensilex-ImageList"] = ImageList;

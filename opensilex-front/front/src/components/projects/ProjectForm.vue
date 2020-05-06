@@ -111,17 +111,23 @@
           ></b-form-input>
         </b-form-group>
 
-         <!-- Website -->
-        <b-form-group
-          :label="$t('component.project.website') + ':'"
-          label-for="website"
-        >
-          <b-form-input
-            id="website"
-            v-model="form.homePage"
-            type="text"
-            :placeholder="$t('component.project.form-website-placeholder')"
-          ></b-form-input>
+        <!-- Website -->
+
+        <b-form-group :label="$t('component.project.website') + ':'" label-for="website">
+          <ValidationProvider
+            :name="$t('component.project.website')"
+            rules="url"
+            v-slot="{ errors }"
+          >
+            <b-form-input
+              id="website"
+              v-model="form.homePage"
+              type="text"
+              :placeholder="$t('component.project.form-website-placeholder')"
+            ></b-form-input>
+
+            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+          </ValidationProvider>
         </b-form-group>
 
         <!--Coordinators -->

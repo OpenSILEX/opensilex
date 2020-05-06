@@ -141,7 +141,7 @@ export default class DefaultLoginComponent extends Vue {
               console.error("Invalid credentials", error);
               this.$opensilex.errorHandler(
                 error,
-                this.$i18n.t("component.login.errors.invalid-credentials")
+                this.$t("component.login.errors.invalid-credentials")
               );
             } else {
               this.$opensilex.errorHandler(error);

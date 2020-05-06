@@ -76,7 +76,7 @@ export default class DefaultMenuComponent extends Vue {
 
   getIcon(item: Menu): string {
     var code = "icon." + item.label;
-    var result = this.$i18n.t(code);
+    var result = this.$t(code);
     if(code != result) {
       return result.toString();
     }

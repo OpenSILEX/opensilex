@@ -1,5 +1,6 @@
 const TerserPlugin = require('terser-webpack-plugin');
-var webpack = require('webpack');
+const webpack = require('webpack');
+const path = require('path');
 
 module.exports = {
     publicPath: "/app/",
@@ -10,6 +11,11 @@ module.exports = {
         externals: {
             'opensilex': 'opensilex'
         },
+        resolve: {
+			alias: {
+				'vue$': path.resolve('../../node_modules/vue/dist/vue.esm.js')
+            }
+		},
         performance: {
             hints: false
         },

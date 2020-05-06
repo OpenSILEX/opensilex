@@ -78,14 +78,16 @@ export default class ExperimentForm extends Vue {
       .createExperiment(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
+        form.uri = uri;
         console.debug("experiment created", uri);
+        this.$emit("onCreate", form);
       })
       .catch(error => {
         if (error.status == 409) {
           console.error("Experiment already exists", error);
           this.$opensilex.errorHandler(
             error,
-            this.$i18n.t(
+            this.$t(
               "component.experiment.errors.experiment-already-exists"
             )
           );
@@ -102,6 +104,7 @@ export default class ExperimentForm extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("experiment updated", uri);
+        this.$emit("onUpdate", form);
       })
       .catch(this.$opensilex.errorHandler);
   }

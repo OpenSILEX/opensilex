@@ -29,7 +29,6 @@ import HttpResponse, {
 @Component
 export default class ModalForm extends Vue {
   $opensilex: any;
-  $i18n: any;
 
   @Ref("modalRef") readonly modalRef!: any;
   @Ref("validatorRef") readonly validatorRef!: any;

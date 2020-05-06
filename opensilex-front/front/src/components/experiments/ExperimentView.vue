@@ -393,7 +393,7 @@ export default class ExperimentView extends Vue {
     let period = endDate.diff(statDate);
     let duration = Math.floor(moment.duration(period).asMonths());
 
-    result += " (" + duration + " " + this.$i18n.t("component.common.months").toString() + ")";
+    result += " (" + duration + " " + this.$t("component.common.months").toString() + ")";
 
     return result;
   }

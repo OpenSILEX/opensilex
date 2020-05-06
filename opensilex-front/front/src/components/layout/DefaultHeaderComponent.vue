@@ -40,6 +40,8 @@ import { User } from "../../models/User";
 
 @Component
 export default class DefaultHeaderComponent extends Vue {
+  $i18n: any;
+  
   /**
    * Return the current connected user
    */

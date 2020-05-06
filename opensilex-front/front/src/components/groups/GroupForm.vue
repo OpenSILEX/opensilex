@@ -104,7 +104,7 @@ export default class GroupForm extends Vue {
           console.error("Group already exists", error);
           this.$opensilex.errorHandler(
             error,
-            this.$i18n.t("component.group.errors.group-already-exists")
+            this.$t("component.group.errors.group-already-exists")
           );
         } else {
           this.$opensilex.errorHandler(error);

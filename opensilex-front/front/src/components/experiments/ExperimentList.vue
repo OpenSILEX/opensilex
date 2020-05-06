@@ -40,13 +40,18 @@
 
           <template v-slot:cell(actions)="{data}">
             <b-button-group size="sm">
-              <b-button
+              <opensilex-EditButton
+                v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
                 @click="experimentForm.showEditForm(data.item)"
-                size="sm"
-                variant="outline-primary"
-              >
-                <font-awesome-icon icon="edit" size="sm" />
-              </b-button>
+                label="component.experiment.update"
+                :small="true"
+              ></opensilex-EditButton>
+              <opensilex-DeleteButton
+                v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_DELETE_ID)"
+                @click="deleteExperiment(data.item.uri)"
+                label="component.experiment.delete"
+                :small="true"
+              ></opensilex-DeleteButton>
             </b-button-group>
           </template>
         </opensilex-TableAsyncView>
@@ -106,13 +111,7 @@ export default class ExperimentList extends Vue {
     return this.$store.state.credentials;
   }
 
-  speciesList = [];
   speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
-
-  projectsList = [];
-  projectsByUri: Map<String, ProjectGetDTO> = new Map<String, ProjectGetDTO>();
-
-  campaigns: Array<Number> = new Array<Number>();
 
   @Ref("tableRef") readonly tableRef!: any;
 
@@ -154,7 +153,7 @@ export default class ExperimentList extends Vue {
     }
   ];
 
-  loadSpecies() {
+  created() {
     let service: SpeciesService = this.$opensilex.getService(
       "opensilex.SpeciesService"
     );
@@ -167,7 +166,6 @@ export default class ExperimentList extends Vue {
             http.response.result[i].uri,
             http.response.result[i]
           );
-          this.speciesList.push(http.response.result[i]);
         }
       })
       .catch(this.$opensilex.errorHandler);
@@ -217,6 +215,16 @@ export default class ExperimentList extends Vue {
       key: "actions"
     }
   ];
+
+  deleteExperiment(uri: string) {
+    this.$opensilex
+      .getService("opensilex.ExperimentsService")
+      .deleteExperiment(uri)
+      .then(() => {
+        this.refresh();
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
 }
 </script>
 

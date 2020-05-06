@@ -481,13 +481,19 @@
         "projects": "Projets",
         "users": "Utilisateurs",
         "variables": "Variables",
-        "factors": "Facteurs"
+        "factors": "Facteurs",
+        "infrastructures": "Infrastructures"
     },
     "credential": {
         "experiment": {
             "modification": "Ajout / Modification des expérimentations",
             "read": "Visualisation des expérimentations",
             "delete": "Supression des expérimentations"
+        },
+        "infrastructure": {
+            "modification": "Ajout / Modification des infrastructures",
+            "read": "Visualisation des infrastructures",
+            "delete": "Supression des infrastructures"
         },
         "group": {
             "modification": "Ajout / Modification des groupes",

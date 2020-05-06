@@ -52,7 +52,6 @@ export default class InfrastructureView extends Vue {
   $opensilex: any;
   $store: any;
   service: InfrastructuresService;
-  $i18n: any;
 
   @Ref("infrastructureTree") readonly infrastructureTree!: any;
 

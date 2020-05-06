@@ -569,13 +569,19 @@
         "projects": "Projects",
         "users": "Users",
         "variables": "Variables",
-        "factors": "Factors"
+        "factors": "Factors",
+        "infrastructures": "Infrastructures"
     },
     "credential": {
         "experiment": {
             "modification": "Create / update experiments",
             "read": "View experiments",
             "delete": "Delete experiments"
+        },
+        "infrastructure": {
+            "modification": "Create / update infrastructures",
+            "read": "View infrastructures",
+            "delete": "Delete infrastructures"
         },
         "group": {
             "modification": "Create / update groups",

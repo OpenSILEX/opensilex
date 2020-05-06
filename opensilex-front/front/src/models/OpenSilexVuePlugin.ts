@@ -585,4 +585,8 @@ export default class OpenSilexVuePlugin {
             return Promise.resolve(this.credentials);
         }
     }
+
+    public fromToken(token: string) {
+        return User.fromToken(token)
+    }
 }

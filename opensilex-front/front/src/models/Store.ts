@@ -95,6 +95,7 @@ let store = new Vuex.Store({
     },
     credentials: {
       CREDENTIAL_EXPERIMENT_MODIFICATION_ID: "experiment-modification",
+      CREDENTIAL_EXPERIMENT_DELETE_ID: "experiment-delete",
       CREDENTIAL_EXPERIMENT_READ_ID: "experiment-read",
       CREDENTIAL_GROUP_MODIFICATION_ID: "group-modification",
       CREDENTIAL_GROUP_DELETE_ID: "group-delete",

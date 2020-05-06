@@ -96,7 +96,7 @@ export default class ProfileForm extends Vue {
           console.error("Profile already exists", error);
           this.$opensilex.errorHandler(
             error,
-            this.$i18n.t("component.profile.errors.profile-already-exists")
+            this.$t("component.profile.errors.profile-already-exists")
           );
         } else {
           this.$opensilex.errorHandler(error);

@@ -86,7 +86,7 @@ export default class InfrastructureFacilityForm extends Vue {
           console.error("Infrastructure facility already exists", error);
           this.$opensilex.errorHandler(
             error,
-            this.$i18n.t(
+            this.$t(
               "component.infrastructure.errors.infrastructure-facility-already-exists"
             )
           );

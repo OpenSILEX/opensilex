@@ -87,7 +87,7 @@ export default class UserForm extends Vue {
     Object.keys(this.$i18n.messages).forEach(key => {
       langs.push({
         id: key,
-        label: this.$i18n.t("component.header.language." + key)
+        label: this.$t("component.header.language." + key)
       });
     });
     return langs;
@@ -142,7 +142,7 @@ export default class UserForm extends Vue {
           console.error("User already exists", error);
           this.$opensilex.errorHandler(
             error,
-            this.$i18n.t("component.user.errors.user-already-exists")
+            this.$t("component.user.errors.user-already-exists")
           );
         } else {
           this.$opensilex.errorHandler(error);

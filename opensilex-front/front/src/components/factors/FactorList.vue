@@ -3,12 +3,12 @@
     <b-input-group class="mt-3 mb-3" size="sm">
       <b-input-group>
         <b-form-input
-          v-model="filterByAlias"
+          v-model="filterByName"
           debounce="300"
           :placeholder="$t('component.factor.filter-placeholder')"
         ></b-form-input>
         <template v-slot:append>
-          <b-btn :disabled="!filterByAlias" variant="primary" @click="filterByAlias = ''">
+          <b-btn :disabled="!filterByName" variant="primary" @click="filterByName = ''">
             <font-awesome-icon icon="times" size="sm" />
           </b-btn>
         </template>
@@ -25,19 +25,47 @@
       :sort-desc.sync="sortDesc"
       no-provider-paging
     >
-      <template v-slot:head(alias)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(name)="data">{{$t(data.label)}}</template>
       <template v-slot:head(comment)="data">{{$t(data.label)}}</template>
       <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
       <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
+
+      <template
+        v-slot:cell(name)="data"
+      >{{(data.item.name == null ? $t('component.common.not-specified').toString() : data.item.name) }}</template>
+      <template v-slot:cell(uri)="data">
+        <a href="#" class="uri-info" @click="$emit('onDetails', data.item.uri)">
+          <font-awesome-icon icon="eye" size="sm" />
+          {{ data.item.uri}}
+        </a>
+      </template>
+
+      <!-- <span @click="$emit('onDetails', data.item.uri)"> -->
       <template v-slot:cell(actions)="data">
         <b-button-group size="sm">
-          <b-button size="sm" @click="$emit('onDetails', data.item.uri)" variant="outline-success">
-            <font-awesome-icon icon="eye" size="sm" /> 
+          <!-- <b-button size="sm" @click="$emit('onDetails', data.item.uri)" variant="outline-success">
+            
+          </b-button>-->
+          <b-button
+           v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
+           size="sm" 
+           @click="$emit('onEdit', data.item.uri)" 
+           variant="outline-primary">
+          <font-awesome-icon icon="edit" size="sm" />
           </b-button>
-          <b-button size="sm" @click="$emit('onEdit', data.item.uri)" variant="outline-primary">
-            <font-awesome-icon icon="edit" size="sm" />
+          <b-button
+            v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
+            size="sm"
+            @click="$emit('onInteroperability', data.item.uri)"
+            variant="outline-info"
+          >
+          <font-awesome-icon icon="globe-americas" size="sm" />
           </b-button>
-          <b-button size="sm" @click="$emit('onDelete', data.item.uri)" variant="danger">
+          <b-button
+          v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_DELETE_ID)"
+          size="sm" 
+          @click="$emit('onDelete', data.item.uri)" 
+          variant="danger">
             <font-awesome-icon icon="trash-alt" size="sm" />
           </b-button>
         </b-button-group>
@@ -53,7 +81,7 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import {
@@ -71,6 +99,8 @@ export default class FactorList extends Vue {
   $router: VueRouter;
   service: FactorsService;
 
+  @Ref("tableRef") readonly tableRef!: any;
+
   get user() {
     return this.$store.state.user;
   }
@@ -79,33 +109,41 @@ export default class FactorList extends Vue {
     return this.$store.state.credentials;
   }
 
+  mounted() {
+    this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        this.refresh();
+      }
+    );
+  }
   currentPage: number = 1;
   pageSize = 20;
   totalRow = 0;
-  sortBy = "alias";
+  sortBy = "name";
   sortDesc = false;
 
   private searchFrom: FactorSearchDTO = {
     uri: "",
-    alias: "",
+    name: "",
     comment: ""
     // lang: "en-US"
   };
 
-  set filterByAlias(value: string) {
-    this.searchFrom.alias = value;
+  set filterByName(value: string) {
+    this.searchFrom.name = value;
     this.refresh();
   }
 
-  get filterByAlias() {
-    return this.searchFrom.alias;
+  get filterByName() {
+    return this.searchFrom.name;
   }
 
   created() {
     this.service = this.$opensilex.getService("opensilex.FactorsService");
     let query: any = this.$route.query;
-    if (query.filterByAlias) {
-      this.searchFrom.alias = decodeURI(query.filterByAlias);
+    if (query.filterByName) {
+      this.searchFrom.name = decodeURI(query.filterByName);
     }
     if (query.pageSize) {
       this.pageSize = parseInt(query.pageSize);
@@ -123,8 +161,13 @@ export default class FactorList extends Vue {
 
   fields = [
     {
-      key: "alias",
-      label: "component.factor.alias",
+      key: "uri",
+      label: "component.factor.uri",
+      sortable: true
+    },
+    {
+      key: "name",
+      label: "component.factor.name",
       sortable: true
     },
     {
@@ -139,8 +182,9 @@ export default class FactorList extends Vue {
   ];
 
   refresh() {
-    let tableRef: any = this.$refs.tableRef;
-    tableRef.refresh();
+    if (this.tableRef != null || this.tableRef != undefined) {
+      this.tableRef.refresh();
+    }
   }
 
   loadData() {
@@ -171,7 +215,7 @@ export default class FactorList extends Vue {
           .push({
             path: this.$route.fullPath,
             query: {
-              filterByAlias: encodeURI(this.searchFrom.alias),
+              filterByName: encodeURI(this.searchFrom.name),
               currentPage: "" + this.currentPage,
               pageSize: "" + this.pageSize
             }
@@ -185,6 +229,9 @@ export default class FactorList extends Vue {
 </script>
 
 <style scoped lang="scss">
+a {
+  color: #007bff;
+}
 .uri-info {
   text-overflow: ellipsis;
   overflow: hidden;

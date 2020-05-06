@@ -20,12 +20,10 @@ public class FactorLevelGetDTO {
     
     private URI uri;
 
-    private String alias;
+    private String name;
 
     private String comment;
     
-    private URI hasFactor;
-
     public URI getUri() {
         return uri;
     }
@@ -34,12 +32,12 @@ public class FactorLevelGetDTO {
         this.uri = uri;
     }
 
-    public String getAlias() {
-        return alias;
+    public String getName() {
+        return name;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setName(String name) {
+        this.name = name;
     }
    
     public String getComment() {
@@ -49,22 +47,13 @@ public class FactorLevelGetDTO {
     public void setComment(String comment) {
         this.comment = comment;
     }
-
-    public URI getHasFactor() {
-        return hasFactor;
-    }
-
-    public void setHasFactor(URI hasFactor) {
-        this.hasFactor = hasFactor;
-    }
     
     public static FactorLevelGetDTO fromModel(FactorLevelModel model) {
         FactorLevelGetDTO dto = new FactorLevelGetDTO();
 
         dto.setUri(model.getUri());
-        dto.setAlias(model.getAlias());
+        dto.setName(model.getName());
         dto.setComment(model.getComment());
-        dto.setHasFactor(model.getHasFactor());
 
         return dto;
     }

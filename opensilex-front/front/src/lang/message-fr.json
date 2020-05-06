@@ -67,6 +67,7 @@
             "colon": " :",
             "uri-copy": "URI copiée dans le presse-papier",
             "search-prompt-text": "Ecrire pour rechercher...",
+            "not-specified" :"Non renseigné(e)",
             "errors": {
                 "error-title": "Erreur",
                 "constraint-error": "Une erreur de validation s'est produite, merci de vérifier les données saisies.",
@@ -83,7 +84,27 @@
                 "done": "Terminer",
                 "cancel": "Annuler"
             },
-            "delete-confirmation": "Cette action est définitive, merci de confirmer la supression."
+            "delete-confirmation": "Cette action est définitive, merci de confirmer la supression.",
+            "success": {
+                "success-title": "Succès",
+                "creation-success-message": "a été crée",
+                "update-success-message": "a été modifié(e)",
+                "delete-success-message": "a été supprimé(e)"
+            },
+            "tabs" :{
+                "document" : "Documents associés",
+                "experiment" : "Expérimentations associées",
+                "factorLevels" : "Niveaux de facteurs associés"
+            },
+            "import-files":{
+                "csv-file" :" Importer un fichier CSV",
+                "csv-template" : "Télécharger un gabarit"
+            },
+            "tabulator":{
+                "reset-table" : "Vider la table",
+                "add-one" : "Ajouter un par un",
+                "add-multiple" : "Ajouter plusieurs en une fois"
+            }
         },
         "copyToClipboard": {
             "copyUri": "Copier l'URI dans le presse papier",
@@ -365,36 +386,49 @@
             }
         },
         "factor": {
+            "description": "Gestion de vos facteurs expérimentaux",
+            "label": "Facteur",
             "uri": "URI du facteur",
             "uri-help": "Identifiant unique du facteur",
-            "alias-placeholder": "Renseignez un alias de facteur",
+            "names-placeholder": "Renseignez un alias de facteur",
             "filter-placeholder": "Utiliser ce filter pour filter les facteurs",
             "factors": "facteur",
-            "add": "Créer un facteur",
-            "update": "Modifier un facteur",
-            "alias": "alias",
-            "alias-help": "alias",
-            "form-alias-placeholder": "Irrigation, Ombrage, Variété, etc.",
-            "comment": "Description associée à ce facteur (protocole, apport de composé)",
-            "comment-help": "alias",
-            "details": "Détails du facteur",
-            "form-comment-placeholder": "Protocole n°1289 - Apport d'eau de 5 ml/jour.",
+            "add": "Créer facteur",
+            "add-button": "Créer facteur",
+            "update": "Mettre à jour un facteur",
+            "name" : "Nom",
+            "names": {
+                "en" : "Nom anglais",
+                "local-name" : "Nom local",
+                "en-placeholder": "Irrigation, Shading, Variety, etc.",
+                "local-name-placeholder": "Irrigation, Ombrage, Variété, etc."
+            },  
+            "names-help": "Noms décrivant ce facteur",         
+            "comment": "description",
+            "comment-help": "Description associée à ce facteur (protocole, apport de composé)",
+            "details" : "Détails du facteur",
+            "form-comment-placeholder" : "Protocole n°1289 - Apport d'eau de 5 ml/jour.",
             "errors": {
                 "user-already-exists": "URI du facteur déjà existante."
             },
-            "form-wizard": {
-                "general-informations": "Factor "
+            "form-wizard" :{
+                "general-informations" : "Facteur "
+            },
+            "tabs" :{
+                "details" : "Informations du facteur"
             }
         },
         "factorLevel": {
             "uri": "URI du niveau de facteur",
-            "alias-placeholder": "Renseignez l'alias d'un niveau de facteur",
-            "factor-selector-placeholder": "Sélectionnez un alias de facteur",
+            "name-placeholder": "Renseignez le nom d'un niveau de facteur",
+            "factor-selector-placeholder": "Sélectionnez un nom de facteur",
             "filter-placeholder": "Utilisez ce change pour filter vos niveau de facteur",
             "factorLevel": "niveau de facteur",
             "add": "Créer un niveau de facteur",
+            "associated" :"Niveaux de facteurs associés", 
+            "unique-name" : "Le nom est requis et doit être unique",
             "update": "Modifier un niveau de facteur",
-            "alias": "alias",
+            "name": "nom",
             "factor": "facteur",
             "comment": "description",
             "hasFactor": "est lié au facteur",
@@ -402,23 +436,27 @@
                 "user-already-exists": "URI du niveau de facteur déjà existante."
             }
         },
-        "skos": {
-            "uri": "URI de référence",
-            "uri-help": "Identifiant du concept référencé",
-            "uri-placeholder": "http://aims.fao.org/aos/agrovoc/c_8332",
-            "relation": "Relation",
-            "relation-help": "Relation entre l'individu décrit localement et le concept lié à cet identifiant",
-            "relation-placeholder": "exactMatch",
-            "update": "Modifier les relations",
-            "add": "Créer une nouvelle relation",
-            "exactMatch": "Equivalent",
-            "closeMatch": "Similaire",
-            "broader": "Plus général",
-            "narrower": "Plus spécifique",
-            "no-relation": "Sélectionner une relation",
-            "ontologies-references-label": "Réferences ontologiques",
-            "link-external": "Ajouter des références externes à",
-            "link-external-button": "Ajouter des références externes"
+        "skos" :{
+            "uri" : "URI de référence",
+            "uri-help" : "Identifiant du concept référencé",
+            "uri-placeholder" : "http://aims.fao.org/aos/agrovoc/c_8332",
+            "relation" : "Relations",
+            "relation-help" : "Relation entre l'individu décrit et le concept intéropérable lié à cet identifiant",
+            "relation-placeholder" : "Equivalent",
+            "update" : "Insérer les relations",
+            "exactMatch" : "Equivalent",
+            "closeMatch" : "Similaire",
+            "broader" : "Plus général",
+            "narrower" : "Plus spécifique",
+            "no-relation" : "Sélectionner une relation",
+            "no-current-relation" : "Aucune relation sélectionnée",
+            "current-relation" : "Relation actuellement sélectionnée",
+            "ontologies-references-label" :"Réferences interropérables",
+            "link-external" :"Ajouter des références à",
+            "link-external-button" :"Ajouter des références (optionnel)",
+            "no-external-links-provided" :"Aucune référence disponible",
+            "external-already-existing" : "Référence déja associée"
+
         },
         "germplasm": {
             "uri": "URI du germplasm",

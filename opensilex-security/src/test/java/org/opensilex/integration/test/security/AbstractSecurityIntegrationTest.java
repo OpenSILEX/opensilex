@@ -20,7 +20,9 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import javax.ws.rs.core.HttpHeaders;
 import org.junit.BeforeClass;
+import org.opensilex.OpenSilex;
 import org.opensilex.integration.test.AbstractIntegrationTest;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.authentication.ApiProtected;
@@ -151,6 +153,22 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         return appendToken(target).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
 
+    /**
+     *
+     * Get {@link Response} from an {@link ApiProtected} POST service call.
+     *
+     * @param target the {@link WebTarget} on which POST the given entity
+     * @param entity the data to POST on the given target
+     * @param lang the translation language of the requested data
+     * @return target invocation response.
+      */
+    protected Response getJsonPostResponse(WebTarget target, Object entity, String lang) throws Exception {
+        if(lang == null){
+            return appendToken(target).header(HttpHeaders.ACCEPT_LANGUAGE, OpenSilex.DEFAULT_LANGUAGE).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
+        }
+        return appendToken(target).header(HttpHeaders.ACCEPT_LANGUAGE, lang).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
+    }
+    
     /**
      *
      * Get {@link Response} from an {@link ApiProtected} PUT service call.

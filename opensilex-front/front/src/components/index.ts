@@ -81,12 +81,8 @@ import FactorForm from './factors/FactorForm.vue';
 components["opensilex-FactorForm"] = FactorForm;
 import FactorDetails from './factors/FactorDetails.vue';
 components["opensilex-FactorDetails"] = FactorDetails;
-import FactorLevelView from './factors/FactorLevelView.vue';
-components["opensilex-FactorLevelView"] = FactorLevelView;
-import FactorLevelList from './factors/FactorLevelList.vue';
-components["opensilex-FactorLevelList"] = FactorLevelList;
-import FactorLevelForm from './factors/FactorLevelForm.vue';
-components["opensilex-FactorLevelForm"] = FactorLevelForm;
+import FactorLevelTable from './factors/FactorLevelTable.vue';
+components["opensilex-FactorLevelTable"] = FactorLevelTable;
 
 // Common
 import FormInputLabelHelper from './common/forms/FormInputLabelHelper.vue'
@@ -101,6 +97,10 @@ import SelectForm from './common/forms/SelectForm.vue'
 components["opensilex-SelectForm"] = SelectForm;
 import CheckboxForm from './common/forms/CheckboxForm.vue'
 components["opensilex-CheckboxForm"] = CheckboxForm;
+import LocalNameInputForm from './common/forms/LocalNameInputForm.vue'
+components["opensilex-LocalNameInputForm"] = LocalNameInputForm;
+import CSVInputFile from './common/forms/CSVInputFile.vue'
+components["opensilex-CSVInputFile"] = CSVInputFile;
 
 import WizardForm from './common/forms/WizardForm.vue'
 components["opensilex-WizardForm"] = WizardForm;

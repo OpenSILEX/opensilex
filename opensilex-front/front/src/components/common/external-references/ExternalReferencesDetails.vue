@@ -1,11 +1,17 @@
 <template>
   <div>
     <div>
-      <b-table striped hover :items="relations" :fields="fields">
+      <b-table v-if="relations.length != 0" striped bordered :items="relations" :fields="fields">
         <template v-slot:head(relation)="data">{{$t(data.label)}}</template>
-        <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
-        <template v-slot:cell(uri)="data">{{$t(data.value)}}</template>
+        <template v-slot:cell(relation)="data">{{$t(data.value)}}</template>
+        <template v-slot:head(relationURI)="data">{{$t(data.label)}}</template>
+        <template v-slot:cell(relationURI)="data">
+          <a :href="data.value" target="_blank">{{$t(data.value)}}</a>
+        </template>
       </b-table>
+      <p v-else>
+        <strong> {{$t('component.skos.no-external-links-provided')}}</strong> 
+      </p>
     </div>
   </div>
 </template>
@@ -14,16 +20,20 @@
 import { Component, Prop } from "vue-property-decorator";
 import Multiselect from "vue-multiselect";
 import Vue from "vue";
+import { Skos } from "../../../models/Skos";
 
 @Component
 export default class ExternalReferencesDetails extends Vue {
   $opensilex: any;
   $store: any;
 
+
   @Prop()
   skosReferences: any;
 
   relationsInternal: any[] = [];
+
+  skosRelationsMap: Map<string,string> = Skos.getSkosRelationsMap();
 
   fields = [
     {
@@ -37,14 +47,15 @@ export default class ExternalReferencesDetails extends Vue {
       sortable: false
     }
   ];
-
+ 
   get relations() {
-    this.relationsInternal = [];
-    this.updateRelations("narrower", this.skosReferences.narrower);
-    this.updateRelations("broader", this.skosReferences.broader);
-    this.updateRelations("closeMatch", this.skosReferences.closeMatch);
-    this.updateRelations("exactMatch", this.skosReferences.exactMatch);
-    console.debug(this.relationsInternal);
+    this.relationsInternal = [];  
+    console.debug("Log skos relations",this.skosRelationsMap);
+    console.debug("Log skos objects",this.skosReferences);
+
+    for (let [key, value] of this.skosRelationsMap) {
+      this.updateRelations(key, this.skosReferences[key]);
+    }
     return this.relationsInternal;
   }
 
@@ -55,14 +66,17 @@ export default class ExternalReferencesDetails extends Vue {
     }
   }
 
-  addRelation(currentRelation: string, currentExternalUri: string) {
+  addRelation(relation: string, externalUri: string) {
     this.$set(this.relationsInternal, this.relationsInternal.length, {
-      relation: currentRelation,
-      relationURI: currentExternalUri
+      relation: this.skosRelationsMap.get(relation),
+      relationURI: externalUri
     });
   }
 }
 </script>
 
 <style scoped lang="scss">
+a {
+  color : #007bff
+}
 </style>

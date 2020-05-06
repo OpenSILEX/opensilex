@@ -35,11 +35,27 @@ public class FactorLevelDAO {
         sparql.create(instance);
         return instance;
     }
+    
+    public List<FactorLevelModel> create(List<FactorLevelModel> instances) throws Exception {
+        // TODO Fix multiple instance creation in the same transaction
+        for (FactorLevelModel instance : instances) {
+            sparql.create(instance);
+        }
+        return instances;
+    }
 
     public FactorLevelModel update(FactorLevelModel instance) throws Exception {
         sparql.update(instance);
         return instance;
     }
+    
+    public void deleteCollection(List<URI> instanceURIs) throws Exception {
+        for (URI instanceURI : instanceURIs) {
+            sparql.delete(FactorLevelModel.class, instanceURI);
+        }
+    }
+
+    
 
     public void delete(URI instanceURI) throws Exception {
         sparql.delete(FactorLevelModel.class, instanceURI);
@@ -62,6 +78,19 @@ public class FactorLevelDAO {
                 pageSize
         );
     }
+    
+    
+    public List<FactorLevelModel> search(URI hasFactor) throws Exception {
+        return sparql.search(
+                FactorLevelModel.class,
+                null,
+                (SelectBuilder select) -> {
+                    // TODO implements filters
+                    appendFilters(null,hasFactor, select);
+                }
+        );
+    }
+
 
     /**
      * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty simple attribute ( not a {@link List} from the {@link ExperimentSearchDTO}
@@ -79,13 +108,13 @@ public class FactorLevelDAO {
        
         // build regex filters
         if (alias != null) {
-            exprList.add(SPARQLQueryHelper.regexFilter(FactorLevelModel.ALIAS_FIELD, alias));
+            exprList.add(SPARQLQueryHelper.regexFilter(FactorLevelModel.NAME_FIELD, alias));
         }
 
         // build equality filters
-        if (hasFactor!= null) {
-            exprList.add(SPARQLQueryHelper.eq(FactorLevelModel.HAS_FACTOR_FIELD, hasFactor));
-        }
+//        if (hasFactor!= null) {
+//            exprList.add(SPARQLQueryHelper.eq(FactorLevelModel.HAS_FACTOR_FIELD, hasFactor));
+//        }
 
         for (Expr filterExpr : exprList) {
             select.addFilter(filterExpr);

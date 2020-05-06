@@ -180,3 +180,12 @@ input:invalid {
 .btn-sm {
   width: 32px;
 }
+
+.uppercase-letters {
+  text-transform: uppercase;
+}
+
+
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable.required .tabulator-col-title{
+  color: #D00; 
+}

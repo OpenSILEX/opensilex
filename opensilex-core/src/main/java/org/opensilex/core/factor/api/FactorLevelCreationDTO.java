@@ -10,6 +10,7 @@
 package org.opensilex.core.factor.api;
 
 import java.net.URI;
+import javax.validation.Valid;
 import org.opensilex.core.factor.dal.FactorLevelModel;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -20,10 +21,12 @@ import org.opensilex.server.rest.validation.ValidURI;
  */
 public class FactorLevelCreationDTO {
     
+    @Valid
+    @ValidURI
     private URI uri;
 
     @Required
-    private String alias;
+    private String name;
 
     @ValidURI
     private URI hasFactor;
@@ -38,12 +41,12 @@ public class FactorLevelCreationDTO {
         this.uri = uri;
     }
 
-    public String getAlias() {
-        return alias;
+    public String getName() {
+        return name;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getComment() {
@@ -65,7 +68,7 @@ public class FactorLevelCreationDTO {
     public FactorLevelModel newModel() {
         FactorLevelModel model = new FactorLevelModel();
         model.setUri(getUri());
-        model.setAlias(getAlias());
+        model.setName(getName());
         model.setComment(getComment());
         model.setHasFactor(getHasFactor());
         return model;

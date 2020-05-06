@@ -25,7 +25,7 @@ import javax.validation.Payload;
  */
 @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})
 @Retention(RUNTIME)
-@Constraint(validatedBy = {ValidURIValidator.class})
+@Constraint(validatedBy = {ValidURIValidator.class,ValidURIListValidator.class})
 @Documented
 public @interface ValidURI {
 
@@ -49,4 +49,20 @@ public @interface ValidURI {
      * @return Validation payload
      */
     Class<? extends Payload>[] payload() default {};
+    
+     /**
+     * Apply this interface on list of elements.
+     */
+    @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})
+    @Retention(RUNTIME)
+    @Documented
+    public @interface List {
+
+        /**
+         * Return list or URIs.
+         *
+         * @return list or URIs
+         */
+        public ValidURI[] value();
+    }
 }

@@ -9,16 +9,19 @@
  */
 package org.opensilex.core.factor.dal;
 
-import java.text.Normalizer;
+import java.net.URI;
+import java.util.LinkedList;
+import java.util.List;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SKOSReferencesModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
 /**
- * 
+ *
  * @author Arnaud Charleroy
  */
 @SPARQLResource(
@@ -31,27 +34,32 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
 
     @SPARQLProperty(
             ontology = RDFS.class,
-            property = "label",
-            required = true
+            property = "label"
     )
-    String alias;
-    public static final String ALIAS_FIELD = "alias";
+    SPARQLLabel name;
+    public static final String NAME_FIELD = "name";
 
- 
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "comment"
     )
     String comment;
 
-    public String getAlias() {
-        return alias;
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasFactorLevel",
+            cascadeDelete = true
+    )
+    List<FactorLevelModel> factorLevels = new LinkedList<>();
+    public static final String FACTORLEVELS_SPARQL_VAR = "factorLevels";
+
+    public SPARQLLabel getName() {
+        return name;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setName(SPARQLLabel name) {
+        this.name = name;
     }
-
 
     public String getComment() {
         return comment;
@@ -60,14 +68,19 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
     public void setComment(String comment) {
         this.comment = comment;
     }
-    
+
+    public List<FactorLevelModel> getFactorLevels() {
+        return factorLevels;
+    }
+
+    public void setFactorLevels(List<FactorLevelModel> factorLevels) {
+        this.factorLevels = factorLevels;
+    }
+
     @Override
     public String[] getUriSegments(FactorModel instance) {
         return new String[]{
-           Normalizer
-                   .normalize(instance.getAlias(), Normalizer.Form.NFD)
-                   .replaceAll("[^\\p{ASCII}]", "")
-                   .replaceAll("\\s+","")
+            instance.getName().getDefaultValue()
         };
     }
 }

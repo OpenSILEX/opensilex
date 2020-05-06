@@ -211,3 +211,61 @@ autocomplete | string | HTML input field ["autocomplete" property value](https:/
 ### Checkbox form field
 ### URI form field
 ### Type form field
+
+
+### Input local name field
+
+Identifier: **opensilex-LocalNameInputForm**
+
+Description: 
+
+Component used to display a form local name input field.
+
+Properties:
+
+ID | Type | Default value | Description
+--- | --- | --- | ---
+value | string | *-* | Input field value (generally used whith "sync" flag)
+type | string | *text* | HTML input type
+label | string | *-* | Translation key of the input form label
+helpMessage | string | *-* | Optional translation key for tooltip help message
+placeholder | string | *-* | Optional translation key for input placeholder
+disabled | boolean | *false* | Flag to determine if form field is disabled or not
+required | boolean | *false* | Flag to determine if form field is required
+rules | string or function | *-* | [vee-validate rules](https://logaretm.github.io/vee-validate/guide/rules.html#rules) or function returning validation rules
+autocomplete | string | HTML input field ["autocomplete" property value](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete)
+
+
+### CSV file input
+
+Identifier: **opensilex-CSVInputFile**
+
+Description: 
+
+Component used to load csv data.
+Properties:
+
+ID | Type | Default value | Description
+--- | --- | --- | ---
+headersToCheck | Array[String] | [] | Headers to check
+
+Events:
+ID | Type | Default value | Description
+--- | --- | --- | ---
+updated | Array[Any] | *-* | Emit only if is the data has been loaded
+
+Usage:
+
+* In template :
+  
+```html
+<opensilex-CSVInputFile :headersToCheck="['name','comment']" v-on:updated="uploaded"></opensilex-CSVInputFile>
+```
+
+* Component callback function :
+  
+```javascript
+ uploaded(data) {
+    // use loaded data
+ }
+```

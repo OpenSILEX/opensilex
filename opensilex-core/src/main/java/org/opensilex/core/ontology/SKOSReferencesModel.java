@@ -74,12 +74,5 @@ public abstract class SKOSReferencesModel extends SPARQLResourceModel {
         this.narrower = narrower;
     }
     
-        
-    public void setSkosReferencesNewModel(SKOSReferencesDTO dto) {
-        this.setNarrower(dto.getNarrower());
-        this.setBroader(dto.getBroader());
-        this.setCloseMatch(dto.getCloseMatch());
-        this.setExactMatch(dto.getExactMatch()); 
-    }
 }
 

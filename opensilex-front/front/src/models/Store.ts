@@ -114,6 +114,9 @@ let store = new Vuex.Store({
       CREDENTIAL_VARIABLE_MODIFICATION_ID: "variable-modification",
       CREDENTIAL_VARIABLE_DELETE_ID: "variable-delete",
       CREDENTIAL_VARIABLE_READ_ID: "variable-read",
+      CREDENTIAL_FACTOR_READ_ID : "factors-read",
+      CREDENTIAL_FACTOR_MODIFICATION_ID :"factors-modification",
+      CREDENTIAL_FACTOR_DELETE_ID : "factors-delete"
     }
   },
   getters: {

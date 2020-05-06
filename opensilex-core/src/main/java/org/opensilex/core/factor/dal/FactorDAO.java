@@ -52,13 +52,12 @@ public class FactorDAO {
         return sparql.getByURI(FactorModel.class, instanceURI, null);
     }
             
-    public ListWithPagination<FactorModel> search(String alias, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
-        return sparql.searchWithPagination(
-                FactorModel.class,
-                null,
+    public ListWithPagination<FactorModel> search(String name, List<OrderBy> orderByList, Integer page, Integer pageSize, String lang) throws Exception {
+        return sparql.searchWithPagination(FactorModel.class,
+                lang,
                 (SelectBuilder select) -> {
                     // TODO implements filters
-                    appendFilters(alias, select);
+                    appendFilters(name, select);
                 },
                 orderByList,
                 page,
@@ -66,25 +65,25 @@ public class FactorDAO {
         );
     }
 
-    public List<FactorModel> getAll() throws Exception {
-       return  sparql.search(FactorModel.class, null); 
+    public List<FactorModel> getAll(String lang) throws Exception {
+       return  sparql.search(FactorModel.class, lang); 
     }
 
     /**
      * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty simple attribute ( not a {@link List} from the {@link FactorSearchDTO}
      *
-     * @param alias alias search attribute
+     * @param name name search attribute
      * @param select search query
      * @throws java.lang.Exception can throw an exception
      * @see SPARQLQueryHelper the utility class used to build Expr
      */
-    protected void appendFilters(String alias, SelectBuilder select) throws Exception {
+    protected void appendFilters(String name, SelectBuilder select) throws Exception {
 
         List<Expr> exprList = new ArrayList<>();
 
         // build regex filters
-        if (alias != null) {
-            exprList.add(SPARQLQueryHelper.regexFilter(FactorModel.ALIAS_FIELD, alias));
+        if (name != null) {
+            exprList.add(SPARQLQueryHelper.regexFilter(FactorModel.NAME_FIELD, name));
         }
 
         for (Expr filterExpr : exprList) {

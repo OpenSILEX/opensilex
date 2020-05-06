@@ -41,7 +41,7 @@ public class SPARQLLabel {
     public String getDefaultLang() {
         return defaultLang;
     }
-
+    
     public void setDefaultLang(String defaultLang) {
         this.defaultLang = defaultLang;
     }

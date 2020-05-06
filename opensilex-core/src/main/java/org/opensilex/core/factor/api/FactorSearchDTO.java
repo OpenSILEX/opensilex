@@ -19,7 +19,7 @@ public class FactorSearchDTO {
     
     private URI uri;
 
-    private String alias;
+    private String name;
 
     private String comment;
 
@@ -31,15 +31,15 @@ public class FactorSearchDTO {
         this.uri = uri;
     }
 
-    public String getAlias() {
-        if(alias != null && alias.trim().isEmpty()){
+    public String getName() {
+        if(name != null && name.trim().isEmpty()){
             return null;
         } 
-        return alias;
+        return name;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setName(String name) {
+        this.name = name;
     }
    
     public String getComment() {

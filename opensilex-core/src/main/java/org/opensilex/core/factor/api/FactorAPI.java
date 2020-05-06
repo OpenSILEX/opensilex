@@ -34,10 +34,14 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.factor.dal.FactorDAO;
+import org.opensilex.core.factor.dal.FactorLevelDAO;
+import org.opensilex.core.factor.dal.FactorLevelModel;
 import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -48,6 +52,8 @@ import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -75,8 +81,15 @@ public class FactorAPI {
     public static final String CREDENTIAL_FACTOR_DELETE_ID = "factors-delete";
     public static final String CREDENTIAL_FACTOR_DELETE_LABEL_KEY = "credential.factors.delete";
 
+    public static final String DEFAULT_TRANSLATION_LANGUAGE = "en";
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(FactorAPI.class);
+
     @Inject
     private SPARQLService sparql;
+
+    @CurrentUser
+    UserModel user;
 
     /**
      * Create a factor model from a FactorCreationDTO object
@@ -86,6 +99,7 @@ public class FactorAPI {
      * @throws Exception if creation failed
      */
     @POST
+    @Path("create")
     @ApiOperation("Create an factor")
     @ApiProtected
     @ApiCredential(
@@ -101,6 +115,14 @@ public class FactorAPI {
         try {
             FactorModel model = dto.newModel();
             dao.create(model);
+            List<FactorLevelModel> factorLevelsModels = new ArrayList<>();
+            dto.getFactorLevels().forEach(factorCreationDTO -> {
+                FactorLevelModel newModel = factorCreationDTO.newModel();
+                newModel.setHasFactor(model.getUri());
+                factorLevelsModels.add(newModel);
+            });
+            model.setFactorLevels(factorLevelsModels);
+            dao.update(model);
             return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
             return new ErrorResponse(
@@ -110,7 +132,7 @@ public class FactorAPI {
             ).getResponse();
         }
     }
-
+    
     /**
      * Retreive factor by uri
      *
@@ -119,7 +141,7 @@ public class FactorAPI {
      * @throws Exception in case of server error
      */
     @GET
-    @Path("{uri}")
+    @Path("get/{uri}")
     @ApiOperation("Get an factor")
     @ApiProtected
     @ApiCredential(
@@ -133,7 +155,7 @@ public class FactorAPI {
         @ApiResponse(code = 404, message = "No factor found", response = ErrorResponse.class)
     })
     public Response getFactor(
-            @ApiParam(value = "Factor URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Factor URI", example = "platform-factor:irrigation", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         FactorDAO dao = new FactorDAO(sparql);
         FactorModel model = dao.get(uri);
@@ -141,6 +163,47 @@ public class FactorAPI {
         if (model != null) {
             return new SingleObjectResponse<>(
                     FactorDetailsGetDTO.fromModel(model)
+            ).getResponse();
+        } else {
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Factor not found",
+                    "Unknown factor URI: " + uri.toString()
+            ).getResponse();
+        }
+    }
+
+   /**
+     * Retreive factor  levels by uri
+     *
+     * @param uri factor uri levels
+     * @return Return factor levels
+     * @throws Exception in case of server error
+     */
+    @GET
+    @Path("get/{uri}/levels")
+    @ApiOperation("Get an factor")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_FACTOR_READ_ID,
+            credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Factor levels retrieved", response = FactorLevelGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 404, message = "No factor found", response = ErrorResponse.class)
+    })
+    public Response getFactorLevels(
+            @ApiParam(value = "Factor URI", example = "platform-factor:irrigation", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+        FactorDAO dao = new FactorDAO(sparql);
+        FactorModel model = dao.get(uri);
+      
+        if (model != null) {
+            FactorDetailsGetDTO dtoFromModel = FactorDetailsGetDTO.fromModel(model);
+            return new SingleObjectResponse<>(
+                    dtoFromModel.getFactorLevels()
             ).getResponse();
         } else {
             return new ErrorResponse(
@@ -179,7 +242,7 @@ public class FactorAPI {
     })
     public Response searchFactors(
             @ApiParam("Factor search form") FactorSearchDTO factorSearchDTO,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "alias=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
@@ -187,20 +250,27 @@ public class FactorAPI {
         // Search factors with Factor DAO
         FactorDAO dao = new FactorDAO(sparql);
         ListWithPagination<FactorModel> resultList = dao.search(
-                factorSearchDTO.getAlias(),
+                factorSearchDTO.getName(),
                 orderByList,
                 page,
-                pageSize
+                pageSize,
+                user.getLanguage()
         );
 
-        // Convert paginated list to DTO
-        ListWithPagination<FactorDetailsGetDTO> resultDTOList = resultList.convert(
-                FactorDetailsGetDTO.class,
-                FactorDetailsGetDTO::fromModel
+        List<FactorGetDTO> resultDTOList = new ArrayList<>();
+
+        for (FactorModel factorModel : resultList.getList()) {
+            resultDTOList.add(FactorGetDTO.fromModel(factorModel));
+        }
+
+        ListWithPagination<FactorGetDTO> paginatedListResponse = new ListWithPagination<FactorGetDTO>(
+                resultDTOList, resultList.getPage(),
+                resultList.getPageSize(),
+                resultList.getTotal()
         );
 
         // Return paginated list of factor DTO
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        return new PaginatedListResponse<>(paginatedListResponse).getResponse();
     }
 
     /**
@@ -221,17 +291,18 @@ public class FactorAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return factor list", response = FactorGetDTO.class, responseContainer = "List"),})
+        @ApiResponse(code = 200, message = "Return factor list", response = FactorGetDTO.class, responseContainer = "List")
+    })
     public Response getAllFactors() throws Exception {
 
         // Search factors with Factor DAO
         FactorDAO dao = new FactorDAO(sparql);
-        List<FactorModel> factorModelsList = dao.getAll();
+        List<FactorModel> factorModelsList = dao.getAll(user.getLanguage());
         List<FactorGetDTO> getFactorDTOList = new ArrayList<>();
         for (FactorModel factorModel : factorModelsList) {
             FactorGetDTO factorGetDTO = new FactorGetDTO();
             factorGetDTO.setUri(factorModel.getUri());
-            factorGetDTO.setAlias(factorModel.getAlias());
+            factorGetDTO.setName(factorModel.getName().getDefaultLang());
             factorGetDTO.setComment(factorModel.getComment());
             getFactorDTOList.add(factorGetDTO);
         }
@@ -248,7 +319,7 @@ public class FactorAPI {
      * the deleted Factor {@link URI}
      */
     @DELETE
-    @Path("{uri}")
+    @Path("delete/{uri}")
     @ApiOperation("Delete an factor")
     @ApiProtected
     @ApiCredential(
@@ -277,7 +348,7 @@ public class FactorAPI {
     }
 
     /**
-     * @param factorDTO the Factor to update
+     * @param dto the Factor to update
      * @return a {@link Response} with a {@link ObjectUriResponse} containing
      * the updated Factor {@link URI}
      */
@@ -296,13 +367,34 @@ public class FactorAPI {
         @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response updateFactor(
-            @ApiParam("Factor description") @Valid FactorCreationDTO factorDTO
+            @ApiParam("Factor description") @Valid FactorUpdateDTO dto
     ) {
         try {
-            FactorDAO dao = new FactorDAO(sparql);
+            FactorDAO factorDao = new FactorDAO(sparql);
+            FactorLevelDAO factorLevelDao = new FactorLevelDAO(sparql);
+            FactorModel model = dto.newModel();
+            List<FactorLevelModel> existingFactors = factorLevelDao.search(model.getUri());
+            existingFactors.forEach(factorLevelModel -> {
+                System.out.println("org.opensilex.core.factor.api.FactorAPI.updateFactor()");
+                System.out.println(factorLevelModel.getUri().toString());
+                try {
+                    factorLevelDao.delete(factorLevelModel.getUri());
+                } catch (Exception ex) {
+                    System.out.println("org.opensilex.core.factor.api.FactorAPI.updateFactor() ERROR" + ex.getMessage());
+                 }
+            });
 
-            FactorModel model = factorDTO.newModel();
-            dao.update(model);
+            List<FactorLevelModel> factorLevelsModels = new ArrayList<>();
+            dto.getFactorLevels().forEach(factorCreationDTO -> {
+                FactorLevelModel newModel = factorCreationDTO.newModel();
+                newModel.setHasFactor(model.getUri());
+                factorLevelsModels.add(newModel);
+
+            });
+            factorLevelDao.create(factorLevelsModels);
+            model.setFactorLevels(factorLevelsModels); 
+            factorDao.update(model);
+            
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
 
         } catch (SPARQLInvalidURIException e) {

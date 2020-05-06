@@ -18,7 +18,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
 /**
- * 
+ *
  * @author Arnaud Charleroy
  */
 @SPARQLResource(
@@ -34,31 +34,24 @@ public class FactorLevelModel extends SPARQLResourceModel implements ClassURIGen
             property = "label",
             required = true
     )
-    String alias;
-    public static final String ALIAS_FIELD = "alias";
+    String name;
+    public static final String NAME_FIELD = "name";
 
- 
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "comment"
     )
     String comment;
 
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasFactor"
-    )
     URI hasFactor;
-    public static final String HAS_FACTOR_FIELD = "hasFactor";
 
-    public String getAlias() {
-        return alias;
+    public String getName() {
+        return name;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setName(String alias) {
+        this.name = alias;
     }
-
 
     public String getComment() {
         return comment;
@@ -75,11 +68,12 @@ public class FactorLevelModel extends SPARQLResourceModel implements ClassURIGen
     public void setHasFactor(URI hasFactor) {
         this.hasFactor = hasFactor;
     }
-    
+
     @Override
     public String[] getUriSegments(FactorLevelModel instance) {
         return new String[]{
-            instance.getAlias()
+            instance.getHasFactor().toString(),
+            instance.getName()
         };
     }
 }

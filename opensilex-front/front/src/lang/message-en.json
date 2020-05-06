@@ -69,6 +69,7 @@
             "colon": ":",
             "uri-copy": "URI copied to clipboard",
             "search-prompt-text": "Type to search...",
+            "not-specified" :"Not specified",
             "errors": {
                 "error-title": "Error",
                 "constraint-error": "A data validation error occured, please check the validity of the submited fields.",
@@ -85,7 +86,28 @@
                 "done": "Done",
                 "cancel": "Cancel"
             },
-            "delete-confirmation": "This action is final, are you sure you want to delete this item?"
+            "delete-confirmation": "This action is final, are you sure you want to delete this item?",
+            "success": {
+                "success-title": "Success",
+                "creation-success-message": " has been inserted",
+                "update-success-message": " has been updated",
+                "delete-success-message": "has been deleted"
+            },
+            "tabs" :{
+                "document" : "Associated documents",
+                "experiment" : "Associated experiments",
+                "factorLevels" : "Associated factor levels"
+            },
+            "import-files":{
+                "csv-file" :" Import CSV file",
+                "csv-template" : "Get csv template file"
+            },
+            "tabulator":{
+                "reset-table" : "Reset table",
+                "add-one" : "Add one by one",
+                "add-multiple" : "Add multiple at once"
+            }
+            
         },
         "copyToClipboard": {
             "copyUri": "Copy URI to clipboard",
@@ -379,36 +401,50 @@
             }
         },
         "factor": {
+            "description": "Manage your experimental factors",
+            "label": "Factor",
             "uri": "Factor URI",
             "uri-help": "Unique factor identifier",
             "alias-placeholder": "Enter factor alias",
             "filter-placeholder": "Use this field to search factors",
             "factors": "factor",
-            "add": "create a factor",
-            "update": "update factor",
-            "alias": "alias",
-            "alias-help": "Name used to define this factor",
-            "form-alias-placeholder": "Irrigation, Shading, Variety, etc.",
+            "add": "Create factor",
+            "add-button": "Create factor",
+            "update": "Update factor",
+            "name" : "name",
+            "names": {
+                "en" : "English name",
+                "local-name" : "Local name",
+                "en-placeholder": "Irrigation, Shading, Variety, etc.",
+                "local-name-placeholder": "Irrigation, Ombrage, Variété, etc."
+            },
+            "names-help": "Names used to define this factor",
             "comment": "comment",
             "comment-help": "Description associated to this factors (protocol, amount of component)",
+            "comment-error": "Must contains at least 10 characters",
             "details": "Factor details",
             "form-comment-placeholder": "Protocol n°1289 - Amount of water 5 ml/Days.",
             "errors": {
                 "user-already-exists": "Factor already exists with this URI."
             },
-            "form-wizard": {
-                "general-informations": "Factor description"
+            "form-wizard" :{
+                "general-informations" : "Factor description"
+            },
+            "tabs" :{
+                "details" : "Factor informations"
             }
         },
         "factorLevel": {
             "uri": "Factor level URI",
-            "alias-placeholder": "Enter factor level alias",
+            "name-placeholder": "Enter factor level name",
             "selector-placeholder": "Please select a factor to search factor levels",
             "filter-placeholder": "Use this field to search factor levels",
             "factorLevel": "factor level",
-            "add": "Create factor level",
+            "add": "Add a new factor levels",
+            "associated" :"Associated factor levels",
+            "unique-name" : "Name is required and must be unique",
             "update": "update factor level",
-            "alias": "alias",
+            "name": "name",
             "factor": "factor",
             "comment": "comment",
             "hasFactor": "has factor",
@@ -416,23 +452,26 @@
                 "user-already-exists": "Factor level already exists with this URI."
             }
         },
-        "skos": {
-            "uri": "reference URI",
-            "uri-help": "reference identifier URI",
-            "uri-placeholder": "http://aims.fao.org/aos/agrovoc/c_8332",
-            "relation": "relation",
-            "relation-help": "relation associated between Reference URI and this local individual",
-            "relation-placeholder": "exactMatch",
-            "add": "Create new relation",
-            "update": "update relations",
-            "exactMatch": "exactmatch",
-            "closeMatch": "closematch",
-            "broader": "broader",
-            "narrower": "narrower",
-            "no-relation": "Please choose a relation type",
-            "ontologies-references-label": "Ontologies References",
-            "link-external": "Add external references to",
-            "link-external-button": "Add external references"
+        "skos" :{
+            "uri" : "Reference URI",
+            "uri-help" : "Reference identifier URI",
+            "uri-placeholder" : "http://aims.fao.org/aos/agrovoc/c_8332",
+            "relation" : "Relations",
+            "relation-help" : "Relation associated between interoperable concept URI and this local individual",
+            "relation-placeholder" : "Exact Match",
+            "add" : "Insert references", 
+            "exactMatch" : "Exact match",
+            "closeMatch" : "Close match",
+            "broader" : "Broader",
+            "narrower" : "Narrower",
+            "no-relation" : "Please choose a relation type",
+            "no-current-relation" : "No relation selected",
+            "current-relation" : "Current selected relation",
+            "ontologies-references-label" :"Interoperability References",
+            "link-external" :"Add references to",
+            "link-external-button" :"Add references (optional)",
+            "no-external-links-provided" :"No references available",
+            "external-already-existing" : "Already associated reference"
         },
         "germplasm": {
             "uri": "Germplasm URI",

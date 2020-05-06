@@ -13,6 +13,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
@@ -25,8 +26,9 @@ import org.opensilex.sparql.model.SPARQLLabel;
  *
  * @author Arnaud Charleroy
  */
-public class FactorCreationDTO extends SKOSReferencesDTO {
+public class FactorUpdateDTO extends SKOSReferencesDTO {
 
+    @NotNull
     @ValidURI
     private URI uri;
 

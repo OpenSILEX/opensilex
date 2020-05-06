@@ -452,6 +452,17 @@ export default class OpenSilexVuePlugin {
         });
     }
 
+    public showInfoToast(message: string) {
+        this.showToast(message, {
+            variant: "info",
+            toaster: "b-toaster-top-center",
+            appendToast: true,
+            solid: true,
+            autoHideDelay: 1500,
+            noCloseButton: true
+        });
+    }
+
     public showToast(message: string, options: any) {
         let toastID = this.computeToastID(message, options);
         options.id = toastID;

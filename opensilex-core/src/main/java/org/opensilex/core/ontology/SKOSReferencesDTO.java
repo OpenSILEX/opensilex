@@ -6,7 +6,10 @@
 package org.opensilex.core.ontology;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import javax.validation.Valid;
+import org.opensilex.server.rest.validation.ValidURI;
 
 /**
  * Ontology reference model.
@@ -15,13 +18,17 @@ import java.util.List;
  */
 public abstract class SKOSReferencesDTO {
 
-    private List<URI> exactMatch;
-
-    private List<URI> closeMatch;
-
-    private List<URI> broader;
-
-    private List<URI> narrower;
+    @ValidURI
+    private List<URI> exactMatch = new ArrayList<>();
+    
+    @ValidURI
+    private List<URI> closeMatch = new ArrayList<>();
+    
+    @ValidURI
+    private List<URI> broader = new ArrayList<>();
+    
+    @ValidURI
+    private List<URI> narrower = new ArrayList<>();
 
     public List<URI> getExactMatch() {
         return exactMatch;
@@ -54,12 +61,18 @@ public abstract class SKOSReferencesDTO {
     public void setNarrower(List<URI> narrower) {
         this.narrower = narrower;
     }
-    
-    
+
     public void setSkosReferencesFromModel(SKOSReferencesModel model) {
         this.setNarrower(model.getNarrower());
         this.setBroader(model.getBroader());
         this.setCloseMatch(model.getCloseMatch());
-        this.setExactMatch(model.getExactMatch()); 
+        this.setExactMatch(model.getExactMatch());
+    }
+
+    public void setSkosReferencesToModel(SKOSReferencesModel model) {
+        model.setNarrower(this.getNarrower());
+        model.setBroader(this.getBroader());
+        model.setCloseMatch(this.getCloseMatch());
+        model.setExactMatch(this.getExactMatch());
     }
 }

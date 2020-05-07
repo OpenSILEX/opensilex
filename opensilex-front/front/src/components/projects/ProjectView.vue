@@ -17,10 +17,10 @@
 
     <opensilex-PageContent>
       <template v-slot>
-        <opensilex-ProjectTable 
-        ref="projectTable" 
+        <opensilex-ProjectList
+        ref="projectList" 
         @onEdit="projectForm.showEditForm($event)"
-        ></opensilex-ProjectTable>
+        ></opensilex-ProjectList>
       </template>
     </opensilex-PageContent>
 
@@ -46,7 +46,7 @@ export default class ProjectView extends Vue {
   $store: any;
 
   @Ref("projectForm") readonly projectForm!: any;
-  @Ref("projectTable") readonly projectTable!: any;
+  @Ref("projectList") readonly projectList!: any;
 
   get user() {
     return this.$store.state.user;

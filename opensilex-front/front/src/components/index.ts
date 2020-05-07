@@ -173,8 +173,8 @@ components["opensilex-GermplasmList"] = GermplasmList;
 // Projects
 import ProjectForm from './projects/ProjectForm.vue';
 components["opensilex-ProjectForm"] = ProjectForm;
-import ProjectTable from './projects/ProjectTable.vue';
-components["opensilex-ProjectTable"] = ProjectTable;
+import ProjectList from './projects/ProjectList.vue';
+components["opensilex-ProjectList"] = ProjectList;
 import ProjectView from './projects/ProjectView.vue';
 components["opensilex-ProjectView"] = ProjectView;
 

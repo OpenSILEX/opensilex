@@ -82,9 +82,9 @@
         </a>
       </template>
 
-      <template v-slot:cell(startDate)="{data}">{{ format(data.item.startDate)}}</template>
+      <template v-slot:cell(startDate)="{data}">{{ formatDate(data.item.startDate)}}</template>
 
-      <template v-slot:cell(endDate)="{data}">{{ format(data.item.endDate)}}</template>
+      <template v-slot:cell(endDate)="{data}">{{ formatDate(data.item.endDate)}}</template>
 
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
@@ -112,6 +112,7 @@
 </template>
 
 <script lang="ts">
+import moment from "moment";
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
@@ -119,7 +120,7 @@ import { ProjectGetDTO, ProjectsService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
 
 @Component
-export default class ProjectTable extends Vue {
+export default class ProjectList extends Vue {
   $opensilex: any;
   service: ProjectsService;
   get user() {
@@ -168,7 +169,6 @@ export default class ProjectTable extends Vue {
   }
 
   created() {
-   
     this.service = this.$opensilex.getService("opensilex.ProjectsService");
   }
 
@@ -229,17 +229,16 @@ export default class ProjectTable extends Vue {
       endDateFilter = undefined;
     }
 
-    return this.service
-      .searchProjects(
-        startDateFilter,
-        endDateFilter,
-        this.nameFilterPattern,
-        this.nameFilterPattern,
-        this.financialFilterPattern,
-        options.orderBy,
-        options.currentPage,
-        options.pageSize
-      )
+    return this.service.searchProjects(
+      startDateFilter,
+      endDateFilter,
+      this.nameFilterPattern,
+      this.nameFilterPattern,
+      this.financialFilterPattern,
+      options.orderBy,
+      options.currentPage,
+      options.pageSize
+    );
   }
 
   deleteUser(uri: string) {
@@ -252,20 +251,12 @@ export default class ProjectTable extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
-  format(date) {
-    if (date) {
-      var d = new Date(date),
-        month = "" + (d.getMonth() + 1),
-        day = "" + d.getDate(),
-        year = d.getFullYear();
-
-      if (month.length < 2) month = "0" + month;
-      if (day.length < 2) day = "0" + day;
-
-      return [day, month, year].join("-");
-    } else {
-      return this.$i18n.t("component.project.inProgress");
+  public formatDate(value) {
+    if (value != undefined && value != null) {
+      moment.locale(this.$i18n.locale);
+      return moment(value, "YYYY-MM-DD").format("L");
     }
+    return "";
   }
 }
 </script>

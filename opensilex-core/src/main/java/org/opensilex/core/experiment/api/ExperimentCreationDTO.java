@@ -13,6 +13,8 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import org.opensilex.core.infrastructure.dal.InfrastructureModel;
+import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.user.dal.UserModel;
 
@@ -36,14 +38,28 @@ public class ExperimentCreationDTO extends ExperimentDTO {
         model.setComment(getComment());
         model.setKeywords(keywords);
         model.setCampaign(campaign);
-        model.setSpecies(species);
-        model.setInfrastructures(infrastructures);
         model.setDevices(installations);
         model.setIsPublic(isPublic);
         model.setSensors(sensors);
         model.setVariables(variables);
         model.setFactors(factors);
 
+        List<SpeciesModel> speciesList = new ArrayList<>(species.size());
+        species.forEach((URI u) -> {
+            SpeciesModel species = new SpeciesModel();
+            species.setUri(u);
+            speciesList.add(species);
+        });
+        model.setSpecies(speciesList);
+        
+        List<InfrastructureModel> infrastructuresList = new ArrayList<>(infrastructures.size());
+        infrastructures.forEach((URI u) -> {
+            InfrastructureModel infrastructure = new InfrastructureModel();
+            infrastructure.setUri(u);
+            infrastructuresList.add(infrastructure);
+        });
+        model.setInfrastructures(infrastructuresList);
+        
         List<ProjectModel> projectList = new ArrayList<>(projects.size());
         projects.forEach((URI u) -> {
             ProjectModel project = new ProjectModel();

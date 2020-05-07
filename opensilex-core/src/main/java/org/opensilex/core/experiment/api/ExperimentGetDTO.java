@@ -17,11 +17,10 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
  *
- * A basic GetDTO which extends the {@link ExperimentDTO} and which add the conversion from
- * an {@link ExperimentModel} to a {@link ExperimentGetDTO}
+ * A basic GetDTO which extends the {@link ExperimentDTO} and which add the conversion from an {@link ExperimentModel} to a {@link ExperimentGetDTO}
  *
- *  @author Vincent MIGOT
- *  @author Renaud COLIN
+ * @author Vincent MIGOT
+ * @author Renaud COLIN
  */
 public class ExperimentGetDTO extends ExperimentDTO {
 
@@ -45,9 +44,6 @@ public class ExperimentGetDTO extends ExperimentDTO {
                 .setObjective(model.getObjective())
                 .setComment(model.getComment())
                 .setKeywords(model.getKeywords())
-                .setSpecies(model.getSpecies())
-                .setInfrastructures(model.getInfrastructures())
-                .setInstallations(model.getDevices())
                 .setIsPublic(model.getIsPublic())
                 .setSensors(model.getSensors())
                 .setVariables(model.getVariables())
@@ -60,7 +56,9 @@ public class ExperimentGetDTO extends ExperimentDTO {
         dto.setScientificSupervisors(getUriList(model.getScientificSupervisors()))
                 .setTechnicalSupervisors(getUriList(model.getTechnicalSupervisors()))
                 .setProjects(getUriList(model.getProjects()))
-                .setGroups(getUriList(model.getGroups()));
+                .setGroups(getUriList(model.getGroups()))
+                .setSpecies(getUriList(model.getSpecies()))
+                .setInfrastructures(getUriList(model.getInfrastructures()));
 
         return dto;
     }

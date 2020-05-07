@@ -17,6 +17,8 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
+import org.opensilex.core.infrastructure.dal.InfrastructureModel;
+import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.user.dal.UserModel;
 
@@ -114,14 +116,14 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             ontology = Oeso.class,
             property = "hasSpecies"
     )
-    List<URI> species;
+    List<SpeciesModel> species;
     public static final String SPECIES_SPARQL_VAR = "species";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasInfrastructure"
     )
-    List<URI> infrastructures;
+    List<InfrastructureModel> infrastructures;
     public static final String INFRASTRUCTURE_SPARQL_VAR = "infrastructure";
 
     @SPARQLProperty(
@@ -249,19 +251,19 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
         this.campaign = campaign;
     }
 
-    public List<URI> getSpecies() {
+    public List<SpeciesModel> getSpecies() {
         return species;
     }
 
-    public void setSpecies(List<URI> species) {
+    public void setSpecies(List<SpeciesModel> species) {
         this.species = species;
     }
 
-    public List<URI> getInfrastructures() {
+    public List<InfrastructureModel> getInfrastructures() {
         return infrastructures;
     }
 
-    public void setInfrastructures(List<URI> infrastructures) {
+    public void setInfrastructures(List<InfrastructureModel> infrastructures) {
         this.infrastructures = infrastructures;
     }
 

@@ -53,12 +53,6 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         securityModule.createDefaultSuperAdmin();
     }
 
-    /**
-     * Clear the list of SPARQL graph to clear after each test execution
-     *
-     * @see IntegrationTestContext#clearGraphs(List)
-     * @see #getGraphsToCleanNames()
-     */
     @After
     public void clearGraphs() throws Exception {
         clearGraphs(getModelsToClean());
@@ -92,7 +86,8 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     /**
      * Clear the list of SPARQL graph to clear after each test execution
      *
-     * @throws SPARQLQueryException if an errors occurs during SPARQL query execution
+     * @param modelsToClear List of graphs to clear
+     * @throws Exception in case of error happening during graph clear
      */
     public void clearGraphs(List<Class<? extends SPARQLResourceModel>> modelsToClear) throws Exception {
         SPARQLService sparqlService = getSparqlService();
@@ -106,6 +101,8 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     }
 
     /**
+     * Default Abstract method to be implementted by subclasses for graph clear after tests
+     *
      * @return the List of SPARQL Model to clear after each test execution.
      */
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
@@ -116,6 +113,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * Call the security service and return a new Token
      *
      * @return a new Token
+     * @throws Exception in case of error during token retrieval
      */
     protected TokenGetDTO getToken() throws Exception {
 
@@ -148,6 +146,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @param target the {@link WebTarget} on which POST the given entity
      * @param entity the data to POST on the given target
      * @return target invocation response.
+     * @throws Exception in case of error during token retrieval
      */
     protected Response getJsonPostResponse(WebTarget target, Object entity) throws Exception {
         return appendToken(target).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
@@ -161,14 +160,15 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @param entity the data to POST on the given target
      * @param lang the translation language of the requested data
      * @return target invocation response.
-      */
+     * @throws Exception in case of error during token retrieval
+     */
     protected Response getJsonPostResponse(WebTarget target, Object entity, String lang) throws Exception {
-        if(lang == null){
+        if (lang == null) {
             return appendToken(target).header(HttpHeaders.ACCEPT_LANGUAGE, OpenSilex.DEFAULT_LANGUAGE).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
         }
         return appendToken(target).header(HttpHeaders.ACCEPT_LANGUAGE, lang).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
-    
+
     /**
      *
      * Get {@link Response} from an {@link ApiProtected} PUT service call.
@@ -176,6 +176,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @param target the {@link WebTarget} on which PUT the given entity
      * @param entity the data to PUT on the given target
      * @return target invocation response.
+     * @throws Exception in case of error during token retrieval
      */
     protected Response getJsonPutResponse(WebTarget target, Object entity) throws Exception {
         return appendToken(target).put(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
@@ -188,8 +189,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @param target the {@link WebTarget} on which get an entity with the given URI
      * @param uri the URI of the resource to fetch from the given target.
      * @return target invocation response.
-     *
-     * @see WebTarget#resolveTemplate(String, Object)
+     * @throws Exception in case of error during token retrieval
      */
     protected Response getJsonGetByUriResponse(WebTarget target, String uri) throws Exception {
         return appendToken(target.resolveTemplate("uri", uri)).get();
@@ -201,10 +201,8 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      *
      * @param target the {@link WebTarget} on which DELETE the given uri
      * @param uri the URI of the resource to DELETE
-     *
      * @return target invocation response.
-     *
-     * @see WebTarget#resolveTemplate(String, Object)
+     * @throws Exception in case of error during token retrieval
      */
     protected Response getDeleteByUriResponse(WebTarget target, String uri) throws Exception {
         return appendToken(target.resolveTemplate("uri", uri)).delete();
@@ -216,7 +214,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      *
      * @param target the {@link WebTarget} on which DELETE some content
      * @return target invocation response.
-     *
+     * @throws Exception in case of error during token retrieval
      */
     protected Response getDeleteJsonResponse(WebTarget target) throws Exception {
         return appendToken(target).delete();
@@ -228,12 +226,8 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * Append a token header to the given {@link WebTarget}
      *
      * @param target the {@link WebTarget} on which append params
-     *
      * @return the updated {@link WebTarget}
-     *
-     * @see #getToken()
-     * @see ApiProtected#HEADER_NAME
-     * @see ApiProtected#TOKEN_PARAMETER_PREFIX
+     * @throws Exception in case of error during token retrieval
      */
     protected Invocation.Builder appendToken(WebTarget target) throws Exception {
         if (token == null) {

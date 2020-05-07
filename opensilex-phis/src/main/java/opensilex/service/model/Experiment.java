@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import org.opensilex.core.species.dal.SpeciesModel;
 
 /**
  * Experiment model.
@@ -246,7 +247,9 @@ public class Experiment {
 
         if (!StringUtils.isEmpty(xp.getCropSpecies())) {
             try {
-                xpModel.setSpecies(Collections.singletonList(new URI(xp.getCropSpecies())));
+                SpeciesModel species = new SpeciesModel();
+                species.setUri(new URI(xp.getCropSpecies()));
+                xpModel.setSpecies(Collections.singletonList(species));
             } catch (URISyntaxException e) {
                 Species searchSpecies = new Species();
                 searchSpecies.setLabel(xp.getCropSpecies());
@@ -255,14 +258,16 @@ public class Experiment {
                 if (daoSpecies.isEmpty()) {
                     throw new IllegalArgumentException("Unknown species label " + xp.getCropSpecies());
                 }
-                xpModel.setSpecies(Collections.singletonList(new URI(daoSpecies.get(0).getUri())));
+                SpeciesModel species = new SpeciesModel();
+                species.setUri(new URI(daoSpecies.get(0).getUri()));
+                xpModel.setSpecies(Collections.singletonList(species));
             }
         }
 
         if (xp.getProjects() != null) {
 
             for (Project project : xp.getProjects()) {
-                ProjectModel projectModel = projectDAO.get(new URI(project.getUri()),null);
+                ProjectModel projectModel = projectDAO.get(new URI(project.getUri()), null);
                 if (projectModel == null) {
                     throw new IllegalArgumentException("Unknown project URI :" + project.getUri());
                 }

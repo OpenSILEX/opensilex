@@ -23,6 +23,12 @@
       :groups.sync="experiment.groups"
       :multiple="true"
     ></opensilex-GroupSelector>
+
+    <opensilex-CheckboxForm
+      :value.sync="form.isPublic"
+      label="component.experiment.public-label"
+      title="component.experiment.public-title"
+    ></opensilex-CheckboxForm>
   </ValidationObserver>
 </template>
 

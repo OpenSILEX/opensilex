@@ -35,8 +35,30 @@
             </span>
           </template>
 
-          <template v-slot:cell(startDate)="{data}">{{ formatDate(data.item.startDate)}}</template>
-          <template v-slot:cell(endDate)="{data}">{{ formatDate(data.item.endDate)}}</template>
+          <template v-slot:cell(startDate)="{data}">
+            <opensilex-DateView :value="data.item.startDate"></opensilex-DateView>
+          </template>
+          <template v-slot:cell(endDate)="{data}">
+            <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
+          </template>
+
+          <template v-slot:cell(state)="{data}">
+            <i
+              v-if="!isEnded(data.item)"
+              class="ik ik-activity badge-icon badge-info-opensilex"
+              :title="$t('component.experiment.common.status.in-progress')"
+            ></i>
+            <i
+              v-else
+              class="ik ik-archive badge-icon badge-light"
+              :title="$t('component.experiment.common.status.finished')"
+            ></i>
+            <i
+              v-if="data.item.isPublic"
+              class="ik ik-users badge-icon badge-info"
+              :title="$t('component.experiment.common.status.public')"
+            ></i>
+          </template>
 
           <template v-slot:cell(actions)="{data}">
             <b-button-group size="sm">
@@ -70,9 +92,9 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueConstructor from "vue";
-import moment from "moment";
 import copy from "copy-to-clipboard";
 import VueI18n from "vue-i18n";
+import moment from 'moment';
 import {
   ProjectGetDTO,
   SpeciesDTO,
@@ -158,6 +180,7 @@ export default class ExperimentList extends Vue {
       "opensilex.SpeciesService"
     );
 
+    this.$opensilex.disableLoader();
     service
       .getAllSpecies()
       .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
@@ -167,15 +190,9 @@ export default class ExperimentList extends Vue {
             http.response.result[i]
           );
         }
+        this.$opensilex.enableLoader();
       })
       .catch(this.$opensilex.errorHandler);
-  }
-
-  formatDate(value: string): string {
-    if (value != undefined && value != null) {
-      return moment(value, "YYYY-MM-dd").format("DD/MM/YYYY");
-    }
-    return null;
   }
 
   getSpeciesName(uri: String): String {
@@ -183,6 +200,14 @@ export default class ExperimentList extends Vue {
       return this.speciesByUri.get(uri).label;
     }
     return null;
+  }
+
+  isEnded(experiment) {
+    if (experiment.endDate) {
+      return moment(experiment.endDate, "YYYY-MM-DD").diff(moment()) < 0;
+    } 
+
+    return false;
   }
 
   fields = [
@@ -209,6 +234,10 @@ export default class ExperimentList extends Vue {
       key: "endDate",
       label: "component.experiment.endDate",
       sortable: true
+    },
+    {
+      key: "state",
+      label: "component.experiment.search.column.state"
     },
     {
       label: "component.common.actions",

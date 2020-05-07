@@ -379,13 +379,13 @@ export default class ExperimentView extends Vue {
   }
 
   formatPeriod(startDateValue: string, endDateValue: string) {
-    let statDate = moment(startDateValue, 'YYYY-MM-dd');
+    let statDate = moment(startDateValue, 'YYYY-MM-DD');
     let endDate;
-    let result = statDate.format('DD/MM/YYYY');
+    let result = this.$opensilex.formatDate(startDateValue);
 
     if(endDateValue) {
-      endDate = moment(endDateValue, 'YYYY-MM-dd');
-      result += " - " + endDate.format('DD/MM/YYYY');
+      endDate = moment(endDateValue, 'YYYY-MM-DD');
+      result += " - " + this.$opensilex.formatDate(endDateValue);
     } else {
       endDate = moment();
     }

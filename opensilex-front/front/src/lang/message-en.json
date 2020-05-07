@@ -275,8 +275,8 @@
             "uri": "Experiment URI",
             "label": "Name",
             "objective-help": "A clear description of the objective of the experiment",
-            "comment": "Comment",
-            "comment-placeholder": "",
+            "comment": "Description",
+            "comment-placeholder": "Experiment description",
             "comment-help": "A description of the experiment",
             "startDate": "Start date",
             "startDate-help": "The beginning of an experiment (required)",
@@ -306,6 +306,8 @@
             "description": "Description",
             "add": "Create experiment",
             "update": "Update experiment",
+            "public-label": "Public experiment",
+            "public-title": "Select this option to make experiment data publicly available",
             "common": {
                 "status": {
                     "finished": "Finished",

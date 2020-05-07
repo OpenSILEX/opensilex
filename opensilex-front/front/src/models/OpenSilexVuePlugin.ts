@@ -1,4 +1,4 @@
-import { Container, interfaces } from 'inversify';
+import { Container } from 'inversify';
 import moment from 'moment';
 import Vue from 'vue';
 import { VueCookies } from 'vue-cookies';
@@ -389,8 +389,6 @@ export default class OpenSilexVuePlugin {
                 this.handleUnexpectedError(error, message);
                 break;
         }
-
-        throw error;
     }
 
     public errorHandler = this.handleError.bind(this);
@@ -588,5 +586,13 @@ export default class OpenSilexVuePlugin {
 
     public fromToken(token: string) {
         return User.fromToken(token)
+    }
+
+    public formatDate(value) {
+        if (value != undefined && value != null) {
+            moment.locale(this.$i18n.locale);
+            return moment(value, "YYYY-MM-DD").format("L");
+        }
+        return "";
     }
 }

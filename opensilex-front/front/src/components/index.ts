@@ -113,6 +113,9 @@ components["opensilex-TypeForm"] = TypeForm;
 
 import StringView from './common/views/StringView.vue'
 components["opensilex-StringView"] = StringView;
+import DateView from './common/views/DateView.vue'
+components["opensilex-DateView"] = DateView;
+
 import UriView from './common/views/UriView.vue'
 components["opensilex-UriView"] = UriView;
 import UriLink from './common/views/UriLink.vue'

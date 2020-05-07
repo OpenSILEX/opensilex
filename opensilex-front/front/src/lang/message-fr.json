@@ -272,7 +272,7 @@
             "objective": "Objectif",
             "objective-placeholder": "",
             "comment": "Description",
-            "comment-placeholder": "",
+            "comment-placeholder": "Description de l'expérimentation",
             "startDate": "Date de début",
             "endDate": "Date de fin",
             "campaign": "Campagne",
@@ -294,6 +294,8 @@
             "contacts": "Contacts",
             "add": "Ajouter une expérimentation",
             "update": "Modifier l'expérimentation",
+            "public-label": "Expérimentation publique",
+            "public-title": "Sélectionner cette option pour rendre les données publiques",
             "common": {
                 "status": {
                     "finished": "Terminé",

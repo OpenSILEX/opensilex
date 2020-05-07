@@ -67,108 +67,52 @@
               </template>
             </b-input-group>
           </div>
-         
         </div>
       </div>
     </div>
+    <opensilex-TableAsyncView
+      ref="tableRef"
+      :searchMethod="loadData"
+      :fields="fields"
+      defaultSortBy="startDate"
+    >
+      <template v-slot:cell(uri)="{data}">
+        <a class="uri-info">
+          <small>{{ data.item.uri }}</small>
+        </a>
+      </template>
 
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <b-table
-          ref="tableRef"
-          striped
-          hover
-          small
-          :items="loadData"
-          :fields="fields"
-          :sort-by.sync="sortBy"
-          :sort-desc.sync="sortDesc"
-          no-provider-paging
-        >
-          <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
-          <template v-slot:head(shortname)="data">{{$t(data.label)}}</template>
-          <template v-slot:head(label)="data">{{$t(data.label)}}</template>
-          <template v-slot:head(startDate)="data">{{$t(data.label)}}</template>
-          <template v-slot:head(endDate)="data">{{$t(data.label)}}</template>
-          <template v-slot:head(hasFinancialFunding)="data">{{$t(data.label)}}</template>
-          <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
+      <template v-slot:cell(startDate)="{data}">{{ format(data.item.startDate)}}</template>
 
-          <template v-slot:cell(uri)="data">
-            <a class="uri-info">
-              <small>{{ data.item.uri }}</small>
-            </a>
-          </template>
+      <template v-slot:cell(endDate)="{data}">{{ format(data.item.endDate)}}</template>
 
-          <template v-slot:cell(startDate)="data">{{ format(data.item.startDate)}}</template>
+      <template v-slot:cell(actions)="{data}">
+        <b-button-group size="sm">
+          <opensilex-DetailButton
+            label="component.user.details"
+            :detailVisible="data.detailsShowing"
+            :small="true"
+          ></opensilex-DetailButton>
 
-          <template v-slot:cell(endDate)="data">{{ format(data.item.endDate)}}</template>
+          <opensilex-EditButton
+            @click="$emit('onEdit', data.item)"
+            label="component.user.update"
+            :small="true"
+          ></opensilex-EditButton>
 
-          <template v-slot:row-details="data">
-            <div v-if="data.item.description">
-              DESCRIPTION:
-              <br />
-              <div class="capitalize-first-letter">{{ data.item.description }}</div>
-            </div>
-
-            <div v-if="data.item.coordinators">
-              Coordinators :
-              <b-badge
-                v-for="(item, index) in data.item.coordinators"
-                :key="index"
-                pill
-                variant="info"
-              >{{item}}</b-badge>
-            </div>
-            <div v-if="data.item.scientificContacts">
-              Scientific contact :
-              <b-badge
-                v-for="(item, index) in data.item.scientificContacts"
-                :key="index"
-                pill
-                variant="info"
-              >{{item}}</b-badge>
-            </div>
-            <div v-if="data.item.administrativeContacts">
-              Administrative contact :
-              <b-badge
-                v-for="(item, index) in data.item.administrativeContacts"
-                :key="index"
-                pill
-                variant="info"
-              >{{item}}</b-badge>
-            </div>
-          </template>
-
-          <template v-slot:cell(actions)="data">
-            <b-button-group>
-              <b-button size="sm" @click="data.toggleDetails" variant="outline-success">
-                <font-awesome-icon v-if="!data.detailsShowing" icon="eye" size="sm" />
-                <font-awesome-icon v-if="data.detailsShowing" icon="eye-slash" size="sm" />
-              </b-button>
-
-              <b-button size="sm" @click="$emit('onEdit', data.item)" variant="outline-primary">
-                <font-awesome-icon icon="edit" size="sm" />
-              </b-button>
-
-              <b-button size="sm" @click="$emit('onDelete', data.item.uri)" variant="danger">
-                <font-awesome-icon icon="trash-alt" size="sm" />
-              </b-button>
-            </b-button-group>
-          </template>
-        </b-table>
-        <b-pagination
-          v-model="currentPage"
-          :total-rows="totalRow"
-          :per-page="pageSize"
-          @change="refresh()"
-        ></b-pagination>
-      </div>
-    </div>
+          <opensilex-DeleteButton
+            @click="deleteUser(data.item.uri)"
+            label="component.user.delete"
+            :small="true"
+          ></opensilex-DeleteButton>
+        </b-button-group>
+      </template>
+    </opensilex-TableAsyncView>
   </div>
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import { ProjectGetDTO, ProjectsService } from "opensilex-core/index";
@@ -177,22 +121,13 @@ import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
 @Component
 export default class ProjectTable extends Vue {
   $opensilex: any;
-  $store: any;
-  $router: VueRouter;
-  $i18n: any;
-
+  service: ProjectsService;
   get user() {
     return this.$store.state.user;
   }
   get credentials() {
     return this.$store.state.credentials;
   }
-
-  pageSize = 20;
-  currentPage: number = 1;
-  totalRow = 0;
-  sortBy = "uri";
-  sortDesc = false;
 
   private yearFilterPatternValue: any = "";
   set yearFilterPattern(value: number) {
@@ -233,20 +168,8 @@ export default class ProjectTable extends Vue {
   }
 
   created() {
-    let query: any = this.$route.query;
-    if (query.nameFilterPattern) {
-      this.nameFilterPatternValue = decodeURI(query.nameFilterPattern);
-    }
-    if (query.yearFilterPattern) {
-      this.yearFilterPatternValue = decodeURI(query.yearFilterPattern);
-    }
-
-    if (query.sortBy) {
-      this.sortBy = decodeURI(query.sortBy);
-    }
-    if (query.sortDesc) {
-      this.sortDesc = query.sortDesc == "true";
-    }
+   
+    this.service = this.$opensilex.getService("opensilex.ProjectsService");
   }
 
   fields = [
@@ -286,29 +209,19 @@ export default class ProjectTable extends Vue {
     }
   ];
 
+  @Ref("tableRef") readonly tableRef!: any;
   refresh() {
-    let tableRef: any = this.$refs.tableRef;
-    tableRef.refresh();
+    this.tableRef.refresh();
   }
 
-  loadData() {
-    let service: ProjectsService = this.$opensilex.getService(
-      "opensilex.ProjectsService"
-    );
-
-    let orderBy = [];
-    if (this.sortBy) {
-      let orderByText = this.sortBy + "=";
-      if (this.sortDesc) {
-        orderBy.push(orderByText + "desc");
-      } else {
-        orderBy.push(orderByText + "asc");
-      }
-    }
-
+  loadData(options) {
     let startDateFilter: string;
     let endDateFilter: string;
-    if (this.yearFilterPatternValue !== ""&&this.yearFilterPattern > 1000 && this.yearFilterPattern < 4000) {
+    if (
+      this.yearFilterPatternValue !== "" &&
+      this.yearFilterPattern > 1000 &&
+      this.yearFilterPattern < 4000
+    ) {
       startDateFilter = this.yearFilterPatternValue.toString() + "-01-01";
       endDateFilter = this.yearFilterPatternValue.toString() + "-12-31";
     } else {
@@ -316,39 +229,25 @@ export default class ProjectTable extends Vue {
       endDateFilter = undefined;
     }
 
-    return service
+    return this.service
       .searchProjects(
         startDateFilter,
         endDateFilter,
         this.nameFilterPattern,
         this.nameFilterPattern,
         this.financialFilterPattern,
-        orderBy,
-        this.currentPage - 1,
-        this.pageSize
+        options.orderBy,
+        options.currentPage,
+        options.pageSize
       )
-      .then((http: HttpResponse<OpenSilexResponse<Array<ProjectGetDTO>>>) => {
-        console.log(http);
-        this.totalRow = http.response.metadata.pagination.totalCount;
-        this.pageSize = http.response.metadata.pagination.pageSize;
+  }
 
-        this.$router
-          .push({
-            path: this.$route.fullPath,
-            query: {
-              nameFilterPattern: this.nameFilterPattern
-                ? encodeURI(this.nameFilterPattern)
-                : null,
-              yearFilterPattern: this.yearFilterPattern
-                ? encodeURI(this.yearFilterPattern.toString())
-                : null,
-              sortBy: encodeURI(this.sortBy),
-              sortDesc: "" + this.sortDesc
-            }
-          })
-          .catch(function() {});
-
-        return http.response.result;
+  deleteUser(uri: string) {
+    this.service
+      .deleteProject(uri)
+      .then(() => {
+        this.refresh();
+        this.$emit("onDelete", uri);
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -372,12 +271,4 @@ export default class ProjectTable extends Vue {
 </script>
 
 <style scoped lang="scss">
-.uri-info {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: inline-block;
-  max-width: 300px;
-}
 </style>

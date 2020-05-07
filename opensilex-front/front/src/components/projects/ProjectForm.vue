@@ -27,56 +27,26 @@
     ></opensilex-InputForm>
 
     <!-- Period -->
-    <b-form inline>
+    <div class="row">
+      <!-- Start Date -->
+      <div class="col-lg-6">
+        <opensilex-InputForm
+          :value.sync="form.startDate"
+          label="component.common.startDate"
+          type="date"
+          :required="true"
+        ></opensilex-InputForm>
+      </div>
 
-      <opensilex-DateForm
-        :value.sync="form.startDate"
-        label="component.common.startDate"
-        placeholder="Select a date"
-        :required="true"
-      ></opensilex-DateForm>
-
-      <opensilex-DateForm
-        :value.sync="form.endDate"
-        label="component.common.endDate"
-        placeholder="Select a date"
-      ></opensilex-DateForm>
-
-    </b-form>
-<!-- 
-    <b-form inline>
-      <label class="mr-sm-2 required" for="inline-form-custom-select-pref">Start Date</label>
-      <b-input-group class="mt-3 mb-3" size="sm" id="inline-form-custom-select-pref">
-        <ValidationProvider
-          :name="$t('component.common.startDate')"
-          rules="required"
-          v-slot="{ errors }"
-        >
-          <datePicker
-            v-model="form.startDate"
-            input-class="form-control"
-            placeholder="Select a date"
-            :clear-button="true"
-            @input="onStartDateSelected"
-            @cleared="onStartDateCleared"
-          ></datePicker>
-
-          <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-        </ValidationProvider>
-      </b-input-group>
-
-      <label class="mr-sm-2 ml-4" for="inline-2">End Date</label>
-      <b-input-group class="mt-3 mb-3" size="sm" id="inline-2">
-        <datePicker
-          v-model="form.endDate"
-          input-class="form-control"
-          placeholder="Select a date"
-          :clear-button="true"
-          @input="onEndDateSelected"
-          @cleared="onEndDateCleared"
-        ></datePicker>
-      </b-input-group>
-    </b-form> -->
+      <!-- End Date -->
+      <div class="col-lg-6">
+        <opensilex-InputForm
+          :value.sync="form.endDate"
+          label="component.common.endDate"
+          type="date"
+        ></opensilex-InputForm>
+      </div>
+    </div>
 
     <!-- Financial funding -->
 
@@ -89,41 +59,42 @@
 
     <!-- Website -->
 
-    <b-form-group :label="$t('component.project.website') + ':'" label-for="website">
-      <b-form-input
-        id="website"
-        v-model="form.homePage"
-        type="text"
-        :placeholder="$t('component.project.form-website-placeholder')"
-      ></b-form-input>
-    </b-form-group>
+    <opensilex-InputForm
+      :value.sync="form.homePage"
+      label="component.project.website"
+      type="text"
+      rules="url"
+      placeholder="component.project.form-website-placeholder"
+    ></opensilex-InputForm>
 
     <!--Coordinators -->
-    <!-- <opensilex-UserSelector
+    <opensilex-UserSelector
+      v-if="form.coordinators"
       label="component.project.coordinators"
       :users.sync="form.coordinators"
       :multiple="true"
-    ></opensilex-UserSelector>-->
+    ></opensilex-UserSelector>
 
     <!-- Scientific contacts -->
-    <!-- <opensilex-UserSelector
+    <opensilex-UserSelector
+      v-if="form.scientificContacts"
       label="component.project.scientificContacts"
       :users.sync="form.scientificContacts"
       :multiple="true"
-    ></opensilex-UserSelector>-->
+    ></opensilex-UserSelector>
 
     <!-- Administrative contacts -->
-    <!-- <opensilex-UserSelector
+    <opensilex-UserSelector
+      v-if="form.administrativeContacts"
       label="component.project.administrativeContacts"
       :users.sync="form.administrativeContacts"
       :multiple="true"
-    ></opensilex-UserSelector>-->
+    ></opensilex-UserSelector>
 
- <!-- Objective -->
+    <!-- Objective -->
     <opensilex-TextAreaForm
       :value.sync="form.objective"
       label="component.project.objective"
-      :required="true"
       placeholder="component.project.form-objective-placeholder"
     ></opensilex-TextAreaForm>
 
@@ -131,10 +102,8 @@
     <opensilex-TextAreaForm
       :value.sync="form.description"
       label="component.project.description"
-      :required="true"
       placeholder="component.project.form-description-placeholder"
     ></opensilex-TextAreaForm>
-
   </b-form>
 </template>
 
@@ -237,42 +206,6 @@ export default class ProjectForm extends Vue {
         console.debug("Project updated", uri);
       })
       .catch(this.$opensilex.errorHandler);
-  }
-
-  onStartDateSelected() {
-    console.log("start date" + this.form.startDate);
-    if (this.form.startDate !== null) {
-      console.log("ici");
-      this.form.startDate = this.format(this.form.startDate);
-    }
-  }
-
-  onEndDateSelected() {
-    console.log("end date" + this.form.endDate);
-    if (this.form.endDate !== null) {
-      this.form.endDate = this.format(this.form.endDate);
-    }
-  }
-
-  onStartDateCleared() {
-    console.log("start date cleared");
-    this.form.startDate = "";
-  }
-  onEndDateCleared() {
-    console.log("end date cleared");
-    this.form.endDate = "";
-  }
-
-  format(date) {
-    var d = new Date(date),
-      month = "" + (d.getMonth() + 1),
-      day = "" + d.getDate(),
-      year = d.getFullYear();
-
-    if (month.length < 2) month = "0" + month;
-    if (day.length < 2) day = "0" + day;
-
-    return [year, month, day].join("-");
   }
 }
 </script>

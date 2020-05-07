@@ -8,7 +8,8 @@
     <template v-slot:field="field">
       <b-form-input
         :id="field.id"
-        v-model="stringValue"
+        :value="stringValue"
+        @update="updateValue($event)"
         :disabled="disabled"
         :type="type"
         :required="required"
@@ -35,6 +36,14 @@ export default class InputForm extends Vue {
 
   @PropSync("value")
   stringValue: string;
+
+  updateValue(newValue) {
+    if (this.type == "date" && newValue == "") {
+      this.stringValue = null;
+    } else {
+      this.stringValue = newValue;
+    }
+  }
 
   @Prop({
     default: "text"

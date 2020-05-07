@@ -2,8 +2,8 @@
   <div class="container-fluid">
     <opensilex-PageHeader
       icon="ik#ik-user"
-      title="component.menu.security.users"
-      description="component.user.description"
+      title="UserView.title"
+      description="UserView.description"
     ></opensilex-PageHeader>
 
     <opensilex-PageActions>
@@ -11,7 +11,7 @@
         <opensilex-CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
           @click="userForm.showCreateForm()"
-          label="component.user.add"
+          label="UserView.create"
         ></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
@@ -30,8 +30,8 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
       ref="userForm"
       component="opensilex-UserForm"
-      createTitle="component.user.add"
-      editTitle="component.user.update"
+      createTitle="UserView.create"
+      editTitle="UserView.update"
       icon="ik#ik-user"
       @onCreate="userList.refresh()"
       @onUpdate="userList.refresh()"
@@ -71,3 +71,18 @@ export default class UserView extends Vue {
 <style scoped lang="scss">
 </style>
 
+<i18n>
+en:
+  UserView:
+    title: Users
+    description: Manage and configure users
+    create: Create user
+    update: Update user
+
+fr:
+  UserView:
+    title: Utilisateurs
+    description: Gérer et configurer les utilisateurs
+    create: Créer un utilisateur
+    update: Modifier l'utilisateur
+</i18n>

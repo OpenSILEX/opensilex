@@ -12,10 +12,10 @@ module.exports = {
             'opensilex': 'opensilex'
         },
         resolve: {
-			alias: {
-				'vue$': path.resolve('../../node_modules/vue/dist/vue.esm.js')
+            alias: {
+                'vue$': path.resolve('../../node_modules/vue/dist/vue.esm.js')
             }
-		},
+        },
         performance: {
             hints: false
         },
@@ -31,10 +31,14 @@ module.exports = {
     },
     chainWebpack: config => {
         config.module
-          .rule('i18n')
-          .resourceQuery(/blockType=i18n/)
-          .type('javascript/auto')
-          .use('i18n')
-          .loader('@kazupon/vue-i18n-loader')
+            .rule("i18n")
+            .resourceQuery(/blockType=i18n/)
+            .type('javascript/auto')
+            .use("i18n")
+            .loader("@kazupon/vue-i18n-loader")
+            .end()
+            .use('yaml')
+            .loader('yaml-loader')
+            .end()
     }
 };

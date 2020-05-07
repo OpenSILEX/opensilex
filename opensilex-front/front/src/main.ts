@@ -282,7 +282,9 @@ console.debug("Load default components...");
 import components from './components';
 for (let componentName in components) {
   console.debug("Load default component", componentName);
-  Vue.component(componentName, components[componentName]);
+  let component = components[componentName];
+  Vue.component(componentName, component);
+  $opensilex.loadComponentTranslations(component);
 }
 
 function loadFonts(vueJsService: VueJsService, fonts: Array<FontConfigDTO>) {

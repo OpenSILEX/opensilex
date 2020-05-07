@@ -227,6 +227,13 @@ export default class OpenSilexVuePlugin {
         }
     }
 
+    public loadComponentTranslations(component) {
+        if (component.options.__i18n) {
+            let componentTranslations = JSON.parse(component.options.__i18n);
+            this.loadTranslations(componentTranslations);
+        }
+    }
+
     public loadModule(name) {
         if (window[name]) return window[name];
 
@@ -252,6 +259,12 @@ export default class OpenSilexVuePlugin {
 
                 if (plugin.lang) {
                     self.loadTranslations(plugin.lang);
+                }
+
+                if (plugin.components) {
+                    for (let componentId in plugin.components) {
+                        this.loadComponentTranslations(plugin.components[componentId]);
+                    }
                 }
 
                 self.initAsyncComponents(plugin.components)

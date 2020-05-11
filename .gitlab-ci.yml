@@ -199,6 +199,17 @@ trigger:phis:deploy:test:
     - if: $CI_COMMIT_BRANCH == "master" 
   needs: 
     - job: "opensilex:build"
+    
+# Trigger pipeline for phis user test deployment
+trigger:usertest:deploy:test:
+  stage: deploy
+  image: curlimages/curl
+  script:
+    - curl --request POST --form "variables[DEPLOY]=phis-usertest" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$COMMIT_SHA_OPENSILEX_DEV"  https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" 
+  needs: 
+    - job: "opensilex:build"
 
 # Trigger pipeline for phis module deployment
 trigger:bdg:deploy:test:

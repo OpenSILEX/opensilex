@@ -9,63 +9,31 @@
           </h3>
         </div>
         <div class="card-body row">
-          <div class="filter-group col col-xl-4 col-sm-6 col-12">
+          <div class="col col-xl-4 col-sm-6 col-12">
             <label>{{$t('component.project.filter-year')}}:</label>
-            <div class="input-group input-group-button">
-              <b-input-group>
-                <b-form-input
-                  id="input-live"
-                  v-model="yearFilterPattern"
-                  :placeholder="$t('component.project.filter-year-placeholder')"
-                  trim
-                ></b-form-input>
-                <template v-slot:append>
-                  <b-btn :disabled="!yearState" variant="primary" @click="yearFilterPattern = ''">
-                    <font-awesome-icon icon="times" size="sm" />
-                  </b-btn>
-                </template>
-              </b-input-group>
-            </div>
+            <opensilex-StringFilter
+              :filter.sync="yearFilter"
+              @update="refresh()"
+              placeholder="component.project.filter-year-placeholder"
+            ></opensilex-StringFilter>
           </div>
 
-          <div class="filter-group col col-xl-4 col-sm-6 col-12">
+          <div class="col col-xl-4 col-sm-6 col-12">
             <label>{{$t('component.project.filter-label')}}:</label>
-            <b-input-group>
-              <b-form-input
-                v-model="nameFilterPattern"
-                debounce="1000"
-                :placeholder="$t('component.project.filter-label-placeholder')"
-              ></b-form-input>
-              <template v-slot:append>
-                <b-btn
-                  :disabled="!nameFilterPattern"
-                  variant="primary"
-                  @click="nameFilterPattern = ''"
-                >
-                  <font-awesome-icon icon="times" size="sm" />
-                </b-btn>
-              </template>
-            </b-input-group>
+            <opensilex-StringFilter
+              :filter.sync="nameFilter"
+              @update="refresh()"
+              placeholder="component.project.filter-label-placeholder"
+            ></opensilex-StringFilter>
           </div>
 
-          <div class="filter-group col col-xl-4 col-sm-6 col-12">
+          <div class="col col-xl-4 col-sm-6 col-12">
             <label>{{$t('component.project.filter-financial')}}</label>
-            <b-input-group>
-              <b-form-input
-                v-model="financialFilterPattern"
-                debounce="300"
-                :placeholder="$t('component.project.filter-financial-placeholder')"
-              ></b-form-input>
-              <template v-slot:append>
-                <b-btn
-                  :disabled="!financialFilterPattern"
-                  variant="primary"
-                  @click="financialFilterPattern = ''"
-                >
-                  <font-awesome-icon icon="times" size="sm" />
-                </b-btn>
-              </template>
-            </b-input-group>
+            <opensilex-StringFilter
+              :filter.sync="financialFilter"
+              @update="refresh()"
+              placeholder="component.project.filter-financial-placeholder"
+            ></opensilex-StringFilter>
           </div>
         </div>
       </div>
@@ -77,14 +45,16 @@
       defaultSortBy="startDate"
     >
       <template v-slot:cell(uri)="{data}">
-        <a class="uri-info">
-          <small>{{ data.item.uri }}</small>
-        </a>
+        <opensilex-UriLink :uri="data.item.uri"></opensilex-UriLink>
       </template>
 
-      <template v-slot:cell(startDate)="{data}">{{ formatDate(data.item.startDate)}}</template>
+      <template v-slot:cell(startDate)="{data}">
+        <opensilex-DateView :value="data.item.startDate"></opensilex-DateView>
+      </template>
 
-      <template v-slot:cell(endDate)="{data}">{{ formatDate(data.item.endDate)}}</template>
+      <template v-slot:cell(endDate)="{data}">
+        <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
+      </template>
 
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
@@ -130,43 +100,11 @@ export default class ProjectList extends Vue {
     return this.$store.state.credentials;
   }
 
-  private yearFilterPatternValue: any = "";
-  set yearFilterPattern(value: number) {
-    this.yearFilterPatternValue = value;
-    if (this.yearFilterPattern > 1000 && this.yearFilterPattern < 4000) {
-      //the user enter a valid year
-      this.refresh();
-    }
-    if (!this.yearFilterPattern) {
-      this.refresh();
-    }
-  }
-  get yearFilterPattern() {
-    return this.yearFilterPatternValue;
-  }
-  get yearState() {
-    return this.yearFilterPattern > 1000 && this.yearFilterPattern < 4000
-      ? true
-      : false;
-  }
+  private yearFilter: any = "";
 
-  private nameFilterPatternValue: any = "";
-  set nameFilterPattern(value: string) {
-    this.nameFilterPatternValue = value;
-    this.refresh();
-  }
-  get nameFilterPattern() {
-    return this.nameFilterPatternValue;
-  }
+  private nameFilter: any = "";
 
-  private financialFilterPatternValue: any = "";
-  set financialFilterPattern(value: string) {
-    this.financialFilterPatternValue = value;
-    this.refresh();
-  }
-  get financialFilterPattern() {
-    return this.financialFilterPatternValue;
-  }
+  private financialFilter: any = "";
 
   created() {
     this.service = this.$opensilex.getService("opensilex.ProjectsService");
@@ -215,26 +153,18 @@ export default class ProjectList extends Vue {
   }
 
   loadData(options) {
-    let startDateFilter: string;
-    let endDateFilter: string;
-    if (
-      this.yearFilterPatternValue !== "" &&
-      this.yearFilterPattern > 1000 &&
-      this.yearFilterPattern < 4000
-    ) {
-      startDateFilter = this.yearFilterPatternValue.toString() + "-01-01";
-      endDateFilter = this.yearFilterPatternValue.toString() + "-12-31";
-    } else {
-      startDateFilter = undefined;
-      endDateFilter = undefined;
+    let startDateFilter: string = undefined;
+    let endDateFilter: string = undefined;
+    if (this.yearFilter) {
+      startDateFilter = this.yearFilter.toString() + "-01-01";
+      endDateFilter = this.yearFilter.toString() + "-12-31";
     }
 
     return this.service.searchProjects(
       startDateFilter,
       endDateFilter,
-      this.nameFilterPattern,
-      this.nameFilterPattern,
-      this.financialFilterPattern,
+      this.nameFilter,
+      this.financialFilter,
       options.orderBy,
       options.currentPage,
       options.pageSize
@@ -249,14 +179,6 @@ export default class ProjectList extends Vue {
         this.$emit("onDelete", uri);
       })
       .catch(this.$opensilex.errorHandler);
-  }
-
-  public formatDate(value) {
-    if (value != undefined && value != null) {
-      moment.locale(this.$i18n.locale);
-      return moment(value, "YYYY-MM-DD").format("L");
-    }
-    return "";
   }
 }
 </script>

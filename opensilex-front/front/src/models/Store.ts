@@ -115,9 +115,9 @@ let store = new Vuex.Store({
       CREDENTIAL_VARIABLE_MODIFICATION_ID: "variable-modification",
       CREDENTIAL_VARIABLE_DELETE_ID: "variable-delete",
       CREDENTIAL_VARIABLE_READ_ID: "variable-read",
-      CREDENTIAL_FACTOR_READ_ID : "factors-read",
-      CREDENTIAL_FACTOR_MODIFICATION_ID :"factors-modification",
-      CREDENTIAL_FACTOR_DELETE_ID : "factors-delete"
+      CREDENTIAL_FACTOR_READ_ID: "factors-read",
+      CREDENTIAL_FACTOR_MODIFICATION_ID: "factors-modification",
+      CREDENTIAL_FACTOR_DELETE_ID: "factors-delete"
     }
   },
   getters: {
@@ -146,8 +146,9 @@ let store = new Vuex.Store({
         console.debug("Automatically call logout");
         let method: any = "logout";
         this.commit(method);
-        let message = getOpenSilexPlugin().$i18n.t("component.common.errors.unauthorized-error");
-        getOpenSilexPlugin().showErrorToast(message + " - " + Date.now());
+        let opensilex = getOpenSilexPlugin();
+        let message = opensilex.$i18n.t("component.common.errors.unauthorized-error");
+        opensilex.showErrorToast(Date.now().toLocaleString() + " - " + message);
       }, exipreAfter);
 
       let inactivityRenewDelay = user.getInactivityRenewDelayMs();

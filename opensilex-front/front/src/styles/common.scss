@@ -199,3 +199,12 @@ input:invalid {
 .badge-info-opensilex {
  background-color: #ffc107;
 }
+
+.b-toaster.b-toaster-bottom-center .b-toaster-slot, 
+.b-toaster.b-toaster-top-center .b-toaster-slot ,
+.b-toaster.b-toaster-bottom-center .b-toaster-slot .b-toast, 
+.b-toaster.b-toaster-top-center .b-toaster-slot .b-toast,
+.b-toaster.b-toaster-bottom-center .b-toaster-slot .b-toast .toast, 
+.b-toaster.b-toaster-top-center .b-toaster-slot .b-toast .toast {
+    max-width: 500px;
+ }

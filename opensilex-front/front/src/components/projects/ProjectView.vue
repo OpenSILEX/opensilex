@@ -31,8 +31,8 @@
       editTitle="component.project.update"
       modalSize="lg"
       icon="ik#ik-folder"
-      @onCreate="projectTable.refresh()"
-      @onUpdate="projectTable.refresh()"
+      @onCreate="projectList.refresh()"
+      @onUpdate="projectList.refresh()"
     ></opensilex-ModalForm>
   </div>
 </template>

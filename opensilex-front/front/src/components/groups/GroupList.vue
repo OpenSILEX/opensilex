@@ -12,7 +12,7 @@
       :fields="fields"
     >
       <template v-slot:cell(uri)="{data}">
-        <opensilex-UriLink :uri="data.item.uri"></opensilex-UriLink>
+        <opensilex-UriLink :uri="data.item.uri" @click="data.toggleDetails()"></opensilex-UriLink>
       </template>
 
       <template v-slot:cell(userProfiles)="{data}">
@@ -32,7 +32,7 @@
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
           <opensilex-DetailButton
-            @click="data.toggleDetails"
+            @click="data.toggleDetails()"
             label="component.group.details"
             :detailVisible="data.detailsShowing"
             :small="true"

@@ -17,7 +17,7 @@
       </template>
 
       <template v-slot:cell(uri)="{data}">
-        <opensilex-UriLink :uri="data.item.uri"></opensilex-UriLink>
+        <opensilex-UriLink :uri="data.item.uri" @click="loadUserDetail(data)"></opensilex-UriLink>
       </template>
 
       <template v-slot:cell(admin)="{data}">
@@ -153,12 +153,14 @@ export default class UserList extends Vue {
   loadUserDetail(data) {
     if (!data.detailsShowing) {
       this.groupDetails = [];
+      this.$opensilex.disableLoader();
       this.service
         .getUserGroups(data.item.uri)
         .then(
           (http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
             this.groupDetails = http.response.result;
             data.toggleDetails();
+            this.$opensilex.enableLoader();
           }
         )
         .catch(this.$opensilex.errorHandler);

@@ -4,18 +4,29 @@
       <span>{{uri}}</span>
       &nbsp;
       <button
-        v-on:click.prevent="copyURI(url || uri)"
+        v-on:click.prevent="copyURI(uri)"
         class="uri-copy"
         :title="$t('component.copyToClipboard.copyUri')"
       >
         <opensilex-Icon icon="ik#ik-copy" />
       </button>
     </router-link>
-    <a v-else :href="url || uri" class="uri" target="about:blank">
+    <a v-if="url" :href="url" class="uri" target="about:blank">
       <span>{{uri}}</span>
       &nbsp;
       <button
-        v-on:click.prevent="copyURI(url || uri)"
+        v-on:click.prevent="copyURI(uri)"
+        class="uri-copy"
+        :title="$t('component.copyToClipboard.copyUri')"
+      >
+        <opensilex-Icon icon="ik#ik-copy" />
+      </button>
+    </a>
+    <a v-if="!url && !to" href="#" @click.prevent="$emit('click', uri)" class="uri">
+      <span>{{uri}}</span>
+      &nbsp;
+      <button
+        v-on:click.prevent="copyURI(uri)"
         class="uri-copy"
         :title="$t('component.copyToClipboard.copyUri')"
       >
@@ -33,6 +44,7 @@ import Vue from "vue";
 @Component
 export default class UriLink extends Vue {
   $opensilex: any;
+  $t: any;
 
   @Prop()
   uri: string;

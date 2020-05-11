@@ -42,9 +42,9 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
@@ -102,8 +102,8 @@ public class ProjectAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Create a project", response = ObjectUriResponse.class),
-        @ApiResponse(code = 409, message = "A project with the same URI already exists", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+        @ApiResponse(code = 409, message = "A project with the same URI already exists", response = ErrorResponse.class)
+    })
 
     public Response createProject(
             @ApiParam("Project description") @Valid ProjectCreationDTO dto
@@ -112,11 +112,13 @@ public class ProjectAPI {
             ProjectDAO dao = new ProjectDAO(sparql);
             ProjectModel createdPjct = dao.create(dto.newModel());
             return new ObjectUriResponse(Response.Status.CREATED, createdPjct.getUri()).getResponse();
-
         } catch (SPARQLAlreadyExistingUriException e) {
-            return new ErrorResponse(Response.Status.CONFLICT, "Project already exists", e.getMessage()).getResponse();
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            // Return error response 409 - CONFLICT if user URI already exists
+            return new ErrorResponse(
+                    Response.Status.CONFLICT,
+                    "Project already exists",
+                    "Duplicated URI: " + dto.getUri()
+            ).getResponse();
         }
     }
 
@@ -137,27 +139,26 @@ public class ProjectAPI {
 
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Project updated", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown Project URI", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+        @ApiResponse(code = 404, message = "Unknown Project URI", response = ErrorResponse.class)
+    })
     public Response updateProject(
             @ApiParam("Project description") @Valid ProjectCreationDTO dto
-    ) {
+    ) throws Exception {
         try {
             ProjectDAO dao = new ProjectDAO(sparql);
-            ProjectModel model = dto.newModel();
-            dao.update(model);
-
+            ProjectModel model = dao.update(dto.newModel());
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
-
         } catch (SPARQLInvalidURIException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Project URI", e.getMessage()).getResponse();
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Model not found",
+                    "Unknown group URI: " + e.getUri()
+            ).getResponse();
         }
     }
 
     /**
-     * @param prjctUri the Project URI
+     * @param uri the Project URI
      * @return a {@link Response} with a {@link SingleObjectResponse} containing the {@link ExperimentGetDTO}
      */
     @GET
@@ -172,25 +173,26 @@ public class ProjectAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Project retrieved", response = ProjectGetDTO.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-
+        @ApiResponse(code = 404, message = "Unknown Project URI", response = ErrorResponse.class)
+    })
     public Response getProject(
-            @ApiParam(value = "Project URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI prjctUri
-    ) {
-        try {
-            ProjectDAO dao = new ProjectDAO(sparql);
-            ProjectModel model = dao.get(prjctUri, currentUser.getLanguage());
+            @ApiParam(value = "Project URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+        ProjectDAO dao = new ProjectDAO(sparql);
+        ProjectModel model = dao.get(uri, currentUser.getLanguage());
 
-            if (model != null) {
-                return new SingleObjectResponse<>(ProjectGetDTO.fromModel(model)).getResponse();
-            } else {
-                return new ErrorResponse(
-                        Response.Status.NO_CONTENT, "Project not found",
-                        "Unknown Project URI: " + prjctUri.toString()
-                ).getResponse();
-            }
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+        // Check if project is found
+        if (model != null) {
+            return new SingleObjectResponse<>(
+                    ProjectGetDTO.fromModel(model)
+            ).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Project not found",
+                    "Unknown Project URI: " + uri.toString()
+            ).getResponse();
         }
     }
 
@@ -220,8 +222,7 @@ public class ProjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return Project list", response = ProjectGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Return Project list", response = ProjectGetDTO.class, responseContainer = "List")
     })
     public Response searchProjects(
             @ApiParam(value = "Search by start date", example = "2017-06-15") @QueryParam("startDate") LocalDate startDate,
@@ -232,26 +233,20 @@ public class ProjectAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
+        ProjectDAO prjctDao = new ProjectDAO(sparql);
+        ListWithPagination<ProjectModel> resultList = prjctDao.search(
+                label,
+                financial,
+                startDate,
+                endDate,
+                orderByList,
+                page,
+                pageSize
+        );
 
-        try {
-            ProjectDAO prjctDao = new ProjectDAO(sparql);
-            ListWithPagination<ProjectModel> resultList = prjctDao.search(
-                    label,
-                    financial,
-                    startDate,
-                    endDate,
-                    orderByList,
-                    page,
-                    pageSize
-            );
-
-            // Convert paginated list to DTO
-            ListWithPagination<ProjectGetDTO> resultDTOList = resultList.convert(ProjectGetDTO.class, ProjectGetDTO::fromModel);
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
-
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
-        }
+        // Convert paginated list to DTO
+        ListWithPagination<ProjectGetDTO> resultDTOList = resultList.convert(ProjectGetDTO.class, ProjectGetDTO::fromModel);
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
     /**
@@ -271,21 +266,14 @@ public class ProjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Project deleted", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown Project URI", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+        @ApiResponse(code = 200, message = "Project deleted", response = ObjectUriResponse.class)
+    })
     public Response deleteProject(
             @ApiParam(value = "Project URI", example = PROJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI prjctUri
-    ) {
-        try {
-            ProjectDAO dao = new ProjectDAO(sparql);
-            dao.delete(prjctUri);
-            return new ObjectUriResponse(prjctUri).getResponse();
+    ) throws Exception {
+        ProjectDAO dao = new ProjectDAO(sparql);
+        dao.delete(prjctUri);
+        return new ObjectUriResponse(prjctUri).getResponse();
 
-        } catch (SPARQLInvalidURIException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Project URI", e.getMessage()).getResponse();
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
-        }
     }
 }

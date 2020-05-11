@@ -22,9 +22,6 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
-import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.security.user.dal.UserModel;
 
 /**
  * @author vidalmor
@@ -117,8 +114,8 @@ public class ProjectDAO {
 
         Expr financialFundingFilter = SPARQLQueryHelper.regexFilter(ProjectModel.FINANCIAL_FUNDING_FIELD, financialFunding);
 
-         Expr dateFilter = SPARQLQueryHelper.dateRange(ProjectModel.START_DATE_FIELD, startDate, ProjectModel.END_DATE_FIELD, endDate);
-         
+        Expr dateFilter = SPARQLQueryHelper.intervalDateRange(ProjectModel.START_DATE_FIELD, startDate, ProjectModel.END_DATE_FIELD, endDate);
+
         return sparql.searchWithPagination(
                 ProjectModel.class,
                 null,
@@ -130,7 +127,7 @@ public class ProjectDAO {
                     if (financialFundingFilter != null) {
                         select.addFilter(financialFundingFilter);
                     }
-                    
+
                     if (dateFilter != null) {
                         select.addFilter(dateFilter);
                     }

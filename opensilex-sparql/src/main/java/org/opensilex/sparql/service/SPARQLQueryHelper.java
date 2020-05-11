@@ -339,4 +339,21 @@ public class SPARQLQueryHelper {
         }
         return endDateExpr;
     }
+
+    public static Expr intervalDateRange(String startDateVarName, LocalDate startDate, String endDateVarName, LocalDate endDate) throws Exception {
+
+        if (startDate == null || endDate == null) {
+            return null;
+        }
+
+        DateDeserializer dateDeserializer = new DateDeserializer();
+        Node startVar = NodeFactory.createVariable(startDateVarName);
+        Node endVar = NodeFactory.createVariable(endDateVarName);
+        Expr startDateExpr = exprFactory.ge(endVar, dateDeserializer.getNode(startDate));
+        Expr endDateExpr = exprFactory.le(startVar, dateDeserializer.getNode(endDate));
+        Expr withEndDateExpr = exprFactory.and(startDateExpr, endDateExpr);
+        Expr noEndDateExpr = exprFactory.not(exprFactory.bound(endVar));
+        Expr withoutEndDateExpr = exprFactory.and(endDateExpr, noEndDateExpr);
+        return exprFactory.or(withEndDateExpr, withoutEndDateExpr);
+    }
 }

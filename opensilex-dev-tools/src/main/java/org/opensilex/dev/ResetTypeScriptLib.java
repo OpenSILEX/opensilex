@@ -19,6 +19,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.SwaggerAPIGenerator;
 import org.slf4j.Logger;
@@ -65,7 +66,7 @@ public class ResetTypeScriptLib {
                     FileUtils.deleteDirectory(swaggerJsonLibPath.toFile());
                     FileUtils.writeStringToFile(swaggerJsonLibPath.resolve(".gitkeep").toFile(), "", StandardCharsets.UTF_8);
 
-                    ObjectMapper mapper = new ObjectMapper();
+                    ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
                     String jsonInString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(moduleAPI);
                     LOGGER.info("Write swagger definition to: " + swaggerPath);
                     LOGGER.debug(jsonInString);

@@ -8,7 +8,6 @@ package org.opensilex.core.experiment.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -48,8 +47,8 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
         xpDto.setLabel("xp");
 
         LocalDate currentDate = LocalDate.now();
-        xpDto.setStartDate(currentDate.minusDays(3).toString());
-        xpDto.setEndDate(currentDate.plusDays(3).toString());
+        xpDto.setStartDate(currentDate.minusDays(3));
+        xpDto.setEndDate(currentDate.plusDays(3));
         xpDto.setCampaign(currentDate.getYear());
         return xpDto;
     }
@@ -92,7 +91,7 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
         // update the xp
         xpDto.setUri(extractUriFromResponse(postResult));
         xpDto.setLabel("new alias");
-        xpDto.setEndDate(LocalDate.now().toString());
+        xpDto.setEndDate(LocalDate.now());
 
         final Response updateResult = getJsonPutResponse(target(updatePath), xpDto);
         assertEquals(Status.OK.getStatusCode(), updateResult.getStatus());
@@ -102,7 +101,6 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        ObjectMapper mapper = new ObjectMapper();
         SingleObjectResponse<ExperimentGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ExperimentGetDTO>>() {
         });
         ExperimentGetDTO dtoFromApi = getResponse.getResult();
@@ -138,7 +136,6 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        ObjectMapper mapper = new ObjectMapper();
         SingleObjectResponse<ExperimentGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ExperimentGetDTO>>() {
         });
         ExperimentGetDTO xpGetDto = getResponse.getResult();
@@ -150,7 +147,6 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
 
         final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
         JsonNode node = postResult.readEntity(JsonNode.class);
-        ObjectMapper mapper = new ObjectMapper();
         ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class);
         String uri = postResponse.getResult();
 
@@ -180,9 +176,8 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         JsonNode node = getResult.readEntity(JsonNode.class);
-        // mapper.convertValue(node, PaginatedListResponse.class);
-        ObjectMapper mapper = new ObjectMapper();
-        PaginatedListResponse<ExperimentGetDTO> xpListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ExperimentGetDTO>>() {});
+        PaginatedListResponse<ExperimentGetDTO> xpListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ExperimentGetDTO>>() {
+        });
         List<ExperimentGetDTO> xps = xpListResponse.getResult();
 
         assertFalse(xps.isEmpty());

@@ -24,6 +24,7 @@ import java.util.Objects;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.security.user.dal.UserModel;
 
 /**
  * @author vidalmor
@@ -71,24 +72,24 @@ public class ProjectDAO {
             filterList.add(SPARQLQueryHelper.regexFilter(strUriExpr, uri.toString(), null));
         }
         if (homePage != null) {
-            Var homepageVar = makeVar(ProjectModel.HOMEPAGE_SPARQL_VAR);
+            Var homepageVar = makeVar(ProjectModel.HOMEPAGE_FIELD);
             Expr strUriExpr = SPARQLQueryHelper.getExprFactory().str(homepageVar);
             filterList.add(SPARQLQueryHelper.regexFilter(strUriExpr, homePage.toString(), null));
         }
 
         // append regex filter
-        filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.LABEL_VAR, name));
+        filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.LABEL_FIELD, name));
 
-        filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.SHORTNAME_SPARQL_VAR, shortname));
-        filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.DESCRIPTION_SPARQL_VAR, description));
-        filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.OBJECTIVE_SPARQL_VAR, objective));
+        filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.SHORTNAME_FIELD, shortname));
+        filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.DESCRIPTION_FIELD, description));
+        filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.OBJECTIVE_FIELD, objective));
 
         // append date filters
         if (!StringUtils.isEmpty(startDate)) {
-            filterList.add(SPARQLQueryHelper.eq(ProjectModel.START_DATE_SPARQL_VAR, LocalDate.parse(startDate)));
+            filterList.add(SPARQLQueryHelper.eq(ProjectModel.START_DATE_FIELD, LocalDate.parse(startDate)));
         }
         if (!StringUtils.isEmpty(endDate)) {
-            filterList.add(SPARQLQueryHelper.eq(ProjectModel.END_DATE_SPARQL_VAR, LocalDate.parse(endDate)));
+            filterList.add(SPARQLQueryHelper.eq(ProjectModel.END_DATE_FIELD, LocalDate.parse(endDate)));
         }
 
         return sparql.searchWithPagination(
@@ -107,65 +108,36 @@ public class ProjectDAO {
         sparql.create(instances);
     }
 
-    public ListWithPagination<ProjectModel> search(List<OrderBy> orderByList, int page, int pageSize, String lang) throws Exception {
-        return sparql.searchWithPagination(
-                ProjectModel.class,
-                lang,
-                (SelectBuilder select) -> {
-                    // TODO implements filters
-                },
-                orderByList,
-                page,
-                pageSize
+    public ListWithPagination<ProjectModel> search(String label, String financialFunding, LocalDate startDate, LocalDate endDate, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+
+        Expr stringFilter = SPARQLQueryHelper.or(
+                SPARQLQueryHelper.regexFilter(ProjectModel.SHORTNAME_FIELD, label),
+                SPARQLQueryHelper.regexFilter(ProjectModel.LABEL_FIELD, label)
         );
-    }
 
-    public ListWithPagination<ProjectModel> search(String shortname, String label, String financial, String startDate, String endDate, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+        Expr financialFundingFilter = SPARQLQueryHelper.regexFilter(ProjectModel.FINANCIAL_FUNDING_FIELD, financialFunding);
 
+         Expr dateFilter = SPARQLQueryHelper.dateRange(ProjectModel.START_DATE_FIELD, startDate, ProjectModel.END_DATE_FIELD, endDate);
+         
         return sparql.searchWithPagination(
                 ProjectModel.class,
                 null,
                 (SelectBuilder select) -> {
-                    appendRegexShortnameOrLabelFilter(select, shortname, label);
-                    appendRegexFinancialFundingFilter(select, financial);
-                    appendIntervalDateFilters(select, startDate, endDate);
+                    if (stringFilter != null) {
+                        select.addFilter(stringFilter);
+                    }
+
+                    if (financialFundingFilter != null) {
+                        select.addFilter(financialFundingFilter);
+                    }
+                    
+                    if (dateFilter != null) {
+                        select.addFilter(dateFilter);
+                    }
                 },
                 orderByList,
                 page,
                 pageSize
         );
     }
-
-    protected void appendRegexShortnameOrLabelFilter(SelectBuilder select, String shortname, String label) {
-        if (!StringUtils.isEmpty(shortname) && !StringUtils.isEmpty(label)) {
-            Expr shortnameRegexExpr = SPARQLQueryHelper.regexFilter(ProjectModel.SHORTNAME_SPARQL_VAR, shortname);
-            Expr labelRegexExpr = SPARQLQueryHelper.regexFilter(ProjectModel.LABEL_VAR, label);
-            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
-            select.addFilter(exprFactory.or(shortnameRegexExpr, labelRegexExpr));
-        } else if (!StringUtils.isEmpty(shortname)) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(ProjectModel.SHORTNAME_SPARQL_VAR, shortname));
-        } else if (!StringUtils.isEmpty(label)) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(ProjectModel.LABEL_VAR, label));
-        }
-    }
-
-    protected void appendRegexFinancialFundingFilter(SelectBuilder select, String financial) {
-        if (!StringUtils.isEmpty(financial)) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(ProjectModel.FINANCIALFUNDING_SPARQL_VAR, financial));
-        }
-    }
-
-    protected void appendIntervalDateFilters(SelectBuilder select, String startDate, String endDate) throws Exception {
-
-        if (startDate == null || endDate == null) {
-            return;
-        }
-
-        LocalDate startLocateDate = LocalDate.parse(startDate);
-        LocalDate endLocalDate = LocalDate.parse(endDate);
-
-        Expr dateRangeExpr = SPARQLQueryHelper.intervalDateRange(ExperimentModel.START_DATE_SPARQL_VAR, startLocateDate, ExperimentModel.END_DATE_SPARQL_VAR, endLocalDate);
-        select.addFilter(dateRangeExpr);
-    }
-
 }

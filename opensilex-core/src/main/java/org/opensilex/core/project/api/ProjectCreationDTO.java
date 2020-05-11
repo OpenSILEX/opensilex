@@ -6,7 +6,6 @@
 package org.opensilex.core.project.api;
 
 import java.net.URI;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -27,10 +26,8 @@ public class ProjectCreationDTO extends ProjectDTO {
         
         model.setShortname(getShortname());
         model.setHasFinancialFunding(hasFinancialFunding);
-        model.setStartDate(LocalDate.parse(startDate));
-        if (endDate != null) {
-            model.setEndDate(LocalDate.parse(endDate));
-        }
+        model.setStartDate(startDate);
+        model.setEndDate(endDate);
         model.setLabel(label);
         model.setDescription(description);
         model.setObjective(objective);

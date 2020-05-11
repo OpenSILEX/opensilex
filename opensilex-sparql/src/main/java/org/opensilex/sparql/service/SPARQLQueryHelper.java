@@ -106,10 +106,8 @@ public class SPARQLQueryHelper {
     /**
      * @param varName the variable name
      * @param object the object to compare with the given variable
-     * @return an E_Equals expression between the given variable and the given
-     * object
-     * @throws SPARQLDeserializerNotFoundException if no
-     * {@link SPARQLDeserializer} is found for object
+     * @return an E_Equals expression between the given variable and the given object
+     * @throws SPARQLDeserializerNotFoundException if no {@link SPARQLDeserializer} is found for object
      * @see ExprFactory#eq(Object, Object)
      * @see SPARQLDeserializers#getForClass(Class)
      */
@@ -121,8 +119,7 @@ public class SPARQLQueryHelper {
     /**
      * @param varName the variable name
      * @param node the Jena node to compare with the given variable
-     * @return an E_Equals expression between the given variable and the given
-     * object
+     * @return an E_Equals expression between the given variable and the given object
      * @see ExprFactory#eq(Object, Object)
      */
     public static Expr eq(String varName, Node node) {
@@ -207,11 +204,9 @@ public class SPARQLQueryHelper {
      * @param where the WhereClause to update
      * @param varName the variable name
      * @param values the list of values to put in the VALUES set
-     * @throws SPARQLDeserializerNotFoundException if no
-     * {@link SPARQLDeserializer} is found for an element of values
+     * @throws SPARQLDeserializerNotFoundException if no {@link SPARQLDeserializer} is found for an element of values
      * @see
-     * <a href=www.w3.org/TR/2013/REC-sparql11-query-20130321/#inline-data>W3C
-     * SPARQL VALUES specifications</a>
+     * <a href=www.w3.org/TR/2013/REC-sparql11-query-20130321/#inline-data>W3C SPARQL VALUES specifications</a>
      * @see SelectBuilder#addWhereValueVar(Object, Object...)
      * @see SPARQLDeserializers#getForClass(Class)
      */
@@ -254,15 +249,13 @@ public class SPARQLQueryHelper {
      * </pre>
      *
      * @param select the SelectBuilder to update
-     * @param varValuesMap a map between variable name and the list of values
-     * for this variable
+     * @param varValuesMap a map between variable name and the list of values for this variable
      *
      * @see <a href=www.w3.org/TR/2013/REC-sparql11-query-20130321/#inline-data>
      * SPARQL VALUES</a>
      * @see <a href=https://www.w3.org/TR/sparql11-query/#func-logical-or>
      * SPARQL LOGICAL OR</a>
-     * @see <a href=https://www.w3.org/TR/sparql11-query/#expressions> SPARQL
-     * FILTER </a>
+     * @see <a href=https://www.w3.org/TR/sparql11-query/#expressions> SPARQL FILTER </a>
      */
     public static void addWhereValues(SelectBuilder select, Map<String, List<?>> varValuesMap) throws Exception {
 
@@ -303,11 +296,9 @@ public class SPARQLQueryHelper {
     }
 
     /**
-     * @param startDateVarName the name of the startDate variable , should not
-     * be null if startDate is not null
+     * @param startDateVarName the name of the startDate variable , should not be null if startDate is not null
      * @param startDate the start date
-     * @param endDateVarName the name of the endDate variable , should not be
-     * null if endDate is not null
+     * @param endDateVarName the name of the endDate variable , should not be null if endDate is not null
      * @param endDate the end date
      * @return an Expr according the two given LocalDate and variable names      <pre>
      *     null if startDate and endDate are both null
@@ -347,21 +338,5 @@ public class SPARQLQueryHelper {
             return startDateExpr;
         }
         return endDateExpr;
-    }
-
-    public static Expr intervalDateRange(String startDateVarName, LocalDate startDate, String endDateVarName, LocalDate endDate) throws Exception {
-
-       
-
-        DateDeserializer dateDeserializer = new DateDeserializer();
-        Node startVar = NodeFactory.createVariable(startDateVarName);
-        Node endVar = NodeFactory.createVariable(endDateVarName);
-        Expr startDateExpr = exprFactory.ge(endVar, dateDeserializer.getNode(startDate));
-        Expr endDateExpr = exprFactory.le(startVar, dateDeserializer.getNode(endDate));
-        Expr withEndDateExpr = exprFactory.and(startDateExpr, endDateExpr);
-        Expr noEndDateExpr = exprFactory.not(exprFactory.bound(endVar));
-        Expr withoutEndDateExpr = exprFactory.and(endDateExpr, noEndDateExpr);
-
-        return exprFactory.or(withEndDateExpr, withoutEndDateExpr);
     }
 }

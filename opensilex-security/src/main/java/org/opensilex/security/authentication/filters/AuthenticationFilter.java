@@ -36,6 +36,7 @@ import org.opensilex.server.exceptions.UnexpectedErrorException;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.SecurityContextProxy;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,7 +108,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             try {
                 if (isJSON.get()) {
                     String body = IOUtils.toString(requestContext.getEntityStream(), Charset.forName("UTF-8"));
-                    ObjectMapper mapper = new ObjectMapper();
+                    ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
                     String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.readTree(body));
                     LOGGER.debug("Incoming request JSON body: \n" + json);
                     requestContext.setEntityStream(new ByteArrayInputStream(body.getBytes(Charset.forName("UTF-8"))));

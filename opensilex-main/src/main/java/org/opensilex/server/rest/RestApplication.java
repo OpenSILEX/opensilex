@@ -15,7 +15,6 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Context;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.process.internal.RequestScoped;
@@ -27,6 +26,7 @@ import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.server.ServerModule;
 import org.opensilex.server.extensions.APIExtension;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceFactory;
 import org.slf4j.Logger;
@@ -97,7 +97,7 @@ public class RestApplication extends ResourceConfig {
         register(MultiPartFeature.class);
 
         // Enable Jackson JSON serialier/deserializer for Jersey
-        register(JacksonFeature.class);
+        register(ObjectMapperContextResolver.class);
 
         // Enable GZIP for web services
         register(GZipEncoder.class);

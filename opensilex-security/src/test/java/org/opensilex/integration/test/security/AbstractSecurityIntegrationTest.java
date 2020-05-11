@@ -8,7 +8,6 @@ package org.opensilex.integration.test.security;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.util.ArrayList;
 import org.junit.After;
@@ -29,7 +28,6 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.api.AuthenticationDTO;
 import org.opensilex.security.authentication.api.TokenGetDTO;
-import org.opensilex.sparql.exceptions.SPARQLQueryException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
@@ -128,7 +126,6 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         JsonNode node = callResult.readEntity(JsonNode.class);
 
         // need to convert according a TypeReference, because the expected SingleObjectResponse is a generic object
-        ObjectMapper mapper = new ObjectMapper();
         Object json = mapper.readValue(node.toString(), Object.class);
         if (callResult.getStatus() == Response.Status.OK.getStatusCode()) {
             SingleObjectResponse<TokenGetDTO> res = mapper.convertValue(node, new TypeReference<SingleObjectResponse<TokenGetDTO>>() {

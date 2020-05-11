@@ -7,10 +7,11 @@ package org.opensilex.core.project.api;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import javax.validation.constraints.NotNull;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.server.rest.validation.DateConstraint;
 import org.opensilex.server.rest.validation.Required;
 
 /**
@@ -30,9 +31,9 @@ public abstract class ProjectDTO {
 
     protected String objective;
 
-    protected String startDate;
+    protected LocalDate startDate;
 
-    protected String endDate;
+    protected LocalDate endDate;
 
     protected List<String> keywords = new ArrayList<>();
 
@@ -104,23 +105,23 @@ public abstract class ProjectDTO {
         return this;
     }
 
-    @Required
+    @NotNull
     @ApiModelProperty(example = "2020-02-20")
-    @DateConstraint
-    public String getStartDate() {
+    public LocalDate getStartDate() {
         return startDate;
     }
 
-    public ProjectDTO setStartDate(String startDate) {
+    public ProjectDTO setStartDate(LocalDate startDate) {
         this.startDate = startDate;
         return this;
     }
 
-    public String getEndDate() {
+    @ApiModelProperty(example = "2020-02-20")
+    public LocalDate getEndDate() {
         return endDate;
     }
 
-    public ProjectDTO setEndDate(String endDate) {
+    public ProjectDTO setEndDate(LocalDate endDate) {
         this.endDate = endDate;
         return this;
     }

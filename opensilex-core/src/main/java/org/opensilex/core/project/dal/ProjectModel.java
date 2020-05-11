@@ -35,57 +35,56 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
             property = "label"
     )
     String label;
-    public static final String LABEL_VAR = "label";
+    public static final String LABEL_FIELD = "label";
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasShortname",
-            required = true
+            property = "hasShortname"
     )
     private String shortname;
-    public static final String SHORTNAME_SPARQL_VAR = "shortname";
+    public static final String SHORTNAME_FIELD = "shortname";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasFinancialFunding"
     )
     private String hasFinancialFunding;
-    public static final String FINANCIALFUNDING_SPARQL_VAR = "hasFinancialFunding";
+    public static final String FINANCIAL_FUNDING_FIELD = "hasFinancialFunding";
 
     @SPARQLProperty(
             ontology = DCTerms.class,
             property = "description"
     )
     private String description;
-    public static final String DESCRIPTION_SPARQL_VAR = "description";
+    public static final String DESCRIPTION_FIELD = "description";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasExperiment"
     )
     List<ExperimentModel> experiments;
-    public static final String EXPERIMENT_URI_SPARQL_VAR = "experiment";
+    public static final String EXPERIMENT_URI_FIELD = "experiment";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasObjective"
     )
     private String objective;
-    public static final String OBJECTIVE_SPARQL_VAR = "objective";
+    public static final String OBJECTIVE_FIELD = "objective";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "startDate"
     )
     private LocalDate startDate;
-    public static final String START_DATE_SPARQL_VAR = "startDate";
+    public static final String START_DATE_FIELD = "startDate";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "endDate"
     )
     private LocalDate endDate;
-    public static final String END_DATE_SPARQL_VAR = "endDate";
+    public static final String END_DATE_FIELD = "endDate";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -98,7 +97,7 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
             property = "homepage"
     )
     private URI homePage;
-    public static final String HOMEPAGE_SPARQL_VAR = "homePage";
+    public static final String HOMEPAGE_FIELD = "homePage";
 
     @SPARQLProperty(
             ontology = Oeso.class,

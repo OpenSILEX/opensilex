@@ -2,7 +2,6 @@ package org.opensilex.security.user.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -105,7 +104,6 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        ObjectMapper mapper = new ObjectMapper();
         SingleObjectResponse<UserGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<UserGetDTO>>() {
         });
         UserGetDTO dtoFromApi = getResponse.getResult();
@@ -158,7 +156,6 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), getSearchResult.getStatus());
 
         JsonNode node = getSearchResult.readEntity(JsonNode.class);
-        ObjectMapper mapper = new ObjectMapper();
         PaginatedListResponse<UserGetDTO> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<UserGetDTO>>() {
         });
         List<UserGetDTO> users = listResponse.getResult();
@@ -199,7 +196,6 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         JsonNode node = getResult.readEntity(JsonNode.class);
-        ObjectMapper mapper = new ObjectMapper();
         PaginatedListResponse<UserGetDTO> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<UserGetDTO>>() {
         });
         List<UserGetDTO> users = listResponse.getResult();

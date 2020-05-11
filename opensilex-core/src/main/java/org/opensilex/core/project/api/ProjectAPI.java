@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -28,6 +29,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.server.response.ErrorResponse;
@@ -222,10 +224,9 @@ public class ProjectAPI {
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     public Response searchProjects(
-            @ApiParam(value = "Search by start date", example = "2017-06-15") @QueryParam("startDate") String startDate,
-            @ApiParam(value = "Search by end date", example = "2018-06-15") @QueryParam("endDate") String endDate,
-            @ApiParam(value = "Regex pattern for filtering by shortname", example = "PJ17") @QueryParam("shortname") String shortname,
-            @ApiParam(value = "Regex pattern for filtering by label", example = "a longer name") @QueryParam("label") String label,
+            @ApiParam(value = "Search by start date", example = "2017-06-15") @QueryParam("startDate") LocalDate startDate,
+            @ApiParam(value = "Search by end date", example = "2018-06-15") @QueryParam("endDate") LocalDate endDate,
+            @ApiParam(value = "Regex pattern for filtering by name or shortname", example = "PJ17") @QueryParam("label") String label,
             @ApiParam(value = "Regex pattern for filtering by financial funding", example = "ANR") @QueryParam("financial") String financial,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "label=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
@@ -235,7 +236,6 @@ public class ProjectAPI {
         try {
             ProjectDAO prjctDao = new ProjectDAO(sparql);
             ListWithPagination<ProjectModel> resultList = prjctDao.search(
-                    shortname,
                     label,
                     financial,
                     startDate,

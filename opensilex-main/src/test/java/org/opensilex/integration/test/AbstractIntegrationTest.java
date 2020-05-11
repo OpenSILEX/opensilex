@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
+import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.test.TestProperties;
 import org.junit.AfterClass;
@@ -38,6 +39,7 @@ import org.junit.runner.Description;
 import org.mockito.Mockito;
 import org.opensilex.OpenSilex;
 import org.opensilex.server.rest.RestApplication;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +68,8 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return opensilex;
     }
 
+    protected final static ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
+
     @BeforeClass
     public static void createOpenSilex() throws Exception {
         Map<String, String> args = new HashMap<>();
@@ -76,11 +80,17 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         // args.put(OpenSilex.DEBUG_ARG_KEY, "true");
         LOGGER.debug("Create OpenSilex instance for Integration Test");
         opensilex = OpenSilex.createInstance(args);
+
     }
 
     @AfterClass
     public static void stopOpenSilex() throws Exception {
         opensilex.shutdown();
+    }
+
+    @Override
+    public void configureClient(ClientConfig config) {
+        config.register(ObjectMapperContextResolver.class);
     }
 
     @Override
@@ -237,11 +247,8 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      * @throws URISyntaxException if the extracted URI as String could not be parse as an {@link URI}
      */
     protected URI extractUriFromResponse(final Response response) throws URISyntaxException {
-        JsonNode node = response.readEntity(JsonNode.class
-        );
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class
-        );
+        JsonNode node = response.readEntity(JsonNode.class);
+        ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class);
         return new URI(postResponse.getResult());
     }
 
@@ -253,9 +260,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      *
      */
     protected List<URI> extractUriListFromPaginatedListResponse(final Response response) {
-        JsonNode node = response.readEntity(JsonNode.class
-        );
-        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node = response.readEntity(JsonNode.class);
         PaginatedListResponse<URI> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<URI>>() {
         });
         return listResponse.getResult();
@@ -271,8 +276,8 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     }
 
     protected void printJsonNode(JsonNode node) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node);
         System.out.println(json);
     }
+
 }

@@ -8,7 +8,6 @@ package org.opensilex.core.infrastructure.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.util.*;
 import javax.ws.rs.core.Response;
@@ -75,7 +74,6 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
 
         JsonNode node = getResult.readEntity(JsonNode.class);
 
-        ObjectMapper mapper = new ObjectMapper();
         ResourceTreeResponse response = mapper.convertValue(node, new TypeReference<ResourceTreeResponse>() {
         });
 

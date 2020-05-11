@@ -39,7 +39,7 @@ public class ExperimentGetDTO extends ExperimentDTO {
 
         dto.setUri(model.getUri())
                 .setLabel(model.getLabel())
-                .setStartDate(model.getStartDate().toString())
+                .setStartDate(model.getStartDate())
                 .setCampaign(model.getCampaign())
                 .setObjective(model.getObjective())
                 .setComment(model.getComment())
@@ -50,7 +50,7 @@ public class ExperimentGetDTO extends ExperimentDTO {
                 .setFactors(model.getFactors());
 
         if (model.getEndDate() != null) {
-            dto.setEndDate(model.getEndDate().toString());
+            dto.setEndDate(model.getEndDate());
         }
 
         dto.setScientificSupervisors(getUriList(model.getScientificSupervisors()))

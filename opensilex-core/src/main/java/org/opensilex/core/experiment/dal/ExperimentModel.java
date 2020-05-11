@@ -39,14 +39,14 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             required = true
     )
     String label;
-    public static final String LABEL_VAR = "label";
+    public static final String LABEL_FIELD = "label";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasProject"
     )
     List<ProjectModel> projects;
-    public static final String PROJECT_URI_SPARQL_VAR = "project";
+    public static final String PROJECT_URI_FIELD = "project";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -54,98 +54,98 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             required = true
     )
     LocalDate startDate;
-    public static final String START_DATE_SPARQL_VAR = "startDate";
+    public static final String START_DATE_FIELD = "startDate";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "endDate"
     )
     LocalDate endDate;
-    public static final String END_DATE_SPARQL_VAR = "endDate";
+    public static final String END_DATE_FIELD = "endDate";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasScientificSupervisor"
     )
     List<UserModel> scientificSupervisors;
-    public static final String SCIENTIFIC_SUPERVISOR_SPARQL_VAR = "scientificSupervisor";
+    public static final String SCIENTIFIC_SUPERVISOR_FIELD = "scientificSupervisor";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasTechnicalSupervisor"
     )
     List<UserModel> technicalSupervisors;
-    public static final String TECHNICAL_SUPERVISOR_SPARQL_VAR = "technicalSupervisor";
+    public static final String TECHNICAL_SUPERVISOR_FIELD = "technicalSupervisor";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasGroup"
     )
     List<GroupModel> groups;
-    public static final String GROUP_SPARQL_VAR = "group";
+    public static final String GROUP_FIELD = "group";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasCampaign"
     )
     Integer campaign;
-    public static final String CAMPAIGN_SPARQL_VAR = "campaign";
+    public static final String CAMPAIGN_FIELD = "campaign";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasObjective"
     )
     String objective;
-    public static final String OBJECTIVE_SPARQL_VAR = "objective";
+    public static final String OBJECTIVE_FIELD = "objective";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasKeyword"
     )
     List<String> keywords;
-    public static final String KEYWORD_SPARQL_VAR = "keyword";
+    public static final String KEYWORD_FIELD = "keyword";
 
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "comment"
     )
     String comment;
-    public static final String COMMENT_SPARQL_VAR = "comment";
+    public static final String COMMENT_FIELD = "comment";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasSpecies"
     )
     List<SpeciesModel> species;
-    public static final String SPECIES_SPARQL_VAR = "species";
+    public static final String SPECIES_FIELD = "species";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasInfrastructure"
     )
     List<InfrastructureModel> infrastructures;
-    public static final String INFRASTRUCTURE_SPARQL_VAR = "infrastructure";
+    public static final String INFRASTRUCTURE_FIELD = "infrastructure";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasDevice"
     )
     List<URI> devices;
-    public static final String DEVICES_SPARQL_VAR = "devices";
+    public static final String DEVICES_FIELD = "devices";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "isPublic"
     )
     protected Boolean isPublic;
-    public static final String IS_PUBLIC_SPARQL_VAR = "isPublic";
+    public static final String IS_PUBLIC_FIELD = "isPublic";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "measures"
     )
     List<URI> variables;
-    public static final String VARIABLES_SPARQL_VAR = "variables";
+    public static final String VARIABLES_FIELD = "variables";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -153,7 +153,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             inverse = true
     )
     List<URI> sensors;
-    public static final String SENSORS_SPARQL_VAR = "sensors";
+    public static final String SENSORS_FIELD = "sensors";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -161,7 +161,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             inverse = true
     )
     List<URI> factors;
-    public static final String FACTORS_SPARQL_VAR = "factors";
+    public static final String FACTORS_FIELD = "factors";
 
     public String getLabel() {
         return label;

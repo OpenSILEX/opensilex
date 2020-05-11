@@ -10,10 +10,11 @@ import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import javax.validation.constraints.NotNull;
 import org.opensilex.server.rest.validation.Required;
-import org.opensilex.server.rest.validation.DateConstraint;
 
 /**
  * @author Renaud COLIN A basic DTO class about an {@link ExperimentModel}
@@ -26,9 +27,9 @@ public abstract class ExperimentDTO {
 
     protected List<URI> projects = new ArrayList<>();
 
-    protected String startDate;
+    protected LocalDate startDate;
 
-    protected String endDate;
+    protected LocalDate endDate;
 
     protected String objective;
 
@@ -88,25 +89,23 @@ public abstract class ExperimentDTO {
         return this;
     }
 
-    @Required
+    @NotNull
     @ApiModelProperty(example = "2020-02-20")
-    @DateConstraint
-    public String getStartDate() {
+    public LocalDate getStartDate() {
         return startDate;
     }
 
-    public ExperimentDTO setStartDate(String startDate) {
+    public ExperimentDTO setStartDate(LocalDate startDate) {
         this.startDate = startDate;
         return this;
     }
 
     @ApiModelProperty(example = "2020-02-20")
-    @DateConstraint
-    public String getEndDate() {
+    public LocalDate getEndDate() {
         return endDate;
     }
 
-    public ExperimentDTO setEndDate(String endDate) {
+    public ExperimentDTO setEndDate(LocalDate endDate) {
         this.endDate = endDate;
         return this;
     }

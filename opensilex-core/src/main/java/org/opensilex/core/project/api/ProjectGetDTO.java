@@ -38,15 +38,13 @@ public class ProjectGetDTO extends ProjectDTO {
 
         dto.setUri(model.getUri())
                 .setLabel(model.getLabel())
-                .setStartDate(model.getStartDate().toString())
+                .setStartDate(model.getStartDate())
+                .setEndDate(model.getEndDate())
                 .setShortname(model.getShortname())
                 .setHasFinancialFunding(model.getHasFinancialFunding())
                 .setDescription(model.getDescription())
                 .setObjective(model.getObjective())
                 .setHomePage(model.getHomePage());
-        if (model.getEndDate() != null) {
-            dto.setEndDate(model.getEndDate().toString());
-        }
 
         dto.setKeywords(model.getKeywords())
                 .setAdministrativeContacts(getUriList(model.getAdministrativeContacts()))

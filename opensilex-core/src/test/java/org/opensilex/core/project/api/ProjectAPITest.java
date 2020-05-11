@@ -6,12 +6,9 @@
 //******************************************************************************
 package org.opensilex.core.project.api;
 
-import org.opensilex.core.experiment.api.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
-import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 
@@ -48,8 +45,8 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
         pjctDto.setShortname("prjjj");
 
         LocalDate currentDate = LocalDate.now();
-        pjctDto.setStartDate(currentDate.minusDays(3).toString());
-        pjctDto.setEndDate(currentDate.plusDays(3).toString());
+        pjctDto.setStartDate(currentDate.minusDays(3));
+        pjctDto.setEndDate(currentDate.plusDays(3));
         return pjctDto;
     }
 
@@ -91,7 +88,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
         // update the pj
         pjctDto.setUri(extractUriFromResponse(postResult));
         pjctDto.setShortname("new");
-        pjctDto.setEndDate(LocalDate.now().toString());
+        pjctDto.setEndDate(LocalDate.now());
 
         final Response updateResult = getJsonPutResponse(target(updatePath), pjctDto);
         assertEquals(Status.OK.getStatusCode(), updateResult.getStatus());
@@ -101,7 +98,6 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        ObjectMapper mapper = new ObjectMapper();
         SingleObjectResponse<ProjectCreationDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ProjectCreationDTO>>() {
         });
         ProjectCreationDTO dtoFromApi = getResponse.getResult();
@@ -110,21 +106,6 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(pjctDto.getShortname(), dtoFromApi.getShortname());
         assertEquals(pjctDto.getEndDate(), dtoFromApi.getEndDate());
     }
-
-//    @Test
-//    public void testDelete() throws Exception {
-//
-//        // create object and check if URI exists
-//        Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO());
-//        String uri = extractUriFromResponse(postResponse).toString();
-//
-//        // delete object and check if URI no longer exists
-//        Response delResult = getDeleteByUriResponse(target(deletePath), uri);
-//        assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
-//
-//        Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
-//        assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
-//    }
 
     @Test
     public void testGetByUri() throws Exception {
@@ -137,26 +118,11 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        ObjectMapper mapper = new ObjectMapper();
         SingleObjectResponse<ProjectCreationDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ProjectCreationDTO>>() {
         });
         ProjectCreationDTO pjGetDto = getResponse.getResult();
         assertNotNull(pjGetDto);
     }
-
-//    @Test
-//    public void testGetByUriFail() throws Exception {
-//
-//        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
-//        JsonNode node = postResult.readEntity(JsonNode.class);
-//        ObjectMapper mapper = new ObjectMapper();
-//        ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class);
-//        String uri = postResponse.getResult();
-//
-//        // call the service with a non existing pseudo random URI
-//        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri + "7FG4FG89FG4GH4GH58");
-//        assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
-//    }
 
     @Test
     public void testSearch() throws Exception {
@@ -168,7 +134,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
         Map<String, Object> params = new HashMap<String, Object>() {
             {
                 put("startDate", creationDTO.getStartDate());
-                  put("shortname", creationDTO.getShortname());
+                put("shortname", creationDTO.getShortname());
                 put("uri", uri);
             }
         };
@@ -178,9 +144,8 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         JsonNode node = getResult.readEntity(JsonNode.class);
-        // mapper.convertValue(node, PaginatedListResponse.class);
-        ObjectMapper mapper = new ObjectMapper();
-        PaginatedListResponse<ProjectCreationDTO> xpListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ProjectCreationDTO>>() {});
+        PaginatedListResponse<ProjectCreationDTO> xpListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ProjectCreationDTO>>() {
+        });
         List<ProjectCreationDTO> xps = xpListResponse.getResult();
 
         assertFalse(xps.isEmpty());

@@ -2,7 +2,6 @@ package org.opensilex.security.authentication.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
@@ -76,7 +75,6 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
         Response getResult = getJsonGetPublicResponse(target(credentialsPath));
 
         JsonNode node = getResult.readEntity(JsonNode.class);
-        ObjectMapper mapper = new ObjectMapper();
         PaginatedListResponse<CredentialsGroupDTO> getResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<CredentialsGroupDTO>>() {
         });
 

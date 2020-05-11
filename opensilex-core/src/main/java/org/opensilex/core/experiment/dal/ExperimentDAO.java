@@ -105,7 +105,7 @@ public class ExperimentDAO {
      *
      * @param xp the {@link ExperimentModel} to filter
      */
-    protected void filterExperimentSensors(ExperimentModel xp) {
+    private void filterExperimentSensors(ExperimentModel xp) {
         if (xp.getSensors().isEmpty())
             return;
 
@@ -119,16 +119,6 @@ public class ExperimentDAO {
         });
 
     }
-
-//    public ListWithPagination<ExperimentModel> getAllXp(List<OrderBy> orderByList, int page, int pageSize) throws Exception {
-//
-//        ListWithPagination<ExperimentModel> xps = sparql.searchWithPagination(ExperimentModel.class, null, null, orderByList, page, pageSize);
-//        for (ExperimentModel xp : xps.getList()) {
-//            filterExperimentSensors(xp);
-//        }
-//        return xps;
-//    }
-
 
     public ListWithPagination<ExperimentModel> search(
             URI uri,
@@ -191,27 +181,27 @@ public class ExperimentDAO {
 
     }
 
-    protected void appendCampaignFilter(SelectBuilder select, Integer campaign) throws Exception {
+    private void appendCampaignFilter(SelectBuilder select, Integer campaign) throws Exception {
         if (campaign != null) {
-            select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.CAMPAIGN_SPARQL_VAR, campaign));
+            select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.CAMPAIGN_FIELD, campaign));
         }
     }
 
-    protected void appendSpeciesFilter(SelectBuilder select, List<URI> species) throws Exception {
+    private void appendSpeciesFilter(SelectBuilder select, List<URI> species) throws Exception {
         if (species != null && ! species.isEmpty()) {
-            addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasSpecies, ExperimentModel.SPECIES_SPARQL_VAR);
-            SPARQLQueryHelper.addWhereValues(select, ExperimentModel.SPECIES_SPARQL_VAR, species);
+            addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasSpecies, ExperimentModel.SPECIES_FIELD);
+            SPARQLQueryHelper.addWhereValues(select, ExperimentModel.SPECIES_FIELD, species);
         }
     }
 
 
-    protected void appendRegexLabelFilter(SelectBuilder select, String label) {
+    private void appendRegexLabelFilter(SelectBuilder select, String label) {
         if (!StringUtils.isEmpty(label)) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.LABEL_VAR, label));
+            select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.LABEL_FIELD, label));
         }
     }
 
-    protected void appendUriRegexFilter(SelectBuilder select, URI uri) {
+    private void appendUriRegexFilter(SelectBuilder select, URI uri) {
         if (uri != null) {
             Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
             Expr strUriExpr = SPARQLQueryHelper.getExprFactory().str(uriVar);
@@ -219,11 +209,11 @@ public class ExperimentDAO {
         }
     }
 
-    protected void appendDateFilters(SelectBuilder select, Boolean ended, String startDate, String endDate) throws Exception {
+    private void appendDateFilters(SelectBuilder select, Boolean ended, String startDate, String endDate) throws Exception {
 
         if (ended != null) {
 
-            Node endDateVar = NodeFactory.createVariable(ExperimentModel.END_DATE_SPARQL_VAR);
+            Node endDateVar = NodeFactory.createVariable(ExperimentModel.END_DATE_FIELD);
             Node currentDateNode = SPARQLDeserializers.getForClass(LocalDate.class).getNode(LocalDate.now());
 
             // an experiment is ended if the end date is less than the the current date
@@ -242,29 +232,29 @@ public class ExperimentDAO {
         LocalDate startLocateDate = startDate == null ? null : LocalDate.parse(startDate);
         LocalDate endLocalDate = endDate == null ? null : LocalDate.parse(endDate);
 
-        Expr dateRangeExpr = SPARQLQueryHelper.dateRange(ExperimentModel.START_DATE_SPARQL_VAR,startLocateDate,ExperimentModel.END_DATE_SPARQL_VAR,endLocalDate);
+        Expr dateRangeExpr = SPARQLQueryHelper.dateRange(ExperimentModel.START_DATE_FIELD,startLocateDate,ExperimentModel.END_DATE_FIELD,endLocalDate);
         select.addFilter(dateRangeExpr);
     }
 
-    protected void appendProjectListFilter(SelectBuilder select, List<URI> projects) throws Exception {
+    private void appendProjectListFilter(SelectBuilder select, List<URI> projects) throws Exception {
 
         if (projects != null && !projects.isEmpty()) {
-            addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasProject, ExperimentModel.PROJECT_URI_SPARQL_VAR);
-            SPARQLQueryHelper.addWhereValues(select, ExperimentModel.PROJECT_URI_SPARQL_VAR, projects);
+            addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasProject, ExperimentModel.PROJECT_URI_FIELD);
+            SPARQLQueryHelper.addWhereValues(select, ExperimentModel.PROJECT_URI_FIELD, projects);
         }
     }
 
-    protected static void addWhere(SelectBuilder select, String subjectVar, Property property, String objectVar) {
+    private static void addWhere(SelectBuilder select, String subjectVar, Property property, String objectVar) {
         select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
     }
 
-    protected void appendGroupsListFilters(SelectBuilder select, boolean admin, Boolean isPublic, List<URI> groups) {
+    private void appendGroupsListFilters(SelectBuilder select, boolean admin, Boolean isPublic, List<URI> groups) {
 
         if (admin) {
             // add no filter on groups for the admin
             return;
         }
-        Var groupVar = makeVar(ExperimentModel.GROUP_SPARQL_VAR);
+        Var groupVar = makeVar(ExperimentModel.GROUP_FIELD);
         Triple groupTriple = new Triple(makeVar(ExperimentModel.URI_FIELD), Oeso.hasGroup.asNode(), groupVar);
 
         if (CollectionUtils.isEmpty(groups) || (isPublic != null && isPublic)) {
@@ -289,10 +279,10 @@ public class ExperimentDAO {
         }
     }
 
-    protected void appendVariablesListFilter(SelectBuilder select, List<URI> variables) throws Exception {
+    private void appendVariablesListFilter(SelectBuilder select, List<URI> variables) throws Exception {
         if (variables != null && !variables.isEmpty()) {
-            addWhere(select, ExperimentModel.URI_FIELD, Oeso.measures, ExperimentModel.VARIABLES_SPARQL_VAR);
-            SPARQLQueryHelper.addWhereValues(select, ExperimentModel.VARIABLES_SPARQL_VAR, variables);
+            addWhere(select, ExperimentModel.URI_FIELD, Oeso.measures, ExperimentModel.VARIABLES_FIELD);
+            SPARQLQueryHelper.addWhereValues(select, ExperimentModel.VARIABLES_FIELD, variables);
         }
     }
 

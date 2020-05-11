@@ -23,16 +23,13 @@ import org.opensilex.security.user.dal.UserModel;
  */
 public class ExperimentCreationDTO extends ExperimentDTO {
 
-
     public ExperimentModel newModel() {
 
         ExperimentModel model = new ExperimentModel();
         model.setUri(getUri());
         model.setLabel(getLabel());
-        model.setStartDate(LocalDate.parse(startDate));
-        if (endDate != null) {
-            model.setEndDate(LocalDate.parse(endDate));
-        }
+        model.setStartDate(startDate);
+        model.setEndDate(endDate);
 
         model.setObjective(getObjective());
         model.setComment(getComment());
@@ -51,7 +48,7 @@ public class ExperimentCreationDTO extends ExperimentDTO {
             speciesList.add(species);
         });
         model.setSpecies(speciesList);
-        
+
         List<InfrastructureModel> infrastructuresList = new ArrayList<>(infrastructures.size());
         infrastructures.forEach((URI u) -> {
             InfrastructureModel infrastructure = new InfrastructureModel();
@@ -59,7 +56,7 @@ public class ExperimentCreationDTO extends ExperimentDTO {
             infrastructuresList.add(infrastructure);
         });
         model.setInfrastructures(infrastructuresList);
-        
+
         List<ProjectModel> projectList = new ArrayList<>(projects.size());
         projects.forEach((URI u) -> {
             ProjectModel project = new ProjectModel();

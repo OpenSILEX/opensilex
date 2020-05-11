@@ -90,12 +90,11 @@ public class ExperimentAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Create an experiment", response = ObjectUriResponse.class),
-        @ApiResponse(code = 409, message = "An experiment with the same URI already exists", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)}
-    )
+        @ApiResponse(code = 409, message = "An experiment with the same URI already exists", response = ErrorResponse.class)
+    })
     public Response createExperiment(
             @ApiParam("Experiment description") @Valid ExperimentCreationDTO xpDto
-    ) {
+    ) throws Exception {
         try {
             ExperimentDAO dao = new ExperimentDAO(sparql);
             ExperimentModel createdXp = dao.create(xpDto.newModel());
@@ -103,8 +102,6 @@ public class ExperimentAPI {
 
         } catch (SPARQLAlreadyExistingUriException e) {
             return new ErrorResponse(Response.Status.CONFLICT, "Experiment already exists", e.getMessage()).getResponse();
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
         }
     }
 
@@ -125,11 +122,11 @@ public class ExperimentAPI {
 
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Experiment updated", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+        @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
+    })
     public Response updateExperiment(
             @ApiParam("Experiment description") @Valid ExperimentCreationDTO xpDto
-    ) {
+    ) throws Exception {
         try {
             ExperimentDAO dao = new ExperimentDAO(sparql);
 
@@ -138,9 +135,10 @@ public class ExperimentAPI {
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
 
         } catch (SPARQLInvalidURIException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Experiment URI", e.getMessage()).getResponse();
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND, "Experiment not found",
+                    "Unknown Experiment URI: " + e.getUri()
+            ).getResponse();
         }
     }
 
@@ -161,24 +159,21 @@ public class ExperimentAPI {
 
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Experiment retrieved", response = ExperimentGetDTO.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+        @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
+    })
     public Response getExperiment(
             @ApiParam(value = "Experiment URI", example = "http://opensilex.dev/set/experiments/ZA17", required = true) @PathParam("uri") @NotNull URI xpUri
-    ) {
-        try {
-            ExperimentDAO dao = new ExperimentDAO(sparql);
-            ExperimentModel model = dao.get(xpUri);
+    ) throws Exception {
+        ExperimentDAO dao = new ExperimentDAO(sparql);
+        ExperimentModel model = dao.get(xpUri);
 
-            if (model != null) {
-                return new SingleObjectResponse<>(ExperimentGetDTO.fromModel(model)).getResponse();
-            } else {
-                return new ErrorResponse(
-                        Response.Status.NOT_FOUND, "Experiment not found",
-                        "Unknown Experiment URI: " + xpUri.toString()
-                ).getResponse();
-            }
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+        if (model != null) {
+            return new SingleObjectResponse<>(ExperimentGetDTO.fromModel(model)).getResponse();
+        } else {
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND, "Experiment not found",
+                    "Unknown Experiment URI: " + xpUri.toString()
+            ).getResponse();
         }
     }
 
@@ -199,8 +194,7 @@ public class ExperimentAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return Experiment list", response = ExperimentGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Return Experiment list", response = ExperimentGetDTO.class, responseContainer = "List")
     })
     public Response searchExperiments(
             @ApiParam(value = "Search by uri", example = EXPERIMENT_EXAMPLE_URI) @QueryParam("uri") URI uri,
@@ -217,41 +211,34 @@ public class ExperimentAPI {
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "label=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
-    ) {
+    ) throws Exception {
+        ExperimentDAO xpDao = new ExperimentDAO(sparql);
 
-        try {
-            ExperimentDAO xpDao = new ExperimentDAO(sparql);
-
-            List<URI> groupUris = new ArrayList<>();
-            for (String groupUri : authentication.decodeStringArrayClaim(currentUser.getToken(), SecurityModule.TOKEN_USER_GROUP_URIS)) {
-                groupUris.add(new URI(groupUri));
-            }
-
-            ListWithPagination<ExperimentModel> resultList = xpDao.search(
-                    uri,
-                    campaign,
-                    label,
-                    species,
-                    startDate,
-                    endDate,
-                    isEnded,
-                    projects,
-                    isPublic,
-                    groupUris,
-                    currentUser.isAdmin(),
-                    orderByList,
-                    page,
-                    pageSize
-            );
-
-            // Convert paginated list to DTO
-            ListWithPagination<ExperimentGetDTO> resultDTOList = resultList.convert(ExperimentGetDTO.class, ExperimentGetDTO::fromModel);
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
-
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+        List<URI> groupUris = new ArrayList<>();
+        for (String groupUri : authentication.decodeStringArrayClaim(currentUser.getToken(), SecurityModule.TOKEN_USER_GROUP_URIS)) {
+            groupUris.add(new URI(groupUri));
         }
 
+        ListWithPagination<ExperimentModel> resultList = xpDao.search(
+                uri,
+                campaign,
+                label,
+                species,
+                startDate,
+                endDate,
+                isEnded,
+                projects,
+                isPublic,
+                groupUris,
+                currentUser.isAdmin(),
+                orderByList,
+                page,
+                pageSize
+        );
+
+        // Convert paginated list to DTO
+        ListWithPagination<ExperimentGetDTO> resultDTOList = resultList.convert(ExperimentGetDTO.class, ExperimentGetDTO::fromModel);
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
     /**
@@ -273,20 +260,21 @@ public class ExperimentAPI {
 
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Experiment deleted", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+        @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
+    })
     public Response deleteExperiment(
             @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
-    ) {
+    ) throws Exception {
         try {
             ExperimentDAO dao = new ExperimentDAO(sparql);
             dao.delete(xpUri);
             return new ObjectUriResponse(xpUri).getResponse();
 
         } catch (SPARQLInvalidURIException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Experiment URI", e.getMessage()).getResponse();
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND, "Experiment not found",
+                    "Unknown Experiment URI: " + e.getUri()
+            ).getResponse();
         }
     }
 
@@ -313,19 +301,20 @@ public class ExperimentAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "The list of factors which participates in the experiment updated", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+        @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
+    })
     public Response putFactors(
             @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
-            @ApiParam(value = "List of factors uris") ArrayList<URI> factors) {
+            @ApiParam(value = "List of factors uris") ArrayList<URI> factors) throws Exception {
         try {
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
             xpDao.updateWithFactors(xpUri, factors);
             return new ObjectUriResponse(Response.Status.OK, xpUri).getResponse();
         } catch (SPARQLInvalidURIException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Experiment URI", e.getMessage()).getResponse();
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND, "Experiment not found",
+                    "Unknown Experiment URI: " + e.getUri()
+            ).getResponse();
         }
     }
 }

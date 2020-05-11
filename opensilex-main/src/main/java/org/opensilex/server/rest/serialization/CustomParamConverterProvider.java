@@ -33,7 +33,11 @@ public class CustomParamConverterProvider implements ParamConverterProvider {
             if (value == null || value.isEmpty()) {
                 return null;
             }
-            return LocalDate.parse(value);
+            try {
+                return LocalDate.parse(value);
+            } catch (Exception ex) {
+                return null;
+            }
         }
 
         @Override
@@ -48,7 +52,11 @@ public class CustomParamConverterProvider implements ParamConverterProvider {
             if (value == null || value.isEmpty()) {
                 return null;
             }
-            return LocalDateTime.parse(value);
+            try {
+                return LocalDateTime.parse(value);
+            } catch (Exception ex) {
+                return null;
+            }
         }
 
         @Override

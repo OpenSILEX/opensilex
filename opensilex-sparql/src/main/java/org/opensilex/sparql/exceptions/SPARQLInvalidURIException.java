@@ -13,7 +13,18 @@ import java.net.URI;
  */
 public class SPARQLInvalidURIException extends SPARQLException {
 
+    private final URI uri;
+
     public SPARQLInvalidURIException(URI uri) {
         super("Invalid URI: " + uri);
+        this.uri = uri;
     }
+
+    public String getUri() {
+        if (uri == null) {
+            return null;
+        }
+        return uri.toString();
+    }
+
 }

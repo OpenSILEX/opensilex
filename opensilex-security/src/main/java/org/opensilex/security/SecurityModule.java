@@ -71,6 +71,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
     @Override
     public void setup() throws Exception {
         SPARQLService.addPrefix(SecurityOntology.PREFIX, SecurityOntology.NAMESPACE);
+        AuthenticationService.registerClaimClass(TOKEN_USER_GROUP_URIS, List.class);
     }
 
     @Override

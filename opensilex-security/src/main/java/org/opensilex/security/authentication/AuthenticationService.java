@@ -146,6 +146,10 @@ public class AuthenticationService extends BaseService implements Service {
             put(CLAIM_CREDENTIALS_LIST, List.class);
         }
     };
+    
+    public static void registerClaimClass(String claim, Class<?> cls) {
+        claimClasses.put(claim, cls);
+    }
 
     /**
      * Map of registred users by URI

@@ -1,5 +1,9 @@
 <template>
   <div>
+    <b-button @click="importCsv" class="mb-2 mr-2" variant="outline-success">{{$t(buttonLabel)}}</b-button>
+    <slot name="error">
+      <span v-if="errors" class="error-message alert alert-danger mb-2 mr-2">{{this.errors[0]}}</span>
+    </slot>
     <b-form-file
       ref="inputFile"
       accept="text/csv, .csv"
@@ -7,12 +11,6 @@
       hidden
       style="display:none"
     ></b-form-file>
-
-    <b-button @click="importCsv" variant="outline-success">{{$t(buttonLabel)}}</b-button>
-    <br><br>
-     <slot name="error">
-        <span v-if="errors" class="error-message alert alert-danger mb-2 mr-2">{{this.errors[0]}}</span>
-     </slot>
   </div>
 </template>
 
@@ -54,13 +52,14 @@ export default class CSVInputFile extends Vue {
   })
   buttonLabel: string;
 
-  // @Prop()
-  // file: File;
+  get lang() {
+    return this.$store.getters.language;
+  }
 
   @Prop()
   delimiterOption: string;
 
-  delimiter :string;
+  delimiter: string;
 
   @Ref("inputFile") readonly inputFile!: any;
 
@@ -74,8 +73,7 @@ export default class CSVInputFile extends Vue {
         console.debug("text", text);
         // delimiter per local
         if (this.delimiterOption == null) {
-          let lang = this.$store.getters.language;
-          switch (lang) {
+          switch (this.lang) {
             case "en":
               this.delimiter = ",";
               break;
@@ -95,18 +93,22 @@ export default class CSVInputFile extends Vue {
         console.debug("result.errors", result.errors);
         console.debug("result.meta", result.meta);
         this.errors = [];
-        if (result.data  == null ||result.data.length == 0) {
+        if (result.data == null || result.data.length == 0) {
           this.errors.push(
-            "Unable to parse csv, delimiter used :'" + this.delimiter + "'"
+            "Unable to parse csv, delimiter used : '" + this.delimiter + "'"
           );
         } else {
           if (this.headersToCheck != null && this.headersToCheck.length > 0) {
             let objectToCheck = result.data[0];
 
-            console.log(CSVInputFile.equalArrays(
+            console.log(
+              CSVInputFile.equalArrays(
                 Object.keys(objectToCheck),
                 this.headersToCheck
-              ), Object.keys(objectToCheck),this.headersToCheck)
+              ),
+              Object.keys(objectToCheck),
+              this.headersToCheck
+            );
             if (
               !CSVInputFile.equalArrays(
                 Object.keys(objectToCheck),
@@ -114,15 +116,19 @@ export default class CSVInputFile extends Vue {
               )
             ) {
               this.errors.push(
-                "Bad data : " +  this.headersToCheck.toString() + "excepted. " + Object.keys(objectToCheck) + " Found."
+                "Bad data : [" +
+                  this.headersToCheck.toString() +
+                  "] is excepted. [" +
+                  Object.keys(objectToCheck) +
+                  "] has been found."
               );
             }
-          } 
+          }
         }
-        if(this.errors.length ==0){
-            this.data = result.data;
-            this.$emit("updated", result.data);
-        } 
+        if (this.errors.length == 0) {
+          this.data = result.data;
+          this.$emit("updated", result.data);
+        }
       });
     });
   }

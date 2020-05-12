@@ -1,12 +1,18 @@
 <template>
-  <b-modal ref="modalRef" @ok.prevent="validate" :size="modalSize" :static="true">
+  <b-modal
+    ref="modalRef"
+    :class="(modalSize == 'full' ? 'full-screen-modal-form' : '')"
+    @ok.prevent="validate"
+    :size="modalSize"
+    :static="true"
+  >
     <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
     <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
 
     <template v-slot:modal-title>
       <i>
         <slot name="icon">
-          <opensilex-Icon :icon="icon" class="icon-title"/>
+          <opensilex-Icon :icon="icon" class="icon-title" />
         </slot>
         <span v-if="editMode">{{ $t(editTitle) }}</span>
         <span v-else>{{ $t(createTitle) }}</span>
@@ -64,6 +70,12 @@ export default class ModalForm extends Vue {
   @Prop()
   updateAction: Function;
 
+  @Prop({
+    type: [String,Function],
+    default: "component.common.element"
+  })
+  successMessage: string | Function;
+
   validate() {
     this.validatorRef.validate().then(isValid => {
       if (isValid) {
@@ -88,6 +100,7 @@ export default class ModalForm extends Vue {
         }
         submitResult
           .then(result => {
+            this.creationOrUpdateMessage();
             this.$nextTick(() => {
               this.$emit(successEvent, submitResult);
               this.hide();
@@ -98,6 +111,24 @@ export default class ModalForm extends Vue {
     });
   }
 
+  creationOrUpdateMessage() {
+    let successMessage;
+    if (typeof(this.successMessage) == "function") {
+      successMessage = this.successMessage(this.form);
+    } else {
+      successMessage = this.$i18n.t(this.successMessage);
+    }
+    if (this.editMode) {
+      successMessage =
+        successMessage +
+        this.$i18n.t("component.common.success.update-success-message");
+    } else {
+      successMessage =
+        successMessage +
+        this.$i18n.t("component.common.success.creation-success-message");
+    }
+    this.$opensilex.showSuccessToast(successMessage);
+  }
   getFormRef(): any {
     return this.$refs.componentRef;
   }
@@ -131,5 +162,8 @@ export default class ModalForm extends Vue {
 <style scoped lang="scss">
 .icon-title {
   margin-right: 5px;
+}
+::v-deep .full-screen-modal-form > .modal-dialog {
+  max-width: 95%;
 }
 </style>;

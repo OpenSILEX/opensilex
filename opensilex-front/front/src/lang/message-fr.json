@@ -91,10 +91,9 @@
                 "update-success-message": "a été modifié(e)",
                 "delete-success-message": "a été supprimé(e)"
             },
-            "tabs" :{
+            "details" :{
                 "document" : "Documents associés",
-                "experiment" : "Expérimentations associées",
-                "factorLevels" : "Niveaux de facteurs associés"
+                "experiment" : "Expérimentations associées"
             },
             "import-files":{
                 "csv-file" :" Importer un fichier CSV",
@@ -103,7 +102,23 @@
             "tabulator":{
                 "reset-table" : "Vider la table",
                 "add-one" : "Ajouter un par un",
-                "add-multiple" : "Ajouter plusieurs en une fois"
+                "add-multiple" : "Ajouter plusieurs en une fois",
+                "lang-options" : {
+                    "pagination":{
+                        "first":"Premier",
+                        "first_title":"Première Page",
+                        "last":"Dernier",
+                        "last_title":"Dernière Page",
+                        "prev":"Précédent",
+                        "prev_title":"Page Précédente",
+                        "next":"Suivant",
+                        "next_title":"Page Suivante"
+                    }
+                }
+            },
+            "search" :{
+                "search-button" : "Rechercher",
+                "clear-button" : "Réinitialiser"
             }
         },
         "copyToClipboard": {
@@ -417,17 +432,15 @@
             "names-help": "Noms décrivant ce facteur",         
             "comment": "description",
             "comment-help": "Description associée à ce facteur (protocole, apport de composé)",
-            "details" : "Détails du facteur",
             "form-comment-placeholder" : "Protocole n°1289 - Apport d'eau de 5 ml/jour.",
             "errors": {
                 "user-already-exists": "URI du facteur déjà existante."
             },
-            "form-wizard" :{
-                "general-informations" : "Facteur "
-            },
-            "tabs" :{
-                "details" : "Informations du facteur"
-            }
+            "details" : {
+                "label" : "Vue détaillée du facteur",
+                "factorLevels" : "Niveaux de facteurs associés"
+            }  
+
         },
         "factorLevel": {
             "uri": "URI du niveau de facteur",
@@ -455,6 +468,8 @@
             "relation-help" : "Relation entre l'individu décrit et le concept intéropérable lié à cet identifiant",
             "relation-placeholder" : "Equivalent",
             "update" : "Insérer les relations",
+            "add" : "Créer une nouvelle relation",
+
             "exactMatch" : "Equivalent",
             "closeMatch" : "Similaire",
             "broader" : "Plus général",
@@ -462,7 +477,7 @@
             "no-relation" : "Sélectionner une relation",
             "no-current-relation" : "Aucune relation sélectionnée",
             "current-relation" : "Relation actuellement sélectionnée",
-            "ontologies-references-label" :"Réferences interropérables",
+            "ontologies-references-label" :"Réferences interopérables",
             "link-external" :"Ajouter des références à",
             "link-external-button" :"Ajouter des références (optionnel)",
             "no-external-links-provided" :"Aucune référence disponible",

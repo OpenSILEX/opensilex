@@ -93,11 +93,10 @@
                 "update-success-message": " has been updated",
                 "delete-success-message": "has been deleted"
             },
-            "tabs" :{
+            "details" :{
                 "document" : "Associated documents",
-                "experiment" : "Associated experiments",
-                "factorLevels" : "Associated factor levels"
-            },
+                "experiment" : "Associated experiments"
+             },
             "import-files":{
                 "csv-file" :" Import CSV file",
                 "csv-template" : "Get csv template file"
@@ -105,9 +104,24 @@
             "tabulator":{
                 "reset-table" : "Reset table",
                 "add-one" : "Add one by one",
-                "add-multiple" : "Add multiple at once"
+                "add-multiple" : "Add multiple at once",
+                "lang-options" : {
+                    "pagination":{
+                        "first":"First",
+                        "first_title":"First Page",
+                        "last":"Last",
+                        "last_title":"Last Page",
+                        "prev":"Prev",
+                        "prev_title":"Prev Page",
+                        "next":"Next",
+                        "next_title":"Next Page"
+                    }
+                }
+            },
+            "search" :{
+                "search-button" : "Search",
+                "clear-button" : "Clear Filters"
             }
-            
         },
         "copyToClipboard": {
             "copyUri": "Copy URI to clipboard",
@@ -416,7 +430,13 @@
             "uri": "Factor URI",
             "uri-help": "Unique factor identifier",
             "alias-placeholder": "Enter factor alias",
-            "filter-placeholder": "Use this field to search factors",
+            "filter": {
+                "label":"Filter factors",
+                "name": "By name",
+                "experiment":"By experiment",
+                "name-placeholder": "irrigation, Shading, ...",
+                "experiment-placeholder":"Choose experiment"
+            },
             "factors": "factor",
             "add": "Create factor",
             "add-button": "Create factor",
@@ -424,24 +444,25 @@
             "name" : "name",
             "names": {
                 "en" : "English name",
-                "local-name" : "Local name",
+                "en-help" : "Default SI name",
                 "en-placeholder": "Irrigation, Shading, Variety, etc.",
+                "local-name" : "Local name",
+                "local-name-help" : "Local name definition",
                 "local-name-placeholder": "Irrigation, Ombrage, Variété, etc."
             },
             "names-help": "Names used to define this factor",
             "comment": "comment",
             "comment-help": "Description associated to this factors (protocol, amount of component)",
             "comment-error": "Must contains at least 10 characters",
-            "details": "Factor details",
-            "form-comment-placeholder": "Protocol n°1289 - Amount of water 5 ml/Days.",
+            "comment-placeholder": "Protocol n°1289 - Amount of water 5 ml/Days.",
             "errors": {
                 "user-already-exists": "Factor already exists with this URI."
             },
-            "form-wizard" :{
-                "general-informations" : "Factor description"
-            },
-            "tabs" :{
-                "details" : "Factor informations"
+
+            "details" :{
+                "label": "Detailled Factor view",
+                "factorLevels" : "Niveaux de facteurs associés"
+
             }
         },
         "factorLevel": {
@@ -469,7 +490,8 @@
             "relation" : "Relations",
             "relation-help" : "Relation associated between interoperable concept URI and this local individual",
             "relation-placeholder" : "Exact Match",
-            "add" : "Insert references", 
+            "add" : "Insert references",
+            "update" : "Update relations",
             "exactMatch" : "Exact match",
             "closeMatch" : "Close match",
             "broader" : "Broader",

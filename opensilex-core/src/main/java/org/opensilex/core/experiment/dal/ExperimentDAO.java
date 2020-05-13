@@ -350,16 +350,20 @@ public class ExperimentDAO {
             return;
         }
 
-        Set<URI> xps = getUserExperiments(user);
-        Expr experimentFilter = null;
-        if (!xps.isEmpty()) {
-            experimentFilter = SPARQLQueryHelper.inURIFilter(ExperimentModel.URI_FIELD, xps);
-        }
-
         Var uriVar = makeVar(ExperimentModel.URI_FIELD);
+        Var userProfileVar = makeVar("_userProfile");
+        Var userVar = makeVar("_user");
+        Var groupVar = makeVar(ExperimentModel.GROUP_FIELD);
 
         Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
-        
+
+        ElementGroup optionals = new ElementGroup();
+        optionals.addTriplePattern(new Triple(uriVar, SecurityOntology.hasGroup.asNode(), groupVar));
+        optionals.addTriplePattern(new Triple(groupVar, SecurityOntology.hasUserProfile.asNode(), userProfileVar));
+        optionals.addTriplePattern(new Triple(userProfileVar, SecurityOntology.hasUser.asNode(), userVar));
+        select.getWhereHandler().getClause().addElement(new ElementOptional(optionals));
+        Expr inGroup = SPARQLQueryHelper.eq(userVar, userNodeURI);
+
         Var scientificSupervisorVar = makeVar(ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD);
         select.addOptional(new Triple(uriVar, Oeso.hasScientificSupervisor.asNode(), scientificSupervisorVar));
         Expr hasScientificSupervisor = SPARQLQueryHelper.eq(scientificSupervisorVar, userNodeURI);
@@ -373,7 +377,7 @@ public class ExperimentDAO {
         Expr isPublic = SPARQLQueryHelper.eq(isPublicVar, Boolean.TRUE);
 
         select.addFilter(SPARQLQueryHelper.or(
-                experimentFilter,
+                inGroup,
                 hasScientificSupervisor,
                 hasTechnicalSupervisor,
                 isPublic
@@ -391,20 +395,38 @@ public class ExperimentDAO {
 
         AskBuilder ask = sparql.getUriExistsQuery(ExperimentModel.class, experimentURI);
 
+        Var uriVar = makeVar(ExperimentModel.URI_FIELD);
         Var userProfileVar = makeVar("_userProfile");
         Var userVar = makeVar("_user");
         Var groupVar = makeVar(ExperimentModel.GROUP_FIELD);
-        ask.addWhere(makeVar(ExperimentModel.URI_FIELD), SecurityOntology.hasGroup, groupVar);
-        ask.addWhere(groupVar, SecurityOntology.hasUserProfile, userProfileVar);
-        ask.addWhere(userProfileVar, SecurityOntology.hasUser, userVar);
 
         Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
+
+        ElementGroup optionals = new ElementGroup();
+        optionals.addTriplePattern(new Triple(uriVar, SecurityOntology.hasGroup.asNode(), groupVar));
+        optionals.addTriplePattern(new Triple(groupVar, SecurityOntology.hasUserProfile.asNode(), userProfileVar));
+        optionals.addTriplePattern(new Triple(userProfileVar, SecurityOntology.hasUser.asNode(), userVar));
+        ask.getWhereHandler().getClause().addElement(new ElementOptional(optionals));
+        Expr inGroup = SPARQLQueryHelper.eq(userVar, userNodeURI);
+
+        Var scientificSupervisorVar = makeVar(ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD);
+        ask.addOptional(new Triple(uriVar, Oeso.hasScientificSupervisor.asNode(), scientificSupervisorVar));
+        Expr hasScientificSupervisor = SPARQLQueryHelper.eq(scientificSupervisorVar, userNodeURI);
+
+        Var technicalSupervisorVar = makeVar(ExperimentModel.TECHNICAL_SUPERVISOR_FIELD);
+        ask.addOptional(new Triple(uriVar, Oeso.hasTechnicalSupervisor.asNode(), technicalSupervisorVar));
+        Expr hasTechnicalSupervisor = SPARQLQueryHelper.eq(technicalSupervisorVar, userNodeURI);
+
+        Var isPublicVar = makeVar(ExperimentModel.IS_PUBLIC_FIELD);
+        ask.addOptional(new Triple(uriVar, Oeso.isPublic.asNode(), isPublicVar));
+        Expr isPublic = SPARQLQueryHelper.eq(isPublicVar, Boolean.TRUE);
+
         ask.addFilter(
                 SPARQLQueryHelper.or(
-                        SPARQLQueryHelper.eq(userVar, userNodeURI),
-                        SPARQLQueryHelper.eq(makeVar(ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD), userNodeURI),
-                        SPARQLQueryHelper.eq(makeVar(ExperimentModel.TECHNICAL_SUPERVISOR_FIELD), userNodeURI),
-                        SPARQLQueryHelper.eq(makeVar(ExperimentModel.IS_PUBLIC_FIELD), Boolean.TRUE)
+                        inGroup,
+                        hasScientificSupervisor,
+                        hasTechnicalSupervisor,
+                        isPublic
                 )
         );
 

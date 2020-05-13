@@ -10,7 +10,8 @@ menu:
     route: 
       path: /infrastructures
       component: opensilex-InfrastructureView
-      credentials: []        
+      credentials: 
+        - infrastructure-read
   - id: data
     label: component.menu.data.label
     children:
@@ -26,13 +27,15 @@ menu:
     route: 
       path: /projects
       component: opensilex-ProjectView
-      credentials: []
+      credentials:
+        - project-read
   - id: experiments
     label: component.menu.experiments
     route: 
       path: /experiments
       component: opensilex-ExperimentList
-      credentials: []
+      credentials:
+        - experiment-read
   - id: installations
     label: component.menu.installations
  
@@ -118,15 +121,10 @@ menu:
 
 
 routes:
-  - path: /experiments/details
-    component: opensilex-core-ExperimentDetails
-    credentials: []
   - path: /experiment/:uri
     component: opensilex-ExperimentView
-    credentials: []
-  - path: /VariableCreate
-    component: opensilex-VariableCreate
-    credentials: []
+    credentials:
+      - experiment-read
 
 # Route item example:
 #  - path: /users/create

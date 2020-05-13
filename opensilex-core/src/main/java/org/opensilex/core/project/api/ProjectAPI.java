@@ -39,17 +39,14 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
-import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
 /**
- * @author vidalmor,Vincent MIGOT,Renaud COLIN
  * @author Julien BONNEFONT
  */
 @Api(ProjectAPI.CREDENTIAL_PROJECT_GROUP_ID)
@@ -79,9 +76,6 @@ public class ProjectAPI {
 
     @Inject
     private SPARQLService sparql;
-
-    @Inject
-    private AuthenticationService authentication;
 
     /**
      * Create a Project
@@ -144,17 +138,9 @@ public class ProjectAPI {
     public Response updateProject(
             @ApiParam("Project description") @Valid ProjectCreationDTO dto
     ) throws Exception {
-        try {
-            ProjectDAO dao = new ProjectDAO(sparql);
-            ProjectModel model = dao.update(dto.newModel());
-            return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
-        } catch (SPARQLInvalidURIException e) {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Model not found",
-                    "Unknown group URI: " + e.getUri()
-            ).getResponse();
-        }
+        ProjectDAO dao = new ProjectDAO(sparql);
+        ProjectModel model = dao.update(dto.newModel(), currentUser);
+        return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
     }
 
     /**
@@ -179,21 +165,8 @@ public class ProjectAPI {
             @ApiParam(value = "Project URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         ProjectDAO dao = new ProjectDAO(sparql);
-        ProjectModel model = dao.get(uri, currentUser.getLanguage());
-
-        // Check if project is found
-        if (model != null) {
-            return new SingleObjectResponse<>(
-                    ProjectGetDTO.fromModel(model)
-            ).getResponse();
-        } else {
-            // Otherwise return a 404 - NOT_FOUND error response
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Project not found",
-                    "Unknown Project URI: " + uri.toString()
-            ).getResponse();
-        }
+        ProjectModel model = dao.get(uri, currentUser);
+        return new SingleObjectResponse<>(ProjectGetDTO.fromModel(model)).getResponse();
     }
 
     /**
@@ -239,6 +212,7 @@ public class ProjectAPI {
                 financial,
                 startDate,
                 endDate,
+                currentUser,
                 orderByList,
                 page,
                 pageSize
@@ -266,13 +240,14 @@ public class ProjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Project deleted", response = ObjectUriResponse.class)
+        @ApiResponse(code = 200, message = "Project deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 404, message = "Unknown Project URI", response = ErrorResponse.class)
     })
     public Response deleteProject(
             @ApiParam(value = "Project URI", example = PROJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         ProjectDAO dao = new ProjectDAO(sparql);
-        dao.delete(uri);
+        dao.delete(uri, currentUser);
         return new ObjectUriResponse(uri).getResponse();
 
     }

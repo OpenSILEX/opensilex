@@ -59,12 +59,14 @@
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
           <opensilex-EditButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
             @click="$emit('onEdit', data.item)"
             label="component.project.update"
             :small="true"
           ></opensilex-EditButton>
 
           <opensilex-DeleteButton
+          v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_DELETE_ID)"
             @click="deleteUser(data.item.uri)"
             label="component.project.delete"
             :small="true"

@@ -31,7 +31,6 @@ import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
-import org.apache.jena.graph.Node_URI;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.syntax.ElementFilter;

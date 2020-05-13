@@ -104,18 +104,21 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
             property = "hasAdministrativeContact"
     )
     private List<UserModel> administrativeContacts;
+    public static final String ADMINISTRATIVE_CONTACTS_FIELD = "administrativeContacts";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasCoordinator"
     )
     private List<UserModel> coordinators;
+    public static final String COORDINATORS_FIELD = "coordinators";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasScientificContact"
     )
     private List<UserModel> scientificContacts;
+    public static final String SCIENTIFIC_CONTACTS_FIELD = "scientificContacts";
 
     @SPARQLProperty(
             ontology = Oeso.class,

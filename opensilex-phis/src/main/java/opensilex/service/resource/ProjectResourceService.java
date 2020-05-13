@@ -251,7 +251,7 @@ public class ProjectResourceService extends ResourceService {
             UserModel user = (UserModel) securityContext.getUserPrincipal();
             ProjectDAO projectDAO = new ProjectDAO(sparql);
 
-            ProjectModel project = projectDAO.get(new URI(uri), user.getLanguage());
+            ProjectModel project = projectDAO.get(new URI(uri), user);
             ProjectDetailDTO projectDTO = new ProjectDetailDTO(project, sparql, user.getLanguage());
             projects.add(projectDTO);
 

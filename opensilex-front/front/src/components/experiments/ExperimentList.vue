@@ -64,7 +64,7 @@
             <b-button-group size="sm">
               <opensilex-EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-                @click="experimentForm.showEditForm(data.item)"
+                @click="showEditForm(data.item.uri)"
                 label="component.experiment.update"
                 :small="true"
               ></opensilex-EditButton>
@@ -94,7 +94,7 @@ import Vue from "vue";
 import VueConstructor from "vue";
 import copy from "copy-to-clipboard";
 import VueI18n from "vue-i18n";
-import moment from 'moment';
+import moment from "moment";
 import {
   ProjectGetDTO,
   SpeciesDTO,
@@ -203,7 +203,7 @@ export default class ExperimentList extends Vue {
   isEnded(experiment) {
     if (experiment.endDate) {
       return moment(experiment.endDate, "YYYY-MM-DD").diff(moment()) < 0;
-    } 
+    }
 
     return false;
   }
@@ -242,6 +242,16 @@ export default class ExperimentList extends Vue {
       key: "actions"
     }
   ];
+
+  showEditForm(uri: string) {
+     this.$opensilex
+      .getService("opensilex.ExperimentsService")
+      .getExperiment(uri)
+      .then((http) => {
+        this.experimentForm.showEditForm(http.response.result);
+      })
+    
+  }
 
   deleteExperiment(uri: string) {
     this.$opensilex

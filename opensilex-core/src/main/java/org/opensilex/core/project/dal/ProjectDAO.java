@@ -21,7 +21,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import java.util.Set;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
  * @author vidalmor
@@ -39,23 +50,28 @@ public class ProjectDAO {
         return instance;
     }
 
-    public ProjectModel update(ProjectModel instance) throws Exception {
+    public ProjectModel update(ProjectModel instance, UserModel user) throws Exception {
+        validateProjectAccess(instance.getUri(), user);
         sparql.update(instance);
         return instance;
     }
 
+    @Deprecated
     public void update(List<ProjectModel> instances) throws Exception {
         sparql.update(instances);
     }
 
-    public void delete(URI instanceURI) throws Exception {
-        sparql.delete(ProjectModel.class, instanceURI);
+    public void delete(URI uri, UserModel user) throws Exception {
+        validateProjectAccess(uri, user);
+        sparql.delete(ProjectModel.class, uri);
     }
 
-    public ProjectModel get(URI instanceURI, String lang) throws Exception {
-        return sparql.getByURI(ProjectModel.class, instanceURI, lang);
+    public ProjectModel get(URI uri, UserModel user) throws Exception {
+        validateProjectAccess(uri, user);
+        return sparql.getByURI(ProjectModel.class, uri, user.getLanguage());
     }
 
+    @Deprecated
     public ListWithPagination<ProjectModel> search(URI uri,
             String name, String shortname, String description, String startDate, String endDate, URI homePage, String objective,
             List<OrderBy> orderByList, Integer page, Integer pageSize, String lang) throws Exception {
@@ -105,7 +121,7 @@ public class ProjectDAO {
         sparql.create(instances);
     }
 
-    public ListWithPagination<ProjectModel> search(String label, String financialFunding, LocalDate startDate, LocalDate endDate, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+    public ListWithPagination<ProjectModel> search(String label, String financialFunding, LocalDate startDate, LocalDate endDate, UserModel user, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
 
         Expr stringFilter = SPARQLQueryHelper.or(
                 SPARQLQueryHelper.regexFilter(ProjectModel.SHORTNAME_FIELD, label),
@@ -131,10 +147,79 @@ public class ProjectDAO {
                     if (dateFilter != null) {
                         select.addFilter(dateFilter);
                     }
+
+                    appendUserProjectsFilter(select, user);
                 },
                 orderByList,
                 page,
                 pageSize
         );
+    }
+
+    private void appendUserProjectsFilter(SelectBuilder select, UserModel user) throws Exception {
+        if (user == null || user.isAdmin()) {
+            return;
+        }
+
+        Var uriVar = makeVar(ExperimentModel.URI_FIELD);
+
+        Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
+
+        Var coordinatorVar = makeVar(ProjectModel.COORDINATORS_FIELD);
+        select.addOptional(new Triple(uriVar, Oeso.hasCoordinator.asNode(), coordinatorVar));
+        Expr hasCoordinator = SPARQLQueryHelper.eq(coordinatorVar, userNodeURI);
+
+        Var scientificSupervisorVar = makeVar(ProjectModel.SCIENTIFIC_CONTACTS_FIELD);
+        select.addOptional(new Triple(uriVar, Oeso.hasScientificContact.asNode(), scientificSupervisorVar));
+        Expr hasScientificContact = SPARQLQueryHelper.eq(scientificSupervisorVar, userNodeURI);
+
+        Var technicalSupervisorVar = makeVar(ProjectModel.ADMINISTRATIVE_CONTACTS_FIELD);
+        select.addOptional(new Triple(uriVar, Oeso.hasAdministrativeContact.asNode(), technicalSupervisorVar));
+        Expr hasAdministrativeContact = SPARQLQueryHelper.eq(technicalSupervisorVar, userNodeURI);
+
+        select.addFilter(SPARQLQueryHelper.or(
+                hasCoordinator,
+                hasScientificContact,
+                hasAdministrativeContact
+        ));
+    }
+
+    public void validateProjectAccess(URI projectURI, UserModel user) throws Exception {
+        if (!sparql.uriExists(ProjectModel.class, projectURI)) {
+            throw new NotFoundURIException(projectURI);
+        }
+
+        if (user.isAdmin()) {
+            return;
+        }
+
+        Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
+        Var uriVar = makeVar(ExperimentModel.URI_FIELD);
+
+        AskBuilder ask = sparql.getUriExistsQuery(ProjectModel.class, projectURI);
+
+        Var coordinatorVar = makeVar(ProjectModel.COORDINATORS_FIELD);
+        ask.addOptional(new Triple(uriVar, Oeso.hasCoordinator.asNode(), coordinatorVar));
+        Expr hasCoordinator = SPARQLQueryHelper.eq(coordinatorVar, userNodeURI);
+
+        Var scientificSupervisorVar = makeVar(ProjectModel.SCIENTIFIC_CONTACTS_FIELD);
+        ask.addOptional(new Triple(uriVar, Oeso.hasScientificContact.asNode(), scientificSupervisorVar));
+        Expr hasScientificContact = SPARQLQueryHelper.eq(scientificSupervisorVar, userNodeURI);
+
+        Var technicalSupervisorVar = makeVar(ProjectModel.ADMINISTRATIVE_CONTACTS_FIELD);
+        ask.addOptional(new Triple(uriVar, Oeso.hasAdministrativeContact.asNode(), technicalSupervisorVar));
+        Expr hasAdministrativeContact = SPARQLQueryHelper.eq(technicalSupervisorVar, userNodeURI);
+
+        ask.addFilter(
+                SPARQLQueryHelper.or(
+                        hasCoordinator,
+                        hasScientificContact,
+                        hasAdministrativeContact
+                )
+        );
+
+        if (!sparql.executeAskQuery(ask)) {
+            throw new ForbiddenURIAccessException(projectURI);
+        }
     }
 }

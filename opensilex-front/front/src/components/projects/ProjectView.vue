@@ -8,23 +8,22 @@
 
     <opensilex-PageActions>
       <template v-slot>
-        <opensilex-CreateButton 
-        @click="projectForm.showCreateForm()" 
-        label="component.project.add"
+        <opensilex-CreateButton
+          v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
+          @click="projectForm.showCreateForm()"
+          label="component.project.add"
         ></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
 
     <opensilex-PageContent>
       <template v-slot>
-        <opensilex-ProjectList
-        ref="projectList" 
-        @onEdit="projectForm.showEditForm($event)"
-        ></opensilex-ProjectList>
+        <opensilex-ProjectList ref="projectList" @onEdit="projectForm.showEditForm($event)"></opensilex-ProjectList>
       </template>
     </opensilex-PageContent>
 
     <opensilex-ModalForm
+      v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
       ref="projectForm"
       component="opensilex-ProjectForm"
       createTitle="component.project.add"

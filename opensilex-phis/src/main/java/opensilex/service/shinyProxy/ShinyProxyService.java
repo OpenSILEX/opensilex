@@ -40,6 +40,7 @@ import org.glassfish.jersey.server.ServerConfig;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
+import org.opensilex.utils.ClassUtils;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -115,7 +116,7 @@ public class ShinyProxyService {
     /**
      *
      */
-    public void run() {
+    public void run() throws IOException {
         boolean validShinyProxyInstallation = false;
         boolean isConfigFileWritten = false;
 
@@ -206,17 +207,13 @@ public class ShinyProxyService {
      *
      * @return process
      */
-    private boolean buildShinyProxyDockerImage() {
+    private boolean buildShinyProxyDockerImage() throws IOException {
 
         Path copiedDockerFilePath = SHINYPROXY_DOCKERFILE_IMAGE;
-        Path internalDockerFilePath = Paths.get(
-                getClass().getClassLoader().
-                        getResource(SHINYPROXY_INTERNAL_DOCKERFILE_IMAGE).
-                        getFile()
-        );
+        File internalDockerFilePath = ClassUtils.getFileFromClassArtifact(this.getClass(), SHINYPROXY_INTERNAL_DOCKERFILE_IMAGE); 
         try {
             Files.copy(
-                    internalDockerFilePath,
+                    internalDockerFilePath.toPath(),
                     copiedDockerFilePath,
                     StandardCopyOption.REPLACE_EXISTING
             );

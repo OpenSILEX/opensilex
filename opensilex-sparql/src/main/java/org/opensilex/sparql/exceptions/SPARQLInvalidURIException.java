@@ -16,7 +16,11 @@ public class SPARQLInvalidURIException extends SPARQLException {
     private final URI uri;
 
     public SPARQLInvalidURIException(URI uri) {
-        super("Invalid URI: " + uri);
+        this("Invalid URI: ", uri);
+    }
+
+    public SPARQLInvalidURIException(String message, URI uri) {
+        super(message + uri);
         this.uri = uri;
     }
 

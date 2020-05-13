@@ -4,7 +4,6 @@
 // Copyright © INRAE 2020
 // Contact: vincent.migot@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
-
 package org.opensilex.core.experiment.dal;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -16,13 +15,11 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
-import org.apache.jena.vocabulary.RDF;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -35,10 +32,14 @@ import org.opensilex.utils.ListWithPagination;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
-
+import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.security.user.dal.UserModel;
 
 /**
  * @author Vincent MIGOT
@@ -100,14 +101,14 @@ public class ExperimentDAO {
     }
 
     /**
-     * Remove all URI from {@link ExperimentModel#getSensors()} method which don't represents a {@link Oeso#SensingDevice}
-     * in the SPARQL Graph
+     * Remove all URI from {@link ExperimentModel#getSensors()} method which don't represents a {@link Oeso#SensingDevice} in the SPARQL Graph
      *
      * @param xp the {@link ExperimentModel} to filter
      */
     private void filterExperimentSensors(ExperimentModel xp) {
-        if (xp.getSensors().isEmpty())
+        if (xp.getSensors().isEmpty()) {
             return;
+        }
 
         // #TODO don't fetch URI which don't represents sensors and delete this method
         xp.getSensors().removeIf(sensor -> {
@@ -120,6 +121,7 @@ public class ExperimentDAO {
 
     }
 
+    @Deprecated
     public ListWithPagination<ExperimentModel> search(
             URI uri,
             String label,
@@ -131,11 +133,11 @@ public class ExperimentDAO {
                 ExperimentModel.class,
                 null,
                 (SelectBuilder select) -> {
-                    appendUriRegexFilter(select,uri);
-                    appendRegexLabelFilter(select,label);
-                    appendDateFilters(select,isEnded,null,null);
-                    appendCampaignFilter(select,campaign);
-                    appendVariablesListFilter(select,variables);
+                    appendUriRegexFilter(select, uri);
+                    appendRegexLabelFilter(select, label);
+                    appendDateFilters(select, isEnded, null, null);
+                    appendCampaignFilter(select, campaign);
+                    appendVariablesListFilter(select, variables);
                 },
                 orderByList,
                 page,
@@ -147,6 +149,7 @@ public class ExperimentDAO {
         return xps;
     }
 
+    @Deprecated
     public ListWithPagination<ExperimentModel> search(URI uri,
             Integer campaign,
             String label,
@@ -166,7 +169,16 @@ public class ExperimentDAO {
                     appendRegexLabelFilter(select, label);
                     appendCampaignFilter(select, campaign);
                     appendSpeciesFilter(select, species);
-                    appendDateFilters(select, isEnded, startDate, endDate);
+
+                    LocalDate startDateObj = null;
+                    if (startDate != null) {
+                        startDateObj = LocalDate.parse(startDate);
+                    }
+                    LocalDate endDateObj = null;
+                    if (endDate != null) {
+                        endDateObj = LocalDate.parse(endDate);
+                    }
+                    appendDateFilters(select, isEnded, startDateObj, endDateObj);
                     appendGroupsListFilters(select, admin, isPublic, groups);
                     appendProjectListFilter(select, projects);
                 },
@@ -181,6 +193,37 @@ public class ExperimentDAO {
 
     }
 
+    public ListWithPagination<ExperimentModel> search(
+            String label,
+            List<URI> species,
+            LocalDate startDate,
+            LocalDate endDate,
+            Boolean isEnded,
+            List<URI> projects,
+            Boolean isPublic,
+            UserModel user,
+            List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+
+        ListWithPagination<ExperimentModel> xps = sparql.searchWithPagination(
+                ExperimentModel.class,
+                null,
+                (SelectBuilder select) -> {
+                    appendRegexLabelFilter(select, label);
+                    appendSpeciesFilter(select, species);
+                    appendDateFilters(select, isEnded, startDate, endDate);
+                    appendProjectListFilter(select, projects);
+                    appendUserExperimentsFilter(select, user);
+                    appendPublicFilter(select, isPublic);
+                },
+                orderByList,
+                page,
+                pageSize
+        );
+
+        return xps;
+
+    }
+
     private void appendCampaignFilter(SelectBuilder select, Integer campaign) throws Exception {
         if (campaign != null) {
             select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.CAMPAIGN_FIELD, campaign));
@@ -188,12 +231,11 @@ public class ExperimentDAO {
     }
 
     private void appendSpeciesFilter(SelectBuilder select, List<URI> species) throws Exception {
-        if (species != null && ! species.isEmpty()) {
+        if (species != null && !species.isEmpty()) {
             addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasSpecies, ExperimentModel.SPECIES_FIELD);
             SPARQLQueryHelper.addWhereValues(select, ExperimentModel.SPECIES_FIELD, species);
         }
     }
-
 
     private void appendRegexLabelFilter(SelectBuilder select, String label) {
         if (!StringUtils.isEmpty(label)) {
@@ -209,10 +251,8 @@ public class ExperimentDAO {
         }
     }
 
-    private void appendDateFilters(SelectBuilder select, Boolean ended, String startDate, String endDate) throws Exception {
-
+    private void appendDateFilters(SelectBuilder select, Boolean ended, LocalDate startDate, LocalDate endDate) throws Exception {
         if (ended != null) {
-
             Node endDateVar = NodeFactory.createVariable(ExperimentModel.END_DATE_FIELD);
             Node currentDateNode = SPARQLDeserializers.getForClass(LocalDate.class).getNode(LocalDate.now());
 
@@ -222,18 +262,14 @@ public class ExperimentDAO {
             } else {
                 ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
                 Expr noEndDateFilter = exprFactory.not(exprFactory.bound(endDateVar));
-                select.addFilter(exprFactory.or(noEndDateFilter,exprFactory.gt(endDateVar, currentDateNode)));
+                select.addFilter(exprFactory.or(noEndDateFilter, exprFactory.gt(endDateVar, currentDateNode)));
             }
         }
-        if(startDate == null && endDate == null){
-            return;
+
+        Expr dateRangeExpr = SPARQLQueryHelper.intervalDateRange(ExperimentModel.START_DATE_FIELD, startDate, ExperimentModel.END_DATE_FIELD, endDate);
+        if (dateRangeExpr != null) {
+            select.addFilter(dateRangeExpr);
         }
-
-        LocalDate startLocateDate = startDate == null ? null : LocalDate.parse(startDate);
-        LocalDate endLocalDate = endDate == null ? null : LocalDate.parse(endDate);
-
-        Expr dateRangeExpr = SPARQLQueryHelper.dateRange(ExperimentModel.START_DATE_FIELD,startLocateDate,ExperimentModel.END_DATE_FIELD,endLocalDate);
-        select.addFilter(dateRangeExpr);
     }
 
     private void appendProjectListFilter(SelectBuilder select, List<URI> projects) throws Exception {
@@ -284,6 +320,66 @@ public class ExperimentDAO {
             addWhere(select, ExperimentModel.URI_FIELD, Oeso.measures, ExperimentModel.VARIABLES_FIELD);
             SPARQLQueryHelper.addWhereValues(select, ExperimentModel.VARIABLES_FIELD, variables);
         }
+    }
+
+    private void appendPublicFilter(SelectBuilder select, Boolean isPublic) throws Exception {
+        if (isPublic != null) {
+            select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.IS_PUBLIC_FIELD, isPublic));
+        }
+    }
+
+    public Set<URI> getUserExperiments(UserModel user) throws Exception {
+        String lang = user.getLanguage();
+        Set<URI> userExperiments = new HashSet<>();
+        List<URI> xps = sparql.searchURIs(ExperimentModel.class, lang, (SelectBuilder select) -> {
+            Var userProfileVar = makeVar("_userProfile");
+            select.addWhere(makeVar(ExperimentModel.URI_FIELD), SecurityOntology.hasGroup, makeVar(ExperimentModel.GROUP_FIELD));
+            select.addWhere(makeVar(ExperimentModel.GROUP_FIELD), SecurityOntology.hasUserProfile, userProfileVar);
+            select.addWhere(userProfileVar, SecurityOntology.hasUser, SPARQLDeserializers.nodeURI(user.getUri()));
+        });
+
+        userExperiments.addAll(xps);
+
+        return userExperiments;
+    }
+
+    private void appendUserExperimentsFilter(SelectBuilder select, UserModel user) throws Exception {
+        if (user == null || user.isAdmin()) {
+            return;
+        }
+
+        ElementGroup rootFilteringElem = new ElementGroup();
+        ElementGroup optionals = new ElementGroup();
+
+        Set<URI> xps = getUserExperiments(user);
+        Expr experimentFilter = null;
+        if (!xps.isEmpty()) {
+            experimentFilter = SPARQLQueryHelper.inURIFilter(ExperimentModel.URI_FIELD, xps);
+        }
+
+        Var uriVar = makeVar(ExperimentModel.URI_FIELD);
+
+        Var scientificSupervisorVar = makeVar(ExperimentModel.TECHNICAL_SUPERVISOR_FIELD);
+        optionals.addTriplePattern(new Triple(uriVar, Oeso.hasScientificSupervisor.asNode(), scientificSupervisorVar));
+        Expr hasScientificSupervisor = SPARQLQueryHelper.eq(scientificSupervisorVar, user.getUri());
+
+        Var technicalSupervisorVar = makeVar(ExperimentModel.TECHNICAL_SUPERVISOR_FIELD);
+        optionals.addTriplePattern(new Triple(uriVar, Oeso.hasTechnicalSupervisor.asNode(), technicalSupervisorVar));
+        Expr hasTechnicalSupervisor = SPARQLQueryHelper.eq(technicalSupervisorVar, user.getUri());
+
+        Var isPublicVar = makeVar(ExperimentModel.IS_PUBLIC_FIELD);
+        optionals.addTriplePattern(new Triple(uriVar, Oeso.isPublic.asNode(), isPublicVar));
+        Expr isPublic = SPARQLQueryHelper.eq(isPublicVar, Boolean.TRUE);
+
+        rootFilteringElem.addElement(new ElementOptional(optionals));
+        rootFilteringElem.addElementFilter(new ElementFilter(SPARQLQueryHelper.or(
+                experimentFilter,
+                hasScientificSupervisor,
+                hasTechnicalSupervisor,
+                isPublic
+        )));
+
+        select.getWhereHandler().getClause().addElement(rootFilteringElem);
     }
 
 }

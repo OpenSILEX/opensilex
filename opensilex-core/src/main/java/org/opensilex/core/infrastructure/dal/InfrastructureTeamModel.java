@@ -29,6 +29,7 @@ public class InfrastructureTeamModel extends GroupModel {
             inverse = true
     )
     private InfrastructureModel infrastructure;
+    public static final String INFRASTRUCTURE_FIELD = "infrastructure";
 
     public InfrastructureModel getInfrastructure() {
         return infrastructure;

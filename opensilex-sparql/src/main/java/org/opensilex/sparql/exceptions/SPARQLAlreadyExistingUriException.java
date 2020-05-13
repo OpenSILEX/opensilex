@@ -13,8 +13,17 @@ import java.net.URI;
  */
 public class SPARQLAlreadyExistingUriException extends SPARQLException {
 
+    private final URI uri;
+
     public SPARQLAlreadyExistingUriException(URI uri) {
         super("URI already exists: " + uri.toString());
+        this.uri = uri;
     }
 
+    public String getUri() {
+        if (uri == null) {
+            return null;
+        }
+        return uri.toString();
+    }
 }

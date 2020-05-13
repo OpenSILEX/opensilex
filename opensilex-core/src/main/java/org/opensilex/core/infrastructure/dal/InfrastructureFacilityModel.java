@@ -24,6 +24,7 @@ public class InfrastructureFacilityModel extends SPARQLNamedResourceModel<Infras
             inverse = true
     )
     private InfrastructureModel infrastructure;
+    public static final String INFRASTRUCTURE_FIELD = "infrastructure";
 
     public InfrastructureModel getInfrastructure() {
         return infrastructure;

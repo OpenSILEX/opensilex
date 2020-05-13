@@ -113,11 +113,11 @@ public class ProjectAPI {
             ProjectModel createdPjct = dao.create(dto.newModel());
             return new ObjectUriResponse(Response.Status.CREATED, createdPjct.getUri()).getResponse();
         } catch (SPARQLAlreadyExistingUriException e) {
-            // Return error response 409 - CONFLICT if user URI already exists
+            // Return error response 409 - CONFLICT if project URI already exists
             return new ErrorResponse(
                     Response.Status.CONFLICT,
                     "Project already exists",
-                    "Duplicated URI: " + dto.getUri()
+                    "Duplicated URI: " + e.getUri()
             ).getResponse();
         }
     }
@@ -269,11 +269,11 @@ public class ProjectAPI {
         @ApiResponse(code = 200, message = "Project deleted", response = ObjectUriResponse.class)
     })
     public Response deleteProject(
-            @ApiParam(value = "Project URI", example = PROJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI prjctUri
+            @ApiParam(value = "Project URI", example = PROJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         ProjectDAO dao = new ProjectDAO(sparql);
-        dao.delete(prjctUri);
-        return new ObjectUriResponse(prjctUri).getResponse();
+        dao.delete(uri);
+        return new ObjectUriResponse(uri).getResponse();
 
     }
 }

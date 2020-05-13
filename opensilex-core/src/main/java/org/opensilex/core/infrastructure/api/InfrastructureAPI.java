@@ -74,7 +74,7 @@ public class InfrastructureAPI {
     private SPARQLService sparql;
 
     @CurrentUser
-    UserModel user;
+    UserModel currentUser;
 
     @POST
     @Path("create")
@@ -116,23 +116,14 @@ public class InfrastructureAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure retrieved", response = InfrastructureGetDTO.class),
-        @ApiResponse(code = 404, message = "No infrastructure found", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Infrastructure retrieved", response = InfrastructureGetDTO.class)
     })
     public Response getInfrastructure(
             @ApiParam(value = "Infrastructure URI", example = "http://opensilex.dev/infrastructures/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        InfrastructureModel model = dao.get(uri, user.getLanguage());
-
-        if (model != null) {
-            return new SingleObjectResponse<>(InfrastructureGetDTO.getDTOFromModel(model)).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND, "Infrastructure not found",
-                    "Unknown infrastructure URI: " + uri.toString()
-            ).getResponse();
-        }
+        InfrastructureModel model = dao.get(uri, currentUser);
+        return new SingleObjectResponse<>(InfrastructureGetDTO.getDTOFromModel(model)).getResponse();
     }
 
     @DELETE
@@ -145,11 +136,14 @@ public class InfrastructureAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Infrastructure deleted", response = ObjectUriResponse.class)
+    })
     public Response deleteInfrastructure(
             @ApiParam(value = "Infrastructure URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        dao.delete(uri);
+        dao.delete(uri, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
@@ -164,18 +158,14 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of infrastructure tree", response = ResourceTreeDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+        @ApiResponse(code = 200, message = "Return list of infrastructure tree", response = ResourceTreeDTO.class, responseContainer = "List")
     })
     public Response searchInfrastructuresTree(
             @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
 
-        SPARQLTreeListModel<InfrastructureModel> tree = dao.searchTree(
-                pattern,
-                user
-        );
+        SPARQLTreeListModel<InfrastructureModel> tree = dao.searchTree(pattern, currentUser);
 
         boolean enableSelection = (pattern != null && !pattern.isEmpty());
         return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree, enableSelection)).getResponse();
@@ -192,8 +182,7 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return updated infrastructure", response = String.class),
-        @ApiResponse(code = 400, message = "Invalid parameters")
+        @ApiResponse(code = 200, message = "Return updated infrastructure", response = ObjectUriResponse.class)
     })
     public Response updateInfrastructure(
             @ApiParam("Infrastructure description")
@@ -201,18 +190,8 @@ public class InfrastructureAPI {
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
 
-        Response response;
-        if (sparql.uriExists(InfrastructureModel.class, dto.getUri())) {
-            InfrastructureModel infrastructure = dao.update(dto.newModel());
-
-            response = new ObjectUriResponse(Response.Status.OK, infrastructure.getUri()).getResponse();
-        } else {
-            response = new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Infrastructure not found",
-                    "Unknown infrastructure URI: " + dto.getUri()
-            ).getResponse();
-        }
+        InfrastructureModel infrastructure = dao.update(dto.newModel(), currentUser);
+        Response response = new ObjectUriResponse(Response.Status.OK, infrastructure.getUri()).getResponse();
 
         return response;
     }
@@ -236,7 +215,7 @@ public class InfrastructureAPI {
     ) throws Exception {
         try {
             InfrastructureDAO dao = new InfrastructureDAO(sparql);
-            InfrastructureFacilityModel model = dao.createFacility(dto.newModel());
+            InfrastructureFacilityModel model = dao.createFacility(dto.newModel(), currentUser);
             return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException e) {
@@ -256,23 +235,14 @@ public class InfrastructureAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure facility retrieved", response = InfrastructureFacilityGetDTO.class),
-        @ApiResponse(code = 404, message = "No infrastructure facility found", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Infrastructure facility retrieved", response = InfrastructureFacilityGetDTO.class)
     })
     public Response getInfrastructureFacility(
             @ApiParam(value = "Infrastructure facility URI", example = "http://opensilex.dev/infrastructures/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        InfrastructureFacilityModel model = dao.getFacility(uri, user.getLanguage());
-
-        if (model != null) {
-            return new SingleObjectResponse<>(InfrastructureFacilityGetDTO.getDTOFromModel(model)).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND, "Infrastructure not found",
-                    "Unknown infrastructure URI: " + uri.toString()
-            ).getResponse();
-        }
+        InfrastructureFacilityModel model = dao.getFacility(uri, currentUser);
+        return new SingleObjectResponse<>(InfrastructureFacilityGetDTO.getDTOFromModel(model)).getResponse();
     }
 
     @DELETE
@@ -285,11 +255,14 @@ public class InfrastructureAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Infrastructure facility deleted", response = ObjectUriResponse.class)
+    })
     public Response deleteInfrastructureFacility(
             @ApiParam(value = "Infrastructure facility URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        dao.deleteFacility(uri);
+        dao.deleteFacility(uri, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
@@ -304,8 +277,7 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return updated infrastructure", response = String.class),
-        @ApiResponse(code = 400, message = "Invalid parameters")
+        @ApiResponse(code = 200, message = "Return updated infrastructure", response = ObjectUriResponse.class)
     })
     public Response updateInfrastructureFacility(
             @ApiParam("Infrastructure description")
@@ -314,17 +286,9 @@ public class InfrastructureAPI {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
 
         Response response;
-        if (sparql.uriExists(InfrastructureFacilityModel.class, dto.getUri())) {
-            InfrastructureFacilityModel infrastructure = dao.updateFacility(dto.newModel());
+        InfrastructureFacilityModel infrastructure = dao.updateFacility(dto.newModel(), currentUser);
 
-            response = new ObjectUriResponse(Response.Status.OK, infrastructure.getUri()).getResponse();
-        } else {
-            response = new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Infrastructure facility not found",
-                    "Unknown infrastructure facility URI: " + dto.getUri()
-            ).getResponse();
-        }
+        response = new ObjectUriResponse(Response.Status.OK, infrastructure.getUri()).getResponse();
 
         return response;
     }
@@ -349,9 +313,8 @@ public class InfrastructureAPI {
     ) throws Exception {
         try {
             InfrastructureDAO dao = new InfrastructureDAO(sparql);
-            InfrastructureTeamModel model = dao.createTeam(dto.newModel());
+            InfrastructureTeamModel model = dao.createTeam(dto.newModel(), currentUser);
             return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
-
         } catch (SPARQLAlreadyExistingUriException e) {
             return new ErrorResponse(Response.Status.CONFLICT, "Infrastructure team already exists", e.getMessage()).getResponse();
         }
@@ -369,23 +332,14 @@ public class InfrastructureAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure team retrieved", response = InfrastructureTeamDTO.class),
-        @ApiResponse(code = 404, message = "No infrastructure facility found", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Infrastructure team retrieved", response = InfrastructureTeamDTO.class)
     })
     public Response getInfrastructureTeam(
             @ApiParam(value = "Infrastructure team URI", example = "http://opensilex.dev/infrastructures/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        InfrastructureTeamModel model = dao.getTeam(uri, user.getLanguage());
-
-        if (model != null) {
-            return new SingleObjectResponse<>(InfrastructureTeamDTO.getDTOFromModel(model)).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND, "Infrastructure not found",
-                    "Unknown infrastructure URI: " + uri.toString()
-            ).getResponse();
-        }
+        InfrastructureTeamModel model = dao.getTeam(uri, currentUser);
+        return new SingleObjectResponse<>(InfrastructureTeamDTO.getDTOFromModel(model)).getResponse();
     }
 
     @DELETE
@@ -398,11 +352,14 @@ public class InfrastructureAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Infrastructure team deleted", response = ObjectUriResponse.class)
+    })
     public Response deleteInfrastructureTeam(
             @ApiParam(value = "Infrastructure team URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        dao.deleteTeam(uri);
+        dao.deleteTeam(uri, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
@@ -417,28 +374,15 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return updated infrastructure uri", response = String.class),
-        @ApiResponse(code = 400, message = "Invalid parameters")
+        @ApiResponse(code = 200, message = "Return updated infrastructure uri", response = ObjectUriResponse.class)
     })
     public Response updateInfrastructureTeam(
             @ApiParam("Infrastructure team description")
             @Valid InfrastructureTeamDTO dto
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
-
-        Response response;
-        if (sparql.uriExists(InfrastructureTeamModel.class, dto.getUri())) {
-            InfrastructureTeamModel team = dao.updateTeam(dto.newModel());
-
-            response = new ObjectUriResponse(Response.Status.OK, team.getUri()).getResponse();
-        } else {
-            response = new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Infrastructure facility not found",
-                    "Unknown infrastructure facility URI: " + dto.getUri()
-            ).getResponse();
-        }
-
+        InfrastructureTeamModel team = dao.updateTeam(dto.newModel(), currentUser);
+        Response response = new ObjectUriResponse(Response.Status.OK, team.getUri()).getResponse();
         return response;
     }
 }

@@ -10,8 +10,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.core.Var;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -51,6 +54,65 @@ public class InfrastructureDAO {
         );
     }
 
+    public void validateInfrastructureAccess(URI infrastructureURI, UserModel user) throws Exception {
+        if (user.isAdmin()) {
+            return;
+        }
+
+        if (!sparql.uriExists(InfrastructureModel.class, infrastructureURI)) {
+            throw new NotFoundURIException(infrastructureURI);
+        }
+
+        AskBuilder ask = sparql.getUriExistsQuery(InfrastructureModel.class, infrastructureURI);
+        addAskInfrastructureAccess(ask, makeVar(InfrastructureModel.URI_FIELD), user);
+
+        if (!sparql.executeAskQuery(ask)) {
+            throw new ForbiddenURIAccessException(infrastructureURI);
+        }
+    }
+
+    public void validateInfrastructureTeamAccess(URI infrastructureTeamURI, UserModel user) throws Exception {
+        if (user.isAdmin()) {
+            return;
+        }
+
+        if (!sparql.uriExists(InfrastructureTeamModel.class, infrastructureTeamURI)) {
+            throw new NotFoundURIException(infrastructureTeamURI);
+        }
+
+        AskBuilder ask = sparql.getUriExistsQuery(InfrastructureTeamModel.class, infrastructureTeamURI);
+        addAskInfrastructureAccess(ask, makeVar(InfrastructureTeamModel.INFRASTRUCTURE_FIELD), user);
+
+        if (!sparql.executeAskQuery(ask)) {
+            throw new ForbiddenURIAccessException(infrastructureTeamURI);
+        }
+    }
+
+    public void validateInfrastructureFacilityAccess(URI infrastructureFacilityURI, UserModel user) throws Exception {
+        if (user.isAdmin()) {
+            return;
+        }
+
+        if (!sparql.uriExists(InfrastructureFacilityModel.class, infrastructureFacilityURI)) {
+            throw new NotFoundURIException(infrastructureFacilityURI);
+        }
+
+        AskBuilder ask = sparql.getUriExistsQuery(InfrastructureFacilityModel.class, infrastructureFacilityURI);
+        addAskInfrastructureAccess(ask, makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD), user);
+
+        if (!sparql.executeAskQuery(ask)) {
+            throw new ForbiddenURIAccessException(infrastructureFacilityURI);
+        }
+    }
+
+    public void addAskInfrastructureAccess(AskBuilder ask, Var infraURIVar, UserModel user) {
+        Var userProfileVar = makeVar("_userProfile");
+        Var groupVar = makeVar(InfrastructureModel.GROUP_FIELD);
+        ask.addWhere(infraURIVar, SecurityOntology.hasGroup, groupVar);
+        ask.addWhere(groupVar, SecurityOntology.hasUserProfile, userProfileVar);
+        ask.addWhere(userProfileVar, SecurityOntology.hasUser, SPARQLDeserializers.nodeURI(user.getUri()));
+    }
+
     public Set<URI> getUserInfrastructures(UserModel user) throws Exception {
         if (user == null || user.isAdmin()) {
             return null;
@@ -76,61 +138,71 @@ public class InfrastructureDAO {
         return instance;
     }
 
-    public InfrastructureModel get(URI uri, String lang) throws Exception {
-        return sparql.getByURI(InfrastructureModel.class, uri, lang);
+    public InfrastructureModel get(URI uri, UserModel user) throws Exception {
+        validateInfrastructureAccess(uri, user);
+        return sparql.getByURI(InfrastructureModel.class, uri, user.getLanguage());
     }
 
-    public void delete(URI instanceURI) throws Exception {
-        sparql.delete(InfrastructureModel.class, instanceURI);
+    public void delete(URI uri, UserModel user) throws Exception {
+        validateInfrastructureAccess(uri, user);
+        sparql.delete(InfrastructureModel.class, uri);
     }
 
-    public InfrastructureModel update(InfrastructureModel instance) throws Exception {
+    public InfrastructureModel update(InfrastructureModel instance, UserModel user) throws Exception {
+        validateInfrastructureAccess(instance.getUri(), user);
         sparql.update(instance);
         return instance;
     }
 
-    public InfrastructureFacilityModel createFacility(InfrastructureFacilityModel instance) throws Exception {
-        InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), null);
+    public InfrastructureFacilityModel createFacility(InfrastructureFacilityModel instance, UserModel user) throws Exception {
+        validateInfrastructureFacilityAccess(instance.getUri(), user);
+        InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), user.getLanguage());
         instance.setInfrastructure(infra);
         sparql.create(instance);
         return instance;
     }
 
-    public InfrastructureFacilityModel getFacility(URI uri, String lang) throws Exception {
-        return sparql.getByURI(InfrastructureFacilityModel.class, uri, lang);
+    public InfrastructureFacilityModel getFacility(URI uri, UserModel user) throws Exception {
+        validateInfrastructureFacilityAccess(uri, user);
+        return sparql.getByURI(InfrastructureFacilityModel.class, uri, user.getLanguage());
     }
 
-    public void deleteFacility(URI uri) throws Exception {
+    public void deleteFacility(URI uri, UserModel user) throws Exception {
+        validateInfrastructureFacilityAccess(uri, user);
         sparql.delete(InfrastructureFacilityModel.class, uri);
     }
 
-    public InfrastructureFacilityModel updateFacility(InfrastructureFacilityModel instance) throws Exception {
-        InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), null);
+    public InfrastructureFacilityModel updateFacility(InfrastructureFacilityModel instance, UserModel user) throws Exception {
+        validateInfrastructureFacilityAccess(instance.getUri(), user);
+        InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), user.getLanguage());
         instance.setInfrastructure(infra);
         sparql.update(instance);
         return instance;
     }
 
-    public InfrastructureTeamModel getTeam(URI uri, String language) throws Exception {
-        return sparql.getByURI(InfrastructureTeamModel.class, uri, language);
+    public InfrastructureTeamModel getTeam(URI uri, UserModel user) throws Exception {
+        validateInfrastructureTeamAccess(uri, user);
+        return sparql.getByURI(InfrastructureTeamModel.class, uri, user.getLanguage());
     }
 
-    public void deleteTeam(URI uri) throws Exception {
+    public void deleteTeam(URI uri, UserModel user) throws Exception {
+        validateInfrastructureTeamAccess(uri, user);
         sparql.delete(InfrastructureTeamModel.class, uri);
     }
 
-    public InfrastructureTeamModel createTeam(InfrastructureTeamModel instance) throws Exception {
+    public InfrastructureTeamModel createTeam(InfrastructureTeamModel instance, UserModel user) throws Exception {
+        validateInfrastructureTeamAccess(instance.getUri(), user);
         InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), null);
         instance.setInfrastructure(infra);
         sparql.create(instance);
         return instance;
     }
 
-    public InfrastructureTeamModel updateTeam(InfrastructureTeamModel instance) throws Exception {
+    public InfrastructureTeamModel updateTeam(InfrastructureTeamModel instance, UserModel user) throws Exception {
+        validateInfrastructureTeamAccess(instance.getUri(), user);
         InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), null);
         instance.setInfrastructure(infra);
         sparql.update(instance);
         return instance;
     }
-
 }

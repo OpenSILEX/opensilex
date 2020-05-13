@@ -40,7 +40,17 @@ public class ExceptionJsonMapper implements ExceptionMapper<Throwable> {
     @Override
     public Response toResponse(Throwable exception) {
         final Response response;
-        if (exception instanceof WebApplicationException) {
+        if (exception instanceof ForbiddenURIAccessException) {
+            response = new ErrorResponse(
+                    Response.Status.FORBIDDEN, "URI access forbidden",
+                    exception.getMessage()
+            ).getResponse();
+        } else if (exception instanceof NotFoundURIException) {
+            response = new ErrorResponse(
+                    Response.Status.NOT_FOUND, "URI not found",
+                    exception.getMessage()
+            ).getResponse();
+        } else if (exception instanceof WebApplicationException) {
             WebApplicationException webAppException = (WebApplicationException) exception;
             Response exceptionResponse = webAppException.getResponse();
             response = new ErrorResponse(

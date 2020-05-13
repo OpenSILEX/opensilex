@@ -27,6 +27,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Consumer;
 import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
@@ -87,6 +88,32 @@ public class SPARQLQueryHelper {
         return parentExpr;
     }
 
+    public static Expr or(Expr[] expressions, Expr... extensions) {
+        Expr parentExpr = null;
+
+        for (Expr expr : expressions) {
+            if (expr != null) {
+                if (parentExpr == null) {
+                    parentExpr = expr;
+                } else {
+                    parentExpr = new E_LogicalOr(parentExpr, expr);
+                }
+            }
+        }
+
+        for (Expr expr : extensions) {
+            if (expr != null) {
+                if (parentExpr == null) {
+                    parentExpr = expr;
+                } else {
+                    parentExpr = new E_LogicalOr(parentExpr, expr);
+                }
+            }
+        }
+
+        return parentExpr;
+    }
+
     public static Expr and(Expr... expressions) {
         Expr parentExpr = null;
 
@@ -116,6 +143,9 @@ public class SPARQLQueryHelper {
         return eq(varName, node);
     }
 
+    public static Expr eq(Var var, Object object) throws Exception {
+        return eq(var.getVarName(), object);
+    }
     /**
      * @param varName the variable name
      * @param node the Jena node to compare with the given variable
@@ -126,7 +156,7 @@ public class SPARQLQueryHelper {
         return exprFactory.eq(NodeFactory.createVariable(varName), node);
     }
 
-    public static void inPropertyOrEmpty(SelectBuilder select, String uriField, Property relation, String varName, List<URI> uris) {
+    public static void inPropertyOrEmpty(SelectBuilder select, String uriField, Property relation, String varName, List<URI> uris, Expr... orFilters) {
         Var var = makeVar(varName);
         Triple relationTriple = new Triple(makeVar(uriField), relation.asNode(), var);
 
@@ -148,12 +178,12 @@ public class SPARQLQueryHelper {
 
             rootFilteringElem.addElement(new ElementOptional(optionals));
 
-            rootFilteringElem.addElementFilter(new ElementFilter(SPARQLQueryHelper.or(boundExpr, groupInUrisExpr)));
+            rootFilteringElem.addElementFilter(new ElementFilter(SPARQLQueryHelper.or(orFilters, boundExpr, groupInUrisExpr)));
             select.getWhereHandler().getClause().addElement(rootFilteringElem);
         }
     }
 
-    public static void inProperty(SelectBuilder select, String uriField, Property relation, String varName, List<URI> uris) {
+    public static void inProperty(SelectBuilder select, String uriField, Property relation, String varName, List<URI> uris, Expr... orFilters) {
         Var var = makeVar(varName);
         Triple relationTriple = new Triple(makeVar(uriField), relation.asNode(), var);
 
@@ -174,23 +204,30 @@ public class SPARQLQueryHelper {
 
             rootFilteringElem.addElement(elementGroup);
 
-            rootFilteringElem.addElementFilter(new ElementFilter(resourceInUrisExpr));
+            rootFilteringElem.addElementFilter(new ElementFilter(SPARQLQueryHelper.or(orFilters, resourceInUrisExpr)));
             select.getWhereHandler().getClause().addElement(rootFilteringElem);
         }
     }
-
-    public static void inURI(AbstractQueryBuilder<?> select, String uriField, Collection<URI> uris) {
+    
+    public static Expr inURIFilter(String uriField, Collection<URI> uris) {
         if (uris != null && !uris.isEmpty()) {
             ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
 
             // get ressource with relation specified in the given list
-            Expr resourceInUrisExpr = exprFactory.in(makeVar(uriField), uris.stream()
+            return exprFactory.in(makeVar(uriField), uris.stream()
                     .map(uri -> {
                         return NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString()));
                     })
                     .toArray());
+        }
 
-            select.getWhereHandler().addFilter(resourceInUrisExpr);
+        return null;
+    }
+
+    public static void inURI(AbstractQueryBuilder<?> select, String uriField, Collection<URI> uris) {
+        Expr filter = inURIFilter(uriField, uris);
+        if (filter != null) {
+            select.getWhereHandler().addFilter(filter);
         }
     }
 

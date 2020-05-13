@@ -27,9 +27,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import org.opensilex.security.SecurityModule;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -101,7 +101,12 @@ public class ExperimentAPI {
             return new ObjectUriResponse(Response.Status.CREATED, createdXp.getUri()).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException e) {
-            return new ErrorResponse(Response.Status.CONFLICT, "Experiment already exists", e.getMessage()).getResponse();
+            // Return error response 409 - CONFLICT if experiment URI already exists
+            return new ErrorResponse(
+                    Response.Status.CONFLICT,
+                    "Experiment already exists",
+                    "Duplicated URI: " + e.getUri()
+            ).getResponse();
         }
     }
 
@@ -197,15 +202,11 @@ public class ExperimentAPI {
         @ApiResponse(code = 200, message = "Return Experiment list", response = ExperimentGetDTO.class, responseContainer = "List")
     })
     public Response searchExperiments(
-            @ApiParam(value = "Search by uri", example = EXPERIMENT_EXAMPLE_URI) @QueryParam("uri") URI uri,
-            @ApiParam(value = "Search by start date", example = "2017-06-15") @QueryParam("startDate") String startDate,
-            @ApiParam(value = "Search by end date", example = "2017-06-15") @QueryParam("endDate") String endDate,
-            @ApiParam(value = "Search by campaign", example = "2019") @QueryParam("campaign") Integer campaign,
+            @ApiParam(value = "Search by start date", example = "2017-06-15") @QueryParam("startDate") LocalDate startDate,
+            @ApiParam(value = "Search by end date", example = "2017-06-15") @QueryParam("endDate") LocalDate endDate,
             @ApiParam(value = "Regex pattern for filtering by label", example = "ZA17") @QueryParam("label") String label,
             @ApiParam(value = "Search by involved species", example = "http://www.phenome-fppn.fr/id/species/zeamays") @QueryParam("species") List<URI> species,
             @ApiParam(value = "Search by related project uri", example = "http://www.phenome-fppn.fr/projects/ZA17\nhttp://www.phenome-fppn.fr/id/projects/ZA18") @QueryParam("projects") List<URI> projects,
-            //            @ApiParam(value = "Search by infrastructure(s)") @QueryParam("infrastructures") List<URI> infrastructures,
-            //            @ApiParam(value = "Search by devices(s)") @QueryParam("devices") List<URI> installations,
             @ApiParam(value = "Search private(false) or public projects(true)", example = "true") @QueryParam("isPublic") Boolean isPublic,
             @ApiParam(value = "Search ended(false) or active projects(true)", example = "true") @QueryParam("isEnded") Boolean isEnded,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "label=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
@@ -214,14 +215,7 @@ public class ExperimentAPI {
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql);
 
-        List<URI> groupUris = new ArrayList<>();
-        for (String groupUri : authentication.decodeStringArrayClaim(currentUser.getToken(), SecurityModule.TOKEN_USER_GROUP_URIS)) {
-            groupUris.add(new URI(groupUri));
-        }
-
         ListWithPagination<ExperimentModel> resultList = xpDao.search(
-                uri,
-                campaign,
                 label,
                 species,
                 startDate,
@@ -229,8 +223,7 @@ public class ExperimentAPI {
                 isEnded,
                 projects,
                 isPublic,
-                groupUris,
-                currentUser.isAdmin(),
+                currentUser,
                 orderByList,
                 page,
                 pageSize

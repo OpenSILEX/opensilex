@@ -71,28 +71,21 @@ public class ScientificAppDescription {
      */
     public static String containerNetwork = ShinyProxyService.SHINYPROXY_NETWORK_ID; 
 
-    public ScientificAppDescription(String uri, String display_name, String description, String sessionId) {
+    public ScientificAppDescription(String uri, String display_name, String description, String sessionId, String host, String port, String wsPath) {
         this.documentUri = uri;
         setId(uri);
         this.displayName = display_name;
         this.description = description;
         this.containerImageName = "opensilex/shinyproxy-" + this.id;
         this.environmentVariables = new HashMap<>();
-        final String shinyHost = PropertiesFileManager.
-                getConfigFileProperty("data_analysis_config", "shinyproxy.host");
-        final String shinyPort = PropertiesFileManager.
-                getConfigFileProperty("data_analysis_config", "shinyproxy.port");
-        final String webServiceHost = PropertiesFileManager.
-                getConfigFileProperty("service", "host");
-        final String webServiceBasePath = PropertiesFileManager.
-                getConfigFileProperty("service", "basePath");
+       
         
         String token = "";
         if(sessionId != null){
             token = "&token=" + sessionId;
         }
-        this.applicationUrl = "http://" + shinyHost + ":" + shinyPort + "/app/" + this.id
-                + "?wsUrl=http://" + webServiceHost + webServiceBasePath + "/" + token;
+        this.applicationUrl = "http://" + host + ":" + port + "/app/" + this.id
+                + "?wsUrl="+ wsPath + "/" + token;
     }
 
     /**

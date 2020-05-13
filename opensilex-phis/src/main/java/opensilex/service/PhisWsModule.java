@@ -7,19 +7,26 @@
 //******************************************************************************
 package opensilex.service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import opensilex.service.shinyProxy.ShinyProxyService;
 import org.apache.jena.riot.Lang;
 
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.OpenSilexModule;
+import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
+import org.opensilex.server.ServerConfig;
+import org.opensilex.server.ServerModule;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
 
 /**
  * Phis opensilex module implementation
@@ -84,6 +91,41 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension, SPARQ
                 sparqlConfig.baseURIAlias() + "-species"
         ));
         return list;
+    }
+
+    @Override
+    public void startup() throws Exception {
+        PhisWsConfig phisConfig = (PhisWsConfig) this.getConfig();
+        if (phisConfig.enableShinyProxy()) {
+            this.startupShinyProxy(phisConfig);
+        }
+    }
+
+    @Override
+    public void shutdown() throws Exception {
+        PhisWsConfig phisConfig = (PhisWsConfig) this.getConfig();
+        if (phisConfig.enableShinyProxy()) {
+            ShinyProxyService shinyProxyProcess = new ShinyProxyService();
+            shinyProxyProcess.stop();
+        }
+    }
+
+    private void startupShinyProxy(PhisWsConfig phisConfig) throws OpenSilexModuleNotFoundException, IOException {
+        SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
+        ServerConfig serverConfig = getOpenSilex().getModuleConfig(ServerModule.class, ServerConfig.class);
+        ShinyProxyService shinyProxyProcess = new ShinyProxyService();
+        ShinyProxyService.STARTED = true;
+        ShinyProxyService.HOST = phisConfig.shinyProxyHost();
+        ShinyProxyService.PORT = phisConfig.shinyProxyPort();
+        ShinyProxyService.WS_HOST = serverConfig.publicURI();
+        ShinyProxyService.sparql = sparql;
+        System.out.println("opensilex.service.PhisWsModule.startup()" + ShinyProxyService.WS_HOST);
+        System.out.println("opensilex.service.PhisWsModule.startup()" + ShinyProxyService.HOST);
+
+        System.out.println("opensilex.service.PhisWsModule.startup()" + ShinyProxyService.WS_HOST);
+        shinyProxyProcess.initialize();
+        shinyProxyProcess.reload();
     }
 
 }

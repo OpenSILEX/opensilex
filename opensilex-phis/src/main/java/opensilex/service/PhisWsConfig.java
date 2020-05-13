@@ -77,5 +77,25 @@ public interface PhisWsConfig {
             defaultString = "2097152"
     )
     String pageSizeMax();
+    
+    @ConfigDescription(
+            value = "enable ShinyProxy service",
+            defaultBoolean = false
+    )
+    Boolean enableShinyProxy();
+    
+    @ConfigDescription(
+            value = "shinyProxyHost",
+            defaultString = "localhost"
+    )
+    String shinyProxyHost();
+    
+    
+    @ConfigDescription(
+        value = "shinyProxyPort",
+        defaultString = "8004"
+    )
+    String shinyProxyPort();
+    
 
 }

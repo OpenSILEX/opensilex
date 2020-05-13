@@ -28,6 +28,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import opensilex.service.PhisWsConfig;
+import opensilex.service.PhisWsModule;
 import opensilex.service.configuration.DefaultBrapiPaginationValues;
 import opensilex.service.dao.RDAO;
 import opensilex.service.dao.ScientificAppDAO;
@@ -40,7 +42,10 @@ import opensilex.service.resource.dto.ScientificAppDTO;
 import opensilex.service.shinyProxy.ShinyProxyService;
 import opensilex.service.view.brapi.form.ResponseFormGET;
 import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.opensilex.OpenSilex;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.server.ServerConfig;
+import org.opensilex.server.ServerModule;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -48,12 +53,15 @@ import org.opensilex.sparql.service.SPARQLService;
  *
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>
  */
-//@Api("/dataAnalysis")
-//@Path("/dataAnalysis")
+@Api("/dataAnalysis")
+@Path("/dataAnalysis")
 public class DataAnalysisResourceService extends ResourceService {
 
     @Inject
     private SPARQLService sparql;
+
+    @Inject
+    private OpenSilex opensilex;
 
     /**
      * Call R function via OpenCPU Server
@@ -161,9 +169,14 @@ public class DataAnalysisResourceService extends ResourceService {
     public Response shinyProxyServerAppList(
             @ApiParam(value = DocumentationAnnotation.PAGE_SIZE) @QueryParam("pageSize") @DefaultValue(DefaultBrapiPaginationValues.PAGE_SIZE) @Min(0) int limit,
             @ApiParam(value = DocumentationAnnotation.PAGE) @QueryParam("page") @DefaultValue(DefaultBrapiPaginationValues.PAGE) @Min(0) int page) throws Exception {
-        ScientificAppDAO scientificAppDAO = new ScientificAppDAO();
+        ScientificAppDAO scientificAppDAO = new ScientificAppDAO(sparql);
         scientificAppDAO.session = userSession;
-        ArrayList<ScientificAppDescription> shinyProxyAppList = scientificAppDAO.find(sparql, null, null);
+        PhisWsConfig phisConfig = opensilex.getModuleConfig(PhisWsModule.class, PhisWsConfig.class);
+        ServerConfig serverConfig = opensilex.getModuleConfig(ServerModule.class, ServerConfig.class);
+        scientificAppDAO.HOST_APP = phisConfig.shinyProxyHost();
+        scientificAppDAO.PORT_APP = phisConfig.shinyProxyPort();
+        ShinyProxyService.WS_HOST = serverConfig.publicURI();
+        ArrayList<ScientificAppDescription> shinyProxyAppList = scientificAppDAO.find(null, null);
         ArrayList<ScientificAppDTO> shinyProxyAppDTOList = new ArrayList<>();
         for (ScientificAppDescription scientificApplicationDescription : shinyProxyAppList) {
             shinyProxyAppDTOList.add(new ScientificAppDTO(scientificApplicationDescription));

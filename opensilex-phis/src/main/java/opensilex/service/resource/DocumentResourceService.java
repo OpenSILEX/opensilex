@@ -253,7 +253,7 @@ public class DocumentResourceService extends ResourceService {
                 postResponse.getMetadata().setDatafiles((ArrayList) insertAnnotationJSON.createdResources);
                 final URI newUri = new URI(uri.getPath());
                 // Need to use event instead of "if" condition
-                if (media.equals("ShinyAppPackage")) {
+                if (media.equals("ShinyAppPackage") && ShinyProxyService.STARTED) {
                     ShinyProxyService shinyProxyProcess = new ShinyProxyService();
                     new Thread(() -> shinyProxyProcess.reload()).start();
                 }

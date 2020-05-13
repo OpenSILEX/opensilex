@@ -82,7 +82,6 @@ public class Oeso {
     public static final Property hasProject = Ontology.property(NS, "hasProject");
     public static final Property hasScientificSupervisor = Ontology.property(NS, "hasScientificSupervisor");
     public static final Property hasTechnicalSupervisor = Ontology.property(NS, "hasTechnicalSupervisor");
-    public static final Property hasGroup = Ontology.property(NS, "hasGroup");
     public static final Property hasCampaign = Ontology.property(NS, "hasCampaign");
     public static final Property hasSpecies = Ontology.property(NS, "hasSpecies");
     public static final Property isPublic = Ontology.property(NS, "isPublic");

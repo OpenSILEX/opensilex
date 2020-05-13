@@ -145,15 +145,13 @@ export default class ExperimentList extends Vue {
     return this.$opensilex
       .getService("opensilex.ExperimentsService")
       .searchExperiments(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
+        undefined, // startDate
+        undefined, // endDate
+        undefined, // label
+        undefined, // species
+        undefined, // projects
+        undefined, // isPublic
+        undefined, // isEnded
         options.orderBy,
         options.currentPage,
         options.pageSize

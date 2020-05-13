@@ -359,7 +359,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classAnalizer.getFieldProperty(field);
     }
 
-    public Expr getFieldOrderExpr(String fieldName) throws SPARQLUnknownFieldException {
+    public Expr getFieldOrderExpr(String fieldName) {
         Field f = classAnalizer.getFieldFromName(fieldName);
         if (f != null) {
             if (f.getType().equals(String.class)) {
@@ -368,7 +368,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                 return new ExprVar(f.getName());
             }
         } else {
-            throw new SPARQLUnknownFieldException(f);
+            return null;
         }
     }
 

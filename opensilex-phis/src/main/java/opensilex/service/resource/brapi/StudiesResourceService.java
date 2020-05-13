@@ -61,6 +61,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.OrderBy;
@@ -83,6 +85,9 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
     @Inject
     private SPARQLService sparql;
 
+    @CurrentUser
+    UserModel currentUser;
+    
     /**
      * Overriding BrapiCall method
      *
@@ -307,7 +312,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         try {
 
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
-            ExperimentModel xp = xpDao.get(URI.create(studyDbId));
+            ExperimentModel xp = xpDao.get(URI.create(studyDbId), currentUser);
 
             ArrayList<StudyDTO> studies = new ArrayList();
             if (xp != null) {
@@ -489,7 +494,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
         try {
 
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
-            ExperimentModel xpModel = xpDao.get(new URI(studyDbId));
+            ExperimentModel xpModel = xpDao.get(new URI(studyDbId), currentUser);
 
             ArrayList<Status> statusList = new ArrayList<>();
 
@@ -657,7 +662,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             ArrayList<ScientificObject> scientificObjects = scientificObjectsDAO.find(null, null, null, rdfType, studyDbId, null, false, null, null);
 
             ExperimentDAO experimentDAO = new ExperimentDAO(sparql);
-            ExperimentModel xp = experimentDAO.get(new URI(studyDbId));
+            ExperimentModel xp = experimentDAO.get(new URI(studyDbId), currentUser);
             if (xp != null) {
                 ArrayList<BrapiObservationUnitDTO> observationUnits = getObservationUnitsResult(scientificObjects, xp);
 

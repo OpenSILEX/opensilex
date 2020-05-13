@@ -30,7 +30,6 @@ import org.opensilex.core.infrastructure.dal.InfrastructureDAO;
 import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.core.infrastructure.dal.InfrastructureTeamModel;
-import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -116,7 +115,8 @@ public class InfrastructureAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure retrieved", response = InfrastructureGetDTO.class)
+        @ApiResponse(code = 200, message = "Infrastructure retrieved", response = InfrastructureGetDTO.class),
+        @ApiResponse(code = 404, message = "Infrastructure URI not found", response = ErrorResponse.class)
     })
     public Response getInfrastructure(
             @ApiParam(value = "Infrastructure URI", example = "http://opensilex.dev/infrastructures/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
@@ -137,7 +137,8 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure deleted", response = ObjectUriResponse.class)
+        @ApiResponse(code = 200, message = "Infrastructure deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 404, message = "Infrastructure URI not found", response = ErrorResponse.class)
     })
     public Response deleteInfrastructure(
             @ApiParam(value = "Infrastructure URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
@@ -182,7 +183,8 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return updated infrastructure", response = ObjectUriResponse.class)
+        @ApiResponse(code = 200, message = "Return updated infrastructure", response = ObjectUriResponse.class),
+        @ApiResponse(code = 404, message = "Infrastructure URI not found", response = ErrorResponse.class)
     })
     public Response updateInfrastructure(
             @ApiParam("Infrastructure description")
@@ -235,7 +237,8 @@ public class InfrastructureAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure facility retrieved", response = InfrastructureFacilityGetDTO.class)
+        @ApiResponse(code = 200, message = "Infrastructure facility retrieved", response = InfrastructureFacilityGetDTO.class),
+        @ApiResponse(code = 404, message = "Infrastructure facility URI not found", response = ErrorResponse.class)
     })
     public Response getInfrastructureFacility(
             @ApiParam(value = "Infrastructure facility URI", example = "http://opensilex.dev/infrastructures/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
@@ -256,7 +259,8 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure facility deleted", response = ObjectUriResponse.class)
+        @ApiResponse(code = 200, message = "Infrastructure facility deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 404, message = "Infrastructure facility URI not found", response = ErrorResponse.class)
     })
     public Response deleteInfrastructureFacility(
             @ApiParam(value = "Infrastructure facility URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
@@ -277,7 +281,8 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return updated infrastructure", response = ObjectUriResponse.class)
+        @ApiResponse(code = 200, message = "Return updated infrastructure", response = ObjectUriResponse.class),
+        @ApiResponse(code = 404, message = "Infrastructure facility URI not found", response = ErrorResponse.class)
     })
     public Response updateInfrastructureFacility(
             @ApiParam("Infrastructure description")
@@ -332,7 +337,8 @@ public class InfrastructureAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure team retrieved", response = InfrastructureTeamDTO.class)
+        @ApiResponse(code = 200, message = "Infrastructure team retrieved", response = InfrastructureTeamDTO.class),
+        @ApiResponse(code = 404, message = "Infrastructure team URI not found", response = ErrorResponse.class)
     })
     public Response getInfrastructureTeam(
             @ApiParam(value = "Infrastructure team URI", example = "http://opensilex.dev/infrastructures/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
@@ -353,7 +359,8 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure team deleted", response = ObjectUriResponse.class)
+        @ApiResponse(code = 200, message = "Infrastructure team deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 404, message = "Infrastructure team URI not found", response = ErrorResponse.class)
     })
     public Response deleteInfrastructureTeam(
             @ApiParam(value = "Infrastructure team URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
@@ -374,7 +381,8 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return updated infrastructure uri", response = ObjectUriResponse.class)
+        @ApiResponse(code = 200, message = "Return updated infrastructure uri", response = ObjectUriResponse.class),
+        @ApiResponse(code = 404, message = "Infrastructure team URI not found", response = ErrorResponse.class)
     })
     public Response updateInfrastructureTeam(
             @ApiParam("Infrastructure team description")

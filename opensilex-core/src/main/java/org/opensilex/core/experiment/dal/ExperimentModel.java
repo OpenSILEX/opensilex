@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.user.dal.UserModel;
 
@@ -78,11 +79,11 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
     public static final String TECHNICAL_SUPERVISOR_FIELD = "technicalSupervisor";
 
     @SPARQLProperty(
-            ontology = Oeso.class,
+            ontology = SecurityOntology.class,
             property = "hasGroup"
     )
     List<GroupModel> groups;
-    public static final String GROUP_FIELD = "group";
+    public static final String GROUP_FIELD = "groups";
 
     @SPARQLProperty(
             ontology = Oeso.class,

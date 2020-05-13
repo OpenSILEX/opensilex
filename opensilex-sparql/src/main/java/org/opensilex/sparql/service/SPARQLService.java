@@ -541,10 +541,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
 
         if (orderByList != null) {
-            orderByList.forEach(ThrowingConsumer.wrap((OrderBy orderBy) -> {
+            orderByList.forEach((OrderBy orderBy) -> {
                 Expr fieldOrderExpr = mapper.getFieldOrderExpr(orderBy.getFieldName());
-                select.addOrderBy(fieldOrderExpr, orderBy.getOrder());
-            }, SPARQLUnknownFieldException.class));
+                if (fieldOrderExpr != null) {
+                    select.addOrderBy(fieldOrderExpr, orderBy.getOrder());
+                }
+            });
         }
 
         if (page == null || page < 0) {

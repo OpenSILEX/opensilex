@@ -55,12 +55,12 @@ public class InfrastructureDAO {
     }
 
     public void validateInfrastructureAccess(URI infrastructureURI, UserModel user) throws Exception {
-        if (user.isAdmin()) {
-            return;
-        }
-
         if (!sparql.uriExists(InfrastructureModel.class, infrastructureURI)) {
             throw new NotFoundURIException(infrastructureURI);
+        }
+
+        if (user.isAdmin()) {
+            return;
         }
 
         AskBuilder ask = sparql.getUriExistsQuery(InfrastructureModel.class, infrastructureURI);
@@ -72,12 +72,13 @@ public class InfrastructureDAO {
     }
 
     public void validateInfrastructureTeamAccess(URI infrastructureTeamURI, UserModel user) throws Exception {
-        if (user.isAdmin()) {
-            return;
-        }
 
         if (!sparql.uriExists(InfrastructureTeamModel.class, infrastructureTeamURI)) {
             throw new NotFoundURIException(infrastructureTeamURI);
+        }
+
+        if (user.isAdmin()) {
+            return;
         }
 
         AskBuilder ask = sparql.getUriExistsQuery(InfrastructureTeamModel.class, infrastructureTeamURI);
@@ -89,12 +90,12 @@ public class InfrastructureDAO {
     }
 
     public void validateInfrastructureFacilityAccess(URI infrastructureFacilityURI, UserModel user) throws Exception {
-        if (user.isAdmin()) {
-            return;
-        }
-
         if (!sparql.uriExists(InfrastructureFacilityModel.class, infrastructureFacilityURI)) {
             throw new NotFoundURIException(infrastructureFacilityURI);
+        }
+
+        if (user.isAdmin()) {
+            return;
         }
 
         AskBuilder ask = sparql.getUriExistsQuery(InfrastructureFacilityModel.class, infrastructureFacilityURI);

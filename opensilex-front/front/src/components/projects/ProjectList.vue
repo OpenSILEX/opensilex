@@ -58,21 +58,15 @@
 
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
-          <opensilex-DetailButton
-            label="component.user.details"
-            :detailVisible="data.detailsShowing"
-            :small="true"
-          ></opensilex-DetailButton>
-
           <opensilex-EditButton
             @click="$emit('onEdit', data.item)"
-            label="component.user.update"
+            label="component.project.update"
             :small="true"
           ></opensilex-EditButton>
 
           <opensilex-DeleteButton
             @click="deleteUser(data.item.uri)"
-            label="component.user.delete"
+            label="component.project.delete"
             :small="true"
           ></opensilex-DeleteButton>
         </b-button-group>

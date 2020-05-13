@@ -32,12 +32,14 @@ import org.opensilex.utils.ListWithPagination;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.user.dal.UserModel;
 
@@ -58,41 +60,41 @@ public class ExperimentDAO {
         return instance;
     }
 
-    public ExperimentModel update(ExperimentModel instance) throws Exception {
+    public ExperimentModel update(ExperimentModel instance, UserModel user) throws Exception {
+        validateExperimentAccess(instance.getUri(), user);
         sparql.update(instance);
         return instance;
     }
 
-    public void updateWithVariables(URI xpUri, List<URI> variablesUris) throws Exception {
-        if (!sparql.uriExists(ExperimentModel.class, xpUri)) {
-            throw new IllegalArgumentException("Unknown experiment " + xpUri);
-        }
+    public void updateWithVariables(URI xpUri, List<URI> variablesUris, UserModel user) throws Exception {
+        validateExperimentAccess(xpUri, user);
         sparql.updateObjectRelations(SPARQLDeserializers.nodeURI(xpUri), xpUri, Oeso.measures, variablesUris);
     }
 
-    public void updateWithSensors(URI xpUri, List<URI> sensorsUris) throws Exception {
-        if (!sparql.uriExists(ExperimentModel.class, xpUri)) {
-            throw new IllegalArgumentException("Unknown experiment " + xpUri);
-        }
+    public void updateWithSensors(URI xpUri, List<URI> sensorsUris, UserModel user) throws Exception {
+        validateExperimentAccess(xpUri, user);
         sparql.updateSubjectRelations(SPARQLDeserializers.nodeURI(xpUri), sensorsUris, Oeso.participatesIn, xpUri);
     }
 
-    public void updateWithFactors(URI xpUri, List<URI> factorsUris) throws Exception {
-        if (!sparql.uriExists(ExperimentModel.class, xpUri)) {
-            throw new IllegalArgumentException("Unknown experiment " + xpUri);
-        }
+    public void updateWithFactors(URI xpUri, List<URI> factorsUris, UserModel user) throws Exception {
+        validateExperimentAccess(xpUri, user);
         sparql.updateSubjectRelations(SPARQLDeserializers.nodeURI(xpUri), factorsUris, Oeso.influencedBy, xpUri);
     }
 
-    public void delete(URI xpUri) throws Exception {
+    public void delete(URI xpUri, UserModel user) throws Exception {
+        validateExperimentAccess(xpUri, user);
         sparql.delete(ExperimentModel.class, xpUri);
     }
 
-    public void delete(List<URI> xpUris) throws Exception {
+    public void delete(List<URI> xpUris, UserModel user) throws Exception {
+        for (URI xpUri : xpUris) {
+            validateExperimentAccess(xpUri, user);
+        }
         sparql.delete(ExperimentModel.class, xpUris);
     }
 
-    public ExperimentModel get(URI xpUri) throws Exception {
+    public ExperimentModel get(URI xpUri, UserModel user) throws Exception {
+        validateExperimentAccess(xpUri, user);
         ExperimentModel xp = sparql.getByURI(ExperimentModel.class, xpUri, null);
         if (xp != null) {
             filterExperimentSensors(xp);
@@ -291,7 +293,7 @@ public class ExperimentDAO {
             return;
         }
         Var groupVar = makeVar(ExperimentModel.GROUP_FIELD);
-        Triple groupTriple = new Triple(makeVar(ExperimentModel.URI_FIELD), Oeso.hasGroup.asNode(), groupVar);
+        Triple groupTriple = new Triple(makeVar(ExperimentModel.URI_FIELD), SecurityOntology.hasGroup.asNode(), groupVar);
 
         if (CollectionUtils.isEmpty(groups) || (isPublic != null && isPublic)) {
             // get experiment without any group
@@ -348,9 +350,6 @@ public class ExperimentDAO {
             return;
         }
 
-        ElementGroup rootFilteringElem = new ElementGroup();
-        ElementGroup optionals = new ElementGroup();
-
         Set<URI> xps = getUserExperiments(user);
         Expr experimentFilter = null;
         if (!xps.isEmpty()) {
@@ -359,27 +358,59 @@ public class ExperimentDAO {
 
         Var uriVar = makeVar(ExperimentModel.URI_FIELD);
 
-        Var scientificSupervisorVar = makeVar(ExperimentModel.TECHNICAL_SUPERVISOR_FIELD);
-        optionals.addTriplePattern(new Triple(uriVar, Oeso.hasScientificSupervisor.asNode(), scientificSupervisorVar));
-        Expr hasScientificSupervisor = SPARQLQueryHelper.eq(scientificSupervisorVar, user.getUri());
+        Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
+        
+        Var scientificSupervisorVar = makeVar(ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD);
+        select.addOptional(new Triple(uriVar, Oeso.hasScientificSupervisor.asNode(), scientificSupervisorVar));
+        Expr hasScientificSupervisor = SPARQLQueryHelper.eq(scientificSupervisorVar, userNodeURI);
 
         Var technicalSupervisorVar = makeVar(ExperimentModel.TECHNICAL_SUPERVISOR_FIELD);
-        optionals.addTriplePattern(new Triple(uriVar, Oeso.hasTechnicalSupervisor.asNode(), technicalSupervisorVar));
-        Expr hasTechnicalSupervisor = SPARQLQueryHelper.eq(technicalSupervisorVar, user.getUri());
+        select.addOptional(new Triple(uriVar, Oeso.hasTechnicalSupervisor.asNode(), technicalSupervisorVar));
+        Expr hasTechnicalSupervisor = SPARQLQueryHelper.eq(technicalSupervisorVar, userNodeURI);
 
         Var isPublicVar = makeVar(ExperimentModel.IS_PUBLIC_FIELD);
-        optionals.addTriplePattern(new Triple(uriVar, Oeso.isPublic.asNode(), isPublicVar));
+        select.addOptional(new Triple(uriVar, Oeso.isPublic.asNode(), isPublicVar));
         Expr isPublic = SPARQLQueryHelper.eq(isPublicVar, Boolean.TRUE);
 
-        rootFilteringElem.addElement(new ElementOptional(optionals));
-        rootFilteringElem.addElementFilter(new ElementFilter(SPARQLQueryHelper.or(
+        select.addFilter(SPARQLQueryHelper.or(
                 experimentFilter,
                 hasScientificSupervisor,
                 hasTechnicalSupervisor,
                 isPublic
-        )));
+        ));
+    }
 
-        select.getWhereHandler().getClause().addElement(rootFilteringElem);
+    public void validateExperimentAccess(URI experimentURI, UserModel user) throws Exception {
+        if (!sparql.uriExists(ExperimentModel.class, experimentURI)) {
+            throw new NotFoundURIException(experimentURI);
+        }
+
+        if (user.isAdmin()) {
+            return;
+        }
+
+        AskBuilder ask = sparql.getUriExistsQuery(ExperimentModel.class, experimentURI);
+
+        Var userProfileVar = makeVar("_userProfile");
+        Var userVar = makeVar("_user");
+        Var groupVar = makeVar(ExperimentModel.GROUP_FIELD);
+        ask.addWhere(makeVar(ExperimentModel.URI_FIELD), SecurityOntology.hasGroup, groupVar);
+        ask.addWhere(groupVar, SecurityOntology.hasUserProfile, userProfileVar);
+        ask.addWhere(userProfileVar, SecurityOntology.hasUser, userVar);
+
+        Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
+        ask.addFilter(
+                SPARQLQueryHelper.or(
+                        SPARQLQueryHelper.eq(userVar, userNodeURI),
+                        SPARQLQueryHelper.eq(makeVar(ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD), userNodeURI),
+                        SPARQLQueryHelper.eq(makeVar(ExperimentModel.TECHNICAL_SUPERVISOR_FIELD), userNodeURI),
+                        SPARQLQueryHelper.eq(makeVar(ExperimentModel.IS_PUBLIC_FIELD), Boolean.TRUE)
+                )
+        );
+
+        if (!sparql.executeAskQuery(ask)) {
+            throw new ForbiddenURIAccessException(experimentURI);
+        }
     }
 
 }

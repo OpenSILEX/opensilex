@@ -179,7 +179,7 @@ public class ExperimentResourceService extends ResourceService {
 
         try {
             ExperimentDAO dao = new ExperimentDAO(sparql);
-            ExperimentModel xpModel = dao.get(experimentURI);
+            ExperimentModel xpModel = dao.get(experimentURI, null);
 
             ArrayList<Status> statusList = new ArrayList<>();
             ResultForm<Experiment> getResponse;
@@ -307,10 +307,10 @@ public class ExperimentResourceService extends ResourceService {
             ArrayList<URI> updatedXpUris = new ArrayList<>(experiments.size());
 
             for (ExperimentDTO xpDto : experiments) {
-                ExperimentModel xpModel = xpDao.get(new URI(xpDto.getUri()));
+                ExperimentModel xpModel = xpDao.get(new URI(xpDto.getUri()), null);
                 Experiment xp = xpDto.createObjectFromDTO();
                 xpModel = Experiment.toExperimentModel(xp, xpModel, speciesDAO, projectDAO, userDAO, groupDAO);
-                xpDao.update(xpModel);
+                xpDao.update(xpModel, null);
                 updatedXpUris.add(xpModel.getUri());
             }
 
@@ -368,7 +368,7 @@ public class ExperimentResourceService extends ResourceService {
             for (String variableUri : variables) {
                 variablesUris.add(new URI(variableUri));
             }
-            xpDao.updateWithVariables(uri, variablesUris);
+            xpDao.updateWithVariables(uri, variablesUris, null);
 
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, "The experiment " + uri + " has now " + variables.size() + " linked variables"));
             return Response.status(Response.Status.OK).entity(postResponse).build();
@@ -417,7 +417,7 @@ public class ExperimentResourceService extends ResourceService {
             for (String sensorUri : sensors) {
                 sensorUris.add(new URI(sensorUri));
             }
-            xpDao.updateWithSensors(uri, sensorUris);
+            xpDao.updateWithSensors(uri, sensorUris, null);
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, "The experiment " + uri + " has now " + sensors.size() + " linked sensors"));
             return Response.status(Response.Status.OK).entity(postResponse).build();
 

@@ -27,11 +27,11 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Consumer;
 import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.graph.Node_URI;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.syntax.ElementFilter;
@@ -139,6 +139,9 @@ public class SPARQLQueryHelper {
      * @see SPARQLDeserializers#getForClass(Class)
      */
     public static Expr eq(String varName, Object object) throws Exception {
+        if (object instanceof Node) {
+            return eq(varName, (Node) object);
+        }
         Node node = SPARQLDeserializers.getForClass(object.getClass()).getNode(object);
         return eq(varName, node);
     }
@@ -146,6 +149,11 @@ public class SPARQLQueryHelper {
     public static Expr eq(Var var, Object object) throws Exception {
         return eq(var.getVarName(), object);
     }
+
+    public static Expr eq(Var var, Node node) throws Exception {
+        return eq(var.getVarName(), node);
+    }
+
     /**
      * @param varName the variable name
      * @param node the Jena node to compare with the given variable
@@ -208,7 +216,7 @@ public class SPARQLQueryHelper {
             select.getWhereHandler().getClause().addElement(rootFilteringElem);
         }
     }
-    
+
     public static Expr inURIFilter(String uriField, Collection<URI> uris) {
         if (uris != null && !uris.isEmpty()) {
             ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();

@@ -163,59 +163,6 @@ public class SPARQLQueryHelper {
         return exprFactory.eq(NodeFactory.createVariable(varName), node);
     }
 
-    public static void inPropertyOrEmpty(SelectBuilder select, String uriField, Property relation, String varName, List<URI> uris, Expr... orFilters) {
-        Var var = makeVar(varName);
-        Triple relationTriple = new Triple(makeVar(uriField), relation.asNode(), var);
-
-        if (uris == null || uris.isEmpty()) {
-            // get ressource without any relation
-            select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(relationTriple)));
-        } else {
-            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
-
-            // get ressource with no relation specified or in the given list
-            ElementGroup rootFilteringElem = new ElementGroup();
-            ElementGroup optionals = new ElementGroup();
-            optionals.addTriplePattern(relationTriple);
-
-            Expr boundExpr = exprFactory.not(exprFactory.bound(var));
-            Expr groupInUrisExpr = exprFactory.in(var, uris.stream()
-                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
-                    .toArray());
-
-            rootFilteringElem.addElement(new ElementOptional(optionals));
-
-            rootFilteringElem.addElementFilter(new ElementFilter(SPARQLQueryHelper.or(orFilters, boundExpr, groupInUrisExpr)));
-            select.getWhereHandler().getClause().addElement(rootFilteringElem);
-        }
-    }
-
-    public static void inProperty(SelectBuilder select, String uriField, Property relation, String varName, List<URI> uris, Expr... orFilters) {
-        Var var = makeVar(varName);
-        Triple relationTriple = new Triple(makeVar(uriField), relation.asNode(), var);
-
-        if (uris == null || uris.isEmpty()) {
-            // get ressource without any relation
-            select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(relationTriple)));
-        } else {
-            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
-
-            // get ressource with relation specified in the given list
-            ElementGroup rootFilteringElem = new ElementGroup();
-            ElementGroup elementGroup = new ElementGroup();
-            elementGroup.addTriplePattern(relationTriple);
-
-            Expr resourceInUrisExpr = exprFactory.in(var, uris.stream()
-                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
-                    .toArray());
-
-            rootFilteringElem.addElement(elementGroup);
-
-            rootFilteringElem.addElementFilter(new ElementFilter(SPARQLQueryHelper.or(orFilters, resourceInUrisExpr)));
-            select.getWhereHandler().getClause().addElement(rootFilteringElem);
-        }
-    }
-
     public static Expr inURIFilter(String uriField, Collection<URI> uris) {
         if (uris != null && !uris.isEmpty()) {
             ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();

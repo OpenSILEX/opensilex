@@ -22,6 +22,8 @@ public class FactorSearchDTO {
     private String name;
 
     private String comment;
+    
+    private URI experiment;
 
     public URI getUri() {
         return uri;
@@ -49,5 +51,15 @@ public class FactorSearchDTO {
     public void setComment(String comment) {
         this.comment = comment;
     }
+
+    public URI getExperiment() {
+        return experiment;
+    }
+
+    public void setExperiment(URI experiment) {
+        this.experiment = experiment;
+    }
+    
+    
  
 }

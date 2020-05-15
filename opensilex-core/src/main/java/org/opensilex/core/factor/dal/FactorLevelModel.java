@@ -9,7 +9,6 @@
  */
 package org.opensilex.core.factor.dal;
 
-import java.net.URI;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -43,7 +42,12 @@ public class FactorLevelModel extends SPARQLResourceModel implements ClassURIGen
     )
     String comment;
 
-    URI hasFactor;
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasFactorLevel",
+            inverse = true
+    )
+    FactorModel factor;
 
     public String getName() {
         return name;
@@ -61,18 +65,18 @@ public class FactorLevelModel extends SPARQLResourceModel implements ClassURIGen
         this.comment = comment;
     }
 
-    public URI getHasFactor() {
-        return hasFactor;
+    public FactorModel getFactor() {
+        return factor;
     }
 
-    public void setHasFactor(URI hasFactor) {
-        this.hasFactor = hasFactor;
+    public void setFactor(FactorModel factor) {
+        this.factor = factor;
     }
 
     @Override
     public String[] getUriSegments(FactorLevelModel instance) {
         return new String[]{
-            instance.getHasFactor().toString(),
+            getFactor().getName().toString(),
             instance.getName()
         };
     }

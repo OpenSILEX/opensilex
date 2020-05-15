@@ -10,37 +10,34 @@
     ></opensilex-UriForm>
 
     <!-- Name en -->
-    <opensilex-InputForm
-      :value.sync="form.names.en"
+    <opensilex-NameInputForm
+      :value.sync="form.names"
       label="component.factor.names.en"
       helpMessage="component.factor.names.en-help"
       type="text"
       :required="true"
       placeholder="component.factor.names.en-placeholder"
-    ></opensilex-InputForm>
+    ></opensilex-NameInputForm>
 
     <!-- Local name -->
-    <opensilex-LocalNameInputForm
+    <opensilex-NameInputForm
       :value.sync="form.names"
       label="component.factor.names.local-name"
-      helpMessage="component.factor.names.local-name.help"
       type="text"
+      helpMessage="component.factor.names.local-name-help"
       placeholder="component.factor.names.local-name-placeholder"
-    ></opensilex-LocalNameInputForm>
+      :localName="true"
+    ></opensilex-NameInputForm>
 
-    <!-- Local name -->
-    <opensilex-InputForm
+    <!-- Comment -->
+    <opensilex-TextAreaForm
       :value.sync="form.comment"
-      label="form.comment"
+      label="component.factor.comment"
       helpMessage="component.factor.comment-help"
-      type="textarea"
-      size="lg"
-      rules="required|min:10"
-      :required="true"
-      placeholder="component.factor.names.en-placeholder"
-    ></opensilex-InputForm>
+      placeholder="component.factor.comment-placeholder"
+    ></opensilex-TextAreaForm>
 
-    <opensilex-FactorLevelTable :factorLevels.sync="form.factorLevels"></opensilex-FactorLevelTable>
+    <opensilex-FactorLevelTable :editMode="editMode" :factorLevels.sync="form.factorLevels"></opensilex-FactorLevelTable>
   </b-form>
 </template>
 
@@ -70,10 +67,13 @@ export default class FactorForm extends Vue {
 
   @Prop({
     default: () => {
+      let names = {};
+      let defaultLang = "en";
+      names[defaultLang] = "";
       return {
         uri: null,
-        names: { en: null, fr: null },
-        comment: null,
+        names: names,
+        comment: "",
         exactMatch: [],
         closeMatch: [],
         broader: [],
@@ -89,10 +89,15 @@ export default class FactorForm extends Vue {
   }
 
   getEmptyForm() {
+    let names = {};
+    let lang = this.languageCode;
+    let defaultLang = "en";
+    names[lang] = "";
+    names[defaultLang] = "";
     return {
       uri: null,
-      names: { en: null, fr: null },
-      comment: null,
+      names: names,
+      comment: "",
       exactMatch: [],
       closeMatch: [],
       broader: [],
@@ -105,19 +110,57 @@ export default class FactorForm extends Vue {
     this.form.uri = uri;
   }
 
+  updatefactor() {
+    return new Promise((resolve, reject) => {
+      console.log("update", this.form);
+      return this.$emit("onUpdate", this.form, result => {
+        if (result instanceof Promise) {
+          return result
+            .then(resolve => {
+              console.log("resolve", resolve);
+            })
+            .catch(reject => {
+              console.log("resolve", reject);
+            });
+        } else {
+          return resolve(result);
+        }
+      });
+    });
+  }
+
+  createFactor() {
+    return new Promise((resolve, reject) => {
+      return this.$emit("onCreate", this.form, result => {
+        if (result instanceof Promise) {
+          return result
+            .then(uri => {
+              this.afterCreate(uri);
+              return uri;
+            })
+            .catch(reject);
+        } else {
+          return resolve(result);
+        }
+      });
+    });
+  }
+
   afterCreate(uri: string) {
     this.setUri(uri);
     this.$emit("onDetails", uri);
   }
 
   create(form) {
-    console.log(form);
+    console.log("factor", form);
     return this.$opensilex
       .getService("opensilex.FactorsService")
       .createFactor(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("Factor created", uri);
+        form.uri = uri;
+        return uri;
       })
       .catch(error => {
         if (error.status == 409) {
@@ -141,6 +184,10 @@ export default class FactorForm extends Vue {
         console.debug("Factor updated", uri);
       })
       .catch(this.$opensilex.errorHandler);
+  }
+
+  get languageCode(): string {
+    return this.$opensilex.getLocalLangCode();
   }
 }
 </script>

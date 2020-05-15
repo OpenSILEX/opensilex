@@ -1,87 +1,79 @@
 <template>
   <div>
-    <b-input-group class="mt-3 mb-3" size="sm">
-      <b-input-group>
-        <b-form-input
-          v-model="filterByName"
-          debounce="300"
-          :placeholder="$t('component.factor.filter-placeholder')"
-        ></b-form-input>
-        <template v-slot:append>
-          <b-btn :disabled="!filterByName" variant="primary" @click="filterByName = ''">
-            <font-awesome-icon icon="times" size="sm" />
-          </b-btn>
-        </template>
-      </b-input-group>
-    </b-input-group>
-    <b-table
-      ref="tableRef"
-      striped
-      hover
-      small
-      :items="loadData"
-      :fields="fields"
-      :sort-by.sync="sortBy"
-      :sort-desc.sync="sortDesc"
-      no-provider-paging
+    <opensilex-SearchFilterField
+      @search="updateFilter()"
+      @clear="clearFilters()"
+      label="component.factor.filter.label"
     >
-      <template v-slot:head(name)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(comment)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
-
-      <template
-        v-slot:cell(name)="data"
-      >{{(data.item.name == null ? $t('component.common.not-specified').toString() : data.item.name) }}</template>
-      <template v-slot:cell(uri)="data">
-        <a href="#" class="uri-info" @click="$emit('onDetails', data.item.uri)">
-          <font-awesome-icon icon="eye" size="sm" />
-          {{ data.item.uri}}
-        </a>
+      <template v-slot:filters>
+        <b-row class="ml-2">
+          <opensilex-FilterField>
+            <template v-slot>
+              <opensilex-StringFilter
+                label="component.factor.filter.name"
+                :filter.sync="filter.name"
+                placeholder="component.factor.filter.name-placeholder"
+              ></opensilex-StringFilter>
+            </template>
+          </opensilex-FilterField>
+          <opensilex-FilterField>
+            <template v-slot>
+              <opensilex-StringFilter
+                :disabled="true"
+                label="component.factor.filter.experiment"
+                :filter.sync="filter.experiment"
+                placeholder="component.factor.filter.experiment-placeholder"
+              ></opensilex-StringFilter>
+            </template>
+          </opensilex-FilterField>
+        </b-row>
       </template>
+    </opensilex-SearchFilterField>
 
-      <!-- <span @click="$emit('onDetails', data.item.uri)"> -->
-      <template v-slot:cell(actions)="data">
+    <opensilex-TableAsyncView
+      ref="tableRef"
+      :searchMethod="searchFactors"
+      :fields="fields"
+      defaultSortBy="name"
+    >
+      <template v-slot:head(name)="{data}">{{$t(data.label)}}</template>
+      <template v-slot:head(comment)="{data}">{{$t(data.label)}}</template>
+      <template v-slot:head(uri)="{data}">{{$t(data.label)}}</template>
+      <template v-slot:head(actions)="{data}">{{$t(data.label)}}</template>
+      <template v-slot:cell(uri)="{data}">
+        <opensilex-UriLink
+          :uri="data.item.uri"
+          :to="{path: '/factor/'+ encodeURIComponent(data.item.uri)}"
+        ></opensilex-UriLink>
+      </template>
+      <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
-          <!-- <b-button size="sm" @click="$emit('onDetails', data.item.uri)" variant="outline-success">
-            
-          </b-button>-->
-          <b-button
-           v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
-           size="sm" 
-           @click="$emit('onEdit', data.item.uri)" 
-           variant="outline-primary">
-          <font-awesome-icon icon="edit" size="sm" />
-          </b-button>
-          <b-button
+          <opensilex-EditButton
             v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
-            size="sm"
+            :small="true"
+            label="component.factor.update"
+            @click="$emit('onEdit', data.item.uri)"
+          ></opensilex-EditButton>
+          <opensilex-InteroperabilityButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
+            :small="true"
+            label="component.factor.interoperrability"
             @click="$emit('onInteroperability', data.item.uri)"
-            variant="outline-info"
-          >
-          <font-awesome-icon icon="globe-americas" size="sm" />
-          </b-button>
-          <b-button
-          v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_DELETE_ID)"
-          size="sm" 
-          @click="$emit('onDelete', data.item.uri)" 
-          variant="danger">
-            <font-awesome-icon icon="trash-alt" size="sm" />
-          </b-button>
+          ></opensilex-InteroperabilityButton>
+          <opensilex-DeleteButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_DELETE_ID)"
+            :small="true"
+            label="component.factor.delete"
+            @click="$emit('onDelete', data.item.uri)"
+          ></opensilex-DeleteButton>
         </b-button-group>
       </template>
-    </b-table>
-    <b-pagination
-      v-model="currentPage"
-      :total-rows="totalRow"
-      :per-page="pageSize"
-      @change="refresh()"
-    ></b-pagination>
+    </opensilex-TableAsyncView>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import {
@@ -89,17 +81,16 @@ import {
   FactorGetDTO,
   FactorSearchDTO
 } from "opensilex-core/index";
-
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import HttpResponse, {
+  OpenSilexResponse
+} from "opensilex-security/HttpResponse";
 
 @Component
 export default class FactorList extends Vue {
   $opensilex: any;
-  $store: any;
-  $router: VueRouter;
   service: FactorsService;
-
-  @Ref("tableRef") readonly tableRef!: any;
+  $store: any;
+  $route: any;
 
   get user() {
     return this.$store.state.user;
@@ -109,54 +100,42 @@ export default class FactorList extends Vue {
     return this.$store.state.credentials;
   }
 
-  mounted() {
-    this.$store.watch(
-      () => this.$store.getters.language,
-      lang => {
-        this.refresh();
-      }
-    );
-  }
-  currentPage: number = 1;
-  pageSize = 20;
-  totalRow = 0;
-  sortBy = "name";
-  sortDesc = false;
-
-  private searchFrom: FactorSearchDTO = {
+  filter: FactorSearchDTO = {
     uri: "",
     name: "",
-    comment: ""
-    // lang: "en-US"
+    comment: "",
+    experiment: ""
   };
 
-  set filterByName(value: string) {
-    this.searchFrom.name = value;
-    this.refresh();
+  clearFilters() {
+    this.filter = {
+      uri: "",
+      name: "",
+      comment: ""
+      // experiment: ""
+    };
   }
 
-  get filterByName() {
-    return this.searchFrom.name;
+  onDetails(uri) {
+    this.$emit("onDetails", uri);
   }
 
   created() {
     this.service = this.$opensilex.getService("opensilex.FactorsService");
     let query: any = this.$route.query;
-    if (query.filterByName) {
-      this.searchFrom.name = decodeURI(query.filterByName);
+
+    for (let [key, value] of Object.entries(this.filter)) {
+      if (query[key]) {
+        this.filter[key] = decodeURI(query[key]);
+      }
     }
-    if (query.pageSize) {
-      this.pageSize = parseInt(query.pageSize);
+  }
+
+  updateFilter(value: string) {
+    for (let [key, value] of Object.entries(this.filter)) {
+      this.$opensilex.updateURLParameter(key, value, "");
     }
-    if (query.currentPage) {
-      this.currentPage = parseInt(query.currentPage);
-    }
-    if (query.sortBy) {
-      this.sortBy = decodeURI(query.sortBy);
-    }
-    if (query.sortDesc) {
-      this.sortDesc = query.sortDesc == "true";
-    }
+    this.refresh();
   }
 
   fields = [
@@ -180,50 +159,19 @@ export default class FactorList extends Vue {
       label: "component.common.actions"
     }
   ];
+  @Ref("tableRef") readonly tableRef!: any;
 
   refresh() {
-    if (this.tableRef != null || this.tableRef != undefined) {
-      this.tableRef.refresh();
-    }
+    this.tableRef.refresh();
   }
 
-  loadData() {
-    let orderBy: string[] = [];
-    if (this.sortBy) {
-      let orderByText = this.sortBy + "=";
-      if (this.sortDesc) {
-        orderBy.push(orderByText + "desc");
-      } else {
-        orderBy.push(orderByText + "asc");
-      }
-    }
-    return this.service
-      .searchFactors(
-        orderBy,
-        this.currentPage - 1,
-        this.pageSize,
-        this.searchFrom
-      )
-      .then((http: HttpResponse<OpenSilexResponse<Array<FactorGetDTO>>>) => {
-        this.totalRow = http.response.metadata.pagination.totalCount;
-        this.pageSize = http.response.metadata.pagination.pageSize;
-        setTimeout(() => {
-          this.currentPage = http.response.metadata.pagination.currentPage + 1;
-        }, 0);
-
-        this.$router
-          .push({
-            path: this.$route.fullPath,
-            query: {
-              filterByName: encodeURI(this.searchFrom.name),
-              currentPage: "" + this.currentPage,
-              pageSize: "" + this.pageSize
-            }
-          })
-          .catch(err => {});
-        return http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler);
+  searchFactors(options) {
+    return this.service.searchFactors(
+      options.orderBy,
+      options.currentPage,
+      options.pageSize,
+      this.filter
+    );
   }
 }
 </script>

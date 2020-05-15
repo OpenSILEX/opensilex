@@ -18,6 +18,7 @@ declare var window: any;
 export default class OpenSilexVuePlugin {
 
     private DEFAULT_ICON = "folder";
+    private static DEFAULT_LANG : string = "en";
     private container: Container;
     private baseApi: string;
     private config: FrontConfigDTO;
@@ -607,5 +608,20 @@ export default class OpenSilexVuePlugin {
             return moment(value, "YYYY-MM-DD").format("L");
         }
         return "";
+    }
+    
+    public getLocalLangCode(): string {
+        let availableLocalesFiltered = this.$i18n.availableLocales.filter(
+            function (value, index, arr) {
+                return value != OpenSilexVuePlugin.DEFAULT_LANG;
+            }
+        );
+
+        if (availableLocalesFiltered.length > 0) {
+            let locale = availableLocalesFiltered[0];
+            return locale;
+        } else {
+            return OpenSilexVuePlugin.DEFAULT_LANG;
+        }
     }
 }

@@ -9,8 +9,7 @@
  */
 package org.opensilex.core.factor.dal;
 
-import java.net.URI;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
@@ -50,7 +49,7 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
             property = "hasFactorLevel",
             cascadeDelete = true
     )
-    List<FactorLevelModel> factorLevels = new LinkedList<>();
+    List<FactorLevelModel> factorLevels = new ArrayList<>();
     public static final String FACTORLEVELS_SPARQL_VAR = "factorLevels";
 
     public SPARQLLabel getName() {

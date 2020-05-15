@@ -392,6 +392,7 @@ ID | Type | Default value | Description
 headersToCheck | Array[String] | [] | Headers to check
 
 Events:
+
 ID | Type | Default value | Description
 --- | --- | --- | ---
 updated | Array[Any] | *-* | Emit only if is the data has been loaded

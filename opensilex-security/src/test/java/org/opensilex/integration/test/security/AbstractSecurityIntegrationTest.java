@@ -165,7 +165,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         }
         return appendToken(target).header(HttpHeaders.ACCEPT_LANGUAGE, lang).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
-
+    
     /**
      *
      * Get {@link Response} from an {@link ApiProtected} PUT service call.

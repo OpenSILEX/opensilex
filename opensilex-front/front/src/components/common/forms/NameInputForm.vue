@@ -6,11 +6,11 @@
     :helpMessage="helpMessage"
   >
     <template v-slot:field="field">
-      <b-input-group class="mt-3">
-        <b-input-group-prepend>
+      <b-input-group size="sm" class="mt-3">
+        <b-input-group-prepend v-if="countryCode" size="sm" tag="span">
           <country-flag
             :country="countryCode"
-            size="normal"
+            size="small"
             v-b-tooltip.hover
             :title="languageCode"
           />
@@ -51,6 +51,9 @@ export default class NameInputForm extends Vue {
   })
   stringMap: Map<string, string>;
 
+  created() {
+    this.countryCode = null;
+  }
   mounted() {
     console.log(this.stringMap);
   }
@@ -85,10 +88,6 @@ export default class NameInputForm extends Vue {
   localName: boolean;
 
   countryCode: string;
-  
-  created() {
-    this.countryCode = "gb";
-  }
 
   get languageCode(): string {
     if (this.localName) {
@@ -96,7 +95,6 @@ export default class NameInputForm extends Vue {
       this.countryCode = localLangCode;
       return localLangCode;
     } else {
-      this.countryCode = "gb";
       return "en";
     }
   }

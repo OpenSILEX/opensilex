@@ -99,7 +99,7 @@
              },
             "import-files":{
                 "csv-file" :" Import CSV file",
-                "csv-template" : "Get csv template file"
+                "csv-template" : "Get CSV template file"
             },
             "tabulator":{
                 "reset-table" : "Reset table",
@@ -443,11 +443,11 @@
             "update": "Update factor",
             "name" : "name",
             "names": {
-                "en" : "English name",
-                "en-help" : "Default SI name",
+                "en" : "Name",
+                "en-help" : "Default name",
                 "en-placeholder": "Irrigation, Shading, Variety, etc.",
                 "local-name" : "Local name",
-                "local-name-help" : "Local name definition",
+                "local-name-help" : "Local language name definition",
                 "local-name-placeholder": "Irrigation, Ombrage, Variété, etc."
             },
             "names-help": "Names used to define this factor",
@@ -471,8 +471,8 @@
             "selector-placeholder": "Please select a factor to search factor levels",
             "filter-placeholder": "Use this field to search factor levels",
             "factorLevel": "factor level",
-            "add": "Add a new factor levels",
-            "associated" :"Associated factor levels",
+            "add": "Add level",
+            "associated" :"Levels",
             "unique-name" : "Name is required and must be unique",
             "update": "update factor level",
             "name": "name",

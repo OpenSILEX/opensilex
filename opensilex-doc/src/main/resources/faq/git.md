@@ -25,5 +25,7 @@ git rebase origin/master
 
 # How to reset this own master branch from origin master branch
 
+```bash
 git update-ref refs/heads/master origin/master
 git reset --hard master
+```

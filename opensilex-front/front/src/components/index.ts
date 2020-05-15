@@ -97,10 +97,11 @@ import SelectForm from './common/forms/SelectForm.vue'
 components["opensilex-SelectForm"] = SelectForm;
 import CheckboxForm from './common/forms/CheckboxForm.vue'
 components["opensilex-CheckboxForm"] = CheckboxForm;
-import LocalNameInputForm from './common/forms/LocalNameInputForm.vue'
-components["opensilex-LocalNameInputForm"] = LocalNameInputForm;
+import NameInputForm from './common/forms/NameInputForm.vue'
+components["opensilex-NameInputForm"] = NameInputForm;
 import CSVInputFile from './common/forms/CSVInputFile.vue'
 components["opensilex-CSVInputFile"] = CSVInputFile;
+
 
 import WizardForm from './common/forms/WizardForm.vue'
 components["opensilex-WizardForm"] = WizardForm;
@@ -110,6 +111,8 @@ import UriForm from './common/forms/UriForm.vue'
 components["opensilex-UriForm"] = UriForm;
 import TypeForm from './common/forms/TypeForm.vue'
 components["opensilex-TypeForm"] = TypeForm;
+import SearchFilterField from './common/forms/SearchFilterField.vue'
+components["opensilex-SearchFilterField"] = SearchFilterField;
 
 import StringView from './common/views/StringView.vue'
 components["opensilex-StringView"] = StringView;
@@ -128,6 +131,10 @@ import TreeView from './common/views/TreeView.vue'
 components["opensilex-TreeView"] = TreeView;
 import TableAsyncView from './common/views/TableAsyncView.vue'
 components["opensilex-TableAsyncView"] = TableAsyncView;
+import Card from './common/views/Card.vue'
+components["opensilex-Card"] = Card;
+import NavBar from './common/views/NavBar.vue'
+components["opensilex-NavBar"] = NavBar;
 
 import ExternalReferencesForm from './common/external-references/ExternalReferencesForm.vue'
 components["opensilex-ExternalReferencesForm"] = ExternalReferencesForm;
@@ -136,6 +143,8 @@ components["opensilex-ExternalReferencesDetails"] = ExternalReferencesDetails;
 
 import StringFilter from './common/filters/StringFilter.vue'
 components["opensilex-StringFilter"] = StringFilter;
+import FilterField from './common/filters/FilterField.vue'
+components["opensilex-FilterField"] = FilterField;
 
 import Button from './common/buttons/Button.vue'
 components["opensilex-Button"] = Button;
@@ -147,6 +156,8 @@ import DetailButton from './common/buttons/DetailButton.vue'
 components["opensilex-DetailButton"] = DetailButton;
 import DeleteButton from './common/buttons/DeleteButton.vue'
 components["opensilex-DeleteButton"] = DeleteButton;
+import InteroperabilityButton from './common/buttons/InteroperabilityButton.vue'
+components["opensilex-InteroperabilityButton"] = InteroperabilityButton;
 import AddChildButton from './common/buttons/AddChildButton.vue'
 components["opensilex-AddChildButton"] = AddChildButton;
 

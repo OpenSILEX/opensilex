@@ -75,6 +75,8 @@ import HttpResponse, {
 export default class UserList extends Vue {
   $opensilex: any;
   service: SecurityService;
+  $store: any;
+  $route: any;
 
   get user() {
     return this.$store.state.user;

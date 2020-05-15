@@ -71,7 +71,7 @@ export default class ModalForm extends Vue {
   updateAction: Function;
 
   @Prop({
-    type: [String,Function],
+    type: [String, Function],
     default: "component.common.element"
   })
   successMessage: string | Function;
@@ -113,7 +113,7 @@ export default class ModalForm extends Vue {
 
   creationOrUpdateMessage() {
     let successMessage;
-    if (typeof(this.successMessage) == "function") {
+    if (typeof this.successMessage == "function") {
       successMessage = this.successMessage(this.form);
     } else {
       successMessage = this.$i18n.t(this.successMessage);

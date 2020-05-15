@@ -97,7 +97,7 @@
             },
             "import-files":{
                 "csv-file" :" Importer un fichier CSV",
-                "csv-template" : "Télécharger un gabarit"
+                "csv-template" : "Télécharger un gabarit CSV"
             },
             "tabulator":{
                 "reset-table" : "Vider la table",
@@ -424,8 +424,10 @@
             "update": "Mettre à jour un facteur",
             "name" : "Nom",
             "names": {
-                "en" : "Nom anglais",
-                "local-name" : "Nom local",
+                "en" : "Nom",
+                "en-help" : "Nom par défaut",
+                "local-name" : "Nom dans la langue locale",
+                "local-name-help" : "Nom dans la langue locale",
                 "en-placeholder": "Irrigation, Shading, Variety, etc.",
                 "local-name-placeholder": "Irrigation, Ombrage, Variété, etc."
             },  

@@ -1,47 +1,47 @@
 <template>
   <b-row>
     <b-col>
-      <h6>
+      <h6 class="mb-3">
         <strong>{{$t('component.factorLevel.associated')}}</strong>
       </h6>
-      <b-row>
-        <b-col md="4">
-          <p class="mb-2 mr-2">{{$t('component.common.tabulator.add-one')}}</p>
-          <b-button
-            class="mb-2 mr-2"
+      <b-row class="ml-2">
+        <b-col md="2">
+          <opensilex-AddChildButton
+            class="mr-2"
             @click="addEmptyRow"
             variant="outline-primary"
-          >{{$t('component.factorLevel.add')}}</b-button>
+            label="component.factorLevel.add"
+          ></opensilex-AddChildButton>
+          <span class="mt-1 ml-1">{{$t('component.factorLevel.add')}}</span>
         </b-col>
-        <b-col>
-          <p class="mb-2 mr-2">{{$t('component.common.tabulator.add-multiple')}}</p>
-          <b-button
-            class="mb-2 mr-2"
-            @click="csvExport"
-            variant="outline-primary"
-          >{{$t('component.common.import-files.csv-template')}}</b-button>
-          <b-button
-            class="mb-2 mr-2"
-            @click="resetTable"
-            variant="outline-secondary"
-          >{{$t('component.common.tabulator.reset-table')}}</b-button>
-          <opensilex-CSVInputFile :headersToCheck="['name','comment']" v-on:updated="uploaded"></opensilex-CSVInputFile>
+        <b-col md="6" class="mb-2">
+          <!-- <p>{{$t('component.common.tabulator.add-multiple')}}</p> -->
+          <b-button-group>
+            <b-button
+              class="mb-2 mr-2"
+              @click="csvExport"
+              variant="outline-primary"
+            >{{$t('component.common.import-files.csv-template')}}</b-button>
+            <!-- <b-button
+              @click="resetTable"
+              variant="outline-secondary"
+            >{{$t('component.common.tabulator.reset-table')}}</b-button>-->
+            <opensilex-CSVInputFile :headersToCheck="['name','comment']" v-on:updated="uploaded"></opensilex-CSVInputFile>
+            <span class="mt-1">{{$t('component.factorLevel.add')}}s</span>
+          </b-button-group>
         </b-col>
       </b-row>
-
-      <br />
-      <span class="error-message alert alert-danger"> {{$t('component.factorLevel.unique-name')}}</span>
-
-      <b-form-group>
-        <VueTabulator
-          ref="tabulatorRef"
-          class="table-light table-bordered"
-          v-model="this.internalFactorLevels"
-          :options="options"
-          @cell-click="cellClik"
-        />
-      </b-form-group>
-      <!-- <span class="error-message alert alert-info"> Number of factor{{this.internalFactorLevels.length}}</span> -->
+      <b-row>
+        <b-col cols="10">
+          <VueTabulator
+            ref="tabulatorRef"
+            class="table-light table-bordered"
+            v-model="this.internalFactorLevels"
+            :options="options"
+            @cell-click="removeFactorLevel"
+          />
+        </b-col>
+      </b-row>
     </b-col>
   </b-row>
 </template>
@@ -60,9 +60,13 @@ export default class FactorLevelTable extends Vue {
   $opensilex: any;
   $store: any;
   $i18n: any;
+  service: FactorsService;
 
   @Ref("tabulatorRef") readonly tabulatorRef!: any;
   @Ref("langInput") readonly langInput!: any;
+
+  @Prop({ default: false })
+  editMode: boolean;
 
   @PropSync("factorLevels", {
     default: () => {
@@ -72,6 +76,13 @@ export default class FactorLevelTable extends Vue {
   internalFactorLevels: any[];
 
   tableColumns: any[] = [
+    {
+      title: "Generated Uri",
+      field: "uri",
+      formater: "string",
+      widthGrow: 0.5,
+      visible: this.editMode
+    },
     {
       title: "Name",
       field: "name",
@@ -89,25 +100,29 @@ export default class FactorLevelTable extends Vue {
       widthGrow: 1
     },
     {
-      title: "Actions",
+      title: "Delete",
       field: "actions",
       widthGrow: 0.3,
       formatter: function(cell, formatterParams, onRendered) {
-        return '<button type="button" class="btn btn-danger btn-sm"><svg data-v-13e99aa8="" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="trash-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-trash-alt fa-w-14 fa-sm"><path data-v-13e99aa8="" fill="currentColor" d="M32 464a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128H32zm272-256a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zM432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16z" class=""></path></svg></button>';
+        return '<button data-v-4d3fd064="" data-v-4c148622="" data-v-13e99aa8="" title="component.factor.delete" type="button" class="btn btn-danger btn-sm"><span data-v-0514f944="" data-v-4d3fd064=""><!----><svg data-v-0514f944="" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="trash-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-trash-alt fa-w-14 fa-sm"><path data-v-0514f944="" fill="currentColor" d="M32 464a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128H32zm272-256a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zM432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16z" class=""></path></svg></span><!----></button>';
       }
     }
   ];
+
+  created() {
+    this.service = this.$opensilex.getService("opensilex.FactorsService");
+  }
 
   uploaded(data) {
     let tmpLength = this.internalFactorLevels.length;
     for (let row in data) {
       this.addRow(data[row]);
     }
-    if(tmpLength == this.internalFactorLevels.length){
-      this.$opensilex.showInfoToast("Valid file. No data to add")
+    if (tmpLength == this.internalFactorLevels.length) {
+      this.$opensilex.showInfoToast("Valid file. No data to add");
     }
-    if(tmpLength < this.internalFactorLevels.length){
-      this.$opensilex.showSuccessToast("Data sucessfully loaded")
+    if (tmpLength < this.internalFactorLevels.length) {
+      this.$opensilex.showSuccessToast("Data sucessfully loaded");
     }
   }
 
@@ -121,7 +136,7 @@ export default class FactorLevelTable extends Vue {
     paginationSize: 5 // this option can take any positive integer value (default = 10)
   };
 
-  cellClik(evt, clickedCell) {
+  removeFactorLevel(evt, clickedCell) {
     console.debug(evt, clickedCell);
     let columnName = clickedCell.getField();
     console.debug(columnName);
@@ -132,10 +147,35 @@ export default class FactorLevelTable extends Vue {
 
       var nameCell = row.getCell("name");
       console.debug("name cell value", nameCell.getValue());
-      this.internalFactorLevels = this.internalFactorLevels.filter(
-        factorLevel => factorLevel.name !== nameCell.getValue()
-      );
+
+      let factorLevelUri = row.uri;
+
+      if (factorLevelUri != null) {
+        this.deleteFactorLevel(row.uri)
+          .then(() => {
+            this.internalFactorLevels = this.internalFactorLevels.filter(
+              factorLevel => factorLevel.name !== nameCell.getValue()
+            );
+            let message =
+              this.$i18n.t("component.factorLevel.label") +
+              " " +
+              factorLevelUri +
+              " " +
+              this.$i18n.t("component.common.success.delete-success-message");
+            this.$opensilex.showSuccessToast(message);
+          })
+          .catch(this.$opensilex.errorHandler);
+      } else {
+        this.internalFactorLevels = this.internalFactorLevels.filter(
+          factorLevel => factorLevel.name !== nameCell.getValue()
+        );
+      }
     }
+  }
+
+  deleteFactorLevel(uri: string) {
+    console.debug("deleteFactor " + uri);
+    return this.service.deleteFactor(uri);
   }
 
   resetTable() {
@@ -145,6 +185,7 @@ export default class FactorLevelTable extends Vue {
   addEmptyRow() {
     console.debug("add row");
     this.internalFactorLevels.unshift({
+      uri: null,
       name: null,
       comment: null
     });

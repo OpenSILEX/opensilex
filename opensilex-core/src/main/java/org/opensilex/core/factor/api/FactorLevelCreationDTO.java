@@ -20,17 +20,13 @@ import org.opensilex.server.rest.validation.ValidURI;
  * @author Arnaud Charleroy
  */
 public class FactorLevelCreationDTO {
-    
-    @Valid
+     
     @ValidURI
     private URI uri;
 
     @Required
     private String name;
-
-    @ValidURI
-    private URI hasFactor;
-    
+ 
     private String comment;
 
     public URI getUri() {
@@ -57,20 +53,11 @@ public class FactorLevelCreationDTO {
         this.comment = comment;
     }
 
-    public URI getHasFactor() {
-        return hasFactor;
-    }
-
-    public void setHasFactor(URI hasFactor) {
-        this.hasFactor = hasFactor;
-    }
-
     public FactorLevelModel newModel() {
         FactorLevelModel model = new FactorLevelModel();
         model.setUri(getUri());
         model.setName(getName());
-        model.setComment(getComment());
-        model.setHasFactor(getHasFactor());
+        model.setComment(getComment()); 
         return model;
     }
 }

@@ -29,7 +29,8 @@ import org.opensilex.core.factor.api.FactorSearchDTO;
 import org.opensilex.core.factor.api.FactorUpdateDTO;
 import org.opensilex.core.factor.dal.FactorLevelModel;
 import org.opensilex.core.factor.dal.FactorModel;
-import org.opensilex.core.skos.model.AbstractSkosModelTest;
+import org.opensilex.core.skos.model.SkosModelTest;
+import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -37,16 +38,19 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 /**
  * @author Arnaud Charleroy
  */
-public class FactorsAPITest extends AbstractSkosModelTest {
+public class FactorsAPITest extends AbstractSecurityIntegrationTest {
 
-    protected String path = "/core/factor";
+    protected String pathFactors = "/core/factor";
+    protected String pathFactorsLevel = "/core/factorLevel";
 
-    protected String uriPath = path + "/get/{uri}";
-    protected String factorsLevelsPath = path + "/get/{uri}/factorsLevels";
-    protected String searchPath = path + "/search";
-    protected String createPath = path + "/create";
-    protected String updatePath = path + "/update";
-    protected String deletePath = path + "/delete/{uri}";
+    protected String uriPath = pathFactors + "/get/{uri}";
+    protected String factorsLevelsPath = pathFactors + "/get/{uri}/levels";
+    protected String searchPath = pathFactors + "/search";
+    protected String createPath = pathFactors + "/create";
+    protected String updatePath = pathFactors + "/update";
+    protected String deleteFactorPath = pathFactors + "/delete/{uri}";
+    protected String deleteFactorsLevelPath = pathFactorsLevel + "/delete/{uri}";
+    protected String getFactorsLevelPath = pathFactorsLevel + "/get/{uri}";
 
     private static int factorCount = 0;
 
@@ -59,7 +63,7 @@ public class FactorsAPITest extends AbstractSkosModelTest {
         dto.setNames(names);
         dto.setComment("Factor Comment" + factorCount);
         // skos model
-        setValidSkosReferences(dto);
+        SkosModelTest.setValidSkosReferences(dto);
         // factors levels
         List<FactorLevelCreationDTO> factorsLevels = new ArrayList<>();
         FactorLevelCreationDTO factorLevelDto = new FactorLevelCreationDTO();
@@ -93,7 +97,7 @@ public class FactorsAPITest extends AbstractSkosModelTest {
         dto.setNames(creationDto.getNames());
         dto.setComment(creationDto.getComment());
         // skos model
-        setValidSkosReferences(dto);
+        SkosModelTest.setValidSkosReferences(dto);
         // factors levels
         dto.setFactorLevels(creationDto.getFactorLevels());
 
@@ -215,18 +219,84 @@ public class FactorsAPITest extends AbstractSkosModelTest {
     }
 
     @Test
-    public void testDelete() throws Exception {
+    public void testDeleteFactor() throws Exception {
 
         // create object and check if URI exists
         Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO());
         String uri = extractUriFromResponse(postResponse).toString();
-
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
+        
         // delete object and check if URI no longer exists
-        Response delResult = getDeleteByUriResponse(target(deletePath), uri);
+        Response delResult = getDeleteByUriResponse(target(deleteFactorPath), uri);
+        JsonNode node2 = delResult.readEntity(JsonNode.class);
+        System.out.println(node2);
         assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
 
         Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+    }
+    
+    @Test
+    public void testDeleteFactorLevel() throws Exception {
+
+        // create object and check if URI exists
+        Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO());
+        String uri = extractUriFromResponse(postResponse).toString();
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
+        
+        
+         // ensure that the result is a well formed URI, else throw exception
+        Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        // try to deserialize object
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
+        SingleObjectResponse<FactorDetailsGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
+        });
+        FactorDetailsGetDTO factorGetDto = getResponse.getResult();
+        int factorLevelSize = factorGetDto.getFactorLevels().size();
+        URI uriToRemove = factorGetDto.getFactorLevels().get(0).getUri();
+        // delete object and check if URI no longer exists
+        Response delResult = getDeleteByUriResponse(target(deleteFactorsLevelPath), uriToRemove.toString());
+        assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
+
+        Response getResult2 = getJsonGetByUriResponse(target(getFactorsLevelPath), uriToRemove.toString());
+        assertEquals(Status.NOT_FOUND.getStatusCode(), getResult2.getStatus());
+        
+        getResult = getJsonGetByUriResponse(target(uriPath), uri);
+        node = getResult.readEntity(JsonNode.class);
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+        getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
+        });
+        factorGetDto = getResponse.getResult();
+        assertEquals(factorLevelSize - 1, factorGetDto.getFactorLevels().size() );
+    }
+    
+    @Test
+    public void testGetFactorLevel() throws Exception {
+
+        // create object and check if URI exists
+        Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO());
+        String uri = extractUriFromResponse(postResponse).toString();
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
+        
+        
+         // ensure that the result is a well formed URI, else throw exception
+        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        // try to deserialize object
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
+        SingleObjectResponse<FactorDetailsGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
+        });
+        FactorDetailsGetDTO factorGetDto = getResponse.getResult();
+        int factorLevelSize = factorGetDto.getFactorLevels().size();
+        URI uriToFind = factorGetDto.getFactorLevels().get(0).getUri();
+       
+        Response getResult2 = getJsonGetByUriResponse(target(getFactorsLevelPath), uriToFind.toString());
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
     }
 
     @Override

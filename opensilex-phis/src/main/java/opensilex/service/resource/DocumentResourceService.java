@@ -72,7 +72,6 @@ import opensilex.service.view.brapi.form.ResponseFormPOST;
 import opensilex.service.model.Document;
 import opensilex.service.resource.validation.interfaces.SortingValue;
 import opensilex.service.result.ResultForm;
-import opensilex.service.shinyProxy.ShinyProxyService;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -252,11 +251,6 @@ public class DocumentResourceService extends ResourceService {
             if (insertAnnotationJSON.getHttpStatus() == Response.Status.CREATED) {
                 postResponse.getMetadata().setDatafiles((ArrayList) insertAnnotationJSON.createdResources);
                 final URI newUri = new URI(uri.getPath());
-                // Need to use event instead of "if" condition
-                if (media.equals("ShinyAppPackage") && ShinyProxyService.STARTED) {
-                    ShinyProxyService shinyProxyProcess = new ShinyProxyService();
-                    new Thread(() -> shinyProxyProcess.reload()).start();
-                }
 
                 return Response
                         .status(insertAnnotationJSON.getHttpStatus())

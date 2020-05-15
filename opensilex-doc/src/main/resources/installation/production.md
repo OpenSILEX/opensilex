@@ -287,8 +287,9 @@ sudo systemctl restart apache2
 cd /home/opensilex
 git clone https://github.com/OpenSILEX/phis-webapp.git
 cd phis-webapp
+git branch -a
 git tag -l
-git checkout -b 3.4.0-hybrid
+git checkout tags/3.4.0-hybrid -b remotes/origin/hybrid
 ```
 
 ### Install Composer

@@ -180,6 +180,12 @@ import GermplasmForm from './germplasm/GermplasmForm.vue';
 components["opensilex-GermplasmForm"] = GermplasmForm;
 import GermplasmList from './germplasm/GermplasmList.vue';
 components["opensilex-GermplasmList"] = GermplasmList;
+import GermplasmCreate from './germplasm/GermplasmCreate.vue';
+components["opensilex-GermplasmCreate"] = GermplasmCreate;
+import GermplasmTable from './germplasm/GermplasmTable.vue';
+components["opensilex-GermplasmTable"] = GermplasmTable;
+import GermplasmDetails from './germplasm/GermplasmDetails.vue';
+components["opensilex-GermplasmDetails"] = GermplasmDetails;
 
 // Projects
 import ProjectForm from './projects/ProjectForm.vue';

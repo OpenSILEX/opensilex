@@ -162,10 +162,11 @@
                 "groups": "Groups",
                 "profiles": "Profiles"
             },
-            "experimentalDesign": {
-                "label": "Experimental Design",
-                "factors": "Factors",
-                "factorLevels": "Factor levels"
+            "experimentalDesign" :{
+                "label" : "Experimental Design",
+                "factors" : "Factors",
+                "factorLevels" : "Factor levels",
+                "germplasm" : "Germplasm"
             },
             "infrastructures": "Infrastructures"
         },
@@ -506,19 +507,80 @@
             "external-already-existing" : "Already associated reference"
         },
         "germplasm": {
-            "uri": "Germplasm URI",
-            "uri-help": "Unique germplasm identifier",
-            "alias-placeholder": "Enter germplasm label",
-            "filter-placeholder": "Use this field to search germplasm",
-            "germplasm": "germplasm",
+            "germplasmTitle": "Germplasm",
+            "description": "Manage Genetic Resources Information",
             "add": "Create germplasm",
-            "update": "update germplasm",
-            "alias": "label",
-            "alias-help": "Name used to define this germplasm",
-            "form-alias-placeholder": "Irrigation, Shading, Variety, etc.",
-            "rdfType": "rdfType",
-            "rdfType-help": "Germplasm Type",
-            "form-rdfType-placeholder": "Variety, Accession, SeedLot",
+            "update": "Update Germplasm",
+            "delete": "Delete Germplasm",         
+            "backToList" : "Return to germplasm list",
+            "germplasmList": "Germplasm List",
+            "select":"Please select a type",
+            "filter": {
+                "description": "Germplasm Search",
+                "allTypes": "All types",
+                "species": "Filter by species",
+                "year": "Filter by production year",
+                "institute": "Filter by institute code",
+                "label": "Filter by name",
+                "label-placeholder": "Enter germplasm name",
+                "rdfType": "Filter by type",
+                "experiment": "Filter by experiment",
+                "search": "Search",
+                "reset": "Reset"
+            },
+            "list": {
+                "label": "Name",
+                "uri": "URI",
+                "rdfType": "Type",
+                "fromSpecies" : "Species URI",
+                "speciesLabel" : "Species"
+            },
+            "table": {
+                "fields": {
+                    "label": "Name",
+                    "uri": "URI",
+                    "rdfType": "Type",
+                    "fromSpecies" : "Species URI",
+                    "fromVariety" : "Variety URI",
+                    "fromAccession": "Accession URI",
+                    "institute": "Institute Code",
+                    "comment": "Comment",
+                    "year": "Production Year",
+                    "checkingStatus": "Checking Status",
+                    "insertionStatus": "Insertion Status"
+                },
+                "button": {
+                    "uploadFile" : "Upload csv file",
+                    "downloadTemplate" : "Download template",
+                    "resetTable" : "Reset table",
+                    "check" : "Check before insertion",
+                    "insert" : "Insert"
+                }
+            },
+            "details": {
+                "title": "Germplasm Details",
+                "tab": "Germplasm Information",
+                "uri": "URI",
+                "label": "Name",
+                "rdfType": "Type",
+                "species":"Species",
+                "variety": "Variety",
+                "accession": "Accession",
+                "institute": "Institute",
+                "year": "Year",
+                "comment": "Comment"
+            },
+            "form" : {
+                "uri-help": "Unique germplasm identifier",          
+                "label-help": "Name used to define this germplasm",
+                "rdfType-help": "Germplasm Type",
+                "species-help": "Species URI of the germplasm",
+                "variety-help": "Variety URI of the germplasm",
+                "accession-help": "Accession URI of the germplasm",
+                "institute-help": "Institute where the germplasm comes from",
+                "year-help": "Year when the ressource has been produced",
+                "comment-help":"Description associated to the germplasm"
+            },
             "errors": {
                 "germplasm-already-exists": "Germplasm already exists with this URI."
             }
@@ -602,7 +664,8 @@
         "users": "Users",
         "variables": "Variables",
         "factors": "Factors",
-        "infrastructures": "Infrastructures"
+        "infrastructures": "Infrastructures",
+        "germplasm": "Germplasm"
     },
     "credential": {
         "experiment": {
@@ -649,6 +712,11 @@
             "modification": "Create / update FactorLevels",
             "read": "View factor levels",
             "delete": "Delete factor levels"
+        },
+        "germplasm": {
+            "modification": "Create / update germplasm",
+            "read": "View germplasm",
+            "delete": "Delete germplasm"
         }
     },
     "validations": {

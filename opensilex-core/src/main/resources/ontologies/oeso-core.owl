@@ -159,6 +159,43 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#fromAccession -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#fromAccession">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#fromInstitute -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#fromInstitute">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#fromSpecies -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#fromSpecies">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Accession"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variety"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Species"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#fromVariety -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#fromVariety">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Accession"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variety"/>
+    </owl:ObjectProperty>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#hasAdministrativeContact -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasAdministrativeContact">
@@ -250,6 +287,16 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasGermplasm -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGermplasm">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+    </owl:ObjectProperty>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#hasLens -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasLens">
@@ -289,6 +336,12 @@
         <rdfs:label xml:lang="fr">a pour part</rdfs:label>
         <rdfs:label xml:lang="en">has part</rdfs:label>
     </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasProductionYear -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasProductionYear"/>
     
 
 
@@ -988,6 +1041,13 @@
    ///////////////////////////////////////////////////////////////////////////////////////
     -->
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#Accession -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Accession">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:label xml:lang="en">Accession</rdfs:label>
+        <rdfs:label xml:lang="fr">Accession</rdfs:label>
+    </owl:Class>
     
 
 
@@ -1331,9 +1391,9 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#GermsplasmDescriptor -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GermsplasmDescriptor">
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm">
         <rdfs:label xml:lang="fr">Matériel Génétique</rdfs:label>
         <rdfs:label xml:lang="en">germplasm descriptor information</rdfs:label>
     </owl:Class>
@@ -1717,6 +1777,14 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Platform -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Platform">
@@ -1916,6 +1984,16 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#RootstockLot -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#RootstockLot">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
+        <rdfs:label xml:lang="fr">Lot de Porte-greffe</rdfs:label>
+        <rdfs:label xml:lang="en">Rootstock Lot</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#ScientificDocument -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ScientificDocument">
@@ -1946,6 +2024,16 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#ScionLot -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ScionLot">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
+        <rdfs:label xml:lang="fr">Lot de greffon</rdfs:label>
+        <rdfs:label xml:lang="en">Scion Lot</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Seed -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Seed">
@@ -1955,6 +2043,16 @@
         <rdfs:comment xml:lang="fr">Structure végétale multi-tissulaire (PO:0025496) qui se développe à partir d&apos;un ovule (PO:0020003) et contient l&apos;embryon (PO:0009009) qui est protégé par un tégument (PO:0009088).</rdfs:comment>
         <rdfs:label xml:lang="fr">graine</rdfs:label>
         <rdfs:label xml:lang="en">seed</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#SeedLot -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SeedLot">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
+        <rdfs:label xml:lang="fr">Lot de semence</rdfs:label>
+        <rdfs:label xml:lang="en">Seed Lot</rdfs:label>
     </owl:Class>
     
 
@@ -2004,7 +2102,7 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#Species -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Species">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#GermsplasmDescriptor"/>
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
         <rdfs:label xml:lang="fr">Espèce</rdfs:label>
         <rdfs:label xml:lang="en">Species</rdfs:label>
     </owl:Class>
@@ -2313,7 +2411,7 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#Variety -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Variety">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#GermsplasmDescriptor"/>
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
         <rdfs:label xml:lang="en">Variety</rdfs:label>
         <rdfs:label xml:lang="fr">Variété</rdfs:label>
     </owl:Class>
@@ -2337,6 +2435,16 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
         <rdfs:label xml:lang="fr">Fichier de Vignettage</rdfs:label>
         <rdfs:label xml:lang="en">Vignetting Document</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#Vitroplant -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Vitroplant">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
+        <rdfs:label xml:lang="fr">Lot de Vitroplant</rdfs:label>
+        <rdfs:label xml:lang="en">Vitroplant Lot</rdfs:label>
     </owl:Class>
     
 

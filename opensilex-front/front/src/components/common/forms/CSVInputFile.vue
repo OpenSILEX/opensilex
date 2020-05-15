@@ -67,6 +67,7 @@ export default class CSVInputFile extends Vue {
     this.inputFile.$el.childNodes[0].click();
   }
   fileUpdated() {
+    this.$opensilex.showLoader();
     this.$nextTick(() => {
       let file = this.inputFile.selectedFile;
       this.readUploadedFileAsText(file).then(text => {
@@ -125,10 +126,11 @@ export default class CSVInputFile extends Vue {
             }
           }
         }
-        if (this.errors.length == 0) {
-          this.data = result.data;
-          this.$emit("updated", result.data);
-        }
+        if(this.errors.length ==0){
+            this.data = result.data;
+            this.$emit("updated", result.data);
+        } 
+        this.$opensilex.hideLoader();
       });
     });
   }
@@ -141,6 +143,7 @@ export default class CSVInputFile extends Vue {
   }
 
   async readUploadedFileAsText(inputFile) {
+    
     const temporaryFileReader = new FileReader();
 
     return new Promise((resolve, reject) => {
@@ -154,6 +157,7 @@ export default class CSVInputFile extends Vue {
       };
       temporaryFileReader.readAsText(inputFile);
     });
+    
   }
 }
 </script>

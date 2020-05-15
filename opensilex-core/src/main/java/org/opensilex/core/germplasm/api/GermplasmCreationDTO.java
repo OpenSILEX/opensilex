@@ -13,13 +13,14 @@ import javax.validation.constraints.NotNull;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.model.SPARQLLabel;
 
 /**
  * DTO representing JSON for posting germplasm
  * @author Alice Boizet
  */
 @ApiModel
-class GermplasmCreationDTO extends GermplasmGetDTO{
+public class GermplasmCreationDTO extends GermplasmSearchDTO{
     @ValidURI
     @ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
     @Override
@@ -62,6 +63,33 @@ class GermplasmCreationDTO extends GermplasmGetDTO{
         return fromAccession;
     }
     
+
+    @ApiModelProperty(value = "institute", example = "INRA")
+    @Override
+    public String getInstitute() {
+        return institute;
+    }
+    
+    @ApiModelProperty(value = "production year", example = "2015")
+    @Override
+    public Integer getProductionYear() {
+        return productionYear;
+    }
+    
+    @ApiModelProperty(value = "comment")
+    /**
+     * comment
+     */
+    protected String comment; 
+    
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+    
     public GermplasmModel newModel() {
         GermplasmModel model = new GermplasmModel();
         
@@ -69,7 +97,7 @@ class GermplasmCreationDTO extends GermplasmGetDTO{
             model.setUri(uri);
         }
         if (label != null) {
-            model.setLabel(label);
+            model.setLabel(new SPARQLLabel(label,null));
         }
         if (rdfType != null) {
             model.setType(rdfType);
@@ -91,6 +119,17 @@ class GermplasmCreationDTO extends GermplasmGetDTO{
             model.setAccession(accession);
         }
         
+        if (institute != null) {
+            model.setInstitute(institute);
+        }
+        
+        if (productionYear != null) {
+            model.setProductionYear(productionYear);
+        }
+        
+        if (comment != null) {
+            model.setComment(comment);
+        }        
                 
         return model;
     }   

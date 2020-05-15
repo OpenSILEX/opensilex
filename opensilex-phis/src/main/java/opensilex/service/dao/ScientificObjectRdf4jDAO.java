@@ -281,7 +281,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                 if (property.getRelation().equals(Oeso.RELATION_HAS_GERMPLASM.toString())) {
                     if (property.getRdfType() != null) {
                         org.opensilex.core.germplasm.dal.GermplasmDAO germplasmDAO = new org.opensilex.core.germplasm.dal.GermplasmDAO(sparql);
-                        GermplasmModel germplasm = germplasmDAO.get(new URI(property.getValue()));
+                        GermplasmModel germplasm = germplasmDAO.get(new URI(property.getValue()), null);
                         if (germplasm != null) {
                             if (!germplasm.getType().toString().equals(property.getRdfType())) {
                                 dataOk = false;
@@ -749,15 +749,15 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             //filter also on the linked germplasm (if the germplasm is a species, then we find also varieties of this species)
             if (withAallRelatedGermplasm) {
                 org.opensilex.core.germplasm.dal.GermplasmDAO germplasmDAO = new org.opensilex.core.germplasm.dal.GermplasmDAO(sparql);
-                GermplasmModel germplasm = germplasmDAO.get(new URI(germplasmURI));
+                GermplasmModel germplasm = germplasmDAO.get(new URI(germplasmURI), null);
                 URI germplasmType = germplasm.getType();
                 ListWithPagination<GermplasmModel> germplasmList = null;
                 if (germplasmType.equals(Oeso.CONCEPT_SPECIES)) {
-                    germplasmList = germplasmDAO.search(null, null, null, new URI(germplasmURI), null, null, null, 0, 5000);
+                    germplasmList = germplasmDAO.search(null,null, null, null, new URI(germplasmURI), null, null, null, null, null, 0, 5000);
                 } else if (germplasmType.equals(Oeso.CONCEPT_VARIETY)) {
-                    germplasmList = germplasmDAO.search(null, null, null, null, new URI(germplasmURI), null, null, 0, 5000);
+                    germplasmList = germplasmDAO.search(null,null, null, null, null, new URI(germplasmURI), null, null, null, null, 0, 5000);
                 } else if (germplasmType.equals(Oeso.CONCEPT_ACCESSION)) {
-                    germplasmList = germplasmDAO.search(null, null, null, null, null, new URI(germplasmURI), null, 0, 5000);
+                    germplasmList = germplasmDAO.search(null,null, null, null, null, null, new URI(germplasmURI), null, null, null, 0, 5000);
                 }
                 
                 String filter = "<" + germplasmURI + ">";

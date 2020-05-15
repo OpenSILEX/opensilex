@@ -10,7 +10,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Species",
-        graph = "species"
+        graph = "germplasm"
 )
 public class SpeciesModel extends SPARQLResourceModel  {
 

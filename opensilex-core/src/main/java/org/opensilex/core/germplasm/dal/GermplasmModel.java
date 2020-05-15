@@ -6,12 +6,11 @@
 //******************************************************************************
 package org.opensilex.core.germplasm.dal;
 
-import java.net.URI;
-import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
@@ -33,14 +32,14 @@ public class GermplasmModel extends SPARQLResourceModel implements ClassURIGener
         property = "label",
         required = true
     )
-    String label;
+    SPARQLLabel label;
     public static final String LABEL_VAR = "label";
     
-    public String getLabel() {
+    public SPARQLLabel getLabel() {
         return label;
     }
 
-    public void setLabel(String label) {
+    public void setLabel(SPARQLLabel label) {
         this.label = label;
     }
 
@@ -63,8 +62,28 @@ public class GermplasmModel extends SPARQLResourceModel implements ClassURIGener
         property = "fromAccession"
     )
     GermplasmModel accession;
-    public static final String ACCESSION_URI_SPARQL_VAR = "accession";    
+    public static final String ACCESSION_URI_SPARQL_VAR = "accession";     
+    
+    @SPARQLProperty(
+        ontology = RDFS.class,
+        property = "comment"
+    )
+    String comment;
 
+    @SPARQLProperty(
+        ontology = Oeso.class,
+        property = "fromInstitute"
+    )
+    String institute;
+    public static final String INSTITUTE_SPARQL_VAR = "institute"; 
+    
+    @SPARQLProperty(
+        ontology = Oeso.class,
+        property = "hasProductionYear"
+    )
+    Integer productionYear;
+    public static final String PRODUCTION_YEAR_SPARQL_VAR = "productionYear"; 
+    
     public GermplasmModel getSpecies() {
         return species;
     }
@@ -88,16 +107,45 @@ public class GermplasmModel extends SPARQLResourceModel implements ClassURIGener
     public void setAccession(GermplasmModel accession) {
         this.accession = accession;
     }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public String getInstitute() {
+        return institute;
+    }
+
+    public void setInstitute(String institute) {
+        this.institute = institute;
+    }
+
+    public Integer getProductionYear() {
+        return productionYear;
+    }
+
+    public void setProductionYear(Integer productionYear) {
+        this.productionYear = productionYear;
+    }
     
     @Override
     public String[] getUriSegments(GermplasmModel instance) {
-        String germplasmType = instance.getType().getFragment();
-        
+        String germplasmType = new String();
+        if (instance.getType().getFragment() != null) {
+            germplasmType = instance.getType().getFragment();
+        } else {
+            if (instance.getType().getSchemeSpecificPart()!= null) {
+                germplasmType = instance.getType().getSchemeSpecificPart();
+            }   
+        }               
+
         return new String[]{                
                 germplasmType + "_" + instance.getLabel()
         };
     }
-    
-    
     
 }

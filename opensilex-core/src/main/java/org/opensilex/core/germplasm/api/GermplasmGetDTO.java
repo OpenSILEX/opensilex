@@ -6,104 +6,83 @@
 //******************************************************************************
 package org.opensilex.core.germplasm.api;
 
-import io.swagger.annotations.ApiModelProperty;
-import java.net.URI;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.sparql.model.SPARQLLabel;
 
 /**
  * DTO representing JSON for searching germplasm or getting them by uri
  * @author Alice Boizet
  */
-class GermplasmGetDTO {
+public class GermplasmGetDTO extends GermplasmSearchDTO {  
+    /**
+     * typeLabel
+     */
+    protected String typeLabel; 
     
     /**
-     * Germplasm URI
+     * speciesLabel
      */
-    protected URI uri;
+    protected String speciesLabel;   
     
     /**
-     * Germplasm Type : Species, Variety, Accession or subclass of PlantMaterialLot
+     * varietyLabel
      */
-    protected URI rdfType;
+    protected String varietyLabel;   
     
     /**
-     * Germplasm label
+     * accessionLabel
      */
-    protected String label;
+    protected String accessionLabel;   
     
     /**
-     * Germplasm species URI
+     * comment
      */
-    protected URI fromSpecies;
-    
-    /**
-     * Germplasm Variety URI
-     */
-    protected URI fromVariety;
-    
-    /**
-     * Germplasm Accession URI
-     */
-    protected URI fromAccession;
-    
-    @ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
-    public URI getUri() {
-        return uri;
+    protected String comment;  
+
+    public String getTypeLabel() {
+        return typeLabel;
     }
 
-    public void setUri(URI uri) {
-        this.uri = uri;
+    public void setTypeLabel(String typeLabel) {
+        this.typeLabel = typeLabel;
     }
 
-    @ApiModelProperty(value = "Germplasm type", example = "http://www.opensilex.org/vocabulary/oeso#SeedLot")
-    public URI getRdfType() {
-        return rdfType;
+    public String getSpeciesLabel() {
+        return speciesLabel;
     }
 
-    public void setRdfType(URI rdfType) {
-        this.rdfType = rdfType;
+    public void setSpeciesLabel(String speciesLabel) {
+        this.speciesLabel = speciesLabel;
     }
 
-    @ApiModelProperty(value = "Germplasm label", example = "SL_001")
-    public String getLabel() {
-        return label;
+    public String getVarietyLabel() {
+        return varietyLabel;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setVarietyLabel(String varietyLabel) {
+        this.varietyLabel = varietyLabel;
+    }
+
+    public String getAccessionLabel() {
+        return accessionLabel;
+    }
+
+    public void setAccessionLabel(String accessionLabel) {
+        this.accessionLabel = accessionLabel;
     }
     
-    @ApiModelProperty(value = "species URI", example = "http://opensilex.dev/opensilex/id/species#zeamays")
-    public URI getFromSpecies() {
-        return fromSpecies;
-    }    
-    
-    public void setFromSpecies(URI fromSpecies) {
-        this.fromSpecies = fromSpecies;
+    public String getComment() {
+        return comment;
     }
 
-    @ApiModelProperty(value = "variety URI", example = "http://opensilex.dev/opensilex/id/variety#B73")
-    public URI getFromVariety() {
-        return fromVariety;
-    }
-
-    public void setFromVariety(URI fromVariety) {
-        this.fromVariety = fromVariety;
-    }
-
-    @ApiModelProperty(value = "accession URI", example = "http://opensilex.dev/opensilex/id/accession#B73_INRA")
-    public URI getFromAccession() {
-        return fromAccession;
-    }
-
-    public void setFromAccession(URI fromAccession) {
-        this.fromAccession = fromAccession;
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     /**
      * Convert Germplasm Model into Germplasm DTO
      *
-     * @param model User Model to convert
+     * @param model Germplasm Model to convert
      * @return Corresponding user DTO
      */
     public static GermplasmGetDTO fromModel(GermplasmModel model) {
@@ -111,15 +90,45 @@ class GermplasmGetDTO {
 
         dto.setUri(model.getUri());
         dto.setRdfType(model.getType());
-        dto.setLabel(model.getLabel());
+        dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
+        dto.setLabel(model.getLabel().getDefaultValue());
+        
         if (model.getSpecies() != null) {
             dto.setFromSpecies(model.getSpecies().getUri());
+            try {                
+                dto.setSpeciesLabel(model.getSpecies().getLabel().getDefaultValue());
+            } catch (Exception e){                
+            }
         }
+        
         if (model.getVariety() != null) {
             dto.setFromVariety(model.getVariety().getUri());
+            try {                
+                dto.setVarietyLabel(model.getVariety().getLabel().getDefaultValue());
+            } catch (Exception e){                
+            }
+            
         }
+        
         if (model.getAccession() != null) {
             dto.setFromAccession(model.getAccession().getUri());
+            try {                
+                dto.setAccessionLabel(model.getAccession().getLabel().getDefaultValue());
+            } catch (Exception e){                
+            }
+           
+        }         
+        
+        if (model.getComment() != null) {
+            dto.setComment(model.getComment());
+        }
+        
+        if (model.getInstitute() != null) {
+            dto.setInstitute(model.getInstitute());
+        }
+        
+        if (model.getProductionYear() != null) {
+            dto.setProductionYear(model.getProductionYear());
         }  
 
         return dto;

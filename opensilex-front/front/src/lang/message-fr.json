@@ -487,18 +487,76 @@
 
         },
         "germplasm": {
-            "uri": "URI du germplasm",
-            "uri-help": "Identifiant unique du germplasm",
-            "alias-placeholder": "Entrer le label du germplasm ",
-            "filter-placeholder": "Utiliser ce champ pour chercher des germplasm",
-            "germplasm": "germplasm",
-            "add": "Créer un germplasm",
-            "update": "meettre à jour un germplasm",
-            "alias": "alias",
-            "alias-help": "alias",
-            "form-alias-placeholder": "Irrigation, Shading, Variety, etc.",
+            "germplasmTitle": "Ressources Génétiques",
+            "description": "Gérer les informations du matériel génétique",
+            "add": "Créer germplasm",
+            "update": "éditer germplasm",
+            "delete": "supprimer germplasm",         
+            "backToList" : "Revenir à la liste des germplasm",
+            "germplasmList": "Germplasm",
+            "select":"Veuillez sélectionner un type de germplasm",
+            "filter": {
+                "description": "Recherche de Ressources Génétiques",
+                "allTypes": "Tous",
+                "species": "Filtrer par espèce",
+                "year": "Filtrer par année de production",
+                "institute": "Filtrer par code institution",
+                "label": "Filtrer par nom",
+                "label-placeholder": "Entrez un nom de germplasm",
+                "rdfType": "Filtrer par type",
+                "experiment": "Filtrer par expérimentation",
+                "search": "Rechercher",
+                "reset": "Réinitialiser"
+            },
+            "list": {
+                "label": "nom",
+                "uri": "URI",
+                "rdfType": "type",
+                "fromSpecies" : "URI de l'espèce",
+                "speciesLabel" : "Espèce"
+            },
+            "table": {
+                "fields": {
+                    "label": "Nom",
+                    "uri": "URI",
+                    "rdfType": "Type",
+                    "fromSpecies" : "URI de l'espèce",
+                    "fromVariety" : "URI de variété",
+                    "fromAccession": "URI d'accession",
+                    "institute": "Code institut",
+                    "comment": "Commentaire",
+                    "year": "Année",
+                    "checkingStatus": "Statut",
+                    "insertionStatus": "Statut"
+                },
+                "button": {
+                    "uploadFile" : "Importer fichier csv",
+                    "downloadTemplate" : "Télécharger le template",
+                    "resetTable" : "Vider tableau",
+                    "check" : "Valider avant d'insérer",
+                    "insert" : "Insérer"
+                }
+            },
+            "details": {
+                "title": "Germplasm Details",
+                "tab": "Germplasm Information",
+                "uri": "URI",
+                "label": "Name",
+                "rdfType": "Type",
+                "species":"Species",
+                "variety": "Variety",
+                "accession": "Accession",
+                "institute": "Institute",
+                "year": "Year",
+                "comment": "Comment"
+            },
+            "form" : {
+                "uri-help": "Unique germplasm identifier",          
+                "label-help": "Name used to define this germplasm",
+                "rdfType-help": "Germplasm Type"
+            },
             "errors": {
-                "germplasm-already-exists": "URI du germplasm déjà existant."
+                "germplasm-already-exists": "Germplasm already exists with this URI."
             }
         }
     },
@@ -516,47 +574,52 @@
         "experiment": {
             "modification": "Ajout / Modification des expérimentations",
             "read": "Visualisation des expérimentations",
-            "delete": "Supression des expérimentations"
+            "delete": "Suppression des expérimentations"
         },
         "infrastructure": {
             "modification": "Ajout / Modification des infrastructures",
             "read": "Visualisation des infrastructures",
-            "delete": "Supression des infrastructures"
+            "delete": "Suppression des infrastructures"
         },
         "group": {
             "modification": "Ajout / Modification des groupes",
             "read": "Visualisation des groupes",
-            "delete": "Supression des groupes"
+            "delete": "Suppression des groupes"
         },
         "profile": {
             "modification": "Ajout / Modification des profiles",
             "read": "Visualisation des profiles",
-            "delete": "Supression des profiles"
+            "delete": "Suppression des profiles"
         },
         "project": {
             "modification": "Ajout / Modification des projets",
             "read": "Visualisation des projets",
-            "delete": "Supression des projets"
+            "delete": "Suppression des projets"
         },
         "user": {
             "modification": "Ajout / Modification des utilisateurs",
             "read": "Visualisation des utilisateurs",
-            "delete": "Supression des utilisateurs"
+            "delete": "Suppression des utilisateurs"
         },
         "variable": {
             "modification": "Ajout / Modification des variables",
             "read": "Visualisation des variables",
-            "delete": "Supression des variables"
+            "delete": "Suppression des variables"
         },
         "factors": {
-            "modification": "Create / Modification des facteurs",
+            "modification": "Ajout / Modification des facteurs",
             "read": "Visualisation facteurs",
-            "delete": "Supression des facteurs"
+            "delete": "Suppression des facteurs"
         },
         "factorLevels": {
-            "modification": "Create / Modification des niveaux de facteurs",
+            "modification": "Ajout / Modification des niveaux de facteurs",
             "read": "Visualisation niveaux de facteurs",
-            "delete": "Supression des niveaux de facteurs"
+            "delete": "Suppression des niveaux de facteurs"
+        },
+        "germplasm": {
+            "modification": "Ajout / Modification germplasm",
+            "read": "Visualisation des germplasm",
+            "delete": "Suppression des  germplasm"
         }
     },
     "validations": {

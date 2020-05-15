@@ -186,7 +186,8 @@ public class SPARQLQueryHelper {
     }
 
     public static Expr langFilter(String varName, String lang) {
-        return exprFactory.langMatches(exprFactory.lang(NodeFactory.createVariable(varName)), lang);
+        return exprFactory.or(exprFactory.langMatches(exprFactory.lang(NodeFactory.createVariable(varName)), lang),
+                            exprFactory.langMatches(exprFactory.lang(NodeFactory.createVariable(varName)), ""));
     }
 
     /**

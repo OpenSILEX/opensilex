@@ -32,6 +32,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.URIGenerator;
@@ -362,7 +363,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public Expr getFieldOrderExpr(String fieldName) {
         Field f = classAnalizer.getFieldFromName(fieldName);
         if (f != null) {
-            if (f.getType().equals(String.class)) {
+            if (f.getType().equals(String.class) || f.getType().equals(SPARQLLabel.class)) {
                 return new E_StrLowerCase(new ExprVar(f.getName()));
             } else {
                 return new ExprVar(f.getName());

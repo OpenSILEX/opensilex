@@ -7,9 +7,25 @@
 
 package org.opensilex.core.species.dal;
 
+import java.net.URI;
+import java.util.ArrayList;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.util.List;
+import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.vocabulary.RDF;
+import org.opensilex.core.germplasm.api.GermplasmSearchDTO;
+import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
 
 
 /**
@@ -33,7 +49,19 @@ public class SpeciesDAO {
 //            Locale langLocale = new Locale.Builder().setLanguageTag(OpenSilex.DEFAULT_LANGUAGE).build();
 //            lang = langLocale.getLanguage();
 //        }
-        return sparql.search(SpeciesModel.class,lang);
+
+        List<OrderBy>  orderByList = new ArrayList();
+        orderByList.add(new OrderBy("label=asc"));  
+
+        return sparql.search(
+                SpeciesModel.class,
+                lang,
+                (SelectBuilder select) -> {
+                    select.addFilter(SPARQLQueryHelper.eq
+                    (SPARQLResourceModel.TYPE_FIELD, new URI(Oeso.Species.toString())));                    
+                },
+                orderByList
+        );
     }
 
 

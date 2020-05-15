@@ -11,12 +11,15 @@ import org.opensilex.OpenSilexModule;
 import java.util.List;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.OA;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.extensions.LoginExtension;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.rest.cache.JCSApiCacheExtension;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
+import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,4 +65,11 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
         ));
         return list;
     }
+
+    @Override
+    public void setup() throws Exception {
+        SPARQLService.addPrefix(Oeso.PREFIX, Oeso.NS);
+        URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), true);
+    }
+           
 }

@@ -497,127 +497,116 @@ class SPARQLClassQueryBuilder {
         shape.addProperty(SHACL.targetClass, analyzer.getRDFType());
 
         analyzer.forEachDataProperty((field, property) -> {
-            Seq seq = model.createSeq();
 
-            if (analyzer.isReverseRelation(field)) {
-                Seq pathSeq = model.createSeq();
-                pathSeq.addProperty(SHACL.inversePath, property);
-                seq.addProperty(SHACL.path, pathSeq);
-            } else {
+            if (!analyzer.isReverseRelation(field)) {
+                Seq seq = model.createSeq();
                 seq.addProperty(SHACL.path, property);
-            }
 
-            XSDDatatype dataType = analyzer.getFieldDatatype(field);
-            if (dataType.equals(XSDDatatype.XSDanyURI)) {
-                seq.addProperty(SHACL.nodeKind, SHACL.IRI);
-            } else {
-                seq.addProperty(SHACL.datatype, model.createResource(dataType.getURI()));
-            }
-            seq.addProperty(SHACL.maxCount, "1", XSDDatatype.XSDinteger);
+                XSDDatatype dataType = analyzer.getFieldDatatype(field);
+                if (dataType.equals(XSDDatatype.XSDanyURI)) {
+                    seq.addProperty(SHACL.nodeKind, SHACL.IRI);
+                } else {
+                    seq.addProperty(SHACL.datatype, model.createResource(dataType.getURI()));
+                }
+                seq.addProperty(SHACL.maxCount, "1", XSDDatatype.XSDinteger);
 
-            if (analyzer.isOptional(field)) {
-                seq.addProperty(SHACL.minCount, "0", XSDDatatype.XSDinteger);
-            } else {
-                seq.addProperty(SHACL.minCount, "1", XSDDatatype.XSDinteger);
-            }
+                if (analyzer.isOptional(field)) {
+                    seq.addProperty(SHACL.minCount, "0", XSDDatatype.XSDinteger);
+                } else {
+                    seq.addProperty(SHACL.minCount, "1", XSDDatatype.XSDinteger);
+                }
 
-            shape.addProperty(SHACL.property, seq);
+                shape.addProperty(SHACL.property, seq);
+            }
         });
 
-        analyzer.forEachObjectProperty((field, property) -> {
-            Seq seq = model.createSeq();
+        analyzer.forEachObjectProperty(
+                (field, property) -> {
+                    if (!analyzer.isReverseRelation(field)) {
+                        Seq seq = model.createSeq();
+                        seq.addProperty(SHACL.path, property);
+                        seq.addProperty(SHACL.classProperty, analyzer.getFieldRDFType(field));
+                        seq.addProperty(SHACL.maxCount, "1", XSDDatatype.XSDinteger);
 
-            if (analyzer.isReverseRelation(field)) {
-                Seq pathSeq = model.createSeq();
-                pathSeq.addProperty(SHACL.inversePath, property);
-                seq.addProperty(SHACL.path, pathSeq);
-            } else {
-                seq.addProperty(SHACL.path, property);
-            }
-            seq.addProperty(SHACL.classProperty, analyzer.getFieldRDFType(field));
-            seq.addProperty(SHACL.maxCount, "1", XSDDatatype.XSDinteger);
+                        if (analyzer.isOptional(field)) {
+                            seq.addProperty(SHACL.minCount, "0", XSDDatatype.XSDinteger);
+                        } else {
+                            seq.addProperty(SHACL.minCount, "1", XSDDatatype.XSDinteger);
+                        }
 
-            if (analyzer.isOptional(field)) {
-                seq.addProperty(SHACL.minCount, "0", XSDDatatype.XSDinteger);
-            } else {
-                seq.addProperty(SHACL.minCount, "1", XSDDatatype.XSDinteger);
-            }
+                        shape.addProperty(SHACL.property, seq);
+                    }
+                }
+        );
 
-            shape.addProperty(SHACL.property, seq);
-        });
+        analyzer.forEachLabelProperty(
+                (field, property) -> {
+                    Seq seq = model.createSeq();
 
-        analyzer.forEachLabelProperty((field, property) -> {
-            Seq seq = model.createSeq();
+                    if (!analyzer.isReverseRelation(field)) {
+                        seq.addProperty(SHACL.path, property);
+                        seq.addProperty(SHACL.uniqueLang, "true", XSDDatatype.XSDboolean);
 
-            if (analyzer.isReverseRelation(field)) {
-                Seq pathSeq = model.createSeq();
-                pathSeq.addProperty(SHACL.inversePath, property);
-                seq.addProperty(SHACL.path, pathSeq);
-            } else {
-                seq.addProperty(SHACL.path, property);
-            }
-            seq.addProperty(SHACL.uniqueLang, "true", XSDDatatype.XSDboolean);
+                        if (analyzer.isOptional(field)) {
+                            seq.addProperty(SHACL.minCount, "0", XSDDatatype.XSDinteger);
+                        } else {
+                            seq.addProperty(SHACL.minCount, "1", XSDDatatype.XSDinteger);
+                        }
 
-            if (analyzer.isOptional(field)) {
-                seq.addProperty(SHACL.minCount, "0", XSDDatatype.XSDinteger);
-            } else {
-                seq.addProperty(SHACL.minCount, "1", XSDDatatype.XSDinteger);
-            }
+                        shape.addProperty(SHACL.property, seq);
+                    }
+                }
+        );
 
-            shape.addProperty(SHACL.property, seq);
-        });
+        analyzer.forEachDataPropertyList(
+                (field, property) -> {
+                    Seq seq = model.createSeq();
 
-        analyzer.forEachDataPropertyList((field, property) -> {
-            Seq seq = model.createSeq();
+                    if (!analyzer.isReverseRelation(field)) {
+                        seq.addProperty(SHACL.path, property);
 
-            if (analyzer.isReverseRelation(field)) {
-                Seq pathSeq = model.createSeq();
-                pathSeq.addProperty(SHACL.inversePath, property);
-                seq.addProperty(SHACL.path, pathSeq);
-            } else {
-                seq.addProperty(SHACL.path, property);
-            }
+                        XSDDatatype dataType = analyzer.getFieldListDatatype(field);
+                        if (dataType.equals(XSDDatatype.XSDanyURI)) {
+                            seq.addProperty(SHACL.nodeKind, SHACL.IRI);
+                        } else {
+                            seq.addProperty(SHACL.datatype, model.createResource(dataType.getURI()));
+                        }
 
-            XSDDatatype dataType = analyzer.getFieldListDatatype(field);
-            if (dataType.equals(XSDDatatype.XSDanyURI)) {
-                seq.addProperty(SHACL.nodeKind, SHACL.IRI);
-            } else {
-                seq.addProperty(SHACL.datatype, model.createResource(dataType.getURI()));
-            }
+                        if (analyzer.isOptional(field)) {
+                            seq.addProperty(SHACL.minCount, "0", XSDDatatype.XSDinteger);
+                        } else {
+                            seq.addProperty(SHACL.minCount, "1", XSDDatatype.XSDinteger);
+                        }
 
-            if (analyzer.isOptional(field)) {
-                seq.addProperty(SHACL.minCount, "0", XSDDatatype.XSDinteger);
-            } else {
-                seq.addProperty(SHACL.minCount, "1", XSDDatatype.XSDinteger);
-            }
+                        shape.addProperty(SHACL.property, seq);
+                    }
+                }
+        );
 
-            shape.addProperty(SHACL.property, seq);
-        });
+        analyzer.forEachObjectPropertyList(
+                (field, property) -> {
+                    Seq seq = model.createSeq();
 
-        analyzer.forEachObjectPropertyList((field, property) -> {
-            Seq seq = model.createSeq();
+                    if (!analyzer.isReverseRelation(field)) {
+                        seq.addProperty(SHACL.path, property);
 
-            if (analyzer.isReverseRelation(field)) {
-                Seq pathSeq = model.createSeq();
-                pathSeq.addProperty(SHACL.inversePath, property);
-                seq.addProperty(SHACL.path, pathSeq);
-            } else {
-                seq.addProperty(SHACL.path, property);
-            }
+                        seq.addProperty(SHACL.classProperty, analyzer.getFieldListRDFType(field));
 
-            seq.addProperty(SHACL.classProperty, analyzer.getFieldListRDFType(field));
+                        if (analyzer.isOptional(field)) {
+                            seq.addProperty(SHACL.minCount, "0", XSDDatatype.XSDinteger);
+                        } else {
+                            seq.addProperty(SHACL.minCount, "1", XSDDatatype.XSDinteger);
+                        }
 
-            if (analyzer.isOptional(field)) {
-                seq.addProperty(SHACL.minCount, "0", XSDDatatype.XSDinteger);
-            } else {
-                seq.addProperty(SHACL.minCount, "1", XSDDatatype.XSDinteger);
-            }
-
-            shape.addProperty(SHACL.property, seq);
-        });
+                        shape.addProperty(SHACL.property, seq);
+                    }
+                }
+        );
 
         StringWriter str = new StringWriter();
-        model.write(str, "TURTLE");
+
+        model.write(str,
+                "TURTLE");
 
         return str.toString();
     }

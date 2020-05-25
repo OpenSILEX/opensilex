@@ -8,7 +8,9 @@ package org.opensilex.sparql.rdf4j;
 import java.io.StringReader;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import org.apache.jena.arq.querybuilder.AskBuilder;
@@ -17,6 +19,8 @@ import org.apache.jena.arq.querybuilder.DescribeBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF4J;
@@ -343,29 +347,31 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
 
     private SPARQLValidationException convertRDF4JSHACLException(ShaclSailValidationException validationEx) {
         SPARQLValidationException exception = new SPARQLValidationException();
-        validationEx.getValidationReport().getValidationResult().forEach((validationResult) -> {
-            URI invalidObject = null;
-            URI invalidObjectProperty = null;
-            URI brokenConstraint = null;
-            for (Statement stmt : validationResult.asModel()) {
-                try {
-                    if (stmt.getPredicate().toString().equals(SHACL.focusNode.toString())) {
-                        invalidObject = new URI(stmt.getObject().stringValue());
-                    } else if (stmt.getPredicate().toString().equals(SHACL.resultPath.toString())) {
-                        invalidObjectProperty = new URI(stmt.getObject().stringValue());
-                    } else if (stmt.getPredicate().toString().equals(SHACL.sourceConstraintComponent.toString())) {
-                        brokenConstraint = new URI(stmt.getObject().stringValue());
-                    }
-                } catch (Exception ex) {
-                    LOGGER.warn("Unexpected error while analyzing SHACL exception", ex);
+        Model model = validationEx.validationReportAsModel();
+        Map<Resource, URI> invalidObject = new HashMap<>();
+        Map<Resource, URI> invalidObjectProperty = new HashMap<>();
+        Map<Resource, URI> brokenConstraint = new HashMap<>();
+        for (Statement stmt : model) {
+            Resource errorURI = stmt.getSubject();
+            try {
+                if (stmt.getPredicate().toString().equals(SHACL.focusNode.toString())) {
+                    invalidObject.put(errorURI, new URI(stmt.getObject().stringValue()));
+                } else if (stmt.getPredicate().toString().equals(SHACL.resultPath.toString())) {
+                    invalidObjectProperty.put(errorURI, new URI(stmt.getObject().stringValue()));
+                } else if (stmt.getPredicate().toString().equals(SHACL.sourceConstraintComponent.toString())) {
+                    brokenConstraint.put(errorURI, new URI(stmt.getObject().stringValue()));
                 }
 
-            }
-            if (invalidObject != null && invalidObjectProperty != null && brokenConstraint != null) {
-                exception.addValidationError(invalidObject, invalidObjectProperty, brokenConstraint);
+                if (invalidObject.containsKey(errorURI) && invalidObjectProperty.containsKey(errorURI)&& brokenConstraint.containsKey(errorURI)) {
+                    exception.addValidationError(invalidObject.get(errorURI), invalidObjectProperty.get(errorURI), brokenConstraint.get(errorURI));
+                    
+                }
+            } catch (Exception ex) {
+                LOGGER.warn("Unexpected error while analyzing SHACL exception", ex);
             }
 
-        });
+        }
+
         return exception;
     }
 

@@ -78,10 +78,10 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension, SPARQ
                 "oeso"
         ));
         list.add(new OntologyFileDefinition(
-                sparqlConfig.baseURI() + "species",
+                sparqlConfig.baseURI() + "germplasm",
                 "ontologies/species.ttl",
                 Lang.TTL,
-                sparqlConfig.baseURIAlias() + "-species"
+                sparqlConfig.baseURIAlias() + "-germplasm"
         ));
         return list;
     }

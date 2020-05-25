@@ -155,9 +155,9 @@ variables:
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "ls ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR};"
     - echo "Restart server java -jar ${RSYNC_INSTANCES_BIN_PATH}/$REMOTE_SERVER_RSYNC_DIR/opensilex.jar"
     - echo "Stop with options --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_STOP_SERVER_OPTS}"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_STOP_SERVER_OPTS}"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar opensilex.jar server stop --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_STOP_SERVER_OPTS}"
     - echo "Start with options --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar opensilex.jar server start --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
     - AUTOGENERATE_ENVIRONMENT_URL="$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT"        
     - echo "Deploy To $AUTOGENERATE_ENVIRONMENT_URL"                 # In script, get the environment URL.
     - echo "AUTOGENERATE_ENVIRONMENT_URL=$AUTOGENERATE_ENVIRONMENT_URL" >> deploy.env 
@@ -469,6 +469,33 @@ test:vincent:deploy:
       when: on_success
   needs:
     - vincent:build
+    
+###################################
+##  JEAN-PHILIPPE-TEST-BUILD-DEPLOYMENT
+###################################
+
+jeanphilippe:build:
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_COMMIT_BRANCH == "jean-philippe"
+
+test:jeanphilippe:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  variables:
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/jean-philippe"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4092
+    OPENSILEX_JAR_PORT: 8092
+    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/jean-philippe"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "jean-philippe"
+      when: on_success
+  needs:
+    - jeanphilippe:build
 
 
 # ##########################################

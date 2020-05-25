@@ -88,6 +88,7 @@
         <reflections.version>0.9.12</reflections.version>
         <httpclient.version>4.5.12</httpclient.version>
         <httpcore.version>4.4.13</httpcore.version>
+        <cdi.api.version>1.2</cdi.api.version>
         <javaee.web.api.version>8.0.1</javaee.web.api.version>
         <apache.tika.version>1.24.1</apache.tika.version>
         
@@ -351,6 +352,11 @@
         <dependency>
             <groupId>org.glassfish.jersey.ext</groupId>
             <artifactId>jersey-bean-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+            <version>${cdi.api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.ext.cdi</groupId>

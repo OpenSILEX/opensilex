@@ -195,6 +195,7 @@
                                     <exclude>jakarta.activation:jakarta.activation-api</exclude>
                                     <exclude>com.sun.activation:jakarta.activation</exclude>
                                     <exclude>jakarta.el:jakarta.el-api</exclude>
+                                    <exclude>javax.el:javax.el-api</exclude>
                                     <exclude>org.glassfish:jakarta.el</exclude>
                                     <exclude>javax.annotation:javax.annotation-api</exclude>
                                     <exclude>org.apache.httpcomponents:httpcore-osgi</exclude>

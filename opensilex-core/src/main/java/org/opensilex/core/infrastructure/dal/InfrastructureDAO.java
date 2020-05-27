@@ -156,7 +156,6 @@ public class InfrastructureDAO {
     }
 
     public InfrastructureFacilityModel createFacility(InfrastructureFacilityModel instance, UserModel user) throws Exception {
-        validateInfrastructureFacilityAccess(instance.getUri(), user);
         InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), user.getLanguage());
         instance.setInfrastructure(infra);
         sparql.create(instance);
@@ -192,7 +191,6 @@ public class InfrastructureDAO {
     }
 
     public InfrastructureTeamModel createTeam(InfrastructureTeamModel instance, UserModel user) throws Exception {
-        validateInfrastructureTeamAccess(instance.getUri(), user);
         InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), null);
         instance.setInfrastructure(infra);
         sparql.create(instance);

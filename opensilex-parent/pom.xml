@@ -117,7 +117,7 @@
         <properties.maven.plugin.version>1.0.0</properties.maven.plugin.version>
         <serviceloader.maven.plugin.version>1.1.0</serviceloader.maven.plugin.version>
         <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
-        <owasp.dependency.check.maven.plugin.version>5.2.1</owasp.dependency.check.maven.plugin.version>
+        <owasp.dependency.check.maven.plugin.version>5.3.2</owasp.dependency.check.maven.plugin.version>
         <frontend.maven.plugin.version>1.9.1</frontend.maven.plugin.version>
         <maven.project.info.reports.plugin.version>3.0.0</maven.project.info.reports.plugin.version>
         <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>

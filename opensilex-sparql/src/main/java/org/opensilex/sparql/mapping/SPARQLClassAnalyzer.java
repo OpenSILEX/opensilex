@@ -92,7 +92,10 @@ final class SPARQLClassAnalyzer {
 
     private final List<String> reverseRelationFields = new ArrayList<>();
 
-    private final Map<Class<? extends SPARQLResourceModel>, String> cascadeDeleteClassesField = new HashMap<>();
+    private final Map<String, Class<? extends SPARQLResourceModel>> cascadeDeleteClassesField = new HashMap<>();
+
+    private final List<String> autoUpdateFields = new ArrayList<>();
+    private final List<String> autoUpdateListFields = new ArrayList<>();
 
     private final URIGenerator<? extends SPARQLResourceModel> uriGenerator;
 
@@ -292,7 +295,10 @@ final class SPARQLClassAnalyzer {
                     Class<? extends SPARQLResourceModel> fieldClass = (Class<? extends SPARQLResourceModel>) genericParameter;
                     addRelatedModelProperty(field, fieldClass);
                     if (sProperty.cascadeDelete()) {
-                        cascadeDeleteClassesField.put(fieldClass, field.getName());
+                        cascadeDeleteClassesField.put(field.getName(), fieldClass);
+                    }
+                    if (sProperty.autoUpdate()) {
+                        autoUpdateListFields.add(field.getName());
                     }
                 } else {
                     throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " has an unsupported type, List<" + genericParameter.getCanonicalName() + "> is not supported");
@@ -312,7 +318,10 @@ final class SPARQLClassAnalyzer {
             Class<? extends SPARQLResourceModel> fieldClass = (Class<? extends SPARQLResourceModel>) fType;
             addRelatedModelProperty(field, fieldClass);
             if (sProperty.cascadeDelete()) {
-                cascadeDeleteClassesField.put(fieldClass, field.getName());
+                cascadeDeleteClassesField.put(field.getName(), fieldClass);
+            }
+            if (sProperty.autoUpdate()) {
+                autoUpdateFields.add(field.getName());
             }
         } else {
             throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " refer to an invalid SPARQL class model: " + fType.getTypeName());
@@ -762,13 +771,31 @@ final class SPARQLClassAnalyzer {
         return relatedModelsFields.keySet();
     }
 
-    public Map<Class<? extends SPARQLResourceModel>, Field> getCascadeDeleteClassesField() {
-        Map<Class<? extends SPARQLResourceModel>, Field> map = new HashMap<>();
-        cascadeDeleteClassesField.keySet().stream().forEach((model) -> {
-            map.put(model, getFieldFromName(cascadeDeleteClassesField.get(model)));
+    public Map<Field, Class<? extends SPARQLResourceModel>> getCascadeDeleteClassesField() {
+        Map<Field, Class<? extends SPARQLResourceModel>> map = new HashMap<>();
+        cascadeDeleteClassesField.keySet().stream().forEach((fieldName) -> {
+            map.put(getFieldFromName(fieldName), cascadeDeleteClassesField.get(fieldName));
         });
 
         return map;
+    }
+
+    public List<Field> getAutoUpdateFields() {
+        List<Field> list = new ArrayList<>();
+        autoUpdateFields.forEach((fieldName) -> {
+            list.add(getFieldFromName(fieldName));
+        });
+
+        return list;
+    }
+
+    public List<Field> getAutoUpdateListFields() {
+        List<Field> list = new ArrayList<>();
+        autoUpdateListFields.forEach((fieldName) -> {
+            list.add(getFieldFromName(fieldName));
+        });
+
+        return list;
     }
 
     boolean allowBlankNode() {

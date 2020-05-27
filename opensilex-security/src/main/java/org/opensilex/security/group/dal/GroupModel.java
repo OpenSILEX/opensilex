@@ -35,7 +35,8 @@ public class GroupModel extends SPARQLNamedResourceModel<GroupModel> {
     @SPARQLProperty(
             ontology = SecurityOntology.class,
             property = "hasUserProfile",
-            cascadeDelete = true
+            cascadeDelete = true,
+            autoUpdate = true
     )
     private List<GroupUserProfileModel> userProfiles;
     public static final String USER_PROFILES_FIELD = "userProfiles";

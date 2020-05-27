@@ -730,8 +730,59 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             if (oldInstance == null) {
                 throw new SPARQLInvalidURIException(instance.getUri());
             }
-
             mapper.updateInstanceFromOldValues(oldInstance, instance);
+
+            Map<URI, Class<? extends SPARQLResourceModel>> autoUpdateFieldsToDelete = new HashMap<>();
+            List<SPARQLResourceModel> autoUpdateFieldsToUpdate = new ArrayList<>();
+
+            List<Field> autoUpdateFields = mapper.getAutoUpdateFields();
+            for (Field f : autoUpdateFields) {
+                SPARQLResourceModel newFieldValue = (SPARQLResourceModel) f.get(instance);
+                SPARQLResourceModel oldFieldValue = (SPARQLResourceModel) f.get(oldInstance);
+                if (newFieldValue == null || newFieldValue.getUri() == null) {
+                    if (oldFieldValue != null) {
+                        autoUpdateFieldsToDelete.put(oldFieldValue.getUri(), oldFieldValue.getClass());
+                    }
+                } else if (oldFieldValue != null) {
+                    if (!oldFieldValue.getUri().equals(newFieldValue.getUri())) {
+                        autoUpdateFieldsToDelete.put(oldFieldValue.getUri(), oldFieldValue.getClass());
+                    } else {
+                        autoUpdateFieldsToUpdate.add(newFieldValue);
+                    }
+                }
+            }
+
+            List<Field> autoUpdateListFields = mapper.getAutoUpdateListFields();
+            for (Field f : autoUpdateListFields) {
+                List<? extends SPARQLResourceModel> newFieldValue = (List<? extends SPARQLResourceModel>) f.get(instance);
+                List<? extends SPARQLResourceModel> oldFieldValue = (List<? extends SPARQLResourceModel>) f.get(oldInstance);
+
+                if (newFieldValue == null) {
+                    for (SPARQLResourceModel ofValue : oldFieldValue) {
+                        autoUpdateFieldsToDelete.put(ofValue.getUri(), ofValue.getClass());
+                    }
+                } else {
+                    Map<URI, Class<? extends SPARQLResourceModel>> oldURIs = new HashMap<>();
+                    if (oldFieldValue != null) {
+                        for (SPARQLResourceModel ofValue : oldFieldValue) {
+                            oldURIs.put(ofValue.getUri(), ofValue.getClass());
+                        }
+                    }
+                    for (SPARQLResourceModel nfValue : newFieldValue) {
+                        if (nfValue != null && nfValue.getUri() != null) {
+                            if (oldURIs.containsKey(nfValue.getUri())) {
+                                autoUpdateFieldsToUpdate.add(nfValue);
+                                oldURIs.remove(nfValue.getUri());
+                            }
+                        }
+                    }
+                    autoUpdateFieldsToDelete.putAll(oldURIs);
+                }
+            }
+
+            deleteURIClassMap(autoUpdateFieldsToDelete);
+            update(autoUpdateFieldsToUpdate);
+
             UpdateBuilder delete = mapper.getDeleteBuilder(graph, oldInstance);
             executeDeleteQuery(delete);
             create(graph, instance, false);
@@ -786,16 +837,16 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             Map<Class<? extends SPARQLResourceModel>, List<URI>> relationsToDelete = new HashMap<>();
             Map<Class<? extends SPARQLResourceModel>, List<URI>> reverseRelationsToDelete = new HashMap<>();
-            Map<Class<? extends SPARQLResourceModel>, Field> cascadeDeleteClassesProperties = mapper.getCascadeDeleteClassesField();
-            for (Map.Entry<Class<? extends SPARQLResourceModel>, Field> cascadeDeleteClassField : cascadeDeleteClassesProperties.entrySet()) {
-                Field f = cascadeDeleteClassField.getValue();
+            Map<Field, Class<? extends SPARQLResourceModel>> cascadeDeleteClassesProperties = mapper.getCascadeDeleteClassesField();
+            for (Map.Entry<Field, Class<? extends SPARQLResourceModel>> cascadeDeleteClassField : cascadeDeleteClassesProperties.entrySet()) {
+                Field f = cascadeDeleteClassField.getKey();
 
                 if (mapper.isReverseRelation(f)) {
-                    List<URI> relations = getRelationsURI(objectClass, cascadeDeleteClassField.getKey(), f, uri);
-                    reverseRelationsToDelete.put(cascadeDeleteClassField.getKey(), relations);
+                    List<URI> relations = getRelationsURI(objectClass, cascadeDeleteClassField.getValue(), f, uri);
+                    reverseRelationsToDelete.put(cascadeDeleteClassField.getValue(), relations);
                 } else {
-                    List<URI> relations = getRelationsURI(objectClass, cascadeDeleteClassField.getKey(), f, uri);
-                    relationsToDelete.put(cascadeDeleteClassField.getKey(), relations);
+                    List<URI> relations = getRelationsURI(objectClass, cascadeDeleteClassField.getValue(), f, uri);
+                    relationsToDelete.put(cascadeDeleteClassField.getValue(), relations);
                 }
 
             }
@@ -851,6 +902,21 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 startTransaction();
                 for (URI uri : uris) {
                     delete(graph, objectClass, uri);
+                }
+                commitTransaction();
+            } catch (Exception ex) {
+                rollbackTransaction(ex);
+                throw ex;
+            }
+        }
+    }
+
+    private void deleteURIClassMap(Map<URI, Class<? extends SPARQLResourceModel>> deleteList) throws Exception {
+        if (deleteList.size() > 0) {
+            try {
+                startTransaction();
+                for (Map.Entry<URI, Class<? extends SPARQLResourceModel>> deleteItem : deleteList.entrySet()) {
+                    delete(deleteItem.getValue(), deleteItem.getKey());
                 }
                 commitTransaction();
             } catch (Exception ex) {
@@ -1211,5 +1277,4 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void clearGraph(Class<? extends SPARQLResourceModel> resourceClass) throws Exception {
         clearGraph(getMapperIndex().getForClass(resourceClass).getDefaultGraphURI());
     }
-
 }

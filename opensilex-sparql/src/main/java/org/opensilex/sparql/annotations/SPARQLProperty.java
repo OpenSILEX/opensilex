@@ -35,4 +35,6 @@ public @interface SPARQLProperty {
     boolean ignoreUpdateIfNull() default false;
     
     boolean cascadeDelete() default false;
+    
+    boolean autoUpdate() default false;
 }

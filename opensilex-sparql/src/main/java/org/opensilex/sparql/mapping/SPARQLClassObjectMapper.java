@@ -402,8 +402,16 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return null;
     }
 
-    public Map<Class<? extends SPARQLResourceModel>, Field> getCascadeDeleteClassesField() {
+    public Map<Field, Class<? extends SPARQLResourceModel>> getCascadeDeleteClassesField() {
         return classAnalizer.getCascadeDeleteClassesField();
+    }
+
+    public List<Field> getAutoUpdateFields() {
+        return classAnalizer.getAutoUpdateFields();
+    }
+
+    public List<Field> getAutoUpdateListFields() {
+        return classAnalizer.getAutoUpdateListFields();
     }
 
     public List<SPARQLResourceModel> getAllDependentResourcesToCreate(T instance) {

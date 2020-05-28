@@ -28,6 +28,7 @@ import org.apache.catalina.webresources.StandardRoot;
 import org.apache.commons.io.FileUtils;
 import org.apache.jasper.servlet.JasperInitializer;
 import org.apache.tomcat.JarScanType;
+import org.apache.tomcat.util.buf.EncodedSolidusHandling;
 import org.opensilex.OpenSilex;
 import org.opensilex.server.extensions.ServerExtension;
 import org.opensilex.utils.ClassUtils;
@@ -111,7 +112,6 @@ public class Server extends Tomcat {
 
         // Set system properties
         System.setProperty("org.apache.catalina.startup.EXIT_ON_INIT_FAILURE", "true");
-        System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
 
         config = instance.getModuleConfig(ServerModule.class, ServerConfig.class);
         config.tomcatSystemProperties().forEach((key, value) -> {
@@ -174,6 +174,9 @@ public class Server extends Tomcat {
 
         Connector connector = getConnector();
 
+        // Allow tomcat to accept encoded slash
+        connector.setEncodedSolidusHandling(EncodedSolidusHandling.DECODE.getValue());
+        
         // Enable GZIP compression
         enableGzip(connector);
 

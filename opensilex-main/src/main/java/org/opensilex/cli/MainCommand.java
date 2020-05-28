@@ -6,16 +6,21 @@
 //******************************************************************************
 package org.opensilex.cli;
 
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexSetup;
 import static org.opensilex.server.extensions.APIExtension.LOGGER;
+import org.opensilex.utils.ClassUtils;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IVersionProvider;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 
 /**
@@ -143,6 +148,36 @@ public class MainCommand extends AbstractOpenSilexCommand implements IVersionPro
         });
         String[] versionListArray = new String[versionList.size()];
         return versionList.toArray(versionListArray);
+    }
+
+    /**
+     * Display git commit number used for building this OpenSilex version.
+     */
+    @Command(
+            name = "git-commit",
+            header = "Display git commit",
+            description = "Display git commit identifier used for building this OpenSilex version"
+    )
+    public void gitCommit(
+            @Mixin HelpOption help) {
+        try {
+            File gitPropertiesFile = ClassUtils.getFileFromClassArtifact(OpenSilex.class, "git.properties");
+
+            Properties gitProperties = new Properties();
+            gitProperties.load(new FileReader(gitPropertiesFile));
+
+            String gitCommitAbbrev = gitProperties.getProperty("git.commit.id.abbrev", null);
+            String gitCommitFull = gitProperties.getProperty("git.commit.id.full", null);
+
+            if (gitCommitAbbrev == null || gitCommitFull == null) {
+                System.out.println("No git commit information found");
+            } else {
+                System.out.println("Git commit id: " + gitCommitAbbrev + " (" + gitCommitFull + ")");
+            }
+        } catch (Exception ex) {
+            System.out.println("No git commit information found");
+            LOGGER.debug("Exception raised:", ex);
+        }
     }
 
 }

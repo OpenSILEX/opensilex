@@ -638,6 +638,8 @@
                     <version>${owasp.dependency.check.maven.plugin.version}</version>
                     <configuration>
                         <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                        <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
+                        <nodeAuditAnalyzerEnabled>false</nodeAuditAnalyzerEnabled>
                     </configuration>
                 </plugin>
                 <!-- Generate swagger.json file -->

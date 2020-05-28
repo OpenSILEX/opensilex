@@ -3,7 +3,7 @@
     position: relative;
     width: 100%;
     border: none;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     @include box-shadow(0 6px 0 0 rgba(0, 0, 0, 0.01), 0 15px 32px 0 rgba(0, 0, 0, 0.06));
     @include transition(all 0.5s ease-in-out);
     @include border-radius(4px);

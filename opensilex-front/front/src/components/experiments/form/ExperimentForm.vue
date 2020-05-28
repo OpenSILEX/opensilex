@@ -2,8 +2,8 @@
   <opensilex-WizardForm
     ref="wizardRef"
     :steps="steps"
-    createTitle="component.experiment.add"
-    editTitle="component.experiment.update"
+    createTitle="ExperimentForm.create"
+    editTitle="ExperimentForm.update"
     icon="fa#vials"
     modalSize="lg"
     :initForm="getEmptyForm"
@@ -29,6 +29,7 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 @Component
 export default class ExperimentForm extends Vue {
   $opensilex: any;
+  $t: any;
 
   @Ref("wizardRef") readonly wizardRef!: any;
 
@@ -87,9 +88,7 @@ export default class ExperimentForm extends Vue {
           console.error("Experiment already exists", error);
           this.$opensilex.errorHandler(
             error,
-            this.$t(
-              "component.experiment.errors.experiment-already-exists"
-            )
+            this.$t("ExperimentForm.experiment-already-exists")
           );
         } else {
           this.$opensilex.errorHandler(error);
@@ -110,5 +109,20 @@ export default class ExperimentForm extends Vue {
   }
 }
 </script>
+
 <style scoped lang="scss">
 </style>
+
+<i18n>
+en:
+  ExperimentForm:
+    create: Create experiment
+    update: Update experiment
+    experiment-already-exists: Experiment already exists
+
+fr:
+  ExperimentForm:
+    create: Créer une expérimentation
+    update: Modifier l'expérimentation
+    experiment-already-exists: L'expérimentation existe déjà
+</i18n>

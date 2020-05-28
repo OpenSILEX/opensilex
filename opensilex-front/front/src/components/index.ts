@@ -33,6 +33,9 @@ import UserView from './users/UserView.vue';
 components["opensilex-UserView"] = UserView;
 import UserSelector from './users/UserSelector.vue';
 components["opensilex-UserSelector"] = UserSelector;
+import UserNameView from './users/UserNameView.vue';
+components["opensilex-UserNameView"] = UserNameView;
+
 
 // Profiles
 import ProfileForm from './profiles/ProfileForm.vue';
@@ -111,11 +114,13 @@ import UriForm from './common/forms/UriForm.vue'
 components["opensilex-UriForm"] = UriForm;
 import TypeForm from './common/forms/TypeForm.vue'
 components["opensilex-TypeForm"] = TypeForm;
-import SearchFilterField from './common/forms/SearchFilterField.vue'
-components["opensilex-SearchFilterField"] = SearchFilterField;
 
 import StringView from './common/views/StringView.vue'
 components["opensilex-StringView"] = StringView;
+import ListView from './common/views/ListView.vue'
+components["opensilex-ListView"] = ListView;
+import TextView from './common/views/TextView.vue'
+components["opensilex-TextView"] = TextView;
 import DateView from './common/views/DateView.vue'
 components["opensilex-DateView"] = DateView;
 
@@ -145,6 +150,8 @@ import StringFilter from './common/filters/StringFilter.vue'
 components["opensilex-StringFilter"] = StringFilter;
 import FilterField from './common/filters/FilterField.vue'
 components["opensilex-FilterField"] = FilterField;
+import SearchFilterField from './common/filters/SearchFilterField.vue'
+components["opensilex-SearchFilterField"] = SearchFilterField;
 
 import Button from './common/buttons/Button.vue'
 components["opensilex-Button"] = Button;
@@ -195,6 +202,9 @@ components["opensilex-ProjectList"] = ProjectList;
 import ProjectView from './projects/ProjectView.vue';
 components["opensilex-ProjectView"] = ProjectView;
 
+// Species
+import SpeciesSelector from './species/SpeciesSelector.vue';
+components["opensilex-SpeciesSelector"] = SpeciesSelector;
 
 // PHIS
 import ImageList from './phis/images/ImageList.vue';

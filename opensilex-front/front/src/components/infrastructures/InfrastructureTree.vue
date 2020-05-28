@@ -23,7 +23,6 @@
     ></opensilex-StringFilter>
 
     <opensilex-TreeView :nodes.sync="nodes" @select="displayNodesDetail">
-
       <template v-slot:node="{ node }">
         <span class="item-icon">
           <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.type)" />
@@ -131,10 +130,11 @@ export default class InfrastructureTree extends Vue {
     this.service
       .searchInfrastructuresTree(this.filter)
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        this.infrastructureForm
-          .getFormRef()
-          .setParentInfrastructures(http.response.result);
-
+        if (this.infrastructureForm) {
+          this.infrastructureForm
+            .getFormRef()
+            .setParentInfrastructures(http.response.result);
+        }
         let treeNode = [];
         let first = true;
         for (let i in http.response.result) {

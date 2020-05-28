@@ -6,13 +6,11 @@
       description="component.project.search-description"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions>
+    <opensilex-PageActions
+      v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
+    >
       <template v-slot>
-        <opensilex-CreateButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
-          @click="projectForm.showCreateForm()"
-          label="component.project.add"
-        ></opensilex-CreateButton>
+        <opensilex-CreateButton @click="projectForm.showCreateForm()" label="component.project.add"></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
 

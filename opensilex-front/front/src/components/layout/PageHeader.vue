@@ -6,9 +6,9 @@
           <div class="d-inline">
             <h5>
               <opensilex-Icon :icon="icon" class="title-icon" />
-              &nbsp;{{ $t(title) }}
+              <slot name="title">&nbsp;{{ $t(title) }}</slot>
             </h5>
-            <span>{{ $t(description) }}</span>
+            <span><slot name="description">{{ $t(description) }}</slot></span>
           </div>
         </div>
       </div>
@@ -24,7 +24,7 @@
             </li>
             <li class="breadcrumb-item active">
               <opensilex-Icon :icon="icon" />
-              {{ $t(title) }}
+              &nbsp;{{ $t(title) }}
             </li>
           </ol>
         </nav>

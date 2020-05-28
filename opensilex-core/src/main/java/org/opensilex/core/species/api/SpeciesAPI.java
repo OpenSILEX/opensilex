@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 import org.opensilex.security.authentication.ApiTranslatable;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.rest.cache.ApiCache;
 
 /**
  * @author Renaud COLIN

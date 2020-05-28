@@ -6,15 +6,52 @@
       description="component.experiment.search.description"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions>
+    <opensilex-PageActions
+      v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+    >
       <template v-slot>
         <opensilex-CreateButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
           @click="experimentForm.showCreateForm()"
           label="component.experiment.search.buttons.create-experiment"
         ></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
+
+    <opensilex-SearchFilterField :withButton="false">
+      <template v-slot:filters>
+          <div class="col col-xl-4 col-sm-6 col-12">
+            <label>{{$t('ExperimentList.filter-label')}}:</label>
+            <opensilex-StringFilter
+              :filter.sync="labelFilter"
+              @update="updateLabelFilter()"
+              placeholder="ExperimentList.label-filter-placeholder"
+            ></opensilex-StringFilter>
+          </div>
+
+          <div class="col col-xl-4 col-sm-6 col-12">
+            <label>{{$t('ExperimentList.filter-year')}}:</label>
+            <opensilex-StringFilter
+              :filter.sync="yearFilter"
+              type="number"
+              min="1000"
+              max="9999"
+              @update="updateYearFilter()"
+              placeholder="ExperimentList.year-filter-placeholder"
+            ></opensilex-StringFilter>
+          </div>
+
+          <div class="col col-xl-4 col-sm-6 col-12">
+            <opensilex-SpeciesSelector
+              label="ExperimentList.filter-species"
+              :multiple="true"
+              :species.sync="speciesFilter"
+              @clear="updateSpeciesFilter()"
+              @select="updateSpeciesFilter()"
+              @deselect="updateSpeciesFilter()"
+            ></opensilex-SpeciesSelector>
+          </div>
+      </template>
+    </opensilex-SearchFilterField>
 
     <opensilex-PageContent>
       <template v-slot>
@@ -133,6 +170,24 @@ export default class ExperimentList extends Vue {
     return this.$store.state.credentials;
   }
 
+  private labelFilter: any = "";
+  updateLabelFilter() {
+    this.$opensilex.updateURLParameter("label", this.labelFilter, "");
+    this.refresh();
+  }
+
+  private yearFilter: any = "";
+  updateYearFilter() {
+    this.$opensilex.updateURLParameter("year", this.yearFilter, "");
+    this.refresh();
+  }
+
+  private speciesFilter: any = [];
+  updateSpeciesFilter() {
+    this.$opensilex.updateURLParameter("species", this.speciesFilter);
+    this.refresh();
+  }
+
   speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
 
   @Ref("tableRef") readonly tableRef!: any;
@@ -142,13 +197,20 @@ export default class ExperimentList extends Vue {
   }
 
   searchExperiments(options) {
+    let startDateFilter: string = undefined;
+    let endDateFilter: string = undefined;
+    if (this.yearFilter) {
+      startDateFilter = this.yearFilter.toString() + "-01-01";
+      endDateFilter = this.yearFilter.toString() + "-12-31";
+    }
+
     return this.$opensilex
       .getService("opensilex.ExperimentsService")
       .searchExperiments(
-        undefined, // startDate
-        undefined, // endDate
-        undefined, // label
-        undefined, // species
+        startDateFilter, // startDate
+        endDateFilter, // endDate
+        this.labelFilter, // label
+        this.speciesFilter, // species
         undefined, // projects
         undefined, // isPublic
         undefined, // isEnded
@@ -174,6 +236,19 @@ export default class ExperimentList extends Vue {
   ];
 
   created() {
+    let query: any = this.$route.query;
+    if (query.label) {
+      this.labelFilter = decodeURI(query.label);
+    }
+    if (query.year) {
+      this.yearFilter = decodeURI(query.year);
+    }
+    if (query.species && Array.isArray(query.species)) {
+      for (let i in query.species) {
+        this.speciesFilter.push(decodeURI(query.species[i]));
+      }
+    }
+
     let service: SpeciesService = this.$opensilex.getService(
       "opensilex.SpeciesService"
     );
@@ -244,13 +319,12 @@ export default class ExperimentList extends Vue {
   ];
 
   showEditForm(uri: string) {
-     this.$opensilex
+    this.$opensilex
       .getService("opensilex.ExperimentsService")
       .getExperiment(uri)
-      .then((http) => {
+      .then(http => {
         this.experimentForm.showEditForm(http.response.result);
-      })
-    
+      });
   }
 
   deleteExperiment(uri: string) {
@@ -268,3 +342,21 @@ export default class ExperimentList extends Vue {
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+en:
+  ExperimentList:
+    filter-label: Search by name
+    label-filter-placeholder: Enter a name
+    filter-year: Search by year
+    year-filter-placeholder: Enter a year
+    filter-species: Search by species
+
+fr:
+  ExperimentList:
+    filter-label: Filtrer par nom
+    label-filter-placeholder: Saisir un nom
+    filter-year: Filtrer par année
+    year-filter-placeholder: Saisir une année
+    filter-species: Filtrer par espèces
+</i18n>

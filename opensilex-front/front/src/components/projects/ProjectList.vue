@@ -1,43 +1,36 @@
 <template>
   <div>
-    <div class="card-vertical-group">
-      <div class="card">
-        <div class="card-header">
-          <h3 class="mr-3">
-            <i class="ik ik-search"></i>
-            {{$t('component.project.filter-description')}}
-          </h3>
+    <opensilex-SearchFilterField :withButton="false">
+      <template v-slot:filters>
+        <div class="col col-xl-4 col-sm-6 col-12">
+          <label>{{$t('component.project.filter-label')}}:</label>
+          <opensilex-StringFilter
+            :filter.sync="nameFilter"
+            @update="refresh()"
+            placeholder="component.project.filter-label-placeholder"
+          ></opensilex-StringFilter>
         </div>
-        <div class="card-body row">
-          <div class="col col-xl-4 col-sm-6 col-12">
-            <label>{{$t('component.project.filter-year')}}:</label>
-            <opensilex-StringFilter
-              :filter.sync="yearFilter"
-              @update="refresh()"
-              placeholder="component.project.filter-year-placeholder"
-            ></opensilex-StringFilter>
-          </div>
 
-          <div class="col col-xl-4 col-sm-6 col-12">
-            <label>{{$t('component.project.filter-label')}}:</label>
-            <opensilex-StringFilter
-              :filter.sync="nameFilter"
-              @update="refresh()"
-              placeholder="component.project.filter-label-placeholder"
-            ></opensilex-StringFilter>
-          </div>
-
-          <div class="col col-xl-4 col-sm-6 col-12">
-            <label>{{$t('component.project.filter-financial')}}</label>
-            <opensilex-StringFilter
-              :filter.sync="financialFilter"
-              @update="refresh()"
-              placeholder="component.project.filter-financial-placeholder"
-            ></opensilex-StringFilter>
-          </div>
+        <div class="col col-xl-4 col-sm-6 col-12">
+          <label>{{$t('component.project.filter-year')}}:</label>
+          <opensilex-StringFilter
+            :filter.sync="yearFilter"
+            @update="refresh()"
+            type="number"
+            placeholder="component.project.filter-year-placeholder"
+          ></opensilex-StringFilter>
         </div>
-      </div>
-    </div>
+
+        <div class="col col-xl-4 col-sm-6 col-12">
+          <label>{{$t('component.project.filter-financial')}}:</label>
+          <opensilex-StringFilter
+            :filter.sync="financialFilter"
+            @update="refresh()"
+            placeholder="component.project.filter-financial-placeholder"
+          ></opensilex-StringFilter>
+        </div>
+      </template>
+    </opensilex-SearchFilterField>
     <opensilex-TableAsyncView
       ref="tableRef"
       :searchMethod="loadData"
@@ -66,7 +59,7 @@
           ></opensilex-EditButton>
 
           <opensilex-DeleteButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_DELETE_ID)"
+            v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_DELETE_ID)"
             @click="deleteUser(data.item.uri)"
             label="component.project.delete"
             :small="true"

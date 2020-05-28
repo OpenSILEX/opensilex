@@ -252,6 +252,7 @@ export default class SelectForm extends Vue {
     if (this.multiple) {
       if (values.length == 0) {
         this.selection.splice(0, this.selection.length);
+        this.$emit("clear");
       }
     } else if (!values) {
       this.selection = null;

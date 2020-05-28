@@ -6,13 +6,9 @@
       description="UserView.description"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions>
+    <opensilex-PageActions v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)">
       <template v-slot>
-        <opensilex-CreateButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
-          @click="userForm.showCreateForm()"
-          label="UserView.create"
-        ></opensilex-CreateButton>
+        <opensilex-CreateButton @click="userForm.showCreateForm()" label="UserView.create"></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
 

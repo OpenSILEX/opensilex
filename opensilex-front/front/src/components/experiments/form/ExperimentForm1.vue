@@ -48,16 +48,11 @@
     ></opensilex-InputForm>
 
     <!-- Species -->
-    <opensilex-SelectForm
-      label="component.experiment.species"
-      helpMessage="component.experiment.species-help"
-      placeholder="component.experiment.form.placeholder.species"
+    <opensilex-SpeciesSelector
       :required="true"
       :multiple="true"
-      :selected.sync="experiment.species"
-      :optionsLoadingMethod="loadSpecies"
-      :conversionMethod="speciesToSelectNode"
-    ></opensilex-SelectForm>
+      :species.sync="experiment.species"
+    ></opensilex-SpeciesSelector>
 
     <!-- Objective -->
     <opensilex-TextAreaForm
@@ -106,23 +101,6 @@ export default class ExperimentForm1 extends Vue {
 
   @PropSync("form")
   experiment: ExperimentCreationDTO;
-
-  loadSpecies() {
-    return this.$opensilex
-      .getService("opensilex.SpeciesService")
-      .getAllSpecies()
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) =>
-          http.response.result
-      );
-  }
-
-  speciesToSelectNode(dto: SpeciesDTO) {
-    return {
-      id: dto.uri,
-      label: dto.label
-    };
-  }
 
   reset() {
     this.uriGenerated = true;

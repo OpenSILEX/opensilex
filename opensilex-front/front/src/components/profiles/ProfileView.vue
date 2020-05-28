@@ -6,13 +6,11 @@
       description="component.profile.description"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions>
+    <opensilex-PageActions
+      v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
+    >
       <template v-slot>
-        <opensilex-CreateButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
-          @click="profileForm.showCreateForm()"
-          label="component.profile.add"
-        ></opensilex-CreateButton>
+        <opensilex-CreateButton @click="profileForm.showCreateForm()" label="component.profile.add"></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
 

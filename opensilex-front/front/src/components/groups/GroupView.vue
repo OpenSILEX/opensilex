@@ -6,13 +6,9 @@
       description="component.group.description"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions>
+    <opensilex-PageActions v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)">
       <template v-slot>
-        <opensilex-CreateButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
-          @click="groupForm.showCreateForm()"
-          label="component.group.add"
-        ></opensilex-CreateButton>
+        <opensilex-CreateButton @click="groupForm.showCreateForm()" label="component.group.add"></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
 

@@ -416,6 +416,13 @@
             <version>${hibernate.validator.version}</version>
         </dependency>
         
+        <!-- GeoJSON jackson support --> 
+        <dependency>
+            <groupId>de.grundid.opendatalab</groupId>
+            <artifactId>geojson-jackson</artifactId>
+            <version>1.14</version>
+        </dependency>
+        
         <!--Servlet API v4 provided by Tomcat--> 
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -436,7 +443,22 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+        <!--               <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>2.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-jaxrs2</artifactId>
+            <version>2.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-jaxrs2-servlet-initializer-v2</artifactId>
+            <version>2.1.2</version>
+        </dependency>
+        -->
         <!-- Cache library --> 
         <dependency>
             <groupId>org.apache.commons</groupId>

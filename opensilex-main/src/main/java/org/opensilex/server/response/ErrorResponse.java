@@ -59,6 +59,16 @@ public class ErrorResponse extends JsonResponse<ErrorDTO> {
         );
     }
 
+    public ErrorResponse(Status status, String title, Throwable exception) {
+        super(status);
+        metadata = new MetadataDTO(new PaginationDTO());
+        result = new ErrorDTO(
+                title,
+                exception.getMessage(),
+                exception
+        );
+    }
+
     /**
      * Constructor.
      *

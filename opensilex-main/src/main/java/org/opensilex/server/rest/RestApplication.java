@@ -144,7 +144,9 @@ public class RestApplication extends ResourceConfig {
         getAPIExtensionModules().forEach((APIExtension api) -> {
             packageList.addAll(api.apiPackages());
         });
-
+        
+        packageList.add("org.opensilex.server.rest.serialization");
+        
         // Init swagger UI
         BeanConfig beanConfig = new BeanConfig();
 
@@ -158,7 +160,7 @@ public class RestApplication extends ResourceConfig {
         beanConfig.setExpandSuperTypes(false);
         beanConfig.setScan(true);
     }
-
+    
     /**
      * Return list of modules implementing APIExtension.
      *

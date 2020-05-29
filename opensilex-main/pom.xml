@@ -230,6 +230,9 @@
                     <includeOnlyProperties>
                         <includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
                         <includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
+                        <includeOnlyProperty>^git.commit.message.full$</includeOnlyProperty>
+                        <includeOnlyProperty>^git.commit.user.(name|email)$</includeOnlyProperty>
+                        
                     </includeOnlyProperties>
                     <commitIdGenerationMode>full</commitIdGenerationMode>
                 </configuration>

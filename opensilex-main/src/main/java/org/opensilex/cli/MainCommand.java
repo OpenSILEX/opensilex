@@ -168,11 +168,23 @@ public class MainCommand extends AbstractOpenSilexCommand implements IVersionPro
 
             String gitCommitAbbrev = gitProperties.getProperty("git.commit.id.abbrev", null);
             String gitCommitFull = gitProperties.getProperty("git.commit.id.full", null);
+            String gitCommitMessage = gitProperties.getProperty("git.commit.message.full", null);
+            String gitCommitUsername = gitProperties.getProperty("git.commit.user.name", null);
+            String gitCommitUsermail = gitProperties.getProperty("git.commit.user.email", null);
+            if (gitCommitUsername != null && gitCommitUsermail != null) {
+                gitCommitUsername = gitCommitUsername + " <" + gitCommitUsermail + ">";
+            }
 
             if (gitCommitAbbrev == null || gitCommitFull == null) {
                 System.out.println("No git commit information found");
             } else {
                 System.out.println("Git commit id: " + gitCommitAbbrev + " (" + gitCommitFull + ")");
+                if (gitCommitMessage != null) {
+                    System.out.println("Git commit message: " + gitCommitMessage);
+                }
+                if (gitCommitUsername != null) {
+                    System.out.println("Git commit user: " + gitCommitUsername);
+                }
             }
         } catch (Exception ex) {
             System.out.println("No git commit information found");

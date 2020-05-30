@@ -160,7 +160,7 @@ public class RestApplication extends ResourceConfig {
         beanConfig.setExpandSuperTypes(false);
         beanConfig.setScan(true);
     }
-    
+
     /**
      * Return list of modules implementing APIExtension.
      *

@@ -1,5 +1,6 @@
 package org.opensilex.server.rest.serialization;
 
+import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.jaxrs.Reader;
 import io.swagger.jaxrs.config.ReaderListener;
 import io.swagger.models.ModelImpl;
@@ -27,6 +28,7 @@ import org.geojson.LngLatAlt;
 import org.geojson.Point;
 
 @Provider
+@SwaggerDefinition
 public class GeoJsonConverter implements MessageBodyReader<GeoJsonObject>, MessageBodyWriter<GeoJsonObject>, ReaderListener {
 
     @Override

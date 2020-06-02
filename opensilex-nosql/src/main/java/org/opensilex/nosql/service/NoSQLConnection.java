@@ -7,10 +7,8 @@
 package org.opensilex.nosql.service;
 
 import java.util.Collection;
-import java.util.Map;
 import javax.jdo.JDOQLTypedQuery;
 import javax.jdo.PersistenceManager;
-import javax.jdo.Query;
 import javax.naming.NamingException;
 import org.opensilex.service.Service;
 

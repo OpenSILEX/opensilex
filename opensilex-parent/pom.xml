@@ -71,13 +71,13 @@
         <data.nucleus.api.jdo.version>5.2.3</data.nucleus.api.jdo.version>
         <data.nucleus.jdo.version>3.2.0-m13</data.nucleus.jdo.version>
         <datanucleus-jdo-query.version>5.0.9</datanucleus-jdo-query.version>
-        <data.nucleus.jta.version>5.10.4.Final</data.nucleus.jta.version>
+        <data.nucleus.jta.version>5.10.5.Final</data.nucleus.jta.version>
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
         <data.nucleus.accessplatform.mongodb.version>5.2.3</data.nucleus.accessplatform.mongodb.version>
         <data.nucleus.maven.plugin.version>5.2.1</data.nucleus.maven.plugin.version>
-        <bytebuddy.version>1.10.9</bytebuddy.version>
-        <java.jwt.version>3.10.2</java.jwt.version>
-        <picocli.version>4.2.0</picocli.version>
+        <bytebuddy.version>1.10.10</bytebuddy.version>
+        <java.jwt.version>3.10.3</java.jwt.version>
+        <picocli.version>4.3.2</picocli.version>
         <bcript.version>0.9.0</bcript.version>
         <commons.io.version>2.7</commons.io.version>
         <logback.version>1.2.3</logback.version>
@@ -1015,6 +1015,7 @@
                             <processors>
                                 <processor>org.datanucleus.jdo.query.JDOQueryProcessor</processor>
                             </processors>
+                            <outputDirectory>target/generated-test-sources/apt-test</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -1256,9 +1257,9 @@
                         <goals>
                             <goal>enhance</goal>
                         </goals>
-                            <configuration>
-                                <targetDirectory>${project.build.outputDirectory}</targetDirectory>
-                            </configuration>
+                        <configuration>
+                            <targetDirectory>${project.build.outputDirectory}</targetDirectory>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>process-test-classes</id>

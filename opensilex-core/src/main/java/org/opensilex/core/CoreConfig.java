@@ -14,8 +14,8 @@ import org.opensilex.config.ConfigDescription;
 public interface CoreConfig {
 
     @ConfigDescription(
-        value = "Activate Logs",
-        defaultBoolean = false
+            value = "Activate access logs by user",
+            defaultBoolean = false
     )
     public Boolean enableLogs();
 

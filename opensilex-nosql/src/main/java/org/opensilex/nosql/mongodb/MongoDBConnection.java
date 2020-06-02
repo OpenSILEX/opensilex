@@ -23,12 +23,12 @@ import org.slf4j.LoggerFactory;
  */
 @ServiceDefaultDefinition(
         configClass = MongoDBConfig.class,
-        configID = "mongodb"
+        configID = ""
 )
 public class MongoDBConnection extends AbstractDataNucleusConnection implements NoSQLConnection {
 
     public final static Logger LOGGER = LoggerFactory.getLogger(MongoDBConnection.class);
-    
+
     private final MongoDBConfig config;
 
     public MongoDBConnection(MongoDBConfig config) {

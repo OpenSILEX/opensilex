@@ -31,7 +31,6 @@ import org.opensilex.service.ServiceDefaultDefinition;
 )
 public class NoSQLService extends BaseService implements NoSQLConnection, Service {
 
-    public final static String DEFAULT_NOSQL_SERVICE = "sparql";
     private final NoSQLConnection connection;
 
     /**

@@ -5,7 +5,8 @@
  */
 package org.opensilex.core.logs.dal;
 
-import java.util.Date;
+import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.Map;
 import javax.jdo.annotations.PersistenceCapable;
 
@@ -16,7 +17,7 @@ import javax.jdo.annotations.PersistenceCapable;
 @PersistenceCapable(table = "logs")
 public class LogModel {
 
-    String userUri;
+    URI userUri;
 
     String request;
 
@@ -24,18 +25,16 @@ public class LogModel {
 
     Map<String, Object> queryParmeters;
     
-    Date date;
+    LocalDateTime datetime;
 
-    public Date getDate() {
-        return date;
+    public LocalDateTime getDatetime() {
+        return datetime;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setDatetime(LocalDateTime datetime) {
+        this.datetime = datetime;
     }
     
-    
-
     public Map<String, Object> getQueryParmeters() {
         return queryParmeters;
     }
@@ -44,11 +43,11 @@ public class LogModel {
         this.queryParmeters = queryParmeters;
     }
 
-    public String getUserUri() {
+    public URI getUserUri() {
         return userUri;
     }
 
-    public void setUserUri(String userUri) {
+    public void setUserUri(URI userUri) {
         this.userUri = userUri;
     }
 

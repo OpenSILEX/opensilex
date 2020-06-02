@@ -31,9 +31,30 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
     private final static Logger LOGGER = LoggerFactory.getLogger(CoreModule.class);
 
     @Override
+    public Class<?> getConfigClass() {
+        return CoreConfig.class;
+    }
+
+    @Override
+    public String getConfigId() {
+        return "core";
+    }
+
+    @Override
     public void login(UserModel user, JWTCreator.Builder tokenBuilder) throws Exception {
 
         // TODO add experiments, projects, infrastructures related to the user as token claims...
+    }
+
+    @Override
+    public List<String> getPackagesToScan() {
+        List<String> list = APIExtension.super.getPackagesToScan();
+
+        if (getConfig(CoreConfig.class).enableLogs()) {
+            list.add("org.opensilex.core.logs.filter");
+        }
+
+        return list;
     }
 
     @Override
@@ -71,5 +92,5 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
         SPARQLService.addPrefix(Oeso.PREFIX, Oeso.NS);
         URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), true);
     }
-           
+
 }

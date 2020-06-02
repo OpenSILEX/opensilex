@@ -59,6 +59,7 @@
         <tomcat.version>9.0.35</tomcat.version>
         <hibernate.validator.version>6.1.5.Final</hibernate.validator.version>
         <jackson.version>2.11.0</jackson.version>
+        <geojson.jackson.version>1.14</geojson.jackson.version>
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
         <swagger.jersey2.jaxrs.version>1.6.1</swagger.jersey2.jaxrs.version>
         <commons.jcs.cache.version>2.2.1</commons.jcs.cache.version>
@@ -68,14 +69,17 @@
         <jena.query.builder.version>3.15.0</jena.query.builder.version>
         <data.nucleus.version>5.2.2</data.nucleus.version>
         <data.nucleus.api.jdo.version>5.2.3</data.nucleus.api.jdo.version>
-        <data.nucleus.jdo.version>3.2.0-m12</data.nucleus.jdo.version>
+        <data.nucleus.jdo.version>3.2.0-m13</data.nucleus.jdo.version>
+        <datanucleus-jdo-query.version>5.0.9</datanucleus-jdo-query.version>
         <data.nucleus.jta.version>5.10.5.Final</data.nucleus.jta.version>
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
+        <data.nucleus.accessplatform.mongodb.version>5.2.3</data.nucleus.accessplatform.mongodb.version>
+        <data.nucleus.maven.plugin.version>5.2.1</data.nucleus.maven.plugin.version>
         <bytebuddy.version>1.10.10</bytebuddy.version>
         <java.jwt.version>3.10.3</java.jwt.version>
         <picocli.version>4.3.2</picocli.version>
         <bcript.version>0.9.0</bcript.version>
-        <commons.io.version>2.6</commons.io.version>
+        <commons.io.version>2.7</commons.io.version>
         <logback.version>1.2.3</logback.version>
         <janino.version>3.1.2</janino.version>
         <slf4j.api.version>1.7.30</slf4j.api.version>
@@ -101,6 +105,7 @@
         <maven.deploy.plugin.version>3.0.0-M1</maven.deploy.plugin.version>
         <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+        <maven.processor.plugin.version>4.0-rc1</maven.processor.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M2</maven.enforcer.plugin.version>
         <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
         <maven.surefire.plugin.version>3.0.0-M3</maven.surefire.plugin.version>
@@ -126,7 +131,7 @@
         <maven.surefire.report.plugin.version>3.0.0-M3</maven.surefire.report.plugin.version>
         <maven.jxr.plugin.version>3.0.0</maven.jxr.plugin.version>
         <spotbugs.maven.plugin.version>3.1.12.2</spotbugs.maven.plugin.version>
-        <logstash-logback-encoder>6.3</logstash-logback-encoder>
+        <logstash-logback-encoder>6.4</logstash-logback-encoder>
     </properties>
 
     <dependencyManagement>
@@ -275,13 +280,26 @@
             <artifactId>datanucleus-api-jdo</artifactId>
             <version>${data.nucleus.api.jdo.version}</version>
         </dependency>
-        
+        <!-- https://mvnrepository.com/artifact/org.datanucleus/datanucleus-jdo-query -->
+        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-jdo-query</artifactId>
+            <version>${datanucleus-jdo-query.version}</version>
+        </dependency>
         <!--DataNucleus - MongoDB driver --> 
         <dependency>
             <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-mongodb</artifactId>
             <version>${data.nucleus.mongodb.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.datanucleus/datanucleus-accessplatform-jdo-mongodb -->
+        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-accessplatform-jdo-mongodb</artifactId>
+            <version>${data.nucleus.accessplatform.mongodb.version}</version>
+            <type>pom</type>
+        </dependency>
+
         
         <!--DataNucleus - JTA Transaction--> 
         <dependency>
@@ -420,7 +438,7 @@
         <dependency>
             <groupId>de.grundid.opendatalab</groupId>
             <artifactId>geojson-jackson</artifactId>
-            <version>1.14</version>
+            <version>${geojson.jackson.version}</version>
         </dependency>
         
         <!--Servlet API v4 provided by Tomcat--> 
@@ -661,6 +679,7 @@
                                 <goal>java</goal>
                             </goals>
                             <configuration>
+                                <cleanupDaemonThreads>false</cleanupDaemonThreads>
                                 <mainClass>org.opensilex.utils.SwaggerAPIGenerator</mainClass>
                                 <arguments>
                                     <argument>${project.basedir}/src/main/java/</argument>
@@ -936,6 +955,11 @@
                         </checkstyleRules>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>pl.project13.maven</groupId>
+                    <artifactId>git-commit-id-plugin</artifactId>
+                    <version>4.0.0</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         
@@ -961,6 +985,40 @@
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
+            </plugin>
+            
+            <!-- Run annotation processors on src/main/java sources -->
+            <plugin>
+                <groupId>org.bsc.maven</groupId>
+                <artifactId>maven-processor-plugin</artifactId>
+                <version>${maven.processor.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>process</id>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <processors>
+                                <processor>org.datanucleus.jdo.query.JDOQueryProcessor</processor>
+                            </processors>
+                        </configuration>
+                    </execution> 
+                    <execution>
+                        <id>process-test</id>
+                        <goals>
+                            <goal>process-test</goal>
+                        </goals>
+                        <phase>generate-test-sources</phase>
+                        <configuration>
+                            <processors>
+                                <processor>org.datanucleus.jdo.query.JDOQueryProcessor</processor>
+                            </processors>
+                            <outputDirectory>target/generated-test-sources/apt-test</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <!--check minimal maven version--> 
             <plugin>
@@ -1143,6 +1201,41 @@
                                     </includes>
                                 </fileset>
                             </filesets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--datanucleus-maven-plugin-enhance--> 
+            <plugin>
+                <groupId>org.datanucleus</groupId>
+                <artifactId>datanucleus-maven-plugin</artifactId>
+                <version>${data.nucleus.maven.plugin.version}</version>
+                <configuration>
+                    <api>JDO</api>
+                    <!--<fork>false</fork>-->
+                    <log4jConfiguration>${project.basedir}/../opensilex-main/src/main/resources/log4j.properties</log4jConfiguration>
+                    <verbose>false</verbose>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>enhance</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>enhance</goal>
+                        </goals>
+                        <configuration>
+                            <targetDirectory>${project.build.outputDirectory}</targetDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>process-test-classes</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>enhance</goal>
+                        </goals>
+                        <configuration>
+                            <targetDirectory>${project.build.testOutputDirectory}</targetDirectory>
+                            <metadataDirectory>${project.build.testOutputDirectory}</metadataDirectory>
                         </configuration>
                     </execution>
                 </executions>

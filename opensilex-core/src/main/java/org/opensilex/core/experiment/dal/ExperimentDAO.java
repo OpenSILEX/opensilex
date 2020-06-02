@@ -36,12 +36,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.user.dal.UserModel;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
  * @author Vincent MIGOT

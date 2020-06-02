@@ -29,13 +29,8 @@ import java.time.LocalDate;
 import java.util.*;
 import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 
-import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.sparql.syntax.ElementFilter;
-import org.apache.jena.sparql.syntax.ElementGroup;
-import org.apache.jena.sparql.syntax.ElementOptional;
+import org.apache.jena.arq.querybuilder.Converters;
+import org.apache.jena.sparql.ARQInternalErrorException;
 
 /**
  * @author Vincent MIGOT
@@ -187,7 +182,7 @@ public class SPARQLQueryHelper {
 
     public static Expr langFilter(String varName, String lang) {
         return exprFactory.or(exprFactory.langMatches(exprFactory.lang(NodeFactory.createVariable(varName)), lang),
-                            exprFactory.langMatches(exprFactory.lang(NodeFactory.createVariable(varName)), ""));
+                exprFactory.langMatches(exprFactory.lang(NodeFactory.createVariable(varName)), ""));
     }
 
     /**
@@ -347,5 +342,9 @@ public class SPARQLQueryHelper {
         Expr noEndDateExpr = exprFactory.not(exprFactory.bound(endVar));
         Expr withoutEndDateExpr = exprFactory.and(endDateExpr, noEndDateExpr);
         return exprFactory.or(withEndDateExpr, withoutEndDateExpr);
+    }
+
+    public static Var makeVar(Object o) {
+        return Converters.makeVar(o);
     }
 }

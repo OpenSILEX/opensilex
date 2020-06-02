@@ -30,7 +30,8 @@ public interface MongoDBConfig extends ServiceConfig {
     public int port();
 
     @ConfigDescription(
-            value = "MongoDB database"
+            value = "MongoDB database",
+            defaultString = "opensilex"
     )
     public String database();
 

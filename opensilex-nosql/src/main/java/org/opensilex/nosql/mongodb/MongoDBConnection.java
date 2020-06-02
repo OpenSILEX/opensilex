@@ -6,12 +6,11 @@
 //******************************************************************************
 package org.opensilex.nosql.mongodb;
 
-import java.util.HashMap;
-import org.opensilex.OpenSilex;
 import org.opensilex.nosql.datanucleus.AbstractDataNucleusConnection;
-import org.opensilex.service.Service;
-import org.opensilex.service.ServiceConstructorArguments;
+import org.opensilex.nosql.service.NoSQLConnection;
 import org.opensilex.service.ServiceDefaultDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MongoDB connection for DataNucleus.
@@ -23,54 +22,25 @@ import org.opensilex.service.ServiceDefaultDefinition;
  * @author Vincent Migot
  */
 @ServiceDefaultDefinition(
-        configClass = MongoDBConfig.class
+        configClass = MongoDBConfig.class,
+        configID = ""
 )
-public class MongoDBConnection extends AbstractDataNucleusConnection implements Service {
+public class MongoDBConnection extends AbstractDataNucleusConnection implements NoSQLConnection {
 
-    /**
-     * Constructor for MongoDB connection
-     * <pre>
-     * TODO setup correct configuration
-     * </pre>
-     *
-     * @param config MongoDB configuration
-     */
+    public final static Logger LOGGER = LoggerFactory.getLogger(MongoDBConnection.class);
+
+    private final MongoDBConfig config;
+
     public MongoDBConnection(MongoDBConfig config) {
-        // TODO setup correct configuration
-        super(new HashMap<>());
+        this.config = config;
     }
 
     @Override
-    public void startup() {
-        // TODO implement mongodb startup mechanism
+    public void setup() throws Exception {
+        super.setup();
+        this.PMF_PROPERTIES.setProperty("javax.jdo.option.ConnectionURL", "mongodb:" + config.host() + ":" + config.port() + "/" + config.database());
+        this.PMF_PROPERTIES.setProperty("javax.jdo.option.Mapping", "mongodb");
+        this.PMF_PROPERTIES.setProperty("datanucleus.schema.autoCreateAll", "true");
     }
 
-    @Override
-    public void shutdown() {
-        // TODO implement mongodb shutdown mechanism
-    }
-
-    private ServiceConstructorArguments constructorArgs;
-
-    @Override
-    public void setServiceConstructorArguments(ServiceConstructorArguments args) {
-        this.constructorArgs = args;
-    }
-
-    @Override
-    public ServiceConstructorArguments getServiceConstructorArguments() {
-        return this.constructorArgs;
-    }
-
-    private OpenSilex opensilex;
-
-    @Override
-    public void setOpenSilex(OpenSilex opensilex) {
-        this.opensilex = opensilex;
-    }
-
-    @Override
-    public OpenSilex getOpenSilex() {
-        return this.opensilex;
-    }
 }

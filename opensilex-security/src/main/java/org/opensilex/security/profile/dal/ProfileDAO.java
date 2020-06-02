@@ -7,7 +7,6 @@ package org.opensilex.security.profile.dal;
 
 import java.net.URI;
 import java.util.List;
-import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.sparql.core.Var;
@@ -18,6 +17,7 @@ import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;

@@ -20,13 +20,13 @@ import org.opensilex.server.rest.validation.ValidURI;
  * @author Arnaud Charleroy
  */
 public class FactorLevelCreationDTO {
-     
+
     @ValidURI
     private URI uri;
 
     @Required
     private String name;
- 
+
     private String comment;
 
     public URI getUri() {
@@ -57,7 +57,7 @@ public class FactorLevelCreationDTO {
         FactorLevelModel model = new FactorLevelModel();
         model.setUri(getUri());
         model.setName(getName());
-        model.setComment(getComment()); 
+        model.setComment(getComment());
         return model;
     }
 }

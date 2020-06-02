@@ -12,19 +12,10 @@ import java.util.ArrayList;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.util.List;
-import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.vocabulary.RDF;
-import org.opensilex.core.germplasm.api.GermplasmSearchDTO;
-import org.opensilex.core.germplasm.dal.GermplasmDAO;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
-import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 
@@ -45,10 +36,6 @@ public class SpeciesDAO {
      * @return the list of all {@link SpeciesModel} in the given lang
      */
     public List<SpeciesModel> getAll(String lang) throws Exception {
-//        if(StringUtils.isEmpty(lang)){
-//            Locale langLocale = new Locale.Builder().setLanguageTag(OpenSilex.DEFAULT_LANGUAGE).build();
-//            lang = langLocale.getLanguage();
-//        }
 
         List<OrderBy>  orderByList = new ArrayList();
         orderByList.add(new OrderBy("label=asc"));  

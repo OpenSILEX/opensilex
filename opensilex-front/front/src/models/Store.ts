@@ -148,7 +148,7 @@ let store = new Vuex.Store({
         this.commit(method);
         let opensilex = getOpenSilexPlugin();
         let message = opensilex.$i18n.t("component.common.errors.unauthorized-error");
-        opensilex.showErrorToast(Date.now().toLocaleString() + " - " + message);
+        opensilex.showErrorToast("" + message);
       }, exipreAfter);
 
       let inactivityRenewDelay = user.getInactivityRenewDelayMs();

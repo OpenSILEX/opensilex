@@ -6,7 +6,11 @@
 //******************************************************************************
 package org.opensilex.nosql.service;
 
-import org.opensilex.nosql.exceptions.NoSQLTransactionException;
+import java.util.Collection;
+import javax.jdo.JDOQLTypedQuery;
+import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
+import javax.naming.NamingException;
 import org.opensilex.nosql.mongodb.MongoDBConnection;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
@@ -27,6 +31,8 @@ import org.opensilex.service.ServiceDefaultDefinition;
 )
 public class NoSQLService extends BaseService implements NoSQLConnection, Service {
 
+    private final NoSQLConnection connection;
+
     /**
      * Constructor with NoSQLConnection to allow multiple configurable
      * implementations
@@ -35,23 +41,6 @@ public class NoSQLService extends BaseService implements NoSQLConnection, Servic
      */
     public NoSQLService(NoSQLConnection connection) {
         this.connection = connection;
-    }
-
-    private final NoSQLConnection connection;
-
-    @Override
-    public void startTransaction() throws NoSQLTransactionException {
-        connection.startTransaction();
-    }
-
-    @Override
-    public void commitTransaction() throws NoSQLTransactionException {
-        connection.commitTransaction();
-    }
-
-    @Override
-    public void rollbackTransaction(Exception ex) throws Exception {
-        connection.rollbackTransaction(ex);
     }
 
     @Override
@@ -69,4 +58,52 @@ public class NoSQLService extends BaseService implements NoSQLConnection, Servic
     public void shutdown() throws Exception {
         connection.shutdown();
     }
+
+ 
+
+    @Override
+    public void delete(Class cls, Object key) throws NamingException {
+        this.connection.delete(cls, key);
+    }
+
+    @Override
+    public <T> T findById(Class cls, Object key) throws NamingException {
+        return this.connection.findById(cls, key);
+    } 
+
+    @Override
+    public Object update(Object instance) throws NamingException {
+        return this.connection.update(instance);
+    }
+
+    @Override
+    public void createAll(Collection instances) throws NamingException {
+        this.connection.createAll(instances);
+    }
+    
+    @Override
+    public void deleteAll(Collection instances) throws NamingException {
+        this.connection.deleteAll(instances);
+    }
+    
+    @Override
+    public Long deleteAll(JDOQLTypedQuery query) throws NamingException {
+        return this.connection.deleteAll(query);
+    }
+    
+    @Override
+    public PersistenceManager getPersistentConnectionManager() throws NamingException {
+        return this.connection.getPersistentConnectionManager();
+    }
+
+    @Override
+    public Long count(JDOQLTypedQuery query) throws NamingException {
+        return this.connection.count(query);
+    }
+
+    @Override
+    public Object create(Object instance) throws NamingException {
+        return this.connection.create(instance);
+    }
+
 }

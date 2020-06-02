@@ -53,7 +53,6 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Consumer;
-import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
@@ -64,6 +63,7 @@ import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.utils.ClassUtils;
 
 /**

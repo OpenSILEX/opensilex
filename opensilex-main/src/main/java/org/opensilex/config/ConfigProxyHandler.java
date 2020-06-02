@@ -599,7 +599,7 @@ public class ConfigProxyHandler implements InvocationHandler {
                 }
 
                 try {
-                    Object config = getInterface(configClass, '/' + configID, value);
+                    Object config = getInterface(configClass, configID, value);
                     instance = implementation.getConstructor(configClass).newInstance(config);
                     instance.setServiceConstructorArguments(new ServiceConstructorArguments(implementation, configClass, configID, config));
                 } catch (Exception ex) {

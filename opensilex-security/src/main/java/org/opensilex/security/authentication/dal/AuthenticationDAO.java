@@ -12,7 +12,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
@@ -22,6 +21,7 @@ import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

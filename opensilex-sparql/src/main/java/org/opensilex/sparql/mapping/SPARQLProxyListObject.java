@@ -7,13 +7,13 @@ package org.opensilex.sparql.mapping;
 
 import java.net.URI;
 import java.util.List;
-import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
  *

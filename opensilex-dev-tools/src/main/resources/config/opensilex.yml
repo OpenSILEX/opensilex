@@ -19,3 +19,6 @@ big-data:
 
 phisws:
     infrastructure: opensilex
+    
+core:
+    enableLogs: true      

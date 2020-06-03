@@ -1,14 +1,6 @@
 /*********************************
 * GLOBAL STYLE
 *********************************/
-body {
-    display: flex;
-}
-
-.wrapper {
-    flex: 1;
-}
-
 .bg-phis-green {
     background-color: #00A38D
 }
@@ -43,10 +35,43 @@ body {
     margin-bottom: 2px;
 }
 
-footer {
-    display: none;
+.required {
+    color: red;
 }
 
+/*************************************
+* LIST BROWSER
+*************************************/
+.list-browser {
+    margin-left: 0;
+    margin-bottom: 1em;
+    white-space: nowrap;
+}
+
+.list-browser .list-browser-control {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.list-browser .list-browser-control button {
+    display: inline-block;
+    width: auto;
+    height: 35px;
+}
+
+.list-browser .list-browser-control a {
+    display: inline-block;
+    width: auto;
+    height: 35px;
+    color: white;
+}
+
+.list-browser .list-browser-control input {
+    display: inline-block;
+    width: 80px;
+    text-align: center;
+    border: 1px #c6c6c6 solid;
+}
 
 /*************************************
 * CARDS
@@ -81,7 +106,7 @@ footer {
 .card .card-header .badge {
     margin-top: 6px;
     font-size: 1.1em;
-    margin-right: 1em;
+    margin-right: 0.3em;
 }
 
 .card .card-block .dashboard-item a {
@@ -109,6 +134,54 @@ footer {
     border-radius: 10px;
 }
 
+.card .card-block .dashboard-item .btn {
+    display: none;
+}
+
+.card .card-block .dashboard-item .btn-icon {
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+}
+
+.card .card-block .dashboard-item:hover .btn {
+    display: inline-block;
+}
+
+/*************************************
+* CARD VERTICAL GROUP
+*************************************/
+
+.card-vertical-group .card {
+    margin-bottom: 0;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
+
+.card-vertical-group .card .sub-header {
+    padding-top: 0;
+}
+
+.card-vertical-group .card .card-header .card-header-right {
+    top: 0;
+}
+
+.card-vertical-group {
+    margin-bottom: 30px;
+    -webkit-box-shadow: 0 6px 0 0 rgba(0,0,0,0.01), 0 15px 32px 0 rgba(0,0,0,0.06);
+    -moz-box-shadow: 0 6px 0 0 rgba(0,0,0,0.01),0 15px 32px 0 rgba(0,0,0,0.06);
+    box-shadow: 0 6px 0 0 rgba(0,0,0,0.01), 0 15px 32px 0 rgba(0,0,0,0.06);
+}
+
+.filter-group {
+    padding-bottom: 15px;
+}
+
+.filter-group .input-group{
+    margin-bottom: 0;
+}
+
 /*************************************
 * LINKS
 *************************************/
@@ -134,7 +207,25 @@ footer {
 }
 
 .card .card-header .card-options a.btn {
+    display: inline;
     border-radius: 0.25rem;
+    padding: 5px 10px 5px 10px;
+    vertical-align: baseline;
+    color: white;
+}
+
+.card .card-header .card-options a.btn.btn-icon {
+    display: inline-block;
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    line-height: 32px;
+}
+
+.card .card-header .card-options button.btn {
+    vertical-align: baseline;
 }
 
 .card .card-header .card-options a.btn-outline-primary {
@@ -354,3 +445,64 @@ footer {
     padding-top: 20px;
 }
 
+/*********************************
+* PROPERTIES DROPDOWN
+*********************************/
+
+.properties-dropdown .dropdown-menu {
+    width: 200px;
+    padding: 10px;
+}
+
+.properties-dropdown .properties-dropdown-header {
+    margin-bottom: 5px;
+}
+
+.properties-dropdown .properties-dropdown-header span {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.properties-dropdown .properties-dropdown-body ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.properties-dropdown .properties-dropdown-footer ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    text-align: right;
+}
+
+.properties-dropdown .properties-dropdown-footer li {
+    display: inline-block;
+}
+
+.properties-dropdown .properties-dropdown-body .custom-checkbox .custom-control-label::before {
+    position: absolute;
+    top: 0px;
+}
+
+.properties-dropdown .properties-dropdown-body .custom-checkbox .custom-control-label::after {
+    position: absolute;
+    top: 0px;
+}
+
+/*********************************
+* MODALS
+*********************************/
+
+.advancedMultiSelectorModal .modal-dialog
+{
+    max-width: 80%;
+}
+
+.advancedMultiSelectorModal .modal-body
+{
+    padding: 0;
+}
+
+.advancedMultiSelectorModal .modal-body .card .card-header {
+    border-bottom: 0;
+}

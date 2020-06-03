@@ -7,8 +7,22 @@
   >
     <template v-slot:field="field">
       <input :id="field.id" type="hidden" :value="getHiddenValue()" />
+      <b-input-group v-if="isModalSearch">
+        <treeselect
+          class="multiselect-popup"
+          :multiple="true"
+          :openOnClick="false"
+          :searchable="false"
+          valueFormat="object"
+          v-model="selection"
+          :placeholder="$t(placeholder)"
+        ></treeselect>
+        <b-input-group-append>
+          <b-button variant="primary" @click="showModal">+</b-button>
+        </b-input-group-append>
+      </b-input-group>
       <treeselect
-        v-if="optionsLoadingMethod"
+        v-else-if="optionsLoadingMethod"
         :multiple="multiple"
         :flat="multiple && flat"
         :value="selectedValues"
@@ -44,6 +58,13 @@
         :noResultsText="$t(noResultsText)"
         :searchPromptText="$t('component.common.search-prompt-text')"
       ></treeselect>
+
+      <component
+        v-if="isModalSearch"
+        :is="modalComponent"
+        ref="searchModal"
+        @onValidate="updateValues"
+      ></component>
     </template>
   </opensilex-FormField>
 </template>
@@ -81,6 +102,14 @@ export default class SelectForm extends Vue {
 
   @Prop()
   searchMethod;
+
+  @Prop({ 
+    default: false 
+  })
+  isModalSearch;
+
+  @Prop()
+  modalComponent;
 
   @Prop({
     type: Function,
@@ -327,8 +356,47 @@ export default class SelectForm extends Vue {
   setCurrentSelectedNodes(values) {
     this.selectedNodes = values;
   }
+
+  showModal() {
+    let searchModal: any = this.$refs.searchModal;
+    searchModal.show();
+  }
+
+  updateValues(selectedValues) {
+    if(this.conversionMethod && selectedValues) {
+      this.selection = selectedValues.map(item => this.conversionMethod(item));
+    } else {
+      this.selection = selectedValues;
+    }
+    // this.$forceUpdate();
+  }
 }
 </script>
 
 <style scoped lang="scss">
+
+  ::v-deep .multiselect-popup.vue-treeselect {
+    width: calc(100% - 37px);
+  }
+
+  ::v-deep .multiselect-popup .vue-treeselect__control-arrow-container {
+    display: none;
+  }
+
+  ::v-deep .multiselect-popup .vue-treeselect__menu-container {
+    display: none;
+  }
+
+  ::v-deep .multiselect-popup .vue-treeselect__control {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 5px !important;
+    width: 100%;
+    height: 35px;
+  }
+  
+  ::v-deep .vue-treeselect__multi-value {
+    margin-bottom: 4px;
+  }
+  
 </style>

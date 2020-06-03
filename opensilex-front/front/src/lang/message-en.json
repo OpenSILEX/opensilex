@@ -50,6 +50,7 @@
             "yes": "yes",
             "no": "no",
             "ok": "OK",
+            "close": "Close",
             "delete": "delete",
             "cancel": "cancel",
             "name": "Name",
@@ -70,6 +71,8 @@
             "uri-copy": "URI copied to clipboard",
             "search-prompt-text": "Type to search...",
             "not-specified" :"Not specified",
+            "validate": "Validate",
+            "validateSelection": "Validate the selection",
             "errors": {
                 "error-title": "Error",
                 "constraint-error": "A data validation error occured, please check the validity of the submited fields.",
@@ -257,6 +260,7 @@
             }
         },
         "project": {
+            "selectedLabel":"Selected Project(s)",
             "uri": "Project URI",
             "filter-description":"Project search",
             "search-description":"Manage and configure projects ",
@@ -353,6 +357,9 @@
             },
             "search": {
                 "description": "Manage and configure experiments",
+                "label": "Search Experiments",
+                "selectLabel": "Select Experiments",
+                "selectedLabel": "Selected Experiment(s)",
                 "buttons": {
                     "create-experiment": "Create experiment",
                     "create-experiment-help": " Create an experiment (experimental informations, sensors/variables/factors linked)"
@@ -367,20 +374,31 @@
                     "startDate": "Start date",
                     "endDate": "End date",
                     "uri": "URI",
-                    "state": "State"
+                    "state": "State",
+                    "sites": "Site(s)"
                 },
                 "filter": {
-                    "alias": "Filter by Alias",
+                    "alias": "Filter by Name/URI",
                     "campaign": "Filter by Campaign(s)",
                     "installations": "Filter by Installation(s)",
                     "projects": "Filter by Project(s)",
                     "places": "Filter by Place(s)",
                     "species": "Filter by Species",
                     "startDate": "Filter by start date",
-                    "endDate": "Filtrer by end date",
-                    "date": "Filter by date",
                     "uri": "Filter by URI",
-                    "state": "Filter par state"
+                    "state": "Filter by state",
+                    "sites": "Filter by Site(s)"
+                },
+                "placeholder": {
+                    "alias": "All Names/URI",
+                    "campaign": "All Campains",
+                    "installations": "All Installations",
+                    "projects": "All Projects",
+                    "species": "All Species",
+                    "startDate": "",
+                    "uri": "All URI",
+                    "state": "All States",
+                    "sites": "All Sites"
                 }
             },
             "form": {
@@ -400,6 +418,51 @@
                 "infra-groups-projects": "Infrastructures, groups and projects",
                 "scientific-technical-users": "Scientific and technical users",
                 "variables-sensors-factors": "Variables, factors and sensors"
+            }
+        },
+        "scientificObjects": {
+            "search": {
+                "selected": "Selected Scientific Objects",
+                "description": "Manage and configure scientific objects",
+                "advancedSearch": "Advanced search",
+                "propetiesConfiguration": "Properties to display",
+                "column": {
+                    "alias": "Alias",
+                    "experiments": "Experiment(s)",
+                    "germplasm": "Germplasm",
+                    "campaigns": "Campaign(s)",
+                    "type": "Type",
+                    "uri": "URI",
+                    "properties": "Properties",
+                    "actions": "Actions"
+                },
+                "filter": {
+                    "label": "Search for Scientific Objects",
+                    "experiments": "Filter by Experiments",
+                    "germplasm": "Filter by Germplasm",
+                    "campains": "Filter by Campaign(s)",
+                    "types": "Filter by Type(s)",
+                    "alias": "Filter by Alias / URI",
+                    "hasExperimentModalities": "hasExperimentModalities",
+                    "hasReplication": "hasReplication",
+                    "hasSpecies": "hasSpecies",
+                    "hasVariety": "hasVariety",
+                    "hasPart": "hasPart (Alias ou URI)",
+                    "isPartOf": "isPartOf (Alias ou URI)"
+                },
+                "placeholder": {
+                    "experiments": "Please select at least one item",
+                    "germplasm": "Please select at least one item",
+                    "campains": "All Campaigns",
+                    "types": "All Types", 
+                    "alias": "All Alias / URI", 
+                    "hasExperimentModalities": "All attributes", 
+                    "hasReplication": "All attributes", 
+                    "hasSpecies": "All attributes", 
+                    "hasVariety": "All attributes", 
+                    "hasPart": "All Alias / URI",
+                    "isPartOf": "All Alias / URI"
+                }
             }
         },
         "infrastructure": {

@@ -48,6 +48,7 @@
             "yes": "oui",
             "no": "non",
             "ok": "OK",
+            "close": "Fermer",
             "cancel": "annuler",
             "delete": "supprimer",
             "name": "Nom",
@@ -68,6 +69,8 @@
             "uri-copy": "URI copiée dans le presse-papier",
             "search-prompt-text": "Ecrire pour rechercher...",
             "not-specified" :"Non renseigné(e)",
+            "validate": "Valider",
+            "validateSelection": "Valider la sélection",
             "errors": {
                 "error-title": "Erreur",
                 "constraint-error": "Une erreur de validation s'est produite, merci de vérifier les données saisies.",
@@ -258,6 +261,7 @@
             }
         },
         "project": {
+            "selectedLabel": "Project(s) Sélectionnée(s)",
             "uri": "URI du projet",
             "filter-description":"Recherche de projets",
             "search-description":"Gérer et configurer les projets",
@@ -343,6 +347,9 @@
             },
             "search": {
                 "description": "Gérer et configurer les expérimentations",
+                "label": "Rechercher des Expérimentations",
+                "selectLabel": "Sélectionner des Expérimentations",
+                "selectedLabel": "Expérimentation(s) Sélectionnée(s)",
                 "buttons": {
                     "create-experiment": "Créer une expérimentation",
                     "create-experiment-help": "Créer une expérimentation (informations expérimentales, variables/capteurs/facteurs associés)"
@@ -357,20 +364,30 @@
                     "startDate": "Date de début",
                     "endDate": "Date de fin",
                     "uri": "URI",
-                    "state": "Etat"
+                    "state": "Etat",
+                    "sites": "Site(s)"
                 },
                 "filter": {
-                    "alias": "Filtrer par Alias",
+                    "alias": "Filtrer par Nom/URI",
                     "campaign": "Filtrer par Campagne(s)",
                     "installations": "Filtrer par Installation(s)",
                     "projects": "Filtrer par Projet(s)",
-                    "places": "Filtrer par Lieux",
                     "species": "Filtrer par Espèce(s)",
                     "startDate": "Filtrer par Date de début",
-                    "endDate": "Filtrer par Date de fin",
-                    "date": "Filtrer par date",
                     "uri": "Filtrer par URI",
-                    "state": "Filtrer par état"
+                    "state": "Filtrer par état",
+                    "sites": "Filtrer par Site(s)"
+                },
+                "placeholder": {
+                    "alias": "Tous les Noms/URI",
+                    "campaign": "Toutes les Campagnes",
+                    "installations": "Toutes les Installations",
+                    "projects": "Tous les Projets",
+                    "species": "Toutes les Espèces",
+                    "startDate": "",
+                    "uri": "Toutes les URI",
+                    "state": "Tous les états",
+                    "sites": "Tous les Sites"
                 }
             },
             "form": {
@@ -387,6 +404,51 @@
                 "infra-groups-projects": "Infrastructures, groupes et projets",
                 "scientific-technical-users": "Utilisateurs",
                 "variables-sensors-factors": "Variables, facteurs et capteurs"
+            }
+        },
+        "scientificObjects": {
+            "search": {
+                "description": "Gérer et configurer les objets scientifiques",
+                "advancedSearch": "Recherche avancée",
+                "selected": "Objets Scientifiques Sélectionnés",
+                "propetiesConfiguration": "Propriétés à afficher",
+                "column": {
+                    "alias": "Alias",
+                    "experiments": "Expérimentation(s)",
+                    "germplasm": "Matériel Génétiques",
+                    "campaigns": "Campagne(s)",
+                    "type": "Type",
+                    "uri": "URI",
+                    "properties": "Propriétés",
+                    "actions": "Actions"
+                },
+                "filter": {
+                    "label": "Rechercher des Objets Scientifiques",
+                    "experiments": "Filtrer par Expérimentation(s)",
+                    "germplasm": "Filtrer par Matériel Génétiques",
+                    "campains": "Filtrer par Campagne(s)",
+                    "types": "Filtrer par Type(s)",
+                    "alias": "Filtrer par Alias / URI",
+                    "hasExperimentModalities": "hasExperimentModalities",
+                    "hasReplication": "hasReplication",
+                    "hasSpecies": "hasSpecies",
+                    "hasVariety": "hasVariety",
+                    "hasPart": "hasPart (Alias ou URI)",
+                    "isPartOf": "isPartOf (Alias ou URI)"
+                },
+                "placeholder": {
+                    "experiments": "Veuillez sélectionner au moins un élément",
+                    "germplasm": "Veuillez sélectionner au moins un élément",
+                    "campains": "Toutes les Campagnes",
+                    "types": "Tous les Types", 
+                    "alias": "Tous les Alias / URI", 
+                    "hasExperimentModalities": "Tous les attributs", 
+                    "hasReplication": "Tous les attributs", 
+                    "hasSpecies": "Tous les attributs", 
+                    "hasVariety": "Tous les attributs", 
+                    "hasPart": "Tous les Alias / URI", 
+                    "isPartOf": "Tous les Alias / URI"
+                }
             }
         },
         "infrastructure": {

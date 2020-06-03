@@ -104,7 +104,8 @@ import NameInputForm from './common/forms/NameInputForm.vue'
 components["opensilex-NameInputForm"] = NameInputForm;
 import CSVInputFile from './common/forms/CSVInputFile.vue'
 components["opensilex-CSVInputFile"] = CSVInputFile;
-
+import SearchForm from './common/forms/SearchForm.vue'
+components["opensilex-SearchForm"] = SearchForm;
 
 import WizardForm from './common/forms/WizardForm.vue'
 components["opensilex-WizardForm"] = WizardForm;
@@ -181,6 +182,8 @@ import ExperimentList from './experiments/ExperimentList.vue';
 components["opensilex-ExperimentList"] = ExperimentList;
 import ExperimentView from './experiments/ExperimentView.vue';
 components["opensilex-ExperimentView"] = ExperimentView;
+import ExperimentModalList from './experiments/ExperimentModalList.vue';
+components["opensilex-ExperimentModalList"] = ExperimentModalList;
 
 // Germplasm
 import GermplasmView from './germplasm/GermplasmView.vue';
@@ -195,6 +198,8 @@ import GermplasmTable from './germplasm/GermplasmTable.vue';
 components["opensilex-GermplasmTable"] = GermplasmTable;
 import GermplasmDetails from './germplasm/GermplasmDetails.vue';
 components["opensilex-GermplasmDetails"] = GermplasmDetails;
+import GermplasmModalList from './germplasm/GermplasmModalList.vue';
+components["opensilex-GermplasmModalList"] = GermplasmModalList;
 
 // Projects
 import ProjectForm from './projects/ProjectForm.vue';
@@ -207,6 +212,16 @@ components["opensilex-ProjectView"] = ProjectView;
 // Species
 import SpeciesSelector from './species/SpeciesSelector.vue';
 components["opensilex-SpeciesSelector"] = SpeciesSelector;
+import ProjectModalList from './projects/ProjectModalList.vue';
+components["opensilex-ProjectModalList"] = ProjectModalList;
+
+// Scientific Object
+import ScientificObjectList from './scientificObjects/ScientificObjectList.vue';
+components["opensilex-ScientificObjectList"] = ScientificObjectList;
+import ScientificObjectPropertyList from './scientificObjects/ScientificObjectPropertyList.vue';
+components["opensilex-ScientificObjectPropertyList"] = ScientificObjectPropertyList;
+import ScientificObjectPropertyConfiguration from './scientificObjects/ScientificObjectPropertyConfiguration.vue';
+components["opensilex-ScientificObjectPropertyConfiguration"] = ScientificObjectPropertyConfiguration;
 
 // PHIS
 import ImageList from './phis/images/ImageList.vue';

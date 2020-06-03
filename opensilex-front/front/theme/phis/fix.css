@@ -1,6 +1,10 @@
 /**
- * Fir for bootstrap theme
+ * Fix for bootstrap theme
  */
+
+ .wrapper .page-wrap .main-content .page-header .page-header-title i {
+     margin-right: 0;
+ }
 
 .wrapper .header-top {
     padding: 10px 0;
@@ -49,13 +53,12 @@
     text-decoration: none;
 }
 
-.table-responsive .table thead th {
-    font-weight: normal;
-}
-
 .table-responsive a:visited,
 .table-responsive a {
     color: #007bff;
+}
+.custom-control-label {
+    cursor: pointer;
 }
 
 /**
@@ -106,6 +109,60 @@
     color: #adadad;
 }
 
+.card-body.advancedSearch {
+    display: none;
+}
+
+.card-body.advancedSearch.open {
+    display: block;
+}
+
+.properties-configuration .dropdown-menu {
+    width: auto;
+}
+
+.properties-configuration .btn.dropdown-toggle {
+    height: 30px;
+    padding: 0px;
+}
+
+.properties-configuration .dropdown-header {
+    font-weight: bold;
+    padding: 10px;
+}
+
+.properties-configuration p.b-dropdown-text {
+    font-size: 12px;
+    padding: 0 10px;
+}
+
+.properties-configuration p.b-dropdown-text .custom-control-label:after,
+.properties-configuration p.b-dropdown-text .custom-control-label:before {
+    top: 0;
+}
+
+.properties-configuration .properties-dropdown-footer {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-align: right;
+}
+
+.properties-configuration .properties-dropdown-footer p.b-dropdown-text {
+    font-size: 13px;
+}
+
+.properties-configuration .properties-dropdown-footer .btn-success {
+    margin-left: 3px;
+}
+
+.card-footer.text-right .btn-primary {
+    margin-left: 3px;
+}
+
+.card-footer.text-right .btn .ik:before {
+    display: inline-block;
+}
+
 /**
  * Fix for date picker
  */
@@ -131,4 +188,40 @@ table.asd__month-table td {
 
 .keyword {
     margin-right: 2px;
+}
+
+.modal-xxl {
+    max-width: 95%;
+}
+
+.table td, .table th,
+.table thead td, .table thead th,
+.table tbody td, .table tbody th,
+.table-sm td, .table-sm th {
+    border-bottom: 1px solid #dee2e6;
+    padding: .75em;
+}
+
+.table th,
+.table thead th,
+.table-sm th {
+    border-top: 1px solid #dee2e6;
+}
+
+.hide {
+    display: none;
+}
+
+.modal-title {
+    display: inherit;
+}
+
+table.b-table-selectable thead tr th:first-child {
+    width: 45px;
+}
+
+@media(max-width: 1023px) {
+    .app-sidebar {
+        display: none;
+    }
 }

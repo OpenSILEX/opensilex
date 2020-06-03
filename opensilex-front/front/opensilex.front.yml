@@ -41,9 +41,9 @@ menu:
 
   - id: scientificObjects
     label: component.menu.scientificObjects
-    route:
-      path: /users
-      component: opensilex-UserView
+    route: 
+      path: /scientificObjects
+      component: opensilex-ScientificObjectList
       credentials: []
   - id: equipments
     label: component.menu.equipments.label

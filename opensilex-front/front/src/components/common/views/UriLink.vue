@@ -89,7 +89,7 @@ export default class UriLink extends Vue {
   display: none;
   border: 1px solid #d8dde5;
   border-radius: 5px;
-  color: #007bff;
+  color: #212121;
   display: none;
   padding: 3px 3px 0 3px;
   padding-left: 5px;
@@ -105,8 +105,9 @@ export default class UriLink extends Vue {
   display: inline;
 }
 
-.uri-copy:hover {
+.uri:hover {
   color: #212121;
+  text-decoration: underline;
 }
 </style>
 

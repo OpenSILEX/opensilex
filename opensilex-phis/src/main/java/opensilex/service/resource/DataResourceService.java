@@ -38,7 +38,10 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import opensilex.service.utils.ImageThumbnails;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import opensilex.service.PropertiesFileManager;
@@ -92,26 +95,25 @@ public class DataResourceService extends ResourceService {
      * Service to insert data.
      *
      * @param data
-     * @example
-     * [
-     *  {
-     *      "objectUri": "http://www.phenome-fppn.fr/diaphen/2018/s18521",
-     *      "variableUri": "http://www.phenome-fppn.fr/id/variables/v001",
-     *      "date": "2017-06-15T10:51:00+0200",
-     *      "value": "0.5"
-     *  }
-     * ]
      * @param context
      * @return the insertion result.
+     * @example [
+     * {
+     * "objectUri": "http://www.phenome-fppn.fr/diaphen/2018/s18521",
+     * "variableUri": "http://www.phenome-fppn.fr/id/variables/v001",
+     * "date": "2017-06-15T10:51:00+0200",
+     * "value": "0.5"
+     * }
+     * ]
      */
     @POST
     @ApiOperation(value = "Post data",
             notes = "Register data in the database")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "data saved", response = ResponseFormPOST.class),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+            @ApiResponse(code = 201, message = "data saved", response = ResponseFormPOST.class),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -178,50 +180,49 @@ public class DataResourceService extends ResourceService {
      * @param dateSortAsc
      * @param requestContext
      * @return list of the data corresponding to the search params given
-     * @example
+     * @example {
+     * "metadata": {
+     * "pagination": {
+     * "pageSize": 20,
+     * "currentPage": 0,
+     * "totalCount": 3,
+     * "totalPages": 1
+     * },
+     * "status": [],
+     * "datafiles": []
+     * },
+     * "result": {
+     * "data": [
      * {
-     *      "metadata": {
-     *          "pagination": {
-     *              "pageSize": 20,
-     *              "currentPage": 0,
-     *              "totalCount": 3,
-     *              "totalPages": 1
-     *          },
-     *          "status": [],
-     *          "datafiles": []
-     *      },
-     *      "result": {
-     *          "data": [
-     *               {
-     *                 "uri": "http://www.phenome-fppn.fr/diaphen/id/data/d2plf65my4rc2odiv2lbjgukc2zswkqyoddh25jtoy4b5pf3le3q4ec5c332f5cd44ce82977e404cebf83c",
-     *                 "provenanceUri": "http://www.phenome-fppn.fr/mtp/2018/pv181515071552",
-     *                 "objectUri": "http://www.phenome-fppn.fr/diaphen/2018/o18001199",
-     *                 "variableUri": "http://www.phenome-fppn.fr/diaphen/id/variables/v009",
-     *                 "date": "2017-06-15T00:00:00+0200",
-     *                 "value": 2.4
-     *               },
-     *               {
-     *                 "uri": "http://www.phenome-fppn.fr/diaphen/id/data/pttdrrqybxoyku4img323dyrhmpp267mhnpiw3vld2wm6tap3vwq93b344c429ec45bb9b185edfe5bc2b64",
-     *                 "provenanceUri": "http://www.phenome-fppn.fr/mtp/2018/pv181515071552",
-     *                 "objectUri": "http://www.phenome-fppn.fr/diaphen/2018/o18001199",
-     *                 "variableUri": "http://www.phenome-fppn.fr/diaphen/id/variables/v009",
-     *                 "date": "2017-06-16T00:00:00+0200",
-     *                 "value": "2017-06-15T00:00:00+0200"
-     *               }
-     *          ]
-     *      }
+     * "uri": "http://www.phenome-fppn.fr/diaphen/id/data/d2plf65my4rc2odiv2lbjgukc2zswkqyoddh25jtoy4b5pf3le3q4ec5c332f5cd44ce82977e404cebf83c",
+     * "provenanceUri": "http://www.phenome-fppn.fr/mtp/2018/pv181515071552",
+     * "objectUri": "http://www.phenome-fppn.fr/diaphen/2018/o18001199",
+     * "variableUri": "http://www.phenome-fppn.fr/diaphen/id/variables/v009",
+     * "date": "2017-06-15T00:00:00+0200",
+     * "value": 2.4
+     * },
+     * {
+     * "uri": "http://www.phenome-fppn.fr/diaphen/id/data/pttdrrqybxoyku4img323dyrhmpp267mhnpiw3vld2wm6tap3vwq93b344c429ec45bb9b185edfe5bc2b64",
+     * "provenanceUri": "http://www.phenome-fppn.fr/mtp/2018/pv181515071552",
+     * "objectUri": "http://www.phenome-fppn.fr/diaphen/2018/o18001199",
+     * "variableUri": "http://www.phenome-fppn.fr/diaphen/id/variables/v009",
+     * "date": "2017-06-16T00:00:00+0200",
+     * "value": "2017-06-15T00:00:00+0200"
+     * }
+     * ]
+     * }
      * }
      */
     @GET
     @ApiOperation(value = "Get data corresponding to the search parameters given.",
             notes = "Retrieve all data corresponding to the search parameters given,"
-            + "<br/>Date parameters could be either a datetime like: " + DocumentationAnnotation.EXAMPLE_XSDDATETIME
-            + "<br/>or simply a date like: " + DocumentationAnnotation.EXAMPLE_DATE)
+                    + "<br/>Date parameters could be either a datetime like: " + DocumentationAnnotation.EXAMPLE_XSDDATETIME
+                    + "<br/>or simply a date like: " + DocumentationAnnotation.EXAMPLE_DATE)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all data", response = Data.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+            @ApiResponse(code = 200, message = "Retrieve all data", response = Data.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
@@ -285,7 +286,8 @@ public class DataResourceService extends ResourceService {
     /**
      * Saves data file with its metadata and use MULTIPART_FORM_DATA for it.
      * fileContentDisposition parameter is automatically created from submitted file.
-     * No example could be provided for this kind of MediaType 
+     * No example could be provided for this kind of MediaType
+     *
      * @param descriptionDto
      * @param file
      * @param fileContentDisposition
@@ -295,10 +297,10 @@ public class DataResourceService extends ResourceService {
     @Path("file")
     @ApiOperation(value = "Post data file")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data file and metadata saved", response = ResponseFormPOST.class),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
+            @ApiResponse(code = 201, message = "Data file and metadata saved", response = ResponseFormPOST.class),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
     @ApiProtected
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
@@ -338,8 +340,10 @@ public class DataResourceService extends ResourceService {
      * Save the metadata of a file already stored in an accessible storage.
      * The absolute path of the file will be ${ws.updir.doc property}/relativePath
      * ${ws.updir.doc property} refers to the <ws.updir.doc> property defined in the config.properties file used for building the webservice.
+     *
      * @param descriptionsDto
      * @param context
+     * @return the insertion result.
      * @example [ { "rdfType":
      * "http://www.opensilex.org/vocabulary/oeso#HemisphericalImage", "date":
      * "2017-06-15T10:51:00+0200", "provenanceUri":
@@ -348,26 +352,24 @@ public class DataResourceService extends ResourceService {
      * "http://www.opensilex.org/demo/DMO2018-1", "typeURI":
      * "http://www.opensilex.org/vocabulary/oeso#Experiment" }], "metadata": {
      * "sensorUri": "http://www.phenome-fppn.fr/diaphen/2018/s18001" } } ]
-     * @return the insertion result.
-     * @example
-     * {
-     *      "metadata": {
-     *          "pagination": null,
-     *          "status": [],
-     *          "datafiles": [
-     *              "http://www.opensilex.org/opensilex/id/dataFile/HemisphericalImage/ynckimhx54ejoppqewxw2o4aje44kdfvsaimdkptypznrzzbreoa45ae8ad4836741e0ad1a48838bb525bb"
-     *          ]
-     *      }
+     * @example {
+     * "metadata": {
+     * "pagination": null,
+     * "status": [],
+     * "datafiles": [
+     * "http://www.opensilex.org/opensilex/id/dataFile/HemisphericalImage/ynckimhx54ejoppqewxw2o4aje44kdfvsaimdkptypznrzzbreoa45ae8ad4836741e0ad1a48838bb525bb"
+     * ]
+     * }
      * }
      */
     @POST
     @Path("filepaths")
     @ApiOperation(value = "Post data about existing files")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = ResponseFormPOST.class),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
+            @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = ResponseFormPOST.class),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -388,7 +390,7 @@ public class DataResourceService extends ResourceService {
                 FileDescription fileDescription = description.createObjectFromDTO();
                 // get the the absolute file path according to the fileStorageDirectory
                 File realFile = Paths.get(fileStorageDirectory + '/' + fileDescription.getPath()).toFile();
-                
+
                 checkFsError = checkFilePath(realFile);
                 if (checkFsError.isPresent()) { // check if a error msg was returned
                     break;
@@ -428,7 +430,6 @@ public class DataResourceService extends ResourceService {
      * @param file : the file to check
      * @return a {@link Optional} of {@link String} which describe an error msg
      * if an error was encountered <br> return {@link Optional#empty()} else
-     *
      */
     protected Optional<String> checkFilePath(File file) {
 
@@ -455,11 +456,11 @@ public class DataResourceService extends ResourceService {
     @Path("file/{fileUri}")
     @ApiOperation(value = "Get data file")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve file"),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+            @ApiResponse(code = 200, message = "Retrieve file"),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getDataFile(
@@ -469,7 +470,6 @@ public class DataResourceService extends ResourceService {
         FileDescriptionDAO dataFileDao = new FileDescriptionDAO(sparql);
 
         FileDescription description = dataFileDao.findFileDescriptionByUri(fileUri);
-
 
 
         try {
@@ -483,12 +483,12 @@ public class DataResourceService extends ResourceService {
             java.nio.file.Path filePath = Paths.get(fileUri);
             byte[] fileContent = fs.readFileAsByteArray(filePath);
 
-            if(ArrayUtils.isEmpty(fileContent)){
+            if (ArrayUtils.isEmpty(fileContent)) {
                 return Response.status(404).build();
             }
 
             return Response.ok(fileContent, MediaType.APPLICATION_OCTET_STREAM)
-                    .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString()+ "\"") //optional
+                    .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString() + "\"") //optional
                     .build();
 
         } catch (FileNotFoundException ex) {
@@ -511,12 +511,12 @@ public class DataResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getPicturesThumbnails(
             @ApiParam(value = "Search by fileUri", required = true) @PathParam("fileUri") @Required String fileUri,
-            @ApiParam(value = "Thumbnail width") Integer scaledWidth,
-            @ApiParam(value = "Thumbnail height") Integer scaledHeight,
+//            @ApiParam(value = "Thumbnail width") Integer scaledWidth,
+//            @ApiParam(value = "Thumbnail height") Integer scaledHeight,
 
-            @Context HttpServletResponse response ) throws Exception {
+            @Context HttpServletResponse response) throws Exception {
 
-        try{
+        try {
 
 //            FileDescriptionDAO fileDescriptionDAO = new FileDescriptionDAO(sparql);
 //
@@ -527,18 +527,24 @@ public class DataResourceService extends ResourceService {
 
             java.nio.file.Path filePath = Paths.get(fileUri);
             java.nio.file.Path physicalFilePath = fs.getPhysicalPath(filePath);
+//
+//            scaledWidth = scaledWidth == null ? 640 : scaledWidth;
+//            scaledHeight = scaledHeight == null ? 360 : scaledHeight;
 
-            scaledWidth = scaledWidth == null ? 640 : scaledWidth;
-            scaledHeight = scaledHeight == null? 360 : scaledHeight;
-
-            byte[] thumbnailData = ImageThumbnails.getInstance().getThumbnail(ImageThumbnails.THUMBNAIL_METHOD.CONVERT_COMMAND,physicalFilePath,scaledWidth,scaledHeight);
-
-            if(ArrayUtils.isEmpty(thumbnailData)){
+            byte[] thumbnailData = ImageThumbnails.getInstance().getThumbnail(
+                    ImageThumbnails.THUMBNAIL_METHOD.CONVERT_COMMAND,
+                    physicalFilePath,
+                    640,
+                    360
+            );
+            if (ArrayUtils.isEmpty(thumbnailData)) {
                 return Response.status(404).build();
+            }
 
-            return Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM)
-                    .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"") //optional
+            return Response.ok(thumbnailData, MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString() + "\"") //optional
                     .build();
+
         } catch (FileNotFoundException ex) {
             return Response.status(404).build();
         }
@@ -546,34 +552,34 @@ public class DataResourceService extends ResourceService {
 
     /**
      * This service returns the description of a file corresponding to the URI given.
+     *
      * @param fileUri
      * @param response
      * @return the file description
-     * @example 
-     * {
-     *    "uri": "http://www.phenome-fppn.fr/diaphen/id/dataFile/RGBImage/55fjbbmtmr4m3kkizslzaddfkdt2ranum3ikz6cdiajqzfdc7yqa31d87b83efac4c358ceb5b0da6ed27ff",
-     *    "rdfType": "http://www.opensilex.org/vocabulary/oeso#RGBImage",
-     *    "date": "2017-06-15T10:51:00+0200",
-     *    "concernedItems": [{
-     *      "uri": "http://www.phenome-fppn.fr/diaphen/2018/o18001199",
-     *      "typeURI": "http://www.opensilex.org/vocabulary/oeso#Plot"
-     *    }],
-     *    "provenanceUri": "http://www.phenome-fppn.fr/diaphen/id/provenance/1552405256945",
-     *    "metadata": {
-     *      "sensor": "http://www.phenome-fppn.fr/diaphen/2018/s18035",
-     *      "position": "1"
-     *    }
+     * @example {
+     * "uri": "http://www.phenome-fppn.fr/diaphen/id/dataFile/RGBImage/55fjbbmtmr4m3kkizslzaddfkdt2ranum3ikz6cdiajqzfdc7yqa31d87b83efac4c358ceb5b0da6ed27ff",
+     * "rdfType": "http://www.opensilex.org/vocabulary/oeso#RGBImage",
+     * "date": "2017-06-15T10:51:00+0200",
+     * "concernedItems": [{
+     * "uri": "http://www.phenome-fppn.fr/diaphen/2018/o18001199",
+     * "typeURI": "http://www.opensilex.org/vocabulary/oeso#Plot"
+     * }],
+     * "provenanceUri": "http://www.phenome-fppn.fr/diaphen/id/provenance/1552405256945",
+     * "metadata": {
+     * "sensor": "http://www.phenome-fppn.fr/diaphen/2018/s18035",
+     * "position": "1"
+     * }
      * }
      */
     @GET
     @Path("file/{fileUri}/description")
     @ApiOperation(value = "Get data file description")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve file description", response = FileDescriptionDTO.class),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+            @ApiResponse(code = 200, message = "Retrieve file description", response = FileDescriptionDTO.class),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
@@ -595,6 +601,7 @@ public class DataResourceService extends ResourceService {
 
     /**
      * This service searches for file descriptions according to the search parameters given.
+     *
      * @param pageSize
      * @param page
      * @param rdfType
@@ -605,30 +612,29 @@ public class DataResourceService extends ResourceService {
      * @param jsonValueFilter
      * @param dateSortAsc
      * @return List of file description
-    * @example 
-     * [{
-     *    "uri": "http://www.phenome-fppn.fr/diaphen/id/dataFile/RGBImage/55fjbbmtmr4m3kkizslzaddfkdt2ranum3ikz6cdiajqzfdc7yqa31d87b83efac4c358ceb5b0da6ed27ff",
-     *    "rdfType": "http://www.opensilex.org/vocabulary/oeso#RGBImage",
-     *    "date": "2017-06-15T10:51:00+0200",
-     *    "concernedItems": [{
-     *      "uri": "http://www.phenome-fppn.fr/diaphen/2018/o18001199",
-     *      "typeURI": "http://www.opensilex.org/vocabulary/oeso#Plot"
-     *    }],
-     *    "provenanceUri": "http://www.phenome-fppn.fr/diaphen/id/provenance/1552405256945",
-     *    "metadata": {
-     *      "sensor": "http://www.phenome-fppn.fr/diaphen/2018/s18035",
-     *      "position": "1"
-     *    }
+     * @example [{
+     * "uri": "http://www.phenome-fppn.fr/diaphen/id/dataFile/RGBImage/55fjbbmtmr4m3kkizslzaddfkdt2ranum3ikz6cdiajqzfdc7yqa31d87b83efac4c358ceb5b0da6ed27ff",
+     * "rdfType": "http://www.opensilex.org/vocabulary/oeso#RGBImage",
+     * "date": "2017-06-15T10:51:00+0200",
+     * "concernedItems": [{
+     * "uri": "http://www.phenome-fppn.fr/diaphen/2018/o18001199",
+     * "typeURI": "http://www.opensilex.org/vocabulary/oeso#Plot"
+     * }],
+     * "provenanceUri": "http://www.phenome-fppn.fr/diaphen/id/provenance/1552405256945",
+     * "metadata": {
+     * "sensor": "http://www.phenome-fppn.fr/diaphen/2018/s18035",
+     * "position": "1"
+     * }
      * }]
      */
     @GET
     @Path("file/search")
     @ApiOperation(value = "Retrieve data file descriptions corresponding to the search parameters given.")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve file descriptions", response = FileDescriptionDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+            @ApiResponse(code = 200, message = "Retrieve file descriptions", response = FileDescriptionDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
@@ -712,54 +718,53 @@ public class DataResourceService extends ResourceService {
      * @param provenanceLabel
      * @param dateSortAsc
      * @return list of the data corresponding to the search params given
-     * @example
+     * @example {
+     * "metadata": {
+     * "pagination": {
+     * "pageSize": 20,
+     * "currentPage": 0,
+     * "totalCount": 3,
+     * "totalPages": 1
+     * },
+     * "status": [],
+     * "datafiles": []
+     * },
+     * "result": {
+     * "data": [
      * {
-     *      "metadata": {
-     *          "pagination": {
-     *              "pageSize": 20,
-     *              "currentPage": 0,
-     *              "totalCount": 3,
-     *              "totalPages": 1
-     *          },
-     *          "status": [],
-     *          "datafiles": []
-     *      },
-     *      "result": {
-     *          "data": [
-     *              {
-     *                 "uri": "http://www.opensilex.org/opensilex/id/data/k3zilz2rrjhkxo4ppy43372rr5hyrbehjuf2stecbekvkxyqcjdq84b1df953972418a8d5808ba2bca3baedfsf",
-     *                 "provenance": {
-     *                      "uri": "http://www.opensilex.org/opensilex/id/provenance/1552386023784",
-     *                      "label": "provenance-label"
-     *                  },
-     *                 "object": {
-     *                     "uri": "http://www.opensilex.org/opensilex/2019/o19000060",
-     *                     "labels": [
-     *                         "2"
-     *                     ]
-     *                  },
-     *                 "variable": {
-     *                     "uri": "http://www.opensilex.org/opensilex/id/variables/v001",
-     *                     "label": "trait_method_unit"
-     *                 },
-     *                 "date": "2014-01-04T00:55:00+0100",
-     *                 "value": "19"
-     *              },
-     *          ]
-     *      }
-     *  }
+     * "uri": "http://www.opensilex.org/opensilex/id/data/k3zilz2rrjhkxo4ppy43372rr5hyrbehjuf2stecbekvkxyqcjdq84b1df953972418a8d5808ba2bca3baedfsf",
+     * "provenance": {
+     * "uri": "http://www.opensilex.org/opensilex/id/provenance/1552386023784",
+     * "label": "provenance-label"
+     * },
+     * "object": {
+     * "uri": "http://www.opensilex.org/opensilex/2019/o19000060",
+     * "labels": [
+     * "2"
+     * ]
+     * },
+     * "variable": {
+     * "uri": "http://www.opensilex.org/opensilex/id/variables/v001",
+     * "label": "trait_method_unit"
+     * },
+     * "date": "2014-01-04T00:55:00+0100",
+     * "value": "19"
+     * },
+     * ]
+     * }
+     * }
      */
     @GET
     @Path("search")
     @ApiOperation(value = "Get data corresponding to the search parameters given.",
             notes = "Retrieve all data corresponding to the search parameters given,"
-            + "<br/>Date parameters could be either a datetime like: " + DocumentationAnnotation.EXAMPLE_XSDDATETIME
-            + "<br/>or simply a date like: " + DocumentationAnnotation.EXAMPLE_DATE)
+                    + "<br/>Date parameters could be either a datetime like: " + DocumentationAnnotation.EXAMPLE_XSDDATETIME
+                    + "<br/>or simply a date like: " + DocumentationAnnotation.EXAMPLE_DATE)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve all data", response = Data.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+            @ApiResponse(code = 200, message = "Retrieve all data", response = Data.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)

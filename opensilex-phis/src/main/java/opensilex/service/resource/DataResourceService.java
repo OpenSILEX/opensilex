@@ -382,31 +382,29 @@ public class DataResourceService extends ResourceService {
         POSTResultsReturn result = new POSTResultsReturn();
 
         try {
-            String fileStorageDirectory = PropertiesFileManager.getConfigFileProperty("service", "uploadFileServerDirectory");
-            List<FileDescription> descriptions = new ArrayList<>();
-            Optional<String> checkFsError = Optional.empty();
 
+            List<FileDescription> descriptions = new ArrayList<>();
             for (FileDescriptionWebPathPostDTO description : descriptionsDto) {
+
                 FileDescription fileDescription = description.createObjectFromDTO();
                 // get the the absolute file path according to the fileStorageDirectory
-                File realFile = Paths.get(fileStorageDirectory + '/' + fileDescription.getPath()).toFile();
 
-                checkFsError = checkFilePath(realFile);
-                if (checkFsError.isPresent()) { // check if a error msg was returned
-                    break;
+                java.nio.file.Path absoluteFilePath = fs.getAbsolutePath(Paths.get(fileDescription.getPath()));
+
+                if(! fs.exist(absoluteFilePath)){
+                    result.setErrorMsg("File not found " + absoluteFilePath.toString());
+                    result.setDataState(false);
+                    result.setHttpStatus(Response.Status.BAD_REQUEST);
+                    postResponse = new ResponseFormPOST(result.statusList);
+                    return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
                 }
-                fileDescription.setPath(realFile.getAbsolutePath());
-                fileDescription.setFilename(realFile.getName());
+
+                fileDescription.setPath(absoluteFilePath.toString());
+                fileDescription.setFilename(absoluteFilePath.getFileName().toString());
                 descriptions.add(fileDescription);
             }
 
-            if (!checkFsError.isPresent()) { // check if a error msg was returned
-                result = fileDescriptionDao.checkAndInsertWithWebPath(descriptions); // insert description with DAO
-            } else {
-                result.setErrorMsg(checkFsError.get());
-                result.setDataState(false);
-                result.setHttpStatus(Response.Status.BAD_REQUEST);
-            }
+            result = fileDescriptionDao.checkAndInsertWithWebPath(descriptions); // insert description with DAO
 
             if (result.getHttpStatus().equals(Response.Status.CREATED)) {
                 postResponse = new ResponseFormPOST(result.statusList);

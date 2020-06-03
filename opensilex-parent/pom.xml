@@ -292,12 +292,6 @@
             <artifactId>datanucleus-mongodb</artifactId>
             <version>${data.nucleus.mongodb.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.datanucleus</groupId>
-            <artifactId>datanucleus-accessplatform-jdo-mongodb</artifactId>
-            <version>${data.nucleus.api.jdo.version}</version>
-            <type>pom</type>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.datanucleus/datanucleus-accessplatform-jdo-mongodb -->
         <dependency>
             <groupId>org.datanucleus</groupId>

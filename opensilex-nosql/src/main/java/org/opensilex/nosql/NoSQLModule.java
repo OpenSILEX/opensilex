@@ -10,9 +10,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import javax.jdo.JDOEnhancer;
 import org.bson.Document;
-import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.slf4j.Logger;
@@ -48,12 +46,6 @@ public class NoSQLModule extends OpenSilexModule {
      */
     @Override
     public void setup() throws Exception {
-        LOGGER.debug("Enhancing class");
-        JDOEnhancer enhancer = new org.datanucleus.api.jdo.JDOEnhancer();
-        enhancer.setClassLoader(OpenSilex.getClassLoader());
-        enhancer.setVerbose(getOpenSilex().isDebug());
-        enhancer.enhance();
-
     }
 
     @Override
@@ -81,6 +73,8 @@ public class NoSQLModule extends OpenSilexModule {
             LOGGER.error("There is a problem in your mongo configuration");
             throw new Exception("There is a problem in your mongo configuration");
         }
+        
+        mongo.close();
     }
 
     private static MongoClient getMongoClient(MongoDBConfig config) {

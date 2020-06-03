@@ -6,14 +6,16 @@
 //******************************************************************************
 package org.opensilex.fs.service;
 
-import java.io.File;
-import java.nio.file.Path;
 import org.opensilex.fs.local.LocalFileSystemConnection;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * File storage service to access any filesystem (default to local)
@@ -23,18 +25,38 @@ import org.slf4j.LoggerFactory;
 @ServiceDefaultDefinition(
         serviceClass = LocalFileSystemConnection.class
 )
-public class FileStorageService extends BaseService  implements Service, FileStorageConnection {
+public class FileStorageService extends BaseService implements Service, FileStorageConnection {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(FileStorageService.class);
 
     public final static String DEFAULT_FS_SERVICE = "fs";
-        
+
     private final FileStorageConnection connection;
 
     public FileStorageService(FileStorageConnection connection) {
         this.connection = connection;
     }
-    
+
+    @Override
+    public void setup() throws Exception {
+        connection.setup();
+    }
+
+    @Override
+    public void shutdown() throws Exception {
+        connection.shutdown();
+    }
+
+    @Override
+    public void clean() throws Exception {
+        connection.clean();
+    }
+
+    @Override
+    public void startup() throws Exception {
+        connection.startup();
+    }
+
     private Path storageBasePath;
 
     public Path getStorageBasePath() {
@@ -45,32 +67,71 @@ public class FileStorageService extends BaseService  implements Service, FileSto
         this.storageBasePath = storageBasePath;
     }
 
+    public Path getAbsolutePath(Path filePath) {
+        return filePath.isAbsolute() ? filePath : storageBasePath.resolve(filePath).toAbsolutePath();
+    }
+
     @Override
-    public String readFile(Path filePath) throws Exception {
-        Path absolutePath = storageBasePath.resolve(filePath).toAbsolutePath();
+    public String readFile(Path filePath) throws IOException {
+        Path absolutePath = getAbsolutePath(filePath);
         LOGGER.debug("READ FILE: " + absolutePath.toString());
-        return this.connection.readFile(absolutePath);
+        return connection.readFile(absolutePath);
     }
 
     @Override
-    public void writeFile(Path filePath, String content) throws Exception {
-        Path absolutePath = storageBasePath.resolve(filePath).toAbsolutePath();
-        LOGGER.debug("WRITE FILE: " + absolutePath.toString());
-        this.connection.writeFile(absolutePath, content);
+    public byte[] readFileAsByteArray(Path filePath) throws IOException {
+        Path absolutePath = getAbsolutePath(filePath);
+        LOGGER.debug("READ FILE AS BYTE ARRAY: " + absolutePath.toString());
+        return connection.readFileAsByteArray(absolutePath);
     }
 
-    
     @Override
-    public void writeFile(Path filePath, File file) throws Exception {
-        Path absolutePath = storageBasePath.resolve(filePath).toAbsolutePath();
-        LOGGER.debug("WRITE FILE: " + absolutePath.toString());
-        this.connection.writeFile(absolutePath, file);
+    public Path getPhysicalPath(Path filePath) throws IOException {
+        Path absolutePath = getAbsolutePath(filePath);
+        LOGGER.debug("FETCH FILE : " + absolutePath.toString());
+        return connection.getPhysicalPath(absolutePath);
     }
-    
+
     @Override
-    public void createDirectories(Path directoryPath) throws Exception {
-        Path absolutePath = storageBasePath.resolve(directoryPath).toAbsolutePath();
-         LOGGER.debug("CREATE DIRECTORIES: " + absolutePath.toString());
-        this.connection.createDirectories(absolutePath);
+    public void writeFile(Path filePath, String content) throws IOException {
+        Path absolutePath = getAbsolutePath(filePath);
+        LOGGER.debug("WRITE FILE: " + absolutePath.toString());
+        connection.writeFile(absolutePath, content);
+    }
+
+
+    @Override
+    public void writeFile(Path filePath, File file) throws IOException {
+        Path absolutePath = getAbsolutePath(filePath);
+        LOGGER.debug("WRITE FILE: " + absolutePath.toString());
+        connection.writeFile(absolutePath, file);
+    }
+
+    @Override
+    public void createDirectories(Path directoryPath) throws IOException {
+        Path absolutePath = getAbsolutePath(directoryPath);
+        LOGGER.debug("CREATE DIRECTORIES: " + absolutePath.toString());
+        connection.createDirectories(absolutePath);
+    }
+
+    @Override
+    public Path createFile(Path filePath) throws IOException {
+        Path absolutePath = getAbsolutePath(filePath);
+        LOGGER.debug("CREATE FILES: " + absolutePath.toString());
+        return connection.createFile(filePath);
+    }
+
+    @Override
+    public boolean exist(Path filePath) throws IOException {
+        Path absolutePath = getAbsolutePath(filePath);
+        LOGGER.debug("CHECK EXISTS: " + absolutePath.toString());
+        return connection.exist(absolutePath);
+    }
+
+    @Override
+    public void delete(Path filePath) throws IOException {
+        Path absolutePath = getAbsolutePath(filePath);
+        LOGGER.debug("DELETE: " + absolutePath.toString());
+        connection.delete(absolutePath);
     }
 }

@@ -5,9 +5,11 @@
  */
 package org.opensilex.fs.service;
 
-import java.io.File;
-import java.nio.file.Path;
 import org.opensilex.service.Service;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  *
@@ -15,12 +17,30 @@ import org.opensilex.service.Service;
  */
 public interface FileStorageConnection extends Service {
 
-    public String readFile(Path filePath) throws Exception;
+    byte[] readFileAsByteArray(Path filePath) throws IOException;
+
+    String readFile(Path filePath) throws IOException;
+
+    /**
+     *
+     * @param filePath a Path to a filesystem resource
+     * @return a directly accessible ( by the local filesystem) {@link Path} to the given filePath.
+     *
+     * For distributed/remote filesystem, this allow to get a {@link Path} to a remote file without directly reading it,
+     * for further processing (e.g. : image processing/analysis).
+     *
+     */
+    Path getPhysicalPath(Path filePath) throws IOException;
+
+    void writeFile(Path filePath, String content) throws IOException;
     
-    public void writeFile(Path filePath, String content) throws Exception;
+    void writeFile(Path filePath, File file) throws IOException;
     
-    public void writeFile(Path filePath, File file) throws Exception;
-    
-    public void createDirectories(Path directoryPath) throws Exception;
-    
+    void createDirectories(Path directoryPath) throws IOException;
+
+    Path createFile(Path filePath) throws IOException;
+
+    boolean exist(Path filePath) throws IOException;
+
+    void delete(Path filePath) throws IOException;
 }

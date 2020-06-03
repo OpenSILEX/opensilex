@@ -12,9 +12,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+
+import java.io.*;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -471,12 +470,71 @@ public class DataResourceService extends ResourceService {
 
         FileDescription description = dataFileDao.findFileDescriptionByUri(fileUri);
 
-        if (description == null) {
+
+
+        try {
+//            FileDescriptionDAO dataFileDao = new FileDescriptionDAO(sparql);
+//
+//            FileDescription description = dataFileDao.findFileDescriptionByUri(fileUri);
+//            if (description == null) {
+//                return Response.status(404).build();
+//            }
+
+            java.nio.file.Path filePath = Paths.get(fileUri);
+            byte[] fileContent = fs.readFileAsByteArray(filePath);
+
+            if(ArrayUtils.isEmpty(fileContent)){
+                return Response.status(404).build();
+            }
+
+            return Response.ok(fileContent, MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString()+ "\"") //optional
+                    .build();
+
+        } catch (FileNotFoundException ex) {
             return Response.status(404).build();
         }
 
-        try {
-            FileInputStream stream = new FileInputStream(new File(description.getPath()));
+    }
+
+    @ApiProtected
+    @GET
+    @Path("file/thumbnail{fileUri}")
+    @ApiOperation(value = "Get picture thumbnail")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieve thumbnail"),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+    })
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response getPicturesThumbnails(
+            @ApiParam(value = "Search by fileUri", required = true) @PathParam("fileUri") @Required String fileUri,
+            @ApiParam(value = "Thumbnail width") Integer scaledWidth,
+            @ApiParam(value = "Thumbnail height") Integer scaledHeight,
+
+            @Context HttpServletResponse response ) throws Exception {
+
+        try{
+
+//            FileDescriptionDAO fileDescriptionDAO = new FileDescriptionDAO(sparql);
+//
+//            FileDescription description = fileDescriptionDAO.findFileDescriptionByUri(fileUri);
+//            if (description == null) {
+//                return Response.status(404).build();
+//            }
+
+            java.nio.file.Path filePath = Paths.get(fileUri);
+            java.nio.file.Path physicalFilePath = fs.getPhysicalPath(filePath);
+
+            scaledWidth = scaledWidth == null ? 640 : scaledWidth;
+            scaledHeight = scaledHeight == null? 360 : scaledHeight;
+
+            byte[] thumbnailData = ImageThumbnails.getInstance().getThumbnail(ImageThumbnails.THUMBNAIL_METHOD.CONVERT_COMMAND,physicalFilePath,scaledWidth,scaledHeight);
+
+            if(ArrayUtils.isEmpty(thumbnailData)){
+                return Response.status(404).build();
 
             return Response.ok(stream, MediaType.APPLICATION_OCTET_STREAM)
                     .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"") //optional

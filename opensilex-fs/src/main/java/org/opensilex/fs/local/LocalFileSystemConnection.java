@@ -7,7 +7,10 @@
 package org.opensilex.fs.local;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.fs.service.FileStorageConnection;
@@ -23,30 +26,54 @@ import org.opensilex.service.BaseService;
 public class LocalFileSystemConnection extends BaseService implements FileStorageConnection {
 
     @Override
-    public String readFile(Path filePath) throws Exception {
+    public String readFile(Path filePath) throws IOException {
         return FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8);
     }
 
     @Override
-    public void writeFile(Path filePath, String content) throws Exception {
+    public byte[] readFileAsByteArray(Path filePath) throws IOException {
+        return Files.readAllBytes(filePath);
+    }
+
+    @Override
+    public Path getPhysicalPath(Path filePath) throws IOException {
+        return filePath;
+    }
+
+    @Override
+    public void writeFile(Path filePath, String content) throws IOException {
         FileUtils.writeStringToFile(filePath.toFile(), content, StandardCharsets.UTF_8);
     }
 
     @Override
-    public void writeFile(Path filePath, File file) throws Exception {
+    public void writeFile(Path filePath, File file) throws IOException {
         FileUtils.copyFile(file, filePath.toFile());
     }
 
     @Override
-    public void createDirectories(Path directoryPath) throws Exception {
+    public void createDirectories(Path directoryPath) throws IOException {
         FileUtils.forceMkdir(directoryPath.toFile());
     }
 
-    
+    @Override
+    public Path createFile(Path filePath) throws IOException {
+        return Files.createFile(filePath);
+    }
+
+    @Override
+    public boolean exist(Path filePath) throws IOException {
+        return Files.exists(filePath);
+    }
+
+    @Override
+    public void delete(Path filePath) throws IOException {
+        Files.delete(filePath);
+    }
+
     public static FileStorageService getService(Path storageBasePath) {
         FileStorageService service = new FileStorageService(new LocalFileSystemConnection());
         service.setStorageBasePath(storageBasePath);
-        
+
         return service;
     }
 }

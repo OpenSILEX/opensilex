@@ -51,8 +51,7 @@ public class NoSQLModule extends OpenSilexModule {
     public void setup() throws Exception {
         LOGGER.debug("Enhancing class");
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        JDOHelper.getEnhancer(contextClassLoader);
-        JDOEnhancer enhancer = JDOHelper.getEnhancer();
+        JDOEnhancer enhancer = JDOHelper.getEnhancer(contextClassLoader);
         enhancer.setClassLoader(contextClassLoader);
         enhancer.setVerbose(true);
 //        enhancer.addClasses(classNames)

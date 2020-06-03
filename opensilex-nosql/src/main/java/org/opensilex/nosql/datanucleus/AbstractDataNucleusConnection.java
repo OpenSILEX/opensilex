@@ -7,21 +7,20 @@
 package org.opensilex.nosql.datanucleus;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
-import javax.jdo.JDOEnhancer;
 import javax.jdo.JDOHelper;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.JDOQLTypedQuery;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
-import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.naming.NamingException;
-import org.datanucleus.AbstractNucleusContext;
 import org.datanucleus.PropertyNames;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.datanucleus.metadata.PersistenceUnitMetaData;
+import org.opensilex.OpenSilex;
 import org.opensilex.nosql.service.NoSQLConnection;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
@@ -62,8 +61,9 @@ public abstract class AbstractDataNucleusConnection extends BaseService implemen
         PersistenceUnitMetaData pumd = new PersistenceUnitMetaData("dynamic-unit", "RESOURCE_LOCAL", null);
         pumd.setExcludeUnlistedClasses(false);
         PMF_PROPERTIES.forEach((key, value) -> pumd.addProperty((String) key, (String) value));
-        pumd.addProperty(PropertyNames.PROPERTY_CLASSLOADER_RESOLVER_NAME, "org.opensilex.nosql.datanucleus.OpenSilexDataNucleusClassLoaderResolver");
-        PMF = new JDOPersistenceManagerFactory(pumd, null);
+        Map<String, Object> props = new HashMap<>();
+        props.put(PropertyNames.PROPERTY_CLASSLOADER_PRIMARY, OpenSilex.getClassLoader());
+        PMF = new JDOPersistenceManagerFactory(pumd, props);
     }
 
     // convenience methods to get a PersistenceManager 

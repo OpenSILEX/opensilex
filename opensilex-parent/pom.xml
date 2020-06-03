@@ -781,6 +781,7 @@
                             <configuration>
                                 <port>37017</port>
                                 <bindIp>127.0.0.1</bindIp>
+                                <skip>${skipIntegrationTest}</skip>
                             </configuration>
                         </execution>
                     </executions>
@@ -1021,39 +1022,6 @@
                 </executions>
             </plugin>
             
-            <!-- Run annotation processors on src/main/java sources -->
-            <plugin>
-                <groupId>org.bsc.maven</groupId>
-                <artifactId>maven-processor-plugin</artifactId>
-                <version>${maven.processor.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>process</id>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                        <phase>generate-sources</phase>
-                        <configuration>
-                            <processors>
-                                <processor>org.datanucleus.jdo.query.JDOQueryProcessor</processor>
-                            </processors>
-                        </configuration>
-                    </execution> 
-                    <execution>
-                        <id>process-test</id>
-                        <goals>
-                            <goal>process-test</goal>
-                        </goals>
-                        <phase>generate-test-sources</phase>
-                        <configuration>
-                            <processors>
-                                <processor>org.datanucleus.jdo.query.JDOQueryProcessor</processor>
-                            </processors>
-                            <outputDirectory>target/generated-test-sources/apt-test</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <!--check minimal maven version--> 
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>

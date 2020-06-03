@@ -949,6 +949,53 @@
                 <groupId>org.bsc.maven</groupId>
                 <artifactId>maven-processor-plugin</artifactId>
                 <version>${maven.processor.plugin.version}</version>
+                
+                <dependencies>
+                    <!--DataNucleus - Big data object mapping--> 
+                    <dependency>
+                        <groupId>org.datanucleus</groupId>
+                        <artifactId>datanucleus-core</artifactId>
+                        <version>${data.nucleus.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.datanucleus</groupId>
+                        <artifactId>javax.jdo</artifactId>
+                        <version>${data.nucleus.jdo.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.datanucleus</groupId>
+                        <artifactId>datanucleus-api-jdo</artifactId>
+                        <version>${data.nucleus.api.jdo.version}</version>
+                    </dependency>
+                    <!-- https://mvnrepository.com/artifact/org.datanucleus/datanucleus-jdo-query -->
+                    <dependency>
+                        <groupId>org.datanucleus</groupId>
+                        <artifactId>datanucleus-jdo-query</artifactId>
+                        <version>${datanucleus-jdo-query.version}</version>
+                    </dependency>
+                    <!--DataNucleus - MongoDB driver --> 
+                    <dependency>
+                        <groupId>org.datanucleus</groupId>
+                        <artifactId>datanucleus-mongodb</artifactId>
+                        <version>${data.nucleus.mongodb.version}</version>
+                    </dependency>
+                    <!-- https://mvnrepository.com/artifact/org.datanucleus/datanucleus-accessplatform-jdo-mongodb -->
+                    <dependency>
+                        <groupId>org.datanucleus</groupId>
+                        <artifactId>datanucleus-accessplatform-jdo-mongodb</artifactId>
+                        <version>${data.nucleus.accessplatform.mongodb.version}</version>
+                        <type>pom</type>
+                    </dependency>
+
+        
+                    <!--DataNucleus - JTA Transaction--> 
+                    <dependency>
+                        <groupId>org.jboss.narayana.jta</groupId>
+                        <artifactId>narayana-jta</artifactId>
+                        <version>${data.nucleus.jta.version}</version>
+                    </dependency>
+                </dependencies>
+                
                 <executions>
                     <execution>
                         <id>process</id>
@@ -1175,48 +1222,11 @@
                     <verbose>false</verbose>
                 </configuration>
                 <dependencies>
-                    <!--DataNucleus - Big data object mapping--> 
-                    <dependency>
-                        <groupId>org.datanucleus</groupId>
-                        <artifactId>datanucleus-core</artifactId>
-                        <version>${data.nucleus.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.datanucleus</groupId>
-                        <artifactId>javax.jdo</artifactId>
-                        <version>${data.nucleus.jdo.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.datanucleus</groupId>
-                        <artifactId>datanucleus-api-jdo</artifactId>
-                        <version>${data.nucleus.api.jdo.version}</version>
-                    </dependency>
-                    <!-- https://mvnrepository.com/artifact/org.datanucleus/datanucleus-jdo-query -->
-                    <dependency>
-                        <groupId>org.datanucleus</groupId>
-                        <artifactId>datanucleus-jdo-query</artifactId>
-                        <version>${datanucleus-jdo-query.version}</version>
-                    </dependency>
-                    <!--DataNucleus - MongoDB driver --> 
-                    <dependency>
-                        <groupId>org.datanucleus</groupId>
-                        <artifactId>datanucleus-mongodb</artifactId>
-                        <version>${data.nucleus.mongodb.version}</version>
-                    </dependency>
-                    <!-- https://mvnrepository.com/artifact/org.datanucleus/datanucleus-accessplatform-jdo-mongodb -->
                     <dependency>
                         <groupId>org.datanucleus</groupId>
                         <artifactId>datanucleus-accessplatform-jdo-mongodb</artifactId>
                         <version>${data.nucleus.accessplatform.mongodb.version}</version>
                         <type>pom</type>
-                    </dependency>
-
-        
-                    <!--DataNucleus - JTA Transaction--> 
-                    <dependency>
-                        <groupId>org.jboss.narayana.jta</groupId>
-                        <artifactId>narayana-jta</artifactId>
-                        <version>${data.nucleus.jta.version}</version>
                     </dependency>
                 </dependencies>
                 <executions>

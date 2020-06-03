@@ -467,20 +467,16 @@ public class DataResourceService extends ResourceService {
             @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @PathParam("fileUri") @URL @Required String fileUri,
             @Context HttpServletResponse response
     ) throws Exception {
-        FileDescriptionDAO dataFileDao = new FileDescriptionDAO(sparql);
-
-        FileDescription description = dataFileDao.findFileDescriptionByUri(fileUri);
-
 
         try {
-//            FileDescriptionDAO dataFileDao = new FileDescriptionDAO(sparql);
-//
-//            FileDescription description = dataFileDao.findFileDescriptionByUri(fileUri);
-//            if (description == null) {
-//                return Response.status(404).build();
-//            }
+            FileDescriptionDAO dataFileDao = new FileDescriptionDAO(sparql);
 
-            java.nio.file.Path filePath = Paths.get(fileUri);
+            FileDescription description = dataFileDao.findFileDescriptionByUri(fileUri);
+            if (description == null) {
+                return Response.status(404).build();
+            }
+
+            java.nio.file.Path filePath = Paths.get(description.getPath());
             byte[] fileContent = fs.readFileAsByteArray(filePath);
 
             if (ArrayUtils.isEmpty(fileContent)) {
@@ -518,14 +514,14 @@ public class DataResourceService extends ResourceService {
 
         try {
 
-//            FileDescriptionDAO fileDescriptionDAO = new FileDescriptionDAO(sparql);
-//
-//            FileDescription description = fileDescriptionDAO.findFileDescriptionByUri(fileUri);
-//            if (description == null) {
-//                return Response.status(404).build();
-//            }
+            FileDescriptionDAO fileDescriptionDAO = new FileDescriptionDAO(sparql);
 
-            java.nio.file.Path filePath = Paths.get(fileUri);
+            FileDescription description = fileDescriptionDAO.findFileDescriptionByUri(fileUri);
+            if (description == null) {
+                return Response.status(404).build();
+            }
+
+            java.nio.file.Path filePath = Paths.get(description.getPath());
             java.nio.file.Path physicalFilePath = fs.getPhysicalPath(filePath);
 //
 //            scaledWidth = scaledWidth == null ? 640 : scaledWidth;

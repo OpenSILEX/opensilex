@@ -200,6 +200,7 @@
                                     <exclude>javax.annotation:javax.annotation-api</exclude>
                                     <exclude>org.apache.httpcomponents:httpcore-osgi</exclude>
                                     <exclude>org.apache.httpcomponents:httpclient-osgi</exclude>
+                                    <exclude>org.datanucleus:*</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>

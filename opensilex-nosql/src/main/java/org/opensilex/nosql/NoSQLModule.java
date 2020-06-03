@@ -11,13 +11,12 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import javax.jdo.JDOEnhancer;
-import javax.jdo.JDOHelper;
 import org.bson.Document;
+import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  *
@@ -45,22 +44,17 @@ public class NoSQLModule extends OpenSilexModule {
     /**
      * @see http://www.datanucleus.org/products/accessplatform/jdo/enhancer.html#api
      * @see https://github.com/datanucleus/tests/blob/master/jdo/general/src/test/org/datanucleus/tests/DynamicEnhanceSchemaToolTest.java
-     * @throws Exception 
+     * @throws Exception
      */
     @Override
     public void setup() throws Exception {
         LOGGER.debug("Enhancing class");
-        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        JDOEnhancer enhancer = JDOHelper.getEnhancer(contextClassLoader);
-        enhancer.setClassLoader(contextClassLoader);
-        enhancer.setVerbose(true);
-//        enhancer.addClasses(classNames)
-//        enhancer.addJar("opensilex-core"); // TODO specify module ?
+        JDOEnhancer enhancer = new org.datanucleus.api.jdo.JDOEnhancer();
+        enhancer.setClassLoader(OpenSilex.getClassLoader());
+        enhancer.setVerbose(getOpenSilex().isDebug());
         enhancer.enhance();
 
     }
-    
-    
 
     @Override
     public void check() throws Exception {

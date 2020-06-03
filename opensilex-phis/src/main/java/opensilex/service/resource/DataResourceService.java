@@ -507,8 +507,8 @@ public class DataResourceService extends ResourceService {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getPicturesThumbnails(
             @ApiParam(value = "Search by fileUri", required = true) @PathParam("fileUri") @Required String fileUri,
-//            @ApiParam(value = "Thumbnail width") Integer scaledWidth,
-//            @ApiParam(value = "Thumbnail height") Integer scaledHeight,
+            @ApiParam(value = "Thumbnail width" )  @QueryParam("scaledWidth") @Min(256) Integer scaledWidth,
+            @ApiParam(value = "Thumbnail height") @QueryParam("scaledHeight") @Min(144) Integer scaledHeight,
 
             @Context HttpServletResponse response) throws Exception {
 
@@ -522,16 +522,15 @@ public class DataResourceService extends ResourceService {
             }
 
             java.nio.file.Path filePath = Paths.get(description.getPath());
+
+            // get a path to the file which is physically accessible in order to be read by the ImageThumbnails utility class
             java.nio.file.Path physicalFilePath = fs.getPhysicalPath(filePath);
-//
-//            scaledWidth = scaledWidth == null ? 640 : scaledWidth;
-//            scaledHeight = scaledHeight == null ? 360 : scaledHeight;
 
             byte[] thumbnailData = ImageThumbnails.getInstance().getThumbnail(
                     ImageThumbnails.THUMBNAIL_METHOD.CONVERT_COMMAND,
                     physicalFilePath,
-                    640,
-                    360
+                    scaledWidth,
+                    scaledHeight
             );
             if (ArrayUtils.isEmpty(thumbnailData)) {
                 return Response.status(404).build();

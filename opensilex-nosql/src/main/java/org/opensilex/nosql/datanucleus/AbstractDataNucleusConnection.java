@@ -18,6 +18,8 @@ import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.naming.NamingException;
+import org.datanucleus.AbstractNucleusContext;
+import org.datanucleus.PropertyNames;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.datanucleus.metadata.PersistenceUnitMetaData;
 import org.opensilex.nosql.service.NoSQLConnection;
@@ -60,8 +62,8 @@ public abstract class AbstractDataNucleusConnection extends BaseService implemen
         PersistenceUnitMetaData pumd = new PersistenceUnitMetaData("dynamic-unit", "RESOURCE_LOCAL", null);
         pumd.setExcludeUnlistedClasses(false);
         PMF_PROPERTIES.forEach((key, value) -> pumd.addProperty((String) key, (String) value));
-
-        PMF =  new JDOPersistenceManagerFactory(pumd, null);
+        pumd.addProperty(PropertyNames.PROPERTY_CLASSLOADER_RESOLVER_NAME, "org.opensilex.nosql.datanucleus.OpenSilexDataNucleusClassLoaderResolver");
+        PMF = new JDOPersistenceManagerFactory(pumd, null);
     }
 
     // convenience methods to get a PersistenceManager 
@@ -89,7 +91,7 @@ public abstract class AbstractDataNucleusConnection extends BaseService implemen
 
     @Override
     public void delete(Class cls, Object key) throws NamingException {
-        Object foundedObject  = findById(cls, key);
+        Object foundedObject = findById(cls, key);
 
         if (foundedObject != null) {
             try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
@@ -99,9 +101,6 @@ public abstract class AbstractDataNucleusConnection extends BaseService implemen
             }
         }
     }
-    
-  
-
 
     @Override
     public <T> T findById(Class cls, Object key) throws NamingException {
@@ -119,9 +118,9 @@ public abstract class AbstractDataNucleusConnection extends BaseService implemen
         return (Long) query.executeResultUnique();
     }
 
-     @Override
+    @Override
     public Object update(Object instance) throws NamingException {
-        return  create(instance);
+        return create(instance);
     }
 
     @Override

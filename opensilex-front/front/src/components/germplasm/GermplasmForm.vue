@@ -3,8 +3,8 @@
     <!-- URI -->
     <opensilex-UriForm
       :uri.sync="form.uri"
-      label="component.germplasm.table.fields.uri"
-      helpMessage="component.experiment.uri-help"
+      label="GermplasmForm.uri"
+      helpMessage="GermplasmForm.uri-help"
       :editMode="editMode"
       :generated.sync="uriGenerated"
     ></opensilex-UriForm>
@@ -14,65 +14,65 @@
       :type.sync="form.rdfType"
       :baseType="$opensilex.Oeso.GERMPLASM_TYPE_URI"
       :required="true"
-      helpMessage="component.germplasm.form.rdfType-help"
+      helpMessage="GermplasmForm.rdfType-help"
       disabled
     ></opensilex-TypeForm>
     
     <!-- label -->
     <opensilex-InputForm
       :value.sync="form.label"
-      label="component.germplasm.table.fields.label"
+      label="GermplasmForm.label"
       type="text"
       :required="true"
-      helpMessage="component.germplasm.form.labelHelp"
+      helpMessage="GermplasmForm.label-help"
     ></opensilex-InputForm>
     
     <!-- fromSpecies -->
     <opensilex-InputForm
       :value.sync="form.fromSpecies"
-      label="component.germplasm.table.fields.fromSpecies"
+      label="GermplasmForm.fromSpecies"
       type="text"
-      helpMessage="component.germplasm.form.species-help"
+      helpMessage="GermplasmForm.species-help"
     ></opensilex-InputForm>
  
     <!-- fromVariety -->
     <opensilex-InputForm
       :value.sync="form.fromVariety"
-      label="component.germplasm.table.fields.fromVariety"
+      label="GermplasmForm.fromVariety"
       type="text"
-      helpMessage="component.germplasm.form.variety-help"
+      helpMessage="GermplasmForm.variety-help"
     ></opensilex-InputForm>
     
     <!-- fromAccession -->
     <opensilex-InputForm
       :value.sync="form.fromAccession"
-      label="component.germplasm.table.fields.fromAccession"
+      label="GermplasmForm.fromAccession"
       type="text"
-      helpMessage="component.germplasm.form.accession-help"
+      helpMessage="GermplasmForm.accession-help"
     ></opensilex-InputForm>
     
     <!-- institute -->
     <opensilex-InputForm
       :value.sync="form.institute"
-      label="component.germplasm.table.fields.institute"
+      label="GermplasmForm.institute"
       type="text"
-      helpMessage="component.germplasm.form.institute-help"
+      helpMessage="GermplasmForm.institute-help"
     ></opensilex-InputForm>
     
     <!-- year -->
     <opensilex-InputForm
       :value.sync="form.productionYear"
-      label="component.germplasm.table.fields.year"
+      label="GermplasmForm.year"
       type="text"
-      helpMessage="component.germplasm.form.year-help"
+      helpMessage="GermplasmForm.year-help"
     ></opensilex-InputForm>
     
     <!-- comment -->
     <opensilex-InputForm
       :value.sync="form.comment"
-      label="component.germplasm.table.fields.comment"
+      label="GermplasmForm.comment"
       type="text"
-      helpMessage="component.germplasm.form.comment-help"
+      helpMessage="GermplasmForm.comment-help"
     ></opensilex-InputForm>
   </ValidationObserver>
 </template>
@@ -161,4 +161,49 @@ export default class GermplasmForm extends Vue {
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+
+en:
+  GermplasmForm:
+    label: Name
+    label-help: Name used to define this germplasm
+    uri: URI
+    uri-help: Unique germplasm identifier
+    rdfType: Type
+    rdfType-help: Germplasm Type
+    fromSpecies : Species URI
+    species-help: Species URI of the germplasm
+    fromVariety : Variety URI
+    variety-help: Variety URI of the germplasm
+    fromAccession: Accession URI
+    accession-help: Accession URI of the germplasm
+    institute: Institute
+    institute-help: The code of the institute which the sgermplasm comes from
+    comment: Comment
+    comment-help: Description associated to the germplasm 
+    year: Production Year
+    year-help: Year when the ressource has been produced
+
+fr:
+  GermplasmForm:
+    label: Nom
+    label-help: Nom du germplasm
+    uri: URI
+    uri-help: Identifiant unique du germplasm
+    rdfType: Type
+    rdfType-help: Type du germplasm
+    fromSpecies : URI de l'espèce
+    species-help: URI de l'espèce
+    fromVariety : URI de variété
+    variety-help: URI de la variété
+    fromAccession: URI d'accession
+    accession-help: Accession URI of the germplasm
+    institute: institut
+    institute-help: Code de l'institut dont provient le germplasm
+    comment: Commentaire
+    comment-help: Description associée au germplasm
+    year: Année de production
+    year-help: Year when the ressource has been produced
+</i18n>
 

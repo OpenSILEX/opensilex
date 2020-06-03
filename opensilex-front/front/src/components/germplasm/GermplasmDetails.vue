@@ -1,108 +1,75 @@
 <template>
-  <b-modal ref="modalRef" size="lg" ok-only>
-    <template v-slot:modal-ok>{{$t('component.common.cancel')}}</template>
-    <template v-slot:modal-title>
-      <font-awesome-icon icon="sun" />
-      {{$t("component.germplasm.details.title") }} :
-      <strong>{{details.label}}</strong>
-    </template>
-    <b-tabs content-class="mt-3" pills card>
-      <b-tab :title="$t('component.germplasm.details.tab')" active>
-        <div class="row">
-          <div class="col-md-3">
-            <label>
-              <strong>{{$t('component.germplasm.details.uri')}}</strong>
-            </label>
-          </div>
-          <div class="col-md-9">
-            <p>{{this.details.uri}}</p>
-          </div>
-          <div class="col-md-3">
-            <label>
-              <strong>{{$t('component.germplasm.details.label')}}</strong>
-            </label>
-          </div>
-          <div class="col-md-9">
-            <p>{{this.details.label}}</p>
-          </div>
-          <div class="col-md-3">
-            <label>
-              <strong>{{$t('component.germplasm.details.rdfType')}}</strong>
-            </label>
-          </div>
-          <div class="col-md-9">
-            <p>{{this.details.typeLabel}}</p>
-          </div>
-          <div class="col-md-3">
-            <label>
-              <strong>{{$t('component.germplasm.details.species')}}</strong>
-            </label>
-          </div>
-          <div class="col-md-3">
-            <p>{{this.details.speciesLabel}}</p>            
-          </div>
-          <div class="col-md-6">
-            <!-- <a :href="this.details.fromSpecies" class="uri-info primary">{{this.details.fromSpecies}}</a> -->
-            <p>{{this.details.fromSpecies}}</p>    
-          </div>
-          <div class="col-md-3">
-            <label>
-              <strong>{{$t('component.germplasm.details.variety')}}</strong>
-            </label>
-          </div>
-          <div class="col-md-3">
-            <p>{{this.details.varietyLabel}}</p>
-          </div>
-          <div class="col-md-6">
-            <p>{{this.details.fromVariety}}</p>
-          </div>
-          <div class="col-md-3">
-            <label>
-              <strong>{{$t('component.germplasm.details.accession')}}</strong>
-            </label>
-          </div>
-          <div class="col-md-3">
-            <p>{{this.details.accessionLabel}}</p>
-          </div>
-          <div class="col-md-6">
-            <p>{{this.details.fromAccession}}</p>
-          </div>
-          <div class="col-md-3">
-            <label>
-              <strong>{{$t('component.germplasm.details.institute')}}</strong>
-            </label>
-          </div>
-          <div class="col-md-9">
-            <p>{{this.details.institute}}</p>
-          </div>
-          <div class="col-md-3">
-            <label>
-              <strong>{{$t('component.germplasm.details.year')}}</strong>
-            </label>
-          </div>
-          <div class="col-md-9">
-            <p>{{this.details.productionYear}}</p>
-          </div>
-          <div class="col-md-3">
-            <label>
-              <strong>{{$t('component.germplasm.details.comment')}}</strong>
-            </label>
-          </div>
-          <div class="col-md-9">
-            <p>{{this.details.comment}}</p>
-          </div>
-        </div>
-      </b-tab>
-      <b-tab :title="$t('component.common.tabs.document')" disabled></b-tab>
-      <b-tab :title="$t('component.common.tabs.experiment')" disabled></b-tab>
-    </b-tabs>
-  </b-modal>
+  <div class="container-fluid">
+    <opensilex-PageHeader
+      icon="fa#sun"
+      :title="germplasm.label"
+      description="GermplasmDetails.description"
+    ></opensilex-PageHeader>
+    <opensilex-NavBar returnTo="/germplasm" returnToTitle="GermplasmDetails.backToList">
+    </opensilex-NavBar>
+  
+  <div class="container-fluid">
+      <b-row>
+        <b-col>
+          <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
+            <template v-slot:body>
+              <opensilex-UriView v-if="germplasm.uri.startsWith('http')" :uri="germplasm.uri" :url="germplasm.uri"></opensilex-UriView>
+              <opensilex-StringView v-else label="GermplasmDetails.uri" :value="germplasm.uri"></opensilex-StringView>
+              <opensilex-StringView label="GermplasmDetails.rdfType" :value="germplasm.typeLabel"></opensilex-StringView>
+              <opensilex-StringView label="GermplasmDetails.label" :value="germplasm.label"></opensilex-StringView>
+              <opensilex-StringView v-if="germplasm.institute != null" label="GermplasmDetails.institute" :value="germplasm.institute"></opensilex-StringView>
+              <opensilex-StringView v-if="germplasm.year != null" label="GermplasmDetails.year" :value="germplasm.year"></opensilex-StringView>
+              <opensilex-StringView v-if="germplasm.comment != null" label="GermplasmDetails.comment" :value="germplasm.comment"></opensilex-StringView>
+              <opensilex-LabelUriView 
+              v-if="(germplasm.speciesLabel != null) || (germplasm.fromSpecies != null)" 
+              label="GermplasmDetails.species" 
+              :value="germplasm.speciesLabel" 
+              :uri="germplasm.fromSpecies" 
+              ></opensilex-LabelUriView>
+              <opensilex-LabelUriView 
+              v-if="(germplasm.varietyLabel != null) || (germplasm.fromVariety != null)" 
+              label="GermplasmDetails.variety" 
+              :value="germplasm.varietyLabel" 
+              :uri="germplasm.fromVariety" 
+              ></opensilex-LabelUriView>
+              <opensilex-LabelUriView 
+              v-if="(germplasm.fromAccession != null) || (germplasm.fromAccession != null)" 
+              label="GermplasmDetails.accession" 
+              :value="germplasm.accessionLabel" 
+              :uri="germplasm.fromAccession" 
+              ></opensilex-LabelUriView>
+            </template>
+          </opensilex-Card>
+        </b-col>
+        <b-col>
+          <opensilex-Card label="GermplasmDetails.experiment" icon="ik#ik-clipboard">
+            <template v-slot:body>
+               <opensilex-TableAsyncView
+                ref="tableRef"
+                :searchMethod="loadExperiments"
+                :fields="expFields"
+                defaultSortBy="label"
+              >
+              <template v-slot:cell(uri)="{data}">
+                <opensilex-UriLink
+                  :uri="data.item.uri"
+                  :to="{path: '/experiment/'+ encodeURIComponent(data.item.uri)}"
+                ></opensilex-UriLink>
+              </template>
+              </opensilex-TableAsyncView>
+            </template>
+          </opensilex-Card>
+        </b-col>
+      </b-row>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import { GermplasmGetDTO } from "opensilex-core/index";
+import { GermplasmGetDTO, GermplasmService, ExperimentGetListDTO } from "opensilex-core/index";
+import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
 export default class GermplasmDetails extends Vue {
@@ -111,6 +78,9 @@ export default class GermplasmDetails extends Vue {
   $router: any;
   $t: any;
   $i18n: any;
+  service: GermplasmService;
+
+  uri: string = null;
 
   @Ref("modalRef") readonly modalRef!: any;
 
@@ -118,25 +88,62 @@ export default class GermplasmDetails extends Vue {
     return this.$store.state.user;
   }
 
-  details: GermplasmGetDTO = {
+  germplasm: GermplasmGetDTO = {
     uri: null,
     label: null,
     rdfType: null,
     fromSpecies: null,
+    speciesLabel: null,
     fromVariety: null,
+    varietyLabel: null,
     fromAccession: null,
+    accessionLabel: null,
     institute: null,
     productionYear: null,
     comment: null
   };
 
-  showDetails(details: any) {
-    this.details = details;
-    this.modalRef.show();
+  created() {
+    this.service = this.$opensilex.getService("opensilex.GermplasmService");
+
+    this.uri = this.$route.params.uri;
+    this.loadGermplasm(this.uri);
   }
 
-  hideForm() {
-    this.modalRef.hide();
+  loadGermplasm(uri: string) {
+    this.service
+      .getGermplasm(uri)
+      .then((http: HttpResponse<OpenSilexResponse<GermplasmGetDTO>>) => {
+        this.germplasm = http.response.result;
+        this.loadExperiments
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
+
+  expFields = [
+    {
+      key: "uri",
+      label: "component.experiment.uri",
+      sortable: true
+    },
+    {
+      key: "label",
+      label: "component.experiment.label",
+      sortable: true
+    },
+  ]
+
+  experiments = [];
+
+  @Ref("table") readonly table!: any;
+
+  loadExperiments(options) {
+    
+    return  this.service.getGermplasmExperiments(
+      this.uri,
+      options.orderBy,
+      options.currentPage,
+      options.pageSize)
   }
 }
 </script>
@@ -151,3 +158,42 @@ export default class GermplasmDetails extends Vue {
   max-width: 300px;
 }
 </style>
+
+<i18n>
+
+en:
+  GermplasmDetails:
+    title: Germplasm Details
+    description: Detailed Information
+    info: Germplasm Information
+    experiment: Associated experiments
+    document: Associated documents
+    uri: URI
+    label: Name
+    rdfType: Type
+    species: Species
+    variety: Variety
+    accession: Accession
+    institute: Institute
+    year: Production Year
+    comment: Comment
+    backToList: Go back to Germplasm list
+
+fr:
+  GermplasmDetails:
+    title: Détails du Germplasm
+    description: Information détaillées
+    info: Informations générales
+    experiment: Experimentations associées
+    document: Documents associées
+    uri: URI
+    label: Nom
+    rdfType: Type
+    species: Espèce
+    variety: Variété
+    accession: Accession
+    institute: Institut
+    year: Année de production
+    comment: Commentaire
+    backToList: Retourner à la liste des germplasm
+</i18n>

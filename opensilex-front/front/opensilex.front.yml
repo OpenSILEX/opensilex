@@ -111,7 +111,7 @@ menu:
           credentials:
             - factor-read
       - id: germplasm
-        label: component.germplasm.germplasmTitle
+        label: component.menu.experimentalDesign.germplasm
         icon: ik-cloud-rain
         route:
           path: /germplasm
@@ -132,6 +132,9 @@ routes:
     credentials: []
   - path: /germplasm/create
     component: opensilex-GermplasmCreate
+    credentials: []
+  - path: /germplasm/:uri
+    component: opensilex-GermplasmDetails
     credentials: []
 
   - path: /factor/create

@@ -115,6 +115,8 @@ components["opensilex-UriForm"] = UriForm;
 import TypeForm from './common/forms/TypeForm.vue'
 components["opensilex-TypeForm"] = TypeForm;
 
+import LabelUriView from './common/views/LabelUriView.vue'
+components["opensilex-LabelUriView"] = LabelUriView;
 import StringView from './common/views/StringView.vue'
 components["opensilex-StringView"] = StringView;
 import ListView from './common/views/ListView.vue'

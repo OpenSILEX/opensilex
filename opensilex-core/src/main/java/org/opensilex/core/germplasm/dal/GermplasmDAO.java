@@ -23,6 +23,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -161,6 +162,7 @@ public class GermplasmDAO {
             URI accession,
             String institute,
             Integer productionYear,
+            URI experiment,
             List<OrderBy> orderByList, 
             Integer page, 
             Integer pageSize) throws Exception {
@@ -177,6 +179,7 @@ public class GermplasmDAO {
                     appendAccessionFilter(select, accession);
                     appendInstituteFilter(select, institute);
                     appendProductionYearFilter(select, productionYear);
+                    appendExperimentFilter(select, experiment);
                 },
                 orderByList,
                 page,
@@ -254,6 +257,55 @@ public class GermplasmDAO {
         return sparql.executeAskQuery(new AskBuilder()
                 .addWhere(uriVar, ontologyRelation, SPARQLDeserializers.nodeURI(uri))
         );
+    }
+    
+    public ListWithPagination<ExperimentModel> getExpFromGermplasm(
+            UserModel currentUser,
+            URI uri,
+            List<OrderBy> orderByList, 
+            Integer page, 
+            Integer pageSize) throws Exception {
+
+        return sparql.searchWithPagination(
+                ExperimentModel.class, 
+                currentUser.getLanguage(),
+                (SelectBuilder select) -> {
+                    appendGermplasmFilter(select, uri);
+                },
+                orderByList,
+                page, 
+                pageSize);        
+                
+    }
+    
+    public ListWithPagination<GermplasmModel> getGermplasmFromExp(
+            UserModel currentUser,
+            URI uri,
+            List<OrderBy> orderByList, 
+            Integer page, 
+            Integer pageSize) throws Exception {
+
+        return sparql.searchWithPagination(GermplasmModel.class, currentUser.getLanguage(),
+                (SelectBuilder select) -> {
+                    appendExperimentFilter(select, uri);
+                }
+                , orderByList, page, pageSize);        
+                
+    }
+
+    private void appendGermplasmFilter(SelectBuilder select, URI uri) {
+        if (uri != null) {
+            select.addWhere(makeVar("so"), Oeso.hasGermplasm, SPARQLDeserializers.nodeURI(uri));
+            select.addWhere(makeVar("so"), Oeso.participatesIn, makeVar(SPARQLResourceModel.URI_FIELD));
+        }
+    }
+
+    private void appendExperimentFilter(SelectBuilder select, URI uri) {
+        if (uri != null) {
+            select.addWhere(makeVar("so"), Oeso.hasGermplasm, makeVar(SPARQLResourceModel.URI_FIELD));
+            //String uristring = SPARQLDeserializers.getExpandedURI(uri.toString());
+            select.addWhere(makeVar("so"), Oeso.participatesIn, SPARQLDeserializers.nodeURI(uri));
+        }        
     }
 
     private static class Key {

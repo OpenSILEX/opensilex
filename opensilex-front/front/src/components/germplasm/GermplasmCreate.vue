@@ -1,38 +1,26 @@
 <template>
-  <div>
-    <div class="page-header">
-      <div class="row align-items-end">
-
-          <div class="col-lg-2">
-              <nav class="breadcrumb-container" aria-label="breadcrumb">
-                  <ol class="breadcrumb">
-                      <li class="breadcrumb-item">
-                        <router-link :to="{path: '/germplasm'}" :title="$t('component.germplasm.backToList')">
-                          <i class="ik ik-corner-up-left"></i>
-                          {{ $t('component.germplasm.germplasmList') }}
-                        </router-link>
-                      </li>
-                  </ol>
-              </nav>
-          </div>
-      </div>
-    </div>
-    <div>    
-      <b-input-group class="mt-3 mb-3" size="sm">
-        <b-form-select ref="germplasmType" 
-          v-model="selected" :options="germplasmTypes" 
-          @change="refreshTable">
-          <template v-slot:first>
-            <b-form-select-option :value="null">{{$t('component.germplasm.select')}}</b-form-select-option>
-          </template>
-        </b-form-select>
-      </b-input-group>
-      <opensilex-GermplasmTable
-      v-if = this.selected
-      ref="germplasmTable" 
-      :germplasmType=selected
-      ></opensilex-GermplasmTable>
-    </div>
+  <div class="container-fluid">
+    <opensilex-PageHeader
+      icon="fa#sun"
+      title="GermplasmCreate.title"
+      description="GermplasmCreate.description"
+    ></opensilex-PageHeader>
+    <opensilex-NavBar returnTo="/germplasm" returnToTitle="GermplasmCreate.backToList">
+    </opensilex-NavBar>
+    <b-input-group class="mt-3 mb-3" size="sm">
+      <b-form-select ref="germplasmType" 
+        v-model="selected" :options="germplasmTypes" 
+        @change="refreshTable">
+        <template v-slot:first>
+          <b-form-select-option :value="null">{{$t('GermplasmCreate.select')}}</b-form-select-option>
+        </template>
+      </b-form-select>
+    </b-input-group>
+    <opensilex-GermplasmTable
+    v-if = this.selected
+    ref="germplasmTable" 
+    :germplasmType=selected
+    ></opensilex-GermplasmTable>
   </div>
 </template>
 
@@ -113,3 +101,20 @@ export default class GermplasmCreate extends Vue {
 <style scoped lang="scss">
 
 </style>
+
+<i18n>
+
+en:
+  GermplasmCreate:
+    title: Add Germplasm
+    description: Add species, varieties, accessions ...
+    backToList: Return to germplasm list
+    select: Please select a type
+fr:
+  GermplasmCreate:
+    title: Ajout de resources génétiques
+    description: Créer des espèces, des variétiés, des accessions ...
+    backToList: Revenir à la liste des germplasm
+    select: Veuillez sélectionner un type de germplasm
+  
+</i18n>

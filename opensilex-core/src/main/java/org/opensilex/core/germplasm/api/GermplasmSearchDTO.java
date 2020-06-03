@@ -54,6 +54,11 @@ public class GermplasmSearchDTO {
      */
     protected Integer productionYear;
     
+    /**
+     * experiment
+     */
+    protected URI experiment;
+    
     @ValidURI
     @ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
     public URI getUri() {
@@ -130,5 +135,14 @@ public class GermplasmSearchDTO {
     public void setProductionYear(Integer productionYear) {
         this.productionYear = productionYear;
     } 
+
+    @ApiModelProperty(value = "experiment in which the germplasm has been used", example = "dev-experiment:expA01")
+    public URI getExperiment() {
+        return experiment;
+    }
+
+    public void setExperiment(URI experiment) {
+        this.experiment = experiment;
+    }
     
 }

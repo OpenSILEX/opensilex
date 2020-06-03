@@ -6,11 +6,12 @@
         class="btn btn-outline-primary mb-2 mr-2"
         :data="jsonForTemplate"
         name="template.csv">
-        {{$t('component.germplasm.table.button.downloadTemplate')}}
+        {{$t('GermplasmTable.downloadTemplate')}}
       </downloadCsv>
       <opensilex-CSVInputFile v-on:updated="uploaded">         
       </opensilex-CSVInputFile>
-      <b-button class="mb-2 mr-2" @click="updateColumns" variant="outline-secondary">{{$t('component.germplasm.table.button.resetTable')}}</b-button>
+      <b-button class="mb-2 mr-2" @click="updateColumns" variant="outline-secondary">{{$t('GermplasmTable.resetTable')}}</b-button>
+      <b-button class="mb-2 mr-2" @click="addRow" variant="outline-secondary">{{$t('GermplasmTable.addRow')}}</b-button>
     </b-input-group>
     <div ref="table"></div>
     <b-button class="mb-2 mr-2" @click="checkData()" variant="primary">{{$t("GermplasmTable.check")}}</b-button>
@@ -78,13 +79,11 @@ export default class GermplasmTable extends Vue {
 
   tableColumns = [];
 
-  //displayCreateButton: boolean = false;
-
   insertionStatus = [];
 
   jsonForTemplate = [];
 
-   mounted() {
+  mounted() {
     this.$store.watch(
       () => this.$store.getters.language,
       lang => {       
@@ -189,6 +188,10 @@ export default class GermplasmTable extends Vue {
     for (let i = 1; i < X+1; i++) {
       this.tableData.push({id:i})
     }
+  }
+
+  addRow() {
+    this.addXRows(1);
   }
 
   resetModal() {
@@ -422,6 +425,7 @@ en:
     progressTitle: lines to scan
     emptyMessage: The table is empty
     close: Close
+    addRow: Add Row
 
 fr:
   GermplasmTable:
@@ -443,4 +447,5 @@ fr:
     progressTitle: lignes à parcourir
     emptyMessage: Le tableau est vide
     close : Fermer
+    addRow: Ajouter ligne
 </i18n>

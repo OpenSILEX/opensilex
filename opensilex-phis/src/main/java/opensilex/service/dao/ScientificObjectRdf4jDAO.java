@@ -753,11 +753,11 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                 URI germplasmType = germplasm.getType();
                 ListWithPagination<GermplasmModel> germplasmList = null;
                 if (germplasmType.equals(Oeso.CONCEPT_SPECIES)) {
-                    germplasmList = germplasmDAO.search(null,null, null, null, new URI(germplasmURI), null, null, null, null, null, 0, 5000);
+                    germplasmList = germplasmDAO.search(null,null, null, null, new URI(germplasmURI), null, null, null, null, null, null, 0, 5000);
                 } else if (germplasmType.equals(Oeso.CONCEPT_VARIETY)) {
-                    germplasmList = germplasmDAO.search(null,null, null, null, null, new URI(germplasmURI), null, null, null, null, 0, 5000);
+                    germplasmList = germplasmDAO.search(null,null, null, null, null, new URI(germplasmURI), null, null, null, null, null, 0, 5000);
                 } else if (germplasmType.equals(Oeso.CONCEPT_ACCESSION)) {
-                    germplasmList = germplasmDAO.search(null,null, null, null, null, null, new URI(germplasmURI), null, null, null, 0, 5000);
+                    germplasmList = germplasmDAO.search(null,null, null, null, null, null, new URI(germplasmURI), null, null, null, null, 0, 5000);
                 }
                 
                 String filter = "<" + germplasmURI + ">";

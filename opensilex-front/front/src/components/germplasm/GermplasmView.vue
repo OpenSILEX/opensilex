@@ -2,16 +2,16 @@
   <div class="container-fluid">
     <opensilex-PageHeader
       icon="ik-folder"
-      title="component.germplasm.germplasmTitle"
-      description="component.germplasm.description"
+      title="GermplasmView.title"
+      description="GermplasmView.description"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions>
+    <opensilex-PageActions
+    v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)">
       <template v-slot>
         <opensilex-CreateButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
           @click="goToGermplasmCreate"
-          label="component.germplasm.add"
+          label="GermplasmView.add"
         ></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
@@ -31,16 +31,16 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
       ref="germplasmForm"
       component="opensilex-GermplasmForm"
-      createTitle="component.germplasm.add"
-      editTitle="component.germplasm.update"
+      createTitle="GermplasmView.add"
+      editTitle="GermplasmView.update"
       icon="ik#ik-user"
       modalSize="lg"
       @onCreate="germplasmList.refresh()"
       @onUpdate="germplasmList.refresh()"
     ></opensilex-ModalForm>
-    <opensilex-GermplasmDetails
+    <!-- <opensilex-GermplasmDetails
      ref="germplasmDetails">
-    </opensilex-GermplasmDetails>
+    </opensilex-GermplasmDetails> -->
   </div>
 </template>
 
@@ -104,17 +104,6 @@ export default class GermplasmView extends Vue {
     );
   }
 
-  showGermplasmDetails(uri: string){
-    console.debug("showGermplasmDetails" + uri);
-    this.service
-      .getGermplasm(uri)
-      .then((http: HttpResponse<OpenSilexResponse<GermplasmGetDTO>>) => {
-        console.log(http.response.result);
-        this.germplasmDetails.showDetails(http.response.result);
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-
   callUpdateGermplasmService(form: GermplasmCreationDTO, done) {
     console.debug(form);
     done(
@@ -162,4 +151,22 @@ export default class GermplasmView extends Vue {
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+
+en:
+  GermplasmView:
+    title: Germplasm 
+    description: Manage Genetic Resources Information
+    add: Add germplasm
+    update: Update Germplasm
+    delete: Delete Germplasm
+fr:
+  GermplasmView:
+    title: Ressources Génétiques 
+    description: Gérer les informations du matériel génétique
+    add: Ajouter des ressources génétiques
+    update: éditer germplasm
+    delete: supprimer germplasm
+</i18n>
 

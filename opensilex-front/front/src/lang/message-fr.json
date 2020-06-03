@@ -163,7 +163,8 @@
             "experimentalDesign": {
                 "label": "Plan d'expérience",
                 "factors": "Facteurs",
-                "factorLevels": "Niveaux de facteurs"
+                "factorLevels": "Niveaux de facteurs",
+                "germplasm" : "Ressources Génétiques"
             },
             "infrastructures": "Infrastructures"
         },
@@ -485,79 +486,6 @@
             "no-external-links-provided" :"Aucune référence disponible",
             "external-already-existing" : "Référence déja associée"
 
-        },
-        "germplasm": {
-            "germplasmTitle": "Ressources Génétiques",
-            "description": "Gérer les informations du matériel génétique",
-            "add": "Créer germplasm",
-            "update": "éditer germplasm",
-            "delete": "supprimer germplasm",         
-            "backToList" : "Revenir à la liste des germplasm",
-            "germplasmList": "Germplasm",
-            "select":"Veuillez sélectionner un type de germplasm",
-            "filter": {
-                "description": "Recherche de Ressources Génétiques",
-                "allTypes": "Tous",
-                "species": "Filtrer par espèce",
-                "year": "Filtrer par année de production",
-                "institute": "Filtrer par code institution",
-                "label": "Filtrer par nom",
-                "label-placeholder": "Entrez un nom de germplasm",
-                "rdfType": "Filtrer par type",
-                "experiment": "Filtrer par expérimentation",
-                "search": "Rechercher",
-                "reset": "Réinitialiser"
-            },
-            "list": {
-                "label": "nom",
-                "uri": "URI",
-                "rdfType": "type",
-                "fromSpecies" : "URI de l'espèce",
-                "speciesLabel" : "Espèce"
-            },
-            "table": {
-                "fields": {
-                    "label": "Nom",
-                    "uri": "URI",
-                    "rdfType": "Type",
-                    "fromSpecies" : "URI de l'espèce",
-                    "fromVariety" : "URI de variété",
-                    "fromAccession": "URI d'accession",
-                    "institute": "Code institut",
-                    "comment": "Commentaire",
-                    "year": "Année",
-                    "checkingStatus": "Statut",
-                    "insertionStatus": "Statut"
-                },
-                "button": {
-                    "uploadFile" : "Importer fichier csv",
-                    "downloadTemplate" : "Télécharger le template",
-                    "resetTable" : "Vider tableau",
-                    "check" : "Valider avant d'insérer",
-                    "insert" : "Insérer"
-                }
-            },
-            "details": {
-                "title": "Germplasm Details",
-                "tab": "Germplasm Information",
-                "uri": "URI",
-                "label": "Name",
-                "rdfType": "Type",
-                "species":"Species",
-                "variety": "Variety",
-                "accession": "Accession",
-                "institute": "Institute",
-                "year": "Year",
-                "comment": "Comment"
-            },
-            "form" : {
-                "uri-help": "Unique germplasm identifier",          
-                "label-help": "Name used to define this germplasm",
-                "rdfType-help": "Germplasm Type"
-            },
-            "errors": {
-                "germplasm-already-exists": "Germplasm already exists with this URI."
-            }
         }
     },
     "credential-groups": {

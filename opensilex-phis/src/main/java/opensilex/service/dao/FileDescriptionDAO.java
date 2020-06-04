@@ -21,6 +21,7 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Sorts;
 import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -55,18 +56,18 @@ import org.opensilex.sparql.service.SPARQLService;
 public class FileDescriptionDAO extends MongoDAO<FileDescription> {
 
     private final SPARQLService sparql;
-    
+
     public FileDescriptionDAO(SPARQLService sparql) {
         this.sparql = sparql;
     }
     private final static Logger LOGGER = LoggerFactory.getLogger(FileDescriptionDAO.class);
-     
+
     private final static String DB_FIELD_URI = "uri";
     private final static String DB_FIELD_DATE = "date";
     private final static String DB_FIELD_PROVENANCE = "provenanceUri";
     private final static String DB_FIELD_RDF_TYPE = "rdfType";
     private final static String DB_FIELD_CONCERNED_ITEM_URI = "concernedItems.uri";
-    
+
     /**
      * Prepares and returns the data file description search query with the given parameters
      * @param rdfType
@@ -97,7 +98,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
         boolean dateSortAsc
     ) {
         BasicDBObject query = new BasicDBObject();
-        
+
         try {
             // Define date filter depending if start date and/or end date are defined
             if (startDate != null) {
@@ -119,27 +120,27 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
         } catch (ParseException ex) {
             LOGGER.error("Invalid date format", ex);
         }
-        
+
         // Add filter if a provenance uri is defined
         if (provenanceUri != null) {
             query.append(DB_FIELD_PROVENANCE, provenanceUri);
         }
-        
+
         if (concernedItems != null && concernedItems.size() > 0) {
             BasicDBList concernedItemsIds = new BasicDBList();
             concernedItemsIds.addAll(concernedItems);
             DBObject inFilter = new BasicDBObject("$in", concernedItemsIds);
             query.append(DB_FIELD_CONCERNED_ITEM_URI, inFilter);
         }
-        
+
         query.append(DB_FIELD_RDF_TYPE, rdfType);
-        
+
         if (jsonValueFilter != null) {
             query.putAll((BSONObject) BasicDBObject.parse(jsonValueFilter));
         }
-        
+
         LOGGER.debug(getTraceabilityLogs() + " query : " + query.toString());
-        
+
         return query;
     }
 
@@ -152,7 +153,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
      * @param jsonValueFilter
      * @param concernedItems
      * @param dateSortAsc
-     * @return 
+     * @return
      */
     public ArrayList<FileDescription> search(
         String rdfType,
@@ -161,7 +162,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
         String provenanceUri,
         String jsonValueFilter,
         List<String> concernedItems,
-        boolean dateSortAsc    
+        boolean dateSortAsc
     ) {
          // Get the collection corresponding to rdf type uri
         String typeCollection = this.getCollectionFromFileType(rdfType);
@@ -175,12 +176,12 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
             provenanceUri,
             jsonValueFilter,
             concernedItems,
-            dateSortAsc                
+            dateSortAsc
         );
-        
+
         // Get paginated documents
         FindIterable<FileDescription> fileDescription = dataVariableCollection.find(query);
-        
+
         //SILEX:info
         // Results are always sort by date, either ascending or descending depending on dateSortAsc parameter
         //If dateSortAsc=true, sort by date ascending
@@ -191,18 +192,18 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
         } else {
             fileDescription = fileDescription.sort(Sorts.descending(DB_FIELD_DATE));
         }
-        
+
         // Define pagination for the request
         fileDescription = fileDescription.skip(page * pageSize).limit(pageSize);
         ArrayList<FileDescription> dataList = new ArrayList<>();
-        
+
         // For each document, create a data Instance and add it to the result list
         try (MongoCursor<FileDescription> cursor = fileDescription.iterator()) {
             while (cursor.hasNext()) {
                 dataList.add(cursor.next());
             }
         }
-        
+
         return dataList;
     }
 
@@ -224,7 +225,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
         String provenanceUri,
         String jsonValueFilter,
         List<String> concernedItems,
-        boolean dateSortAsc   
+        boolean dateSortAsc
     ) {
         String typeCollection = this.getCollectionFromFileType(rdfType);
         MongoCollection<Document> dataVariableCollection = database.getCollection(typeCollection);
@@ -237,13 +238,13 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
             provenanceUri,
             jsonValueFilter,
             concernedItems,
-            dateSortAsc     
+            dateSortAsc
         );
-        
+
         // Return the document count
         return dataVariableCollection.countDocuments(query);
     }
-    
+
     /**
      * Checks and inserts data file and its metadata.
      * @param fileDescription
@@ -259,7 +260,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
             return checkResult;
         }
     }
-    
+
     /**
      * Check a given list of FileDescription
      * @param fileDescriptions
@@ -277,9 +278,9 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
         }
         POSTResultsReturn result = new POSTResultsReturn(dataOk, null, dataOk);
         result.statusList = checkStatus;
-        return result;       
+        return result;
     }
-    
+
     /**
      * Inserts the given data in the MongoDB database.
      * @param dataList
@@ -295,7 +296,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
             List<Status> status = new ArrayList<>();
             List<String> createdResources = new ArrayList<>();
             boolean hasError = false;
-            
+
             for (FileDescription fileDescription : fileDescriptions) {
                 // 2. Create unique index on uri for file rdf type collection
                 //   Mongo won't create index if it already exists
@@ -303,7 +304,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
                 String fileCollectionName = getCollectionFromFileType(fileDescription.getRdfType());
                 MongoCollection<FileDescription> fileDescriptionCollection = database.getCollection(fileCollectionName, FileDescription.class);
                 fileDescriptionCollection.createIndex(new BasicDBObject(DB_FIELD_URI, 1), indexOptions);
-                
+
                 try {
                     Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                     String key = Long.toString(timestamp.getTime());
@@ -311,9 +312,9 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
                     while (uriExists(fileDescription.getRdfType(), uri)) {
                         uri = UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
                     }
-                    
+
                     fileDescription.setUri(uri);
-                    
+
                     //3. Insert metadata first
                     fileDescriptionCollection.insertOne(session, fileDescription);
                     createdResources.add(fileDescription.getUri());
@@ -321,7 +322,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
                 } catch (MongoException ex) {
                     // Define that an error occurs
                     hasError = true;
-                    
+
                     // Error check if it's because of a duplicated data error
                     // Add status according to the error type (duplication or unexpected)
                     if (ex.getCode() == MongoDAO.DUPLICATE_KEY_ERROR_CODE) {
@@ -370,7 +371,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
         }
         return result;
     }
-    
+
     /**
      * Check and insert the given file descriptions.
      * @param fileDescriptions
@@ -384,7 +385,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
             return checkResult;
         }
     }
-    
+
     /**
      * Checks the given data file description.
      * @param fileDescription
@@ -398,40 +399,40 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
 
         ProvenanceDAO provenanceDAO = new ProvenanceDAO(sparql);
         ScientificObjectRdf4jDAO scientificObjectDao = new ScientificObjectRdf4jDAO(sparql);
-        
+
         // 1. Check if the provenance uri exist and is a provenance
         if (!provenanceDAO.existProvenanceUri(fileDescription.getProvenanceUri())) {
             dataOk = false;
-            checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+            checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
                 "Unknwon provenance : " + fileDescription.getProvenanceUri()));
-        } 
-        
+        }
+
         // 2. Check if the rdf type uri exist, 
         // we use scientificObjectDao for convenience to access existUri method        
         if (!scientificObjectDao.existUri(fileDescription.getRdfType())) {
             dataOk = false;
-            checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+            checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
                 "Unknwon file rdf type : " + fileDescription.getRdfType()));
-        } 
+        }
         // 3. Check concerned items consistency
         for (ConcernedItem concernedItem : fileDescription.getConcernedItems()) {
             if (!scientificObjectDao.existScientificObject(concernedItem.getUri())) {
                 dataOk = false;
-                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
                     "Unknwon concerned item : " + concernedItem.getUri()));
             }
             if (!scientificObjectDao.existUri(concernedItem.getRdfType())) {
                 dataOk = false;
-                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, 
+                checkStatus.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR,
                     "Unknwon concerned item type : " + concernedItem.getUri()));
             }
         }
-        
+
         checkResult = new POSTResultsReturn(dataOk, null, dataOk);
         checkResult.statusList = checkStatus;
         return checkResult;
     }
-    
+
     /**
      * Inserts the given data in the MongoDB database
      * @param dataList
@@ -453,40 +454,44 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
         String fileCollectionName = getCollectionFromFileType(fileDescription.getRdfType());
         MongoCollection<FileDescription> fileDescriptionCollection = database.getCollection(fileCollectionName, FileDescription.class);
         fileDescriptionCollection.createIndex(new BasicDBObject(DB_FIELD_URI, 1), indexOptions);
-        
+
         boolean hasError = false;
-            
+
         try {
-            String fileStorageDirectory = PropertiesFileManager.getConfigFileProperty("service", "uploadFileServerDirectory");
-            final String fileServerDirectory =  Paths.get(fileStorageDirectory + '/' + fileCollectionName + "/").toFile().getAbsolutePath();
-            
+//            Path storageBasePath = fs.getStorageBasePath();
+            Path fileStorageDirectory = Paths.get(fs.getStorageBasePath().toString(),fileCollectionName).toAbsolutePath();
+
+//            String fileStorageDirectory = PropertiesFileManager.getConfigFileProperty("service", "uploadFileServerDirectory");
+//            final String fileServerDirectory =  Paths.get(fileStorageDirectory + '/' + fileCollectionName + "/").toFile().getAbsolutePath();
+
             String key = fileDescription.getFilename() + fileDescription.getDate();
             String uri = UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
             while (uriExists(fileDescription.getRdfType(), uri)) {
                 uri = UriGenerator.generateNewInstanceUri(sparql, Oeso.CONCEPT_DATA_FILE.toString(), fileCollectionName, key);
             }
-            
+
             fileDescription.setUri(uri);
-            
-            final String filename =  Base64.getEncoder().encodeToString(fileDescription.getUri().getBytes());
-            fileDescription.setPath(fileServerDirectory + filename);
-            
+
+            final String filename = Base64.getEncoder().encodeToString(fileDescription.getUri().getBytes());
+            fileDescription.setPath(fileStorageDirectory.toString() + filename);
+
             //3. Insert metadata first
             fileDescriptionCollection.insertOne(session, fileDescription);
 
             //4. Copy file to directory
-            fs.createDirectories(Paths.get(fileServerDirectory));
-            
+            fs.createDirectories(fileStorageDirectory);
+//          fs.createDirectories(Paths.get(fileServerDirectory));
+
             try {
                 fs.writeFile(Paths.get(fileDescription.getPath()), file);
-                
+
                 status.add(new Status(
                     StatusCodeMsg.RESOURCES_CREATED,
                     StatusCodeMsg.INFO,
                     StatusCodeMsg.DATA_INSERTED + " for the file " + fileDescription.getFilename()
                 ));
-                            
-                createdResources.add(fileDescription.getUri());    
+
+                createdResources.add(fileDescription.getUri());
             } catch (Exception ex) {
                 status.add(new Status(
                         StatusCodeMsg.UNEXPECTED_ERROR,
@@ -495,7 +500,7 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
                 ));
                 hasError = true;
             }
-            
+
         } catch (MongoException ex) {
             // Define that an error occurs
             hasError = true;
@@ -571,11 +576,11 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
      */
     public boolean uriExists(String rdfType, String uri) {
         String variableCollection = getCollectionFromFileType(rdfType);
-        
+
         BasicDBObject query = new BasicDBObject();
         query.append(DB_FIELD_URI, uri);
-        
-        return database.getCollection(variableCollection).countDocuments(query) > 0; 
+
+        return database.getCollection(variableCollection).countDocuments(query) > 0;
     }
 
     /**
@@ -586,14 +591,14 @@ public class FileDescriptionDAO extends MongoDAO<FileDescription> {
     public FileDescription findFileDescriptionByUri(String fileUri) {
         BasicDBObject query = new BasicDBObject();
         query.append(DB_FIELD_URI, fileUri);
-         
+
         String[] uriParts = fileUri.split("/");
         String collection = uriParts[uriParts.length - 2];
         MongoCollection<FileDescription> datafileCollection = database.getCollection(collection, FileDescription.class);
 
         // Get paginated documents
         FindIterable<FileDescription> dataMongo = datafileCollection.find(query).limit(1);
-        
+
         return dataMongo.first();
     }
 

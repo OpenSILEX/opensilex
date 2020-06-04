@@ -387,8 +387,8 @@ public class DataResourceService extends ResourceService {
             for (FileDescriptionWebPathPostDTO description : descriptionsDto) {
 
                 FileDescription fileDescription = description.createObjectFromDTO();
-                // get the the absolute file path according to the fileStorageDirectory
 
+                // get the the absolute file path according to the fileStorageDirectory
                 java.nio.file.Path absoluteFilePath = fs.getAbsolutePath(Paths.get(fileDescription.getPath()));
 
                 if(! fs.exist(absoluteFilePath)){
@@ -420,25 +420,6 @@ public class DataResourceService extends ResourceService {
             postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         }
-    }
-
-    /**
-     * Check if a file exists, if it's a file and if it's readable
-     *
-     * @param file : the file to check
-     * @return a {@link Optional} of {@link String} which describe an error msg
-     * if an error was encountered <br> return {@link Optional#empty()} else
-     */
-    protected Optional<String> checkFilePath(File file) {
-
-        if (!file.exists()) {
-            return Optional.of("File not found : " + file.getPath());
-        } else if (!file.isFile()) {
-            return Optional.of(file.getPath() + " is not a file");
-        } else if (!file.canRead()) {
-            return Optional.of(file.getPath() + " is not readable");
-        }
-        return Optional.empty();
     }
 
     /**

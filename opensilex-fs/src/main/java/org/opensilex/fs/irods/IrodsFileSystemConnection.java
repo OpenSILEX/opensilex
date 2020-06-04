@@ -153,7 +153,24 @@ public class IrodsFileSystemConnection extends BaseService implements FileStorag
 
     @Override
     public void createDirectories(Path directoryPath) throws IOException {
-        throw new NotImplementedException("Not implemented yet");
+        Process irodsProcess = null;
+
+        try {
+            irodsProcess = new ProcessBuilder().command(
+                    IRODS_IPUT_CMD,
+                    directoryPath.toString()
+            ).start();
+
+            // redirect eventual errors to logger
+            checkErrorFromProcess(irodsProcess);
+
+        } catch (Exception e) {
+
+            if (irodsProcess != null && irodsProcess.isAlive()) {
+                irodsProcess.destroy();
+            }
+            throw new IOException(e);
+        }
     }
 
     @Override
@@ -185,9 +202,25 @@ public class IrodsFileSystemConnection extends BaseService implements FileStorag
         }
     }
 
+    private final static String IRODS_RM_CMD = "irm";
+
     @Override
     public void delete(Path filePath) throws IOException {
-        throw new NotImplementedException("Not implemented yet");
+        Process irodsProcess = null;
+        try {
+            irodsProcess = new ProcessBuilder().command(
+                    IRODS_RM_CMD,
+                    filePath.toString()
+            ).start();
+
+            // redirect eventual errors to logger
+            checkErrorFromProcess(irodsProcess);
+
+        } catch (Exception e) {
+            if (irodsProcess != null && irodsProcess.isAlive()) {
+                irodsProcess.destroy();
+            }
+        }
     }
 
 }

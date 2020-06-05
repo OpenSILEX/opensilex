@@ -7,74 +7,54 @@
 //******************************************************************************
 package opensilex.service.resource;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
+import opensilex.service.configuration.DateFormat;
+import opensilex.service.configuration.DefaultBrapiPaginationValues;
+import opensilex.service.configuration.GlobalWebserviceValues;
+import opensilex.service.dao.*;
+import opensilex.service.documentation.DocumentationAnnotation;
+import opensilex.service.documentation.StatusCodeMsg;
+import opensilex.service.model.Data;
+import opensilex.service.model.FileDescription;
+import opensilex.service.ontology.Oeso;
+import opensilex.service.resource.dto.data.*;
+import opensilex.service.resource.validation.interfaces.Date;
+import opensilex.service.resource.validation.interfaces.Required;
+import opensilex.service.resource.validation.interfaces.URL;
+import opensilex.service.result.ResultForm;
+import opensilex.service.utils.ImageResizer;
+import opensilex.service.utils.POSTResultsReturn;
+import opensilex.service.view.brapi.Status;
+import opensilex.service.view.brapi.form.AbstractResultForm;
+import opensilex.service.view.brapi.form.ResponseFormPOST;
+import org.apache.commons.lang3.ArrayUtils;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.sparql.service.SPARQLService;
 
-import java.io.*;
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.net.URI;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import opensilex.service.utils.ImageThumbnails;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import opensilex.service.PropertiesFileManager;
-import opensilex.service.configuration.DateFormat;
-import opensilex.service.configuration.DefaultBrapiPaginationValues;
-import opensilex.service.configuration.GlobalWebserviceValues;
-import opensilex.service.dao.DataDAO;
-import opensilex.service.dao.FileDescriptionDAO;
-import opensilex.service.dao.ProvenanceDAO;
-import opensilex.service.dao.ScientificObjectRdf4jDAO;
-import opensilex.service.dao.VariableDAO;
-import opensilex.service.documentation.DocumentationAnnotation;
-import opensilex.service.documentation.StatusCodeMsg;
-import opensilex.service.resource.dto.data.DataDTO;
-import opensilex.service.resource.dto.data.DataPostDTO;
-import opensilex.service.resource.dto.data.FileDescriptionDTO;
-import opensilex.service.resource.dto.data.FileDescriptionPostDTO;
-import opensilex.service.resource.validation.interfaces.Date;
-import opensilex.service.resource.validation.interfaces.Required;
-import opensilex.service.resource.validation.interfaces.URL;
-import opensilex.service.utils.POSTResultsReturn;
-import opensilex.service.view.brapi.Status;
-import opensilex.service.view.brapi.form.AbstractResultForm;
-import opensilex.service.view.brapi.form.ResponseFormPOST;
-import opensilex.service.result.ResultForm;
-import opensilex.service.model.Data;
-import opensilex.service.model.FileDescription;
-import opensilex.service.ontology.Oeso;
-import opensilex.service.resource.dto.data.DataSearchDTO;
-import opensilex.service.resource.dto.data.FileDescriptionWebPathPostDTO;
-import org.opensilex.fs.service.FileStorageService;
-import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Data resource service.
@@ -391,7 +371,7 @@ public class DataResourceService extends ResourceService {
                 // get the the absolute file path according to the fileStorageDirectory
                 java.nio.file.Path absoluteFilePath = fs.getAbsolutePath(Paths.get(fileDescription.getPath()));
 
-                if(! fs.exist(absoluteFilePath)){
+                if (!fs.exist(absoluteFilePath)) {
                     result.setErrorMsg("File not found " + absoluteFilePath.toString());
                     result.setDataState(false);
                     result.setHttpStatus(Response.Status.BAD_REQUEST);
@@ -443,32 +423,28 @@ public class DataResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getDataFile(
-            @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @PathParam("fileUri") @URL @Required String fileUri,
+            @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @PathParam("fileUri") @Required URI fileUri,
             @Context HttpServletResponse response
     ) throws Exception {
 
-        try {
-            FileDescriptionDAO dataFileDao = new FileDescriptionDAO(sparql);
+        FileDescriptionDAO dataFileDao = new FileDescriptionDAO(sparql);
 
-            FileDescription description = dataFileDao.findFileDescriptionByUri(fileUri);
-            if (description == null) {
-                return Response.status(404).build();
-            }
-
-            java.nio.file.Path filePath = Paths.get(description.getPath());
-            byte[] fileContent = fs.readFileAsByteArray(filePath);
-
-            if (ArrayUtils.isEmpty(fileContent)) {
-                return Response.status(404).build();
-            }
-
-            return Response.ok(fileContent, MediaType.APPLICATION_OCTET_STREAM)
-                    .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString() + "\"") //optional
-                    .build();
-
-        } catch (FileNotFoundException ex) {
-            return Response.status(404).build();
+        FileDescription description = dataFileDao.findFileDescriptionByUri(fileUri.toString());
+        if (description == null) {
+            throw new NotFoundURIException(fileUri);
         }
+
+        java.nio.file.Path filePath = Paths.get(description.getPath());
+        byte[] fileContent = fs.readFileAsByteArray(filePath);
+
+        if (ArrayUtils.isEmpty(fileContent)) {
+            throw new FileNotFoundException(fileUri.toString());
+        }
+
+        return Response.ok(fileContent, MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString() + "\"") //optional
+                .build();
+
 
     }
 
@@ -485,43 +461,36 @@ public class DataResourceService extends ResourceService {
     })
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getPicturesThumbnails(
-            @ApiParam(value = "Search by fileUri", required = true) @PathParam("fileUri") @Required String fileUri,
-            @ApiParam(value = "Thumbnail width" )  @QueryParam("scaledWidth") @Min(256) Integer scaledWidth,
-            @ApiParam(value = "Thumbnail height") @QueryParam("scaledHeight") @Min(144) Integer scaledHeight,
+            @ApiParam(value = "Search by fileUri", required = true) @PathParam("fileUri") @Required URI fileUri,
+            @ApiParam(value = "Thumbnail width") @QueryParam("scaledWidth") @Min(256) @Max(1920) Integer scaledWidth,
+            @ApiParam(value = "Thumbnail height") @QueryParam("scaledHeight") @Min(144) @Max(1080) Integer scaledHeight,
 
             @Context HttpServletResponse response) throws Exception {
 
-        try {
+        FileDescriptionDAO fileDescriptionDAO = new FileDescriptionDAO(sparql);
 
-            FileDescriptionDAO fileDescriptionDAO = new FileDescriptionDAO(sparql);
-
-            FileDescription description = fileDescriptionDAO.findFileDescriptionByUri(fileUri);
-            if (description == null) {
-                return Response.status(404).build();
-            }
-
-            java.nio.file.Path filePath = Paths.get(description.getPath());
-
-            // get a path to the file which is physically accessible in order to be read by the ImageThumbnails utility class
-            java.nio.file.Path physicalFilePath = fs.getPhysicalPath(filePath);
-
-            byte[] thumbnailData = ImageThumbnails.getInstance().getThumbnail(
-                    ImageThumbnails.THUMBNAIL_METHOD.CONVERT_COMMAND,
-                    physicalFilePath,
-                    scaledWidth,
-                    scaledHeight
-            );
-            if (ArrayUtils.isEmpty(thumbnailData)) {
-                return Response.status(404).build();
-            }
-
-            return Response.ok(thumbnailData, MediaType.APPLICATION_OCTET_STREAM)
-                    .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString() + "\"") //optional
-                    .build();
-
-        } catch (FileNotFoundException ex) {
-            return Response.status(404).build();
+        FileDescription description = fileDescriptionDAO.findFileDescriptionByUri(fileUri.toString());
+        if (description == null) {
+            throw new NotFoundURIException(fileUri);
         }
+
+        java.nio.file.Path filePath = Paths.get(description.getPath());
+
+        // get a path to the file which is physically accessible in order to be read by the ImageThumbnails
+        java.nio.file.Path physicalFilePath = fs.getPhysicalPath(filePath);
+
+        byte[] imageData = ImageResizer.getInstance().getResizedImage(
+                physicalFilePath,
+                scaledWidth,
+                scaledHeight
+        );
+        if (ArrayUtils.isEmpty(imageData)) {
+            throw new FileNotFoundException(fileUri.toString());
+        }
+
+        return Response.ok(imageData, MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString() + "\"") //optional
+                .build();
     }
 
     /**
@@ -561,7 +530,7 @@ public class DataResourceService extends ResourceService {
             @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI)
             @PathParam("fileUri") @URL @Required String fileUri,
             @Context HttpServletResponse response
-    ) throws Exception {
+    ) {
         FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO(sparql);
 
         FileDescription description = fileDescriptionDao.findFileDescriptionByUri(fileUri);

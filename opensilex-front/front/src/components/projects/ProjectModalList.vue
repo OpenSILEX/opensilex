@@ -13,47 +13,38 @@
         
     <div class="card">
 
-      <div class="card-vertical-group">
-
-        <div class="card">
-
-          <div class="card-body row">
-
-            <!-- Year -->
-            <div class="filter-group col col-xl-3 col-sm-6 col-12">
-              <opensilex-InputForm
-                :value.sync="yearFilterPattern"
-                label="component.project.filter-year"
-                type="text"
-                placeholder="component.project.filter-year-placeholder"
-              ></opensilex-InputForm>
-            </div>
-
-            <!-- Label -->
-            <div class="filter-group col col-xl-3 col-sm-6 col-12">
-              <opensilex-InputForm
-                :value.sync="nameFilterPattern"
-                label="component.project.filter-label"
-                type="text"
-                placeholder="component.project.filter-label-placeholder"
-              ></opensilex-InputForm>
-            </div>
-
+      <opensilex-SearchForm
+        labelTitle="component.experiment.search.label"
+        :resetMethod="resetFilters"
+        :searchMethod="refresh"
+        :showTitle="false"
+      >
+            
+        <template v-slot:standardSearch>
+            
+          <!-- Year -->
+          <div class="filter-group col col-xl-3 col-sm-6 col-12">
+            <opensilex-InputForm
+              :value.sync="yearFilterPattern"
+              label="component.project.filter-year"
+              type="text"
+              placeholder="component.project.filter-year-placeholder"
+            ></opensilex-InputForm>
           </div>
 
-          <!-- Form actions -->
-          <div class="card-footer text-right">
-            <button type="button" class="btn btn-primary float-right mb-2 mr-2" @click="refresh">
-              <i class="ik ik-search"></i>{{$t('component.germplasm.filter.search')}}
-            </button>
-            <button type="button" class="btn btn-light float-right mb-2 mr-2" @click="resetFilters">
-              <i class="ik ik-x"></i>{{$t('component.germplasm.filter.reset')}}
-            </button>          
+          <!-- Label -->
+          <div class="filter-group col col-xl-3 col-sm-6 col-12">
+            <opensilex-InputForm
+              :value.sync="nameFilterPattern"
+              label="component.project.filter-label"
+              type="text"
+              placeholder="component.project.filter-label-placeholder"
+            ></opensilex-InputForm>
           </div>
 
-        </div>
-
-      </div>
+        </template>
+            
+      </opensilex-SearchForm>
 
       <opensilex-TableAsyncView
         ref="tableRef"

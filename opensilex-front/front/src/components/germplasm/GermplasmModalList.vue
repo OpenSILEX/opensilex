@@ -3,7 +3,7 @@
   <b-modal ref="modalRef" size="xl" :static="true">
     
     <template v-slot:modal-title>
-      <i class="ik ik-search mr-1"></i> {{ $t('component.germplasm.search.selectLabel') }}
+      <i class="ik ik-search mr-1"></i> {{ $t('GermplasmList.selectLabel') }}
     </template>
 
     <template v-slot:modal-footer>
@@ -25,7 +25,7 @@
           <!-- Type -->
           <div class="filter-group col col-xl-3 col-sm-6 col-12">
             <opensilex-SelectForm
-              label="component.germplasm.filter.rdfType"
+              label="GermplasmList.filter.rdfType"
               placeholder="component.germplasm.filter.allTypes"
               :selected.sync="filterByRdfType"
               :optionsLoadingMethod="loadGermplasmTypes"
@@ -36,7 +36,7 @@
           <!-- Species -->
           <div class="filter-group col col-xl-3 col-sm-6 col-12">
             <opensilex-SelectForm
-              label="component.germplasm.filter.species"
+              label="GermplasmList.filter.species"
               :selected.sync="filterBySpecies"
               :optionsLoadingMethod="loadSpecies"
               :conversionMethod="germplasmToSelectNode"
@@ -47,7 +47,7 @@
           <div class="filter-group col col-xl-3 col-sm-6 col-12">
             <opensilex-InputForm
               :value.sync="filterByInstitute"
-              label="component.germplasm.filter.institute"
+              label="GermplasmList.filter.institute"
               type="text"
             ></opensilex-InputForm>
           </div>
@@ -56,7 +56,7 @@
           <div class="filter-group col col-xl-3 col-sm-6 col-12">
             <opensilex-InputForm
               :value.sync="filterByLabel"
-              label="component.germplasm.filter.label"
+              label="GermplasmList.filter.label"
               type="text"
             ></opensilex-InputForm>
           </div>
@@ -72,7 +72,7 @@
         defaultSortBy="name"
         isSelectable="true"
         defaultPageSize="10"
-        labelNumberOfSelectedRow="component.germplasm.selected"
+        labelNumberOfSelectedRow="GermplasmList.selected"
         iconNumberOfSelectedRow="ik#ik-feather"
       >
 
@@ -112,22 +112,23 @@ export default class GermplasmModalList extends GermplasmList {
   fields = [
     {
       key: "uri",
-      label: "component.germplasm.list.uri",
-      sortable: true
-    },
-    {
-      key: "typeLabel",
-      label: "component.germplasm.list.rdfType",
+      label: "GermplasmList.uri",
       sortable: true
     },
     {
       key: "label",
-      label: "component.germplasm.list.label",
+      label: "GermplasmList.label",
+      sortable: true
+    },
+    {
+      key: "typeLabel",
+      label: "GermplasmList.rdfType",
       sortable: true
     },
     {
       key: "speciesLabel",
-      label: "component.germplasm.list.speciesLabel",
+      label: "GermplasmList.speciesLabel",
+      sortable: true
     }
   ];
 
@@ -184,17 +185,4 @@ export default class GermplasmModalList extends GermplasmList {
 </script>
 
 <style scoped lang="scss">
-
-  .card {
-    margin-bottom: 30px; 
-  }
-
-  .filter-group {
-      padding-bottom: 0;
-  }
-
-  .card-vertical-group .card {
-    margin-bottom: 20px;
-  }
-
 </style>

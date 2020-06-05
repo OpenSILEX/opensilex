@@ -24,7 +24,7 @@
                     placeholder="component.scientificObjects.search.placeholder.experiments"
                     :selected.sync="filter.projects"
                     :conversionMethod="experimentGetListDTOToSelectNode"
-                    modalComponent="opensilex-ProjectModalList"
+                    modalComponent="opensilex-ExperimentModalList"
                     :isModalSearch="true"
                 ></opensilex-SelectForm>
             </div>
@@ -36,7 +36,7 @@
                     placeholder="component.scientificObjects.search.placeholder.germplasm"
                     :selected.sync="filter.germplasm"
                     :conversionMethod="germplasmGetDTOToSelectNode"
-                    modalComponent="opensilex-ProjectModalList"
+                    modalComponent="opensilex-GermplasmModalList"
                     :isModalSearch="true"
                 ></opensilex-SelectForm>
             </div>
@@ -364,13 +364,26 @@
         }
 
         searchScientificObject(options) {
-            return new Promise((resolve, reject) => {
+            let scientificObjectsService: ScientificObjectsService = this.$opensilex.getService("opensilex.ScientificObjectsService");
+            return scientificObjectsService.getScientificObjectsBySearch(
+                undefined, 
+                undefined, 
+                undefined, 
+                undefined, 
+                undefined, 
+                undefined, 
+                undefined, 
+                true,
+                true
+            );
+            
+            /*return new Promise((resolve, reject) => {
                 let paginationDTO = new PaginationDTO(10, 1, 10, 1);
                 let metadataDTO = new MetadataDTO(paginationDTO, undefined, undefined);
                 let openSilexResponse = new OpenSilexResponse<Array<any>>(this.mock(), metadataDTO);
                 let httpResponse = new HttpResponse<OpenSilexResponse<Array<any>>>(openSilexResponse, 200, undefined);
                 resolve(httpResponse);
-            });
+            });*/
         }
 
         mock() {

@@ -345,6 +345,8 @@ en:
     speciesLabel: Species
     update: Update Germplasm
     delete: Delete Germplasm
+    selectLabel: Select Germplasm
+    selected: Selected Germplasm
 
     filter:
       description: Germplasm Search
@@ -372,6 +374,8 @@ fr:
     speciesLabel: Espèce
     update: Editer le germplasm
     delete: Supprimer le germplasm
+    selectLabel: Sélection de Matériel Génétiques
+    selected: Matériel Génétique(s) Sélectionné(s)
 
     filter:
       description: Recherche de Ressources Génétiques

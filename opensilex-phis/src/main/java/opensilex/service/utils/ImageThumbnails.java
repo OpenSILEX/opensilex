@@ -1,7 +1,7 @@
 package opensilex.service.utils;
 
 import org.apache.commons.compress.utils.FileNameUtils;
-import org.eclipse.rdf4j.common.io.FileUtil;
+import org.apache.tika.Tika;
 import org.opensilex.fs.local.LocalFileSystemConnection;
 
 import javax.imageio.ImageIO;
@@ -31,9 +31,33 @@ public class ImageThumbnails {
 
     private final static String TMP_THUMBNAIL_DIR_NAME = "opensilex_thumbnail";
 
+    // use Tika for JPEG picture recognition
+    private final Tika tika;
+    private final static String JPEG_MIME_TYPE = "image/jpeg";
+    private final static String JPG_MIME_TYPE = "image/jpg";
+
+    private final THUMBNAIL_METHOD defaultThumbMethod;
+
     private ImageThumbnails() throws IOException {
+
         THUMBNAIL_TMP_DIRECTORY = Files.createTempDirectory(TMP_THUMBNAIL_DIR_NAME);
         localFsConnection = new LocalFileSystemConnection();
+        tika = new Tika();
+
+        // determine if we can use the command convert, else use the java API based method
+        THUMBNAIL_METHOD thumbnailMethod;
+        Process testConvertProcess = null;
+        try{
+            testConvertProcess = new ProcessBuilder(CONVERT_COMMAND,"-version").start();
+            checkErrorFromProcess(testConvertProcess);
+            thumbnailMethod = THUMBNAIL_METHOD.CONVERT_COMMAND;
+        }catch (Exception e){
+            if (testConvertProcess != null && testConvertProcess.isAlive()) {
+                testConvertProcess.destroy();
+            }
+            thumbnailMethod = THUMBNAIL_METHOD.JAVA_API;
+        }
+        defaultThumbMethod = thumbnailMethod;
     }
 
     public static ImageThumbnails getInstance() throws IOException {
@@ -52,6 +76,7 @@ public class ImageThumbnails {
 
         /**
          * Convert command from ImageMagick
+         * @see <a href="https://imagemagick.org/script/convert.php"></a>
          */
         CONVERT_COMMAND
     }
@@ -64,8 +89,7 @@ public class ImageThumbnails {
     }
 
     public byte[] getThumbnail(Path srcImagePath, int scaledWidth, int scaledHeight) throws IOException {
-        // TODO check if convert command is accessible through config at the startup
-        return this.getThumbnail(THUMBNAIL_METHOD.JAVA_API, srcImagePath, scaledWidth, scaledHeight);
+        return this.getThumbnail(defaultThumbMethod, srcImagePath, scaledWidth, scaledHeight);
     }
 
 
@@ -96,6 +120,7 @@ public class ImageThumbnails {
     private static final String CONVERT_JPEG_DEFINE_OPTION = "-define";
     private static final String CONVERT_JPEG_SIZE_OPTION = "jpeg:size=";
 
+
     private byte[] getThumbnailWithConvertCommand(Path srcImagePath, int scaledWidth, int scaledHeight) throws IOException {
         Process convertProcess = null;
         Path scaledImagePath = null;
@@ -108,8 +133,9 @@ public class ImageThumbnails {
             command.add(CONVERT_COMMAND);
 
             // use convert optimization for JPEG file, could be very efficient for large jpeg file
-            String fileExt = FileUtil.getFileExtension(srcImagePath.toString());
-            if (fileExt.equals("jpeg") || fileExt.equals("jpg")) {
+            String fileExt = tika.detect(srcImagePath.toFile());
+
+            if (fileExt.equals(JPEG_MIME_TYPE) || fileExt.equals(JPG_MIME_TYPE)) {
                 int jpegWidth = scaledWidth * 2;
                 int jpegHeight = scaledHeight * 2;
                 command.addAll(Arrays.asList(CONVERT_JPEG_DEFINE_OPTION, CONVERT_JPEG_SIZE_OPTION + jpegWidth + "x" + jpegHeight));
@@ -143,7 +169,6 @@ public class ImageThumbnails {
 
     /**
      * @param srcImagePath path to source picture to transform
-     *                     //     * @param scaleRatio ratio used to determine the thumbnail weight and height according the source image
      * @return the content of the created thumbnail
      */
     private byte[] getThumbnailWithJavaAPI(Path srcImagePath, int scaledWidth, int scaledHeight) throws IOException {

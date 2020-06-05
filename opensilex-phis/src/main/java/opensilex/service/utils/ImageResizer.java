@@ -21,53 +21,51 @@ import java.util.List;
 
 /**
  * @author rcolin
- * A utility class for creating picture thumbnail
+ * A utility class for resizing picture
  */
-public class ImageThumbnails {
+public class ImageResizer {
 
-    private static ImageThumbnails _INSTANCE;
-    private final Path THUMBNAIL_TMP_DIRECTORY;
+    private static ImageResizer _INSTANCE;
+    private final Path RESIZED_PICTURE_TMP_DIR;
     private final LocalFileSystemConnection localFsConnection;
-
-    private final static String TMP_THUMBNAIL_DIR_NAME = "opensilex_thumbnail";
 
     // use Tika for JPEG picture recognition
     private final Tika tika;
     private final static String JPEG_MIME_TYPE = "image/jpeg";
     private final static String JPG_MIME_TYPE = "image/jpg";
 
-    private final THUMBNAIL_METHOD defaultThumbMethod;
+    private final RESIZE_METHOD defaultResizeMethod;
 
-    private ImageThumbnails() throws IOException {
+    private ImageResizer() throws IOException {
 
-        THUMBNAIL_TMP_DIRECTORY = Files.createTempDirectory(TMP_THUMBNAIL_DIR_NAME);
+        RESIZED_PICTURE_TMP_DIR = Files.createTempDirectory("opensilex_resized_picture");
         localFsConnection = new LocalFileSystemConnection();
         tika = new Tika();
 
         // determine if we can use the command convert, else use the java API based method
-        THUMBNAIL_METHOD thumbnailMethod;
+        RESIZE_METHOD resizeMethod;
         Process testConvertProcess = null;
         try{
             testConvertProcess = new ProcessBuilder(CONVERT_COMMAND,"-version").start();
             checkErrorFromProcess(testConvertProcess);
-            thumbnailMethod = THUMBNAIL_METHOD.CONVERT_COMMAND;
+            resizeMethod = RESIZE_METHOD.CONVERT_COMMAND;
         }catch (Exception e){
             if (testConvertProcess != null && testConvertProcess.isAlive()) {
                 testConvertProcess.destroy();
             }
-            thumbnailMethod = THUMBNAIL_METHOD.JAVA_API;
+            resizeMethod = RESIZE_METHOD.JAVA_API;
         }
-        defaultThumbMethod = thumbnailMethod;
+        defaultResizeMethod = resizeMethod;
     }
 
-    public static ImageThumbnails getInstance() throws IOException {
+    public static ImageResizer getInstance() throws IOException {
         if (_INSTANCE == null) {
-            _INSTANCE = new ImageThumbnails();
+            _INSTANCE = new ImageResizer();
         }
         return _INSTANCE;
     }
 
-    public enum THUMBNAIL_METHOD {
+    public enum RESIZE_METHOD {
 
         /**
          * JAVA API
@@ -81,15 +79,15 @@ public class ImageThumbnails {
         CONVERT_COMMAND
     }
 
-    public byte[] getThumbnail(THUMBNAIL_METHOD method, Path srcImagePath, int scaledWidth, int scaledHeight) throws IOException {
-        if (method.equals(THUMBNAIL_METHOD.CONVERT_COMMAND)) {
-            return getThumbnailWithConvertCommand(srcImagePath, scaledWidth, scaledHeight);
+    public byte[] getResizedImage(RESIZE_METHOD method, Path srcImagePath, int scaledWidth, int scaledHeight) throws IOException {
+        if (method.equals(RESIZE_METHOD.CONVERT_COMMAND)) {
+            return getResizedImageWithConvertCmd(srcImagePath, scaledWidth, scaledHeight);
         }
-        return getThumbnailWithJavaAPI(srcImagePath, scaledWidth, scaledHeight);
+        return getResizedImageWithJavaAPI(srcImagePath, scaledWidth, scaledHeight);
     }
 
-    public byte[] getThumbnail(Path srcImagePath, int scaledWidth, int scaledHeight) throws IOException {
-        return this.getThumbnail(defaultThumbMethod, srcImagePath, scaledWidth, scaledHeight);
+    public byte[] getResizedImage(Path srcImagePath, int scaledWidth, int scaledHeight) throws IOException {
+        return this.getResizedImage(defaultResizeMethod, srcImagePath, scaledWidth, scaledHeight);
     }
 
 
@@ -115,19 +113,19 @@ public class ImageThumbnails {
     private static final String CONVERT_RESIZE_OPTION = "-resize";
 
     /**
-     * Extra thumbnail args for JPEG specific convert optimization
+     * Extra args for JPEG specific convert optimization
      */
     private static final String CONVERT_JPEG_DEFINE_OPTION = "-define";
     private static final String CONVERT_JPEG_SIZE_OPTION = "jpeg:size=";
 
 
-    private byte[] getThumbnailWithConvertCommand(Path srcImagePath, int scaledWidth, int scaledHeight) throws IOException {
+    private byte[] getResizedImageWithConvertCmd(Path srcImagePath, int scaledWidth, int scaledHeight) throws IOException {
         Process convertProcess = null;
         Path scaledImagePath = null;
         try {
 
             // create tmp file
-            scaledImagePath = localFsConnection.createFile(Paths.get(THUMBNAIL_TMP_DIRECTORY.toString(), srcImagePath.getFileName().toString()));
+            scaledImagePath = localFsConnection.createFile(Paths.get(RESIZED_PICTURE_TMP_DIR.toString(), srcImagePath.getFileName().toString()));
 
             List<String> command = new ArrayList<>();
             command.add(CONVERT_COMMAND);
@@ -151,10 +149,10 @@ public class ImageThumbnails {
             convertProcess = new ProcessBuilder().command(command).start();
             checkErrorFromProcess(convertProcess);
 
-            byte[] scaledImageContent = localFsConnection.readFileAsByteArray(scaledImagePath);
+            byte[] resizedImageData = localFsConnection.readFileAsByteArray(scaledImagePath);
             localFsConnection.delete(scaledImagePath);
 
-            return scaledImageContent;
+            return resizedImageData;
 
         } catch (Exception e) {
             if (convertProcess != null && convertProcess.isAlive()) {
@@ -169,9 +167,9 @@ public class ImageThumbnails {
 
     /**
      * @param srcImagePath path to source picture to transform
-     * @return the content of the created thumbnail
+     * @return the content of the created resized image
      */
-    private byte[] getThumbnailWithJavaAPI(Path srcImagePath, int scaledWidth, int scaledHeight) throws IOException {
+    private byte[] getResizedImageWithJavaAPI(Path srcImagePath, int scaledWidth, int scaledHeight) throws IOException {
 
         ByteArrayInputStream bais = null;
         ByteArrayOutputStream baos = null;
@@ -184,20 +182,20 @@ public class ImageThumbnails {
             bais.close();
 
             // compute scaled image
-            BufferedImage thumbImg = new BufferedImage(scaledWidth, scaledHeight, sourceImage.getType());
-            Graphics2D graphics2D = thumbImg.createGraphics();
-            graphics2D.drawImage(sourceImage, 0, 0, thumbImg.getWidth(), thumbImg.getHeight(), null);
+            BufferedImage scaledImg = new BufferedImage(scaledWidth, scaledHeight, sourceImage.getType());
+            Graphics2D graphics2D = scaledImg.createGraphics();
+            graphics2D.drawImage(sourceImage, 0, 0, scaledImg.getWidth(), scaledImg.getHeight(), null);
             graphics2D.dispose();
 
             // write scaled image as byte array
             baos = new ByteArrayOutputStream();
-            ImageIO.write(thumbImg, FileNameUtils.getExtension(srcImagePath.toString()), baos);
+            ImageIO.write(scaledImg, FileNameUtils.getExtension(srcImagePath.toString()), baos);
             baos.flush();
-            byte[] thumbnailData = baos.toByteArray();
+            byte[] resizedImageData = baos.toByteArray();
 
             baos.close();
 
-            return thumbnailData;
+            return resizedImageData;
 
         } catch (IOException e) {
             if (bais != null) {

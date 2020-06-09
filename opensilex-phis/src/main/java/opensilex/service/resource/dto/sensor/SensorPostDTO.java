@@ -19,27 +19,32 @@ import opensilex.service.resource.validation.interfaces.URL;
 
 /**
  * DTO for the POST sensor service.
+ * 
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
 public class SensorPostDTO extends AbstractVerifiedClass {
-    //type of the sensor. Uri of the concept (must be subclass of SensingDevice concept)
+    // type of the sensor. Uri of the concept (must be subclass of SensingDevice
+    // concept)
     private String rdfType;
-    //label of the sensor
+    // label of the sensor
     private String label;
-    //brand of the sensor
+    // brand of the sensor
     private String brand;
-    //model of the sensor
+    // model of the sensor
     private String model;
-    //serial number of the sensor
+    // serial number of the sensor
     private String serialNumber;
-    //in service date of the sensor
+    // in service date of the sensor
     private String inServiceDate;
-    //purchase date of the sensor
+    // purchase date of the sensor
     private String dateOfPurchase;
-    //date of last calibration of the sensor
+    // date of last calibration of the sensor
     private String dateOfLastCalibration;
-    //email of the person in charge of the sensor
+    // email of the person in charge of the sensor
     private String personInCharge;
+
+    public SensorPostDTO() {
+    }
 
     public SensorPostDTO(Sensor sensor) {
         rdfType = sensor.getRdfType();
@@ -52,7 +57,7 @@ public class SensorPostDTO extends AbstractVerifiedClass {
         dateOfLastCalibration = sensor.getDateOfLastCalibration();
         personInCharge = sensor.getPersonInCharge();
     }
-    
+
     @Override
     public Sensor createObjectFromDTO() {
         Sensor sensor = new Sensor();
@@ -139,7 +144,7 @@ public class SensorPostDTO extends AbstractVerifiedClass {
     public void setDateOfLastCalibration(String dateOfLastCalibration) {
         this.dateOfLastCalibration = dateOfLastCalibration;
     }
-    
+
     @Email
     @Required
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_USER_EMAIL)
@@ -150,7 +155,7 @@ public class SensorPostDTO extends AbstractVerifiedClass {
     public void setPersonInCharge(String personInCharge) {
         this.personInCharge = personInCharge;
     }
-    
+
     @ApiModelProperty(example = DocumentationAnnotation.EXAMPLE_SENSOR_MODEL)
     public String getModel() {
         return model;

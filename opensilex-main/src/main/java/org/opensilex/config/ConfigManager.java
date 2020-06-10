@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
@@ -32,7 +31,7 @@ import org.opensilex.OpenSilexConfig;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceConfig;
-import org.opensilex.service.ServiceConstructorArguments;
+import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -476,53 +475,17 @@ public class ConfigManager {
      * @throws Exception
      */
     private void addConfigService(StringBuilder yml, String name, Service service, Type serviceBaseType, int depth) throws Exception {
-        ServiceConstructorArguments serviceConfig = service.getServiceConstructorArguments();
         yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
                 + "# Service implementation class for: "
                 + name
                 + " (" + getShortType(serviceBaseType) + ")\n");
-        yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "implementation: " + serviceConfig.implementation().getCanonicalName() + "\n");
-        if (serviceConfig.configID() != null && serviceConfig.configClass() != null) {
-            Constructor<?> constructor = ClassUtils.getConstructorWithParameterImplementing(serviceConfig.implementation(), ServiceConfig.class);
-            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
-                    + "# Configuration class used as constructor parameter for: "
-                    + name
-                    + " (" + getShortType(constructor.getParameters()[0].getType()) + ")\n");
-            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
-                    + "configClass: " + serviceConfig.configClass().getCanonicalName() + "\n");
-            if (!serviceConfig.configID().isEmpty()) {
-                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
-                        + "# Configuration identifier used as constructor parameter for: "
-                        + name + "\n");
-                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
-                        + "configID: "
-                        + serviceConfig.configID() + "\n");
-            }
-            addConfigInterface(yml, serviceConfig.configID(), serviceConfig.getConfig(), serviceConfig.configClass(), depth);
+        yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "implementation: " + service.getClass().getCanonicalName() + "\n");
 
-        } else if (serviceConfig.getService() != null) {
-            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
-                    + "# Service class used as constructor parameter for: "
-                    + name + "\n");
-            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
-                    + "serviceClass: "
-                    + serviceConfig.serviceClass().getCanonicalName() + "\n");
-
-            String serviceID = serviceConfig.serviceID();
-            if (serviceID != null && !serviceID.isEmpty()) {
-                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
-                        + "# Service identifier used as constructor parameter for: " + name + "\n");
-                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
-                        + "serviceID: " + serviceID + "\n");
-                yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
-                        + serviceID + ":\n");
-
-                Constructor<? extends Service> constructor = ClassUtils.getConstructorWithParameterImplementing(
-                        serviceConfig.implementation(),
-                        Service.class
-                );
-                addConfigService(yml, serviceID, serviceConfig.getService(), constructor.getParameters()[0].getType(), depth + 1);
-            }
+        ServiceConfig serviceConfig = service.getConfig();
+        ServiceDefaultDefinition defaultDefinition = service.getClass().getAnnotation(ServiceDefaultDefinition.class);
+        if (defaultDefinition != null && defaultDefinition.config() != null) {
+            Class<? extends ServiceConfig> serviceConfigClass = defaultDefinition.config();
+            addConfigInterface(yml, "config", serviceConfig, serviceConfigClass, depth);
         }
     }
 

@@ -15,6 +15,10 @@ import org.glassfish.hk2.api.Factory;
  */
 public abstract class ServiceFactory<T extends Service> extends BaseService implements Factory<T>, Service {
 
+    public ServiceFactory(ServiceConfig config) {
+        super(config);
+    }
+
     /**
      * Return factory provided service class.
      *

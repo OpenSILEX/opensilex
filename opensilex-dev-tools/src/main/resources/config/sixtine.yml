@@ -7,20 +7,30 @@ ontologies:
     baseURIAlias: dev
     enableSHACL: true
     sparql:
-#        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
-        rdf4j:
+        config:
             serverURI: http://localhost:8667/rdf4j-server/
             repository: opensilex
 
 file-system: 
-    storageBasePath: ../../opensilex-data
+    fs:
+        config:
+            basePath: ../../opensilex-data
+#            connections:
+#                irod: 
+#                    implementation: org.opensilex.fs.irod.IRODSConnection
+#                    config:
+#                        baseURI: http://example.com/
+#            customPath:
+#                images: irod
     
-big-data:   
+big-data:
     nosql:
-        mongodb:
-            host: localhost
-            port: 8668
-            database: opensilex
+        config:
+            connection:
+                config:
+                    host: localhost
+                    port: 8668
+                    database: opensilex
 
 front:
     theme: inrae-sixtine#sixtine

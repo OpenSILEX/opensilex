@@ -31,7 +31,6 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.sail.shacl.ShaclSailValidationException;
 import org.opensilex.service.BaseService;
-import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLConnection;
 import org.opensilex.sparql.service.SPARQLResult;
@@ -46,10 +45,6 @@ import org.slf4j.LoggerFactory;
  *
  * @author vincent
  */
-@ServiceDefaultDefinition(
-        configClass = RDF4JConfig.class,
-        configID = "rdf4j"
-)
 public class RDF4JConnection extends BaseService implements SPARQLConnection {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(RDF4JConnection.class);
@@ -59,6 +54,7 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
     private static AtomicInteger connectionCount = new AtomicInteger(0);
 
     public RDF4JConnection(RepositoryConnection rdf4JConnection) {
+        super(null);
         this.rdf4JConnection = rdf4JConnection;
         LOGGER.debug("Acquire RDF4J sparql connection: " + this.rdf4JConnection.hashCode() + " (" + RDF4JConnection.connectionCount.incrementAndGet() + ")");
     }
@@ -362,9 +358,9 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
                     brokenConstraint.put(errorURI, new URI(stmt.getObject().stringValue()));
                 }
 
-                if (invalidObject.containsKey(errorURI) && invalidObjectProperty.containsKey(errorURI)&& brokenConstraint.containsKey(errorURI)) {
+                if (invalidObject.containsKey(errorURI) && invalidObjectProperty.containsKey(errorURI) && brokenConstraint.containsKey(errorURI)) {
                     exception.addValidationError(invalidObject.get(errorURI), invalidObjectProperty.get(errorURI), brokenConstraint.get(errorURI));
-                    
+
                 }
             } catch (Exception ex) {
                 LOGGER.warn("Unexpected error while analyzing SHACL exception", ex);

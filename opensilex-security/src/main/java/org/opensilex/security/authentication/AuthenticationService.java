@@ -146,7 +146,7 @@ public class AuthenticationService extends BaseService implements Service {
             put(CLAIM_CREDENTIALS_LIST, List.class);
         }
     };
-    
+
     public static void registerClaimClass(String claim, Class<?> cls) {
         claimClasses.put(claim, cls);
     }
@@ -172,6 +172,7 @@ public class AuthenticationService extends BaseService implements Service {
      * @throws NoSuchAlgorithmException should never happend
      */
     public AuthenticationService() throws NoSuchAlgorithmException {
+        super(null);
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
         kpg.initialize(RSA_KEY_SIZE);
         KeyPair kp = kpg.generateKeyPair();
@@ -255,7 +256,7 @@ public class AuthenticationService extends BaseService implements Service {
      * </pre>
      *
      * @param user User having token to renew
-     * @return true if token has been renewed and false if not (in case user has no previous token) 
+     * @return true if token has been renewed and false if not (in case user has no previous token)
      * @throws Exception in case of token renew failure
      */
     public boolean renewToken(UserModel user) throws Exception {

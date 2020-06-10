@@ -15,23 +15,12 @@ import org.opensilex.OpenSilex;
 public abstract class BaseService implements Service {
 
     /**
-     * Service construction arguments definitions.
-     */
-    private ServiceConstructorArguments constructorArgs;
-
-    /**
      * OpenSilex instance.
      */
     private OpenSilex opensilex;
 
-    @Override
-    public void setServiceConstructorArguments(ServiceConstructorArguments args) {
-        this.constructorArgs = args;
-    }
-
-    @Override
-    public ServiceConstructorArguments getServiceConstructorArguments() {
-        return this.constructorArgs;
+    protected BaseService(ServiceConfig config) {
+        this.config = config;
     }
 
     @Override
@@ -42,6 +31,13 @@ public abstract class BaseService implements Service {
     @Override
     public OpenSilex getOpenSilex() {
         return this.opensilex;
+    }
+
+    private final ServiceConfig config;
+
+    @Override
+    public ServiceConfig getConfig() {
+        return this.config;
     }
 
 }

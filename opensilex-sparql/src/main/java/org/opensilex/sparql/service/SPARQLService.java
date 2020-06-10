@@ -69,10 +69,7 @@ import org.opensilex.utils.ClassUtils;
 /**
  * Implementation of SPARQLService
  */
-@ServiceDefaultDefinition(
-        serviceClass = RDF4JConnection.class,
-        serviceID = "rdf4j"
-)
+@ServiceDefaultDefinition(config = SPARQLServiceConfig.class)
 public class SPARQLService extends BaseService implements SPARQLConnection, Service, AutoCloseable {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLService.class);
@@ -80,7 +77,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public final static String DEFAULT_SPARQL_SERVICE = "sparql";
     private final SPARQLConnection connection;
 
+    public SPARQLService(SPARQLServiceConfig config) {
+        super(config);
+        this.connection = config.connection();
+    }
+
     public SPARQLService(SPARQLConnection connection) {
+        super(null);
         this.connection = connection;
     }
 
@@ -99,6 +102,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         connection.setOpenSilex(getOpenSilex());
         connection.setMapperIndex(getMapperIndex());
         connection.setup();
+    }
+
+    @Override
+    public void clean() throws Exception {
+        connection.clean();
     }
 
     @Override

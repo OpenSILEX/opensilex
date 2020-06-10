@@ -6,6 +6,12 @@
 //******************************************************************************
 package org.opensilex.fs.service;
 
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.opensilex.config.InvalidConfigException;
 import org.opensilex.fs.local.LocalFileSystemConnection;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
@@ -14,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 
 /**
@@ -22,116 +27,123 @@ import java.nio.file.Path;
  *
  * @author Vincent Migot
  */
-@ServiceDefaultDefinition(
-        serviceClass = LocalFileSystemConnection.class
-)
+@ServiceDefaultDefinition(config = FileStorageServiceConfig.class)
 public class FileStorageService extends BaseService implements Service, FileStorageConnection {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(FileStorageService.class);
 
     public final static String DEFAULT_FS_SERVICE = "fs";
 
-    private final FileStorageConnection connection;
+    private final FileStorageConnection local;
 
-    public FileStorageService(FileStorageConnection connection) {
-        this.connection = connection;
+    private final Map<Path, FileStorageConnection> customPath = new HashMap<>();
+
+    private final List<Path> pathOrder;
+
+    public FileStorageService(FileStorageServiceConfig config) throws InvalidConfigException {
+        super(config);
+        this.local = new LocalFileSystemConnection(Paths.get(config.basePath()));
+
+        Map<String, FileStorageConnection> connections = config.connections();
+        for (Map.Entry<String, String> path : config.customPath().entrySet()) {
+            Path pathPrefix = Paths.get(path.getKey());
+            String connectionID = path.getValue();
+
+            if (!connections.containsKey(connectionID)) {
+                throw new InvalidConfigException("File storage connection not found: " + connectionID);
+            }
+
+            customPath.put(pathPrefix, connections.get(connectionID));
+        }
+
+        pathOrder = new ArrayList<>(customPath.keySet());
+
+        pathOrder.sort((Path p1, Path p2) -> {
+            if (p1 == null) {
+                if (p2 == null) {
+                    return 0;
+                } else {
+                    return -1;
+                }
+            } else {
+                if (p2 == null) {
+                    return 1;
+                } else if (p1.equals(p2)) {
+                    return 0;
+                } else if (p1.startsWith(p2)) {
+                    return 1;
+                } else if (p2.startsWith(p1)) {
+                    return -1;
+                } else {
+                    return p1.toAbsolutePath().toString().compareTo(p2.toAbsolutePath().toString());
+                }
+            }
+        });
     }
 
-    @Override
-    public void setup() throws Exception {
-        connection.setup();
+    public FileStorageServiceConfig getImplementedConfig() {
+        return (FileStorageServiceConfig) this.getConfig();
     }
-
-    @Override
-    public void shutdown() throws Exception {
-        connection.shutdown();
-    }
-
-    @Override
-    public void clean() throws Exception {
-        connection.clean();
-    }
-
-    @Override
-    public void startup() throws Exception {
-        connection.startup();
-    }
-
-    private Path storageBasePath;
 
     public Path getStorageBasePath() {
-        return storageBasePath;
+        return Paths.get(getImplementedConfig().basePath());
     }
 
-    public void setStorageBasePath(Path storageBasePath) {
-        this.storageBasePath = storageBasePath;
-    }
+    protected FileStorageConnection getConnection(Path filePath) {
+        for (Path candidatePath : pathOrder) {
+            if (filePath.startsWith(candidatePath)) {
+                return customPath.get(candidatePath);
+            }
+        }
 
-    public Path getAbsolutePath(Path filePath) {
-        return filePath.isAbsolute() ? filePath : storageBasePath.resolve(filePath).toAbsolutePath();
-    }
-
-    @Override
-    public String readFile(Path filePath) throws IOException {
-        Path absolutePath = getAbsolutePath(filePath);
-        LOGGER.debug("READ FILE: " + absolutePath.toString());
-        return connection.readFile(absolutePath);
+        return this.local;
     }
 
     @Override
-    public byte[] readFileAsByteArray(Path filePath) throws IOException {
-        Path absolutePath = getAbsolutePath(filePath);
-        LOGGER.debug("READ FILE AS BYTE ARRAY: " + absolutePath.toString());
-        return connection.readFileAsByteArray(absolutePath);
+    public String readFile(Path filePath) throws Exception {
+        LOGGER.debug("READ FILE: " + filePath.toString());
+        return getConnection(filePath).readFile(filePath);
     }
 
     @Override
-    public Path getPhysicalPath(Path filePath) throws IOException {
-        Path absolutePath = getAbsolutePath(filePath);
-        LOGGER.debug("FETCH FILE : " + absolutePath.toString());
-        return connection.getPhysicalPath(absolutePath);
+    public void writeFile(Path filePath, String content) throws Exception {
+        LOGGER.debug("WRITE FILE: " + filePath.toString());
+        getConnection(filePath).writeFile(filePath, content);
     }
 
     @Override
-    public void writeFile(Path filePath, String content) throws IOException {
-        Path absolutePath = getAbsolutePath(filePath);
-        LOGGER.debug("WRITE FILE: " + absolutePath.toString());
-        connection.writeFile(absolutePath, content);
-    }
-
-
-    @Override
-    public void writeFile(Path filePath, File file) throws IOException {
-        Path absolutePath = getAbsolutePath(filePath);
-        LOGGER.debug("WRITE FILE: " + absolutePath.toString());
-        connection.writeFile(absolutePath, file);
+    public void writeFile(Path filePath, File file) throws Exception {
+        LOGGER.debug("WRITE FILE: " + filePath.toString());
+        getConnection(filePath).writeFile(filePath, file);
     }
 
     @Override
-    public void createDirectories(Path directoryPath) throws IOException {
-        Path absolutePath = getAbsolutePath(directoryPath);
-        LOGGER.debug("CREATE DIRECTORIES: " + absolutePath.toString());
-        connection.createDirectories(absolutePath);
+    public void createDirectories(Path directoryPath) throws Exception {
+        LOGGER.debug("CREATE DIRECTORIES: " + directoryPath.toString());
+        getConnection(directoryPath).createDirectories(directoryPath);
     }
 
     @Override
-    public Path createFile(Path filePath) throws IOException {
-        Path absolutePath = getAbsolutePath(filePath);
-        LOGGER.debug("CREATE FILES: " + absolutePath.toString());
-        return connection.createFile(filePath);
+    public byte[] readFileAsByteArray(Path filePath) throws Exception {
+        LOGGER.debug("READ FILE BYTES: " + filePath.toString());
+        return getConnection(filePath).readFileAsByteArray(filePath);
     }
 
     @Override
-    public boolean exist(Path filePath) throws IOException {
-        Path absolutePath = getAbsolutePath(filePath);
-        LOGGER.debug("CHECK EXISTS: " + absolutePath.toString());
-        return connection.exist(absolutePath);
+    public Path createFile(Path filePath) throws Exception {
+        LOGGER.debug("CREATE FILE: " + filePath.toString());
+        return getConnection(filePath).createFile(filePath);
     }
 
     @Override
-    public void delete(Path filePath) throws IOException {
-        Path absolutePath = getAbsolutePath(filePath);
-        LOGGER.debug("DELETE: " + absolutePath.toString());
-        connection.delete(absolutePath);
+    public boolean exist(Path filePath) throws Exception {
+        LOGGER.debug("TEST FILE EXISTENCE: " + filePath.toString());
+        return getConnection(filePath).exist(filePath);
+    }
+
+    @Override
+    public void delete(Path filePath) throws Exception {
+        LOGGER.debug("DELETE FILE: " + filePath.toString());
+        getConnection(filePath).delete(filePath);
     }
 }

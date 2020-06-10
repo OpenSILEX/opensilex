@@ -26,6 +26,10 @@ import org.slf4j.LoggerFactory;
  */
 public class JCSApiCacheService extends BaseService implements ApiCacheService {
 
+    public JCSApiCacheService() {
+        super(null);
+    }
+
     /**
      * Class Logger.
      */

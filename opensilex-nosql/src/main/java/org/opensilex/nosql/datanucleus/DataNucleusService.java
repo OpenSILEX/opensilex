@@ -1,5 +1,5 @@
 //******************************************************************************
-//                   AbstractDataNucleusConnection.java
+//                   DataNucleusService.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -21,9 +21,9 @@ import org.datanucleus.PropertyNames;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.datanucleus.metadata.PersistenceUnitMetaData;
 import org.opensilex.OpenSilex;
-import org.opensilex.nosql.service.NoSQLConnection;
+import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.service.BaseService;
-import org.opensilex.service.Service;
+import org.opensilex.service.ServiceDefaultDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +37,10 @@ import org.slf4j.LoggerFactory;
  * @author Vincent Migot, Arnaud Charleroy
  * @link https://cloud.google.com/appengine/docs/standard/java/datastore/jdo/creatinggettinganddeletingdata
  */
-public abstract class AbstractDataNucleusConnection extends BaseService implements Service, NoSQLConnection {
+@ServiceDefaultDefinition(config = DataNucleusServiceConfig.class)
+public class DataNucleusService extends BaseService implements NoSQLService {
 
-    public final static Logger LOGGER = LoggerFactory.getLogger(AbstractDataNucleusConnection.class);
+    public final static Logger LOGGER = LoggerFactory.getLogger(DataNucleusService.class);
     /**
      * static final for the JNDI name of the PersistenceManagerFactory
      */
@@ -49,11 +50,18 @@ public abstract class AbstractDataNucleusConnection extends BaseService implemen
     protected PersistenceManagerFactory PMF;
 
     protected Properties PMF_PROPERTIES;
+    private final DataNucleusServiceConnection connection;
+
+    public DataNucleusService(DataNucleusServiceConfig config) {
+        super(config);
+        this.connection = config.connection();
+    }
 
     @Override
     public void setup() throws Exception {
         PMF_PROPERTIES = new Properties();
         PMF_PROPERTIES.setProperty("javax.jdo.PersistenceManagerFactoryClass", "org.datanucleus.api.jdo.JDOPersistenceManagerFactory");
+        this.connection.definePersistentManagerProperties(PMF_PROPERTIES);
     }
 
     @Override

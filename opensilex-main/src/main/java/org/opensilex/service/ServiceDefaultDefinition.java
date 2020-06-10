@@ -12,7 +12,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for describing service default configuration.
  *
  * @author Vincent Migot
  */
@@ -21,39 +20,8 @@ import java.lang.annotation.Target;
 @Documented
 public @interface ServiceDefaultDefinition {
 
-    /**
-     * Service implementation class.
-     *
-     * @return implementation class
-     */
     public Class<? extends Service> implementation() default Service.class;
 
-    /**
-     * Service configuration class.
-     *
-     * @return configuration class
-     */
-    public Class<?> configClass() default Class.class;
-
-    /**
-     * Service configuration ID.
-     *
-     * @return configuration ID
-     */
-    public String configID() default "";
-
-    /**
-     * Service constructor dependency ID.
-     *
-     * @return constructor dependency ID
-     */
-    public String serviceID() default "";
-
-    /**
-     * Service constructor dependency class.
-     *
-     * @return constructor dependency class
-     */
-    public Class<? extends Service> serviceClass() default Service.class;
+    public Class<? extends ServiceConfig> config() default ServiceConfig.class;
 
 }

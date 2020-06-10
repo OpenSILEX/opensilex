@@ -1,43 +1,35 @@
-//******************************************************************************
-// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
-// Copyright © INRA 2019
-// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-//******************************************************************************
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package org.opensilex.service;
 
-import org.opensilex.config.ConfigDescription;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
- * Service definition interface.
  *
- * @author Vincent Migot
+ * @author vince
  */
 public interface ServiceDefinition {
 
-    @ConfigDescription(
-            value = "Service implementation class",
-            defaultClass = Service.class
-    )
     public Class<? extends Service> implementation();
 
-    @ConfigDescription(
-            value = "Service configuration class"
-    )
-    public Class<?> configClass();
+    public JsonNode config();
 
-    @ConfigDescription(
-            value = "Service configuration id"
-    )
-    public String configID();
+    public static Class<? extends Service> getDefaultImplementation(Class<? extends Service> serviceClass) {
+        ServiceDefaultDefinition defaultDefinition = serviceClass.getAnnotation(ServiceDefaultDefinition.class);
+        if (defaultDefinition == null) {
+            return null;
+        }
+        return defaultDefinition.implementation();
+    }
 
-    @ConfigDescription(
-            value = "Service connection id"
-    )
-    public String serviceID();
-
-    @ConfigDescription(
-            value = "Service connection class",
-            defaultClass = Service.class
-    )
-    public Class<? extends Service> serviceClass();
+    public static Class<? extends ServiceConfig> getDefaultConfigClass(Class<? extends Service> serviceClass) {
+        ServiceDefaultDefinition defaultDefinition = serviceClass.getAnnotation(ServiceDefaultDefinition.class);
+        if (defaultDefinition == null) {
+            return null;
+        }
+        return defaultDefinition.config();
+    }
 }

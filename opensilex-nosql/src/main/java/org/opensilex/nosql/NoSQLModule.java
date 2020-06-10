@@ -12,7 +12,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.nosql.mongodb.MongoDBConfig;
+import org.opensilex.nosql.datanucleus.mongo.MongoDBConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +73,7 @@ public class NoSQLModule extends OpenSilexModule {
             LOGGER.error("There is a problem in your mongo configuration");
             throw new Exception("There is a problem in your mongo configuration");
         }
-        
+
         mongo.close();
     }
 

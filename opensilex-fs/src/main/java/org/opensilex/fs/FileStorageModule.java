@@ -5,9 +5,7 @@
  */
 package org.opensilex.fs;
 
-import java.nio.file.Paths;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.fs.service.FileStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,14 +25,6 @@ public class FileStorageModule extends OpenSilexModule {
     @Override
     public String getConfigId() {
         return "file-system";
-    }
-
-    @Override
-    public void setup() throws Exception {
-        FileStorageService fs = getOpenSilex().getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
-        String basePath = ((FileStorageConfig) getConfig()).storageBasePath();
-        LOGGER.debug("Setup base storage path: " + basePath);
-        fs.setStorageBasePath(Paths.get(basePath));
     }
 
 }

@@ -11,6 +11,7 @@ import java.util.Set;
 import javax.ws.rs.ext.Provider;
 import org.apache.jena.rdf.model.Resource;
 import org.opensilex.OpenSilex;
+import org.opensilex.service.ServiceConfig;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.service.ServiceFactory;
 import org.opensilex.sparql.SPARQLConfig;
@@ -30,15 +31,17 @@ import org.slf4j.LoggerFactory;
  *
  * @author vince
  */
-@ServiceDefaultDefinition(
-        //        implementation = RDF4JInMemoryServiceFactory.class
-        implementation = RDF4JServiceFactory.class
-)
 @Provider
+@ServiceDefaultDefinition(implementation = RDF4JServiceFactory.class)
 public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService> {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLServiceFactory.class);
 
+    public SPARQLServiceFactory(ServiceConfig config) {
+        super(config);
+    }
+
+    @Override
     public Class<SPARQLService> getServiceClass() {
         return SPARQLService.class;
     }

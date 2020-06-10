@@ -3,20 +3,26 @@ ontologies:
     baseURIAlias: dev
     sparql:
         #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
-        rdf4j:
+        config:
             serverURI: http://localhost:8667/rdf4j-server/
             repository: opensilex
 
+
 file-system:
-    storageBasePath: ../../opensilex-data
+    fs:
+        config:
+            basePath: ../../opensilex-data
 
 big-data:
     nosql:
-        mongodb:
-            host: localhost
-            port: 8668
-            database: opensilex
+        config:
+            connection:
+                config:
+                    host: localhost
+                    port: 8668
+                    database: opensilex
 
+    
 phisws:
     infrastructure: opensilex
     

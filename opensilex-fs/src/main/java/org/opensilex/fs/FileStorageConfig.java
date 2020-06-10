@@ -11,13 +11,8 @@ import org.opensilex.config.ConfigDescription;
 public interface FileStorageConfig {
 
     @ConfigDescription(
-            value = "File storage access"
+            value = "File storage service"
     )
     public FileStorageService fs();
-
-    @ConfigDescription(
-            value = "Base path for file storage"
-    )
-    public String storageBasePath();
 
 }

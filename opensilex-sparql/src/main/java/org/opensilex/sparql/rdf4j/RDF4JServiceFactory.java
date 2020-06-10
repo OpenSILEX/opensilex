@@ -50,20 +50,16 @@ import org.slf4j.LoggerFactory;
  *
  * @author vince
  */
-@ServiceDefaultDefinition(
-        configClass = RDF4JConfig.class,
-        configID = "rdf4j"
-)
+@ServiceDefaultDefinition(config = RDF4JConfig.class)
 public class RDF4JServiceFactory extends SPARQLServiceFactory {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(RDF4JServiceFactory.class);
 
     private final Repository repository;
-    private final RDF4JConfig config;
     private PoolingHttpClientConnectionManager cm;
 
     public RDF4JServiceFactory(RDF4JConfig config) {
-        this.config = config;
+        super(config);
         LOGGER.debug("Build RDF4JServiceFactory from config");
         synchronized (this) {
             HTTPRepository repo = new HTTPRepository(config.serverURI(), config.repository());
@@ -81,20 +77,24 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
     }
 
     public RDF4JServiceFactory(Repository repository) {
+        super(null);
         LOGGER.debug("Build RDF4JServiceFactory from repository");
         synchronized (this) {
             this.repository = repository;
             this.repository.init();
         }
-        this.config = null;
+    }
+
+    public RDF4JConfig getImplementedConfig() {
+        return (RDF4JConfig) getConfig();
     }
 
     private int getTimeout() {
-        if (config == null) {
+        if (getConfig() == null) {
             return 0;
         }
 
-        return config.timeout();
+        return getImplementedConfig().timeout();
     }
 
     protected synchronized SPARQLService getNewService() throws Exception {
@@ -149,9 +149,9 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
 
     @Override
     public void createRepository() throws Exception {
-        if (config != null) {
+        if (getImplementedConfig() != null) {
             // Create repository
-            RepositoryManager repositoryManager = RepositoryProvider.getRepositoryManager(config.serverURI());
+            RepositoryManager repositoryManager = RepositoryProvider.getRepositoryManager(getImplementedConfig().serverURI());
             repositoryManager.init();
 
             // Read repository configuration file located in jar
@@ -171,8 +171,8 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
             // Define repository template parameters
             final Map<String, String> valueMap = new HashMap<String, String>() {
                 {
-                    put("Repository ID", config.repository());
-                    put("Repository title", config.repository());
+                    put("Repository ID", getImplementedConfig().repository());
+                    put("Repository title", getImplementedConfig().repository());
                     // Default template value write here for information
                     put("Query Iteration Cache size", "10000");
                     put("Triple indexes", "spoc,posc");
@@ -208,11 +208,11 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
 
     @Override
     public void deleteRepository() throws Exception {
-        if (config != null) {
+        if (getImplementedConfig() != null) {
             // Create repository
-            RepositoryManager repositoryManager = RepositoryProvider.getRepositoryManager(config.serverURI());
+            RepositoryManager repositoryManager = RepositoryProvider.getRepositoryManager(getImplementedConfig().serverURI());
             repositoryManager.init();
-            repositoryManager.removeRepository(config.repository());
+            repositoryManager.removeRepository(getImplementedConfig().repository());
             repositoryManager.shutDown();
         }
     }

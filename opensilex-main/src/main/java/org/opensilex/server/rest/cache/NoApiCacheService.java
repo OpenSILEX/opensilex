@@ -17,6 +17,10 @@ import org.opensilex.service.BaseService;
  */
 public class NoApiCacheService extends BaseService implements ApiCacheService {
 
+    public NoApiCacheService() {
+        super(null);
+    }
+
     @Override
     public boolean exists(String category, String key) {
         return false;

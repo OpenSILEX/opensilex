@@ -19,6 +19,10 @@ import java.nio.file.Path;
  */
 public class IrodsFileSystemConnection extends BaseService implements FileStorageConnection {
 
+    public IrodsFileSystemConnection() {
+        super(null);
+    }
+
     private LocalFileSystemConnection localStorageConnection;
 
     private final static Logger LOGGER = LoggerFactory.getLogger(IrodsFileSystemConnection.class);
@@ -26,14 +30,12 @@ public class IrodsFileSystemConnection extends BaseService implements FileStorag
     private final static String IRODS_GET_CMD = "iget";
 
     /**
-     * Option used in order to force IRODS to write the content of a source file into
-     * the destination file when using IGET
+     * Option used in order to force IRODS to write the content of a source file into the destination file when using IGET
      */
     private final static String IRODS_GET_FORCE_WRITE = "-f";
 
     /**
-     * Temp folder used for storing IRODS incoming file(s), the files
-     * are created and then deleted after been read.
+     * Temp folder used for storing IRODS incoming file(s), the files are created and then deleted after been read.
      */
     private Path IRODS_TMP_DIRECTORY;
 
@@ -86,7 +88,6 @@ public class IrodsFileSystemConnection extends BaseService implements FileStorag
         return fileContent;
     }
 
-    @Override
     public Path getPhysicalPath(Path filePath) throws IOException {
 
         Process irodsProcess = null;
@@ -98,10 +99,10 @@ public class IrodsFileSystemConnection extends BaseService implements FileStorag
         try {
             tmpFile = Files.createTempFile(IRODS_TMP_DIRECTORY, null, null);
 
-            irodsProcess = new ProcessBuilder().command(IRODS_GET_CMD
-                    , filePath.toString()
-                    , tmpFile.toString()
-                    , IRODS_GET_FORCE_WRITE).start();
+            irodsProcess = new ProcessBuilder().command(IRODS_GET_CMD,
+                    filePath.toString(),
+                    tmpFile.toString(),
+                    IRODS_GET_FORCE_WRITE).start();
 
             // redirect eventual errors to an IOException
             checkErrorFromProcess(irodsProcess);

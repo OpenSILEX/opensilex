@@ -15,7 +15,11 @@ import org.opensilex.service.BaseService;
  *
  * @author charlero
  */
-public class GridFSConnection   extends BaseService implements FileStorageConnection {
+public class GridFSConnection extends BaseService implements FileStorageConnection {
+
+    public GridFSConnection() {
+        super(null);
+    }
 
     @Override
     public byte[] readFileAsByteArray(Path filePath) throws IOException {
@@ -24,11 +28,6 @@ public class GridFSConnection   extends BaseService implements FileStorageConnec
 
     @Override
     public String readFile(Path filePath) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Path getPhysicalPath(Path filePath) throws IOException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -63,4 +62,3 @@ public class GridFSConnection   extends BaseService implements FileStorageConnec
     }
 
 }
-

@@ -10,15 +10,18 @@ import java.util.Map;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 import org.opensilex.integration.test.IntegrationTestCategory;
-import org.opensilex.nosql.mongodb.MongoDBConfig;
-import org.opensilex.nosql.mongodb.MongoDBConnection;
+import org.opensilex.nosql.datanucleus.DataNucleusService;
+import org.opensilex.nosql.datanucleus.DataNucleusServiceConfig;
+import org.opensilex.nosql.datanucleus.DataNucleusServiceConnection;
+import org.opensilex.nosql.datanucleus.mongo.MongoDBConfig;
+import org.opensilex.nosql.datanucleus.mongo.MongoDBConnection;
 
 /**
  *
  * @author charlero
  */
 @Category(IntegrationTestCategory.class)
-public class MongoConnectionTest extends NoSQLServiceTest {
+public class MongoConnectionTest extends DataNucleusServiceTest {
 
     @BeforeClass
     public static void setupMongo() throws Exception {
@@ -58,9 +61,18 @@ public class MongoConnectionTest extends NoSQLServiceTest {
                 return new HashMap<>();
             }
         });
+
         connection.setOpenSilex(opensilex);
         connection.setup();
-        connection.startup();
-        initialize(connection);
+
+        DataNucleusServiceConfig serviceConfig = new DataNucleusServiceConfig() {
+            @Override
+            public DataNucleusServiceConnection connection() {
+                return connection;
+            }
+
+        };
+
+        initialize(new DataNucleusService(serviceConfig));
     }
 }

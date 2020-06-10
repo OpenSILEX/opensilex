@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Properties;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import org.opensilex.nosql.mongodb.MongoDBConfig;
+import org.opensilex.nosql.datanucleus.mongo.MongoDBConfig;
 import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.slf4j.Logger;
@@ -36,8 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 /**
- * Gère les méthodes appelant tous types de propriétés à partir de fichier de
- * configuration Les fichiers sont disponible dans /src/main/resources par
+ * Gère les méthodes appelant tous types de propriétés à partir de fichier de configuration Les fichiers sont disponible dans /src/main/resources par
  * défaut dans un projet Maven
  *
  * @date 05/2016
@@ -74,66 +73,69 @@ public class PropertiesFileManager {
             throw new WebApplicationException(Response
                     .status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Error : Cannot find " + fileName + " configuration file for the wanted database\n" + ex.getMessage()).build());
-         } finally { 
-            if (inputStream != null) { 
-                try { 
-                    inputStream.close(); 
-                } catch (IOException ex) { 
-                    LOGGER.error(ex.getMessage(), ex); 
-                } 
-            } 
-        } 
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException ex) {
+                    LOGGER.error(ex.getMessage(), ex);
+                }
+            }
+        }
         return props;
     }
 
     /**
      * Read yaml file and return a Map.
+     *
      * @param fileName
      * @return null | Map<String,Object>
      */
-    public static Map<String,Object> parseYAMLConfigFile(String fileName) {
+    public static Map<String, Object> parseYAMLConfigFile(String fileName) {
         InputStream inputStream = null;
-        
+
         final String filePath = "/" + fileName + ".yml";
         Yaml yaml = new Yaml();
-        
+
         inputStream = PropertiesFileManager.class.getResourceAsStream(filePath);
         Map<String, Object> ymalMap = yaml.load(inputStream);
-         if (inputStream != null) { 
-            try { 
-                inputStream.close(); 
-            } catch (IOException ex) { 
-                LOGGER.error(ex.getMessage(), ex); 
-            } 
-        } 
-            
+        if (inputStream != null) {
+            try {
+                inputStream.close();
+            } catch (IOException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+            }
+        }
+
         return ymalMap;
     }
-    
+
     /**
      * Write yaml file and from Map.
+     *
      * @param mapObject
      * @param yamlFilePath
-     * @return boolean 
+     * @return boolean
      */
-    public static boolean writeYAMLFile(Map<String,Object> mapObject, String  yamlFilePath) {
+    public static boolean writeYAMLFile(Map<String, Object> mapObject, String yamlFilePath) {
         boolean resultStatus = false;
         Yaml yaml = new Yaml();
         FileWriter writer;
         try {
             writer = new FileWriter(yamlFilePath);
-            
+
             yaml.dump(mapObject, writer);
             LOGGER.debug(yaml.dump(mapObject));
             resultStatus = true;
         } catch (IOException ex) {
-           LOGGER.error("Can't write file", ex);
+            LOGGER.error("Can't write file", ex);
         }
         return resultStatus;
     }
-        
+
     /**
      * Parses a binary public key.
+     *
      * @param configurationFileName
      * @return the key parsed
      */
@@ -158,15 +160,15 @@ public class PropertiesFileManager {
             throw new WebApplicationException(Response
                     .status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Can't process JWT Token" + ex.getMessage()).build());
-        } finally { 
-            if (dataInputStream != null) { 
-                try { 
-                    dataInputStream.close(); 
-                } catch (IOException ex) { 
-                    LOGGER.error(ex.getMessage(), ex); 
-                } 
-            } 
-        } 
+        } finally {
+            if (dataInputStream != null) {
+                try {
+                    dataInputStream.close();
+                } catch (IOException ex) {
+                    LOGGER.error(ex.getMessage(), ex);
+                }
+            }
+        }
         return generatedRSAPublicKey;
     }
 
@@ -174,10 +176,10 @@ public class PropertiesFileManager {
      * Phis service configuration
      */
     private static PhisWsConfig phisConfig;
-    
+
     /**
      * Setter for all configuration needed by phis
-     * 
+     *
      * @param pgConfig PostGreSQL config
      * @param phisConfig Phis service configuration
      * @param coreConfig Application core config
@@ -185,12 +187,12 @@ public class PropertiesFileManager {
      * @param rdf4jConfig RDF4J configuration
      */
     public static void setOpensilexConfigs(
-        PhisWsConfig phisConfig,
-        RDF4JConfig rdf4jConfig,
-        SPARQLConfig sparqlConfig,
-        MongoDBConfig mongoConfig,
-        String storageBasePath,
-        String publicURI
+            PhisWsConfig phisConfig,
+            RDF4JConfig rdf4jConfig,
+            SPARQLConfig sparqlConfig,
+            MongoDBConfig mongoConfig,
+            String storageBasePath,
+            String publicURI
     ) {
         PropertiesFileManager.phisConfig = phisConfig;
         PropertiesFileManager.rdf4jConfig = rdf4jConfig;
@@ -199,11 +201,10 @@ public class PropertiesFileManager {
         PropertiesFileManager.storageBasePath = storageBasePath;
         PropertiesFileManager.publicURI = publicURI;
     }
-    
+
     /**
-     * This method used to read configuration from file
-     * It as been updated to use new YAML config system in modularity
-     * So now this method map old properties to new ones
+     * This method used to read configuration from file It as been updated to use new YAML config system in modularity So now this method map old
+     * properties to new ones
      *
      * @param fileName CoreConfig section
      * @param prop property name
@@ -211,42 +212,43 @@ public class PropertiesFileManager {
      */
     public static String getConfigFileProperty(String fileName, String prop) {
         String value = null;
-        
+
         switch (fileName) {
             case "service":
                 value = getServiceProperty(prop);
                 break;
-                
+
             case "sesame_rdf_config":
                 value = getRDF4JProperty(prop);
                 break;
-                
+
             case "mongodb_nosql_config":
                 value = getMongoProperty(prop);
-                break;                
-                
+                break;
+
             default:
                 break;
         }
-        
+
         return value;
     }
 
     /**
      * Map old properties which where con
+     *
      * @param prop
-     * @return 
+     * @return
      */
     private static String getServiceProperty(String prop) {
         String value = null;
-        
+
         switch (prop) {
             case "sessionTime":
                 value = phisConfig.sessionTime();
                 break;
             case "waitingFileTime":
                 value = phisConfig.waitingFileTime();
-                break;                
+                break;
             case "uploadFileServerDirectory":
                 value = storageBasePath;
                 break;
@@ -255,17 +257,17 @@ public class PropertiesFileManager {
                 break;
             case "gnpisPublicKeyFileName":
                 value = phisConfig.gnpisPublicKeyFileName();
-                break;   
+                break;
             case "phisPublicKeyFileName":
                 value = phisConfig.phisPublicKeyFileName();
-                break;   
+                break;
             case "pageSizeMax":
                 value = phisConfig.pageSizeMax();
-                break;  
+                break;
             default:
                 break;
         }
-        
+
         return value;
     }
 
@@ -275,14 +277,14 @@ public class PropertiesFileManager {
 
     private static String getRDF4JProperty(String prop) {
         String value = null;
-        
+
         switch (prop) {
             case "sesameServer":
                 value = rdf4jConfig.serverURI();
                 break;
             case "repositoryID":
                 value = rdf4jConfig.repository();
-                break;                
+                break;
             case "infrastructure":
                 value = phisConfig.infrastructure();
                 break;
@@ -295,13 +297,13 @@ public class PropertiesFileManager {
             default:
                 break;
         }
-        
+
         return value;
     }
 
     private static String getMongoProperty(String prop) {
-         String value = null;
-        
+        String value = null;
+
         switch (prop) {
             case "host":
                 value = mongoConfig.host();
@@ -320,7 +322,7 @@ public class PropertiesFileManager {
                 break;
             case "db":
                 value = mongoConfig.database();
-                break;                     
+                break;
             case "documents":
                 value = phisConfig.documentsCollection();
                 break;
@@ -336,7 +338,7 @@ public class PropertiesFileManager {
             default:
                 break;
         }
-        
+
         return value;
     }
 }

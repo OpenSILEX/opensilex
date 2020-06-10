@@ -8,13 +8,11 @@ package org.opensilex.fs.local;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.apache.commons.io.FileUtils;
 import org.opensilex.fs.service.FileStorageConnection;
-import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.service.BaseService;
 
 /**
@@ -25,55 +23,67 @@ import org.opensilex.service.BaseService;
  */
 public class LocalFileSystemConnection extends BaseService implements FileStorageConnection {
 
+    private final Path basePath;
+
+    public LocalFileSystemConnection() {
+        super(null);
+        this.basePath = null;
+    }
+
+    public LocalFileSystemConnection(Path basePath) {
+        super(null);
+        this.basePath = basePath;
+    }
+
+    public Path getAbsolutePath(Path filePath) throws IOException {
+        if (this.basePath == null) {
+            return filePath;
+        }
+        return this.basePath.resolve(filePath);
+    }
+
+    public File getAbsolutePathFile(Path path) throws IOException {
+        return getAbsolutePath(path).toFile();
+    }
+
     @Override
     public String readFile(Path filePath) throws IOException {
-        return FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8);
+        return FileUtils.readFileToString(getAbsolutePathFile(filePath), StandardCharsets.UTF_8);
     }
 
     @Override
     public byte[] readFileAsByteArray(Path filePath) throws IOException {
-        return Files.readAllBytes(filePath);
-    }
-
-    @Override
-    public Path getPhysicalPath(Path filePath) throws IOException {
-        return filePath;
+        return Files.readAllBytes(getAbsolutePath(filePath));
     }
 
     @Override
     public void writeFile(Path filePath, String content) throws IOException {
-        FileUtils.writeStringToFile(filePath.toFile(), content, StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(getAbsolutePathFile(filePath), content, StandardCharsets.UTF_8);
     }
 
     @Override
     public void writeFile(Path filePath, File file) throws IOException {
-        FileUtils.copyFile(file, filePath.toFile());
+        FileUtils.copyFile(file, getAbsolutePathFile(filePath));
     }
 
     @Override
     public void createDirectories(Path directoryPath) throws IOException {
-        FileUtils.forceMkdir(directoryPath.toFile());
+        FileUtils.forceMkdir(getAbsolutePathFile(directoryPath));
     }
 
     @Override
     public Path createFile(Path filePath) throws IOException {
-        return Files.createFile(filePath);
+        return Files.createFile(getAbsolutePath(filePath));
     }
 
     @Override
     public boolean exist(Path filePath) throws IOException {
-        return Files.exists(filePath);
+        return Files.exists(getAbsolutePath(filePath));
     }
 
     @Override
     public void delete(Path filePath) throws IOException {
-        Files.delete(filePath);
+        Files.delete(getAbsolutePath(filePath));
     }
 
-    public static FileStorageService getService(Path storageBasePath) {
-        FileStorageService service = new FileStorageService(new LocalFileSystemConnection());
-        service.setStorageBasePath(storageBasePath);
-
-        return service;
-    }
 }

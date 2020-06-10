@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.opensilex.nosql.model.QTestModel;
 import org.opensilex.nosql.model.TestModel;
-import org.opensilex.nosql.service.NoSQLConnection;
 import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.unit.test.AbstractUnitTest;
 
@@ -28,7 +27,7 @@ import org.opensilex.unit.test.AbstractUnitTest;
  *
  * @author vincent
  */
-public abstract class NoSQLServiceTest extends AbstractUnitTest {
+public abstract class DataNucleusServiceTest extends AbstractUnitTest {
 
     protected static NoSQLService service;
 
@@ -45,8 +44,11 @@ public abstract class NoSQLServiceTest extends AbstractUnitTest {
         return r.nextInt((max - min) + 1) + min;
     }
 
-    public static void initialize(NoSQLConnection connection) throws Exception {
-        service = new NoSQLService(connection);
+    public static void initialize(NoSQLService service) throws Exception {
+        service.setOpenSilex(opensilex);
+        service.setup();
+        service.startup();
+        DataNucleusServiceTest.service = service;
         Assert.assertTrue(service.getPersistentConnectionManager() != null);
     }
 

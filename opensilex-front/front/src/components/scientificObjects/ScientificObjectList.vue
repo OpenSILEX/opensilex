@@ -207,12 +207,7 @@
         SpeciesDTO, 
         ExperimentGetDTO, 
         ResourceTreeDTO,
-        InfrastructureGetDTO,
         ExperimentGetListDTO,
-        ExperimentsService, 
-        InfrastructuresService,
-        ProjectsService, 
-        SpeciesService,
         OntologyService
     } from "opensilex-core/index";
     import {
@@ -349,11 +344,15 @@
             {show: true, class: 'badge-success', title: 'species',              label: 'component.scientificObjects.search.filter.hasSpecies',              uri: "http://www.opensilex.org/vocabulary/oeso#hasSpecies"},
             {show: true, class: 'badge-info',    title: 'variety',              label: 'component.scientificObjects.search.filter.hasVariety',              uri: "http://www.opensilex.org/vocabulary/oeso#hasVariety"}
         ];
+
+        static async asyncInit($opensilex) {
+            await $opensilex.loadModule("opensilex-phis");
+        }
         
         get user() {
             return this.$store.state.user;
         }
-
+ope
         reset() {
             this.filter.reset();
             this.refresh();
@@ -364,7 +363,7 @@
         }
 
         searchScientificObject(options) {
-            let scientificObjectsService: ScientificObjectsService = this.$opensilex.getService("opensilex.ScientificObjectsService");
+            let scientificObjectsService: ScientificObjectsService = this.$opensilex.getService("opensilex-phis.ScientificObjectsService");
             return scientificObjectsService.getScientificObjectsBySearch(
                 undefined, 
                 undefined, 

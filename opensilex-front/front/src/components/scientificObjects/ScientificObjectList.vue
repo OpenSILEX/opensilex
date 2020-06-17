@@ -249,7 +249,7 @@
         get user() {
             return this.$store.state.user;
         }
-ope
+
         reset() {
             this.filter.reset();
             this.refresh();

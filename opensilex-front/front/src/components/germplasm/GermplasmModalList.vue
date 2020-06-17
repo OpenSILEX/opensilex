@@ -13,57 +13,54 @@
 
     <div class="card">
 
-      <opensilex-SearchForm
-        labelTitle="component.experiment.search.label"
-        :resetMethod="resetFilters"
-        :searchMethod="refresh"
-        :showTitle="false"
+      <opensilex-SearchFilterField
+        @search="refresh()"
+        @clear="resetFilters()"
       >
-            
-        <template v-slot:standardSearch>
-            
+          
+        <template v-slot:filters>
+
           <!-- Type -->
-          <div class="filter-group col col-xl-3 col-sm-6 col-12">
+          <opensilex-FilterField>
             <opensilex-SelectForm
               label="GermplasmList.filter.rdfType"
-              placeholder="component.germplasm.filter.allTypes"
               :selected.sync="filterByRdfType"
               :optionsLoadingMethod="loadGermplasmTypes"
               :conversionMethod="ontologyToSelectNode"
             ></opensilex-SelectForm>
-          </div>
+          </opensilex-FilterField>
 
           <!-- Species -->
-          <div class="filter-group col col-xl-3 col-sm-6 col-12">
+          <opensilex-FilterField>
             <opensilex-SelectForm
               label="GermplasmList.filter.species"
               :selected.sync="filterBySpecies"
               :optionsLoadingMethod="loadSpecies"
               :conversionMethod="germplasmToSelectNode"
             ></opensilex-SelectForm>
-          </div>
+          </opensilex-FilterField>
 
           <!-- Institute -->
-          <div class="filter-group col col-xl-3 col-sm-6 col-12">
+          <opensilex-FilterField>
             <opensilex-InputForm
               :value.sync="filterByInstitute"
               label="GermplasmList.filter.institute"
               type="text"
             ></opensilex-InputForm>
-          </div>
+          </opensilex-FilterField>
             
           <!-- Label -->
-          <div class="filter-group col col-xl-3 col-sm-6 col-12">
+          <opensilex-FilterField>
             <opensilex-InputForm
               :value.sync="filterByLabel"
               label="GermplasmList.filter.label"
               type="text"
             ></opensilex-InputForm>
-          </div>
-
+          </opensilex-FilterField>
+        
         </template>
-            
-      </opensilex-SearchForm>
+
+      </opensilex-SearchFilterField>
 
       <opensilex-TableAsyncView
         ref="tableRef"

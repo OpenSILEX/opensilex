@@ -13,38 +13,36 @@
         
     <div class="card">
 
-      <opensilex-SearchForm
-        labelTitle="component.experiment.search.label"
-        :resetMethod="resetFilters"
-        :searchMethod="refresh"
-        :showTitle="false"
+      <opensilex-SearchFilterField
+        @search="refresh()"
+        @clear="resetFilters()"
       >
-            
-        <template v-slot:standardSearch>
+          
+        <template v-slot:filters>
             
           <!-- Year -->
-          <div class="filter-group col col-xl-3 col-sm-6 col-12">
+          <opensilex-FilterField>
             <opensilex-InputForm
               :value.sync="yearFilterPattern"
               label="component.project.filter-year"
               type="text"
               placeholder="component.project.filter-year-placeholder"
             ></opensilex-InputForm>
-          </div>
+          </opensilex-FilterField>
 
           <!-- Label -->
-          <div class="filter-group col col-xl-3 col-sm-6 col-12">
+          <opensilex-FilterField>
             <opensilex-InputForm
               :value.sync="nameFilterPattern"
               label="component.project.filter-label"
               type="text"
               placeholder="component.project.filter-label-placeholder"
             ></opensilex-InputForm>
-          </div>
+          </opensilex-FilterField>
 
         </template>
             
-      </opensilex-SearchForm>
+      </opensilex-SearchFilterField>
 
       <opensilex-TableAsyncView
         ref="tableRef"

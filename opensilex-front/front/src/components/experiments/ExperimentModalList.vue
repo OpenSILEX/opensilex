@@ -10,103 +10,102 @@
         </template>
         
         <div class="card">
-            <opensilex-SearchForm
-                labelTitle="component.experiment.search.label"
-                :resetMethod="reset"
-                :searchMethod="refresh"
-                :showTitle="false"
+            
+             <opensilex-SearchFilterField
+                @search="refresh()"
+                @clear="reset()"
             >
-            
-            <template v-slot:standardSearch>
                 
-                <!-- Label -->
-                <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                <opensilex-InputForm
-                    :value.sync="filter.label"
-                    label="component.experiment.search.filter.alias"
-                    type="text"
-                    placeholder="component.experiment.search.placeholder.alias"
-                ></opensilex-InputForm>
-                </div>
-                
-                <!-- Species -->
-                <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                <opensilex-SelectForm
-                    label="component.experiment.search.filter.species"
-                    placeholder="component.experiment.search.placeholder.species"
-                    :multiple="true"
-                    :selected.sync="filter.species"
-                    :optionsLoadingMethod="loadSpecies"
-                    :conversionMethod="speciesToSelectNode"
-                ></opensilex-SelectForm>
-                </div>
+                <template v-slot:filters>
 
-                <!-- Projects -->
-                <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                <opensilex-SelectForm
-                    label="component.experiment.search.filter.projects"
-                    placeholder="component.experiment.search.placeholder.projects"
-                    :selected.sync="filter.projects"
-                    :conversionMethod="projectGetDTOToSelectNode()"
-                    modalComponent="opensilex-ProjectModalList"
-                    :isModalSearch="true"
-                ></opensilex-SelectForm>
-                </div>
+                    <!-- Label -->
+                    <opensilex-FilterField>
+                    <opensilex-InputForm
+                        :value.sync="filter.label"
+                        label="component.experiment.search.filter.alias"
+                        type="text"
+                        placeholder="component.experiment.search.placeholder.alias"
+                    ></opensilex-InputForm>
+                    </opensilex-FilterField>
+                    
+                    <!-- Species -->
+                    <opensilex-FilterField>
+                    <opensilex-SelectForm
+                        label="component.experiment.search.filter.species"
+                        placeholder="component.experiment.search.placeholder.species"
+                        :multiple="true"
+                        :selected.sync="filter.species"
+                        :optionsLoadingMethod="loadSpecies"
+                        :conversionMethod="speciesToSelectNode"
+                    ></opensilex-SelectForm>
+                    </opensilex-FilterField>
 
-                <!-- Installations -->
-                <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                <opensilex-InputForm
-                    :value.sync="filter.installations"
-                    label="component.experiment.search.filter.installations"
-                    type="text"
-                    placeholder="component.experiment.search.placeholder.installations"
-                ></opensilex-InputForm>
-                </div>
+                    <!-- Projects -->
+                    <opensilex-FilterField>
+                    <opensilex-SelectForm
+                        label="component.experiment.search.filter.projects"
+                        placeholder="component.experiment.search.placeholder.projects"
+                        :selected.sync="filter.projects"
+                        :conversionMethod="projectGetDTOToSelectNode"
+                        modalComponent="opensilex-ProjectModalList"
+                        :isModalSearch="true"
+                    ></opensilex-SelectForm>
+                    </opensilex-FilterField>
 
-                <!-- Campaign -->
-                <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                <opensilex-InputForm
-                    :value.sync="filter.campaign"
-                    label="component.experiment.search.filter.campaign"
-                    type="text"
-                    placeholder="component.experiment.search.placeholder.campaign"
-                ></opensilex-InputForm>
-                </div>
+                    <!-- Installations -->
+                    <opensilex-FilterField>
+                    <opensilex-InputForm
+                        :value.sync="filter.installations"
+                        label="component.experiment.search.filter.installations"
+                        type="text"
+                        placeholder="component.experiment.search.placeholder.installations"
+                    ></opensilex-InputForm>
+                    </opensilex-FilterField>
 
-                <!-- Sites -->
-                <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                <opensilex-InputForm
-                    :value.sync="filter.site"
-                    label="component.experiment.search.filter.sites"
-                    type="text"
-                    placeholder="component.experiment.search.placeholder.sites"
-                ></opensilex-InputForm>
-                </div>
+                    <!-- Campaign -->
+                    <opensilex-FilterField>
+                    <opensilex-InputForm
+                        :value.sync="filter.campaign"
+                        label="component.experiment.search.filter.campaign"
+                        type="text"
+                        placeholder="component.experiment.search.placeholder.campaign"
+                    ></opensilex-InputForm>
+                    </opensilex-FilterField>
 
-                <!-- Start date -->
-                <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                <opensilex-InputForm
-                    :value.sync="filter.startDate"
-                    label="component.experiment.search.filter.startDate"
-                    type="text"
-                    placeholder="component.experiment.search.placeholder.startDate"
-                ></opensilex-InputForm>
-                </div>
+                    <!-- Sites -->
+                    <opensilex-FilterField>
+                    <opensilex-InputForm
+                        :value.sync="filter.site"
+                        label="component.experiment.search.filter.sites"
+                        type="text"
+                        placeholder="component.experiment.search.placeholder.sites"
+                    ></opensilex-InputForm>
+                    </opensilex-FilterField>
 
-                <!-- State -->
-                <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                <opensilex-SelectForm
-                    label="component.experiment.search.filter.state"
-                    placeholder="component.experiment.search.placeholder.state"
-                    :multiple="false"
-                    :selected.sync="filter.state"
-                    :optionsLoadingMethod="loadStates"
-                ></opensilex-SelectForm>
-                </div>
+                    <!-- Start date -->
+                    <opensilex-FilterField>
+                    <opensilex-InputForm
+                        :value.sync="filter.startDate"
+                        label="component.experiment.search.filter.startDate"
+                        type="text"
+                        placeholder="component.experiment.search.placeholder.startDate"
+                    ></opensilex-InputForm>
+                    </opensilex-FilterField>
 
-            </template>
-            
-            </opensilex-SearchForm>
+                    <!-- State -->
+                    <opensilex-FilterField>
+                    <opensilex-SelectForm
+                        label="component.experiment.search.filter.state"
+                        placeholder="component.experiment.search.placeholder.state"
+                        :multiple="false"
+                        :selected.sync="filter.state"
+                        :optionsLoadingMethod="loadStates"
+                    ></opensilex-SelectForm>
+                    </opensilex-FilterField>
+                    
+                </template>
+
+            </opensilex-SearchFilterField>
 
             <opensilex-TableAsyncView
             ref="tableRef" 

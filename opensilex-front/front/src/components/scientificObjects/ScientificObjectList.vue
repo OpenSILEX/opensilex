@@ -8,139 +8,134 @@
             description="component.scientificObjects.search.description"
         ></opensilex-PageHeader>
 
-        <opensilex-SearchForm
-            labelTitle="component.scientificObjects.search.filter.label"
-            :resetMethod="reset"
-            :searchMethod="refresh"
-            showAdvancedSearch="true"
+        <opensilex-SearchFilterField
+            @search="refresh()"
+            @clear="reset()"
+            label="component.scientificObjects.search.filter.label"
+            :showTitle="true"
+            :showAdvancedSearch="true"
         >
-        
-        <template v-slot:standardSearch>
-            
-            <!-- Experiments -->
-            <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                <opensilex-SelectForm
-                    label="component.scientificObjects.search.filter.experiments"
-                    placeholder="component.scientificObjects.search.placeholder.experiments"
-                    :selected.sync="filter.projects"
-                    :conversionMethod="experimentGetListDTOToSelectNode"
-                    modalComponent="opensilex-ExperimentModalList"
-                    :isModalSearch="true"
-                ></opensilex-SelectForm>
-            </div>
-
-            <!-- Germplasm -->
-            <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                <opensilex-SelectForm
-                    label="component.scientificObjects.search.filter.germplasm"
-                    placeholder="component.scientificObjects.search.placeholder.germplasm"
-                    :selected.sync="filter.germplasm"
-                    :conversionMethod="germplasmGetDTOToSelectNode"
-                    modalComponent="opensilex-GermplasmModalList"
-                    :isModalSearch="true"
-                ></opensilex-SelectForm>
-            </div>
-
-            <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                <opensilex-InputForm
-                    :value.sync="filter.label"
-                    label="component.scientificObjects.search.filter.alias"
-                    type="text"
-                    placeholder="component.scientificObjects.search.placeholder.alias"
-                ></opensilex-InputForm>
-            </div>
-
-        </template>
-
-        <!-- Search form -->
-        <template v-slot:advancedSearch>
-
-            <div class="row">
-
-                <!-- campains -->
-                <div class="filter-group col col-xl-3 col-sm-6 col-12">
+            <template v-slot:filters>
+                <!-- Experiments -->
+                <opensilex-FilterField>
                     <opensilex-SelectForm
-                        label="component.scientificObjects.search.filter.campains"
-                        placeholder="component.scientificObjects.search.placeholder.campains"
-                        :selected.sync="filter.campaign"
-                        :optionsLoadingMethod="loadCampaigns"
+                        label="component.scientificObjects.search.filter.experiments"
+                        placeholder="component.scientificObjects.search.placeholder.experiments"
+                        :selected.sync="filter.experiments"
+                        :conversionMethod="experimentGetListDTOToSelectNode"
+                        modalComponent="opensilex-ExperimentModalList"
+                        :isModalSearch="true"
                     ></opensilex-SelectForm>
-                </div>
+                </opensilex-FilterField>
 
-                <!-- hasExperimentModalities -->
-                <div class="filter-group col col-xl-3 col-sm-6 col-12">
+                <!-- Germplasm -->
+                <opensilex-FilterField>
                     <opensilex-SelectForm
-                        label="component.scientificObjects.search.filter.hasExperimentModalities"
-                        placeholder="component.scientificObjects.search.placeholder.hasExperimentModalities"
-                        :multiple="true"
-                        :selected.sync="filter.hasExperimentModalities"
-                        :optionsLoadingMethod="loadExperimentModalities"
-                        :conversionMethod="ontologyToSelectNode"
+                        label="component.scientificObjects.search.filter.germplasm"
+                        placeholder="component.scientificObjects.search.placeholder.germplasm"
+                        :selected.sync="filter.germplasm"
+                        :conversionMethod="germplasmGetDTOToSelectNode"
+                        modalComponent="opensilex-GermplasmModalList"
+                        :isModalSearch="true"
                     ></opensilex-SelectForm>
-                </div>
+                </opensilex-FilterField>
 
-                <!-- hasReplication -->
-                <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                    <opensilex-SelectForm
-                        label="component.scientificObjects.search.filter.hasReplication"
-                        placeholder="component.scientificObjects.search.placeholder.hasReplication"
-                        :multiple="true"
-                        :selected.sync="filter.hasReplication"
-                        :optionsLoadingMethod="loadReplications"
-                        :conversionMethod="ontologyToSelectNode"
-                    ></opensilex-SelectForm>
-                </div>
-
-                <!-- hasSpecies -->
-                <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                    <opensilex-SelectForm
-                        label="component.scientificObjects.search.filter.hasSpecies"
-                        placeholder="component.scientificObjects.search.placeholder.hasSpecies"
-                        :multiple="true"
-                        :selected.sync="filter.hasSpecies"
-                        :optionsLoadingMethod="loadSpecies"
-                        :conversionMethod="speciesToSelectNode"
-                    ></opensilex-SelectForm>
-                </div>
-
-                <!-- hasVariety -->
-                <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                    <opensilex-SelectForm
-                        label="component.scientificObjects.search.filter.hasVariety"
-                        placeholder="component.scientificObjects.search.placeholder.hasVariety"
-                        :multiple="true"
-                        :selected.sync="filter.hasVariety"
-                        :optionsLoadingMethod="loadVariety"
-                        :conversionMethod="ontologyToSelectNode"
-                    ></opensilex-SelectForm>
-                </div>
-
-                <!-- hasPart -->
-                <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                   <opensilex-InputForm
-                        :value.sync="filter.hasPart"
-                        label="component.scientificObjects.search.filter.hasPart"
+                <opensilex-FilterField>
+                    <opensilex-InputForm
+                        :value.sync="filter.label"
+                        label="component.scientificObjects.search.filter.alias"
                         type="text"
-                        placeholder="component.scientificObjects.search.placeholder.hasPart"
+                        placeholder="component.scientificObjects.search.placeholder.alias"
                     ></opensilex-InputForm>
+                </opensilex-FilterField>
+            </template>
+
+            <template v-slot:advancedSearch>
+
+                <div class="row">
+
+                    <!-- campains -->
+                    <div class="filter-group col col-xl-3 col-sm-6 col-12">
+                        <opensilex-SelectForm
+                            label="component.scientificObjects.search.filter.campains"
+                            placeholder="component.scientificObjects.search.placeholder.campains"
+                            :selected.sync="filter.campaign"
+                            :optionsLoadingMethod="loadCampaigns"
+                        ></opensilex-SelectForm>
+                    </div>
+
+                    <!-- hasExperimentModalities -->
+                    <div class="filter-group col col-xl-3 col-sm-6 col-12">
+                        <opensilex-SelectForm
+                            label="component.scientificObjects.search.filter.hasExperimentModalities"
+                            placeholder="component.scientificObjects.search.placeholder.hasExperimentModalities"
+                            :multiple="true"
+                            :selected.sync="filter.hasExperimentModalities"
+                            :optionsLoadingMethod="loadExperimentModalities"
+                            :conversionMethod="ontologyToSelectNode"
+                        ></opensilex-SelectForm>
+                    </div>
+
+                    <!-- hasReplication -->
+                    <div class="filter-group col col-xl-3 col-sm-6 col-12">
+                        <opensilex-SelectForm
+                            label="component.scientificObjects.search.filter.hasReplication"
+                            placeholder="component.scientificObjects.search.placeholder.hasReplication"
+                            :multiple="true"
+                            :selected.sync="filter.hasReplication"
+                            :optionsLoadingMethod="loadReplications"
+                            :conversionMethod="ontologyToSelectNode"
+                        ></opensilex-SelectForm>
+                    </div>
+
+                    <!-- hasSpecies -->
+                    <div class="filter-group col col-xl-3 col-sm-6 col-12">
+                        <opensilex-SelectForm
+                            label="component.scientificObjects.search.filter.hasSpecies"
+                            placeholder="component.scientificObjects.search.placeholder.hasSpecies"
+                            :multiple="true"
+                            :selected.sync="filter.hasSpecies"
+                            :optionsLoadingMethod="loadSpecies"
+                            :conversionMethod="speciesToSelectNode"
+                        ></opensilex-SelectForm>
+                    </div>
+
+                    <!-- hasVariety -->
+                    <div class="filter-group col col-xl-3 col-sm-6 col-12">
+                        <opensilex-SelectForm
+                            label="component.scientificObjects.search.filter.hasVariety"
+                            placeholder="component.scientificObjects.search.placeholder.hasVariety"
+                            :multiple="true"
+                            :selected.sync="filter.hasVariety"
+                            :optionsLoadingMethod="loadVariety"
+                            :conversionMethod="ontologyToSelectNode"
+                        ></opensilex-SelectForm>
+                    </div>
+
+                    <!-- hasPart -->
+                    <div class="filter-group col col-xl-3 col-sm-6 col-12">
+                    <opensilex-InputForm
+                            :value.sync="filter.hasPart"
+                            label="component.scientificObjects.search.filter.hasPart"
+                            type="text"
+                            placeholder="component.scientificObjects.search.placeholder.hasPart"
+                        ></opensilex-InputForm>
+                    </div>
+
+                    <!-- isPartOf -->
+                    <div class="filter-group col col-xl-3 col-sm-6 col-12">
+                    <opensilex-InputForm
+                            :value.sync="filter.isPartOf"
+                            label="component.scientificObjects.search.filter.isPartOf"
+                            type="text"
+                            placeholder="component.scientificObjects.search.placeholder.isPartOf"
+                        ></opensilex-InputForm>
+                    </div>
+
                 </div>
 
-                <!-- isPartOf -->
-                <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                   <opensilex-InputForm
-                        :value.sync="filter.isPartOf"
-                        label="component.scientificObjects.search.filter.isPartOf"
-                        type="text"
-                        placeholder="component.scientificObjects.search.placeholder.isPartOf"
-                    ></opensilex-InputForm>
-                </div>
-
-            </div>
-
-        </template>
-        
-        </opensilex-SearchForm>
-        <!-- End search form -->
+            </template>
+        </opensilex-SearchFilterField>
 
         <opensilex-PageContent>
 
@@ -157,7 +152,7 @@
                 >
 
                     <template v-slot:firstActionsSelectableTable>
-                        <div class="card-options d-inline-block">
+                        <div v-if="tableRef.getSelected().length > 0" class="card-options d-inline-block">
                             <a href="data.html" class="btn btn-icon btn-outline-primary" title="Voir les données"><i class="ik ik ik-bar-chart-line-"></i></a>
                         </div>
                     </template>
@@ -208,7 +203,7 @@
         ExperimentGetDTO, 
         ResourceTreeDTO,
         ExperimentGetListDTO,
-        OntologyService
+        OntologyService,
     } from "opensilex-core/index";
     import {
         PropertyDTO, 
@@ -217,48 +212,17 @@
     } from "opensilex-phis/index";
     import Oeso from "../../ontologies/Oeso";
     import HttpResponse, {OpenSilexResponse, MetadataDTO, PaginationDTO}  from "../../lib/HttpResponse";
-    //import HttpResponse, {OpenSilexResponse, MetadataDTO}  from "opensilex-core/HttpResponse";
-
-    class MockPropertie {
         
-        rdfType;
-        value;
+    class PropertyPostDTO {
+        rdfType: string;
+        relation: string;
+        value: string;
 
-        constructor(rdfType, value) {
+        constructor(rdfType, value, relation) {
             this.rdfType = rdfType;
             this.value = value;
+            this.relation = relation;
         }
-
-    }
-
-    class MockExperiment {
-
-        uri;
-        label;
-        campaign;
-
-        constructor(uri, label, campaign) {
-            this.uri = uri;
-            this.label = label;
-            this.campaign = campaign;
-        }
-
-    }
-
-    class MockData {
-
-        uri;
-        label;
-        properties;
-        uriExperiment;
-
-        constructor(uri, label, properties, uriExperiment) {
-            this.uri = uri;
-            this.label = label;
-            this.properties = properties;
-            this.uriExperiment = uriExperiment;
-        }
-
     }
 
     class ScientificObjectFilter {
@@ -352,7 +316,7 @@
         get user() {
             return this.$store.state.user;
         }
-ope
+
         reset() {
             this.filter.reset();
             this.refresh();
@@ -363,84 +327,48 @@ ope
         }
 
         searchScientificObject(options) {
-            let scientificObjectsService: ScientificObjectsService = this.$opensilex.getService("opensilex-phis.ScientificObjectsService");
-            return scientificObjectsService.getScientificObjectsBySearch(
-                undefined, 
-                undefined, 
-                undefined, 
-                undefined, 
-                undefined, 
-                undefined, 
-                undefined, 
-                true,
-                true
-            );
-            
-            /*return new Promise((resolve, reject) => {
-                let paginationDTO = new PaginationDTO(10, 1, 10, 1);
-                let metadataDTO = new MetadataDTO(paginationDTO, undefined, undefined);
-                let openSilexResponse = new OpenSilexResponse<Array<any>>(this.mock(), metadataDTO);
-                let httpResponse = new HttpResponse<OpenSilexResponse<Array<any>>>(openSilexResponse, 200, undefined);
-                resolve(httpResponse);
-            });*/
-        }
+            let experiment = undefined;
+            let label = undefined;
+            let germplasm_URI = undefined;
 
-        mock() {
-            let experimentModalities = [];
-            let replications = [];
-            let varieties = [];
-            let species = [];
-
-            experimentModalities.push(new MockPropertie(Oeso.HAS_EXPERIMENT_MODALITIES, 'N-'));
-            experimentModalities.push(new MockPropertie(Oeso.HAS_EXPERIMENT_MODALITIES, 'WD'));
-            experimentModalities.push(new MockPropertie(Oeso.HAS_EXPERIMENT_MODALITIES, 'WD_SHD'));
-
-            replications.push(new MockPropertie(Oeso.HAS_REPLICATION, 'x2'));
-            replications.push(new MockPropertie(Oeso.HAS_REPLICATION, 'x5'));
-            replications.push(new MockPropertie(Oeso.HAS_REPLICATION, 'x16'));
-            replications.push(new MockPropertie(Oeso.HAS_REPLICATION, 'x24'));
-
-            varieties.push(new MockPropertie(Oeso.HAS_VARIETY, 'voilur'));
-            varieties.push(new MockPropertie(Oeso.HAS_VARIETY, 'nil-007'));
-            varieties.push(new MockPropertie(Oeso.HAS_VARIETY, 'dkc4590'));
-
-            species.push(new MockPropertie(Oeso.HAS_SPECIES, 'Maize'));
-            species.push(new MockPropertie(Oeso.HAS_SPECIES, 'Dry wheat'));
-            species.push(new MockPropertie(Oeso.HAS_SPECIES, 'Durum wheat'));
-
-            let scientificObjects = new Array<ScientificObjectDTO>();
-
-            for(let i=0; i<10; i++) {
-                scientificObjects.push(this.mockExperiment(i, experimentModalities, replications, varieties, species));
+            if(this.filter.experiments && this.filter.experiments.length > 0) {
+                experiment = this.filter.experiments[0].id;
             }
 
-            return scientificObjects;
+            if(this.filter.label && this.filter.label.length > 0) {
+                label = this.filter.label;
+            }
+
+            if(this.filter.germplasm && this.filter.germplasm.length > 0) {
+                germplasm_URI = this.filter.germplasm[0].id;
+            }
+
+            let scientificObjectsService: ScientificObjectsService = this.$opensilex.getService("opensilex-phis.ScientificObjectsService");
+            return scientificObjectsService.getScientificObjectsBySearch(
+                options.pageSize,
+                options.currentPage,
+                undefined,
+                experiment, 
+                label,
+                undefined, 
+                germplasm_URI, 
+                true,
+                true
+            ).then(http => {
+                let result = {
+                    response: {
+                        metadata: null,
+                        result: null
+                    }
+                };
+                result.response.metadata = http.response.metadata;
+                let data:any = http.response.result;
+                result.response.result = data.data;
+                
+                return result;
+            });
         }
-
-        mockExperiment(i, experimentModalities, replications, varieties, species) {
-            let uri = "uri-experiment-" + i;
-            let label = "experiment-" + i;
-            let campaign = 2000 + i;
-            let experiment = new MockExperiment(uri, label, campaign);
-
-            let uriSO = "uri-scientific-object-" + i;
-            let labelSO = "label-" + i;
-            let properties = [];
-            properties.push(experimentModalities[i%2]);
-            properties.push(replications[i%4]);
-            properties.push(varieties[i%2]);
-            properties.push(species[i%2]);
-
-            let data = new MockData(uriSO, labelSO, properties, experiment.uri);
-
-            let experiments = [];
-            experiments.push(experiment);            
-
-            this.experimentsByScientificObject.set(data.uri, experiments);
-
-            return data;
-        }
-        
+       
         loadExperimentModalities() {
             return this.loadOntology(Oeso.HAS_EXPERIMENT_MODALITIES);
         }

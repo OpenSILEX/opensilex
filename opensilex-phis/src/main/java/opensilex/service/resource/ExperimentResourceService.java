@@ -60,7 +60,7 @@ import org.opensilex.security.SecurityModule;
  * @update [Morgane Vidal] 20 Dec. 2018: add PUT services: -
  * experiment/{uri}/variables - experiment/{uri}/sensors
  */
-@Api("/experiments")
+@Api(value = "/experiments", hidden = true)
 @Path("experiments")
 @Deprecated
 public class ExperimentResourceService extends ResourceService {

@@ -67,8 +67,9 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-@Api("/projects")
+@Api(value = "/projects", hidden = true)
 @Path("projects")
+@Deprecated
 public class ProjectResourceService extends ResourceService {
 
     public static final Property hasFinancialFunding = Ontology.property(Oeso.NS, "hasFinancialFunding");

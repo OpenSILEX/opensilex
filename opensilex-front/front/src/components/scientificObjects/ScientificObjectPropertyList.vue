@@ -36,12 +36,9 @@
             if(property && property.length > 0) {
                 if(property[0].show) {
                     return property[0].class;
-                } else {
-                    return "hide";
                 }
-                
             }
-            return "badge-dark";
+            return "hide";
         }
 
     }

@@ -22,6 +22,8 @@ public abstract class BaseVariableModel<T extends SPARQLNamedResourceModel<T>> e
             property = "comment"
     )
     private String comment;
+    public static final String COMMENT_FIELD = "comment";
+
 
     @SPARQLProperty(
             ontology = SKOS.class,

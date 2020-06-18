@@ -8,7 +8,6 @@ package org.opensilex.core.ontology.dal;
 import java.util.List;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.core.ontology.OpenSilexApiOntology;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -52,13 +51,7 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
             ontology = RDFS.class,
             property = "subClassOf"
     )
-    protected ClassModel parent;
-
-    @SPARQLProperty(
-            ontology = OpenSilexApiOntology.class,
-            property = "propertyMapping"
-    )
-    protected List<PropertyMappingModel> propertyMapping;
+    protected List<ClassModel> parent;
 
     @Override
     public String getName() {
@@ -85,13 +78,4 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
     public void setComment(SPARQLLabel comment) {
         this.comment = comment;
     }
-
-    public List<PropertyMappingModel> getPropertyMapping() {
-        return propertyMapping;
-    }
-
-    public void setPropertyMapping(List<PropertyMappingModel> propertyMapping) {
-        this.propertyMapping = propertyMapping;
-    }
-
 }

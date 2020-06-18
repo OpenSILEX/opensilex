@@ -372,6 +372,7 @@ public class DataResourceService extends ResourceService {
                 FileDescription fileDescription = description.createObjectFromDTO();
 
                 // get the the absolute file path according to the fileStorageDirectory
+                
                 java.nio.file.Path absoluteFilePath = fs.getAbsolutePath(Paths.get(fileDescription.getPath()));
 
                 if (!fs.exist(absoluteFilePath)) {
@@ -488,10 +489,14 @@ public class DataResourceService extends ResourceService {
                 return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
             }
 
-            java.nio.file.Path filePath = Paths.get(description.getPath());
-
-            // get a path to the file which is physically accessible in order to be read by the ImageThumbnails
-            java.nio.file.Path physicalFilePath = fs.getPhysicalPath(filePath);
+        byte[] imageData = ImageResizer.getInstance().resize(
+                fs.readFileAsByteArray(filePath),
+                scaledWidth,
+                scaledHeight
+        );
+        if (ArrayUtils.isEmpty(imageData)) {
+            throw new FileNotFoundException(fileUri.toString());
+        }
 
             byte[] imageData = ImageResizer.getInstance().getResizedImage(
                     physicalFilePath,

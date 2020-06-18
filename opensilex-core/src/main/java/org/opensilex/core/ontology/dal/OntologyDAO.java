@@ -6,7 +6,6 @@
 package org.opensilex.core.ontology.dal;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -15,6 +14,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
@@ -47,7 +47,7 @@ public final class OntologyDAO {
         );
     }
 
-    public SPARQLTreeListModel<PropertyModel> searchProperties(URI parent, UserModel user, boolean excludeRoot) throws Exception {
+    public SPARQLTreeListModel<PropertyModel> searchSubProperties(URI parent, UserModel user, boolean excludeRoot) throws Exception {
         return sparql.searchResourceTree(
                 PropertyModel.class,
                 user.getLanguage(),
@@ -56,21 +56,28 @@ public final class OntologyDAO {
                 (SelectBuilder select) -> {
                     Node parentNode = SPARQLDeserializers.nodeURI(parent);
                     if (parentNode != null) {
-                        Var parentVar = makeVar(PropertyModel.PARENT_FIELD);
+                        Var parentVar = makeVar(DatatypePropertyModel.PARENT_FIELD);
                         select.addWhere(parentVar, Ontology.subClassAny, parentNode);
-                        select.addWhere(makeVar(PropertyModel.URI_FIELD), RDFS.subClassOf, parentVar);
+                        select.addWhere(makeVar(DatatypePropertyModel.URI_FIELD), RDFS.subClassOf, parentVar);
                     }
                 }
         );
     }
 
-    public List<PropertyMappingModel> getClassPropertiesMapping(URI classURI, UserModel currentUser) throws Exception {
-        ClassModel classModel = sparql.getByURI(ClassModel.class, classURI, currentUser.getLanguage());
+    public List<DatatypePropertyModel> searchDatatypeProperties(URI rdfClass, UserModel user) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
-        if (classModel != null) {
-            return classModel.getPropertyMapping();
-        }
+    public List<ObjectPropertyModel> searchObjectProperties(URI rdfClass, UserModel user) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
-        return new ArrayList<>();
+    public List<OwlRestrictionModel> getOwlRestrictions(URI rdfClass, UserModel user) throws Exception {
+        return sparql.search(OwlRestrictionModel.class, user.getLanguage(), (SelectBuilder select) -> {
+            Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+            Var classUriVar = makeVar("classURI");
+            select.addWhere(classUriVar, RDFS.subClassOf, uriVar);
+            select.addWhere(SPARQLDeserializers.nodeURI(rdfClass), Ontology.subClassAny, classUriVar);
+        });
     }
 }

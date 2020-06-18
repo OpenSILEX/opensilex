@@ -475,17 +475,19 @@ public class ConfigManager {
      * @throws Exception
      */
     private void addConfigService(StringBuilder yml, String name, Service service, Type serviceBaseType, int depth) throws Exception {
-        yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
-                + "# Service implementation class for: "
-                + name
-                + " (" + getShortType(serviceBaseType) + ")\n");
-        yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "implementation: " + service.getClass().getCanonicalName() + "\n");
+        if (service != null) {
+            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth)
+                    + "# Service implementation class for: "
+                    + name
+                    + " (" + getShortType(serviceBaseType) + ")\n");
+            yml.append(StringUtils.repeat(YAML_SEPARATOR, depth) + "implementation: " + service.getClass().getCanonicalName() + "\n");
 
-        ServiceConfig serviceConfig = service.getConfig();
-        ServiceDefaultDefinition defaultDefinition = service.getClass().getAnnotation(ServiceDefaultDefinition.class);
-        if (defaultDefinition != null && defaultDefinition.config() != null) {
-            Class<? extends ServiceConfig> serviceConfigClass = defaultDefinition.config();
-            addConfigInterface(yml, "config", serviceConfig, serviceConfigClass, depth);
+            ServiceConfig serviceConfig = service.getConfig();
+            ServiceDefaultDefinition defaultDefinition = service.getClass().getAnnotation(ServiceDefaultDefinition.class);
+            if (defaultDefinition != null && defaultDefinition.config() != null) {
+                Class<? extends ServiceConfig> serviceConfigClass = defaultDefinition.config();
+                addConfigInterface(yml, "config", serviceConfig, serviceConfigClass, depth);
+            }
         }
     }
 

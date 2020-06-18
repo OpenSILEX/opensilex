@@ -27,8 +27,6 @@ public interface FileStorageConnection extends Service {
 
     void createDirectories(Path directoryPath) throws IOException;
 
-    Path createFile(Path filePath) throws IOException;
-
     boolean exist(Path filePath) throws IOException;
 
     void delete(Path filePath) throws IOException;

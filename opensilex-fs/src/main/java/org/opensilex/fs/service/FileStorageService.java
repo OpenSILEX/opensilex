@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 
 /**
@@ -34,17 +35,23 @@ public class FileStorageService extends BaseService implements Service, FileStor
 
     public final static String DEFAULT_FS_SERVICE = "fs";
 
-    private final FileStorageConnection local;
+    private final FileStorageConnection defaultFS;
 
     private final Map<Path, FileStorageConnection> customPath = new HashMap<>();
 
     private final List<Path> pathOrder;
 
+    private final Map<String, FileStorageConnection> connections;
+
     public FileStorageService(FileStorageServiceConfig config) throws InvalidConfigException {
         super(config);
-        this.local = new LocalFileSystemConnection(Paths.get(config.basePath()));
-
-        Map<String, FileStorageConnection> connections = config.connections();
+        FileStorageConnection tmpDefaultFS = config.defaultFS();
+        if (tmpDefaultFS == null) {
+            this.defaultFS = new LocalFileSystemConnection(getStorageBasePath());
+        } else {
+            this.defaultFS = tmpDefaultFS;
+        }
+        connections = config.connections();
         for (Map.Entry<String, String> path : config.customPath().entrySet()) {
             Path pathPrefix = Paths.get(path.getKey());
             String connectionID = path.getValue();
@@ -81,6 +88,40 @@ public class FileStorageService extends BaseService implements Service, FileStor
         });
     }
 
+    @Override
+    public void setup() throws Exception {
+        defaultFS.setOpenSilex(getOpenSilex());
+        defaultFS.setup();
+        for (FileStorageConnection connection : connections.values()) {
+            connection.setOpenSilex(getOpenSilex());
+            connection.setup();
+        }
+    }
+
+    @Override
+    public void clean() throws Exception {
+        defaultFS.clean();
+        for (FileStorageConnection connection : connections.values()) {
+            connection.clean();
+        }
+    }
+
+    @Override
+    public void startup() throws Exception {
+        defaultFS.startup();
+        for (FileStorageConnection connection : connections.values()) {
+            connection.startup();
+        }
+    }
+
+    @Override
+    public void shutdown() throws Exception {
+        defaultFS.shutdown();
+        for (FileStorageConnection connection : connections.values()) {
+            connection.shutdown();
+        }
+    }
+
     public FileStorageServiceConfig getImplementedConfig() {
         return (FileStorageServiceConfig) this.getConfig();
     }
@@ -96,53 +137,51 @@ public class FileStorageService extends BaseService implements Service, FileStor
             }
         }
 
-        return this.local;
+        return this.defaultFS;
+    }
+
+    public Path getAbsolutePath(Path filePath) throws IOException {
+        return this.getStorageBasePath().resolve(filePath).toAbsolutePath();
     }
 
     @Override
-    public String readFile(Path filePath) throws Exception {
+    public String readFile(Path filePath) throws IOException {
         LOGGER.debug("READ FILE: " + filePath.toString());
         return getConnection(filePath).readFile(filePath);
     }
 
     @Override
-    public void writeFile(Path filePath, String content) throws Exception {
+    public void writeFile(Path filePath, String content) throws IOException {
         LOGGER.debug("WRITE FILE: " + filePath.toString());
         getConnection(filePath).writeFile(filePath, content);
     }
 
     @Override
-    public void writeFile(Path filePath, File file) throws Exception {
+    public void writeFile(Path filePath, File file) throws IOException {
         LOGGER.debug("WRITE FILE: " + filePath.toString());
         getConnection(filePath).writeFile(filePath, file);
     }
 
     @Override
-    public void createDirectories(Path directoryPath) throws Exception {
+    public void createDirectories(Path directoryPath) throws IOException {
         LOGGER.debug("CREATE DIRECTORIES: " + directoryPath.toString());
         getConnection(directoryPath).createDirectories(directoryPath);
     }
 
     @Override
-    public byte[] readFileAsByteArray(Path filePath) throws Exception {
+    public byte[] readFileAsByteArray(Path filePath) throws IOException {
         LOGGER.debug("READ FILE BYTES: " + filePath.toString());
         return getConnection(filePath).readFileAsByteArray(filePath);
     }
 
     @Override
-    public Path createFile(Path filePath) throws Exception {
-        LOGGER.debug("CREATE FILE: " + filePath.toString());
-        return getConnection(filePath).createFile(filePath);
-    }
-
-    @Override
-    public boolean exist(Path filePath) throws Exception {
+    public boolean exist(Path filePath) throws IOException {
         LOGGER.debug("TEST FILE EXISTENCE: " + filePath.toString());
         return getConnection(filePath).exist(filePath);
     }
 
     @Override
-    public void delete(Path filePath) throws Exception {
+    public void delete(Path filePath) throws IOException {
         LOGGER.debug("DELETE FILE: " + filePath.toString());
         getConnection(filePath).delete(filePath);
     }

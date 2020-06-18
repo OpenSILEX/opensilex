@@ -78,12 +78,6 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
                 Lang.RDFXML,
                 "oeev"
         ));
-        list.add(new OntologyFileDefinition(
-                "http://www.opensilex.org/vocabulary/opensilex-api#",
-                "ontologies/oxapi.owl",
-                Lang.RDFXML,
-                "oxapi"
-        ));
         return list;
     }
 

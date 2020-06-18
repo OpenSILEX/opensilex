@@ -47,11 +47,6 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
     }
 
     @Override
-    public Path createFile(Path filePath) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public boolean exist(Path filePath) throws IOException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

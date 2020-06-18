@@ -72,11 +72,6 @@ public class LocalFileSystemConnection extends BaseService implements FileStorag
     }
 
     @Override
-    public Path createFile(Path filePath) throws IOException {
-        return Files.createFile(getAbsolutePath(filePath));
-    }
-
-    @Override
     public boolean exist(Path filePath) throws IOException {
         return Files.exists(getAbsolutePath(filePath));
     }

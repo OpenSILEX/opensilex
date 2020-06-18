@@ -6,7 +6,7 @@
 package org.opensilex.core.ontology.dal;
 
 import java.util.List;
-import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -19,11 +19,11 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
  * @author vince
  */
 @SPARQLResource(
-        ontology = OWL.class,
-        resource = "DatatypeProperty",
+        ontology = RDF.class,
+        resource = "Property",
         ignoreValidation = true
 )
-public class PropertyModel extends SPARQLTreeModel<PropertyModel> {
+public abstract class PropertyModel extends SPARQLTreeModel<PropertyModel> {
 
     @SPARQLIgnore()
     protected String name;

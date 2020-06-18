@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -538,6 +539,10 @@ public class ConfigProxyHandler implements InvocationHandler {
                 String errorMessage = "Invalid implementation defined for service: " + serviceName;
                 LOGGER.error(errorMessage);
                 throw new Exception(errorMessage);
+            }
+
+            if (implementation.isInterface() || Modifier.isAbstract(implementation.getModifiers())) {
+                return null;
             }
 
             Class<? extends ServiceConfig> configClass = ServiceDefinition.getDefaultConfigClass(implementation);

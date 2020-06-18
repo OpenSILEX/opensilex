@@ -1,7 +1,5 @@
 package org.opensilex.fs.irods;
 
-import org.apache.commons.lang3.NotImplementedException;
-import org.opensilex.fs.local.LocalFileSystemConnection;
 import org.opensilex.fs.service.FileStorageConnection;
 import org.opensilex.service.BaseService;
 import org.slf4j.Logger;
@@ -13,6 +11,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 /**
  * @author rcolin
@@ -22,8 +22,6 @@ public class IrodsFileSystemConnection extends BaseService implements FileStorag
     public IrodsFileSystemConnection() {
         super(null);
     }
-
-    private LocalFileSystemConnection localStorageConnection;
 
     private final static Logger LOGGER = LoggerFactory.getLogger(IrodsFileSystemConnection.class);
 
@@ -37,28 +35,39 @@ public class IrodsFileSystemConnection extends BaseService implements FileStorag
     /**
      * Temp folder used for storing IRODS incoming file(s), the files are created and then deleted after been read.
      */
-    private Path IRODS_TMP_DIRECTORY;
-
-    private Path lastTmpFilePath;
+    private Path tmpDirectory;
 
     @Override
-    public void setup() throws Exception {
-        IRODS_TMP_DIRECTORY = Files.createTempDirectory("opensilex_irods");
-        localStorageConnection = new LocalFileSystemConnection();
-
+    public void startup() throws Exception {
+        tmpDirectory = Files.createTempDirectory("opensilex_irods");
+        tmpDirectory.toFile().deleteOnExit();
         // TODO add IRODS init method in order to check connection
     }
 
     @Override
     public void shutdown() throws Exception {
-        Files.deleteIfExists(IRODS_TMP_DIRECTORY);
+        Files.deleteIfExists(tmpDirectory);
+    }
+
+    private void irodsCommand(String... args) throws IOException {
+        Process irodsProcess = null;
+        try {
+            irodsProcess = new ProcessBuilder().command(args).start();
+
+            // redirect eventual errors to an IOException
+            checkErrorFromProcess(irodsProcess);
+
+        } finally {
+            if (irodsProcess != null && irodsProcess.isAlive()) {
+                irodsProcess.destroy();
+            }
+        }
     }
 
     private void checkErrorFromProcess(Process process) throws IOException {
-
         InputStream errorStream = process.getErrorStream();
         try {
-            byte[] errorBytes = errorStream.readAllBytes();
+            byte[] errorBytes =  IOUtils.toByteArray(errorStream);
             if (errorBytes != null && errorBytes.length > 0) {
                 errorStream.close();
                 if (process.isAlive()) {
@@ -66,52 +75,42 @@ public class IrodsFileSystemConnection extends BaseService implements FileStorag
                 }
                 throw new IOException(new String(errorBytes, StandardCharsets.UTF_8));
             }
-        } catch (IOException e) {
+        } finally {
             errorStream.close();
-            throw e;
         }
     }
 
     @Override
     public String readFile(Path filePath) throws IOException {
-        Path tmpFile = getPhysicalPath(filePath);
-        String fileContent = localStorageConnection.readFile(tmpFile);
+        Path tmpFile = createLocalTempFile(filePath);
+        String fileContent = Files.readString(tmpFile);
         Files.delete(tmpFile);
         return fileContent;
     }
 
     @Override
     public byte[] readFileAsByteArray(Path filePath) throws IOException {
-        Path tmpFile = getPhysicalPath(filePath);
-        byte[] fileContent = localStorageConnection.readFileAsByteArray(tmpFile);
+        Path tmpFile = createLocalTempFile(filePath);
+        byte[] fileContent = Files.readAllBytes(tmpFile);
         Files.delete(tmpFile);
         return fileContent;
     }
 
-    public Path getPhysicalPath(Path filePath) throws IOException {
-
-        Process irodsProcess = null;
+    private Path createLocalTempFile(Path filePath) throws IOException {
         Path tmpFile = null;
 
-        if (lastTmpFilePath != null) {
-            Files.deleteIfExists(lastTmpFilePath);
-        }
         try {
-            tmpFile = Files.createTempFile(IRODS_TMP_DIRECTORY, null, null);
+            tmpFile = Files.createTempFile(tmpDirectory, null, null);
 
-            irodsProcess = new ProcessBuilder().command(IRODS_GET_CMD,
+            irodsCommand(IRODS_GET_CMD,
                     filePath.toString(),
                     tmpFile.toString(),
-                    IRODS_GET_FORCE_WRITE).start();
+                    IRODS_GET_FORCE_WRITE
+            );
 
-            // redirect eventual errors to an IOException
-            checkErrorFromProcess(irodsProcess);
             return tmpFile;
 
-        } catch (Exception e) {
-            if (irodsProcess != null && irodsProcess.isAlive()) {
-                irodsProcess.destroy();
-            }
+        } catch (IOException e) {
             if (tmpFile != null) {
                 Files.deleteIfExists(tmpFile);
             }
@@ -120,85 +119,52 @@ public class IrodsFileSystemConnection extends BaseService implements FileStorag
     }
 
     @Override
-    public void writeFile(Path filePath, String content) throws IOException {
-        throw new NotImplementedException("Not implemented yet");
+    public void writeFile(Path dest, String content) throws IOException {
+        File tmpFile = null;
+        try {
+            tmpFile = Files.createTempFile(tmpDirectory, null, null).toFile();
+            FileUtils.writeStringToFile(tmpFile, content, StandardCharsets.UTF_8);
+            writeFile(dest, tmpFile);
+        } finally {
+            if (tmpFile != null && tmpFile.exists()) {
+                tmpFile.delete();
+            }
+        }
     }
 
     private final static String IRODS_IPUT_CMD = "iput";
 
     @Override
     public void writeFile(Path dest, File file) throws IOException {
-
-        Process irodsProcess = null;
-
-        try {
-            irodsProcess = new ProcessBuilder().command(
-                    IRODS_IPUT_CMD,
-                    file.getPath(),
-                    dest.toString()
-            ).start();
-
-            // redirect eventual errors to logger
-            checkErrorFromProcess(irodsProcess);
-
-        } catch (Exception e) {
-
-            if (irodsProcess != null && irodsProcess.isAlive()) {
-                irodsProcess.destroy();
-            }
-            throw new IOException(e);
-        }
+        irodsCommand(
+                IRODS_IPUT_CMD,
+                file.getPath(),
+                dest.toString()
+        );
     }
 
     private final static String IRODS_MKDIR_CMD = "imkdir";
 
     @Override
     public void createDirectories(Path directoryPath) throws IOException {
-        Process irodsProcess = null;
-
-        try {
-            irodsProcess = new ProcessBuilder().command(
-                    IRODS_IPUT_CMD,
-                    directoryPath.toString()
-            ).start();
-
-            // redirect eventual errors to logger
-            checkErrorFromProcess(irodsProcess);
-
-        } catch (Exception e) {
-
-            if (irodsProcess != null && irodsProcess.isAlive()) {
-                irodsProcess.destroy();
-            }
-            throw new IOException(e);
-        }
-    }
-
-    @Override
-    public Path createFile(Path filePath) throws IOException {
-        throw new NotImplementedException("Not implemented yet");
+        irodsCommand(
+                IRODS_MKDIR_CMD,
+                directoryPath.toString()
+        );
     }
 
     private final static String IRODS_LS_CMD = "ils";
 
     @Override
     public boolean exist(Path filePath) throws IOException {
-
-        Process irodsProcess = null;
         try {
-            irodsProcess = new ProcessBuilder().command(
+            irodsCommand(
                     IRODS_LS_CMD,
                     filePath.toString()
-            ).start();
-
-            // redirect eventual errors to logger
-            checkErrorFromProcess(irodsProcess);
+            );
             return true;
 
         } catch (Exception e) {
-            if (irodsProcess != null && irodsProcess.isAlive()) {
-                irodsProcess.destroy();
-            }
             return false;
         }
     }
@@ -207,21 +173,10 @@ public class IrodsFileSystemConnection extends BaseService implements FileStorag
 
     @Override
     public void delete(Path filePath) throws IOException {
-        Process irodsProcess = null;
-        try {
-            irodsProcess = new ProcessBuilder().command(
-                    IRODS_RM_CMD,
-                    filePath.toString()
-            ).start();
-
-            // redirect eventual errors to logger
-            checkErrorFromProcess(irodsProcess);
-
-        } catch (Exception e) {
-            if (irodsProcess != null && irodsProcess.isAlive()) {
-                irodsProcess.destroy();
-            }
-        }
+        irodsCommand(
+                IRODS_RM_CMD,
+                filePath.toString()
+        );
     }
 
 }

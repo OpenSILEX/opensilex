@@ -19,6 +19,11 @@ public interface FileStorageServiceConfig extends ServiceConfig {
             value = "Base path for file storage"
     )
     public String basePath();
+    
+    @ConfigDescription(
+        value = "Default file system storage"
+    )
+    public FileStorageConnection defaultFS();
 
     @ConfigDescription(
             value = "Map of file storage connection definition by identifier"

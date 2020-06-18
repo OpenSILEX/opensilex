@@ -7,23 +7,45 @@ package org.opensilex.core.variable.dal.variable;
 
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
-import org.opensilex.core.core.AbstractSparqlDao;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
+import java.net.URI;
 import java.util.List;
 
 /**
  *
  * @author vidalmor
  */
-public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> extends AbstractSparqlDao<T> {
+public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
+
+    protected final SPARQLService sparql;
+    protected final Class<T> objectClass;
 
     public BaseVariableDAO(Class<T> objectClass, SPARQLService sparql) {
-        super(objectClass,sparql);
+        this.sparql = sparql;
+        this.objectClass = objectClass;
+    }
+
+    public T create(T instance) throws Exception {
+        sparql.create(instance);
+        return instance;
+    }
+
+    public T update(T instance) throws Exception {
+        sparql.update(instance);
+        return instance;
+    }
+
+    public void delete(URI instanceURI) throws Exception {
+        sparql.delete(objectClass, instanceURI);
+    }
+
+    public T get(URI instanceURI) throws Exception {
+        return sparql.getByURI(objectClass, instanceURI, null);
     }
 
     public ListWithPagination<T> search(String labelPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {

@@ -9,7 +9,6 @@ import java.net.URI;
 import java.util.List;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
-import org.opensilex.core.core.AbstractSparqlDao;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -21,7 +20,7 @@ import org.opensilex.utils.ListWithPagination;
  *
  * @author vidalmor
  */
-public class VariableDAO extends AbstractSparqlDao<VariableModel> {
+public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
     public VariableDAO(SPARQLService sparql) {
         super(VariableModel.class,sparql);

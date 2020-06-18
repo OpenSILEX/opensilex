@@ -16,6 +16,7 @@ import org.opensilex.core.variable.dal.entity.EntityModel;
 import org.opensilex.core.variable.dal.method.MethodModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
@@ -29,7 +30,7 @@ import java.util.List;
         graph = "variable",
         ignoreValidation = true
 )
-public class VariableModel extends SPARQLResourceModel implements ClassURIGenerator<VariableModel> {
+public class VariableModel extends BaseVariableModel<VariableModel> implements ClassURIGenerator<VariableModel> {
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -39,12 +40,12 @@ public class VariableModel extends SPARQLResourceModel implements ClassURIGenera
     private String label;
     public static final String LABEL_FIELD = "label";
 
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "comment"
-    )
-    private String comment;
-    public static final String COMMENT_FIELD = "comment";
+//    @SPARQLProperty(
+//            ontology = RDFS.class,
+//            property = "comment"
+//    )
+//    private String comment;
+//    public static final String COMMENT_FIELD = "comment";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -120,13 +121,13 @@ public class VariableModel extends SPARQLResourceModel implements ClassURIGenera
         this.label = label;
     }
 
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
+//    public String getComment() {
+//        return comment;
+//    }
+//
+//    public void setComment(String comment) {
+//        this.comment = comment;
+//    }
 
     public String getLongName() { return longName; }
 

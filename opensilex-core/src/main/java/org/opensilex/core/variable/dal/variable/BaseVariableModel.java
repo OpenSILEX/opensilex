@@ -1,23 +1,27 @@
-//******************************************************************************
-// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
-// Copyright © INRA 2019
-// Contact: vincent.migot@inra.fr, morgane.vidal@inra.fr,anne.tireau@inra.fr, pascal.neveu@inra.fr
-//******************************************************************************
-package org.opensilex.core.ontology;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.opensilex.core.variable.dal.variable;
+
+import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.SKOS;
+import org.opensilex.core.ontology.SKOSReferences;
+import org.opensilex.sparql.annotations.SPARQLProperty;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
 import java.net.URI;
 import java.util.List;
-import org.apache.jena.vocabulary.SKOS;
-import org.opensilex.core.ontology.SKOSReferencesDTO;
-import org.opensilex.sparql.annotations.SPARQLProperty;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 
-/**
- * Ontology reference model.
- *
- * @author Morgane Vidal
- */
-public abstract class SKOSReferencesModel extends SPARQLResourceModel implements SKOSReferences {
+
+public abstract class BaseVariableModel<T extends SPARQLNamedResourceModel<T>> extends SPARQLNamedResourceModel<T> implements SKOSReferences {
+
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "comment"
+    )
+    private String comment;
 
     @SPARQLProperty(
             ontology = SKOS.class,
@@ -43,37 +47,51 @@ public abstract class SKOSReferencesModel extends SPARQLResourceModel implements
     )
     private List<URI> narrower;
 
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    @Override
     public List<URI> getExactMatch() {
         return exactMatch;
     }
 
+    @Override
     public void setExactMatch(List<URI> exactMatch) {
         this.exactMatch = exactMatch;
     }
 
+    @Override
     public List<URI> getCloseMatch() {
         return closeMatch;
     }
 
+    @Override
     public void setCloseMatch(List<URI> closeMatch) {
         this.closeMatch = closeMatch;
     }
 
+    @Override
     public List<URI> getBroader() {
         return broader;
     }
 
+    @Override
     public void setBroader(List<URI> broader) {
         this.broader = broader;
     }
 
+    @Override
     public List<URI> getNarrower() {
         return narrower;
     }
 
+    @Override
     public void setNarrower(List<URI> narrower) {
         this.narrower = narrower;
     }
-
 }
-

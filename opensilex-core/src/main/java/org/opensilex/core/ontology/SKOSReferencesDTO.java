@@ -62,14 +62,14 @@ public abstract class SKOSReferencesDTO {
         this.narrower = narrower;
     }
 
-    public void setSkosReferencesFromModel(SKOSReferencesModel model) {
+    public void setSkosReferencesFromModel(SKOSReferences model) {
         this.setNarrower(model.getNarrower());
         this.setBroader(model.getBroader());
         this.setCloseMatch(model.getCloseMatch());
         this.setExactMatch(model.getExactMatch());
     }
 
-    public void setSkosReferencesToModel(SKOSReferencesModel model) {
+    public void setSkosReferencesToModel(SKOSReferences model) {
         model.setNarrower(this.getNarrower());
         model.setBroader(this.getBroader());
         model.setCloseMatch(this.getCloseMatch());

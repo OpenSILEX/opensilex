@@ -223,6 +223,34 @@ components["opensilex-ScientificObjectPropertyList"] = ScientificObjectPropertyL
 import ScientificObjectPropertyConfiguration from './scientificObjects/ScientificObjectPropertyConfiguration.vue';
 components["opensilex-ScientificObjectPropertyConfiguration"] = ScientificObjectPropertyConfiguration;
 
+// Variables
+import VariableList from './variables/VariableList.vue';
+components["opensilex-VariableList"] = VariableList;
+import VariableForm from './variables/form/VariableForm.vue';
+components["opensilex-VariableForm"] = VariableForm;
+import VariableForm1 from './variables/form/VariableForm1.vue';
+components["opensilex-VariableForm1"] = VariableForm1;
+import VariableForm2 from './variables/form/VariableForm2.vue';
+components["opensilex-VariableForm2"] = VariableForm2;
+// Entity
+import EntityForm from './variables/form/EntityForm.vue';
+components["opensilex-EntityForm"] = EntityForm;
+// Method
+import MethodCreate from './variables/form/MethodCreate.vue';
+components["opensilex-MethodCreate"] = MethodCreate;
+import MethodForm from './variables/form/MethodForm.vue';
+components["opensilex-MethodForm"] = MethodForm;
+//Quality
+import QualityForm from './variables/form/QualityForm.vue';
+components["opensilex-QualityForm"] = QualityForm;
+import QualityCreate from './variables/form/QualityCreate.vue';
+components["opensilex-QualityCreate"] = QualityCreate;
+// Unit
+import UnitForm from './variables/form/UnitForm.vue';
+components["opensilex-UnitForm"] = UnitForm;
+import UnitCreate from './variables/form/UnitCreate.vue';
+components["opensilex-UnitCreate"] = UnitCreate;
+
 // PHIS
 import ImageList from './phis/images/ImageList.vue';
 components["opensilex-ImageList"] = ImageList;

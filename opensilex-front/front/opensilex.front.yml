@@ -118,6 +118,11 @@ menu:
           component: opensilex-GermplasmView
           credentials:
             - germplasm-read
+      - id: variables
+        label: component.menu.variables
+        route:
+          path: /variables
+          component: opensilex-VariableList
 
 routes:
   - path: /experiment/:uri

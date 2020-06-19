@@ -1,5 +1,5 @@
 <template>
-  <b-modal ref="modalRef" :size="modalSize" :static="true">
+  <b-modal ref="modalRef" :size="modalSize" :static="static">
     <template v-slot:modal-title>
       <i>
         <slot name="icon">
@@ -72,6 +72,9 @@ export default class WizardForm extends Vue {
   form = null;
 
   editMode = false;
+
+  @Prop({default: true})
+  static;
 
   @Prop()
   steps;

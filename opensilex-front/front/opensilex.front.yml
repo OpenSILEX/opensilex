@@ -21,9 +21,14 @@ menu:
           path: /images
           component: phis-ImageView
           credentials: []
+      - id: data
+        label: component.menu.data.label
+        route:
+          path: /data
+          component: opensilex-DataView
+          credentials: []
   - id: projects
     label: component.menu.projects
-    icon: ik-layers
     route:
       path: /projects
       component: opensilex-ProjectView

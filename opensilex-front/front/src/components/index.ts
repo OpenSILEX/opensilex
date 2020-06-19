@@ -410,6 +410,10 @@ components["opensilex-UnitDetails"] = UnitDetails;
 import DataView from './data/DataView.vue';
 components["opensilex-DataView"] = DataView;
 
+// Data
+import DataView from './data/DataView.vue';
+components["opensilex-DataView"] = DataView;
+
 // PHIS
 import ImageList from './phis/images/ImageList.vue';
 components["opensilex-ImageList"] = ImageList;

@@ -12,6 +12,12 @@
       :multiple="true"
     ></opensilex-UserSelector>
 
+    <opensilex-ProjectSelector
+      label="component.experiment.projects"
+      :projects.sync="experiment.projects"
+      :multiple="true"
+    ></opensilex-ProjectSelector>
+
     <opensilex-InfrastructureSelector
       label="component.experiment.infrastructures"
       :infrastructures.sync="experiment.infrastructures"

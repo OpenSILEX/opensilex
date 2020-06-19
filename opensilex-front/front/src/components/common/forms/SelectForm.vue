@@ -7,8 +7,9 @@
   >
     <template v-slot:field="field">
       <input :id="field.id" type="hidden" :value="getHiddenValue()" />
-      <b-input-group v-if="isModalSearch">
+      <b-input-group class="select-button-container">
         <treeselect
+          v-if="isModalSearch"
           class="multiselect-popup"
           :multiple="true"
           :openOnClick="false"
@@ -17,48 +18,52 @@
           v-model="selection"
           :placeholder="$t(placeholder)"
         ></treeselect>
-        <b-input-group-append>
+        <treeselect
+          v-else-if="optionsLoadingMethod"
+          v-bind:class="{ 'multiselect-action': actionHandler}"
+          :multiple="multiple"
+          :flat="multiple && flat"
+          :value="selectedValues"
+          valueFormat="node"
+          :async="searchMethod != null"
+          :load-options="loadOptions"
+          :options="internalOption"
+          :placeholder="$t(placeholder)"
+          :disabled="disabled"
+          @deselect="deselect"
+          @select="select"
+          @input="clearIfNeeded"
+          @close="field.validator && field.validator.validate()"
+          @updade="setCurrentSelectedNodes($event)"
+          :noResultsText="$t(noResultsText)"
+          :searchPromptText="$t('component.common.search-prompt-text')"
+        ></treeselect>
+        <treeselect
+          v-else
+          v-bind:class="{ 'multiselect-action': actionHandler}"
+          :multiple="multiple"
+          :flat="multiple && flat"
+          :value="selectedValues"
+          valueFormat="node"
+          :async="searchMethod != null"
+          :load-options="loadOptions"
+          :options="options || internalOption"
+          :placeholder="$t(placeholder)"
+          :disabled="disabled"
+          @deselect="deselect"
+          @select="select"
+          @input="clearIfNeeded"
+          @close="field.validator && field.validator.validate()"
+          :noResultsText="$t(noResultsText)"
+          :searchPromptText="$t('component.common.search-prompt-text')"
+        ></treeselect>
+        <b-input-group-append v-if="isModalSearch">
           <b-button variant="primary" @click="showModal">+</b-button>
         </b-input-group-append>
+        <b-input-group-append v-else-if="actionHandler">
+          <b-button variant="primary" @click="actionHandler">+</b-button>
+        </b-input-group-append>
       </b-input-group>
-      <treeselect
-        v-else-if="optionsLoadingMethod"
-        :multiple="multiple"
-        :flat="multiple && flat"
-        :value="selectedValues"
-        valueFormat="node"
-        :async="searchMethod != null"
-        :load-options="loadOptions"
-        :options="internalOption"
-        :placeholder="$t(placeholder)"
-        :disabled="disabled"
-        @deselect="deselect"
-        @select="select"
-        @input="clearIfNeeded"
-        @close="field.validator && field.validator.validate()"
-        @updade="setCurrentSelectedNodes($event)"
-        :noResultsText="$t(noResultsText)"
-        :searchPromptText="$t('component.common.search-prompt-text')"
-      ></treeselect>
-      <treeselect
-        v-else
-        :multiple="multiple"
-        :flat="multiple && flat"
-        :value="selectedValues"
-        valueFormat="node"
-        :async="searchMethod != null"
-        :load-options="loadOptions"
-        :options="options || internalOption"
-        :placeholder="$t(placeholder)"
-        :disabled="disabled"
-        @deselect="deselect"
-        @select="select"
-        @input="clearIfNeeded"
-        @close="field.validator && field.validator.validate()"
-        :noResultsText="$t(noResultsText)"
-        :searchPromptText="$t('component.common.search-prompt-text')"
-      ></treeselect>
-
       <component
         v-if="isModalSearch"
         :is="modalComponent"
@@ -103,8 +108,8 @@ export default class SelectForm extends Vue {
   @Prop()
   searchMethod;
 
-  @Prop({ 
-    default: false 
+  @Prop({
+    default: false
   })
   isModalSearch;
 
@@ -144,6 +149,11 @@ export default class SelectForm extends Vue {
     default: true
   })
   flat: boolean;
+
+  @Prop({
+    default: null
+  })
+  actionHandler;
 
   @AsyncComputedProp()
   async selectedValues(): Promise<any> {
@@ -363,40 +373,40 @@ export default class SelectForm extends Vue {
   }
 
   updateValues(selectedValues) {
-    if(this.conversionMethod && selectedValues) {
+    if (this.conversionMethod && selectedValues) {
       this.selection = selectedValues.map(item => this.conversionMethod(item));
     } else {
       this.selection = selectedValues;
     }
-    // this.$forceUpdate();
   }
 }
 </script>
 
 <style scoped lang="scss">
+::v-deep .multiselect-action.vue-treeselect,
+::v-deep .multiselect-popup.vue-treeselect {
+  width: calc(100% - 38px);
+}
 
-  ::v-deep .multiselect-popup.vue-treeselect {
-    width: calc(100% - 37px);
-  }
+::v-deep .multiselect-action .vue-treeselect__control,
+::v-deep .multiselect-popup .vue-treeselect__control {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 5px !important;
+  width: 100%;
+  height: 35px;
+}
 
-  ::v-deep .multiselect-popup .vue-treeselect__control-arrow-container {
-    display: none;
-  }
+.select-button-container {
+  margin-bottom: 0;
+}
 
-  ::v-deep .multiselect-popup .vue-treeselect__menu-container {
-    display: none;
-  }
+::v-deep .multiselect-popup .vue-treeselect__control-arrow-container {
+  display: none;
+}
 
-  ::v-deep .multiselect-popup .vue-treeselect__control {
-    border-bottom-right-radius: 0;
-    border-top-right-radius: 0;
-    border-bottom-left-radius: 5px !important;
-    width: 100%;
-    height: 35px;
-  }
-  
-  ::v-deep .vue-treeselect__multi-value {
-    margin-bottom: 4px;
-  }
-  
+::v-deep .multiselect-popup .vue-treeselect__menu-container {
+  display: none;
+}
+
 </style>

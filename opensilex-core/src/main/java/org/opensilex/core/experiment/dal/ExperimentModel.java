@@ -163,7 +163,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
     )
     List<URI> factors;
     public static final String FACTORS_FIELD = "factors";
-
+    
     public String getLabel() {
         return label;
     }

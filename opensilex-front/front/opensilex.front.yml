@@ -76,6 +76,29 @@ menu:
           path: /users
           component: opensilex-UserView
           credentials: []
+  - id: experimentalDesign
+    label: component.menu.experimentalDesign.label
+    children:
+      - id: factors
+        label: component.menu.experimentalDesign.factors
+        route:
+          path: /factors
+          component: opensilex-FactorView
+          credentials:
+            - factor-read
+      - id: germplasm
+        label: component.menu.experimentalDesign.germplasm
+        icon: ik-cloud-rain
+        route:
+          path: /germplasm
+          component: opensilex-GermplasmView
+          credentials:
+            - germplasm-read
+      - id: variables
+        label: component.menu.variables
+        route:
+          path: /variables
+          component: opensilex-VariableList
   - id: security
     label: component.menu.security.label
     children:
@@ -100,30 +123,6 @@ menu:
           component: opensilex-ProfileView
           credentials:
             - profile-read
-  - id: experimentalDesign
-    label: component.menu.experimentalDesign.label
-    children:
-      - id: factors
-        label: component.menu.experimentalDesign.factors
-        route:
-          path: /factors
-          component: opensilex-FactorView
-          credentials:
-            - factor-read
-      - id: germplasm
-        label: component.menu.experimentalDesign.germplasm
-        icon: ik-cloud-rain
-        route:
-          path: /germplasm
-          component: opensilex-GermplasmView
-          credentials:
-            - germplasm-read
-      - id: variables
-        label: component.menu.variables
-        route:
-          path: /variables
-          component: opensilex-VariableList
-
 routes:
   - path: /experiment/:uri
     component: opensilex-ExperimentView

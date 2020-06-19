@@ -28,6 +28,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -219,5 +220,9 @@ public class ProjectDAO {
         if (!sparql.executeAskQuery(ask)) {
             throw new ForbiddenURIAccessException(projectURI);
         }
+    }
+
+    public List<ProjectModel> getList(List<URI> uris, UserModel user) throws Exception {
+        return sparql.getListByURIs(ProjectModel.class, uris, user.getLanguage());
     }
 }

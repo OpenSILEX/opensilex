@@ -1,6 +1,6 @@
 <template>
   <span>
-    <router-link v-if="to" class="uri" :to="to">
+    <router-link v-if="to" class="uri" :title="uri" :to="to">
       <span>{{uri}}</span>
       &nbsp;
       <button
@@ -11,7 +11,7 @@
         <opensilex-Icon icon="ik#ik-copy" />
       </button>
     </router-link>
-    <a v-if="url" :href="url" class="uri" target="about:blank">
+    <a v-if="url" :href="url" class="uri" :title="uri" target="about:blank">
       <span>{{uri}}</span>
       &nbsp;
       <button
@@ -22,7 +22,7 @@
         <opensilex-Icon icon="ik#ik-copy" />
       </button>
     </a>
-    <a v-if="!url && !to" href="#" @click.prevent="$emit('click', uri)" class="uri">
+    <a v-if="!url && !to" href="#" @click.prevent="$emit('click', uri)" :title="uri" class="uri">
       <span>{{uri}}</span>
       &nbsp;
       <button
@@ -83,6 +83,8 @@ export default class UriLink extends Vue {
   word-break: keep-all;
   text-overflow: ellipsis;
   overflow: hidden;
+  word-wrap: normal;
+  white-space: nowrap;
 }
 
 .uri .uri-copy {

@@ -116,7 +116,6 @@ label::first-letter {
 @import "../node_modules/icon-kit/dist/css/iconkit.min.css";
 @import "../node_modules/bootstrap/scss/bootstrap";
 @import "../node_modules/bootstrap-vue/src/index.scss";
-@import "../node_modules/vue-multiselect/dist/vue-multiselect.min.css";
 @import "../node_modules/vue-airbnb-style-datepicker/dist/vue-airbnb-style-datepicker.min.css";
 @import "../node_modules/vue-tabulator/dist/scss/bootstrap/tabulator_bootstrap4.scss";
 
@@ -159,6 +158,7 @@ input:invalid {
   overflow: hidden;
   white-space: nowrap;
   max-width: 100%;
+  font-size-adjust: 0.4;
 }
 
 .form-group .errors input,

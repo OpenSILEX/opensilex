@@ -95,7 +95,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                         FrontRoutingConfig frontRoutingConfig = cfg.loadConfig("", FrontRoutingConfig.class);
                         for (MenuItem menuItem : frontRoutingConfig.menu()) {
                             if (!menuExclusions.contains(menuItem.id())) {
-                                MenuItemDTO menuDTO = MenuItemDTO.fromModel(menuItem);
+                                MenuItemDTO menuDTO = MenuItemDTO.fromModel(menuItem, menuExclusions);
                                 globalMenu.add(menuDTO);
                             }
                         }

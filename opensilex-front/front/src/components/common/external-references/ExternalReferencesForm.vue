@@ -149,7 +149,6 @@
 
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
-import Multiselect from "vue-multiselect";
 import Vue from "vue";
 import { Skos } from "../../../models/Skos";
 

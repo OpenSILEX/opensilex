@@ -105,10 +105,6 @@ library.add(fas);
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 console.debug("FontAwesomeIcon plugin initialized !");
 
-// Initialize multiselect
-import Multiselect from "vue-multiselect";
-Vue.component('multiselect', Multiselect);
-
 // Initialize Vue wizard form
 import VueFormWizard from 'vue-form-wizard'
 import 'vue-form-wizard/dist/vue-form-wizard.min.css'
@@ -139,6 +135,10 @@ let lang = navigator.language;
 
 if (urlParams.has('lang')) {
   lang = urlParams.get("lang");
+}
+
+if (lang && lang.length > 2) {
+  lang = lang.substr(0,2);
 }
 
 console.debug("Detected language", lang);
@@ -417,9 +417,10 @@ $opensilex.loadModules([
 
           if (!user.isLoggedIn()) {
             console.debug("User is ANONYMOUS !");
+            i18n.locale = lang;
           } else {
             console.debug("User is:", user.getEmail());
-            i18n.locale = user.getLocale();
+            i18n.locale = user.getLocale() || lang;
           }
           // Init user
           console.debug("Initialize global user");

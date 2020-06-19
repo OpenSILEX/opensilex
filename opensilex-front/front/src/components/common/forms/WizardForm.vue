@@ -10,7 +10,14 @@
       </i>
     </template>
     <b-form ref="formRef" v-if="form">
-      <form-wizard title subtitle ref="wizardRef" shape="square" color="#00a38d">
+      <form-wizard
+        title
+        subtitle
+        ref="wizardRef"
+        shape="square"
+        :class="{'single-wizard' : steps.length == 1}"
+        color="#00a38d"
+      >
         <tab-content v-for="(step, index) in steps" :key="index" v-bind:title="$t(step.title)">
           <component
             :ref="'step' + index"
@@ -73,7 +80,7 @@ export default class WizardForm extends Vue {
 
   editMode = false;
 
-  @Prop({default: true})
+  @Prop({ default: true })
   static;
 
   @Prop()
@@ -224,5 +231,10 @@ export default class WizardForm extends Vue {
 
 .icon-title {
   margin-right: 5px;
+}
+
+::v-deep .single-wizard .wizard-progress-with-circle,
+::v-deep .single-wizard .wizard-nav {
+  display: none;
 }
 </style>;

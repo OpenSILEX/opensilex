@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -40,7 +41,10 @@ import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_READ_ID;
+import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_READ_LABEL_KEY;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.OrderBy;
@@ -81,7 +85,8 @@ public class ProjectAPI {
      * Create a Project
      *
      * @param dto the Project to create
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing the created Project {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing
+     * the created Project {@link URI}
      * @throws java.lang.Exception
      */
     @POST
@@ -118,7 +123,8 @@ public class ProjectAPI {
 
     /**
      * @param dto the Project to update
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing the updated Project {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing
+     * the updated Project {@link URI}
      */
     @PUT
     @Path("update")
@@ -145,7 +151,8 @@ public class ProjectAPI {
 
     /**
      * @param uri the Project URI
-     * @return a {@link Response} with a {@link SingleObjectResponse} containing the {@link ExperimentGetDTO}
+     * @return a {@link Response} with a {@link SingleObjectResponse} containing
+     * the {@link ExperimentGetDTO}
      */
     @GET
     @Path("get/{uri}")
@@ -158,7 +165,7 @@ public class ProjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Project retrieved", response = ProjectGetDTO.class),
+        @ApiResponse(code = 200, message = "Project retrieved", response = ProjectGetDetailDTO.class),
         @ApiResponse(code = 404, message = "Unknown Project URI", response = ErrorResponse.class)
     })
     public Response getProject(
@@ -166,7 +173,7 @@ public class ProjectAPI {
     ) throws Exception {
         ProjectDAO dao = new ProjectDAO(sparql);
         ProjectModel model = dao.get(uri, currentUser);
-        return new SingleObjectResponse<>(ProjectGetDTO.fromModel(model)).getResponse();
+        return new SingleObjectResponse<>(ProjectGetDetailDTO.fromModel(model)).getResponse();
     }
 
     /**
@@ -223,11 +230,50 @@ public class ProjectAPI {
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
+    @GET
+    @Path("get-by-uris")
+    @ApiOperation("Get a list of projects by their URIs")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_GROUP_READ_ID,
+            credentialLabelKey = CREDENTIAL_GROUP_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return project list", response = ProjectGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Project not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response getProjectsByURI(
+            @ApiParam(value = "Projects URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+    ) throws Exception {
+        ProjectDAO dao = new ProjectDAO(sparql);
+        List<ProjectModel> models = dao.getList(uris, currentUser);
+
+        if (!models.isEmpty()) {
+            List<ProjectGetDTO> resultDTOList = new ArrayList<>(models.size());
+            models.forEach(result -> {
+                resultDTOList.add(ProjectGetDTO.fromModel(result));
+            });
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Projects not found",
+                    "Unknown project URIs"
+            ).getResponse();
+        }
+    }
+
     /**
      * Remove a project
      *
      * @param prjctUri the project URI
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing the deleted Project {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing
+     * the deleted Project {@link URI}
      */
     @DELETE
     @Path("delete/{uri}")

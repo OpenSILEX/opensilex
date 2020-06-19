@@ -15,28 +15,30 @@ import org.opensilex.front.config.MenuItem;
 @ApiModel
 public class MenuItemDTO {
 
-    public static MenuItemDTO fromModel(MenuItem menuItem) {
+    public static MenuItemDTO fromModel(MenuItem menuItem, List<String> menuExclusions) {
         MenuItemDTO menuDTO = new MenuItemDTO();
-        
+
         menuDTO.setId(menuItem.id());
         menuDTO.setLabel(menuItem.label());
-        
+
         List<MenuItem> mc = menuItem.children();
         List<MenuItemDTO> children = new ArrayList<>(mc.size());
-        for (MenuItem child: mc) {
-            children.add(fromModel(child));
+        for (MenuItem child : mc) {
+            if (!menuExclusions.contains(child.id())) {
+                children.add(fromModel(child, menuExclusions));
+            }
         }
         menuDTO.setChildren(children.toArray(new MenuItemDTO[children.size()]));
-        
+
         RouteDTO routeDTO = RouteDTO.fromModel(menuItem.route());
         menuDTO.setRoute(routeDTO);
-        
+
         return menuDTO;
     }
-    
+
     @NotNull
     private String id;
-    
+
     @NotNull
     private String label;
 
@@ -80,6 +82,5 @@ public class MenuItemDTO {
     public void setRoute(RouteDTO route) {
         this.route = route;
     }
-    
-    
+
 }

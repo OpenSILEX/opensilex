@@ -30,7 +30,8 @@ front:
     menuComponent: inrae-sixtine-SixtineMenuComponent
     headerComponent: inrae-sixtine-SixtineHeaderComponent
     menuExclusions:
-        - experimentalDesign
+        - factors
+        - germplasm
         - radiometricTargets
         - vectors
         - actuators

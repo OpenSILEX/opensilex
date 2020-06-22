@@ -24,6 +24,7 @@
           <opensilex-FilterField>
             <opensilex-SelectForm
               label="GermplasmList.filter.rdfType"
+              placeholder="component.germplasm.filter.allTypes"
               :selected.sync="filterByRdfType"
               :optionsLoadingMethod="loadGermplasmTypes"
               :conversionMethod="ontologyToSelectNode"

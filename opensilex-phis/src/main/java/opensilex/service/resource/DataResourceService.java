@@ -33,6 +33,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.inject.Inject;
@@ -403,27 +404,26 @@ public class DataResourceService extends ResourceService {
     }
 
     /**
-     * Returns the content of the file corresponding to the URI given. No
-     * authentication on this service because image file must be accessible
-     * directly.
+     * Returns the content of the file corresponding to the URI given.
      *
-     * @param fileUri
-     * @param response
+     * @param fileUri the {@link URI} of the file to download
      * @return The file content or null with a 404 status if it doesn't exists
      */
+    @ApiProtected
     @GET
     @Path("file/{fileUri}")
     @ApiOperation(value = "Get data file")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieve file"),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION, response = ErrorResponse.class),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED, response = ErrorResponse.class),
+            @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND, response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA, response = ErrorResponse.class)
     })
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.APPLICATION_OCTET_STREAM, MediaType.APPLICATION_JSON})
     public Response getDataFile(
-            @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @PathParam("fileUri") @Required URI fileUri,
+            @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_DATA_FILE_WEB_PATH) @PathParam("fileUri") @NotNull URI fileUri,
             @Context HttpServletResponse response
     ) throws Exception {
 
@@ -444,24 +444,32 @@ public class DataResourceService extends ResourceService {
         return Response.ok(fileContent, MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString() + "\"") //optional
                 .build();
-
-
     }
 
+    /**
+     * Returns a thumbnail based on the content of the file corresponding to the URI given.
+     * The given URI must link to a picture.
+     *
+     * @param fileUri      the {@link URI} of the file to download
+     * @param scaledHeight the height of the thumbnail to return
+     * @param scaledWidth  the width of the thumbnail to return
+     * @return The file content or null with a 404 status if it doesn't exists
+     */
     @ApiProtected
     @GET
     @Path("file/thumbnail{fileUri}")
     @ApiOperation(value = "Get picture thumbnail")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve thumbnail"),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+            @ApiResponse(code = 200, message = "Retrieve thumbnail of a picture"),
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION, response = ErrorResponse.class),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED, response = ErrorResponse.class),
+            @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND, response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA, response = ErrorResponse.class)
     })
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.APPLICATION_OCTET_STREAM, MediaType.APPLICATION_JSON})
     public Response getPicturesThumbnails(
-            @ApiParam(value = "Search by fileUri", required = true) @PathParam("fileUri") @Required URI fileUri,
+            @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_DATA_FILE_WEB_PATH) @PathParam("fileUri") @NotNull URI fileUri,
             @ApiParam(value = "Thumbnail width") @QueryParam("scaledWidth") @Min(256) @Max(1920) Integer scaledWidth,
             @ApiParam(value = "Thumbnail height") @QueryParam("scaledHeight") @Min(144) @Max(1080) Integer scaledHeight,
 
@@ -519,24 +527,23 @@ public class DataResourceService extends ResourceService {
     @ApiOperation(value = "Get data file description")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieve file description", response = FileDescriptionDTO.class),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION, response = ErrorResponse.class),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED, response = ErrorResponse.class),
+            @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND, response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA, response = ErrorResponse.class),
     })
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataFileDescription(
-            @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI)
-            @PathParam("fileUri") @URL @Required String fileUri,
+            @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_EXPERIMENT_URI) @PathParam("fileUri") @NotNull URI fileUri,
             @Context HttpServletResponse response
-    ) {
+    ) throws Exception {
         FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO(sparql);
 
-        FileDescription description = fileDescriptionDao.findFileDescriptionByUri(fileUri);
+        FileDescription description = fileDescriptionDao.findFileDescriptionByUri(fileUri.toString());
 
         if (description == null) {
-            return Response.status(404).build();
+            throw new NotFoundURIException(fileUri);
         }
 
         return Response.status(Response.Status.OK).entity(new FileDescriptionDTO(description)).build();

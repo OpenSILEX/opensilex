@@ -37,6 +37,7 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.inject.Inject;
+import javax.print.attribute.standard.Media;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -49,6 +50,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.text.ParseException;
@@ -415,35 +417,37 @@ public class DataResourceService extends ResourceService {
     @ApiOperation(value = "Get data file")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieve file"),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION, response = ErrorResponse.class),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED, response = ErrorResponse.class),
-            @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND, response = ErrorResponse.class),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA, response = ErrorResponse.class)
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA),
     })
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces({MediaType.APPLICATION_OCTET_STREAM, MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_OCTET_STREAM})
     public Response getDataFile(
             @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_DATA_FILE_WEB_PATH) @PathParam("fileUri") @NotNull URI fileUri,
             @Context HttpServletResponse response
-    ) throws Exception {
+    ) {
+        try {
+            FileDescriptionDAO descriptionDAO = new FileDescriptionDAO(sparql);
 
-        FileDescriptionDAO dataFileDao = new FileDescriptionDAO(sparql);
+            FileDescription description = descriptionDAO.findFileDescriptionByUri(fileUri.toString());
+            if (description == null) {
+                return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
+            }
 
-        FileDescription description = dataFileDao.findFileDescriptionByUri(fileUri.toString());
-        if (description == null) {
-            throw new NotFoundURIException(fileUri);
+            java.nio.file.Path filePath = Paths.get(fileUri.toString());
+            byte[] fileContent = fs.readFileAsByteArray(filePath);
+
+            if (ArrayUtils.isEmpty(fileContent)) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).build();
+            }
+            return Response.ok(fileContent, MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString() + "\"") //optional
+                    .build();
+
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).build();
         }
-
-        java.nio.file.Path filePath = Paths.get(description.getPath());
-        byte[] fileContent = fs.readFileAsByteArray(filePath);
-
-        if (ArrayUtils.isEmpty(fileContent)) {
-            throw new FileNotFoundException(fileUri.toString());
-        }
-
-        return Response.ok(fileContent, MediaType.APPLICATION_OCTET_STREAM)
-                .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString() + "\"") //optional
-                .build();
     }
 
     /**
@@ -461,44 +465,49 @@ public class DataResourceService extends ResourceService {
     @ApiOperation(value = "Get picture thumbnail")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieve thumbnail of a picture"),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION, response = ErrorResponse.class),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED, response = ErrorResponse.class),
-            @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND, response = ErrorResponse.class),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA, response = ErrorResponse.class)
+            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+            @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
+            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces({MediaType.APPLICATION_OCTET_STREAM, MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_OCTET_STREAM})
     public Response getPicturesThumbnails(
             @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_DATA_FILE_WEB_PATH) @PathParam("fileUri") @NotNull URI fileUri,
-            @ApiParam(value = "Thumbnail width") @QueryParam("scaledWidth") @Min(256) @Max(1920) Integer scaledWidth,
-            @ApiParam(value = "Thumbnail height") @QueryParam("scaledHeight") @Min(144) @Max(1080) Integer scaledHeight,
+            @ApiParam(value = "Thumbnail width") @QueryParam("scaledWidth") @Min(256) @Max(1920) @DefaultValue("640") Integer scaledWidth,
+            @ApiParam(value = "Thumbnail height") @QueryParam("scaledHeight") @Min(144) @Max(1080) @DefaultValue("360") Integer scaledHeight,
 
-            @Context HttpServletResponse response) throws Exception {
+            @Context HttpServletResponse response) {
 
-        FileDescriptionDAO fileDescriptionDAO = new FileDescriptionDAO(sparql);
 
-        FileDescription description = fileDescriptionDAO.findFileDescriptionByUri(fileUri.toString());
-        if (description == null) {
-            throw new NotFoundURIException(fileUri);
+        try {
+            FileDescriptionDAO fileDescriptionDAO = new FileDescriptionDAO(sparql);
+
+            FileDescription description = fileDescriptionDAO.findFileDescriptionByUri(fileUri.toString());
+            if (description == null) {
+                return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
+            }
+
+            java.nio.file.Path filePath = Paths.get(fileUri.toString());
+
+            // get a path to the file which is physically accessible in order to be read by the ImageThumbnails
+            java.nio.file.Path physicalFilePath = fs.getPhysicalPath(filePath);
+
+            byte[] imageData = ImageResizer.getInstance().getResizedImage(
+                    physicalFilePath,
+                    scaledWidth,
+                    scaledHeight
+            );
+            if (ArrayUtils.isEmpty(imageData)) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).build();
+            }
+            return Response.ok(imageData, MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString() + "\"") //optional
+                    .build();
+
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).build();
         }
-
-        java.nio.file.Path filePath = Paths.get(description.getPath());
-
-        // get a path to the file which is physically accessible in order to be read by the ImageThumbnails
-        java.nio.file.Path physicalFilePath = fs.getPhysicalPath(filePath);
-
-        byte[] imageData = ImageResizer.getInstance().getResizedImage(
-                physicalFilePath,
-                scaledWidth,
-                scaledHeight
-        );
-        if (ArrayUtils.isEmpty(imageData)) {
-            throw new FileNotFoundException(fileUri.toString());
-        }
-
-        return Response.ok(imageData, MediaType.APPLICATION_OCTET_STREAM)
-                .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString() + "\"") //optional
-                .build();
     }
 
     /**

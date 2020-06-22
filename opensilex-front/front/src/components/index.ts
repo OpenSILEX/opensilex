@@ -182,6 +182,10 @@ import ExperimentList from './experiments/ExperimentList.vue';
 components["opensilex-ExperimentList"] = ExperimentList;
 import ExperimentView from './experiments/ExperimentView.vue';
 components["opensilex-ExperimentView"] = ExperimentView;
+import ExperimentDetail from './experiments/views/ExperimentDetail.vue';
+components["opensilex-ExperimentDetail"] = ExperimentDetail;
+import ExperimentScientificObjects from './experiments/views/ExperimentScientificObjects.vue';
+components["opensilex-ExperimentScientificObjects"] = ExperimentScientificObjects;
 import ExperimentModalList from './experiments/ExperimentModalList.vue';
 components["opensilex-ExperimentModalList"] = ExperimentModalList;
 

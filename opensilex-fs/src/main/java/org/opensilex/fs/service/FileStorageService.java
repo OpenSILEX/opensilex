@@ -75,14 +75,14 @@ public class FileStorageService extends BaseService implements Service, FileStor
             } else {
                 if (p2 == null) {
                     return 1;
-                } else if (p1.equals(p2)) {
+                } else if (p1.toAbsolutePath().equals(p2.toAbsolutePath())) {
                     return 0;
-                } else if (p1.startsWith(p2)) {
+                } else if (p1.toAbsolutePath().startsWith(p2.toAbsolutePath())) {
                     return 1;
-                } else if (p2.startsWith(p1)) {
+                } else if (p2.toAbsolutePath().startsWith(p1.toAbsolutePath())) {
                     return -1;
                 } else {
-                    return p1.toAbsolutePath().toString().compareTo(p2.toAbsolutePath().toString());
+                    return p1.toAbsolutePath().compareTo(p2.toAbsolutePath());
                 }
             }
         });

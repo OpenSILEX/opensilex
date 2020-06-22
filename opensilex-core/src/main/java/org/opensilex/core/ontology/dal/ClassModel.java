@@ -51,7 +51,7 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
             ontology = RDFS.class,
             property = "subClassOf"
     )
-    protected List<ClassModel> parent;
+    protected ClassModel parent;
 
     @Override
     public String getName() {

@@ -75,7 +75,7 @@
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
         <data.nucleus.accessplatform.mongodb.version>5.2.3</data.nucleus.accessplatform.mongodb.version>
         <data.nucleus.maven.plugin.version>5.2.1</data.nucleus.maven.plugin.version>
-        <bytebuddy.version>1.10.11</bytebuddy.version>
+        <bytebuddy.version>1.10.12</bytebuddy.version>
         <java.jwt.version>3.10.3</java.jwt.version>
         <picocli.version>4.3.2</picocli.version>
         <bcript.version>0.9.0</bcript.version>

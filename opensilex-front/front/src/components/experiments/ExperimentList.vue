@@ -59,7 +59,7 @@
           <template v-slot:cell(uri)="{data}">
             <opensilex-UriLink
               :uri="data.item.uri"
-              :to="{path: '/experiment/'+ encodeURIComponent(data.item.uri)}"
+              :to="{path: '/experiment/details/'+ encodeURIComponent(data.item.uri)}"
             ></opensilex-UriLink>
           </template>
 

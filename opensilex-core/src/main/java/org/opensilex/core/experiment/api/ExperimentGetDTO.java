@@ -17,12 +17,12 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
  *
- * A basic GetDTO which extends the {@link ExperimentDTO} and which add the conversion from an {@link ExperimentModel} to a {@link ExperimentGetDTO}
+ * A basic GetDTO which add the conversion from an {@link ExperimentModel} to a {@link ExperimentGetDTO}
  *
  * @author Vincent MIGOT
  * @author Renaud COLIN
  */
-public class ExperimentGetDTO extends ExperimentDTO {
+public class ExperimentGetDTO {
 
     protected static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
 
@@ -38,8 +38,8 @@ public class ExperimentGetDTO extends ExperimentDTO {
         ExperimentGetDTO dto = new ExperimentGetDTO();
 
         dto.setUri(model.getUri())
-                .setLabel(model.getLabel())
-                .setStartDate(model.getStartDate())
+                dto.setLabel(model.getLabel())
+                dto.setStartDate(model.getStartDate())
                 .setCampaign(model.getCampaign())
                 .setObjective(model.getObjective())
                 .setComment(model.getComment())

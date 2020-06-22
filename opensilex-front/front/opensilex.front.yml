@@ -124,10 +124,14 @@ menu:
           credentials:
             - profile-read
 routes:
-  - path: /experiment/:uri
+  - path: /experiment/details/:uri
     component: opensilex-ExperimentView
     credentials:
       - experiment-read
+  - path: /experiment/scientific-objects/:uri
+    component: opensilex-ExperimentView
+    credentials:
+      - experiment-read      
   - path: /VariableCreate
     component: opensilex-VariableCreate
     credentials: []

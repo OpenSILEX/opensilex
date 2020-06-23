@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 
 /**
@@ -184,5 +185,33 @@ public class FileStorageService extends BaseService implements Service, FileStor
     public void delete(Path filePath) throws IOException {
         LOGGER.debug("DELETE FILE: " + filePath.toString());
         getConnection(filePath).delete(filePath);
+    }
+
+    public Path getFilePathFromPrefixURI(String prefix, URI fileURI) {
+        return Paths.get(prefix, fileURI.getPath());
+    }
+
+    public String readFile(String prefix, URI fileURI) throws IOException {
+        return readFile(getFilePathFromPrefixURI(prefix, fileURI));
+    }
+
+    public void writeFile(String prefix, URI fileURI, String content) throws IOException {
+        writeFile(getFilePathFromPrefixURI(prefix, fileURI), content);
+    }
+
+    public void writeFile(String prefix, URI fileURI, File file) throws IOException {
+        writeFile(getFilePathFromPrefixURI(prefix, fileURI), file);
+    }
+
+    public byte[] readFileAsByteArray(String prefix, URI fileURI) throws IOException {
+        return readFileAsByteArray(getFilePathFromPrefixURI(prefix, fileURI));
+    }
+
+    public boolean exist(String prefix, URI fileURI) throws IOException {
+        return exist(getFilePathFromPrefixURI(prefix, fileURI));
+    }
+
+    public void delete(String prefix, URI fileURI) throws IOException {
+        delete(getFilePathFromPrefixURI(prefix, fileURI));
     }
 }

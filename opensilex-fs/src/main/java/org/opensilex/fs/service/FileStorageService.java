@@ -22,7 +22,9 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import org.apache.commons.codec.binary.Hex;
 
 /**
  * File storage service to access any filesystem (default to local)
@@ -188,7 +190,7 @@ public class FileStorageService extends BaseService implements Service, FileStor
     }
 
     public Path getFilePathFromPrefixURI(String prefix, URI fileURI) {
-        return Paths.get(prefix, fileURI.getPath());
+        return Paths.get(prefix, fileURI.getPath(), Hex.encodeHexString(fileURI.toString().getBytes(StandardCharsets.UTF_8)));
     }
 
     public String readFile(String prefix, URI fileURI) throws IOException {

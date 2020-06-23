@@ -893,7 +893,7 @@ public final class OpenSilex {
     public void setup() throws Exception {
         for (OpenSilexModule module : getModules()) {
             try {
-                LOGGER.info("Setup module: " + module.getClass().getCanonicalName());
+                LOGGER.debug("Setup module: " + module.getClass().getCanonicalName());
                 module.setup();
             } catch (Exception ex) {
                 LOGGER.error("Fail to setup module: " + module.getClass().getCanonicalName(), ex);
@@ -910,7 +910,7 @@ public final class OpenSilex {
     public void clean() throws Exception {
         for (OpenSilexModule module : getModules()) {
             try {
-                LOGGER.info("Clean module: " + module.getClass().getCanonicalName());
+                LOGGER.debug("Clean module: " + module.getClass().getCanonicalName());
                 module.clean();
             } catch (Exception ex) {
                 LOGGER.error("Fail to clean module: " + module.getClass().getCanonicalName(), ex);

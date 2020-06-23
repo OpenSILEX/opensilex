@@ -498,6 +498,6 @@ public class ConfigManager {
      * @return shorten type
      */
     private static String getShortType(Type returnType) {
-        return returnType.getTypeName().replaceAll("([^.<]+\\.)+", "");
+        return returnType.getTypeName().replaceAll("([^.,<]+\\.)+", "");
     }
 }

@@ -1,16 +1,17 @@
 <?xml version="1.0"?>
 <rdf:RDF xmlns="http://www.opensilex.org/vocabulary/oeso#"
-     xml:base="http://www.opensilex.org/vocabulary/oeso"
-     xmlns:dc="http://purl.org/dc/elements/1.1/"
-     xmlns:owl="http://www.w3.org/2002/07/owl#"
-     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-     xmlns:xml="http://www.w3.org/XML/1998/namespace"
-     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     xmlns:skos="http://www.w3.org/2004/02/skos/core#"
-     xmlns:terms="http://purl.org/dc/terms/"
-     xmlns:object="http://www.mistea.supagro.inra.fr/object#"
-     xmlns:vocabulary="http://www.opensilex.org/vocabulary/oeso#">
+         xml:base="http://www.opensilex.org/vocabulary/oeso"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:xml="http://www.w3.org/XML/1998/namespace"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+         xmlns:terms="http://purl.org/dc/terms/"
+         xmlns:object="http://www.mistea.supagro.inra.fr/object#"
+         xmlns:vocabulary="http://www.opensilex.org/vocabulary/oeso#"
+         xmlns:oxapi="http://www.opensilex.org/vocabulary/opensilex-api#">
     <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeso">
         <owl:versionIRI rdf:resource="http://www.opensilex.org/vocabulary/oeso"/>
         <rdfs:comment>Authors : Anne TIREAU, Llorenç CABRERA-BOSQUET, Morgane VIDAL, Pascal NEVEU</rdfs:comment>
@@ -26,12 +27,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Annotation properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Annotation properties
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -87,12 +88,6 @@
     
 
 
-    <!-- http://www.w3.org/2002/07/owl#qualifiedCardinality -->
-
-    <owl:AnnotationProperty rdf:about="http://www.w3.org/2002/07/owl#qualifiedCardinality"/>
-    
-
-
     <!-- http://www.w3.org/2004/02/skos/core#note -->
 
     <owl:AnnotationProperty rdf:about="http://www.w3.org/2004/02/skos/core#note"/>
@@ -100,12 +95,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Datatypes
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Datatypes
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -117,12 +112,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Object Properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Object Properties
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -525,12 +520,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Data properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Data properties
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -1039,21 +1034,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Classes
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
-
-    
-
-
-    <!-- http://www.opensilex.org/security#Group -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/security#Group"/>
-    
-
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Classes
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Accession -->
 
@@ -1280,8 +1266,6 @@
         <rdfs:label xml:lang="en">electrical resistance humidity sensor</rdfs:label>
     </owl:Class>
     
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceThermometer -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceThermometer">
@@ -1291,8 +1275,6 @@
         <rdfs:label xml:lang="en">electrical resistance thermometer</rdfs:label>
     </owl:Class>
     
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Equipement -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Equipement">
@@ -1301,8 +1283,6 @@
         <rdfs:label xml:lang="en">equipment</rdfs:label>
         <rdfs:label xml:lang="fr">équipement</rdfs:label>
     </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Experiment -->
 
@@ -1312,6 +1292,24 @@
         <rdfs:label xml:lang="fr">expérimentation</rdfs:label>
     </owl:Class>
     
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VegetalExperiment">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
+        <rdfs:label xml:lang="en">vegetal experiment</rdfs:label>
+        <rdfs:label xml:lang="fr">expérimentation végétale</rdfs:label>
+        <oxapi:propertyMapping
+            rdf:type="http://www.opensilex.org/vocabulary/opensilex-api#PropertyMapping"
+            oxapi:about="http://www.opensilex.org/vocabulary/oeso#hasSpecies"
+            oxapi:type="org.opensilex.core.species.dal.SpeciesModel"
+            oxapi:isList="true"
+            oxapi:isRequired="false"
+            oxapi:isInverse="false"
+            oxapi:ignoreUpdateIfNull="false"
+            oxapi:cascadeDelete="false"
+            oxapi:order="10"
+            oxapi:viewComponent="opensilex-SpeciesView"
+            oxapi:editComponent="opensilex-SpeciesEdit"
+        />
+    </owl:Class>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition -->
@@ -1408,8 +1406,6 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Spectroradiometer"/>
         <rdfs:label xml:lang="en">green seeker</rdfs:label>
     </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#GypsumBlock -->
 
@@ -1418,8 +1414,6 @@
         <rdfs:label xml:lang="en">gypsum block</rdfs:label>
     </owl:Class>
     
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#HemisphericalCamera -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#HemisphericalCamera">
@@ -1531,28 +1525,20 @@
         <rdfs:label xml:lang="fr">infrastructure</rdfs:label>
     </owl:Class>
     
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
-        <rdfs:label xml:lang="fr">Dispositif</rdfs:label>
-        <rdfs:label xml:lang="en">Facility</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam -->
-
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/security#Group"/>
         <rdfs:label xml:lang="fr">Equipe</rdfs:label>
         <rdfs:label xml:lang="en">Team</rdfs:label>
     </owl:Class>
     
+    <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility -->
 
-
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
+        <rdfs:label xml:lang="en">Facility</rdfs:label>
+        <rdfs:label xml:lang="fr">Dispositif</rdfs:label>
+    </owl:Class>
+    
     <!-- http://www.opensilex.org/vocabulary/oeso#IrrigationSystem -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#IrrigationSystem">
@@ -1561,8 +1547,6 @@
         <rdfs:label xml:lang="fr">système d&apos;irrigation</rdfs:label>
     </owl:Class>
     
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Leaf -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Leaf">
@@ -1641,6 +1625,8 @@
         <rdfs:label xml:lang="en">lightning</rdfs:label>
         <rdfs:label xml:lang="fr">éclairage</rdfs:label>
     </owl:Class>
+    
+
     
 
 
@@ -1736,6 +1722,9 @@
     
 
 
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#NetRadiometerOrNetPyrradiometerOrNetExchangeRadiometerOrBalancemeter -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#NetRadiometerOrNetPyrradiometerOrNetExchangeRadiometerOrBalancemeter">
@@ -1803,28 +1792,6 @@
         <rdfs:label xml:lang="en">platform</rdfs:label>
     </owl:Class>
     
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Plot -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Plot">
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasBrand"/>
-                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onClass rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasDate"/>
-                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-    </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#PrecipitationSensor -->
 
@@ -1932,14 +1899,13 @@
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#pixelSize"/>
-                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"/>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#height"/>
+                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#height"/>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#pixelSize"/>
                 <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
@@ -2463,16 +2429,6 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#VegetalExperiment -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VegetalExperiment">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
-        <rdfs:label xml:lang="fr">expérimentation végétale</rdfs:label>
-        <rdfs:label xml:lang="en">vegetal experiment</rdfs:label>
-    </owl:Class>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#VignettingDocument -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VignettingDocument">
@@ -2533,12 +2489,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Individuals
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Individuals
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -2588,19 +2544,16 @@
         <rdfs:label xml:lang="en">Research Unit</rdfs:label>
         <rdfs:label xml:lang="fr">Unité de recherche</rdfs:label>
     </owl:NamedIndividual>
-    <rdf:Description>
-        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-    </rdf:Description>
     
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Annotations
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Annotations
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/">
         <terms:publisher rdf:resource="http://purl.org/dc/aboutdcmi#DCMI"/>
@@ -2621,8 +2574,8 @@
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#coverage-006"/>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
-        <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
         <rdfs:comment xml:lang="en">The spatial or temporal topic of the resource, the spatial applicability of the resource, or the jurisdiction under which the resource is relevant.</rdfs:comment>
+        <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
         <terms:description xml:lang="en">Spatial topic and spatial applicability may be a named place or a location specified by its geographic coordinates. Temporal topic may be a named period, date, or date range. A jurisdiction may be a named administrative entity or a geographic place to which the resource applies. Recommended best practice is to use a controlled vocabulary such as the Thesaurus of Geographic Names [TGN]. Where appropriate, named places or time periods can be used in preference to numeric identifiers such as sets of coordinates or date ranges.</terms:description>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <rdfs:label xml:lang="en">Coverage</rdfs:label>
@@ -2631,21 +2584,21 @@
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <rdfs:label xml:lang="en">Creator</rdfs:label>
         <rdfs:comment xml:lang="en">An entity primarily responsible for making the resource.</rdfs:comment>
-        <terms:description xml:lang="en">Examples of a Creator include a person, an organization, or a service. Typically, the name of a Creator should be used to indicate the entity.</terms:description>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
+        <terms:description xml:lang="en">Examples of a Creator include a person, an organization, or a service. Typically, the name of a Creator should be used to indicate the entity.</terms:description>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#creator-006"/>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
     </rdf:Description>
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/date">
-        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
+        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
-        <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#date-006"/>
         <rdfs:comment xml:lang="en">A point or period of time associated with an event in the lifecycle of the resource.</rdfs:comment>
-        <rdfs:label xml:lang="en">Date</rdfs:label>
+        <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#date-006"/>
         <terms:description xml:lang="en">Date may be used to express temporal information at any level of granularity.  Recommended best practice is to use an encoding scheme, such as the W3CDTF profile of ISO 8601 [W3CDTF].</terms:description>
+        <rdfs:label xml:lang="en">Date</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/description">
         <terms:description xml:lang="en">Description may include but is not limited to: an abstract, a table of contents, a graphical representation, or a free-text account of the resource.</terms:description>
@@ -2658,8 +2611,8 @@
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#description-006"/>
     </rdf:Description>
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/format">
-        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
+        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <rdfs:label xml:lang="en">Format</rdfs:label>
         <rdfs:comment xml:lang="en">The file format, physical medium, or dimensions of the resource.</rdfs:comment>
@@ -2685,23 +2638,23 @@
         <rdfs:label xml:lang="en">Language</rdfs:label>
         <terms:description xml:lang="en">Recommended best practice is to use a controlled vocabulary such as RFC 4646 [RFC4646].</terms:description>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
-        <rdfs:comment xml:lang="en">A language of the resource.</rdfs:comment>
         <rdfs:seeAlso rdf:resource="http://www.ietf.org/rfc/rfc4646.txt"/>
+        <rdfs:comment xml:lang="en">A language of the resource.</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/publisher">
-        <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#publisher-006"/>
+        <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <rdfs:label xml:lang="en">Publisher</rdfs:label>
-        <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <terms:description xml:lang="en">Examples of a Publisher include a person, an organization, or a service. Typically, the name of a Publisher should be used to indicate the entity.</terms:description>
+        <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:comment xml:lang="en">An entity responsible for making the resource available.</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/relation">
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#relation-006"/>
-        <terms:description xml:lang="en">Recommended best practice is to identify the related resource by means of a string conforming to a formal identification system. </terms:description>
         <rdfs:label xml:lang="en">Relation</rdfs:label>
+        <terms:description xml:lang="en">Recommended best practice is to identify the related resource by means of a string conforming to a formal identification system. </terms:description>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
@@ -2710,8 +2663,8 @@
     </rdf:Description>
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/rights">
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#rights-006"/>
-        <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
+        <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <terms:description xml:lang="en">Typically, rights information includes a statement about various property rights associated with the resource, including intellectual property rights.</terms:description>
         <rdfs:label xml:lang="en">Rights</rdfs:label>
@@ -2738,14 +2691,14 @@
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
     </rdf:Description>
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/type">
-        <rdfs:comment xml:lang="en">The nature or genre of the resource.</rdfs:comment>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#type-006"/>
+        <rdfs:comment xml:lang="en">The nature or genre of the resource.</rdfs:comment>
         <rdfs:label xml:lang="en">Type</rdfs:label>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <terms:description xml:lang="en">Recommended best practice is to use a controlled vocabulary such as the DCMI Type Vocabulary [DCMITYPE]. To describe the file format, physical medium, or dimensions of the resource, use the Format element.</terms:description>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
-        <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
+        <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration">
         <rdfs:label xml:lang="fr">date de la dernière calibration</rdfs:label>

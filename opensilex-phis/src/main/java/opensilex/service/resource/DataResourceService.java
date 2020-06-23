@@ -37,7 +37,6 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.inject.Inject;
-import javax.print.attribute.standard.Media;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -49,8 +48,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.text.ParseException;
@@ -93,10 +90,10 @@ public class DataResourceService extends ResourceService {
     @ApiOperation(value = "Post data",
             notes = "Register data in the database")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "data saved", response = ResponseFormPOST.class),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
+        @ApiResponse(code = 201, message = "data saved", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)
     })
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -199,13 +196,13 @@ public class DataResourceService extends ResourceService {
     @GET
     @ApiOperation(value = "Get data corresponding to the search parameters given.",
             notes = "Retrieve all data corresponding to the search parameters given,"
-                    + "<br/>Date parameters could be either a datetime like: " + DocumentationAnnotation.EXAMPLE_XSDDATETIME
-                    + "<br/>or simply a date like: " + DocumentationAnnotation.EXAMPLE_DATE)
+            + "<br/>Date parameters could be either a datetime like: " + DocumentationAnnotation.EXAMPLE_XSDDATETIME
+            + "<br/>or simply a date like: " + DocumentationAnnotation.EXAMPLE_DATE)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve all data", response = Data.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+        @ApiResponse(code = 200, message = "Retrieve all data", response = Data.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
@@ -280,10 +277,10 @@ public class DataResourceService extends ResourceService {
     @Path("file")
     @ApiOperation(value = "Post data file")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Data file and metadata saved", response = ResponseFormPOST.class),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
+        @ApiResponse(code = 201, message = "Data file and metadata saved", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
     @ApiProtected
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
@@ -349,10 +346,10 @@ public class DataResourceService extends ResourceService {
     @Path("filepaths")
     @ApiOperation(value = "Post data about existing files")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = ResponseFormPOST.class),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
+        @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = ResponseFormPOST.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_SEND_DATA)})
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -372,7 +369,6 @@ public class DataResourceService extends ResourceService {
                 FileDescription fileDescription = description.createObjectFromDTO();
 
                 // get the the absolute file path according to the fileStorageDirectory
-                
                 java.nio.file.Path absoluteFilePath = fs.getAbsolutePath(Paths.get(fileDescription.getPath()));
 
                 if (!fs.exist(absoluteFilePath)) {
@@ -417,12 +413,13 @@ public class DataResourceService extends ResourceService {
     @Path("file/{fileUri}")
     @ApiOperation(value = "Get data file")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve file"),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA),
+        @ApiResponse(code = 200, message = "Retrieve file"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION, response = ErrorResponse.class),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED, response = ErrorResponse.class),
+        @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND, response = ErrorResponse.class),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA, response = ErrorResponse.class)
     })
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_OCTET_STREAM})
     public Response getDataFile(
             @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_DATA_FILE_WEB_PATH) @PathParam("fileUri") @NotNull URI fileUri,
@@ -465,11 +462,11 @@ public class DataResourceService extends ResourceService {
     @Path("file/thumbnail{fileUri}")
     @ApiOperation(value = "Get picture thumbnail")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve thumbnail of a picture"),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+        @ApiResponse(code = 200, message = "Retrieve thumbnail of a picture"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION, response = ErrorResponse.class),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED, response = ErrorResponse.class),
+        @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND, response = ErrorResponse.class),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA, response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_OCTET_STREAM})
@@ -477,42 +474,25 @@ public class DataResourceService extends ResourceService {
             @ApiParam(value = "Search by fileUri", required = true, example = DocumentationAnnotation.EXAMPLE_DATA_FILE_WEB_PATH) @PathParam("fileUri") @NotNull URI fileUri,
             @ApiParam(value = "Thumbnail width") @QueryParam("scaledWidth") @Min(256) @Max(1920) @DefaultValue("640") Integer scaledWidth,
             @ApiParam(value = "Thumbnail height") @QueryParam("scaledHeight") @Min(144) @Max(1080) @DefaultValue("360") Integer scaledHeight,
+            @Context HttpServletResponse response) throws Exception {
 
-            @Context HttpServletResponse response) {
+        FileDescriptionDAO fileDescriptionDAO = new FileDescriptionDAO(sparql);
 
-
-        try {
-            FileDescriptionDAO fileDescriptionDAO = new FileDescriptionDAO(sparql);
-
-            FileDescription description = fileDescriptionDAO.findFileDescriptionByUri(fileUri.toString());
-            if (description == null) {
-                return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
-            }
+        FileDescription description = fileDescriptionDAO.findFileDescriptionByUri(fileUri.toString());
+        if (description == null) {
+            return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
+        }
 
         byte[] imageData = ImageResizer.getInstance().resize(
-                fs.readFileAsByteArray(filePath),
+                fs.readFileAsByteArray(Paths.get(description.getPath())),
                 scaledWidth,
                 scaledHeight
         );
-        if (ArrayUtils.isEmpty(imageData)) {
-            throw new FileNotFoundException(fileUri.toString());
-        }
 
-            byte[] imageData = ImageResizer.getInstance().getResizedImage(
-                    physicalFilePath,
-                    scaledWidth,
-                    scaledHeight
-            );
-            if (ArrayUtils.isEmpty(imageData)) {
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).build();
-            }
-            return Response.ok(imageData, MediaType.APPLICATION_OCTET_STREAM)
-                    .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString() + "\"") //optional
-                    .build();
+        return Response.ok(imageData, MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"") //optional
+                .build();
 
-        } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).build();
-        }
     }
 
     /**
@@ -540,11 +520,11 @@ public class DataResourceService extends ResourceService {
     @Path("file/{fileUri}/description")
     @ApiOperation(value = "Get data file description")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve file description", response = FileDescriptionDTO.class),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION, response = ErrorResponse.class),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED, response = ErrorResponse.class),
-            @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND, response = ErrorResponse.class),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA, response = ErrorResponse.class),
+        @ApiResponse(code = 200, message = "Retrieve file description", response = FileDescriptionDTO.class),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION, response = ErrorResponse.class),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED, response = ErrorResponse.class),
+        @ApiResponse(code = 404, message = DocumentationAnnotation.FILE_NOT_FOUND, response = ErrorResponse.class),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA, response = ErrorResponse.class),
     })
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
@@ -595,10 +575,10 @@ public class DataResourceService extends ResourceService {
     @Path("file/search")
     @ApiOperation(value = "Retrieve data file descriptions corresponding to the search parameters given.")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve file descriptions", response = FileDescriptionDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+        @ApiResponse(code = 200, message = "Retrieve file descriptions", response = FileDescriptionDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
@@ -722,13 +702,13 @@ public class DataResourceService extends ResourceService {
     @Path("search")
     @ApiOperation(value = "Get data corresponding to the search parameters given.",
             notes = "Retrieve all data corresponding to the search parameters given,"
-                    + "<br/>Date parameters could be either a datetime like: " + DocumentationAnnotation.EXAMPLE_XSDDATETIME
-                    + "<br/>or simply a date like: " + DocumentationAnnotation.EXAMPLE_DATE)
+            + "<br/>Date parameters could be either a datetime like: " + DocumentationAnnotation.EXAMPLE_XSDDATETIME
+            + "<br/>or simply a date like: " + DocumentationAnnotation.EXAMPLE_DATE)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve all data", response = Data.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
-            @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
-            @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
+        @ApiResponse(code = 200, message = "Retrieve all data", response = Data.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = DocumentationAnnotation.BAD_USER_INFORMATION),
+        @ApiResponse(code = 401, message = DocumentationAnnotation.USER_NOT_AUTHORIZED),
+        @ApiResponse(code = 500, message = DocumentationAnnotation.ERROR_FETCH_DATA)
     })
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)

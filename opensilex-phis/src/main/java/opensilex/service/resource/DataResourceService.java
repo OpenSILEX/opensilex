@@ -435,7 +435,7 @@ public class DataResourceService extends ResourceService {
                 return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
             }
 
-            java.nio.file.Path filePath = Paths.get(fileUri.toString());
+            java.nio.file.Path filePath = Paths.get(description.getPath());
             byte[] fileContent = fs.readFileAsByteArray(filePath);
 
             if (ArrayUtils.isEmpty(fileContent)) {
@@ -488,7 +488,7 @@ public class DataResourceService extends ResourceService {
                 return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
             }
 
-            java.nio.file.Path filePath = Paths.get(fileUri.toString());
+            java.nio.file.Path filePath = Paths.get(description.getPath());
 
             // get a path to the file which is physically accessible in order to be read by the ImageThumbnails
             java.nio.file.Path physicalFilePath = fs.getPhysicalPath(filePath);

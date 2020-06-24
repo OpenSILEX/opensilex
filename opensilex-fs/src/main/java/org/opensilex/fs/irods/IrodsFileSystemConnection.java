@@ -82,10 +82,8 @@ public class IrodsFileSystemConnection extends BaseService implements FileStorag
 
     @Override
     public String readFile(Path filePath) throws IOException {
-        Path tmpFile = createLocalTempFile(filePath);
-        String fileContent = Files.readString(tmpFile);
-        Files.delete(tmpFile);
-        return fileContent;
+        byte[] bytes = readFileAsByteArray(filePath);
+        return new String(bytes,StandardCharsets.UTF_8);
     }
 
     @Override

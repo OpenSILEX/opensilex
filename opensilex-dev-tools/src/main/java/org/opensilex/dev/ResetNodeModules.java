@@ -43,7 +43,11 @@ public class ResetNodeModules {
         Path rootNodeModulesPath = baseDirectory.resolve("../node_modules");
         File rootNodeDir = rootNodeModulesPath.toFile();
         if (rootNodeDir.exists() && rootNodeDir.isDirectory()) {
-            FileUtils.deleteDirectory(rootNodeDir);
+            Files.walk(rootNodeModulesPath)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+
         }
 
         Path rfPath = baseDirectory.resolve("../yarn.lock");
@@ -53,7 +57,7 @@ public class ResetNodeModules {
         }
 
         yarnCleanCache(baseDirectory);
-        
+
         for (OpenSilexModule module : opensilex.getModules()) {
             String projectId = ClassUtils.getProjectIdFromClass(module.getClass());
             LOGGER.debug("Purge front node_modules folder for: " + projectId);
@@ -62,7 +66,10 @@ public class ResetNodeModules {
             Path nodeModulesPath = baseDirectory.resolve("..").resolve(modulePath).resolve("front/node_modules");
             File nodeDir = nodeModulesPath.toFile();
             if (nodeDir.exists() && nodeDir.isDirectory()) {
-                FileUtils.deleteDirectory(nodeDir);
+                Files.walk(nodeModulesPath)
+                        .sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
             }
 
             Path fPath = baseDirectory.resolve("..").resolve(modulePath).resolve("front/yarn.lock");

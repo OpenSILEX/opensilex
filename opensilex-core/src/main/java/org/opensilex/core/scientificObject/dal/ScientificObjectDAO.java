@@ -6,7 +6,9 @@
 package org.opensilex.core.scientificObject.dal;
 
 import java.net.URI;
+import org.apache.jena.graph.Node;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -22,7 +24,8 @@ public class ScientificObjectDAO {
         this.sparql = sparql;
     }
 
-    public SPARQLTreeListModel<ScientificObjectModel> searchTreeByExperiment(URI experimentURI, UserModel currentUser) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public SPARQLTreeListModel<ScientificObjectModel> searchTreeByExperiment(URI experimentURI, UserModel currentUser) throws Exception {
+        Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
+        return sparql.searchResourceTree(experimentGraph, ScientificObjectModel.class, currentUser.getLanguage(), experimentURI, true, null);
     }
 }

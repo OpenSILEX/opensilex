@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
+import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.opensilex.OpenSilex;
@@ -1001,7 +1002,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     /**
      * @param rdfType the {@link RDF#type} to check
      * @param uri the {@link URI} to check
-     * @return true if uri exists in the TripleStore and if it's an instance of rdfType
+     * @return true if uri exists in the TripleStore and if it's an instance of
+     * rdfType
      */
     public boolean uriExists(URI rdfType, URI uri) throws SPARQLException {
         Var typeVar = makeVar("type");
@@ -1052,7 +1054,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return select;
     }
 
-    public void insertTriple(Node graph, URI subject, Property property, Object value) throws Exception {
+    public void insertPrimitive(Node graph, URI subject, Property property, Object value) throws Exception {
         UpdateBuilder insertQuery = new UpdateBuilder();
         Node nodeValue;
 
@@ -1067,9 +1069,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
-     * Insert a list of quad (graph,subject,property,object), (graph,subject,property,object_1) ... (graph,subject,property,object_k)
+     * Insert a list of quad (graph,subject,property,object),
+     * (graph,subject,property,object_1) ... (graph,subject,property,object_k)
      *
-     * and remove any old quad (graph,subject,property,?object) in the SPARQL graph
+     * and remove any old quad (graph,subject,property,?object) in the SPARQL
+     * graph
      *
      * @param graph the graph in which the triple(s) are present
      * @param subject the triple subject URI
@@ -1101,9 +1105,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
-     * Insert a list of quad (graph,subject,property,object), (graph,subject_1,property,object) ... (graph,subject_k,property,object)
+     * Insert a list of quad (graph,subject,property,object),
+     * (graph,subject_1,property,object) ... (graph,subject_k,property,object)
      *
-     * and remove any old quad (graph,?subject,property,object) in the SPARQL graph
+     * and remove any old quad (graph,?subject,property,object) in the SPARQL
+     * graph
      *
      * @param graph the graph in which the triple(s) are present
      * @param subjects the list of subject URIS
@@ -1284,5 +1290,40 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public void clearGraph(Class<? extends SPARQLResourceModel> resourceClass) throws Exception {
         clearGraph(getMapperIndex().getForClass(resourceClass).getDefaultGraphURI());
+    }
+
+    public <T> void insertPrimitives(Node graph, URI uri, Property property, List<T> values, Class<T> valuesType) throws Exception {
+        if (values.size() > 0) {
+
+            UpdateBuilder update = new UpdateBuilder();
+            Node nodeUri = SPARQLDeserializers.nodeURI(uri);
+            SPARQLDeserializer<T> deserializer = SPARQLDeserializers.getForClass(valuesType);
+
+            for (T value : values) {
+
+                update.addInsert(new Quad(graph, nodeUri, property.asNode(), deserializer.getNode(value)));
+            }
+
+            executeUpdateQuery(update);
+        }
+    }
+
+    public <T> List<T> searchPrimitives(Node graph, URI uri, Property property, Class<T> valuesType) throws Exception {
+        List<T> list = new ArrayList<>();
+        SelectBuilder select = new SelectBuilder();
+
+        Var valueVar = SPARQLQueryHelper.makeVar("value");
+        select.addVar(valueVar);
+        select.addWhere(SPARQLDeserializers.nodeURI(uri), property.asNode(), valueVar);
+        SPARQLDeserializer<T> deserializer = SPARQLDeserializers.getForClass(valuesType);
+        connection.executeSelectQuery(select, results -> {
+            try {
+                list.add(deserializer.fromString(results.getStringValue(valueVar.getVarName())));
+            } catch (Exception ex) {
+                LOGGER.warn("Error while deserializing primitive result, your database may be inconsitent (value currently ignored)", ex);
+            }
+        });
+
+        return list;
     }
 }

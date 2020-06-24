@@ -29,6 +29,9 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.opensilex.core.infrastructure.api.InfrastructureFacilityGetDTO;
+import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -110,7 +113,8 @@ public class ExperimentAPI {
 
     /**
      * @param xpDto the Experiment to update
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing the updated Experiment {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing
+     * the updated Experiment {@link URI}
      */
     @PUT
     @Path("update")
@@ -139,7 +143,8 @@ public class ExperimentAPI {
 
     /**
      * @param xpUri the Experiment URI
-     * @return a {@link Response} with a {@link SingleObjectResponse} containing the {@link ExperimentGetDTO}
+     * @return a {@link Response} with a {@link SingleObjectResponse} containing
+     * the {@link ExperimentGetDTO}
      */
     @GET
     @Path("get/{uri}")
@@ -220,7 +225,8 @@ public class ExperimentAPI {
      * Remove an experiment
      *
      * @param xpUri the experiment URI
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing the deleted Experiment {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing
+     * the deleted Experiment {@link URI}
      */
     @DELETE
     @Path("delete/{uri}")
@@ -245,6 +251,75 @@ public class ExperimentAPI {
         return new ObjectUriResponse(xpUri).getResponse();
     }
 
+    @PUT
+    @Path("{uri}/add-facilities")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_EXPERIMENT_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return experiment URI", response = ObjectUriResponse.class),
+        @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
+    })
+    public Response addFacilities(
+            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
+            @ApiParam(value = "Facility URI") List<URI> facitilities) throws Exception {
+        ExperimentDAO xpDao = new ExperimentDAO(sparql);
+        xpDao.addFacilities(xpUri, facitilities, currentUser);
+        return new ObjectUriResponse(Response.Status.OK, xpUri).getResponse();
+    }
+
+    @GET
+    @Path("{uri}/get-facilities")
+    @ApiOperation("get all facilities involved in an experiment")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_EXPERIMENT_READ_ID,
+            credentialLabelKey = CREDENTIAL_EXPERIMENT_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return facilities list", response = InfrastructureFacilityGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+    })
+    public Response getFacilities(
+            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+    ) throws Exception {
+        ExperimentDAO xpDao = new ExperimentDAO(sparql);
+        List<InfrastructureFacilityModel> facilities = xpDao.getFacilities(xpUri, currentUser);
+
+        List<InfrastructureFacilityGetDTO> dtoList = facilities.stream().map(InfrastructureFacilityGetDTO::getDTOFromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    @GET
+    @Path("{uri}/get-available-facilities")
+    @ApiOperation("get all facilities available for an experiment (depending of which infrastructures are selected")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_EXPERIMENT_READ_ID,
+            credentialLabelKey = CREDENTIAL_EXPERIMENT_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return facilities list", response = InfrastructureFacilityGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+    })
+    public Response getAvailableFacilities(
+            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+    ) throws Exception {
+        ExperimentDAO xpDao = new ExperimentDAO(sparql);
+        List<InfrastructureFacilityModel> facilities = xpDao.getAvailableFacilities(xpUri, currentUser);
+
+        List<InfrastructureFacilityGetDTO> dtoList = facilities.stream().map(InfrastructureFacilityGetDTO::getDTOFromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
     /**
      * Updates the factors linked to an experiment.
      *
@@ -252,8 +327,10 @@ public class ExperimentAPI {
      * @param factors
      * @return the query result
      * @example [ "http://www.phenome-fppn.fr/opensilex/2018/s18001" ]
-     * @example { "metadata": { "pagination": null, "status": [ { "message": "Resources updated", "exception": { "type": "Info", "href": null,
-     * "details": "The experiment http://www.opensilex.fr/platform/OSL2018-1 has now 1 linked sensors" } } ], "datafiles": [
+     * @example { "metadata": { "pagination": null, "status": [ { "message":
+     * "Resources updated", "exception": { "type": "Info", "href": null,
+     * "details": "The experiment http://www.opensilex.fr/platform/OSL2018-1 has
+     * now 1 linked sensors" } } ], "datafiles": [
      * "http://www.opensilex.fr/platform/OSL2015-1" ] } }
      */
     @PUT

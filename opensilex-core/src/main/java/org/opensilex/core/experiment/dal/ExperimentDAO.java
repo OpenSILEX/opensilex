@@ -32,11 +32,14 @@ import org.opensilex.utils.ListWithPagination;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
+import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
@@ -103,7 +106,8 @@ public class ExperimentDAO {
     }
 
     /**
-     * Remove all URI from {@link ExperimentModel#getSensors()} method which don't represents a {@link Oeso#SensingDevice} in the SPARQL Graph
+     * Remove all URI from {@link ExperimentModel#getSensors()} method which
+     * don't represents a {@link Oeso#SensingDevice} in the SPARQL Graph
      *
      * @param xp the {@link ExperimentModel} to filter
      */
@@ -433,6 +437,48 @@ public class ExperimentDAO {
         if (!sparql.executeAskQuery(ask)) {
             throw new ForbiddenURIAccessException(experimentURI);
         }
+    }
+
+    public void addFacilities(URI xpUri, List<URI> facitilities, UserModel user) throws Exception {
+        validateExperimentAccess(xpUri, user);
+
+        // TODO Validate facility existence
+        
+        Node xpGraph = SPARQLDeserializers.nodeURI(xpUri);
+        sparql.insertPrimitives(xpGraph, xpUri, Oeso.hasFacility, facitilities, URI.class);
+    }
+
+    public List<InfrastructureFacilityModel> getFacilities(URI xpUri, UserModel user) throws Exception {
+        validateExperimentAccess(xpUri, user);
+
+        Node xpGraph = SPARQLDeserializers.nodeURI(xpUri);
+
+        List<URI> facilitiesURIs = sparql.searchPrimitives(xpGraph, xpUri, Oeso.hasFacility, URI.class);
+
+        if (facilitiesURIs.size() > 0) {
+            return sparql.search(InfrastructureFacilityModel.class, user.getLanguage(), (select) -> {
+                SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.URI_FIELD, facilitiesURIs);
+            });
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    public List<InfrastructureFacilityModel> getAvailableFacilities(URI xpUri, UserModel user) throws Exception {
+        validateExperimentAccess(xpUri, user);
+
+        ExperimentModel xp = sparql.getByURI(ExperimentModel.class, xpUri, user.getLanguage());
+
+        List<InfrastructureModel> infrastructures = xp.getInfrastructures();
+
+        List<URI> infraURIs = new ArrayList<>();
+        infrastructures.forEach(infra -> {
+            infraURIs.add(infra.getUri());
+        });
+
+        return sparql.search(InfrastructureFacilityModel.class, user.getLanguage(), (select) -> {
+            SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, infraURIs);
+        });
     }
 
 }

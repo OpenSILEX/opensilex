@@ -4,7 +4,7 @@
       <div class="col-md-6">
         <b-card>
           <b-button-group>
-            <opensilex-CreateButton label="ExperimentScientificObjects.add-facilities"></opensilex-CreateButton>
+            <opensilex-ExperimentFacilitySelector :uri="uri"></opensilex-ExperimentFacilitySelector>
             <opensilex-CreateButton label="ExperimentScientificObjects.import-scientific-objects"></opensilex-CreateButton>
           </b-button-group>
           <opensilex-TreeView :nodes.sync="nodes" @select="displayScientificObjectDetails">
@@ -41,15 +41,31 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
+import {
+  ExperimentsService,
+  InfrastructuresService
+} from "opensilex-core/index";
+import HttpResponse from "opensilex-core/HttpResponse";
 @Component
 export default class ExperimentScientificObjects extends Vue {
+  $opensilex: any;
+  xpService: ExperimentsService;
+  infraService: InfrastructuresService;
+  uri: string;
+
   get user() {
     return this.$store.state.user;
   }
 
   public nodes = [];
+
+  @Ref("facilitySelector") readonly facilitySelector!: any;
+
+  created() {
+    this.uri = this.$route.params.uri;
+  }
 
   addExistingScientificObjectAsChild(facilityURI) {}
 

@@ -21,7 +21,14 @@
           :disable-branch-nodes="disableBranchNodes"
           :search-nested="searchNested"
           :show-count="showCount"
-        ></treeselect>
+        >
+          <template v-slot:option-label="{node}">
+            <slot name="option-label" v-bind:node="node">{{node.label}}</slot>
+          </template>
+          <template v-slot:value-label="{node}">
+            <slot name="value-label" v-bind:node="node">{{node.label}}</slot>
+          </template>
+        </treeselect>
         <treeselect
           v-else-if="optionsLoadingMethod"
           v-bind:class="{ 'multiselect-action': actionHandler}"
@@ -45,7 +52,14 @@
           :disable-branch-nodes="disableBranchNodes"
           :search-nested="searchNested"
           :show-count="showCount"
-        ></treeselect>
+        >
+          <template v-slot:option-label="{node}">
+            <slot name="option-label" v-bind:node="node">{{node.label}}</slot>
+          </template>
+          <template v-slot:value-label="{node}">
+            <slot name="value-label" v-bind:node="node">{{node.label}}</slot>
+          </template>
+        </treeselect>
         <treeselect
           v-else
           v-bind:class="{ 'multiselect-action': actionHandler}"
@@ -68,7 +82,14 @@
           :disable-branch-nodes="disableBranchNodes"
           :search-nested="searchNested"
           :show-count="showCount"
-        ></treeselect>
+        >
+          <template v-slot:option-label="{node}">
+            <slot name="option-label" v-bind:node="node">{{node.label}}</slot>
+          </template>
+          <template v-slot:value-label="{node}">
+            <slot name="value-label" v-bind:node="node">{{node.label}}</slot>
+          </template>
+        </treeselect>
         <b-input-group-append v-if="isModalSearch">
           <b-button variant="primary" @click="showModal">+</b-button>
         </b-input-group-append>

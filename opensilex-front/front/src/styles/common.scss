@@ -150,6 +150,7 @@ input:invalid {
   padding-right: 5px;
   margin: 0;
   height: 20px;
+  line-height: 17px;
   top: 0px;
   right: 0;
   font-size: 10px;
@@ -158,7 +159,7 @@ input:invalid {
   overflow: hidden;
   white-space: nowrap;
   max-width: 100%;
-  font-size-adjust: 0.4;
+  /*font-size-adjust: 0.4;*/
 }
 
 .form-group .errors input,
@@ -180,6 +181,10 @@ input:invalid {
 
 .btn-sm {
   width: 32px;
+}
+
+.btn {
+  white-space: nowrap;
 }
 
 .uppercase-letters {

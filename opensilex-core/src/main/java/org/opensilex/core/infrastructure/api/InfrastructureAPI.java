@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
+import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -165,11 +166,12 @@ public class InfrastructureAPI {
         @ApiResponse(code = 200, message = "Return list of infrastructure tree", response = ResourceTreeDTO.class, responseContainer = "List")
     })
     public Response searchInfrastructuresTree(
-            @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern
+            @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
+            @ApiParam(value = "List of infrasctures URI limitations in the result") @QueryParam("infraURIs") List<URI> infraURIs
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
 
-        SPARQLTreeListModel<InfrastructureModel> tree = dao.searchTree(pattern, currentUser);
+        SPARQLTreeListModel<InfrastructureModel> tree = dao.searchTree(pattern, infraURIs, currentUser);
 
         boolean enableSelection = (pattern != null && !pattern.isEmpty());
         return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree, enableSelection)).getResponse();

@@ -517,16 +517,18 @@ export default class OpenSilexVuePlugin {
             id: resourceTree.uri,
             label: resourceTree.name,
             isDefaultExpanded: buildOptions.expanded,
-            isDisabled: false,
+            isDisabled: resourceTree.isDisabled || false,
             children: []
         };
 
+        let disableChildren = false;
         if (buildOptions.disableSubTree != null) {
-            option.isDisabled = (option.id == buildOptions.disableSubTree) || disabled;
+            disableChildren = (option.id == buildOptions.disableSubTree) || disabled;
+            option.isDisabled = disableChildren;
         }
 
         resourceTree.children.forEach(child => {
-            option.children.push(this.buildTreeOptions(child, buildOptions, option.isDisabled));
+            option.children.push(this.buildTreeOptions(child, buildOptions, disableChildren));
         });
 
         if (option.children.length == 0) {

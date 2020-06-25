@@ -33,12 +33,23 @@ public class InfrastructureDAO {
         this.sparql = sparql;
     }
 
-    public SPARQLTreeListModel<InfrastructureModel> searchTree(String pattern, UserModel user) throws Exception {
+    public SPARQLTreeListModel<InfrastructureModel> searchTree(String pattern, List<URI> infraRestriction, UserModel user) throws Exception {
         Set<URI> infras = getUserInfrastructures(user);
         if (infras != null && infras.isEmpty()) {
             return new SPARQLTreeListModel<>();
         }
 
+        if (infraRestriction != null && !infraRestriction.isEmpty()) {
+            if (infras == null) {
+                infras = new HashSet<>();
+            }
+            infraRestriction.retainAll(infras);
+            infras.clear();
+            infras.addAll(infraRestriction);
+        }
+        
+        final Set<URI> finalInfras = infras;
+        
         return sparql.searchResourceTree(
                 InfrastructureModel.class,
                 user.getLanguage(),
@@ -47,8 +58,8 @@ public class InfrastructureDAO {
                         select.addFilter(SPARQLQueryHelper.regexFilter(InfrastructureModel.NAME_FIELD, pattern));
                     }
 
-                    if (infras != null) {
-                        SPARQLQueryHelper.inURI(select, InfrastructureModel.URI_FIELD, infras);
+                    if (finalInfras != null) {
+                        SPARQLQueryHelper.inURI(select, InfrastructureModel.URI_FIELD, finalInfras);
                     }
                 }
         );

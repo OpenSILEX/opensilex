@@ -170,4 +170,12 @@ export default class DefaultLoginComponent extends Vue {
 .logo-centered > img {
   display: inline-block;
 }
+
+.authentication-form .error-message {
+  top: 37px;
+}
+
+.authentication-form fieldset {
+  margin-bottom: 25px;
+}
 </style>

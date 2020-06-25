@@ -121,10 +121,10 @@ public class ImageResizer {
         Path scaledImagePath = null;
         try {
             srcImagePath = Files.createTempFile(Paths.get(RESIZED_PICTURE_TMP_DIR.toString()), null, null);
-            Files.write(scaledImagePath, img);
 
             // create tmp file
             scaledImagePath = Files.createTempFile(Paths.get(RESIZED_PICTURE_TMP_DIR.toString()), null, null);
+            Files.write(scaledImagePath, img);
 
             List<String> command = new ArrayList<>();
             command.add(CONVERT_COMMAND);
@@ -148,21 +148,23 @@ public class ImageResizer {
             convertProcess = new ProcessBuilder().command(command).start();
             checkErrorFromProcess(convertProcess);
 
-            byte[] resizedImageData = Files.readAllBytes(scaledImagePath);
-
-            return resizedImageData;
+            return Files.readAllBytes(scaledImagePath);
 
         } finally {
             if (convertProcess != null && convertProcess.isAlive()) {
                 convertProcess.destroy();
             }
-            Files.deleteIfExists(srcImagePath);
-            Files.deleteIfExists(scaledImagePath);
+            if(srcImagePath != null){
+                Files.deleteIfExists(srcImagePath);
+            }
+            if(scaledImagePath != null){
+                Files.deleteIfExists(scaledImagePath);
+            }
         }
     }
 
     /**
-     * @param srcImagePath path to source picture to transform
+     * @param img content of the source picture to transform
      * @return the content of the created resized image
      */
     private byte[] getResizedImageWithJavaAPI(byte[] img, int scaledWidth, int scaledHeight) throws IOException {
@@ -193,9 +195,7 @@ public class ImageResizer {
             return resizedImageData;
 
         } catch (IOException e) {
-            if (bais != null) {
-                bais.close();
-            }
+            bais.close();
             if (baos != null) {
                 baos.close();
             }

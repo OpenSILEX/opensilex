@@ -33,8 +33,11 @@ import static org.opensilex.core.variable.api.variable.VariableAPI.CREDENTIAL_VA
 import static org.opensilex.core.variable.api.variable.VariableAPI.CREDENTIAL_VARIABLE_READ_LABEL_KEY;
 
 import org.opensilex.core.variable.api.variable.VariableAPI;
+import org.opensilex.core.variable.dal.entity.EntityModel;
 import org.opensilex.core.variable.dal.method.MethodModel;
 import org.opensilex.core.variable.dal.variable.BaseVariableDAO;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -58,6 +61,9 @@ public class MethodAPI {
     @Inject
     private SPARQLService sparql;
 
+    @CurrentUser
+    UserModel currentUser;
+
     @POST
     @ApiOperation("Create a method")
     @ApiProtected
@@ -75,9 +81,11 @@ public class MethodAPI {
     public Response createMethod(
             @ApiParam("Method description") @Valid MethodCreationDTO dto
     ) throws Exception {
-        BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
         try {
+            BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
             MethodModel model = dto.newModel();
+            model.setCreator(currentUser.getUri());
+
             dao.create(model);
             return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {

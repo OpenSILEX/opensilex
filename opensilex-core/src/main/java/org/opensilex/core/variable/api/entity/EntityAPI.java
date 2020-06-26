@@ -35,6 +35,8 @@ import org.opensilex.core.variable.api.method.MethodGetDTO;
 import org.opensilex.core.variable.api.variable.VariableAPI;
 import org.opensilex.core.variable.dal.entity.EntityModel;
 import org.opensilex.core.variable.dal.variable.BaseVariableDAO;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -58,6 +60,9 @@ public class EntityAPI {
     @Inject
     private SPARQLService sparql;
 
+    @CurrentUser
+    UserModel currentUser;
+
     @POST
     @ApiOperation("Create an entity")
     @ApiProtected
@@ -78,6 +83,8 @@ public class EntityAPI {
         try {
             BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
             EntityModel model = dto.newModel();
+            model.setCreator(currentUser.getUri());
+
             dao.create(model);
             return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {

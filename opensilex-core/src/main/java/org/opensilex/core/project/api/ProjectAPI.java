@@ -31,6 +31,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.server.response.ErrorResponse;
@@ -109,8 +111,11 @@ public class ProjectAPI {
     ) throws Exception {
         try {
             ProjectDAO dao = new ProjectDAO(sparql);
-            ProjectModel createdPjct = dao.create(dto.newModel());
-            return new ObjectUriResponse(Response.Status.CREATED, createdPjct.getUri()).getResponse();
+            ProjectModel model = dto.newModel();
+            model.setCreator(currentUser.getUri());
+
+            model = dao.create(model);
+            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
         } catch (SPARQLAlreadyExistingUriException e) {
             // Return error response 409 - CONFLICT if project URI already exists
             return new ErrorResponse(

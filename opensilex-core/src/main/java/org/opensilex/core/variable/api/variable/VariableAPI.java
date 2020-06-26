@@ -6,11 +6,15 @@
 package org.opensilex.core.variable.api.variable;
 
 import io.swagger.annotations.*;
+import org.opensilex.core.project.dal.ProjectDAO;
+import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.variable.dal.variable.VariableDAO;
 import org.opensilex.core.variable.dal.variable.VariableModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -52,6 +56,9 @@ public class VariableAPI {
     @Inject
     private SPARQLService sparql;
 
+    @CurrentUser
+    UserModel currentUser;
+
     @POST
     @ApiOperation("Create a variable")
     @ApiProtected
@@ -62,17 +69,16 @@ public class VariableAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createVariable(
-            @ApiParam("Variable description") @Valid VariableCreationDTO variableDTO
+            @ApiParam("Variable description") @Valid VariableCreationDTO dto
     ) throws Exception {
-        VariableDAO dao = new VariableDAO(sparql);
         try {
+            VariableDAO dao = new VariableDAO(sparql);
+            VariableModel model = dto.newModel();
+            model.setCreator(currentUser.getUri());
 
-            // then get variable model and update with inserted trait
-            VariableModel variable = variableDTO.newModel();
-            dao.create(variable);
-            sparql.commitTransaction();
+            model = dao.create(model);
+            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
 
-            return new ObjectUriResponse(Response.Status.CREATED, variable.getUri()).getResponse();
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
             return new ErrorResponse(
                     Response.Status.CONFLICT,

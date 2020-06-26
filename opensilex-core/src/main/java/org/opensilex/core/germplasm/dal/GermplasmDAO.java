@@ -142,6 +142,7 @@ public class GermplasmDAO {
         germplasm.setComment(comment);
         germplasm.setInstitute(institute);
         germplasm.setProductionYear(productionYear);
+        germplasm.setCreator(user.getUri());
         
         sparql.create(germplasm);
         

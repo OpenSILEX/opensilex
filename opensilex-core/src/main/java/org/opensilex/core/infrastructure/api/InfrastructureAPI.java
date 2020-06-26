@@ -95,7 +95,10 @@ public class InfrastructureAPI {
     ) throws Exception {
         try {
             InfrastructureDAO dao = new InfrastructureDAO(sparql);
-            InfrastructureModel model = dao.create(dto.newModel());
+            InfrastructureModel model = dto.newModel();
+            model.setCreator(currentUser.getUri());
+
+            model = dao.create(model);
             return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException e) {

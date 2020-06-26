@@ -106,6 +106,8 @@ public class FactorAPI {
         FactorDAO dao = new FactorDAO(sparql);
         try {
             FactorModel model = dto.newModel();
+            model.setCreator(user.getUri());
+
             FactorModel created = dao.create(model);
             List<FactorLevelModel> factorLevelsModels = new ArrayList<>();
             FactorLevelDAO factorLevelDao = new FactorLevelDAO(sparql);

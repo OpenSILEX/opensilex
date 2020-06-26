@@ -23,8 +23,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -70,7 +72,7 @@ public class ExperimentAPI {
     /**
      * Create an Experiment
      *
-     * @param xpDto the Experiment to create
+     * @param dto the Experiment to create
      * @return a {@link Response} with a {@link ObjectUriResponse} containing the created Experiment {@link URI}
      */
     @POST
@@ -88,13 +90,15 @@ public class ExperimentAPI {
         @ApiResponse(code = 409, message = "An experiment with the same URI already exists", response = ErrorResponse.class)
     })
     public Response createExperiment(
-            @ApiParam("Experiment description") @Valid ExperimentCreationDTO xpDto
+            @ApiParam("Experiment description") @Valid ExperimentCreationDTO dto
     ) throws Exception {
         try {
             ExperimentDAO dao = new ExperimentDAO(sparql);
-            ExperimentModel createdXp = dao.create(xpDto.newModel());
-            return new ObjectUriResponse(Response.Status.CREATED, createdXp.getUri()).getResponse();
+            ExperimentModel model = dto.newModel();
+            model.setCreator(currentUser.getCreator());
 
+            model = dao.create(model);
+            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
         } catch (SPARQLAlreadyExistingUriException e) {
             // Return error response 409 - CONFLICT if experiment URI already exists
             return new ErrorResponse(

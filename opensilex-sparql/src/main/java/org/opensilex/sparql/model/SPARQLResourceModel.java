@@ -9,6 +9,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import org.apache.jena.vocabulary.DCTerms;
+import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResourceURI;
 import org.opensilex.sparql.annotations.SPARQLTypeRDF;
 import org.opensilex.sparql.annotations.SPARQLTypeRDFLabel;
@@ -29,6 +32,12 @@ public abstract class SPARQLResourceModel implements SPARQLModel {
 
     @SPARQLTypeRDFLabel()
     protected SPARQLLabel typeLabel;
+
+    @SPARQLProperty(
+            ontology = DCTerms.class,
+            property = "creator"
+    )
+    protected URI creator;
 
     protected List<SPARQLModelRelation> relations = new ArrayList<>();
 
@@ -63,6 +72,10 @@ public abstract class SPARQLResourceModel implements SPARQLModel {
     public void setRelations(List<SPARQLModelRelation> relations) {
         this.relations = relations;
     }
+
+    public URI getCreator() { return creator; }
+
+    public void setCreator(URI creator) { this.creator = creator; }
 
     @Override
     public int hashCode() {

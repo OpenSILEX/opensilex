@@ -129,5 +129,9 @@ public class Oeso {
     public static final Property hasProductionYear = Ontology.property(NS, "hasProductionYear");
     public static final Property hasGermplasm = Ontology.property(NS, "hasGermplasm");
     public static final Property hasId = Ontology.property(NS, "hasId");
+    
+    // ---- SCIENTIFIC OBJECTS ----
+    public static final Resource ScientificObject = Ontotlogy.resource(NS, "ScientificObject");
+    public static final Property isPartOf = Ontology.property(NS, "isPartOf");
 
 }

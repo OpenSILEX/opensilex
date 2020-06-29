@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
@@ -28,6 +30,7 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.response.ResourceTreeResponse;
@@ -58,7 +61,7 @@ public class ScientificObjectAPI {
 
     public static final int DEFAULT_CHILDREN_LIMIT = 5;
     public static final int DEFAULT_DEPTH_LIMIT = 3;
-    
+
     @CurrentUser
     UserModel currentUser;
 
@@ -67,7 +70,8 @@ public class ScientificObjectAPI {
 
     /**
      * @param experimentURI the experiment URI
-     * @return Return list of scientific objetcs tree corresponding to the given experiment URI
+     * @return Return list of scientific objetcs tree corresponding to the given
+     * experiment URI
      */
     @GET
     @Path("get-experiment-tree/{xpuri}")
@@ -102,7 +106,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of scientific objetcs children corresponding to the given experiment URI", response = ResourceTreeDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return list of scientific objetcs children corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response getExperimentScientificObjectsChildren(
             @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI,
@@ -110,8 +114,9 @@ public class ScientificObjectAPI {
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        SPARQLTreeListModel<ScientificObjectModel> tree = dao.searchChildrenByExperiment(xpDAO, experimentURI, parentURI, currentUser);
-        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree)).getResponse();
+        List<ScientificObjectModel> sientificObjects = dao.searchChildrenByExperiment(xpDAO, experimentURI, parentURI, currentUser);
+        List<ScientificObjectNodeDTO> dtoList = sientificObjects.stream().map(ScientificObjectNodeDTO::getDTOFromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
     }
     // TODO import CSV
 

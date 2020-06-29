@@ -7,11 +7,16 @@ package org.opensilex.core.scientificObject.dal;
 
 import java.net.URI;
 import java.util.List;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -35,6 +40,7 @@ public class ScientificObjectDAO {
                 ScientificObjectModel.class,
                 currentUser.getLanguage(),
                 ScientificObjectModel.PARENT_FIELD,
+                Oeso.isPartOf,
                 parentURI,
                 maxChild,
                 maxDepth,
@@ -49,9 +55,9 @@ public class ScientificObjectDAO {
             if (parentURI != null) {
                 select.addWhere(ScientificObjectModel.URI_FIELD, Oeso.isPartOf, SPARQLDeserializers.nodeURI(parentURI));
             } else {
-                // TODO
+                Triple parentTriple = new Triple(makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf.asNode(), makeVar("parentURI"));
+                select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
             }
-
         });
     }
 }

@@ -30,7 +30,6 @@ import java.util.*;
 import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 
 import org.apache.jena.arq.querybuilder.Converters;
-import org.apache.jena.sparql.ARQInternalErrorException;
 
 /**
  * @author Vincent MIGOT

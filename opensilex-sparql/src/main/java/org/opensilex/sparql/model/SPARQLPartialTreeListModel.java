@@ -35,7 +35,7 @@ public class SPARQLPartialTreeListModel<T extends SPARQLTreeModel<T>> extends SP
         }
         return countCache.get(parent.getUri());
     }
-
+    
     public void loadChildren(T candidate, int maxDepth) {
         if (maxDepth <= 0) {
             return;

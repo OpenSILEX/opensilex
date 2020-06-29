@@ -47,7 +47,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
-import static java.util.Collections.list;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -504,7 +503,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return tree;
     }
 
-    public <T extends SPARQLTreeModel<T>> SPARQLPartialTreeListModel<T> searchPartialResourceTree(Node graph, Class<T> objectClass, String lang, String parentField, URI parentURI, int maxChild, int maxDepth, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+    public <T extends SPARQLTreeModel<T>> SPARQLPartialTreeListModel<T> searchPartialResourceTree(Node graph, Class<T> objectClass, String lang, String parentField, Property parentProperty, URI parentURI, int maxChild, int maxDepth, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
         if (maxDepth < 0) {
             return null;
         }
@@ -520,9 +519,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             try {
                 return search(graph, objectClass, language, (select) -> {
                     if (parentSearchURI == null) {
-                        // TODO no parent URI explicit filter
+                        Triple parentTriple = new Triple(makeVar(parentField), parentProperty.asNode(), makeVar("parentURI"));
+                        select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
                     } else {
-                        // TODO add parent URI filter
+                        select.addWhere(parentField, parentProperty, SPARQLDeserializers.nodeURI(parentSearchURI));
                     }
                     filterHandler.accept(select);
                 }, null, 0, maxChild);
@@ -535,9 +535,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             try {
                 int totalSize = count(graph, objectClass, language, (select) -> {
                     if (parentCountURI == null) {
-                        // TODO no parent URI explicit filter
+                        Triple parentTriple = new Triple(makeVar(parentField), parentProperty.asNode(), makeVar("parentURI"));
+                        select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
                     } else {
-                        // TODO add parent URI filter
+                        select.addWhere(parentField, parentProperty, SPARQLDeserializers.nodeURI(parentCountURI));
                     }
                     filterHandler.accept(select);
                 });
@@ -548,7 +549,15 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             }
         };
 
-        List<T> rootList = searchHandler.apply(parentURI);
+        List<T> rootList = search(graph, objectClass, language, (select) -> {
+            if (parentURI == null) {
+                Triple parentTriple = new Triple(makeVar(parentField), parentProperty.asNode(), makeVar("parentURI"));
+                select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
+            } else {
+                select.addWhere(parentField, parentProperty, SPARQLDeserializers.nodeURI(parentURI));
+            }
+            filterHandler.accept(select);
+        });
 
         SPARQLPartialTreeListModel<T> tree = new SPARQLPartialTreeListModel<T>(parentURI, searchHandler, countHandler);
 
@@ -1060,7 +1069,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     /**
      * @param rdfType the {@link RDF#type} to check
      * @param uri the {@link URI} to check
-     * @return true if uri exists in the TripleStore and if it's an instance of rdfType
+     * @return true if uri exists in the TripleStore and if it's an instance of
+     * rdfType
      */
     public boolean uriExists(URI rdfType, URI uri) throws SPARQLException {
         Var typeVar = makeVar("type");
@@ -1126,9 +1136,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
-     * Insert a list of quad (graph,subject,property,object), (graph,subject,property,object_1) ... (graph,subject,property,object_k)
+     * Insert a list of quad (graph,subject,property,object),
+     * (graph,subject,property,object_1) ... (graph,subject,property,object_k)
      *
-     * and remove any old quad (graph,subject,property,?object) in the SPARQL graph
+     * and remove any old quad (graph,subject,property,?object) in the SPARQL
+     * graph
      *
      * @param graph the graph in which the triple(s) are present
      * @param subject the triple subject URI
@@ -1160,9 +1172,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
-     * Insert a list of quad (graph,subject,property,object), (graph,subject_1,property,object) ... (graph,subject_k,property,object)
+     * Insert a list of quad (graph,subject,property,object),
+     * (graph,subject_1,property,object) ... (graph,subject_k,property,object)
      *
-     * and remove any old quad (graph,?subject,property,object) in the SPARQL graph
+     * and remove any old quad (graph,?subject,property,object) in the SPARQL
+     * graph
      *
      * @param graph the graph in which the triple(s) are present
      * @param subjects the list of subject URIS

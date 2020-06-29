@@ -1,5 +1,6 @@
 package opensilex.service.utils;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.tika.Tika;
 
 import javax.imageio.ImageIO;
@@ -92,7 +93,7 @@ public class ImageResizer {
 
         InputStream errorStream = process.getErrorStream();
         try {
-            byte[] errorBytes = errorStream.readAllBytes();
+            byte[] errorBytes = IOUtils.toByteArray(errorStream);
             if (errorBytes != null && errorBytes.length > 0) {
                 errorStream.close();
                 if (process.isAlive()) {

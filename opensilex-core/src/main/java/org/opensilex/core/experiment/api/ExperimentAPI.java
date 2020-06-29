@@ -95,7 +95,7 @@ public class ExperimentAPI {
         try {
             ExperimentDAO dao = new ExperimentDAO(sparql);
             ExperimentModel model = dto.newModel();
-            model.setCreator(currentUser.getCreator());
+            model.setCreator(currentUser.getUri());
 
             model = dao.create(model);
             return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();

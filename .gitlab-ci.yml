@@ -222,6 +222,17 @@ trigger:dataanalysis:deploy:test:
   needs: 
     - job: "opensilex:build"
 
+# Trigger pipeline for data-analysis module deployment
+trigger:variables:deploy:prod:
+  stage: deploy
+  image: curlimages/curl
+  script:
+    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" https://forgemia.inra.fr/api/v4/projects/1675/trigger/pipeline
+  rules:
+    - if: $CI_COMMIT_BRANCH == "renaud"
+  needs:
+    - job: "opensilex:build"
+
 
 # Update nightly builds branch
 update:nightly:builds:branch:

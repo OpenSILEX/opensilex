@@ -47,12 +47,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import static java.util.Collections.list;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.sparql.core.Quad;
@@ -62,6 +64,7 @@ import org.opensilex.OpenSilex;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
+import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -496,6 +499,61 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         for (T item : list) {
             tree.addTree(item);
+        }
+
+        return tree;
+    }
+
+    public <T extends SPARQLTreeModel<T>> SPARQLPartialTreeListModel<T> searchPartialResourceTree(Node graph, Class<T> objectClass, String lang, String parentField, URI parentURI, int maxChild, int maxDepth, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+        if (maxDepth < 0) {
+            return null;
+        }
+
+        final String language;
+        if (lang == null) {
+            language = getDefaultLang();
+        } else {
+            language = lang;
+        }
+
+        Function<URI, List<T>> searchHandler = (parentSearchURI) -> {
+            try {
+                return search(graph, objectClass, language, (select) -> {
+                    if (parentSearchURI == null) {
+                        // TODO no parent URI explicit filter
+                    } else {
+                        // TODO add parent URI filter
+                    }
+                    filterHandler.accept(select);
+                }, null, 0, maxChild);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        };
+
+        Function<URI, Integer> countHandler = (parentCountURI) -> {
+            try {
+                int totalSize = count(graph, objectClass, language, (select) -> {
+                    if (parentCountURI == null) {
+                        // TODO no parent URI explicit filter
+                    } else {
+                        // TODO add parent URI filter
+                    }
+                    filterHandler.accept(select);
+                });
+
+                return totalSize;
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        };
+
+        List<T> rootList = searchHandler.apply(parentURI);
+
+        SPARQLPartialTreeListModel<T> tree = new SPARQLPartialTreeListModel<T>(parentURI, searchHandler, countHandler);
+
+        for (T item : rootList) {
+            tree.loadChildren(item, maxDepth);
         }
 
         return tree;
@@ -1002,8 +1060,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     /**
      * @param rdfType the {@link RDF#type} to check
      * @param uri the {@link URI} to check
-     * @return true if uri exists in the TripleStore and if it's an instance of
-     * rdfType
+     * @return true if uri exists in the TripleStore and if it's an instance of rdfType
      */
     public boolean uriExists(URI rdfType, URI uri) throws SPARQLException {
         Var typeVar = makeVar("type");
@@ -1069,11 +1126,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
-     * Insert a list of quad (graph,subject,property,object),
-     * (graph,subject,property,object_1) ... (graph,subject,property,object_k)
+     * Insert a list of quad (graph,subject,property,object), (graph,subject,property,object_1) ... (graph,subject,property,object_k)
      *
-     * and remove any old quad (graph,subject,property,?object) in the SPARQL
-     * graph
+     * and remove any old quad (graph,subject,property,?object) in the SPARQL graph
      *
      * @param graph the graph in which the triple(s) are present
      * @param subject the triple subject URI
@@ -1105,11 +1160,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
-     * Insert a list of quad (graph,subject,property,object),
-     * (graph,subject_1,property,object) ... (graph,subject_k,property,object)
+     * Insert a list of quad (graph,subject,property,object), (graph,subject_1,property,object) ... (graph,subject_k,property,object)
      *
-     * and remove any old quad (graph,?subject,property,object) in the SPARQL
-     * graph
+     * and remove any old quad (graph,?subject,property,object) in the SPARQL graph
      *
      * @param graph the graph in which the triple(s) are present
      * @param subjects the list of subject URIS
@@ -1326,4 +1379,5 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         return list;
     }
+
 }

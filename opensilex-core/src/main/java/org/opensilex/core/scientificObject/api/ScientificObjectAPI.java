@@ -20,10 +20,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.opensilex.core.experiment.api.ExperimentGetDTO;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
-import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -57,6 +56,9 @@ public class ScientificObjectAPI {
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_READ_ID = "scientific-objects-read";
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_READ_LABEL_KEY = "credential.project.read";
 
+    public static final int DEFAULT_CHILDREN_LIMIT = 5;
+    public static final int DEFAULT_DEPTH_LIMIT = 3;
+    
     @CurrentUser
     UserModel currentUser;
 
@@ -68,7 +70,7 @@ public class ScientificObjectAPI {
      * @return Return list of scientific objetcs tree corresponding to the given experiment URI
      */
     @GET
-    @Path("get-by-experiment/{uri}")
+    @Path("get-experiment-tree/{xpuri}")
     @ApiOperation("Get a project by URI")
     @ApiProtected
     @ApiCredential(
@@ -80,16 +82,37 @@ public class ScientificObjectAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return list of scientific objetcs tree corresponding to the given experiment URI", response = ResourceTreeDTO.class, responseContainer = "List")
     })
-    public Response getScientificObjectsByExperiment(
-            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI experimentURI
+    public Response getExperimentScientificObjectsTree(
+            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-        SPARQLTreeListModel<ScientificObjectModel> tree = dao.searchTreeByExperiment(experimentURI, currentUser);
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        SPARQLTreeListModel<ScientificObjectModel> tree = dao.searchTreeByExperiment(xpDAO, experimentURI, null, DEFAULT_CHILDREN_LIMIT, DEFAULT_DEPTH_LIMIT, currentUser);
         return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree)).getResponse();
     }
-    
-    // TODO add facility
-    
+
+    @GET
+    @Path("get-experiment-children/{xpuri}/{parenturi}")
+    @ApiOperation("Get list of scientific object children")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_READ_ID,
+            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return list of scientific objetcs children corresponding to the given experiment URI", response = ResourceTreeDTO.class, responseContainer = "List")
+    })
+    public Response getExperimentScientificObjectsChildren(
+            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI,
+            @ApiParam(value = "Parent object URI", example = "http://example.com/", required = true) @PathParam("parenturi") URI parentURI
+    ) throws Exception {
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        SPARQLTreeListModel<ScientificObjectModel> tree = dao.searchChildrenByExperiment(xpDAO, experimentURI, parentURI, currentUser);
+        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree)).getResponse();
+    }
     // TODO import CSV
 
     // TODO generate CSV import template

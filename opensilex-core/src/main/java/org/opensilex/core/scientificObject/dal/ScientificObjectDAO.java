@@ -6,10 +6,12 @@
 package org.opensilex.core.scientificObject.dal;
 
 import java.net.URI;
+import java.util.List;
 import org.apache.jena.graph.Node;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -24,8 +26,32 @@ public class ScientificObjectDAO {
         this.sparql = sparql;
     }
 
-    public SPARQLTreeListModel<ScientificObjectModel> searchTreeByExperiment(URI experimentURI, UserModel currentUser) throws Exception {
+    public SPARQLPartialTreeListModel<ScientificObjectModel> searchTreeByExperiment(ExperimentDAO xpDAO, URI experimentURI, URI parentURI, int maxChild, int maxDepth, UserModel currentUser) throws Exception {
+        xpDAO.validateExperimentAccess(experimentURI, currentUser);
+
         Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
-        return sparql.searchResourceTree(experimentGraph, ScientificObjectModel.class, currentUser.getLanguage(), experimentURI, true, null);
+        return sparql.searchPartialResourceTree(
+                experimentGraph,
+                ScientificObjectModel.class,
+                currentUser.getLanguage(),
+                ScientificObjectModel.PARENT_FIELD,
+                parentURI,
+                maxChild,
+                maxDepth,
+                null);
+    }
+
+    public List<ScientificObjectModel> searchChildrenByExperiment(ExperimentDAO xpDAO, URI experimentURI, URI parentURI, UserModel currentUser) throws Exception {
+        xpDAO.validateExperimentAccess(experimentURI, currentUser);
+
+        Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
+        return sparql.search(experimentGraph, ScientificObjectModel.class, currentUser.getLanguage(), (select) -> {
+            if (parentURI != null) {
+                select.addWhere(ScientificObjectModel.URI_FIELD, Oeso.isPartOf, SPARQLDeserializers.nodeURI(parentURI));
+            } else {
+                // TODO
+            }
+
+        });
     }
 }

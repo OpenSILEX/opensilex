@@ -80,19 +80,12 @@ public class SPARQLModule extends OpenSilexModule {
     public void installOntologies(SPARQLService sparql, boolean reset) throws Exception {
         try {
             sparql.disableSHACL();
-            sparql.startTransaction();
             // Allow any module implementing SPARQLExtension to add custom ontologies
             for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
-                for (OntologyFileDefinition ontologyDef : module.getOntologiesFiles()) {
-                    if (reset) {
-                        sparql.clearGraph(ontologyDef.getUri());
-                    }
-                    InputStream ontologyStream = new FileInputStream(ClassUtils.getFileFromClassArtifact(module.getClass(), ontologyDef.getFilePath()));
-                    sparql.loadOntology(ontologyDef.getUri(), ontologyStream, ontologyDef.getFileType());
-                    ontologyStream.close();
-                }
+                sparql.startTransaction();
+                module.installOntologies(sparql, reset);
+                sparql.commitTransaction();
             }
-            sparql.commitTransaction();
         } catch (Exception ex) {
             sparql.rollbackTransaction();
             throw ex;
@@ -148,15 +141,7 @@ public class SPARQLModule extends OpenSilexModule {
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
         for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
-            for (OntologyFileDefinition ontologyDef : module.getOntologiesFiles()) {
-                List<SPARQLStatement> results = sparql.getGraphStatement(ontologyDef.getUri());
-
-                if (results.size() == 0) {
-                    String errorMsg = ontologyDef.getUri().toString() + " is missing data into your triple store, did you execute `opensilex system setup` command ?";
-                    LOGGER.warn("/!\\ " + errorMsg);
-                    throw new Exception(errorMsg);
-                }
-            }
+            module.checkOntologies(sparql);
         }
         factory.dispose(sparql);
     }
@@ -165,7 +150,7 @@ public class SPARQLModule extends OpenSilexModule {
     public void startup() throws Exception {
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         if (factory instanceof RDF4JInMemoryServiceFactory) {
-            for (SPARQLExtension module :getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
+            for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
                 module.inMemoryInitialization();
             }
         }

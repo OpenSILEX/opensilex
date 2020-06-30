@@ -131,7 +131,7 @@ public class Oeso {
     public static final Property hasId = Ontology.property(NS, "hasId");
     
     // ---- SCIENTIFIC OBJECTS ----
-    public static final Resource ScientificObject = Ontotlogy.resource(NS, "ScientificObject");
+    public static final Resource ScientificObject = Ontology.resource(NS, "ScientificObject");
     public static final Property isPartOf = Ontology.property(NS, "isPartOf");
 
 }

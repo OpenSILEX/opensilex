@@ -16,7 +16,7 @@
               <span v-if="!node.data.selected">{{ node.title }}</span>
             </template>
 
-            <template v-slot:buttons="{ node }">
+            <!-- <template v-slot:buttons="{ node }">
               <opensilex-AddChildButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
                 @click="addExistingScientificObjectAsChild(node.data.uri)"
@@ -29,7 +29,7 @@
                 label="ExperimentScientificObjects.delete-facility-relation"
                 :small="true"
               ></opensilex-DeleteButton>
-            </template>
+            </template> -->
           </opensilex-TreeView>
         </b-card>
       </div>
@@ -44,19 +44,22 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {
-  ExperimentsService,
-  InfrastructuresService
+  ScientificObjectsService,
+  PartialResourceTreeDTO
 } from "opensilex-core/index";
 import HttpResponse from "opensilex-core/HttpResponse";
 @Component
 export default class ExperimentScientificObjects extends Vue {
   $opensilex: any;
-  xpService: ExperimentsService;
-  infraService: InfrastructuresService;
+  soService: ScientificObjectsService;
   uri: string;
 
   get user() {
     return this.$store.state.user;
+  }
+
+  get credentials() {
+    return this.$store.state.credentials;
   }
 
   public nodes = [];
@@ -65,6 +68,58 @@ export default class ExperimentScientificObjects extends Vue {
 
   created() {
     this.uri = this.$route.params.uri;
+
+    this.soService = this.$opensilex.getService(
+      "opensilex.ScientificObjectsService"
+    );
+
+    this.soService.getExperimentScientificObjectsTree(this.uri).then(http => {
+      let treeNode = [];
+      let first = true;
+      for (let i in http.response.result) {
+        let resourceTree: PartialResourceTreeDTO = http.response.result[i];
+        let node = this.dtoToNode(resourceTree);
+        treeNode.push(node);
+
+        //   if (first && uri == null) {
+        //     this.displayNodeDetail(node.data.uri, true);
+        //     first = false;
+        //   }
+        // }
+
+        // if (uri != null) {
+        //   this.displayNodeDetail(uri, true);
+        // }
+
+        // if (http.response.result.length == 0) {
+        //   this.selected = null;
+        // }
+      }
+
+      this.nodes = treeNode;
+    });
+  }
+
+  private dtoToNode(dto: PartialResourceTreeDTO) {
+    let isLeaf = dto.children.length == 0;
+
+    let childrenDTOs = [];
+    if (!isLeaf) {
+      for (let i in dto.children) {
+        childrenDTOs.push(this.dtoToNode(dto.children[i]));
+      }
+    }
+
+    return {
+      title: dto.name,
+      data: dto,
+      isLeaf: isLeaf,
+      children: childrenDTOs,
+      isExpanded: true,
+      isSelected: false,
+      isDraggable: false,
+      isSelectable: true
+    };
   }
 
   addExistingScientificObjectAsChild(facilityURI) {}

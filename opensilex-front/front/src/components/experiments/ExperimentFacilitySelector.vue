@@ -125,11 +125,6 @@ export default class ExperimentFacilitySelector extends Vue {
           }
         }
 
-        console.error(
-          "Internal selectorTree based on infrastructures",
-          selectorTree
-        );
-
         this.facilititesInfraTree = selectorTree;
       });
     });
@@ -161,7 +156,6 @@ export default class ExperimentFacilitySelector extends Vue {
 
     if (availableFacilitiesByInfra[dto.uri]) {
       let availableInfraFacilities = availableFacilitiesByInfra[dto.uri];
-      console.error(availableInfraFacilities);
       for (let i in availableInfraFacilities) {
         let availableInfraFacility = availableInfraFacilities[i];
 

@@ -233,7 +233,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
     }
 
-    @Test
+//    @Test
     public void testUriListExists() throws Exception {
 
         B b = new B();

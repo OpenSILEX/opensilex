@@ -31,9 +31,9 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.sparql.model.SPARQLTreeListModel;
-import org.opensilex.sparql.response.ResourceTreeDTO;
-import org.opensilex.sparql.response.ResourceTreeResponse;
+import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
+import org.opensilex.sparql.response.PartialResourceTreeDTO;
+import org.opensilex.sparql.response.PartialResourceTreeResponse;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -84,15 +84,15 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of scientific objetcs tree corresponding to the given experiment URI", response = ResourceTreeDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return list of scientific objetcs tree corresponding to the given experiment URI", response = PartialResourceTreeDTO.class, responseContainer = "List")
     })
     public Response getExperimentScientificObjectsTree(
             @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        SPARQLTreeListModel<ScientificObjectModel> tree = dao.searchTreeByExperiment(xpDAO, experimentURI, null, DEFAULT_CHILDREN_LIMIT, DEFAULT_DEPTH_LIMIT, currentUser);
-        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree)).getResponse();
+        SPARQLPartialTreeListModel<ScientificObjectModel> tree = dao.searchTreeByExperiment(xpDAO, experimentURI, null, DEFAULT_CHILDREN_LIMIT, DEFAULT_DEPTH_LIMIT, currentUser);
+        return new PartialResourceTreeResponse(PartialResourceTreeDTO.fromResourceTree(tree)).getResponse();
     }
 
     @GET

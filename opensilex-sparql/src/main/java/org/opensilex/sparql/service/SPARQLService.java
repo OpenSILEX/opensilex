@@ -522,9 +522,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                         Triple parentTriple = new Triple(makeVar(parentField), parentProperty.asNode(), makeVar("parentURI"));
                         select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
                     } else {
-                        select.addWhere(parentField, parentProperty, SPARQLDeserializers.nodeURI(parentSearchURI));
+                        select.addWhere(makeVar(parentField), parentProperty.asNode(), SPARQLDeserializers.nodeURI(parentSearchURI));
                     }
-                    filterHandler.accept(select);
+                    if (filterHandler != null) {
+                        filterHandler.accept(select);
+                    }
                 }, null, 0, maxChild);
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
@@ -538,9 +540,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                         Triple parentTriple = new Triple(makeVar(parentField), parentProperty.asNode(), makeVar("parentURI"));
                         select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
                     } else {
-                        select.addWhere(parentField, parentProperty, SPARQLDeserializers.nodeURI(parentCountURI));
+                        select.addWhere(makeVar(parentField), parentProperty.asNode(), SPARQLDeserializers.nodeURI(parentCountURI));
                     }
-                    filterHandler.accept(select);
+                    if (filterHandler != null) {
+                        filterHandler.accept(select);
+                    }
                 });
 
                 return totalSize;
@@ -556,7 +560,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             } else {
                 select.addWhere(parentField, parentProperty, SPARQLDeserializers.nodeURI(parentURI));
             }
-            filterHandler.accept(select);
+            if (filterHandler != null) {
+                filterHandler.accept(select);
+            }
         });
 
         SPARQLPartialTreeListModel<T> tree = new SPARQLPartialTreeListModel<T>(parentURI, searchHandler, countHandler);
@@ -722,7 +728,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         try {
             startTransaction();
             SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
-            prepareInstanceCreation(instance, mapper, checkUriExist);
+            prepareInstanceCreation(graph, instance, mapper, checkUriExist);
             UpdateBuilder create = mapper.getCreateBuilder(graph, instance);
             executeUpdateQuery(create);
             commitTransaction();
@@ -732,14 +738,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
-    private <T extends SPARQLResourceModel> void prepareInstanceCreation(T instance, SPARQLClassObjectMapper<T> mapper, boolean checkUriExist) throws Exception {
+    private <T extends SPARQLResourceModel> void prepareInstanceCreation(Node graph, T instance, SPARQLClassObjectMapper<T> mapper, boolean checkUriExist) throws Exception {
         URI rdfType = instance.getType();
         if (rdfType == null) {
             instance.setType(new URI(mapper.getRDFType().getURI()));
         } else {
             instance.setType(rdfType);
         }
-        generateUniqueUriIfNullOrValidateCurrent(mapper, instance, checkUriExist);
+        generateUniqueUriIfNullOrValidateCurrent(graph, mapper, instance, checkUriExist);
 
         validate(instance);
 
@@ -761,7 +767,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             validate(instances);
             for (T instance : instances) {
                 SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
-                prepareInstanceCreation(instance, mapper, true);
+                prepareInstanceCreation(graph, instance, mapper, true);
                 mapper.addCreateBuilder(graph, instance, create);
             }
 
@@ -769,7 +775,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
-    private <T extends SPARQLResourceModel> void generateUniqueUriIfNullOrValidateCurrent(SPARQLClassObjectMapper<T> mapper, T instance, boolean checkUriExist) throws Exception {
+    private <T extends SPARQLResourceModel> void generateUniqueUriIfNullOrValidateCurrent(Node graph, SPARQLClassObjectMapper<T> mapper, T instance, boolean checkUriExist) throws Exception {
         URIGenerator<T> uriGenerator = mapper.getUriGenerator(instance);
         URI uri = mapper.getURI(instance);
         if (uri == null) {
@@ -777,12 +783,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             int retry = 0;
             String graphPrefix = getDefaultGraph(instance.getClass()).toString();
             uri = uriGenerator.generateURI(graphPrefix, instance, retry);
-            while (uriExists(uri)) {
+            while (uriExists(graph, uri)) {
                 uri = uriGenerator.generateURI(graphPrefix, instance, ++retry);
             }
 
             mapper.setUri(instance, uri);
-        } else if (checkUriExist && uriExists(uri)) {
+        } else if (checkUriExist && uriExists(graph, uri)) {
             throw new SPARQLAlreadyExistingUriException(uri);
         }
     }
@@ -898,6 +904,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
+    public <T extends SPARQLResourceModel> void deleteIfExists(Class<T> objectClass, URI uri) throws Exception {
+        try {
+            delete(objectClass, uri);
+        } catch (Exception ex) {
+
+        }
+    }
+
     public <T extends SPARQLResourceModel> void delete(Class<T> objectClass, URI uri) throws Exception {
         delete(getDefaultGraph(objectClass), objectClass, uri);
     }
@@ -906,7 +920,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         try {
             startTransaction();
-            if (!uriExists(uri)) {
+            if (!uriExists(graph, uri)) {
                 throw new SPARQLInvalidURIException(uri);
             }
             SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
@@ -950,8 +964,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 executeDeleteQuery(deleteAllReverseReferencesBuilder);
             }
 
-            UpdateBuilder delete = mapper.getDeleteBuilder(graph, instance);
-            executeDeleteQuery(delete);
+            if (instance != null) {
+                UpdateBuilder delete = mapper.getDeleteBuilder(graph, instance);
+                executeDeleteQuery(delete);
+            }
 
             UpdateBuilder deleteRelations = mapper.getDeleteRelationsBuilder(graph, uri);
             if (deleteRelations != null) {
@@ -1027,16 +1043,23 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         });
     }
 
-    public boolean uriExists(URI uri) throws SPARQLException {
+    public boolean uriExists(Node graph, URI uri) throws SPARQLException {
         AskBuilder askQuery = new AskBuilder();
         Var s = makeVar("s");
         Var p = makeVar("p");
         Var o = makeVar("o");
         Node nodeUri = SPARQLDeserializers.nodeURI(uri);
-        askQuery.addWhere(nodeUri, p, o);
-        WhereBuilder reverseWhere = new WhereBuilder();
-        reverseWhere.addWhere(s, p, nodeUri);
-        askQuery.addUnion(reverseWhere);
+        if (graph == null) {
+            askQuery.addWhere(nodeUri, p, o);
+            WhereBuilder reverseWhere = new WhereBuilder();
+            reverseWhere.addWhere(s, p, nodeUri);
+            askQuery.addUnion(reverseWhere);
+        } else {
+            askQuery.addGraph(graph, new Triple(nodeUri, p, o));
+            WhereBuilder reverseWhere = new WhereBuilder();
+            reverseWhere.addGraph(graph, new Triple(s, p, nodeUri));
+            askQuery.addUnion(reverseWhere);
+        }
 
         return executeAskQuery(askQuery);
     }

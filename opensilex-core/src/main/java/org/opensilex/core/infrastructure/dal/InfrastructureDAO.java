@@ -105,7 +105,7 @@ public class InfrastructureDAO {
             throw new NotFoundURIException(infrastructureFacilityURI);
         }
 
-        if (user.isAdmin()) {
+        if (user == null || user.isAdmin()) {
             return;
         }
 
@@ -167,7 +167,11 @@ public class InfrastructureDAO {
     }
 
     public InfrastructureFacilityModel createFacility(InfrastructureFacilityModel instance, UserModel user) throws Exception {
-        InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), user.getLanguage());
+        String lang = null;
+        if (user != null) {
+            lang = user.getLanguage();
+        }
+        InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), lang);
         instance.setInfrastructure(infra);
         sparql.create(instance);
         return instance;

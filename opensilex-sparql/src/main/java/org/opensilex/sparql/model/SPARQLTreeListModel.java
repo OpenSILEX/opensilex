@@ -71,7 +71,7 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
     public void addTree(T candidate) {
         if (!map.containsKey(candidate.getUri())) {
 
-            T parent = (T) candidate.getParent();
+            T parent = candidate.getParent();
 
             if (parent == null || candidate.getUri().equals(root)) {
                 if (!excludeRoot) {

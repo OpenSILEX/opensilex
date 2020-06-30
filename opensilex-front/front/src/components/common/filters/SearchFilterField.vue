@@ -11,7 +11,7 @@
 
       <div class="card" v-if="showAdvancedSearch">
           <div class="card-header sub-header">
-              <h3 class="mr-3">{{ $t('component.scientificObjects.search.advancedSearch') }}</h3>
+              <h3 class="mr-3">{{ $t(advancedSearchLabel) }}</h3>
               <div class="card-header-right">
                   <div class="card-option">
                       <li><i class="ik minimize-card ik-plus" v-on:click="toogleAdvancedSearch($event)"></i></li>
@@ -54,8 +54,11 @@ import Vue from "vue";
 
 @Component
 export default class SearchFilterField extends Vue {
-  @Prop({ default: "component.search.label" })
+  @Prop({ default: "SearchFilter.searchlabel" })
   label: string;
+
+  @Prop({ default: "SearchFilter.advancedSearchLabel" })
+  advancedSearchLabel: string;
 
   @Prop({ default: true })
   withButton: boolean;
@@ -90,4 +93,17 @@ export default class SearchFilterField extends Vue {
   padding-bottom: 0 !important;
 }
 </style>
+
+<i18n>
+
+en:
+  SearchFilter:
+    searchlabel: Search
+    advancedSearchLabel: Advanced Search
+fr:
+  SearchFilter:
+    searchlabel: Recherche
+    advancedSearchLabel: Recherche Avancée
+
+</i18n>
 

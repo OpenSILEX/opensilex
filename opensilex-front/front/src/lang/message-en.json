@@ -1,49 +1,6 @@
 {
     "component": {
         "common": {
-            "actions": "actions",
-            "add":"Add",
-            "advanced-description": "Advanced description",
-            "datePicker": {
-                "dayNames": {
-                    "sunday": "Sun",
-                    "monday": "Mon",
-                    "tuesday": "Tue",
-                    "wednesday": "Wed",
-                    "thursday": "Thu",
-                    "friday": "Fri",
-                    "saturday": "Sat"
-                },
-                "checkIn": "",
-                "checkOut": "",
-                "monthNames": {
-                    "january": "January",
-                    "february": "February",
-                    "march": "March",
-                    "april": "April",
-                    "may": "May",
-                    "june": "June",
-                    "july": "July",
-                    "august": "August",
-                    "september": "September",
-                    "october": "October",
-                    "november": "November",
-                    "december": "December"
-                },
-                "dayShortNames": {
-                    "sun": "Sun",
-                    "mon": "Mon",
-                    "tue": "Tue",
-                    "wed": "Wed",
-                    "thu": "Thu",
-                    "fri": "Fri",
-                    "sat": "Sat"
-                },
-                "texts": {
-                    "apply": "Apply",
-                    "cancel": "Cancel"
-                }
-            },
             "multiselect": {
                 "label": {
                     "x-more": "and {count} more"

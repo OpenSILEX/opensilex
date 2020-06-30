@@ -290,66 +290,6 @@ configure({
   }
 });
 
-
-
-import { Datepicker, Timepicker, DatetimePicker, DateRangePicker } from '@livelybone/vue-datepicker';
-
-// Global register
-Vue.component('datepicker', Datepicker);
-Vue.component('timepicker', Timepicker);
-Vue.component('datetime-picker', DatetimePicker);
-Vue.component('date-range-picker', DateRangePicker);
-
-//Initialise DatePicker - TODO remove it
-//https://www.npmjs.com/package/vuejs-datepicker
-// import Datepicker from 'vuejs-datepicker';
-
-Vue.component('datePicker', Datepicker);
-
-// Initialize date picker - TODO remove it
-import DatePicker from 'vue-airbnb-style-datepicker';
-
-const datepickerOptions = {
-  monthNames: [
-    i18n.t('component.common.datePicker.monthNames.january'),
-    i18n.t('component.common.datePicker.monthNames.february'),
-    i18n.t('component.common.datePicker.monthNames.march'),
-    i18n.t('component.common.datePicker.monthNames.april'),
-    i18n.t('component.common.datePicker.monthNames.may'),
-    i18n.t('component.common.datePicker.monthNames.june'),
-    i18n.t('component.common.datePicker.monthNames.july'),
-    i18n.t('component.common.datePicker.monthNames.august'),
-    i18n.t('component.common.datePicker.monthNames.september'),
-    i18n.t('component.common.datePicker.monthNames.october'),
-    i18n.t('component.common.datePicker.monthNames.november'),
-    i18n.t('component.common.datePicker.monthNames.december')
-  ],
-  days: [
-    i18n.t('component.common.datePicker.dayNames.monday'),
-    i18n.t('component.common.datePicker.dayNames.tuesday'),
-    i18n.t('component.common.datePicker.dayNames.wednesday'),
-    i18n.t('component.common.datePicker.dayNames.thursday'),
-    i18n.t('component.common.datePicker.dayNames.friday'),
-    i18n.t('component.common.datePicker.dayNames.saturday'),
-    i18n.t('component.common.datePicker.dayNames.sunday')
-  ],
-  daysShort: [
-    i18n.t('component.common.datePicker.dayShortNames.mon'),
-    i18n.t('component.common.datePicker.dayShortNames.tue'),
-    i18n.t('component.common.datePicker.dayShortNames.wed'),
-    i18n.t('component.common.datePicker.dayShortNames.thu'),
-    i18n.t('component.common.datePicker.dayShortNames.fri'),
-    i18n.t('component.common.datePicker.dayShortNames.sat'),
-    i18n.t('component.common.datePicker.dayShortNames.sun')
-  ],
-  texts: {
-    apply: i18n.t('component.common.datePicker.texts.apply'),
-    cancel: i18n.t('component.common.datePicker.texts.cancel')
-  }
-};
-
-Vue.use(DatePicker, datepickerOptions);
-
 // Enable Vue front plugin manager for OpenSilex API
 console.debug("Enable OpenSilex plugin...");
 let $opensilex = new OpenSilexVuePlugin(baseApi, store, i18n);

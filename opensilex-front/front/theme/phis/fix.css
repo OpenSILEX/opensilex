@@ -61,6 +61,18 @@
     cursor: pointer;
 }
 
+
+
+.table-responsive a:visited.btn-outline-danger,
+.table-responsive a.btn-outline-danger {
+    color: #dc3545;
+}
+
+.table-responsive a:visited:hover,
+.table-responsive a:hover {
+    color: #ffffff;
+}
+
 /**
  * Fix for multiselect module
  */

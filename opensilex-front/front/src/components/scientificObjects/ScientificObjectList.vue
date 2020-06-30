@@ -5,13 +5,14 @@
         <opensilex-PageHeader
             icon="ik#ik-target"
             title="component.menu.scientificObjects"
-            description="component.scientificObjects.search.description"
+            description="ScientificObjectsList.description"
         ></opensilex-PageHeader>
 
         <opensilex-SearchFilterField
             @search="refresh()"
             @clear="reset()"
-            label="component.scientificObjects.search.filter.label"
+            label="ScientificObjectsList.filter.label"
+            advancedSearchLabel="ScientificObjectsList.advancedSearch"
             :showTitle="true"
             :showAdvancedSearch="true"
         >
@@ -19,8 +20,8 @@
                 <!-- Experiments -->
                 <opensilex-FilterField>
                     <opensilex-SelectForm
-                        label="component.scientificObjects.search.filter.experiments"
-                        placeholder="component.scientificObjects.search.placeholder.experiments"
+                        label="ScientificObjectsList.filter.experiments"
+                        placeholder="ScientificObjectsList.placeholder.experiments"
                         :selected.sync="filter.experiments"
                         :conversionMethod="experimentGetListDTOToSelectNode"
                         modalComponent="opensilex-ExperimentModalList"
@@ -28,24 +29,13 @@
                     ></opensilex-SelectForm>
                 </opensilex-FilterField>
 
-                <!-- Germplasm -->
-                <opensilex-FilterField>
-                    <opensilex-SelectForm
-                        label="component.scientificObjects.search.filter.germplasm"
-                        placeholder="component.scientificObjects.search.placeholder.germplasm"
-                        :selected.sync="filter.germplasm"
-                        :conversionMethod="germplasmGetDTOToSelectNode"
-                        modalComponent="opensilex-GermplasmModalList"
-                        :isModalSearch="true"
-                    ></opensilex-SelectForm>
-                </opensilex-FilterField>
-
+                <!-- URI -->
                 <opensilex-FilterField>
                     <opensilex-InputForm
                         :value.sync="filter.label"
-                        label="component.scientificObjects.search.filter.alias"
+                        label="ScientificObjectsList.filter.uri"
                         type="text"
-                        placeholder="component.scientificObjects.search.placeholder.alias"
+                        placeholder="ScientificObjectsList.placeholder.uri"
                     ></opensilex-InputForm>
                 </opensilex-FilterField>
             </template>
@@ -54,81 +44,57 @@
 
                 <div class="row">
 
-                    <!-- campains -->
-                    <div class="filter-group col col-xl-3 col-sm-6 col-12">
+                    <!-- Germplasm -->
+                    <opensilex-FilterField>
                         <opensilex-SelectForm
-                            label="component.scientificObjects.search.filter.campains"
-                            placeholder="component.scientificObjects.search.placeholder.campains"
-                            :selected.sync="filter.campaign"
-                            :optionsLoadingMethod="loadCampaigns"
+                            label="ScientificObjectsList.filter.germplasm"
+                            placeholder="ScientificObjectsList.placeholder.germplasm"
+                            :selected.sync="filter.germplasm"
+                            :conversionMethod="germplasmGetDTOToSelectNode"
+                            modalComponent="opensilex-GermplasmModalList"
+                            :isModalSearch="true"
                         ></opensilex-SelectForm>
-                    </div>
+                    </opensilex-FilterField>
 
-                    <!-- hasExperimentModalities -->
-                    <div class="filter-group col col-xl-3 col-sm-6 col-12">
+                    <!-- Position -->
+                    <opensilex-FilterField>
                         <opensilex-SelectForm
-                            label="component.scientificObjects.search.filter.hasExperimentModalities"
-                            placeholder="component.scientificObjects.search.placeholder.hasExperimentModalities"
-                            :multiple="true"
-                            :selected.sync="filter.hasExperimentModalities"
-                            :optionsLoadingMethod="loadExperimentModalities"
-                            :conversionMethod="ontologyToSelectNode"
+                            label="ScientificObjectsList.filter.position"
+                            placeholder="ScientificObjectsList.placeholder.position"
+                            :selected.sync="filter.positions"
+                            :conversionMethod="featureToSelectNode"
+                            modalComponent="opensilex-GeometrySelector"
+                            :isModalSearch="true"
                         ></opensilex-SelectForm>
-                    </div>
+                    </opensilex-FilterField>
 
-                    <!-- hasReplication -->
-                    <div class="filter-group col col-xl-3 col-sm-6 col-12">
+                    <!-- Dates -->
+                    <opensilex-FilterField>
+                        <opensilex-DateRangePickerForm
+                            :value.sync="filter.dates"
+                            label="ScientificObjectsList.filter.dates"
+                        ></opensilex-DateRangePickerForm>
+                    </opensilex-FilterField>
+
+                    <!-- Factors -->
+                    <opensilex-FilterField>
                         <opensilex-SelectForm
-                            label="component.scientificObjects.search.filter.hasReplication"
-                            placeholder="component.scientificObjects.search.placeholder.hasReplication"
-                            :multiple="true"
-                            :selected.sync="filter.hasReplication"
-                            :optionsLoadingMethod="loadReplications"
-                            :conversionMethod="ontologyToSelectNode"
+                            label="ScientificObjectsList.filter.factors"
+                            placeholder="ScientificObjectsList.placeholder.factors"
+                            :selected.sync="filter.factors"
+                            :conversionMethod="germplasmGetDTOToSelectNode"
+                            modalComponent="opensilex-FactorModalList"
+                            :isModalSearch="true"
                         ></opensilex-SelectForm>
-                    </div>
-
-                    <!-- hasSpecies -->
-                    <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                        <opensilex-SelectForm
-                            label="component.scientificObjects.search.filter.hasSpecies"
-                            placeholder="component.scientificObjects.search.placeholder.hasSpecies"
-                            :multiple="true"
-                            :selected.sync="filter.hasSpecies"
-                            :optionsLoadingMethod="loadSpecies"
-                            :conversionMethod="speciesToSelectNode"
-                        ></opensilex-SelectForm>
-                    </div>
-
-                    <!-- hasVariety -->
-                    <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                        <opensilex-SelectForm
-                            label="component.scientificObjects.search.filter.hasVariety"
-                            placeholder="component.scientificObjects.search.placeholder.hasVariety"
-                            :multiple="true"
-                            :selected.sync="filter.hasVariety"
-                            :optionsLoadingMethod="loadVariety"
-                            :conversionMethod="ontologyToSelectNode"
-                        ></opensilex-SelectForm>
-                    </div>
-
-                    <!-- hasPart -->
-                    <div class="filter-group col col-xl-3 col-sm-6 col-12">
-                    <opensilex-InputForm
-                            :value.sync="filter.hasPart"
-                            label="component.scientificObjects.search.filter.hasPart"
-                            type="text"
-                            placeholder="component.scientificObjects.search.placeholder.hasPart"
-                        ></opensilex-InputForm>
-                    </div>
+                    </opensilex-FilterField>
 
                     <!-- isPartOf -->
                     <div class="filter-group col col-xl-3 col-sm-6 col-12">
                     <opensilex-InputForm
                             :value.sync="filter.isPartOf"
-                            label="component.scientificObjects.search.filter.isPartOf"
+                            label="ScientificObjectsList.filter.isPartOf"
                             type="text"
-                            placeholder="component.scientificObjects.search.placeholder.isPartOf"
+                            placeholder="ScientificObjectsList.placeholder.isPartOf"
                         ></opensilex-InputForm>
                     </div>
 
@@ -147,7 +113,7 @@
                     :fields="fields"
                     defaultSortBy="label"
                     isSelectable="true"
-                    labelNumberOfSelectedRow="component.scientificObjects.search.selected"
+                    labelNumberOfSelectedRow="ScientificObjectsList.selected"
                     iconNumberOfSelectedRow="ik#ik-target"
                 >
 
@@ -157,19 +123,11 @@
                         </div>
                     </template>
 
-                    <template v-slot:secondActionsSelectableTable>
-                         <opensilex-ScientificObjectPropertyConfiguration :scientificObjectPropertyTypeConfiguration.sync="scientificObjectPropertyTypeConfiguration"></opensilex-ScientificObjectPropertyConfiguration>
-                    </template>
-
                     <template v-slot:cell(uri)="{data}">
                         <opensilex-UriLink
                             :uri="data.item.uri"
                             :to="{path: '/experiment/'+ encodeURIComponent(data.item.uri)}"
                         ></opensilex-UriLink>
-                    </template>
-                
-                    <template v-slot:cell(properties)="{data}">
-                        <opensilex-ScientificObjectPropertyList :properties="data.item.properties" :scientificObjectPropertyTypeConfiguration="scientificObjectPropertyTypeConfiguration"></opensilex-ScientificObjectPropertyList>
                     </template>
 
                     <template v-slot:cell(actions)>
@@ -199,6 +157,7 @@
     import { 
         GermplasmGetAllDTO,
         ProjectCreationDTO, 
+        FactorGetDTO,
         SpeciesDTO, 
         ExperimentGetDTO, 
         ResourceTreeDTO,
@@ -212,30 +171,17 @@
     } from "opensilex-phis/index";
     import Oeso from "../../ontologies/Oeso";
     import HttpResponse, {OpenSilexResponse, MetadataDTO, PaginationDTO}  from "../../lib/HttpResponse";
-        
-    class PropertyPostDTO {
-        rdfType: string;
-        relation: string;
-        value: string;
-
-        constructor(rdfType, value, relation) {
-            this.rdfType = rdfType;
-            this.value = value;
-            this.relation = relation;
-        }
-    }
 
     class ScientificObjectFilter {
         experiments = [];
         germplasm = [];
-        label = undefined;
-        hasExperimentModalities = [];
-        hasReplication = [];
-        hasSpecies = [];
-        hasPart = undefined;
+        positions = [];
+        uri = undefined;
         isPartOf = undefined;
         hasVariety = [];
         campaigns = [];
+        factors = [];
+        dates = undefined;
 
         constructor() {
             this.reset();
@@ -244,14 +190,13 @@
         reset() {
             this.experiments = [];
             this.germplasm = [];
-            this.label = undefined;
-            this.hasExperimentModalities = [];
-            this.hasReplication = [];
-            this.hasSpecies = [];
-            this.hasPart = undefined;
+            this.positions = [];
+            this.uri = undefined;
             this.isPartOf = undefined;
             this.hasVariety = [];
             this.campaigns = [];
+            this.factors = [];
+            this.dates = undefined;
         }
     }
 
@@ -266,48 +211,36 @@
         fields = [
             {
                 key: "uri",
-                label: "component.scientificObjects.search.column.uri",
+                label: "ScientificObjectsList.column.uri",
                 sortable: true
             },
             {
                 key: "label",
-                label: "component.scientificObjects.search.column.alias",
-                sortable: true
-            },
-            {
-                key: "experiments",
-                label: "component.scientificObjects.search.column.experiments"
-            },
-            {
-                key: "campaigns",
-                label: "component.scientificObjects.search.column.campaigns",
+                label: "ScientificObjectsList.column.alias",
                 sortable: true
             },
             {
                 key: "type",
-                label: "component.scientificObjects.search.column.type",
+                label: "ScientificObjectsList.column.type",
                 sortable: true
             },
             {
-                key: "properties",
-                label: "component.scientificObjects.search.column.properties"
+                key: "parents",
+                label: "ScientificObjectsList.column.parents"
+            },
+            {
+                key: "experiments",
+                label: "ScientificObjectsList.column.experiments"
             },
             {
                 key: "actions",
-                label: "component.scientificObjects.search.column.actions"
+                label: "ScientificObjectsList.column.actions"
             },
         ];
 
         experimentsByScientificObject: Map<String, Array<ExperimentGetDTO>> = new Map<String, Array<ExperimentGetDTO>>();
 
         filter = new ScientificObjectFilter();
-
-        scientificObjectPropertyTypeConfiguration = [
-            {show: true, class: 'badge-dark',    title: 'experimentModalities', label: 'component.scientificObjects.search.filter.hasExperimentModalities', uri: "http://www.opensilex.org/vocabulary/oeso#hasExperimentModalities"},
-            {show: true, class: 'badge-warning', title: 'replication',          label: 'component.scientificObjects.search.filter.hasReplication',          uri: "http://www.opensilex.org/vocabulary/oeso#hasReplication"},
-            {show: true, class: 'badge-success', title: 'species',              label: 'component.scientificObjects.search.filter.hasSpecies',              uri: "http://www.opensilex.org/vocabulary/oeso#hasSpecies"},
-            {show: true, class: 'badge-info',    title: 'variety',              label: 'component.scientificObjects.search.filter.hasVariety',              uri: "http://www.opensilex.org/vocabulary/oeso#hasVariety"}
-        ];
 
         static async asyncInit($opensilex) {
             await $opensilex.loadModule("opensilex-phis");
@@ -328,15 +261,15 @@
 
         searchScientificObject(options) {
             let experiment = undefined;
-            let label = undefined;
+            let uri = undefined;
             let germplasm_URI = undefined;
 
             if(this.filter.experiments && this.filter.experiments.length > 0) {
                 experiment = this.filter.experiments[0].id;
             }
 
-            if(this.filter.label && this.filter.label.length > 0) {
-                label = this.filter.label;
+            if(this.filter.uri && this.filter.uri.length > 0) {
+                uri = this.filter.uri;
             }
 
             if(this.filter.germplasm && this.filter.germplasm.length > 0) {
@@ -347,9 +280,9 @@
             return scientificObjectsService.getScientificObjectsBySearch(
                 options.pageSize,
                 options.currentPage,
-                undefined,
+                uri,
                 experiment, 
-                label,
+                undefined,
                 undefined, 
                 germplasm_URI, 
                 true,
@@ -368,30 +301,6 @@
                 return result;
             });
         }
-       
-        loadExperimentModalities() {
-            return this.loadOntology(Oeso.HAS_EXPERIMENT_MODALITIES);
-        }
-
-        loadReplications() {
-            return this.loadOntology(Oeso.HAS_REPLICATION);
-        }
-
-        loadVariety() {
-            return this.loadOntology(Oeso.HAS_VARIETY);
-        }
-
-        loadOntology(type) {
-            let ontoService: OntologyService = this.$opensilex.getService("opensilex.OntologyService");
-            return ontoService.getSubClassesOf(type, true).then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => http.response.result);
-        }
-
-        ontologyToSelectNode(dto: ResourceTreeDTO) {
-            return {
-                id: dto.uri,
-                label: dto.name
-            };
-        }
 
         experimentGetListDTOToSelectNode(dto: ExperimentGetListDTO) {
             if(dto) {
@@ -403,7 +312,17 @@
             return null;
         }
 
-        germplasmGetDTOToSelectNode(dto: GermplasmGetAllDTO) {
+        factorGetDTOToSelectNode(dto: FactorGetDTO) {
+            if(dto) {
+                return {
+                    id: dto.uri,
+                    label: dto.name
+                };
+            }
+            return null;
+        }
+
+        germplasmGetDTOToSelectNode(dto) {
             if(dto) {
                 return {
                     id: dto.uri,
@@ -427,22 +346,12 @@
             };
         }
 
-        loadCampaigns() {
-            return new Promise((resolve, reject) => {
-                let campaigns = [];
-                campaigns.push({id: 2010, label: 2010});
-                campaigns.push({id: 2011, label: 2011});
-                campaigns.push({id: 2012, label: 2012});
-                campaigns.push({id: 2013, label: 2013});
-                campaigns.push({id: 2014, label: 2014});
-                campaigns.push({id: 2015, label: 2015});
-                campaigns.push({id: 2016, label: 2016});
-                campaigns.push({id: 2017, label: 2017});
-                campaigns.push({id: 2018, label: 2018});
-                campaigns.push({id: 2019, label: 2019});
-                campaigns.push({id: 2020, label: 2020});
-                resolve(campaigns);
-            });
+        featureToSelectNode(feature) {
+            return {
+                id: feature.id,
+                label: feature.geometry.type
+                //label: feature.geometry.coordinates
+            };
         }
 
     }
@@ -452,3 +361,72 @@
 <style scoped lang="scss">
 
 </style>
+
+<i18n>
+
+en:
+  ScientificObjectsList:
+    selected: Selected Scientific Objects
+    description: Manage and configure scientific objects
+    advancedSearch: Advanced search
+    propetiesConfiguration: Properties to display
+    column:
+      alias: Nom
+      experiments: Experiment(s)
+      type: Type
+      uri: URI
+      parents: Parent(s)
+      actions: Actions
+    placeholder:
+      experiments: All Experiments
+      germplasm: All Germplasm
+      types: All Types
+      uri: All URI
+      isPartOf: All Alias / URI
+      position: All Spacial Positions
+      factors: All Factors
+      dates: All Dates
+    filter:
+      label: Search for Scientific Objects
+      experiments: Filter by Experiments
+      germplasm: Filter by Germplasm
+      types: Filter by Type(s)
+      uri: Filter by  URI
+      isPartOf: isPartOf (Alias ou URI)
+      position: Filter by Spatial Position
+      factors: Filter by Factors
+      dates: Filter by Dates
+fr:
+  ScientificObjectsList:
+    selected: Objets Scientifiques Sélectionnés
+    description: Gérer et configurer les objets scientifiques
+    advancedSearch: Recherche avancée
+    propetiesConfiguration: Propriétés à afficher
+    column:
+      alias: Name
+      experiments: Expérimentation(s)
+      type: Type
+      uri: URI
+      parents: Parent(s)
+      actions: Actions
+    placeholder:
+      experiments: Toutes les Expérimentations
+      germplasm: Tous les Matériels Génétiques
+      types: Tous les Types
+      uris: Toutes les URI
+      isPartOf: Tous les Alias / URI
+      position: Toutes les Positions Spaciales
+      factors: Tous les Facteurs
+      dates: Toutes les Dates
+    filter:
+      label: Rechercher des Objets Scientifiques
+      experiments: Filtrer par Expérimentation(s)
+      germplasm: Filtrer par Matériel Génétiques
+      types: Filtrer par Type(s)
+      uri: Filtrer par URI
+      isPartOf: isPartOf (Alias ou URI)
+      position: Filtrer par Position Spaciale
+      factors: Filtrer par Facteurs
+      dates: Filtrer par Dates
+
+</i18n>

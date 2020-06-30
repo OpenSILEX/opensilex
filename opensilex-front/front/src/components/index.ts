@@ -102,6 +102,12 @@ import FactorLevelPropertyView from './factors/FactorLevelPropertyView.vue';
 components["opensilex-FactorLevelPropertyView"] = FactorLevelPropertyView;
 import AssociatedExperiments from './factors/AssociatedExperiments.vue';
 components["opensilex-AssociatedExperiments"] = AssociatedExperiments;
+import FactorModalList from './factors/FactorModalList.vue';
+components["opensilex-FactorModalList"] = FactorModalList;
+
+// Geometry
+import GeometrySelector from './geometry/GeometrySelector.vue';
+components["opensilex-GeometrySelector"] = GeometrySelector;
 
 // Common
 import FormInputLabelHelper from './common/forms/FormInputLabelHelper.vue'
@@ -133,6 +139,8 @@ components["opensilex-IconForm"] = IconForm;
 import DateTimeForm from './common/forms/DateTimeForm.vue'
 components["opensilex-DateTimeForm"] = DateTimeForm;
 
+import DateRangePickerForm from './common/forms/DateRangePickerForm.vue'
+components["opensilex-DateRangePickerForm"] = DateRangePickerForm;
 
 import WizardForm from './common/forms/WizardForm.vue'
 components["opensilex-WizardForm"] = WizardForm;
@@ -405,10 +413,6 @@ components["opensilex-UnitExternalReferencesForm"] = UnitExternalReferencesForm;
 import UnitDetails from './variables/views/UnitDetails.vue';
 components["opensilex-UnitDetails"] = UnitDetails;
 
-
-// Data
-import DataView from './data/DataView.vue';
-components["opensilex-DataView"] = DataView;
 
 // Data
 import DataView from './data/DataView.vue';

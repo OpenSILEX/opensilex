@@ -149,18 +149,8 @@ public class GermplasmAPI {
         if (!checkOnly) {
             germplasmDTO = completeDTO(germplasmDTO, germplasmDAO);
             // create new germplasm
-            GermplasmModel germplasm = germplasmDAO.create(
-                currentUser,
-                germplasmDTO.getUri(),
-                germplasmDTO.getLabel(),
-                germplasmDTO.getRdfType(),
-                germplasmDTO.getFromSpecies(),
-                germplasmDTO.getFromVariety(),
-                germplasmDTO.getFromAccession(),
-                germplasmDTO.getComment(),
-                germplasmDTO.getInstitute(),
-                germplasmDTO.getProductionYear()
-            );
+            GermplasmModel model = germplasmDTO.newModel();
+            GermplasmModel germplasm = germplasmDAO.create(model,currentUser);
             //return germplasm uri
             
             return new ObjectUriResponse(Response.Status.CREATED, germplasm.getUri()).getResponse();

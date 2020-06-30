@@ -15,7 +15,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
-import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.NodeFactory;
@@ -28,9 +27,9 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
@@ -104,48 +103,8 @@ public class GermplasmDAO {
         return getAllLabels(key.rdfType);
     }
  
-    public GermplasmModel create(
-            UserModel user,
-            URI uri, 
-            String label, 
-            URI rdfType, 
-            URI fromSpecies, 
-            URI fromVariety, 
-            URI fromAccession,
-            String comment,
-            String institute,
-            Integer productionYear
-    ) throws Exception {
-        GermplasmModel germplasm = new GermplasmModel();
-        germplasm.setUri(uri);
-        germplasm.setLabel(new SPARQLLabel(label, null));
-        germplasm.setType(rdfType);        
-        
-        if (fromAccession != null) {
-            GermplasmModel accession = new GermplasmModel();
-            accession.setUri(fromAccession);
-            germplasm.setAccession(accession);
-        }
-
-        if (fromVariety != null) {
-            GermplasmModel variety = new GermplasmModel();
-            variety.setUri(fromVariety);        
-            germplasm.setVariety(variety);
-        }
-        
-        if (fromSpecies != null) {
-            GermplasmModel species = new GermplasmModel();
-            species.setUri(fromSpecies);
-            germplasm.setSpecies(species);             
-        }  
-        
-        germplasm.setComment(comment);
-        germplasm.setInstitute(institute);
-        germplasm.setProductionYear(productionYear);
-        germplasm.setCreator(user.getUri());
-        
-        sparql.create(germplasm);
-        
+    public GermplasmModel create(GermplasmModel germplasm, UserModel user) throws Exception {        
+        sparql.create(germplasm);        
         return germplasm;
     }  
     

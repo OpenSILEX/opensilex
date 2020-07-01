@@ -5,8 +5,9 @@
  */
 package org.opensilex.core.ontology.dal;
 
+import java.net.URI;
 import java.util.List;
-import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -16,7 +17,7 @@ import org.opensilex.sparql.annotations.SPARQLResource;
  * @author vince
  */
 @SPARQLResource(
-        ontology = OWL.class,
+        ontology = OWL2.class,
         resource = "ObjectProperty",
         ignoreValidation = true
 )
@@ -34,5 +35,15 @@ public class ObjectPropertyModel extends PropertyModel {
             property = "subPropertyOf"
     )
     protected ObjectPropertyModel parent;
+
+    protected URI objectClassRestriction;
+
+    public URI getObjectClassRestriction() {
+        return objectClassRestriction;
+    }
+
+    public void setObjectClassRestriction(URI objectClassRestriction) {
+        this.objectClassRestriction = objectClassRestriction;
+    }
 
 }

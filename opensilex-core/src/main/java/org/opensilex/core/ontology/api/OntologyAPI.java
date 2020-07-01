@@ -12,7 +12,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
-import java.util.List;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -22,14 +21,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
-import org.opensilex.core.ontology.dal.DatatypePropertyModel;
-import org.opensilex.core.ontology.dal.ObjectPropertyModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
@@ -54,14 +50,10 @@ public class OntologyAPI {
     @Path("/subclass-of")
     @ApiOperation("Search sub-classes tree of an RDF class")
     @ApiProtected
-//    @ApiCache(
-//            category = ApiCacheService.STATIC_CATEGORY
-//    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return group", response = ResourceTreeDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+        @ApiResponse(code = 200, message = "Return group", response = ResourceTreeDTO.class, responseContainer = "List")
     })
     public Response getSubClassesOf(
             @ApiParam(value = "Parent RDF class URI") @QueryParam("parentClass") @ValidURI URI parentClass,
@@ -79,40 +71,22 @@ public class OntologyAPI {
     }
 
     @GET
-    @Path("/subproperties-of")
-    @ApiOperation("Search sub-properties tree of an RDF property")
+    @Path("/get-class")
+    @ApiOperation("Return class model definition with properties")
     @ApiProtected
-//    @ApiCache(
-//            category = ApiCacheService.STATIC_CATEGORY
-//    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return group", response = ClassPropertiesDTO.class),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+        @ApiResponse(code = 200, message = "Return group", response = ResourceTreeDTO.class)
     })
-    public Response getClassProperties(
-            @ApiParam(value = "Parent RDF class URI") @QueryParam("rdfClass") @ValidURI URI rdfClass
+    public Response getClass(
+            @ApiParam(value = "Parent RDF class URI") @QueryParam("rdfType") @ValidURI URI rdfType
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
-        List<DatatypePropertyModel> datatypeProperties = dao.searchDatatypeProperties(
-                rdfClass,
-                currentUser
-        );
+        ClassModel classDescription = dao.getClassModel(rdfType, currentUser.getLanguage());
 
-        List<ObjectPropertyModel> objectProperties = dao.searchObjectProperties(
-                rdfClass,
-                currentUser
-        );
-
-        ClassPropertiesDTO classProperties = new ClassPropertiesDTO();
-
-// TODO
-//        classProperties.setDatatypeProperties(ResourceTreeDTO.fromResourceTree(datatypeProperties));
-//        classProperties.setObjectProperties(ResourceTreeDTO.fromResourceTree(objectProperties));
-
-        return new SingleObjectResponse(classProperties).getResponse();
+        return new SingleObjectResponse<>(RDFClassDTO.fromModel(classDescription)).getResponse();
     }
 
 }

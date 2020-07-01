@@ -5,8 +5,11 @@
  */
 package org.opensilex.core.ontology.dal;
 
+import java.net.URI;
 import java.util.List;
-import org.apache.jena.vocabulary.OWL;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -19,7 +22,7 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
  * @author vince
  */
 @SPARQLResource(
-        ontology = OWL.class,
+        ontology = OWL2.class,
         resource = "Class",
         ignoreValidation = true
 )
@@ -53,6 +56,12 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
     )
     protected ClassModel parent;
 
+    protected Map<URI, DatatypePropertyModel> datatypeProperties;
+
+    protected Map<URI, ObjectPropertyModel> objectProperties;
+
+    protected List<OwlRestrictionModel> restrictions;
+
     @Override
     public String getName() {
         SPARQLLabel slabel = getLabel();
@@ -78,4 +87,41 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
     public void setComment(SPARQLLabel comment) {
         this.comment = comment;
     }
+
+    public Map<URI, DatatypePropertyModel> getDatatypeProperties() {
+        return datatypeProperties;
+    }
+
+    public void setDatatypeProperties(Map<URI, DatatypePropertyModel> datatypeProperties) {
+        this.datatypeProperties = datatypeProperties;
+    }
+
+    public Map<URI, ObjectPropertyModel> getObjectProperties() {
+        return objectProperties;
+    }
+
+    public void setObjectProperties(Map<URI, ObjectPropertyModel> objectProperties) {
+        this.objectProperties = objectProperties;
+    }
+
+    public List<OwlRestrictionModel> getRestrictions() {
+        return restrictions;
+    }
+
+    public void setRestrictions(List< OwlRestrictionModel> restrictions) {
+        this.restrictions = restrictions;
+    }
+
+    public void forEachPropertyRestriction(BiConsumer<PropertyModel, OwlRestrictionModel> lambda) {
+        for (OwlRestrictionModel restriction : getRestrictions()) {
+            if (restriction.isDatatypePropertyRestriction()) {
+                DatatypePropertyModel property = getDatatypeProperties().get(restriction.getOnProperty());
+                lambda.accept(property, restriction);
+            } else if (restriction.isObjectPropertyRestriction()) {
+                ObjectPropertyModel property = getObjectProperties().get(restriction.getOnClass());
+                lambda.accept(property, restriction);
+            }
+        }
+    }
+
 }

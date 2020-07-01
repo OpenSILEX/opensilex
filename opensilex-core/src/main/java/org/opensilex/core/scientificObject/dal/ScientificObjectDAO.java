@@ -5,13 +5,23 @@
  */
 package org.opensilex.core.scientificObject.dal;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.dal.ClassModel;
+import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
@@ -59,5 +69,55 @@ public class ScientificObjectDAO {
                 select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
             }
         });
+    }
+
+    public void importCSV(URI xpURI, URI soType, File file, UserModel user) throws Exception {
+        Reader in = new InputStreamReader(new FileInputStream(file));
+        CSVParser rows = CSVFormat.DEFAULT.parse(in);
+
+        List<String> headers = getCSVHeaders(soType, user.getLanguage());
+
+        for (CSVRecord row : rows) {
+            for (int i = 0; i < headers.size(); i++) {
+                String header = headers.get(i);
+                String value = row.get(i);
+                ScientificObjectModel so = new ScientificObjectModel();
+                so.setType(soType);
+                switch (i) {
+                    case 0:
+                        so.setUri(new URI(value));
+                        break;
+                    case 1:
+                        so.setName(value);
+                        break;
+                    case 2:
+                        ScientificObjectModel parent = new ScientificObjectModel();
+                        parent.setUri(new URI(value));
+                        so.setParent(parent);
+                        break;
+                    default:
+
+                        break;
+                }
+
+            }
+
+        }
+    }
+
+    private List<String> getCSVHeaders(URI soType, String lang) throws Exception {
+        List<String> headers = new ArrayList<>();
+
+        headers.add("URI");
+        headers.add("Name");
+        headers.add("Parent URI");
+
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        ClassModel model = ontologyDAO.getClassModel(soType, lang);
+
+//        model.forEachPropertyRestriction((PropertyModel p, OwlRestrictionModel r) -> {
+//            
+//        });
+        return headers;
     }
 }

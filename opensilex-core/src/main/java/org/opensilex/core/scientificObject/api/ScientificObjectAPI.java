@@ -10,18 +10,23 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.io.File;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -31,6 +36,7 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
 import org.opensilex.sparql.response.PartialResourceTreeDTO;
 import org.opensilex.sparql.response.PartialResourceTreeResponse;
@@ -118,7 +124,29 @@ public class ScientificObjectAPI {
         List<ScientificObjectNodeDTO> dtoList = sientificObjects.stream().map(ScientificObjectNodeDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
     }
-    // TODO import CSV
 
-    // TODO generate CSV import template
+    @POST
+    @Path("csv-import")
+    @ApiOperation(value = "Import a CSV file for the given experiement URI and scientific object type.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Data file and metadata saved", response = Boolean.class)
+    })
+    @ApiProtected
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response importCSV(
+            @ApiParam(value = "File description with metadata", required = true, type = "string") @NotNull @Valid @FormDataParam("description") ScientificObjectCsvDescriptionDTO descriptionDto,
+            @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") File file,
+            @FormDataParam("file") FormDataContentDisposition fileContentDisposition
+    ) throws Exception {
+
+        URI xpURI = descriptionDto.getExperimentURI();
+        URI soType = descriptionDto.getScientificObjectType();
+
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        dao.importCSV(xpURI, soType, file, currentUser);
+        // TODO import CSV
+        return new SingleObjectResponse<Boolean>(true).getResponse();
+    }
+
 }

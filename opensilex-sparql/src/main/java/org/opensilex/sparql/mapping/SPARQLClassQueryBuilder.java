@@ -44,6 +44,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Seq;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.vocabulary.OWL2;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -297,7 +299,8 @@ class SPARQLClassQueryBuilder {
     }
 
     /**
-     * Add the WHERE clause into handler, depending if the given field is optional or not, according {@link #analyzer}
+     * Add the WHERE clause into handler, depending if the given field is
+     * optional or not, according {@link #analyzer}
      *
      * @param select       the root {@link SelectBuilder}, needed in order to create the {@link TriplePath} to add to the handler
      * @param uriFieldName name of the uri SPARQL variable
@@ -332,7 +335,7 @@ class SPARQLClassQueryBuilder {
 
         TriplePath rdtTypeTriple = null;
         if (property.equals(RDFS.subClassOf)) {
-            rdtTypeTriple = select.makeTriplePath(propertyFieldVar, RDF.type, OWL.Class);
+            rdtTypeTriple = select.makeTriplePath(propertyFieldVar, RDF.type, OWL2.Class);
         }
 
         WhereHandler handler;

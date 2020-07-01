@@ -11,7 +11,6 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.model.A;
@@ -24,6 +23,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import org.apache.jena.vocabulary.OWL2;
 
 import static org.junit.Assert.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -62,7 +62,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
     }
 
     private void testClass(Resource clazz) throws SPARQLException {
-        Node owlClassNode = NodeFactory.createURI(OWL.CLASS.stringValue());
+        Node owlClassNode = NodeFactory.createURI(OWL2.Class.getURI());
         AskBuilder askQuery = new AskBuilder();
         askQuery.addWhere(clazz, RDF.type, owlClassNode);
         boolean classExists = sparql.executeAskQuery(askQuery);

@@ -33,6 +33,7 @@ public abstract class PropertyModel extends SPARQLTreeModel<PropertyModel> {
             property = "label"
     )
     protected SPARQLLabel label;
+    public final static String LABEL_FIELD = "label";
 
     @SPARQLProperty(
             ontology = RDFS.class,

@@ -5,21 +5,19 @@
  */
 package org.opensilex.core.ontology.dal;
 
+import java.net.URI;
 import java.util.List;
-import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.model.SPARQLTreeModel;
 
 /**
  *
  * @author vince
  */
 @SPARQLResource(
-        ontology = OWL.class,
+        ontology = OWL2.class,
         resource = "DatatypeProperty",
         ignoreValidation = true
 )
@@ -37,4 +35,15 @@ public class DatatypePropertyModel extends PropertyModel {
             property = "subPropertyOf"
     )
     protected DatatypePropertyModel parent;
+
+    protected URI datatypeRestriction;
+
+    public URI getDatatypeRestriction() {
+        return datatypeRestriction;
+    }
+
+    public void setDatatypeRestriction(URI datatypeRestriction) {
+        this.datatypeRestriction = datatypeRestriction;
+    }
+
 }

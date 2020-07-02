@@ -64,7 +64,9 @@ public class RDFClassDTO {
 
         dto.setUri(model.getUri());
         dto.setLabel(model.getName());
-        dto.setComment(model.getComment().getDefaultValue());
+        if (model.getComment() != null) {
+            dto.setComment(model.getComment().getDefaultValue());
+        }
 
         List<RDFClassPropertyDTO> properties = new ArrayList<>();
         for (OwlRestrictionModel restriction : model.getRestrictions()) {

@@ -11,7 +11,6 @@ import java.util.List;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -32,7 +31,8 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
 
     @SPARQLProperty(
             ontology = RDFS.class,
-            property = "label"
+            property = "label",
+            required = true
     )
     String label;
     public static final String LABEL_FIELD = "label";
@@ -57,13 +57,6 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
     )
     private String description;
     public static final String DESCRIPTION_FIELD = "description";
-
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasExperiment"
-    )
-    List<ExperimentModel> experiments;
-    public static final String EXPERIMENT_URI_FIELD = "experiment";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -150,14 +143,6 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
         this.hasFinancialFunding = hasFinancialFunding;
     }
 
-    public List<ExperimentModel> getExperiments() {
-        return experiments;
-    }
-
-    public void setExperiments(List<ExperimentModel> experiments) {
-        this.experiments = experiments;
-    }
-
     public List<ProjectModel> getRelatedProjects() {
         return relatedProjects;
     }
@@ -237,11 +222,11 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
     public void setScientificContacts(List<UserModel> scientificContacts) {
         this.scientificContacts = scientificContacts;
     }
-    
+
     @Override
     public String[] getUriSegments(ProjectModel instance) {
         return new String[]{
-                instance.getShortname()
+            instance.getShortname()
         };
     }
 

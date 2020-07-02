@@ -8,7 +8,6 @@ package org.opensilex.core.project.api;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.security.user.dal.UserModel;
 
@@ -21,9 +20,9 @@ public class ProjectCreationDTO extends ProjectDTO {
     public ProjectModel newModel() {
 
         ProjectModel model = new ProjectModel();
-        
+
         model.setUri(getUri());
-        
+
         model.setShortname(getShortname());
         model.setHasFinancialFunding(hasFinancialFunding);
         model.setStartDate(startDate);
@@ -31,39 +30,39 @@ public class ProjectCreationDTO extends ProjectDTO {
         model.setLabel(label);
         model.setDescription(description);
         model.setObjective(objective);
-        
+
         List<String> keywordsList = new ArrayList<>(keywords.size());
         keywords.forEach((String u) -> {
             keywordsList.add(u);
         });
         model.setKeywords(keywordsList);
-        
+
         model.setHomePage(homePage);
-        
-        List<UserModel> adminList= new ArrayList<>(administrativeContacts.size());
-        administrativeContacts.forEach((URI u )-> {
+
+        List<UserModel> adminList = new ArrayList<>(administrativeContacts.size());
+        administrativeContacts.forEach((URI u) -> {
             UserModel user = new UserModel();
             user.setUri(u);
             adminList.add(user);
         });
         model.setAdministrativeContacts(adminList);
-        
-        List<UserModel> coordList= new ArrayList<>(coordinators.size());
-        coordinators.forEach((URI u )-> {
+
+        List<UserModel> coordList = new ArrayList<>(coordinators.size());
+        coordinators.forEach((URI u) -> {
             UserModel user = new UserModel();
             user.setUri(u);
             coordList.add(user);
         });
         model.setCoordinators(coordList);
-        
-        List<UserModel> scientList= new ArrayList<>(scientificContacts.size());
-        scientificContacts.forEach((URI u )-> {
+
+        List<UserModel> scientList = new ArrayList<>(scientificContacts.size());
+        scientificContacts.forEach((URI u) -> {
             UserModel user = new UserModel();
             user.setUri(u);
             scientList.add(user);
         });
         model.setScientificContacts(scientList);
-        
+
         List<ProjectModel> projectList = new ArrayList<>(relatedProjects.size());
         relatedProjects.forEach((URI u) -> {
             ProjectModel project = new ProjectModel();
@@ -71,15 +70,7 @@ public class ProjectCreationDTO extends ProjectDTO {
             projectList.add(project);
         });
         model.setRelatedProjects(projectList);
-        
-        List<ExperimentModel> expeList = new ArrayList<>(experiments.size());
-        experiments.forEach((URI u) -> {
-            ExperimentModel expe = new ExperimentModel();
-            expe.setUri(u);
-            expeList.add(expe);
-        });
-        model.setExperiments(expeList);
-        
+
         return model;
     }
 

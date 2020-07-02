@@ -5,20 +5,15 @@
  */
 package org.opensilex.sparql;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
 import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.sparql.exceptions.SPARQLValidationException;
-import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
 import org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
-import org.opensilex.sparql.service.SPARQLStatement;
-import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

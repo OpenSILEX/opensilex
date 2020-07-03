@@ -252,7 +252,7 @@ public class ExperimentAPI {
     }
 
     @PUT
-    @Path("{uri}/add-facilities")
+    @Path("{uri}/set-facilities")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
@@ -264,11 +264,11 @@ public class ExperimentAPI {
         @ApiResponse(code = 200, message = "Return experiment URI", response = ObjectUriResponse.class),
         @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
     })
-    public Response addFacilities(
+    public Response setFacilities(
             @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
             @ApiParam(value = "Facility URI") List<URI> facitilities) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql);
-        xpDao.addFacilities(xpUri, facitilities, currentUser);
+        xpDao.setFacilities(xpUri, facitilities, currentUser);
         return new ObjectUriResponse(Response.Status.OK, xpUri).getResponse();
     }
 

@@ -8,7 +8,6 @@ package org.opensilex.core.infrastructure.api;
 import java.net.URI;
 import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**

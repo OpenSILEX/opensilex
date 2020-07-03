@@ -439,13 +439,22 @@ public class ExperimentDAO {
         }
     }
 
-    public void addFacilities(URI xpUri, List<URI> facitilities, UserModel user) throws Exception {
+    public void setFacilities(URI xpUri, List<URI> facilities, UserModel user) throws Exception {
         validateExperimentAccess(xpUri, user);
 
-        // TODO Validate facility existence
-        
         Node xpGraph = SPARQLDeserializers.nodeURI(xpUri);
-        sparql.insertPrimitives(xpGraph, xpUri, Oeso.hasFacility, facitilities, URI.class);
+        sparql.startTransaction();
+        try {
+            List<URI> existingFacilities = sparql.searchPrimitives(xpGraph, xpUri, Oeso.hasFacility, URI.class);
+            sparql.deletePrimitives(xpGraph, xpUri, Oeso.hasFacility);
+            sparql.insertPrimitives(xpGraph, xpUri, Oeso.hasFacility, facilities, URI.class);
+            sparql.deleteAll(xpGraph, existingFacilities);
+            sparql.copyAll(sparql.getDefaultGraph(InfrastructureModel.class), facilities, xpGraph);
+            sparql.commitTransaction();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction(ex);
+            throw ex;
+        }
     }
 
     public List<InfrastructureFacilityModel> getFacilities(URI xpUri, UserModel user) throws Exception {

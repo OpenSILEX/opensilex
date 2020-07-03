@@ -15,6 +15,7 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -84,6 +85,10 @@ public final class OntologyDAO {
     public ClassModel getClassModel(URI rdfClass, String lang) throws Exception {
         ClassModel model = sparql.getByURI(ClassModel.class, rdfClass, lang);
 
+        if (model == null) {
+            throw new NotFoundURIException(rdfClass);
+        }
+        
         List<OwlRestrictionModel> restrictions = getOwlRestrictions(rdfClass, lang);
 
         Map<URI, URI> datatypePropertiesURI = new HashMap<>();

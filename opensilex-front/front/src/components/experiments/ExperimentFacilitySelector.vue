@@ -2,8 +2,8 @@ import Component from "vue-class-component";
 
  <template>
   <div>
-    <opensilex-CreateButton @click="show" label="ExperimentScientificObjects.add-facilities"></opensilex-CreateButton>
-    <b-modal ref="facilitySelector" @ok.prevent="validate" size="md" :static="true">
+    <opensilex-CreateButton @click="show" label="ExperimentFacilitySelector.set-facilities"></opensilex-CreateButton>
+    <b-modal ref="facilitySelector" @ok.prevent="update" size="md" :static="true">
       <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
       <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
 
@@ -12,7 +12,7 @@ import Component from "vue-class-component";
           <slot name="icon">
             <opensilex-Icon icon="fa#eye" class="icon-title" />
           </slot>
-          <span>{{$t("ExperimentScientificObjects.add-facilities")}}</span>
+          <span>{{$t("ExperimentFacilitySelector.set-facilities")}}</span>
         </i>
       </template>
       <opensilex-SelectForm
@@ -25,7 +25,8 @@ import Component from "vue-class-component";
         <template v-slot:option-label="{node}">
           <opensilex-Icon :icon="$opensilex.getRDFIcon(node.raw.type)" />&nbsp;
           <span class="capitalize-first-letter">{{node.label}}</span>&nbsp;
-          (<span class="capitalize-first-letter">{{node.raw.typeLabel}}</span>)
+          (
+          <span class="capitalize-first-letter">{{node.raw.typeLabel}}</span>)
         </template>
         <template v-slot:value-label="{node}">
           <opensilex-Icon :icon="$opensilex.getRDFIcon(node.raw.type)" />&nbsp;
@@ -61,6 +62,10 @@ export default class ExperimentFacilitySelector extends Vue {
 
   show() {
     this.facilitySelector.show();
+  }
+
+  hide() {
+    this.facilitySelector.hide();
   }
 
   mounted() {
@@ -186,8 +191,34 @@ export default class ExperimentFacilitySelector extends Vue {
 
     return node;
   }
+
+  update() {
+    this.xpService
+      .setFacilities(this.uri, this.selected)
+      .then(result => {
+        this.$nextTick(() => {
+          this.$emit("facilitiesUpdated", this.selected);
+          this.hide();
+        });
+      })
+      .catch(console.error);
+  }
 }
 </script>
 
 <style scoped lang="scss">
 </style>
+
+
+<i18n>
+
+en:
+  ExperimentFacilitySelector:
+    set-facilities: Define experiment facilities
+    label: experiment facilities
+
+fr:
+  ExperimentFacilitySelector:
+    set-facilities: Définir les zones d'expérimentations
+    label: zones d'expérimentations
+</i18n>

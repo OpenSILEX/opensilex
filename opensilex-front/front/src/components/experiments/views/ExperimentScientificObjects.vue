@@ -4,8 +4,8 @@
       <div class="col-md-6">
         <b-card>
           <b-button-group>
-            <opensilex-ExperimentFacilitySelector :uri="uri"></opensilex-ExperimentFacilitySelector>
-            <opensilex-CreateButton label="ExperimentScientificObjects.import-scientific-objects"></opensilex-CreateButton>
+            <opensilex-ExperimentFacilitySelector :uri="uri" @facilitiesUpdated="refresh"></opensilex-ExperimentFacilitySelector>
+            <opensilex-ScientificObjectCSVImporter :uri="uri" @csvImported="refresh"></opensilex-ScientificObjectCSVImporter>
           </b-button-group>
           <opensilex-TreeView :nodes.sync="nodes" @select="displayScientificObjectDetails">
             <template v-slot:node="{ node }">
@@ -29,7 +29,7 @@
                 label="ExperimentScientificObjects.delete-facility-relation"
                 :small="true"
               ></opensilex-DeleteButton>
-            </template> -->
+            </template>-->
           </opensilex-TreeView>
         </b-card>
       </div>
@@ -73,6 +73,10 @@ export default class ExperimentScientificObjects extends Vue {
       "opensilex.ScientificObjectsService"
     );
 
+    this.refresh();
+  }
+
+  refresh() {
     this.soService.getExperimentScientificObjectsTree(this.uri).then(http => {
       let treeNode = [];
       let first = true;
@@ -81,22 +85,8 @@ export default class ExperimentScientificObjects extends Vue {
         let node = this.dtoToNode(resourceTree);
         treeNode.push(node);
 
-        //   if (first && uri == null) {
-        //     this.displayNodeDetail(node.data.uri, true);
-        //     first = false;
-        //   }
-        // }
-
-        // if (uri != null) {
-        //   this.displayNodeDetail(uri, true);
-        // }
-
-        // if (http.response.result.length == 0) {
-        //   this.selected = null;
-        // }
+        this.nodes = treeNode;
       }
-
-      this.nodes = treeNode;
     });
   }
 
@@ -132,3 +122,13 @@ export default class ExperimentScientificObjects extends Vue {
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+en:
+  ExperimentScientificObjects:
+    import-scientific-objects: Import experiment objets
+
+fr:
+  ExperimentScientificObjects:
+    import-scientific-objects:  Importer des objets d'étude
+</i18n>

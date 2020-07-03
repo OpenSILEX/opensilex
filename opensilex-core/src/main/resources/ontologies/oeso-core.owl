@@ -1,30 +1,27 @@
 <?xml version="1.0"?>
 <rdf:RDF xmlns="http://www.opensilex.org/vocabulary/oeso#"
-     xml:base="http://www.opensilex.org/vocabulary/oeso"
-     xmlns:dc="http://purl.org/dc/elements/1.1/"
-     xmlns:owl="http://www.w3.org/2002/07/owl#"
-     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-     xmlns:xml="http://www.w3.org/XML/1998/namespace"
-     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     xmlns:skos="http://www.w3.org/2004/02/skos/core#"
-     xmlns:oxapi="http://www.opensilex.org/vocabulary/opensilex-api#"
-     xmlns:terms="http://purl.org/dc/terms/"
-     xmlns:object="http://www.mistea.supagro.inra.fr/object#"
-     xmlns:vocabulary="http://www.opensilex.org/vocabulary/oeso#">
+         xml:base="http://www.opensilex.org/vocabulary/oeso"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:xml="http://www.w3.org/XML/1998/namespace"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+         xmlns:terms="http://purl.org/dc/terms/"
+         xmlns:object="http://www.mistea.supagro.inra.fr/object#"
+         xmlns:vocabulary="http://www.opensilex.org/vocabulary/oeso#">
     <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeso">
         <owl:versionIRI rdf:resource="http://www.opensilex.org/vocabulary/oeso"/>
         <rdfs:comment>Authors : Anne TIREAU, Llorenç CABRERA-BOSQUET, Morgane VIDAL, Pascal NEVEU</rdfs:comment>
         <rdfs:comment>INRA MISTEA
             Copyright © - INRA - 2014 - 2019
             The Object Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by/4.0/legalcode)</rdfs:comment>
-        <rdfs:label>OpenSILEX - Ontology for Experimental Scientific Objects (OESO)</rdfs:label>
         <rdfs:seeAlso>http://www.phenome-fppn.fr/vocabulary/2018/oepo</rdfs:seeAlso>
         <owl:versionInfo>New version of 3.0.2 release  http://www.phenome-fppn.fr/vocabulary/2018/oepo</owl:versionInfo>
         <owl:versionInfo>Version 2.1 (2019-07-26) created by INRA</owl:versionInfo>
     </owl:Ontology>
     
-
 
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -204,8 +201,6 @@
             </owl:Class>
         </rdfs:domain>
         <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
-        <rdfs:label xml:lang="en">administrative contact</rdfs:label>
-        <rdfs:label xml:lang="fr">contact administratif</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -215,8 +210,6 @@
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasContact">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
         <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
-        <rdfs:label xml:lang="en">contact</rdfs:label>
-        <rdfs:label xml:lang="fr">correspondant</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -234,8 +227,6 @@
             </owl:Class>
         </rdfs:domain>
         <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
-        <rdfs:label xml:lang="fr">coordinateur</rdfs:label>
-        <rdfs:label xml:lang="en">coordinator</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -253,8 +244,6 @@
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasDocument">
         <rdfs:domain rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
-        <rdfs:label xml:lang="en">document</rdfs:label>
-        <rdfs:label xml:lang="fr">document</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -308,8 +297,6 @@
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasMethod">
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variable"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Method"/>
-        <rdfs:label xml:lang="en">method</rdfs:label>
-        <rdfs:label xml:lang="fr">méthode</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -318,8 +305,6 @@
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasPart">
         <owl:inverseOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#isPartOf"/>
-        <rdfs:label xml:lang="fr">a pour part</rdfs:label>
-        <rdfs:label xml:lang="en">has part</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -335,8 +320,6 @@
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasProject">
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Project"/>
-        <rdfs:label xml:lang="fr">projet associé</rdfs:label>
-        <rdfs:label xml:lang="en">related projet</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -369,8 +352,6 @@
             </owl:Class>
         </rdfs:domain>
         <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
-        <rdfs:label xml:lang="fr">contact scientifique</rdfs:label>
-        <rdfs:label xml:lang="en">scientific contact</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -381,8 +362,6 @@
         <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasContact"/>
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
         <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
-        <rdfs:label xml:lang="en">scientific supervisor</rdfs:label>
-        <rdfs:label xml:lang="fr">superviseur scientifique</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -391,8 +370,6 @@
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasSpecies">
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Species"/>
-        <rdfs:label xml:lang="fr">espèce</rdfs:label>
-        <rdfs:label xml:lang="en">species</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -402,8 +379,6 @@
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasTechnicalSupervisor">
         <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasContact"/>
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
-        <rdfs:label xml:lang="fr">superviseur technique</rdfs:label>
-        <rdfs:label xml:lang="en">technical supervisor</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -413,8 +388,6 @@
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasUnit">
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variable"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Unit"/>
-        <rdfs:label xml:lang="en">unit</rdfs:label>
-        <rdfs:label xml:lang="fr">unité</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -429,10 +402,7 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#isPartOf -->
 
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#isPartOf">
-        <rdfs:label xml:lang="fr">est partie de</rdfs:label>
-        <rdfs:label xml:lang="en">is part of</rdfs:label>
-    </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#isPartOf"/>
     
 
 
@@ -441,9 +411,6 @@
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#measures">
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variable"/>
-        <rdfs:comment xml:lang="en">Represent the link between a sensing device which measures a variable</rdfs:comment>
-        <rdfs:label xml:lang="en">measures</rdfs:label>
-        <rdfs:label xml:lang="fr">mesure</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -452,9 +419,6 @@
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#participatesIn">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-        <rdfs:isDefinedBy>http://www.ontobee.org/ontology/rdf/RO?iri=http://purl.obolibrary.org/obo/RO_0000056</rdfs:isDefinedBy>
-        <rdfs:label xml:lang="en">participates in</rdfs:label>
-        <rdfs:label xml:lang="fr">participe à</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -479,55 +443,25 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Data properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Data properties
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
 
-    <!-- dc:description -->
+    <!-- http://purl.org/dc/elements/1.1/description -->
 
-    <owl:DatatypeProperty rdf:about="dc:description">
-        <rdfs:label xml:lang="en">description</rdfs:label>
-        <rdfs:label xml:lang="fr">description</rdfs:label>
-    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://purl.org/dc/elements/1.1/description"/>
     
 
 
-    <!-- dc:title -->
+    <!-- http://purl.org/dc/elements/1.1/title -->
 
-    <owl:DatatypeProperty rdf:about="dc:title">
-        <rdfs:label xml:lang="fr">Titre</rdfs:label>
-        <rdfs:label xml:lang="en">title</rdfs:label>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- foaf:firstName -->
-
-    <owl:DatatypeProperty rdf:about="foaf:firstName"/>
-    
-
-
-    <!-- foaf:homepage -->
-
-    <owl:DatatypeProperty rdf:about="foaf:homepage"/>
-    
-
-
-    <!-- foaf:lastName -->
-
-    <owl:DatatypeProperty rdf:about="foaf:lastName"/>
-    
-
-
-    <!-- foaf:mbox -->
-
-    <owl:DatatypeProperty rdf:about="foaf:mbox"/>
+    <owl:DatatypeProperty rdf:about="http://purl.org/dc/elements/1.1/title"/>
     
 
 
@@ -561,8 +495,6 @@
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#endDate">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
-        <rdfs:label xml:lang="fr">date de fin</rdfs:label>
-        <rdfs:label xml:lang="en">end date</rdfs:label>
     </owl:DatatypeProperty>
     
 
@@ -590,10 +522,7 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasKeyword -->
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasKeyword">
-        <rdfs:label xml:lang="en">keyword</rdfs:label>
-        <rdfs:label xml:lang="fr">mot-clé</rdfs:label>
-    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasKeyword"/>
     
 
 
@@ -601,8 +530,6 @@
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasObjective">
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Project"/>
-        <rdfs:label xml:lang="fr">objectif</rdfs:label>
-        <rdfs:label xml:lang="en">objective</rdfs:label>
     </owl:DatatypeProperty>
     
 
@@ -632,63 +559,77 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#startDate -->
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#startDate">
-        <rdfs:label xml:lang="fr">date de début</rdfs:label>
-        <rdfs:label xml:lang="en">start date</rdfs:label>
-    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#startDate"/>
     
 
 
-    <!-- rdfs:comment -->
+    <!-- http://www.w3.org/2000/01/rdf-schema#comment -->
 
-    <owl:DatatypeProperty rdf:about="rdfs:comment">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
-        <rdfs:label xml:lang="en">comment</rdfs:label>
-        <rdfs:label xml:lang="fr">commentaire</rdfs:label>
-    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://www.w3.org/2000/01/rdf-schema#comment"/>
     
 
 
-    <!-- rdfs:label -->
+    <!-- http://www.w3.org/2000/01/rdf-schema#label -->
 
-    <owl:DatatypeProperty rdf:about="rdfs:label">
-        <rdfs:label xml:lang="en">name</rdfs:label>
-        <rdfs:label xml:lang="fr">nom</rdfs:label>
-    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://www.w3.org/2000/01/rdf-schema#label"/>
     
 
 
-    <!-- skos:broader -->
+    <!-- http://www.w3.org/2004/02/skos/core#broader -->
 
-    <owl:DatatypeProperty rdf:about="skos:broader"/>
+    <owl:DatatypeProperty rdf:about="http://www.w3.org/2004/02/skos/core#broader"/>
     
 
 
-    <!-- skos:closeMatch -->
+    <!-- http://www.w3.org/2004/02/skos/core#closeMatch -->
 
-    <owl:DatatypeProperty rdf:about="skos:closeMatch"/>
+    <owl:DatatypeProperty rdf:about="http://www.w3.org/2004/02/skos/core#closeMatch"/>
     
 
 
-    <!-- skos:exactMatch -->
+    <!-- http://www.w3.org/2004/02/skos/core#exactMatch -->
 
-    <owl:DatatypeProperty rdf:about="skos:exactMatch"/>
+    <owl:DatatypeProperty rdf:about="http://www.w3.org/2004/02/skos/core#exactMatch"/>
     
 
 
-    <!-- skos:narrower -->
+    <!-- http://www.w3.org/2004/02/skos/core#narrower -->
 
-    <owl:DatatypeProperty rdf:about="skos:narrower"/>
+    <owl:DatatypeProperty rdf:about="http://www.w3.org/2004/02/skos/core#narrower"/>
+    
+
+
+    <!-- http://xmlns.com/foaf/0.1/firstName -->
+
+    <owl:DatatypeProperty rdf:about="http://xmlns.com/foaf/0.1/firstName"/>
+    
+
+
+    <!-- http://xmlns.com/foaf/0.1/homepage -->
+
+    <owl:DatatypeProperty rdf:about="http://xmlns.com/foaf/0.1/homepage"/>
+    
+
+
+    <!-- http://xmlns.com/foaf/0.1/lastName -->
+
+    <owl:DatatypeProperty rdf:about="http://xmlns.com/foaf/0.1/lastName"/>
+    
+
+
+    <!-- http://xmlns.com/foaf/0.1/mbox -->
+
+    <owl:DatatypeProperty rdf:about="http://xmlns.com/foaf/0.1/mbox"/>
     
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Classes
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Classes
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -704,14 +645,14 @@
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="dc:description"/>
+                <owl:onProperty rdf:resource="http://purl.org/dc/elements/1.1/description"/>
                 <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="dc:title"/>
+                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#label"/>
                 <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
@@ -752,7 +693,7 @@
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="dc:title"/>
+                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#label"/>
                 <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
@@ -782,8 +723,6 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Accession">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-        <rdfs:label xml:lang="en">Accession</rdfs:label>
-        <rdfs:label xml:lang="fr">Accession</rdfs:label>
     </owl:Class>
     
 
@@ -798,10 +737,7 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Document -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Document">
-        <rdfs:label xml:lang="en">document</rdfs:label>
-        <rdfs:label xml:lang="fr">document</rdfs:label>
-    </owl:Class>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Document"/>
     
 
 
@@ -817,9 +753,6 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Equipement">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
-        <rdfs:comment xml:lang="en">An INSTALLATION is the elementary level for data acquisition in a specific type of experiments. It stands for other frequently used terms such as ‘platform’, ‘facility’ or others.</rdfs:comment>
-        <rdfs:label xml:lang="en">equipment</rdfs:label>
-        <rdfs:label xml:lang="fr">équipement</rdfs:label>
     </owl:Class>
     
 
@@ -1181,7 +1114,7 @@
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="rdfs:comment"/>
+                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#comment"/>
                 <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
@@ -1194,7 +1127,7 @@
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="rdfs:label"/>
+                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#label"/>
                 <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
@@ -1227,30 +1160,19 @@
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:comment xml:lang="en">An EXPERIMENT is a planned activity carried out by a given set of persons on a given set of observation unit, like plants or microplots (see §2.1), involving a protocol, methods and a resulting dataset.</rdfs:comment>
-        <rdfs:label xml:lang="en">experiment</rdfs:label>
-        <rdfs:label xml:lang="fr">expérimentation</rdfs:label>
     </owl:Class>
     
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition">
-        <dc:source>skos:closeMatch http://www.ontobee.org/ontology/rdf/PECO?iri=http://purl.obolibrary.org/obo/PECO_0007359</dc:source>
-        <rdfs:comment xml:lang="en">A set of environmental conditions, infrastructure and supporting equipment or resources necessary to conduct a given experiment and in which plants, plots or group of plants are raised</rdfs:comment>
-        <rdfs:label xml:lang="fr">contexte expérimental</rdfs:label>
-        <rdfs:label xml:lang="en">experimental context</rdfs:label>
-    </owl:Class>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
     
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm">
-        <rdfs:label xml:lang="fr">Matériel Génétique</rdfs:label>
-        <rdfs:label xml:lang="en">germplasm descriptor information</rdfs:label>
-    </owl:Class>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
     
 
 
@@ -1330,13 +1252,11 @@
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="dc:title"/>
+                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#label"/>
                 <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:label xml:lang="en">infrastructure</rdfs:label>
-        <rdfs:label xml:lang="fr">infrastructure</rdfs:label>
     </owl:Class>
     
 
@@ -1345,8 +1265,6 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
-        <rdfs:label xml:lang="fr">Dispositif</rdfs:label>
-        <rdfs:label xml:lang="en">Facility</rdfs:label>
     </owl:Class>
     
 
@@ -1355,8 +1273,6 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/security#Group"/>
-        <rdfs:label xml:lang="fr">Equipe</rdfs:label>
-        <rdfs:label xml:lang="en">Team</rdfs:label>
     </owl:Class>
     
 
@@ -1365,9 +1281,6 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Method">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
-        <rdfs:isDefinedBy>http://purl.org/ppeo/PPEO.owl#PPEO_000011</rdfs:isDefinedBy>
-        <rdfs:label xml:lang="en">method</rdfs:label>
-        <rdfs:label xml:lang="fr">méthode</rdfs:label>
     </owl:Class>
     
 
@@ -1410,14 +1323,14 @@
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="rdfs:label"/>
+                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#label"/>
                 <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="dc:description"/>
+                <owl:onProperty rdf:resource="http://purl.org/dc/elements/1.1/description"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
@@ -1652,19 +1565,20 @@
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:comment xml:lang="en">PROJECT (e.g. EU or national projects) involves partners that are in charge of experiments performed in one or more local infrastructures.</rdfs:comment>
-        <rdfs:label xml:lang="en">project</rdfs:label>
-        <rdfs:label xml:lang="fr">projet</rdfs:label>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://xmlns.com/foaf/0.1/homepage"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
     </owl:Class>
     
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Provenance -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Provenance">
-        <rdfs:label xml:lang="en">provenance</rdfs:label>
-        <rdfs:label xml:lang="fr">provenance</rdfs:label>
-    </owl:Class>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Provenance"/>
     
 
 
@@ -1688,13 +1602,11 @@
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="dc:title"/>
+                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#label"/>
                 <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:label xml:lang="fr">objet scientifique</rdfs:label>
-        <rdfs:label xml:lang="en">scientific object</rdfs:label>
     </owl:Class>
     
 
@@ -1703,8 +1615,6 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SensingDevice">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-        <rdfs:comment xml:lang="en">devices providing numerical data, e.g. environment sensors or cameras</rdfs:comment>
-        <rdfs:label xml:lang="en">sensing device</rdfs:label>
     </owl:Class>
     
 
@@ -1713,8 +1623,6 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Species">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-        <rdfs:label xml:lang="fr">Espèce</rdfs:label>
-        <rdfs:label xml:lang="en">Species</rdfs:label>
     </owl:Class>
     
 
@@ -1737,9 +1645,6 @@
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:isDefinedBy>http://purl.org/ppeo/PPEO.owl#PPEO_000012</rdfs:isDefinedBy>
-        <rdfs:label xml:lang="en">unit</rdfs:label>
-        <rdfs:label xml:lang="fr">unité</rdfs:label>
     </owl:Class>
     
 
@@ -1776,8 +1681,6 @@
                 <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Unit"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:label xml:lang="en">variable</rdfs:label>
-        <rdfs:label xml:lang="fr">variable</rdfs:label>
     </owl:Class>
     
 
@@ -1787,38 +1690,38 @@
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VariableBase">
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="skos:broader"/>
+                <owl:onProperty rdf:resource="http://www.w3.org/2004/02/skos/core#broader"/>
                 <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="skos:closeMatch"/>
+                <owl:onProperty rdf:resource="http://www.w3.org/2004/02/skos/core#closeMatch"/>
                 <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="skos:exactMatch"/>
+                <owl:onProperty rdf:resource="http://www.w3.org/2004/02/skos/core#exactMatch"/>
                 <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="skos:narrower"/>
+                <owl:onProperty rdf:resource="http://www.w3.org/2004/02/skos/core#narrower"/>
                 <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="rdfs:label"/>
+                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#label"/>
                 <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="rdfs:comment"/>
+                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#comment"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
@@ -1831,8 +1734,6 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Variety">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-        <rdfs:label xml:lang="en">Variety</rdfs:label>
-        <rdfs:label xml:lang="fr">Variété</rdfs:label>
     </owl:Class>
     
 
@@ -1841,9 +1742,6 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Vector">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-        <rdfs:comment xml:lang="en">devices that either transport plants to a given site for phenotyping, or carry sensors in a greenhouse (e.g. conveyor belt, gripping arm, robot) or in the field (e.g. UAV, gantry, field robot). By extension, a vector can also be a group of persons producing manual observations.</rdfs:comment>
-        <rdfs:label xml:lang="fr">vecteur</rdfs:label>
-        <rdfs:label xml:lang="en">vector</rdfs:label>
     </owl:Class>
     
 
@@ -1899,26 +1797,32 @@
     
 
 
+    <!-- http://www.w3.org/2002/07/owl#DatatypeProperty -->
+
+    <owl:Class rdf:about="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+    
+
+
     <!-- http://xmlns.com/foaf/0.1/Agent -->
 
     <owl:Class rdf:about="http://xmlns.com/foaf/0.1/Agent">
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="foaf:firstName"/>
+                <owl:onProperty rdf:resource="http://xmlns.com/foaf/0.1/firstName"/>
                 <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="foaf:lastName"/>
+                <owl:onProperty rdf:resource="http://xmlns.com/foaf/0.1/lastName"/>
                 <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="foaf:mbox"/>
+                <owl:onProperty rdf:resource="http://xmlns.com/foaf/0.1/mbox"/>
                 <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
@@ -1944,8 +1848,6 @@
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:label xml:lang="en">user</rdfs:label>
-        <rdfs:label xml:lang="fr">utilisateur</rdfs:label>
     </owl:Class>
     
 

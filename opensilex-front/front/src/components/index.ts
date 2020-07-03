@@ -248,6 +248,9 @@ import ScientificObjectPropertyList from './scientificObjects/ScientificObjectPr
 components["opensilex-ScientificObjectPropertyList"] = ScientificObjectPropertyList;
 import ScientificObjectPropertyConfiguration from './scientificObjects/ScientificObjectPropertyConfiguration.vue';
 components["opensilex-ScientificObjectPropertyConfiguration"] = ScientificObjectPropertyConfiguration;
+import ScientificObjectCSVImporter from './scientificObjects/ScientificObjectCSVImporter.vue';
+components["opensilex-ScientificObjectCSVImporter"] = ScientificObjectCSVImporter;
+
 
 // Variables
 import VariableList from './variables/VariableList.vue';

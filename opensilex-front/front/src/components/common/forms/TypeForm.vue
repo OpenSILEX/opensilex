@@ -2,7 +2,7 @@
   <opensilex-FormField
     :rules="rules"
     :required="required"
-    label="component.common.type"
+    :label="label ||'component.common.type'"
   >
     <!-- helpMessage="component.common.type.help-message" -->
     <template v-slot:field="field">
@@ -43,6 +43,9 @@ export default class TypeForm extends Vue {
 
   @Prop()
   baseType: string;
+
+  @Prop()
+  label: string;
 
   @Prop()
   placeholder: string;

@@ -29,10 +29,7 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
 
     @Override
     public Node getNodeFromString(String value) throws Exception {
-        if (prefixes == null) {
-            return getNode(new URI(value));
-        }
-        return getNode(getExpandedURI(value));
+        return getNode(new URI(value));
     }
 
     public static URI formatURI(URI uri) {
@@ -61,7 +58,10 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
 
     @Override
     public Node getNode(Object value) throws Exception {
-        return NodeFactory.createURI(value.toString());
+        if (prefixes == null) {
+            return NodeFactory.createURI(value.toString());
+        }
+        return NodeFactory.createURI(getExpandedURI(value.toString()));
     }
 
     private static PrefixMapping prefixes = null;

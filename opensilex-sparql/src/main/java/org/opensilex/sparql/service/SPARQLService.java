@@ -1398,6 +1398,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
+    public void deletePrimitives(Node graph, URI uri, Property property) throws Exception {
+        UpdateBuilder delete = new UpdateBuilder();
+        Node nodeUri = SPARQLDeserializers.nodeURI(uri);
+        delete.addDelete(graph, nodeUri, property, "?value");
+        delete.addWhere(nodeUri, property, "?value");
+        executeDeleteQuery(delete);
+    }
+
     public <T> List<T> searchPrimitives(Node graph, URI uri, Property property, Class<T> valuesType) throws Exception {
         List<T> list = new ArrayList<>();
         SelectBuilder select = new SelectBuilder();
@@ -1417,4 +1425,37 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return list;
     }
 
+    public void copy(Node originGraph, URI objectURI, Node destinationGraph) throws SPARQLException {
+        List<URI> uriList = new ArrayList<>();
+        uriList.add(objectURI);
+        copyAll(originGraph, uriList, destinationGraph);
+    }
+
+    public void copyAll(Node originGraph, List<URI> objectList, Node destinationGraph) throws SPARQLException {
+        if (objectList.size() > 0) {
+            UpdateBuilder copy = new UpdateBuilder();
+            int varCount = 0;
+            for (URI objectURI : objectList) {
+                Node objectURINode = SPARQLDeserializers.nodeURI(objectURI);
+                copy.addInsert(destinationGraph, objectURINode, "?p" + varCount, "?o" + varCount);
+                copy.addWhere(new WhereBuilder().addGraph(originGraph, objectURINode, "?p" + varCount, "?o" + varCount));
+                varCount++;
+            }
+            executeUpdateQuery(copy);
+        }
+    }
+    
+    public void deleteAll(Node graph, List<URI> objectList) throws SPARQLException {
+         if (objectList.size() > 0) {
+            UpdateBuilder delete = new UpdateBuilder();
+            int varCount = 0;
+            for (URI objectURI : objectList) {
+                Node objectURINode = SPARQLDeserializers.nodeURI(objectURI);
+                delete.addDelete(graph, objectURINode, "?p" + varCount, "?o" + varCount);
+                delete.addWhere(new WhereBuilder().addGraph(graph, objectURINode, "?p" + varCount, "?o" + varCount));
+                varCount++;
+            }
+            executeUpdateQuery(delete);
+        }
+    }
 }

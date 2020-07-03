@@ -27,3 +27,4 @@ public class NamedResourcePaginatedListResponse<T extends SPARQLNamedResourceMod
     }
 
 }
+

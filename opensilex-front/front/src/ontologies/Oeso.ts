@@ -5,6 +5,7 @@ let ontologies = {
     EXPERIMENT_TYPE_URI: OESO_URI + "#Experiment",
     INFRASTRUCTURE_TYPE_URI: OESO_URI + "#Infrastructure",
     INFRASTRUCTURE_FACILITY_TYPE_URI: OESO_URI + "#InfrastructureFacility",
+    SCIENTIFIC_OBJECT_TYPE_URI: OESO_URI + "#ScientificObject",
     GERMPLASM_TYPE_URI: OESO_URI + "#Germplasm",
     PLANT_MATERIAL_LOT_TYPE_URI: OESO_URI + "#PlantMaterialLot",
     HAS_EXPERIMENT_MODALITIES: OESO_URI + "#hasExperimentModalities",

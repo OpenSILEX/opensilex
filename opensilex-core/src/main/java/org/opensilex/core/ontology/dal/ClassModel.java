@@ -8,7 +8,7 @@ package org.opensilex.core.ontology.dal;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
@@ -60,7 +60,9 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
 
     protected Map<URI, ObjectPropertyModel> objectProperties;
 
-    protected List<OwlRestrictionModel> restrictions;
+    protected Map<URI, OwlRestrictionModel> restrictions;
+
+    protected Map<URI, Integer> propertiesOrder;
 
     @Override
     public String getName() {
@@ -104,24 +106,70 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
         this.objectProperties = objectProperties;
     }
 
-    public List<OwlRestrictionModel> getRestrictions() {
+    public Map<URI, OwlRestrictionModel> getRestrictions() {
         return restrictions;
     }
 
-    public void setRestrictions(List< OwlRestrictionModel> restrictions) {
+    public void setRestrictions(Map<URI, OwlRestrictionModel> restrictions) {
         this.restrictions = restrictions;
     }
 
-    public void forEachPropertyRestriction(BiConsumer<PropertyModel, OwlRestrictionModel> lambda) {
-        for (OwlRestrictionModel restriction : getRestrictions()) {
-            if (restriction.isDatatypePropertyRestriction()) {
-                DatatypePropertyModel property = getDatatypeProperties().get(restriction.getOnProperty());
-                lambda.accept(property, restriction);
-            } else if (restriction.isObjectPropertyRestriction()) {
-                ObjectPropertyModel property = getObjectProperties().get(restriction.getOnClass());
-                lambda.accept(property, restriction);
+    public List<OwlRestrictionModel> getOrderedRestrictions() {
+        return restrictions.values().stream().sorted((r1, r2) -> {
+            if (propertiesOrder == null) {
+                return 0;
             }
+            
+            Integer o1 = propertiesOrder.get(r1.getOnProperty());
+            Integer o2 = propertiesOrder.get(r2.getOnProperty());
+            
+            if (o1 == null) {
+                if (o2 != null) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            } else {
+                if (o2 == null) {
+                    return -1;
+                } else {
+                    return o1.compareTo(o2);
+                }
+            }
+            
+        }).collect(Collectors.toList());
+    }
+
+    public boolean isDatatypePropertyRestriction(URI datatype) {
+        if (datatype == null) {
+            return false;
         }
+
+        return getDatatypeProperties().containsKey(datatype);
+    }
+
+    public boolean isObjectPropertyRestriction(URI classURI) {
+        if (classURI == null) {
+            return false;
+        }
+
+        return getObjectProperties().containsKey(classURI);
+    }
+
+    public DatatypePropertyModel getDatatypeProperty(URI propertyURI) {
+        return getDatatypeProperties().get(propertyURI);
+    }
+
+    public ObjectPropertyModel getObjectProperty(URI propertyURI) {
+        return getObjectProperties().get(propertyURI);
+    }
+
+    public Map<URI, Integer> getPropertiesOrder() {
+        return propertiesOrder;
+    }
+
+    public void setPropertiesOrder(Map<URI, Integer> propertiesOrder) {
+        this.propertiesOrder = propertiesOrder;
     }
 
 }

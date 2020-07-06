@@ -368,7 +368,7 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Incident">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Trouble"/>
-        <rdfs:comment>Agit sur un objet scientifique</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Agit sur un objet scientifique</rdfs:comment>
         <rdfs:comment xml:lang="en">Concerns a scientific object</rdfs:comment>
         <rdfs:label xml:lang="en">Incident</rdfs:label>
         <rdfs:label xml:lang="fr">Incident</rdfs:label>

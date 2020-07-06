@@ -58,7 +58,7 @@ public class ExperimentModelToExperiment {
             Project oldProjectMOdel = new Project();
             oldProjectMOdel.setUri(projectModel.getUri().toString());
             oldProjectMOdel.setShortname(projectModel.getShortname());
-            oldProjectMOdel.setName(projectModel.getLabel());
+            oldProjectMOdel.setName(projectModel.getName());
             oldXpModel.addProject(oldProjectMOdel);
         }
         for(URI varURI : xp.getVariables()){

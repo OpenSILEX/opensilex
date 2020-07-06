@@ -248,7 +248,7 @@ public class ProjectPostDTO extends AbstractVerifiedClass {
     public ProjectModel getProjectModel(SPARQLService sparql, String lang) throws Exception {
         ProjectModel project = new ProjectModel();
 
-        project.setLabel(this.getName());
+        project.setName(this.getName());
         project.setShortname(this.getShortname());
         project.setDescription(this.getDescription());
         project.setObjective(this.getObjective());

@@ -56,12 +56,20 @@ public abstract class PropertyModel extends SPARQLTreeModel<PropertyModel> {
 
     @Override
     public String getName() {
+        if (name != null) {
+            return name;
+        }
         SPARQLLabel slabel = getLabel();
         if (slabel != null) {
             return getLabel().getDefaultValue();
         } else {
             return getUri().toString();
         }
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
 
     public SPARQLLabel getLabel() {

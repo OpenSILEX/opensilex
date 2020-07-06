@@ -37,6 +37,7 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
 import org.opensilex.sparql.response.PartialResourceTreeDTO;
 import org.opensilex.sparql.response.PartialResourceTreeResponse;
@@ -147,6 +148,23 @@ public class ScientificObjectAPI {
         dao.importCSV(xpURI, soType, file, currentUser);
         // TODO import CSV
         return new SingleObjectResponse<Boolean>(true).getResponse();
+    }
+
+    @GET
+    @Path("get-csv-headers/{objectType}")
+    @ApiOperation("Get list of scientific object CSV import headers")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return list of scientific objetcs CSV import headers", response = String.class, responseContainer = "List")
+    })
+    public Response getCSVHeaders(
+            @ApiParam(value = "Object type URI", example = "http://example.com/", required = true) @PathParam("objectType") @NotNull @ValidURI URI objectType
+    ) throws Exception {
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        List<String> headers = dao.getCSVHeaders(objectType, currentUser.getLanguage());
+        return new PaginatedListResponse<String>(headers).getResponse();
     }
 
 }

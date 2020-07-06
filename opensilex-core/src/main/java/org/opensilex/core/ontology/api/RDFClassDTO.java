@@ -25,6 +25,8 @@ public class RDFClassDTO {
 
     private String comment;
 
+    private URI parent;
+
     protected List<RDFClassPropertyDTO> properties;
 
     public URI getUri() {
@@ -51,6 +53,14 @@ public class RDFClassDTO {
         this.comment = comment;
     }
 
+    public URI getParent() {
+        return parent;
+    }
+
+    public void setParent(URI parent) {
+        this.parent = parent;
+    }
+
     public List<RDFClassPropertyDTO> getProperties() {
         return properties;
     }
@@ -68,14 +78,20 @@ public class RDFClassDTO {
             dto.setComment(model.getComment().getDefaultValue());
         }
 
+        if (model.getParent() != null) {
+            dto.setParent(model.getParent().getUri());
+        }
+
         List<RDFClassPropertyDTO> properties = new ArrayList<>();
-        for (OwlRestrictionModel restriction : model.getRestrictions()) {
-            if (restriction.isDatatypePropertyRestriction()) {
-                DatatypePropertyModel property = model.getDatatypeProperties().get(restriction.getOnProperty());
-                properties.add(RDFClassPropertyDTO.fromModel(property, restriction));
-            } else if (restriction.isObjectPropertyRestriction()) {
-                ObjectPropertyModel property = model.getObjectProperties().get(restriction.getOnProperty());
-                properties.add(RDFClassPropertyDTO.fromModel(property, restriction));
+
+        for (OwlRestrictionModel restriction : model.getOrderedRestrictions()) {
+            URI propertyURI = restriction.getOnProperty();
+            if (model.isDatatypePropertyRestriction(propertyURI)) {
+                DatatypePropertyModel property = model.getDatatypeProperty(propertyURI);
+                properties.add(RDFClassPropertyDTO.fromModel(property, restriction, true));
+            } else if (model.isObjectPropertyRestriction(propertyURI)) {
+                ObjectPropertyModel property = model.getObjectProperty(propertyURI);
+                properties.add(RDFClassPropertyDTO.fromModel(property, restriction, false));
             }
         }
 

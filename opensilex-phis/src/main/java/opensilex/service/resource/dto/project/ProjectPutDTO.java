@@ -262,7 +262,7 @@ public class ProjectPutDTO extends AbstractVerifiedClass {
 
         project.setUri(new URI(this.getUri()));
 
-        project.setLabel(this.getName());
+        project.setName(this.getName());
         project.setShortname(this.getShortname());
         project.setDescription(this.getDescription());
         project.setObjective(this.getObjective());

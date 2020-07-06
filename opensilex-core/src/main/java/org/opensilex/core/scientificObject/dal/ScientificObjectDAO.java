@@ -24,6 +24,7 @@ import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -105,19 +106,28 @@ public class ScientificObjectDAO {
         }
     }
 
-    private List<String> getCSVHeaders(URI soType, String lang) throws Exception {
+    public List<String> getCSVHeaders(URI soType, String lang) throws Exception {
         List<String> headers = new ArrayList<>();
 
         headers.add("URI");
-        headers.add("Name");
-        headers.add("Parent URI");
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         ClassModel model = ontologyDAO.getClassModel(soType, lang);
 
-//        model.forEachPropertyRestriction((PropertyModel p, OwlRestrictionModel r) -> {
-//            
-//        });
+        model.getOrderedRestrictions().forEach(restriction -> {
+            if (!restriction.isList()) {
+                URI propertyURI = restriction.getOnProperty();
+
+                if (model.isDatatypePropertyRestriction(propertyURI)) {
+                    String header = model.getDatatypeProperty(propertyURI).getName();
+                    headers.add(header);
+                } else if (model.isObjectPropertyRestriction(propertyURI)) {
+                    String header = model.getObjectProperty(propertyURI).getName();
+                    headers.add(header);
+                }
+            }
+        });
+
         return headers;
     }
 }

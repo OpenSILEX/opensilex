@@ -15,7 +15,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
 /**
@@ -27,15 +27,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         graph = "set/projects",
         prefix = "prj"
 )
-public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerator<ProjectModel> {
-
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "label",
-            required = true
-    )
-    String label;
-    public static final String LABEL_FIELD = "label";
+public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> implements ClassURIGenerator<ProjectModel> {
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -118,14 +110,6 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
             property = "hasRelatedProject"
     )
     private List<ProjectModel> relatedProjects;
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-    }
 
     public String getShortname() {
         return shortname;
@@ -226,7 +210,7 @@ public class ProjectModel extends SPARQLResourceModel implements ClassURIGenerat
     @Override
     public String[] getUriSegments(ProjectModel instance) {
         return new String[]{
-            instance.getShortname()
+            instance.getName()
         };
     }
 

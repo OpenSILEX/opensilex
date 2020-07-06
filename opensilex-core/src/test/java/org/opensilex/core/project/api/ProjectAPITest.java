@@ -42,7 +42,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
     protected ProjectCreationDTO getCreationDTO() {
 
         ProjectCreationDTO pjctDto = new ProjectCreationDTO();
-        pjctDto.setShortname("prjjj");
+        pjctDto.setLabel("prjjj");
 
         LocalDate currentDate = LocalDate.now();
         pjctDto.setStartDate(currentDate.minusDays(3));
@@ -87,7 +87,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
 
         // update the pj
         pjctDto.setUri(extractUriFromResponse(postResult));
-        pjctDto.setShortname("new");
+        pjctDto.setLabel("new");
         pjctDto.setEndDate(LocalDate.now());
 
         final Response updateResult = getJsonPutResponse(target(updatePath), pjctDto);
@@ -134,7 +134,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
         Map<String, Object> params = new HashMap<String, Object>() {
             {
                 put("startDate", creationDTO.getStartDate());
-                put("shortname", creationDTO.getShortname());
+                put("label", creationDTO.getLabel());
                 put("uri", uri);
             }
         };

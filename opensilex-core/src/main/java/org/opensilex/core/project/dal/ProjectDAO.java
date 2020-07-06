@@ -90,7 +90,7 @@ public class ProjectDAO {
         }
 
         // append regex filter
-        filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.LABEL_FIELD, name));
+        filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.NAME_FIELD, name));
 
         filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.SHORTNAME_FIELD, shortname));
         filterList.add(SPARQLQueryHelper.regexFilter(ProjectModel.DESCRIPTION_FIELD, description));
@@ -124,7 +124,7 @@ public class ProjectDAO {
 
         Expr stringFilter = SPARQLQueryHelper.or(
                 SPARQLQueryHelper.regexFilter(ProjectModel.SHORTNAME_FIELD, label),
-                SPARQLQueryHelper.regexFilter(ProjectModel.LABEL_FIELD, label)
+                SPARQLQueryHelper.regexFilter(ProjectModel.NAME_FIELD, label)
         );
 
         Expr financialFundingFilter = SPARQLQueryHelper.regexFilter(ProjectModel.FINANCIAL_FUNDING_FIELD, financialFunding);

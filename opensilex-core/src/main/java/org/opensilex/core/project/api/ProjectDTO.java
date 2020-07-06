@@ -67,8 +67,6 @@ public abstract class ProjectDTO {
         return this;
     }
 
-    @Required
-    @ApiModelProperty(example = "Blair witch")
     public String getShortname() {
         return shortname;
     }

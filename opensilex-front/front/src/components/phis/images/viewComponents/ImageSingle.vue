@@ -43,6 +43,7 @@ export default class ImageSingle extends Vue {
 
   created() {
     this.link = this.image.uri;
+
     this.formatedDateValue = this.formatedDate(this.image.date);
     this.objectType = this.image.objectType.split("#")[1];
     if (this.image.objectAlias) {

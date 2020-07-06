@@ -145,7 +145,7 @@ public class ProjectGetDTO {
         ProjectGetDTO dto = new ProjectGetDTO();
 
         dto.setUri(model.getUri())
-                .setLabel(model.getLabel())
+                .setLabel(model.getName())
                 .setStartDate(model.getStartDate())
                 .setEndDate(model.getEndDate())
                 .setShortname(model.getShortname())

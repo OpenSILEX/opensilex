@@ -59,6 +59,12 @@ public class OwlRestrictionModel extends SPARQLResourceModel {
     )
     Integer cardinality;
 
+    @SPARQLProperty(
+            ontology = OWL2.class,
+            property = "someValuesFrom"
+    )
+    URI someValuesFrom;
+
     public URI getOnProperty() {
         return onProperty;
     }
@@ -107,23 +113,58 @@ public class OwlRestrictionModel extends SPARQLResourceModel {
         this.cardinality = cardinality;
     }
 
+    public URI getSomeValuesFrom() {
+        return someValuesFrom;
+    }
+
+    public void setSomeValuesFrom(URI someValuesFrom) {
+        this.someValuesFrom = someValuesFrom;
+    }
+
     public boolean isList() {
-        return getCardinality() > 1 || getMaxCardinality() > 1 || getMinCardinality() > 1;
+        if (getCardinality() != null) {
+            return getCardinality() > 1;
+        }
+        if (getMaxCardinality() != null) {
+            return getMaxCardinality() > 1;
+        }
+        if (getMinCardinality() != null) {
+            return getMinCardinality() > 1;
+        }
+
+        return getSomeValuesFrom() != null;
     }
 
     public boolean isOptional() {
-        return getMinCardinality() == 0;
+        if (getMinCardinality() != null) {
+            return getMinCardinality() == 0;
+        }
+
+        return !isRequired();
     }
 
     public boolean isRequired() {
-        return getCardinality() >= 1 || getMinCardinality() >= 1;
+        if (getCardinality() != null) {
+            return getCardinality() >= 1;
+        }
+        if (getMinCardinality() != null) {
+            return getMinCardinality() >= 1;
+        }
+        
+        return false;
     }
 
-    public boolean isDatatypePropertyRestriction() {
-        return this.getOnDataRange() != null;
-    }
+    public URI getSubjectURI() {
+        if (getOnDataRange() != null) {
+            return getOnDataRange();
+        }
+        if (getOnClass() != null) {
+            return getOnClass();
+        }
+        if (getSomeValuesFrom() != null) {
+            return getSomeValuesFrom();
+        }
 
-    public boolean isObjectPropertyRestriction() {
-        return this.getOnClass() != null;
+        return null;
     }
 }

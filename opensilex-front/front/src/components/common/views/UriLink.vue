@@ -1,7 +1,7 @@
 <template>
   <span>
     <router-link v-if="to" class="uri" :title="uri" :to="to">
-      <span>{{uri}}</span>
+      <span>{{value || uri}}</span>
       &nbsp;
       <button
         v-on:click.prevent="copyURI(uri)"
@@ -12,7 +12,7 @@
       </button>
     </router-link>
     <a v-if="url" :href="url" class="uri" :title="uri" target="about:blank">
-      <span>{{uri}}</span>
+      <span>{{value || uri}}</span>
       &nbsp;
       <button
         v-on:click.prevent="copyURI(uri)"
@@ -23,7 +23,7 @@
       </button>
     </a>
     <a v-if="!url && !to" href="#" @click.prevent="$emit('click', uri)" :title="uri" class="uri">
-      <span>{{uri}}</span>
+      <span>{{value || uri}}</span>
       &nbsp;
       <button
         v-on:click.prevent="copyURI(uri)"
@@ -48,6 +48,9 @@ export default class UriLink extends Vue {
 
   @Prop()
   uri: string;
+
+  @Prop()
+  value: string;
 
   @Prop()
   url: string;

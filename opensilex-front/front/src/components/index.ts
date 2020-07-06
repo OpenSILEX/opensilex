@@ -106,6 +106,9 @@ import CSVInputFile from './common/forms/CSVInputFile.vue'
 components["opensilex-CSVInputFile"] = CSVInputFile;
 import SearchForm from './common/forms/SearchForm.vue'
 components["opensilex-SearchForm"] = SearchForm;
+import FileInputForm from './common/forms/FileInputForm.vue'
+components["opensilex-FileInputForm"] = FileInputForm;
+
 
 import WizardForm from './common/forms/WizardForm.vue'
 components["opensilex-WizardForm"] = WizardForm;

@@ -10,6 +10,7 @@ import { User } from './User';
 import OpenSilexHttpClient from './OpenSilexHttpClient';
 import Oeso from '../ontologies/Oeso';
 import { FrontConfigDTO, ThemeConfigDTO, IAPIConfiguration, ApiServiceBinder } from '../lib';
+import { UploadFileBody } from './UploadFileBody';
 
 declare var $cookies: VueCookies;
 
@@ -18,7 +19,7 @@ declare var window: any;
 export default class OpenSilexVuePlugin {
 
     private DEFAULT_ICON = "folder";
-    private static DEFAULT_LANG : string = "en";
+    private static DEFAULT_LANG: string = "en";
     private container: Container;
     private baseApi: string;
     private config: FrontConfigDTO;
@@ -623,7 +624,7 @@ export default class OpenSilexVuePlugin {
         }
         return "";
     }
-    
+
     public getLocalLangCode(): string {
         let availableLocalesFiltered = this.$i18n.availableLocales.filter(
             function (value, index, arr) {
@@ -637,5 +638,60 @@ export default class OpenSilexVuePlugin {
         } else {
             return OpenSilexVuePlugin.DEFAULT_LANG;
         }
+    }
+
+    /**
+     * 
+     * @param servicePath a string defines path which will
+     *  be combine with api base path. e.g. "/data-analysis/scientific-app/create"
+     * @param body description and file key are mandatory : 
+     *  {description  : {"name" :"filename",....}, file : File Object}
+     *  @see UploadFile interface
+     */
+    uploadFileToService(servicePath: string, body: UploadFileBody) {
+        console.log(this.baseApi);
+        let formData = new FormData();
+
+        // send form data  string part in json
+        // and file as binary
+        for (const name in body) {
+            if (name != "file") {
+                formData.append(name, JSON.stringify(body[name]));
+            } else {
+                formData.append(name, body[name]);
+            }
+
+        }
+        console.debug("formData", JSON.stringify(body));
+        let headers = {};
+        let user: User = this.getUser();
+        if (user != User.ANONYMOUS()) {
+            headers["Authorization"] = user.getAuthorizationHeader();
+        }
+        let options = {
+            method: 'POST',
+            body: formData,
+            // If you add this, upload won't work
+            headers
+        };
+        this.showLoader();
+        return new Promise((resolve, reject) => {
+            let promise = fetch(this.baseApi + servicePath, options)
+                .then(response => response.json())
+                .then((http) => {
+                    console.debug("uploaded file result", http);
+                    return resolve(http);
+                });
+
+            promise
+                .then((result) => {
+                    this.hideLoader();
+                    resolve(result);
+                })
+                .catch((error) => {
+                    this.hideLoader();
+                    reject(error);
+                });
+        });
     }
 }

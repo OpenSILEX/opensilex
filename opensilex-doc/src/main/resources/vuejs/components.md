@@ -1,6 +1,32 @@
 OpenSilex Vue.JS components
 ===========================
 
+- [OpenSilex Vue.JS components](#opensilex-vuejs-components)
+  - [Icons](#icons)
+  - [Buttons](#buttons)
+    - [Generic button](#generic-button)
+    - [Create button](#create-button)
+    - [Delete button](#delete-button)
+    - [Edit button](#edit-button)
+    - [Details button](#details-button)
+    - [Add child button](#add-child-button)
+  - [Forms fields components](#forms-fields-components)
+    - [Generic form field label](#generic-form-field-label)
+    - [Generic form field](#generic-form-field)
+    - [Input form field](#input-form-field)
+    - [Textarea form field](#textarea-form-field)
+    - [Checkbox form field](#checkbox-form-field)
+    - [Select form field](#select-form-field)
+    - [URI form field](#uri-form-field)
+    - [Type form field](#type-form-field)
+    - [CSV file input](#csv-file-input)
+    - [File input form field](#file-input-form-field)
+  - [Forms containers](#forms-containers)
+    - [Modal form](#modal-form)
+    - [Wizard form](#wizard-form)
+  - [View component](#view-component)
+    - [Uri link](#uri-link)
+
 ## Icons
 
 Identifier: **opensilex-Icon**
@@ -188,17 +214,19 @@ helpMessage | string | *-* | Optional translation key for tooltip help message
 
 Identifier: **opensilex-FormField**
 
-Description: 
+Description:
 
 Generic component used to display form field with label, help message and validation messages.
 
 This component is an abstraction which should be used by all form components implementations, currently:
+
 - [Input](#Input%20form%20field)
 - [Select](#Select%20form%20field)
 - [Textarea](#Textarea%20form%20field)
 - [Checkbox](#Checkbox%20form%20field)
 - [URI](#URI%20form%20field)
 - [Type](#Type%20form%20field)
+- [File](#file-input-form-field)
 
 Properties:
 
@@ -218,7 +246,7 @@ field | *id*: form input id, *validator*: reference vee-validate validator | Thi
 
 Identifier: **opensilex-InputForm**
 
-Description: 
+Description:
 
 Component used to display a form input field.
 
@@ -240,7 +268,7 @@ autocomplete | string | *-* | HTML input field ["autocomplete" property value](h
 
 Identifier: **opensilex-TextAreaForm**
 
-Description: 
+Description:
 
 Component used to display a form textarea field.
 
@@ -261,7 +289,7 @@ autocomplete | string | *-* | HTML textarea field ["autocomplete" property value
 
 Identifier: **opensilex-CheckboxForm**
 
-Description: 
+Description:
 
 Component used to display a form checkbox field.
 
@@ -282,7 +310,7 @@ rules | string or function | *-* | [vee-validate rules](https://logaretm.github.
 
 Identifier: **opensilex-SelectForm**
 
-Description: 
+Description:
 
 Component used to display a form select field.
 
@@ -293,6 +321,7 @@ This component is based on [vue-treeselect](https://vue-treeselect.js.org/) comp
 Options are represented by node, see [vue-treeselect documentation](https://vue-treeselect.js.org/#node) for more information.
 
 This component support different options loading mechanisms :
+
 - options: Directly define fixed array of options (see UserForm language selection for an example)
 - optionsLoadingMethod: Asyncronously load options from a webservice when component is loaded (see ExperimentForm1 species selection for an example)
 - searchMethod: Asyncronously load options corresponding to user search (see UserSelector for an example)
@@ -323,7 +352,7 @@ flat | boolean | true | Option to determine tree selection behavior (unused when
 
 Identifier: **opensilex-UriForm**
 
-Description: 
+Description:
 
 Component used to display optional URI field for semantic element creation or update.
 
@@ -340,7 +369,7 @@ uriGenerated | boolean | *-* | Flag to determine if URI value must be generated 
 
 Identifier: **opensilex-TypeForm**
 
-Description: 
+Description:
 
 Component used to display a single selection of an Ontological concept subclass.
 
@@ -354,29 +383,6 @@ placeholder | string | *-* | Optional translation key for type placeholder
 disabled | boolean | *false* | Flag to determine if form field is disabled or not
 required | boolean | *false* | Flag to determine if form field is required
 rules | string or function | *-* | [vee-validate rules](https://logaretm.github.io/vee-validate/guide/rules.html#rules) or function returning validation rules
-
-### Input local name field
-
-Identifier: **opensilex-LocalNameInputForm**
-
-Description: 
-
-Component used to display a form local name input field.
-
-Properties:
-
-ID | Type | Default value | Description
---- | --- | --- | ---
-value | string | *-* | Input field value (generally used whith "sync" flag)
-type | string | *text* | HTML input type
-label | string | *-* | Translation key of the input form label
-helpMessage | string | *-* | Optional translation key for tooltip help message
-placeholder | string | *-* | Optional translation key for input placeholder
-disabled | boolean | *false* | Flag to determine if form field is disabled or not
-required | boolean | *false* | Flag to determine if form field is required
-rules | string or function | *-* | [vee-validate rules](https://logaretm.github.io/vee-validate/guide/rules.html#rules) or function returning validation rules
-autocomplete | string | HTML input field ["autocomplete" property value](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete)
-
 
 ### CSV file input
 
@@ -411,6 +417,32 @@ Usage:
  uploaded(data) {
     // use loaded data
  }
+```
+
+### File input form field
+
+Identifier: **opensilex-FileInputForm**
+
+Description:
+
+Component used to display a form file input field.
+
+Properties:
+
+Inherited properties of [Generic form field](#generic-form-field)
+
+ID | Type | Default value | Description
+--- | --- | --- | ---
+file | File | *-* | file value (generally used whith "sync" flag)
+
+* In template :
+  
+```html
+   <opensilex-FileInputForm
+      :required="true"
+      :file.sync="form.file"
+      label="data-analysis.application.file"
+   ></opensilex-FileInputForm>
 ```
 
 ## Forms containers
@@ -494,3 +526,41 @@ ID | Parameter | Description
 --- | --- | ---
 onCreate | *form* | Event called after sucessfully create action
 onUpdate | *form* | Event called after sucessfully update action
+
+## View component
+
+### Uri link
+
+Identifier: **opensilex-UriLink**
+
+Description:
+
+Component used to display a value identifier (uri or other). It allows  user to copy the uri linked to his identifier in this clipboard.
+
+Interaction:  
+
+On mouse hover clickable link appears.
+
+Properties:
+
+ID | Type | Default value | Description
+--- | --- | --- | ---
+uri | string | *-* | Uri to copy or/and to show
+value | string | *-* | Identifier value to show if null uri will be showed
+url | string | *-* | External Url to go to
+to | string | *-* | Vue Router path to go to
+
+Events:
+ID | Parameter | Description
+--- | --- | ---
+click | *uri* | Event called after click on copy icon.
+
+* In template :
+
+```html 
+      <opensilex-UriLink
+         :uri="data.item.uri"
+         :to="{path: '/experiment/'+ encodeURIComponent(data.item.uri)}"
+         ></opensilex-UriLink>
+      </template>
+```

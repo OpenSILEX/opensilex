@@ -28,6 +28,8 @@ public class RDFClassDTO {
     private URI parent;
 
     protected List<RDFClassPropertyDTO> properties;
+    
+    private boolean abstractClass;
 
     public URI getUri() {
         return uri;
@@ -69,6 +71,14 @@ public class RDFClassDTO {
         this.properties = properties;
     }
 
+    public boolean isAbstractClass() {
+        return abstractClass;
+    }
+
+    public void setAbstractClass(boolean abstractClass) {
+        this.abstractClass = abstractClass;
+    }
+    
     public static RDFClassDTO fromModel(ClassModel model) {
         RDFClassDTO dto = new RDFClassDTO();
 
@@ -81,6 +91,8 @@ public class RDFClassDTO {
         if (model.getParent() != null) {
             dto.setParent(model.getParent().getUri());
         }
+        
+        dto.setAbstractClass(model.isAbstractClass());
 
         List<RDFClassPropertyDTO> properties = new ArrayList<>();
 

@@ -2,8 +2,8 @@ import Component from "vue-class-component";
 
  <template>
   <div>
-    <opensilex-CreateButton @click="show" label="ExperimentFacilitySelector.set-facilities"></opensilex-CreateButton>
-    <b-modal ref="facilitySelector" @ok.prevent="update" size="md" :static="true">
+    <opensilex-CreateButton @click="show" label="ExperimentFacilitySelector.set-facilities">
+ <b-modal ref="facilitySelector" @ok.prevent="update" size="md" :static="true">
       <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
       <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
 
@@ -34,6 +34,9 @@ import Component from "vue-class-component";
         </template>
       </opensilex-SelectForm>
     </b-modal>
+
+    </opensilex-CreateButton>
+   
   </div>
 </template>
 

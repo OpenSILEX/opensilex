@@ -11,19 +11,19 @@
 
     <!-- Name -->
     <opensilex-InputForm
-      :value.sync="form.shortname"
+      :value.sync="form.label"
       label="component.project.name"
       type="text"
       :required="true"
       placeholder="component.project.form-name-placeholder"
     ></opensilex-InputForm>
 
-    <!-- Longname -->
+    <!-- Short name -->
     <opensilex-InputForm
-      :value.sync="form.label"
-      label="component.project.longname"
+      :value.sync="form.shortname"
+      label="component.project.shortname"
       type="text"
-      placeholder="component.project.form-longname-placeholder"
+      placeholder="component.project.form-shortname-placeholder"
     ></opensilex-InputForm>
 
     <!-- Period -->

@@ -45,7 +45,7 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
     public int getRootsCount() {
         return this.getChildCount(null);
     }
-    
+
     public int getChildCount(T parent) {
         URI parentURI = null;
         if (parent != null) {
@@ -98,5 +98,18 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
 
     public boolean isSelected(T candidate) {
         return this.selectionList.contains(candidate.getUri());
+    }
+
+    public void traverse(Consumer<T> handler) {
+        listRoots((instance) -> {
+            traverseNode(instance, handler);
+        });
+    }
+
+    private void traverseNode(T instance, Consumer<T> handler) {
+        handler.accept(instance);
+        listChildren(instance, (child) -> {
+            traverseNode(child, handler);
+        });
     }
 }

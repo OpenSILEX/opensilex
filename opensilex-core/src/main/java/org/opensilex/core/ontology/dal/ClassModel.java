@@ -63,6 +63,8 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
     protected Map<URI, OwlRestrictionModel> restrictions;
 
     protected Map<URI, Integer> propertiesOrder;
+    
+    protected boolean abstractClass;
 
     @Override
     public String getName() {
@@ -172,4 +174,13 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
         this.propertiesOrder = propertiesOrder;
     }
 
+    public boolean isAbstractClass() {
+        return abstractClass;
+    }
+
+    public void setAbstractClass(boolean abstractClass) {
+        this.abstractClass = abstractClass;
+    }
+
+    
 }

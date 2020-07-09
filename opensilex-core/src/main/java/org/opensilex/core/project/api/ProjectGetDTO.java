@@ -63,6 +63,7 @@ public class ProjectGetDTO {
         return this;
     }
 
+    @Required
     public String getLabel() {
         return label;
     }
@@ -72,8 +73,6 @@ public class ProjectGetDTO {
         return this;
     }
 
-    @Required
-    @ApiModelProperty(example = "Blair witch")
     public String getShortname() {
         return shortname;
     }

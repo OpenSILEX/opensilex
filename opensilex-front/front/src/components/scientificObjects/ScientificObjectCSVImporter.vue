@@ -45,7 +45,7 @@ import Component from "vue-class-component";
           <div class="col">
             <VueTabulator
               class="table-light table-bordered"
-              v-model="this.content"
+              v-model="content"
               :options="tabulatorOptions"
               placeholder="Import a CSV file "
             />
@@ -63,7 +63,8 @@ import {
   ExperimentsService,
   InfrastructuresService,
   ResourceTreeDTO,
-  OntologyService
+  OntologyService,
+  RDFClassDTO
 } from "opensilex-core/index";
 @Component
 export default class ScientificObjectCSVImporter extends Vue {
@@ -77,10 +78,9 @@ export default class ScientificObjectCSVImporter extends Vue {
   content = [];
 
   tabulatorOptions = {
+    reactiveData:true,
     columns: []
   };
-
-  requiredHeaders = [];
 
   scientificObjectType = null;
 
@@ -114,29 +114,31 @@ export default class ScientificObjectCSVImporter extends Vue {
   }
 
   typeSwitch() {
-    this.content = [];
 
-    this.tabulatorOptions.columns = [
-      {
-        title: "URI",
-        field: "uri",
-        editor: true
-      },
-      {
-        title: "Name",
-        field: "name",
-        editor: true
-      },
-      {
-        title: "Parent URI",
-        field: "parent",
-        editor: true
+    this.ontologyService.getClass(this.scientificObjectType).then(http => {
+      let classModel: RDFClassDTO = http.response.result;
+
+      let columns = [
+        {
+          title: "URI",
+          field: "uri",
+          editor: true
+        }
+      ];
+
+      for (let i in classModel.properties) {
+        let property = classModel.properties[i];
+        columns.push({
+          title: property.label,
+          field: property.uri,
+          editor: true
+        });
       }
-    ];
 
-    this.requiredHeaders = [];
-    this.tabulatorOptions.columns.forEach(colDefinition => {
-      this.requiredHeaders.push(colDefinition.field);
+      this.tabulatorOptions.columns = columns;
+          this.content = [];
+
+      console.error( this.tabulatorOptions );
     });
   }
 

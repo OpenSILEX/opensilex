@@ -50,6 +50,7 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
         xpDto.setStartDate(currentDate.minusDays(3));
         xpDto.setEndDate(currentDate.plusDays(3));
         xpDto.setCampaign(currentDate.getYear());
+        xpDto.setObjective("Objective");
         return xpDto;
     }
 

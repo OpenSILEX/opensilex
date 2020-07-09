@@ -12,12 +12,16 @@
         :load-options="initTypes"
         :placeholder="$t(placeholder)"
         :disabled="disabled"
+        :allow-clearing-disabled="true"
+        :allow-selecting-disabled-descendants="true"
+        :flat="true"
         v-model="typeURI"
         @select="field.validator && field.validator.validate()"
         @close="field.validator && field.validator.validate()"
       />
     </template>
   </opensilex-FormField>
+  
 </template>
 
 <script lang="ts">

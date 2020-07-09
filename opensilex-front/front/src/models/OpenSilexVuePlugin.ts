@@ -504,7 +504,10 @@ export default class OpenSilexVuePlugin {
 
         if (resourceTrees != null) {
             resourceTrees.forEach((resourceTree: any) => {
-                options.push(this.buildTreeOptions(resourceTree, buildOptions));
+                let subOption = this.buildTreeOptions(resourceTree, buildOptions);
+                if (!subOption.isDisabled || subOption.children) {
+                    options.push(subOption);
+                }
             });
         }
 
@@ -517,23 +520,32 @@ export default class OpenSilexVuePlugin {
             id: resourceTree.uri,
             label: resourceTree.name,
             isDefaultExpanded: buildOptions.expanded,
-            isDisabled: resourceTree.isDisabled || false,
+            isDisabled: false,
             children: []
         };
 
         let disableChildren = false;
+
         if (buildOptions.disableSubTree != null) {
             disableChildren = (option.id == buildOptions.disableSubTree) || disabled;
             option.isDisabled = disableChildren;
         }
 
         resourceTree.children.forEach(child => {
-            option.children.push(this.buildTreeOptions(child, buildOptions, disableChildren));
+            let subOption = this.buildTreeOptions(child, buildOptions, disableChildren);
+            if (!subOption.isDisabled || subOption.children) {
+                option.children.push(subOption);
+            }
         });
+
+        if (resourceTree.disabled) {
+            option.isDisabled = true;
+        }
 
         if (option.children.length == 0) {
             delete option.children;
         }
+
         return option;
     }
 

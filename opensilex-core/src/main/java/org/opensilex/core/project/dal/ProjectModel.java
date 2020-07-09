@@ -59,7 +59,8 @@ public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> impleme
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "startDate"
+            property = "startDate",
+            required = true
     )
     private LocalDate startDate;
     public static final String START_DATE_FIELD = "startDate";

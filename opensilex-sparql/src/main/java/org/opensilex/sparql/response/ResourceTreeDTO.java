@@ -22,6 +22,8 @@ public class ResourceTreeDTO extends NamedResourceDTO {
     private URI parent;
 
     private boolean selected;
+    
+    private boolean disabled;
 
     private List<ResourceTreeDTO> children;
 
@@ -49,6 +51,14 @@ public class ResourceTreeDTO extends NamedResourceDTO {
         this.selected = selected;
     }
 
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+    
     public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(SPARQLTreeListModel<T> tree) {
         return fromResourceTree(tree, null);
     }

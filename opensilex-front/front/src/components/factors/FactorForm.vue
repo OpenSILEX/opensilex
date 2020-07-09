@@ -219,5 +219,4 @@ export default class FactorForm extends Vue {
 </script>
 
 <style scoped lang="scss">
-@import "~vue-tabulator/dist/scss/bootstrap/tabulator_bootstrap4";
 </style>

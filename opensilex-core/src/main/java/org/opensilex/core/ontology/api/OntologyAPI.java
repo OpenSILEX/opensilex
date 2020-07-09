@@ -67,7 +67,9 @@ public class OntologyAPI {
                 ignoreRootClasses
         );
 
-        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree)).getResponse();
+        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree, (model, dto) -> {
+            dto.setDisabled(model.isAbstractClass());
+        })).getResponse();
     }
 
     @GET
@@ -77,10 +79,10 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return group", response = ResourceTreeDTO.class)
+        @ApiResponse(code = 200, message = "Return group", response = RDFClassDTO.class)
     })
     public Response getClass(
-            @ApiParam(value = "Parent RDF class URI") @QueryParam("rdfType") @ValidURI URI rdfType
+            @ApiParam(value = "RDF class URI") @QueryParam("rdfType") @ValidURI URI rdfType
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 

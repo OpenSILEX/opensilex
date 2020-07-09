@@ -152,31 +152,42 @@ public final class OntologyDAO {
 
     private final static Map<String, Map<URI, Map<URI, String>>> labelTranslationMap = new HashMap<>();
     private final static Map<URI, Map<URI, Integer>> classPropertiesOrderMap = new HashMap<>();
+    private final static List<URI> abstractClasses = new ArrayList<>();
 
     public static void customizeOntology(ObjectNode ontologyDefinitionOverride) throws URISyntaxException {
         labelTranslationMap.clear();
         classPropertiesOrderMap.clear();
+        abstractClasses.clear();
         Iterator<Map.Entry<String, JsonNode>> classesOverride = ontologyDefinitionOverride.fields();
         while (classesOverride.hasNext()) {
             Map.Entry<String, JsonNode> classOverride = classesOverride.next();
             URI classURI = new URI(classOverride.getKey());
-            Iterator<Map.Entry<String, JsonNode>> propertiesOverride = classOverride.getValue().fields();
-            while (propertiesOverride.hasNext()) {
-                Map.Entry<String, JsonNode> propertyOverride = propertiesOverride.next();
-                URI propertyURI = new URI(propertyOverride.getKey());
-                JsonNode propertyValues = propertyOverride.getValue();
-                if (propertyValues.hasNonNull("label")) {
-                    Iterator<Map.Entry<String, JsonNode>> labelTs = propertyValues.get("label").fields();
-                    while (labelTs.hasNext()) {
-                        Map.Entry<String, JsonNode> label = labelTs.next();
-                        String lang = label.getKey();
-                        String ts = label.getValue().asText();
-                        addOntologyTranslationLabel(classURI, propertyURI, lang, ts);
+            JsonNode classOverrideNode = classOverride.getValue();
+            if (classOverrideNode.hasNonNull("properties")) {
+                Iterator<Map.Entry<String, JsonNode>> propertiesOverride = classOverrideNode.fields();
+                while (propertiesOverride.hasNext()) {
+                    Map.Entry<String, JsonNode> propertyOverride = propertiesOverride.next();
+                    URI propertyURI = new URI(propertyOverride.getKey());
+                    JsonNode propertyValues = propertyOverride.getValue();
+                    if (propertyValues.hasNonNull("label")) {
+                        Iterator<Map.Entry<String, JsonNode>> labelTs = propertyValues.get("label").fields();
+                        while (labelTs.hasNext()) {
+                            Map.Entry<String, JsonNode> label = labelTs.next();
+                            String lang = label.getKey();
+                            String ts = label.getValue().asText();
+                            addOntologyTranslationLabel(classURI, propertyURI, lang, ts);
+                        }
+                    }
+                    if (propertyValues.hasNonNull("order")) {
+                        int propertyOrder = propertyValues.get("order").asInt();
+                        addOntologyPropertiesOrder(classURI, propertyURI, propertyOrder);
                     }
                 }
-                if (propertyValues.hasNonNull("order")) {
-                    int propertyOrder = propertyValues.get("order").asInt();
-                    addOntologyPropertiesOrder(classURI, propertyURI, propertyOrder);
+            }
+
+            if (classOverrideNode.hasNonNull("abstract")) {
+                if (classOverrideNode.get("abstract").asBoolean(false)) {
+                    abstractClasses.add(classURI);
                 }
             }
         }
@@ -227,8 +238,12 @@ public final class OntologyDAO {
         classPropertiesOrderMap.get(classURI).put(propertyURI, value);
     }
 
+    private static boolean isAbstractClass(URI classURI) {
+        return abstractClasses.contains(classURI);
+    }
+
     public SPARQLTreeListModel<ClassModel> searchSubClasses(URI parent, UserModel user, boolean excludeRoot) throws Exception {
-        return sparql.searchResourceTree(
+        SPARQLTreeListModel<ClassModel> classTree = sparql.searchResourceTree(
                 ClassModel.class,
                 user.getLanguage(),
                 parent,
@@ -242,6 +257,12 @@ public final class OntologyDAO {
                     }
                 }
         );
+
+        classTree.traverse((ClassModel model) -> {
+            model.setAbstractClass(isAbstractClass(model.getUri()));
+        });
+        
+        return classTree;
     }
 
     public SPARQLTreeListModel<PropertyModel> searchSubProperties(URI parent, UserModel user, boolean excludeRoot) throws Exception {
@@ -284,6 +305,8 @@ public final class OntologyDAO {
         if (model == null) {
             throw new NotFoundURIException(rdfClass);
         }
+
+        model.setAbstractClass(isAbstractClass(rdfClass));
 
         List<OwlRestrictionModel> restrictions = getOwlRestrictions(rdfClass, lang);
 
@@ -350,7 +373,7 @@ public final class OntologyDAO {
         model.setObjectProperties(objectPropertiesMap);
 
         model.setPropertiesOrder(getPropertiesOrder(model));
-        
+
         return model;
     }
 

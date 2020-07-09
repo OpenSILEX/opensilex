@@ -71,7 +71,7 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
 
     @Override
     public void startup() throws Exception {
-        LOGGER.warn("Build SPARQL models for base URI: " + baseURI.toString());
+        LOGGER.debug("Build SPARQL models for base URI: " + baseURI.toString());
 
         Set<Class<? extends SPARQLResourceModel>> initClasses = new HashSet<>();
 

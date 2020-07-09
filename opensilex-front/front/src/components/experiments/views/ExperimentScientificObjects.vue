@@ -3,9 +3,17 @@
     <div class="row">
       <div class="col-md-6">
         <b-card>
-          <b-button-group>
-            <opensilex-ExperimentFacilitySelector :uri="uri" @facilitiesUpdated="refresh"></opensilex-ExperimentFacilitySelector>
-            <opensilex-ScientificObjectCSVImporter :uri="uri" @csvImported="refresh"></opensilex-ScientificObjectCSVImporter>
+          <b-button-group class="mb-3">
+            <opensilex-ExperimentFacilitySelector
+              class="btn-group"
+              :uri="uri"
+              @facilitiesUpdated="refresh"
+            ></opensilex-ExperimentFacilitySelector>
+            <opensilex-ScientificObjectCSVImporter
+              class="btn-group"
+              :uri="uri"
+              @csvImported="refresh"
+            ></opensilex-ScientificObjectCSVImporter>
           </b-button-group>
           <opensilex-TreeView :nodes.sync="nodes" @select="displayScientificObjectDetails">
             <template v-slot:node="{ node }">

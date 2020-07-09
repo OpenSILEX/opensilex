@@ -103,13 +103,13 @@ export default class ProjectModalList extends ProjectList {
       sortable: true
     },
     {
-      key: "shortname",
+      key: "label",
       label: "component.common.name",
       sortable: true
     },
     {
-      key: "label",
-      label: "component.project.longname",
+      key: "shortname",
+      label: "component.project.shortname",
       sortable: true
     },
     {

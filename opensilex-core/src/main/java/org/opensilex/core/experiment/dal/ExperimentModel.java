@@ -95,7 +95,8 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasObjective"
+            property = "hasObjective",
+            required = true
     )
     String objective;
     public static final String OBJECTIVE_FIELD = "objective";

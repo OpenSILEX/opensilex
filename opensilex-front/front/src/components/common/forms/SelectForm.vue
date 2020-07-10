@@ -155,8 +155,13 @@ export default class SelectForm extends Vue {
   })
   actionHandler;
 
+  @Watch("selection")
+  onSelectionChange() {
+    this.currentValue = null;
+  }
+
   @AsyncComputedProp()
-  async selectedValues(): Promise<any> {
+  selectedValues(): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.itemLoadingMethod) {
         if (!this.selection || this.selection.length == 0) {

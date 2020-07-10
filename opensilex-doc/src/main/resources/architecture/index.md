@@ -45,28 +45,28 @@ A highest `layer` application level MAY access lower levels at any depth level.
 
  The following schema show Opensilex `layers` from the highest to the lowest level.
 
-`🠧` sign means the highest `layer` "has access to" the lowest `layer`.
+`↓` sign means the highest `layer` "has access to" the lowest `layer`.
 
 ```
 +------------------------- OpenSilex -------------------------+
 +                                                             +
 +  +----- FRONT WEB APP -----+   +---------- CLI ----------+  +
 +  +-------------------------+   +-------------------------+  + 
-+               🠧                             🠧               +
++               ↓                             ↓               +
 +  +---------------------- REST API -----------------------+  +
 +  +-------------------------------------------------------+  +
-+                              🠧                              +
++                              ↓                              +
 +  +------------------ DATA ACCESS LAYER ------------------+  +
 +  +-------------------------------------------------------+  +
-+                              🠧                              +
++                              ↓                              +
 +  +---------------------- SERVICES -----------------------+  +
 +  +-------------------------------------------------------+  +
-+                              🠧                              +
++                              ↓                              +
 +  +---------------------- LIBRARIES ----------------------+  +
 +  +-------------------------------------------------------+  +
 +                                                             +
 +-------------------------------------------------------------+
-             🠧                 🠧                   🠧
+             ↓                 ↓                   ↓
      +---------------+  +---------------+  +---------------+ 
      +     RDF4J     +  +    MongoDB    +  +  File System  +
      +---------------+  +---------------+  +---------------+
@@ -178,14 +178,14 @@ For more information on this module see [documentation](./main.md)
 +  + Swagger-UI              +   + Add system commands     +  +
 +  +   Setup on "/"          +   + Add server commands     +  +
 +  +-------------------------+   +-------------------------+  +
-+               🠧                             🠧               +
++               ↓                             ↓               +
 +  +---------------------- REST API -----------------------+  +
 +  + Initialize all REST API mechanisms                    +  +
 +  + Provide generic DTOs and JSON Response                +  +
 +  + Provide default REST error handling                   +  +
 +  + Provide generic validation annotations for API params +  +
 +  +-------------------------------------------------------+  +
-+                              🠧                              +
++                              ↓                              +
 +  +---------------------- LIBRARIES ----------------------+  +
 +  + Integrate Tomcat Server                               +  +
 +  + Integrate Jersey REST Framework                       +  +
@@ -233,7 +233,7 @@ This module simply provide a `service` to interact with file systems.
 +  +   declare FileStorageConnection service connection    +  +
 +  +   provide LocalFileSystemConnection implementation    +  +
 +  +-------------------------------------------------------+  +
-+                              🠧                              +
++                              ↓                              +
 +  +---------------------- LIBRARIES ----------------------+  +
 +  + Integrate Apache FileUtils                            +  +
 +  +-------------------------------------------------------+  +
@@ -255,18 +255,18 @@ For more information on this module see [documentation](./sparql.md)
 +                                +---------- CLI ----------+  +
 +                                + Add sparql commands     +  +
 +                                +-------------------------+  + 
-+                                             🠧               +
++                                             ↓               +
 +  +---------------------- REST API -----------------------+  +
 +  + Provide generic DTOs corresponding to SPARQL models   +  +
 +  +                                                       +  +
 +  +-------------------------------------------------------+  +
-+                              🠧                              +
++                              ↓                              +
 +  +------------------ DATA ACCESS LAYER ------------------+  +
 +  + Provide generic SPARQL models                         +  +
 +  + Provide @SPARQLResource model description annotation  +  +
 +  + Provide @SPARQLProperty model description annotation  +  +
 +  +-------------------------------------------------------+  +
-+                              🠧                              +
++                              ↓                              +
 +  +---------------------- SERVICES -----------------------+  +
 +  + SPARQLService:                                        +  +
 +  +   declare SPARQLConnection service connection         +  +
@@ -276,7 +276,7 @@ For more information on this module see [documentation](./sparql.md)
 +  +   provide RDF4J remote server implementation          +  +
 +  +   provide RDF4J in-memory server implementation       +  +
 +  +-------------------------------------------------------+  +
-+                              🠧                              +
++                              ↓                              +
 +  +---------------------- LIBRARIES ----------------------+  +
 +  + Integrate Apache Jena for SPARQL query generation     +  +
 +  + Integrate Eclipse RDF4J API in implementations        +  +
@@ -305,7 +305,7 @@ For more information on this module see [documentation](./nosql.md)
 +  + NoSQLConnection:                                      +  +
 +  +   provide MongoDBConnection implementation            +  +
 +  +-------------------------------------------------------+  +
-+                              🠧                              +
++                              ↓                              +
 +  +---------------------- LIBRARIES ----------------------+  +
 +  + Integrate DataNucleus library                         +  +
 +  +-------------------------------------------------------+  +
@@ -341,7 +341,7 @@ For more information on this module see [documentation](./security.md)
 +                                +---------- CLI ----------+  +
 +                                + Add user commands       +  +
 +                                +-------------------------+  + 
-+                                             🠧               +
++                                             ↓               +
 +  +---------------------- REST API -----------------------+  +
 +  + Add Authentication API and related DTOs               +  +
 +  + Add User API and related DTOs                         +  +
@@ -352,20 +352,20 @@ For more information on this module see [documentation](./security.md)
 +  + Provide @ApiCredential security annotation            +  +
 +  + Provide @ApiCredentialGroup security annotation       +  +
 +  +-------------------------------------------------------+  +
-+                              🠧                              +
++                              ↓                              +
 +  +------------------ DATA ACCESS LAYER ------------------+  +
 +  + Add Authentication DAO                                +  +
 +  + Add User DAO and related models                       +  +
 +  + Add Group DAO and related models                      +  +
 +  + Add Profile DAO and related models                    +  +
 +  +-------------------------------------------------------+  +
-+                              🠧                              +
++                              ↓                              +
 +  +---------------------- SERVICES -----------------------+  +
 +  + AuthenticationService:                                +  +
 +  +   default implementation based on BCryp hashed        +  +
 +  +   password validation and JWT token generation        +  +
 +  +-------------------------------------------------------+  +
-+                              🠧                              +
++                              ↓                              +
 +  +---------------------- LIBRARIES ----------------------+  +
 +  + Integrate Auth0 JWT token library                     +  +
 +  + Integrate BCrypt java library                         +  +
@@ -398,7 +398,7 @@ For more information on this module see [documentation](./core.md)
 +  + Provide DTOs corresponding to core models             +  +
 +  + Provide APIs corresponding to core models             +  +
 +  +-------------------------------------------------------+  +
-+                              🠧                              +
++                              ↓                              +
 +  +------------------ DATA ACCESS LAYER ------------------+  +
 +  + Provide APIs corresponding to core models             +  +
 +  + Provide models for scientific research management     +  +
@@ -434,7 +434,7 @@ For more information on this module see [documentation](./vuejs.md)
 +  + Add Generic Vue.js components                         +  +
 +  + Add Vue.js components related to built-in concepts    +  +
 +  +-------------------------------------------------------+  +
-+                             🠧                               +
++                             ↓                               +
 +  +---------------------- REST API -----------------------+  +
 +  + Add Front API to provide front app configuration      +  +
 +  + Add mechanism for Vue.js module extension management  +  +

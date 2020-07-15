@@ -17,16 +17,6 @@ class SparqlProxyNamedResource<T extends SPARQLNamedResourceModel<T>> extends SP
 
     protected final String name;
 
-    private static final Method getNameMethod;
-
-    static {
-        try{
-            getNameMethod = SPARQLNamedResourceModel.class.getMethod("getName");
-        }catch (NoSuchMethodException e){
-            throw new RuntimeException(e);
-        }
-    }
-
     SparqlProxyNamedResource(SPARQLClassObjectMapperIndex repository, Node graph, URI uri, Class<T> type, String name, String lang, SPARQLService service) throws Exception {
         super(repository,graph,uri, type, lang, service);
         this.name = name;
@@ -34,7 +24,7 @@ class SparqlProxyNamedResource<T extends SPARQLNamedResourceModel<T>> extends SP
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (getNameMethod.getName().equals(method.getName()) && getNameMethod.getParameterCount() == method.getParameterCount()){
+        if ("getName".equals(method.getName()) && method.getParameterCount() == 0){
             return name;
         } else {
             return super.invoke(proxy, method, args);

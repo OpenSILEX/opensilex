@@ -11,7 +11,9 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import org.apache.jena.rdf.model.Resource;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -168,7 +170,15 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                 if (classAnalizer.isReverseRelation(field)) {
                     propertyGraph = mapperIndex.getForClass(fieldType).getDefaultGraph();
                 }
-                SPARQLProxyResource<?> proxy = new SPARQLProxyResource<>(mapperIndex, propertyGraph, objURI, fieldType, lang, service);
+
+                SPARQLProxyResource<?> proxy;
+                if(SPARQLNamedResourceModel.class.isAssignableFrom(fieldType)){
+                    String fieldNameVar = SPARQLClassQueryBuilder.getObjectNameVarName(field.getName());
+                    String name = result.getStringValue(fieldNameVar);
+                    proxy = new SparqlProxyNamedResource(mapperIndex,propertyGraph,objURI,fieldType,name,lang,service);
+                }else{
+                    proxy = new SPARQLProxyResource<>(mapperIndex, propertyGraph, objURI, fieldType, lang, service);
+                }
                 setter.invoke(instance, proxy.getInstance());
             }
         }
@@ -322,6 +332,15 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classAnalizer.getURIFieldName();
     }
 
+    /**
+     * @param objectFieldName the field name
+     * @return the name of the SPARQL variable which represent the object field name
+     * @see SPARQLClassQueryBuilder#getObjectNameVarName()
+     */
+    public static String getObjectNameVarName(String objectFieldName){
+        return SPARQLClassQueryBuilder.getObjectNameVarName(objectFieldName);
+    }
+
     public ExprVar getURIFieldExprVar() {
         try {
             return getFieldExprVar(getURIFieldName());
@@ -360,6 +379,13 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classAnalizer.getFieldProperty(field);
     }
 
+    /**
+     *
+     * @param fieldName the var name to put in the {@link Expr}
+     * @return an @{@link Expr} with the {@link Field} corresponding with the given fieldName
+     * in the {@link #classAnalizer}, else return an {@link Expr} with the given fieldName
+     * @see ExprVar
+     */
     public Expr getFieldOrderExpr(String fieldName) {
         Field f = classAnalizer.getFieldFromName(fieldName);
         if (f != null) {
@@ -369,7 +395,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                 return new ExprVar(f.getName());
             }
         } else {
-            return null;
+            return new ExprVar(fieldName);
         }
     }
 

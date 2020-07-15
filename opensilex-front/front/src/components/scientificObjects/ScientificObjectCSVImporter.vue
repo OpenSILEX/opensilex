@@ -38,12 +38,13 @@ import Component from "vue-class-component";
             ></b-form-file>
           </div>
           <div class="col">
-            <b-button>Download CSV template</b-button>
+            <b-button @click="downloadCSVTemplate">Download CSV template</b-button>
           </div>
         </div>
         <div class="row row-tabulator">
           <div class="col">
             <VueTabulator
+              :key="tabulatorRefresh"
               class="table-light table-bordered"
               v-model="content"
               :options="tabulatorOptions"
@@ -78,9 +79,12 @@ export default class ScientificObjectCSVImporter extends Vue {
   content = [];
 
   tabulatorOptions = {
-    reactiveData:true,
-    columns: []
+    reactiveData: true,
+    columns: [],
+    layout: "fitColumns"
   };
+
+  tabulatorRefresh = 0;
 
   scientificObjectType = null;
 
@@ -113,8 +117,26 @@ export default class ScientificObjectCSVImporter extends Vue {
     //   .catch(console.error);
   }
 
-  typeSwitch() {
+  downloadCSVTemplate() {
+    let csvContent = "data:text/csv;charset=utf-8,";
 
+    let columnTitles = [];
+    for (let i in this.tabulatorOptions.columns) {
+      let column = this.tabulatorOptions.columns[i];
+      columnTitles.push(column.title);
+    }
+
+    csvContent += columnTitles.join(",");
+
+    let link = document.createElement("a");
+    link.setAttribute("href", encodeURI(csvContent));
+    link.setAttribute("download", "template.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  typeSwitch() {
     this.ontologyService.getClass(this.scientificObjectType).then(http => {
       let classModel: RDFClassDTO = http.response.result;
 
@@ -136,13 +158,15 @@ export default class ScientificObjectCSVImporter extends Vue {
       }
 
       this.tabulatorOptions.columns = columns;
-          this.content = [];
+      this.content = [];
 
-      console.error( this.tabulatorOptions );
+      this.tabulatorRefresh++;
     });
   }
 
-  csvUploaded() {}
+  csvUploaded() {
+    
+  }
 }
 </script>
 

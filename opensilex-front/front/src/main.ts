@@ -117,9 +117,6 @@ import VueTabulator from 'vue-tabulator';
 Vue.use(VueTabulator);
 console.debug("VueTabulator plugin initialized !");
 
-import VueTable from 'vuejs-spreadsheet';
-Vue.component('vue-table', VueTable);
-
 // Initialize Vue Country flag
 import CountryFlag from 'vue-country-flag'
 Vue.component('country-flag', CountryFlag);

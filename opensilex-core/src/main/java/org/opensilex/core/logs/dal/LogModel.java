@@ -6,7 +6,7 @@
 package org.opensilex.core.logs.dal;
 
 import java.net.URI;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Map;
 import javax.jdo.annotations.PersistenceCapable;
 
@@ -24,17 +24,17 @@ public class LogModel {
     String remoteAdress;
 
     Map<String, Object> queryParmeters;
-    
-    LocalDateTime datetime;
 
-    public LocalDateTime getDatetime() {
+    OffsetDateTime datetime;
+
+    public OffsetDateTime getDatetime() {
         return datetime;
     }
 
-    public void setDatetime(LocalDateTime datetime) {
+    public void setDatetime(OffsetDateTime datetime) {
         this.datetime = datetime;
     }
-    
+
     public Map<String, Object> getQueryParmeters() {
         return queryParmeters;
     }

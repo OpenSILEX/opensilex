@@ -9,9 +9,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,14 +17,11 @@ import java.util.Map;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
-import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDFS;
-import org.apache.jena.vocabulary.XSD;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -47,109 +41,6 @@ public final class OntologyDAO {
         this.sparql = sparql;
     }
 
-    private enum BuiltInDatatypes {
-        STRING("String", XSD.xstring, String.class),
-        URI("URI", XSD.anyURI, URI.class),
-        BOOLEAN("Boolean", XSD.xboolean, Boolean.class),
-        DATE("Date", XSD.date, LocalDate.class),
-        DATETIME("Date time", XSD.dateTime, LocalDateTime.class),
-        TIME("Time", XSD.time, LocalTime.class),
-        INTEGER("Integer", new Resource[]{
-            XSD.integer,
-            XSD.xint,
-            XSD.unsignedInt,
-            XSD.nonPositiveInteger,
-            XSD.nonNegativeInteger,
-            XSD.positiveInteger,
-            XSD.negativeInteger
-        }, Integer.class),
-        BYTE("Byte", new Resource[]{
-            XSD.xbyte,
-            XSD.unsignedByte
-        }, Byte.class),
-        LONG("Long", new Resource[]{
-            XSD.xlong,
-            XSD.unsignedLong
-        }, Long.class),
-        SHORT("Short", new Resource[]{
-            XSD.xshort,
-            XSD.unsignedShort
-        }, Short.class),
-        DOUBLE("Double", XSD.xdouble, Double.class),
-        FLOAT("Float", new Resource[]{
-            XSD.xfloat,
-            XSD.decimal
-        }, Float.class);
-
-        private List<String> datatypeURIs = new ArrayList<>();
-        private Class<?> typeClass;
-        private String label;
-
-        BuiltInDatatypes(String label, Resource r, Class<?> typeClass) {
-            datatypeURIs.add(r.getURI());
-            this.typeClass = typeClass;
-            this.label = label;
-        }
-
-        BuiltInDatatypes(String label, Resource[] rs, Class<?> typeClass) {
-            for (Resource r : rs) {
-                datatypeURIs.add(r.getURI());
-            }
-            this.typeClass = typeClass;
-            this.label = label;
-        }
-
-        List<String> getURIs() {
-            return datatypeURIs;
-        }
-
-        String getLabel() {
-            return this.label;
-        }
-
-    }
-
-    public static Map<String, BuiltInDatatypes> builtInDatatypes = new HashMap<>();
-
-    static {
-        for (BuiltInDatatypes type : BuiltInDatatypes.values()) {
-            for (String typeURI : type.getURIs()) {
-                builtInDatatypes.put(typeURI, type);
-            }
-        }
-    }
-
-    public static boolean isBuiltInDatatype(URI dataType) {
-        return isBuiltInDatatype(dataType.toString());
-    }
-
-    public static boolean isBuiltInDatatype(Resource dataType) {
-        return isBuiltInDatatype(dataType.getURI());
-    }
-
-    public static boolean isBuiltInDatatype(String dataType) {
-        return builtInDatatypes.containsKey(SPARQLDeserializers.getExpandedURI(dataType));
-    }
-
-    public static DatatypePropertyModel getBuiltInDatatypeModel(URI dataType) {
-        return getBuiltInDatatypeModel(dataType.toString());
-    }
-
-    public static DatatypePropertyModel getBuiltInDatatypeModel(Resource dataType) {
-        return getBuiltInDatatypeModel(dataType.getURI());
-    }
-
-    public static DatatypePropertyModel getBuiltInDatatypeModel(String dataTypeURI) {
-        BuiltInDatatypes dataType = builtInDatatypes.get(SPARQLDeserializers.getExpandedURI(dataTypeURI));
-
-        DatatypePropertyModel model = new DatatypePropertyModel();
-
-        SPARQLLabel label = new SPARQLLabel(dataType.getLabel(), "en");
-        model.setLabel(label);
-
-        return model;
-    }
-
     private final static Map<String, Map<URI, Map<URI, String>>> labelTranslationMap = new HashMap<>();
     private final static Map<URI, Map<URI, Integer>> classPropertiesOrderMap = new HashMap<>();
     private final static List<URI> abstractClasses = new ArrayList<>();
@@ -164,7 +55,7 @@ public final class OntologyDAO {
             URI classURI = new URI(classOverride.getKey());
             JsonNode classOverrideNode = classOverride.getValue();
             if (classOverrideNode.hasNonNull("properties")) {
-                Iterator<Map.Entry<String, JsonNode>> propertiesOverride = classOverrideNode.fields();
+                Iterator<Map.Entry<String, JsonNode>> propertiesOverride = classOverrideNode.get("properties").fields();
                 while (propertiesOverride.hasNext()) {
                     Map.Entry<String, JsonNode> propertyOverride = propertiesOverride.next();
                     URI propertyURI = new URI(propertyOverride.getKey());
@@ -261,7 +152,7 @@ public final class OntologyDAO {
         classTree.traverse((ClassModel model) -> {
             model.setAbstractClass(isAbstractClass(model.getUri()));
         });
-        
+
         return classTree;
     }
 
@@ -331,7 +222,7 @@ public final class OntologyDAO {
                 mergedRestrictions.put(propertyURI, restriction);
             }
             if (restriction.getOnDataRange() != null) {
-                if (OntologyDAO.isBuiltInDatatype(restriction.getOnDataRange())) {
+                if (BuiltInDatatypes.isBuiltInDatatype(restriction.getOnDataRange())) {
                     datatypePropertiesURI.put(propertyURI, restriction.getOnDataRange());
                 }
             } else if (restriction.getOnClass() != null) {
@@ -341,7 +232,7 @@ public final class OntologyDAO {
                 }
             } else if (restriction.getSomeValuesFrom() != null) {
                 URI someValueFrom = restriction.getSomeValuesFrom();
-                if (OntologyDAO.isBuiltInDatatype(someValueFrom)) {
+                if (BuiltInDatatypes.isBuiltInDatatype(someValueFrom)) {
                     datatypePropertiesURI.put(propertyURI, someValueFrom);
                 } else if (sparql.uriExists(ClassModel.class,
                         someValueFrom)) {

@@ -3,7 +3,7 @@ package org.opensilex.server.rest.serialization;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import javax.inject.Singleton;
 import javax.ws.rs.ext.ParamConverter;
@@ -20,8 +20,8 @@ public class CustomParamConverterProvider implements ParamConverterProvider {
 
         if (rawType.isAssignableFrom(LocalDate.class)) {
             return (ParamConverter<T>) localDateConverter;
-        } else if (rawType.isAssignableFrom(LocalDateTime.class)) {
-            return (ParamConverter<T>) localDateTimeConverter;
+        } else if (rawType.isAssignableFrom(OffsetDateTime.class)) {
+            return (ParamConverter<T>) offsetDateTimeConverter;
         }
 
         return null;
@@ -46,22 +46,22 @@ public class CustomParamConverterProvider implements ParamConverterProvider {
         }
     };
 
-    private static ParamConverter<LocalDateTime> localDateTimeConverter = new ParamConverter<LocalDateTime>() {
+    private static ParamConverter<OffsetDateTime> offsetDateTimeConverter = new ParamConverter<OffsetDateTime>() {
         @Override
-        public LocalDateTime fromString(final String value) {
+        public OffsetDateTime fromString(final String value) {
             if (value == null || value.isEmpty()) {
                 return null;
             }
             try {
-                return LocalDateTime.parse(value);
+                return OffsetDateTime.parse(value);
             } catch (Exception ex) {
                 return null;
             }
         }
 
         @Override
-        public String toString(final LocalDateTime value) {
-            return value.format(DateTimeFormatter.ISO_INSTANT);
+        public String toString(final OffsetDateTime value) {
+            return value.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         }
     };
 }

@@ -6,7 +6,7 @@
 //******************************************************************************
 package org.opensilex.update;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * Interface for modules update classes.
@@ -20,7 +20,7 @@ public interface OpenSilexModuleUpdate {
      *
      * @return Date of update creation
      */
-    public LocalDateTime getDate();
+    public OffsetDateTime getDate();
 
     /**
      * Description of the update.

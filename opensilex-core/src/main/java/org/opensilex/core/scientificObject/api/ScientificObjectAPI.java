@@ -27,7 +27,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.ontology.dal.CSVValidationModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -37,7 +37,6 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
 import org.opensilex.sparql.response.PartialResourceTreeDTO;
 import org.opensilex.sparql.response.PartialResourceTreeResponse;
@@ -97,8 +96,7 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        SPARQLPartialTreeListModel<ScientificObjectModel> tree = dao.searchTreeByExperiment(xpDAO, experimentURI, null, DEFAULT_CHILDREN_LIMIT, DEFAULT_DEPTH_LIMIT, currentUser);
+        SPARQLPartialTreeListModel<ScientificObjectModel> tree = dao.searchTreeByExperiment(experimentURI, null, DEFAULT_CHILDREN_LIMIT, DEFAULT_DEPTH_LIMIT, currentUser);
         return new PartialResourceTreeResponse(PartialResourceTreeDTO.fromResourceTree(tree)).getResponse();
     }
 
@@ -120,8 +118,7 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Parent object URI", example = "http://example.com/", required = true) @PathParam("parenturi") URI parentURI
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        List<ScientificObjectModel> sientificObjects = dao.searchChildrenByExperiment(xpDAO, experimentURI, parentURI, currentUser);
+        List<ScientificObjectModel> sientificObjects = dao.searchChildrenByExperiment(experimentURI, parentURI, currentUser);
         List<ScientificObjectNodeDTO> dtoList = sientificObjects.stream().map(ScientificObjectNodeDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
     }
@@ -150,21 +147,37 @@ public class ScientificObjectAPI {
         return new SingleObjectResponse<Boolean>(true).getResponse();
     }
 
-    @GET
-    @Path("get-csv-headers/{objectType}")
-    @ApiOperation("Get list of scientific object CSV import headers")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("csv-validate")
+    @ApiOperation(value = "Validate a CSV file for the given experiement URI and scientific object type.")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of scientific objetcs CSV import headers", response = String.class, responseContainer = "List")
+        @ApiResponse(code = 201, message = "CSV validation errors or a validation token used for CSV import", response = CSVValidationDTO.class)
     })
-    public Response getCSVHeaders(
-            @ApiParam(value = "Object type URI", example = "http://example.com/", required = true) @PathParam("objectType") @NotNull @ValidURI URI objectType
+    @ApiProtected
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response validateCSV(
+            @ApiParam(value = "File description with metadata", required = true, type = "string") @NotNull @Valid @FormDataParam("description") ScientificObjectCsvDescriptionDTO descriptionDto,
+            @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") File file,
+            @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
+
+        URI xpURI = descriptionDto.getExperimentURI();
+        URI soType = descriptionDto.getScientificObjectType();
+
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-        List<String> headers = dao.getCSVHeaders(objectType, currentUser.getLanguage());
-        return new PaginatedListResponse<String>(headers).getResponse();
+
+        CSVValidationModel errors = dao.validateCSV(xpURI, soType, file, currentUser);
+
+        CSVValidationDTO csvValidation = new CSVValidationDTO();
+
+        csvValidation.setErrors(errors);
+
+        if (!errors.hasErrors()) {
+            csvValidation.setValidationToken("VALIDATION TOKEN");
+        }
+
+        return new SingleObjectResponse<CSVValidationDTO>(csvValidation).getResponse();
     }
 
 }

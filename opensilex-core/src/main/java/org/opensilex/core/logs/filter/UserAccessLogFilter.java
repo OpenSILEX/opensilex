@@ -6,7 +6,7 @@
 package org.opensilex.core.logs.filter;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import javax.inject.Inject;
@@ -21,7 +21,6 @@ import org.opensilex.OpenSilex;
 import org.opensilex.core.logs.dal.LogModel;
 import org.opensilex.core.logs.dal.LogsDAO;
 import org.opensilex.nosql.service.NoSQLService;
-import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +38,6 @@ public class UserAccessLogFilter implements ContainerRequestFilter {
 
     final static String MAP_FIELD_QUERY_PARAMETERS = "queryParameters";
     final static String MAP_FIELD_RESSOURCE_PATH = "ressourcePath";
-    @Inject
-    AuthenticationService authentication;
 
     @Inject
     NoSQLService nosql;
@@ -58,7 +55,7 @@ public class UserAccessLogFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext) throws IOException {
         // 1. retreive user informations
         UserModel user = (UserModel) requestContext.getSecurityContext().getUserPrincipal();
-        
+
         if (!user.isAnonymous()) {
             //2 . check access log configuration
             final UriInfo uriInfo = requestContext.getUriInfo();
@@ -84,7 +81,7 @@ public class UserAccessLogFilter implements ContainerRequestFilter {
                     queryParmeters.put(MAP_FIELD_RESSOURCE_PATH, resourcePath);
 
                     logModel.setQueryParmeters(queryParmeters);
-                    logModel.setDatetime(LocalDateTime.now());
+                    logModel.setDatetime(OffsetDateTime.now());
                     logsDAO.create(logModel);
                 } catch (Exception ex) {
                     LOGGER.warn("Error while logging user access to service", ex);

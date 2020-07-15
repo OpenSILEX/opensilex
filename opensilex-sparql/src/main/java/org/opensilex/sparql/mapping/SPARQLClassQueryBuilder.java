@@ -17,9 +17,12 @@ import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
-import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
+import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
@@ -42,8 +45,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Seq;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.vocabulary.OWL;
-import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -66,6 +67,15 @@ class SPARQLClassQueryBuilder {
         this.mapperIndex = mapperIndex;
     }
 
+    /**
+     * @param objectFieldName the field name
+     * @return the name of the SPARQL variable which represent the object field name
+     * @see SPARQLNamedResourceModel#getName()
+     */
+    public static String getObjectNameVarName(String objectFieldName) {
+        return "_" + objectFieldName + "_name";
+    }
+
     public SelectBuilder getSelectBuilder(Node graph, String lang) {
         SelectBuilder selectBuilder = new SelectBuilder();
         selectBuilder.setDistinct(true);
@@ -77,6 +87,9 @@ class SPARQLClassQueryBuilder {
 
         analyzer.forEachObjectProperty((Field field, Property property) -> {
             selectBuilder.addVar(field.getName());
+            if (SPARQLNamedResourceModel.class.isAssignableFrom(field.getType())) {
+                selectBuilder.addVar(getObjectNameVarName(field.getName()));
+            }
         });
 
         analyzer.forEachLabelProperty((Field field, Property property) -> {
@@ -337,6 +350,72 @@ class SPARQLClassQueryBuilder {
 
         if (rdtTypeTriple != null) {
             handler.addWhere(rdtTypeTriple);
+        }
+
+        // try to directly fetch object label in the query
+        try {
+            if (isObject && SPARQLNamedResourceModel.class.isAssignableFrom(field.getType())) {
+                appendObjectNameWhere(select,handler,field,graph,isOptional,requiredHandlersByGraph,optionalHandlersByGraph);
+            }
+        } catch (SPARQLMapperNotFoundException | SPARQLInvalidClassDefinitionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Append a WHERE clause which associate the given field with it's name into the given handler
+     * @param select the root {@link AbstractQueryBuilder}
+     * @param handler the current handler
+     * @param field the object field
+     * @param graph the main query graph
+     * @param isOptional a flag which indicate if the field is optional or not
+     * @param requiredHandlersByGraph map between graph and associated {@link WhereHandler}
+     * @param optionalHandlersByGraph map between graph and associated {@link List} of {@link WhereHandler}
+     * @throws SPARQLMapperNotFoundException
+     * @throws SPARQLInvalidClassDefinitionException
+     */
+    private void appendObjectNameWhere(
+            AbstractQueryBuilder<?> select,
+            WhereHandler handler,
+            Field field,
+            Node graph,
+            boolean isOptional,
+            Map<Node, WhereHandler> requiredHandlersByGraph,
+            Map<Node, List<WhereHandler>> optionalHandlersByGraph) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+
+        Var propertyFieldVar = makeVar(field.getName());
+        Node objectPropertyGraph = mapperIndex.getForClass(field.getType()).getDefaultGraph();
+
+        // if the object is stored in the same graph as the current model then try to get object name into this graph
+        if (objectPropertyGraph.equals(graph)) {
+            String objFieldName = getObjectNameVarName(field.getName());
+            TriplePath objectNameTriple = select.makeTriplePath(propertyFieldVar, DCTerms.title, makeVar(objFieldName));
+
+            if (isOptional) {
+                handler.addOptional(objectNameTriple);
+            } else {
+                handler.addWhere(objectNameTriple);
+            }
+
+        } else {
+            // else fetch the object label into his proper graph
+            WhereHandler objectGraphHandler;
+            if (isOptional) {
+                // get or create the handler list
+                List<WhereHandler> optionalHandlers = optionalHandlersByGraph.computeIfAbsent(objectPropertyGraph, handlers -> new ArrayList<>());
+                objectGraphHandler = new WhereHandler();
+                optionalHandlers.add(objectGraphHandler);
+
+            } else {
+                objectGraphHandler = requiredHandlersByGraph.get(objectPropertyGraph);
+                if (objectGraphHandler == null) {
+                    objectGraphHandler = new WhereHandler();
+                    requiredHandlersByGraph.put(objectPropertyGraph, objectGraphHandler);
+                }
+            }
+            String objFieldName = getObjectNameVarName(field.getName());
+            TriplePath objectNameTriple = select.makeTriplePath(propertyFieldVar, DCTerms.title, makeVar(objFieldName));
+            objectGraphHandler.addWhere(objectNameTriple);
         }
     }
 

@@ -140,8 +140,7 @@ public final class OntologyDAO {
                 parent,
                 excludeRoot,
                 (SelectBuilder select) -> {
-                    if (parent
-                    != null) {
+                    if (parent != null) {
                         Var parentVar = makeVar(ClassModel.PARENT_FIELD);
                         select.addWhere(parentVar, Ontology.subClassAny, SPARQLDeserializers.nodeURI(parent));
                         select.addWhere(makeVar(ClassModel.URI_FIELD), RDFS.subClassOf, parentVar);

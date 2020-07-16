@@ -2,8 +2,8 @@ import Component from "vue-class-component";
 
  <template>
   <div>
-    <opensilex-CreateButton @click="show" label="ExperimentFacilitySelector.set-facilities">
- <b-modal ref="facilitySelector" @ok.prevent="update" size="md" :static="true">
+    <opensilex-CreateButton @click="show" label="ExperimentFacilitySelector.set-facilities"></opensilex-CreateButton>
+    <b-modal ref="facilitySelector" @ok.prevent="update" size="md" :static="true">
       <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
       <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
 
@@ -34,9 +34,6 @@ import Component from "vue-class-component";
         </template>
       </opensilex-SelectForm>
     </b-modal>
-
-    </opensilex-CreateButton>
-   
   </div>
 </template>
 
@@ -64,6 +61,7 @@ export default class ExperimentFacilitySelector extends Vue {
   uri;
 
   show() {
+    console.error(this.facilitySelector);
     this.facilitySelector.show();
   }
 
@@ -210,6 +208,9 @@ export default class ExperimentFacilitySelector extends Vue {
 </script>
 
 <style scoped lang="scss">
+::v-deep .vue-treeselect__option--disabled > .vue-treeselect__label-container > .vue-treeselect__checkbox-container {
+  display: none;
+}
 </style>
 
 

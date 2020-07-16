@@ -1,6 +1,7 @@
 package org.opensilex.core.scientificObject.dal;
 
 import java.util.List;
+import org.opensilex.core.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -27,4 +28,19 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
             ignoreUpdateIfNull = true
     )
     protected List<ScientificObjectModel> children;
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasFactorLevel"
+    )
+    protected List<FactorLevelModel> factorLevels;
+
+    public List<FactorLevelModel> getFactorLevels() {
+        return factorLevels;
+    }
+
+    public void setFactorLevels(List<FactorLevelModel> factorLevels) {
+        this.factorLevels = factorLevels;
+    }
+
 }

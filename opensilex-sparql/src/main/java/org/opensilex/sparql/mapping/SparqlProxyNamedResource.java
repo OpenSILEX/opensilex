@@ -24,7 +24,7 @@ class SparqlProxyNamedResource<T extends SPARQLNamedResourceModel<T>> extends SP
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if ("getName".equals(method.getName()) && method.getParameterCount() == 0){
+        if ("getName".equals(method.getName()) && method.getParameterCount() == 0 && name != null){
             return name;
         } else {
             return super.invoke(proxy, method, args);

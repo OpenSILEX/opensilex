@@ -7,7 +7,6 @@ package org.opensilex.core.ontology.dal;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -193,8 +192,16 @@ public enum BuiltInDatatypes {
         return this.label;
     }
 
+    public Class<?> getTypeClass() {
+        return this.typeClass;
+    }
+
     public boolean validate(String value) {
         return this.validator.apply(value);
+    }
+
+    public Object deserialize(String value) {
+        return this.deserializer.apply(value);
     }
 
     public static Map<String, BuiltInDatatypes> builtInDatatypes = new HashMap<>();

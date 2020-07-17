@@ -6,29 +6,34 @@
 package org.opensilex.core.scientificObject.dal;
 
 import org.opensilex.core.ontology.dal.CSVValidationModel;
-import com.opencsv.CSVReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Property;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.factor.dal.FactorLevelModel;
+import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.dal.BuiltInDatatypes;
+import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.ontology.dal.OwlRestrictionModel;
+import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
@@ -140,101 +145,46 @@ public class ScientificObjectDAO {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(xpURI, currentUser);
 
-        Map<String, OwlRestrictionModel> restrictionsByHeader = new HashMap<>();
-
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        ClassModel model = ontologyDAO.getClassModel(soType, currentUser.getLanguage());
 
-        model.getOrderedRestrictions().forEach(restriction -> {
-            if (!restriction.isList()) {
-                URI propertyURI = restriction.getOnProperty();
+        HashMap<Property, BiConsumer<CSVCell, CSVValidationModel>> customValidators = new HashMap<>();
 
-                if (model.isDatatypePropertyRestriction(propertyURI)) {
-                    String header = model.getDatatypeProperty(propertyURI).getName();
-                    restrictionsByHeader.put(header, restriction);
-                } else if (model.isObjectPropertyRestriction(propertyURI)) {
-                    String header = model.getObjectProperty(propertyURI).getName();
-                    restrictionsByHeader.put(header, restriction);
-                }
-            }
-        });
+        ExperimentModel xp = sparql.getByURI(ExperimentModel.class, xpURI, currentUser.getLanguage());
 
-        Map<Integer, OwlRestrictionModel> restrictionsByIndex = new HashMap<>();
-        Map<Integer, String> headerByIndex = new HashMap<>();
-
-        CSVValidationModel csvErrors = new CSVValidationModel();
-
-        try (CSVReader csvReader = new CSVReader(new FileReader(file));) {
-            String[] headers = csvReader.readNext();
-
-            if (headers != null) {
-
-                for (int i = 0; i < headers.length; i++) {
-                    String header = headers[i];
-                    if (restrictionsByHeader.containsKey(header)) {
-                        restrictionsByIndex.put(i, restrictionsByHeader.get(header));
-                        headerByIndex.put(i, header);
-                        restrictionsByHeader.remove(header);
-                    }
-                }
-
-                if (!restrictionsByHeader.isEmpty()) {
-                    csvErrors.addMissingHeaders(restrictionsByHeader.keySet());
-                    return csvErrors;
-                }
-
-                Map<URI, Map<URI, Boolean>> checkedClassObjectURIs = new HashMap<>();
-
-                int rowIndex = 1;
-                String[] values = null;
-                while ((values = csvReader.readNext()) != null) {
-                    for (int colIndex = 0; colIndex < values.length; colIndex++) {
-                        if (restrictionsByIndex.containsKey(colIndex)) {
-                            String value = values[colIndex].trim();
-                            OwlRestrictionModel restriction = restrictionsByIndex.get(colIndex);
-                            URI propertyURI = restriction.getOnProperty();
-
-                            if (restriction.isRequired() && (value == null || value.isEmpty())) {
-                                csvErrors.addMissingRequiredValue(rowIndex, colIndex, headerByIndex.get(colIndex));
-                            } else if (model.isDatatypePropertyRestriction(propertyURI)) {
-                                BuiltInDatatypes dataType = BuiltInDatatypes.getBuiltInDatatype(restriction.getSubjectURI());
-                                if (!dataType.validate(value)) {
-                                    csvErrors.addInvalidDatatypeError(rowIndex, colIndex, headerByIndex.get(colIndex), dataType, value);
-                                }
-                            } else if (model.isObjectPropertyRestriction(propertyURI)) {
-                                try {
-                                    URI objectURI = new URI(value);
-                                    if (objectURI.isAbsolute()) {
-                                        URI classURI = restriction.getSubjectURI();
-                                        boolean doesClassObjectUriExist;
-                                        if (checkedClassObjectURIs.containsKey(classURI) && checkedClassObjectURIs.get(classURI).containsKey(objectURI)) {
-                                            doesClassObjectUriExist = checkedClassObjectURIs.get(classURI).get(objectURI);
-                                        } else {
-                                            doesClassObjectUriExist = sparql.uriExists(classURI, objectURI);
-                                            if (!checkedClassObjectURIs.containsKey(classURI)) {
-                                                checkedClassObjectURIs.put(classURI, new HashMap<>());
-                                            }
-                                            checkedClassObjectURIs.get(classURI).put(objectURI, doesClassObjectUriExist);
-                                        }
-
-                                        if (!doesClassObjectUriExist) {
-                                            csvErrors.addURINotFoundError(rowIndex, colIndex, headerByIndex.get(colIndex), classURI, objectURI);
-                                        }
-                                    } else {
-                                        csvErrors.addInvalidURIError(rowIndex, colIndex, headerByIndex.get(colIndex), value);
-                                    }
-                                } catch (URISyntaxException ex) {
-                                    csvErrors.addInvalidURIError(rowIndex, colIndex, headerByIndex.get(colIndex), value);
-                                }
-                            }
-                        }
-                    }
-
-                    rowIndex++;
-                }
+        List<URI> factorLevelURIs = new ArrayList<>();
+        for (FactorModel factor : xp.getFactors()) {
+            for (FactorLevelModel factorLevel : factor.getFactorLevels()) {
+                factorLevelURIs.add(factorLevel.getUri());
             }
         }
 
-        return csvErrors;
+        List<URI> germplasmURIs = new ArrayList<>();
+        for (SpeciesModel germplasm : xp.getSpecies()) {
+            germplasmURIs.add(germplasm.getUri());
+        }
+
+        customValidators.put(Oeso.hasFactorLevel, (cell, csvErrors) -> {
+            try {
+                URI factorLevelURI = new URI(cell.getValue());
+                if (!factorLevelURIs.contains(factorLevelURI)) {
+                    csvErrors.addInvalidValueError(cell);
+                }
+            } catch (URISyntaxException ex) {
+                csvErrors.addInvalidURIError(cell);
+            }
+        });
+
+        customValidators.put(Oeso.hasGermplasm, (cell, csvErrors) -> {
+            try {
+                URI germplasmURI = new URI(cell.getValue());
+                if (!germplasmURIs.contains(germplasmURI)) {
+                    csvErrors.addInvalidValueError(cell);
+                }
+            } catch (URISyntaxException ex) {
+                csvErrors.addInvalidURIError(cell);
+            }
+        });
+
+        return ontologyDAO.validateCSV(soType, file, currentUser, customValidators);
     }
 }

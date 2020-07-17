@@ -15,12 +15,13 @@ import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResourceURI;
 import org.opensilex.sparql.annotations.SPARQLTypeRDF;
 import org.opensilex.sparql.annotations.SPARQLTypeRDFLabel;
+import org.opensilex.sparql.utils.Ontology;
 
 /**
  *
  * @author vidalmor
  */
-public abstract class SPARQLResourceModel implements SPARQLModel {
+public class SPARQLResourceModel implements SPARQLModel {
 
     @SPARQLResourceURI()
     protected URI uri;
@@ -97,6 +98,19 @@ public abstract class SPARQLResourceModel implements SPARQLModel {
         }
         final SPARQLResourceModel other = (SPARQLResourceModel) obj;
         return Objects.equals(this.uri, other.uri);
+    }
+
+    public void addRelation(URI propertyURI, Class<?> type, String value) {
+        if (this.relations == null) {
+            this.relations = new ArrayList<>();
+        }
+        
+        SPARQLModelRelation r = new SPARQLModelRelation();
+        r.setProperty(Ontology.property(propertyURI));
+        r.setType(type);
+        r.setValue(value);
+        
+        this.relations.add(r);
     }
 
 }

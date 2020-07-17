@@ -7,6 +7,9 @@ package org.opensilex.core.ontology.dal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.opencsv.CSVReader;
+import java.io.File;
+import java.io.FileReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -14,14 +17,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -296,4 +302,181 @@ public final class OntologyDAO {
 
         return baseMap;
     }
+
+    public CSVValidationModel validateCSV(URI rdfType, File file, UserModel currentUser, Map<Property, BiConsumer<CSVCell, CSVValidationModel>> customValidators) throws Exception {
+        Map<URI, OwlRestrictionModel> restrictionsByID = new HashMap<>();
+
+        ClassModel model = getClassModel(rdfType, currentUser.getLanguage());
+
+        model.getOrderedRestrictions().forEach(restriction -> {
+            URI propertyURI = restriction.getOnProperty();
+            restrictionsByID.put(propertyURI, restriction);
+        });
+
+        Map<Integer, OwlRestrictionModel> restrictionsByIndex = new HashMap<>();
+        Map<Integer, String> headerByIndex = new HashMap<>();
+
+        CSVValidationModel csvErrors = new CSVValidationModel();
+
+        try (CSVReader csvReader = new CSVReader(new FileReader(file));) {
+            String[] ids = csvReader.readNext();
+
+            csvReader.readNext();
+            csvReader.readNext();
+
+            if (ids != null) {
+
+                for (int i = 0; i < ids.length; i++) {
+                    try {
+                        URI id = new URI(ids[i]);
+
+                        if (restrictionsByID.containsKey(id)) {
+                            restrictionsByIndex.put(i, restrictionsByID.get(id));
+
+                            String header = id.toString();
+                            if (model.isDatatypePropertyRestriction(id)) {
+                                header = model.getDatatypeProperty(id).getName();
+                            } else if (model.isObjectPropertyRestriction(id)) {
+                                header = model.getObjectProperty(id).getName();
+                            }
+                            headerByIndex.put(i, header);
+
+                            restrictionsByID.remove(id);
+                        }
+                    } catch (URISyntaxException ex) {
+                        csvErrors.addInvalidHeaderURI(i, ids[i]);
+                    }
+                }
+
+                if (!restrictionsByID.isEmpty()) {
+                    csvErrors.addMissingHeaders(restrictionsByID.keySet());
+                }
+
+                if (csvErrors.hasErrors()) {
+                    return csvErrors;
+                }
+
+                Map<URI, Map<URI, Boolean>> checkedClassObjectURIs = new HashMap<>();
+
+                int rowIndex = 1;
+                String[] values = null;
+                while ((values = csvReader.readNext()) != null) {
+                    validateCSVRow(model, values, rowIndex, csvErrors, restrictionsByIndex, headerByIndex, checkedClassObjectURIs, customValidators);
+                    rowIndex++;
+                }
+            }
+        }
+
+        return csvErrors;
+    }
+
+    private void validateCSVRow(
+            ClassModel model,
+            String[] values,
+            int rowIndex,
+            CSVValidationModel csvErrors,
+            Map<Integer, OwlRestrictionModel> restrictionsByIndex,
+            Map<Integer, String> headerByIndex,
+            Map<URI, Map<URI, Boolean>> checkedClassObjectURIs,
+            Map<Property, BiConsumer<CSVCell, CSVValidationModel>> customValidators
+    ) throws Exception {
+        SPARQLResourceModel object = new SPARQLResourceModel();
+        for (int colIndex = 0; colIndex < values.length; colIndex++) {
+            if (restrictionsByIndex.containsKey(colIndex)) {
+                String value = values[colIndex].trim();
+                OwlRestrictionModel restriction = restrictionsByIndex.get(colIndex);
+                URI propertyURI = restriction.getOnProperty();
+
+                BiConsumer<CSVCell, CSVValidationModel> customValidator = null;
+                if (customValidators != null) {
+                    customValidator = customValidators.get(propertyURI);
+                }
+
+                String header = headerByIndex.get(colIndex);
+                validateCSVValue(model, propertyURI, value, rowIndex, colIndex, restriction, header, csvErrors, checkedClassObjectURIs, customValidator, object);
+            }
+        }
+    }
+
+    private void validateCSVValue(
+            ClassModel model,
+            URI propertyURI,
+            String value,
+            int rowIndex,
+            int colIndex,
+            OwlRestrictionModel restriction,
+            String header,
+            CSVValidationModel csvErrors,
+            Map<URI, Map<URI, Boolean>> checkedClassObjectURIs,
+            BiConsumer<CSVCell, CSVValidationModel> customValidator,
+             SPARQLResourceModel object
+    ) throws SPARQLException {
+        if (!restriction.isList()) {
+            CSVCell cell = new CSVCell(rowIndex, colIndex, value, header);
+            validateCSVSingleValue(model, propertyURI, cell, restriction, csvErrors, checkedClassObjectURIs, customValidator, object);
+        } else {
+            String[] multipleValues = value.split("|");
+            for (String singleValue : multipleValues) {
+                CSVCell cell = new CSVCell(rowIndex, colIndex, singleValue, header);
+                validateCSVSingleValue(model, propertyURI, cell, restriction, csvErrors, checkedClassObjectURIs, customValidator, object);
+            }
+        }
+
+    }
+
+    private void validateCSVSingleValue(
+            ClassModel model,
+            URI propertyURI,
+            CSVCell cell,
+            OwlRestrictionModel restriction,
+            CSVValidationModel csvErrors,
+            Map<URI, Map<URI, Boolean>> checkedClassObjectURIs,
+            BiConsumer<CSVCell, CSVValidationModel> customValidator,
+            SPARQLResourceModel object
+    ) throws SPARQLException {
+        String value = cell.getValue();
+
+        if (restriction.isRequired() && (value == null || value.isEmpty())) {
+            csvErrors.addMissingRequiredValue(cell);
+        } else if (model.isDatatypePropertyRestriction(propertyURI)) {
+            BuiltInDatatypes dataType = BuiltInDatatypes.getBuiltInDatatype(restriction.getSubjectURI());
+            if (!dataType.validate(value)) {
+                csvErrors.addInvalidDatatypeError(cell, dataType);
+            } else if (customValidator != null) {
+                customValidator.accept(cell, csvErrors);
+            }
+
+            if (!csvErrors.hasErrors()) {
+                object.addRelation(propertyURI, dataType.getTypeClass(), value);
+            }
+        } else if (model.isObjectPropertyRestriction(propertyURI)) {
+            try {
+                URI objectURI = new URI(value);
+                if (objectURI.isAbsolute()) {
+                    URI classURI = restriction.getSubjectURI();
+                    boolean doesClassObjectUriExist;
+                    if (checkedClassObjectURIs.containsKey(classURI) && checkedClassObjectURIs.get(classURI).containsKey(objectURI)) {
+                        doesClassObjectUriExist = checkedClassObjectURIs.get(classURI).get(objectURI);
+                    } else {
+                        doesClassObjectUriExist = sparql.uriExists(model.getUri(), objectURI);
+                        if (!checkedClassObjectURIs.containsKey(classURI)) {
+                            checkedClassObjectURIs.put(classURI, new HashMap<>());
+                        }
+                        checkedClassObjectURIs.get(classURI).put(objectURI, doesClassObjectUriExist);
+                    }
+
+                    if (!doesClassObjectUriExist) {
+                        csvErrors.addURINotFoundError(cell, classURI, objectURI);
+                    } else if (customValidator != null) {
+                        customValidator.accept(cell, csvErrors);
+                    }
+                } else {
+                    csvErrors.addInvalidURIError(cell);
+                }
+            } catch (URISyntaxException ex) {
+                csvErrors.addInvalidURIError(cell);
+            }
+        }
+    }
+
 }

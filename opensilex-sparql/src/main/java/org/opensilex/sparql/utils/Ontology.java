@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.sparql.utils;
 
+import java.net.URI;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -37,6 +38,10 @@ public abstract class Ontology {
         return ResourceFactory.createProperty(uri);
     }
 
+    public static final Property property(URI uri) {
+        return ResourceFactory.createProperty(uri.toString());
+    }
+    
     public static final Property property(String namespace, String local) {
         return ResourceFactory.createProperty(namespace, local);
     }

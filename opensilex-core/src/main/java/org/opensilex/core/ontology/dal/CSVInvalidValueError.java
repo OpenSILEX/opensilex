@@ -9,17 +9,10 @@ package org.opensilex.core.ontology.dal;
  *
  * @author vmigot
  */
-public class CSVDatatypeError extends CSVCell {
+public class CSVInvalidValueError extends CSVCell {
 
-    private String datatype;
-
-    public CSVDatatypeError(CSVCell cell, String datatype) {
+    public CSVInvalidValueError(CSVCell cell) {
         super(cell);
-        this.datatype = datatype;
-    }
-
-    public String getDatatype() {
-        return datatype;
     }
 
 }

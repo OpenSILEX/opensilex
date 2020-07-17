@@ -121,12 +121,22 @@ export default class ScientificObjectCSVImporter extends Vue {
     let csvContent = "data:text/csv;charset=utf-8,";
 
     let columnTitles = [];
+    let columnIDs = [];
+    let columnDescriptions = [];
+    
     for (let i in this.tabulatorOptions.columns) {
       let column = this.tabulatorOptions.columns[i];
       columnTitles.push(column.title);
+      columnIDs.push(column.field);
+      columnDescriptions.push(column.description);
     }
 
-    csvContent += columnTitles.join(",");
+    let csvRows = [];
+    csvRows.push(columnIDs.join(","));
+    csvRows.push(columnTitles.join(","));
+    csvRows.push(columnDescriptions.join(","));
+
+    csvContent += csvRows.join("\r\n");
 
     let link = document.createElement("a");
     link.setAttribute("href", encodeURI(csvContent));
@@ -144,6 +154,7 @@ export default class ScientificObjectCSVImporter extends Vue {
         {
           title: "URI",
           field: "uri",
+          description: "Object URI",
           editor: true
         }
       ];
@@ -153,6 +164,7 @@ export default class ScientificObjectCSVImporter extends Vue {
         columns.push({
           title: property.label,
           field: property.uri,
+          description: property.comment,
           editor: true
         });
       }

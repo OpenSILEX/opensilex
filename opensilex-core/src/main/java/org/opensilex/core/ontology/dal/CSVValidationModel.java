@@ -18,17 +18,21 @@ import java.util.Map;
  */
 public class CSVValidationModel {
 
-    private List<String> missingHeaders = new ArrayList<>();
+    private List<URI> missingHeaders = new ArrayList<>();
+    
+    private Map<Integer, String> invalidHeaderURIs = new HashMap<>();
 
     private Map<Integer, List<CSVDatatypeError>> datatypeErrors = new HashMap<>();
 
     private Map<Integer, List<CSVURINotFoundError>> uriNotFoundErrors = new HashMap<>();
 
     private Map<Integer, List<CSVInvalidURIError>> invalidURIErrors = new HashMap<>();
-    
+
     private Map<Integer, List<CSVMissingRequiredValueError>> missingRequiredValueErrors = new HashMap<>();
 
-    public List<String> getMissingHeaders() {
+    private Map<Integer, List<CSVInvalidValueError>> invalidValueErrors = new HashMap<>();
+
+    public List<URI> getMissingHeaders() {
         return missingHeaders;
     }
 
@@ -47,45 +51,71 @@ public class CSVValidationModel {
     public Map<Integer, List<CSVMissingRequiredValueError>> getMissingRequiredValueErrors() {
         return missingRequiredValueErrors;
     }
+
+    public Map<Integer, String> getInvalidHeaderURIs() {
+        return invalidHeaderURIs;
+    }
+
+    public Map<Integer, List<CSVInvalidValueError>> getInvalidValueErrors() {
+        return invalidValueErrors;
+    }
     
     public boolean hasErrors() {
         return getMissingHeaders().size() > 0
                 || getDatatypeErrors().size() > 0
                 || getUriNotFoundErrors().size() > 0
                 || getInvalidURIErrors().size() > 0
-                || getMissingRequiredValueErrors().size() > 0;
+                || getMissingRequiredValueErrors().size() > 0
+                || getInvalidHeaderURIs().size() > 0
+                || getInvalidValueErrors().size() > 0;
     }
 
-    public void addMissingHeaders(Collection<String> headers) {
+    public void addMissingHeaders(Collection<URI> headers) {
         missingHeaders.addAll(headers);
     }
+    
+    void addInvalidHeaderURI(int i, String invalidURI) {
+        invalidHeaderURIs.put(i, invalidURI);
+    }
 
-    public void addInvalidDatatypeError(int rowIndex, int colIndex, String header, BuiltInDatatypes dataType, String value) {
+    public void addInvalidDatatypeError(CSVCell cell, BuiltInDatatypes dataType) {
+        int rowIndex = cell.getRowIndex();
         if (!datatypeErrors.containsKey(rowIndex)) {
             datatypeErrors.put(rowIndex, new ArrayList<>());
         }
-        datatypeErrors.get(rowIndex).add(new CSVDatatypeError(rowIndex, colIndex, header, dataType.getLabel(), value));
+        datatypeErrors.get(rowIndex).add(new CSVDatatypeError(cell, dataType.getLabel()));
     }
 
-    public void addURINotFoundError(int rowIndex, int colIndex, String header, URI subjectURI, URI objectURI) {
+    public void addURINotFoundError(CSVCell cell, URI subjectURI, URI objectURI) {
+        int rowIndex = cell.getRowIndex();
         if (!uriNotFoundErrors.containsKey(rowIndex)) {
             uriNotFoundErrors.put(rowIndex, new ArrayList<>());
         }
-        uriNotFoundErrors.get(rowIndex).add(new CSVURINotFoundError(rowIndex, colIndex, header, subjectURI, objectURI));
+        uriNotFoundErrors.get(rowIndex).add(new CSVURINotFoundError(cell, subjectURI, objectURI));
     }
 
-    public void addInvalidURIError(int rowIndex, int colIndex, String header, String value) {
+    public void addInvalidURIError(CSVCell cell) {
+        int rowIndex = cell.getRowIndex();
         if (!invalidURIErrors.containsKey(rowIndex)) {
             invalidURIErrors.put(rowIndex, new ArrayList<>());
         }
-        invalidURIErrors.get(rowIndex).add(new CSVInvalidURIError(rowIndex, colIndex, header, value));
+        invalidURIErrors.get(rowIndex).add(new CSVInvalidURIError(cell));
     }
 
-    public void addMissingRequiredValue(int rowIndex, int colIndex, String header) {
-                if (!missingRequiredValueErrors.containsKey(rowIndex)) {
+    public void addMissingRequiredValue(CSVCell cell) {
+        int rowIndex = cell.getRowIndex();
+        if (!missingRequiredValueErrors.containsKey(rowIndex)) {
             missingRequiredValueErrors.put(rowIndex, new ArrayList<>());
         }
-        missingRequiredValueErrors.get(rowIndex).add(new CSVMissingRequiredValueError(rowIndex, colIndex, header));
+        missingRequiredValueErrors.get(rowIndex).add(new CSVMissingRequiredValueError(cell));
+    }
+
+    public void addInvalidValueError(CSVCell cell) {
+        int rowIndex = cell.getRowIndex();
+        if (!invalidValueErrors.containsKey(rowIndex)) {
+            invalidValueErrors.put(rowIndex, new ArrayList<>());
+        }
+        invalidValueErrors.get(rowIndex).add(new CSVInvalidValueError(cell));
     }
 
 }

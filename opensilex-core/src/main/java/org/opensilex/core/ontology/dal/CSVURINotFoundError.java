@@ -11,36 +11,16 @@ import java.net.URI;
  *
  * @author vmigot
  */
-public class CSVURINotFoundError {
-
-    private final int rowIndex;
-
-    private final int colIndex;
-
-    private final String header;
+public class CSVURINotFoundError extends CSVCell {
 
     private final URI classURI;
 
     private final URI objectURI;
 
-    public CSVURINotFoundError(int rowIndex, int colIndex, String header, URI classURI, URI objectURI) {
-        this.rowIndex = rowIndex;
-        this.colIndex = colIndex;
-        this.header = header;
+    public CSVURINotFoundError(CSVCell cell, URI classURI, URI objectURI) {
+        super(cell);
         this.classURI = classURI;
         this.objectURI = objectURI;
-    }
-
-    public int getRowIndex() {
-        return rowIndex;
-    }
-
-    public int getColIndex() {
-        return colIndex;
-    }
-
-    public String getHeader() {
-        return header;
     }
 
     public URI getClassURI() {

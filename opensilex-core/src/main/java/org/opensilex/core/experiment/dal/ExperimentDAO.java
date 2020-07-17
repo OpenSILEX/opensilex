@@ -36,8 +36,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import static org.apache.commons.collections4.CollectionUtils.select;
 
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.opensilex.core.factor.dal.FactorLevelModel;
+import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;

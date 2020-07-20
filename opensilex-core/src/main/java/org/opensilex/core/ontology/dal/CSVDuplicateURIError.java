@@ -9,10 +9,17 @@ package org.opensilex.core.ontology.dal;
  *
  * @author vmigot
  */
-public class CSVMissingRequiredValueError extends CSVCell {
+public class CSVDuplicateURIError extends CSVCell {
 
-    public CSVMissingRequiredValueError(CSVCell cell) {
+    private int previousRow;
+
+    public CSVDuplicateURIError(CSVCell cell, int previousRow) {
         super(cell);
+        this.previousRow = previousRow;
+    }
+
+    public int getPreviousRow() {
+        return previousRow;
     }
 
 }

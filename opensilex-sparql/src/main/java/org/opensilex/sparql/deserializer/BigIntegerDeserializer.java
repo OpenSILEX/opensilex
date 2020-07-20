@@ -33,4 +33,5 @@ public class BigIntegerDeserializer implements SPARQLDeserializer<BigInteger> {
     public XSDDatatype getDataType() {
         return XSDDatatype.XSDinteger;
     }
+    
 }

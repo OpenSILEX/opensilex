@@ -26,7 +26,7 @@ public class CSVCell {
         this.value = cell.getValue();
     }
     
-    public CSVCell(int rowIndex, int colIndex, String header, String value) {
+    public CSVCell(int rowIndex, int colIndex, String value, String header) {
         this.rowIndex = rowIndex;
         this.colIndex = colIndex;
         this.header = header;

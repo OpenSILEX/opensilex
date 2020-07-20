@@ -12,6 +12,7 @@ import java.util.Objects;
 
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.sparql.annotations.SPARQLProperty;
+import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.annotations.SPARQLResourceURI;
 import org.opensilex.sparql.annotations.SPARQLTypeRDF;
 import org.opensilex.sparql.annotations.SPARQLTypeRDFLabel;
@@ -21,6 +22,10 @@ import org.opensilex.sparql.utils.Ontology;
  *
  * @author vidalmor
  */
+@SPARQLResource(
+        ontology = Ontology.class,
+        resource = "SPARQLResourceModel"
+)
 public class SPARQLResourceModel implements SPARQLModel {
 
     @SPARQLResourceURI()
@@ -74,9 +79,13 @@ public class SPARQLResourceModel implements SPARQLModel {
         this.relations = relations;
     }
 
-    public URI getCreator() { return creator; }
+    public URI getCreator() {
+        return creator;
+    }
 
-    public void setCreator(URI creator) { this.creator = creator; }
+    public void setCreator(URI creator) {
+        this.creator = creator;
+    }
 
     @Override
     public int hashCode() {
@@ -100,16 +109,18 @@ public class SPARQLResourceModel implements SPARQLModel {
         return Objects.equals(this.uri, other.uri);
     }
 
-    public void addRelation(URI propertyURI, Class<?> type, String value) {
+    public void addRelation(URI graph, URI propertyURI, Class<?> type, String value) {
         if (this.relations == null) {
             this.relations = new ArrayList<>();
         }
-        
+
         SPARQLModelRelation r = new SPARQLModelRelation();
+        r.setGraph(graph);
         r.setProperty(Ontology.property(propertyURI));
         r.setType(type);
         r.setValue(value);
-        
+        r.setReverse(false);
+
         this.relations.add(r);
     }
 

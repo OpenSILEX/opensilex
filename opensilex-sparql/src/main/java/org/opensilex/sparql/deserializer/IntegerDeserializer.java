@@ -9,7 +9,6 @@ import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 
-
 /**
  *
  * @author vincent
@@ -23,11 +22,24 @@ public class IntegerDeserializer implements SPARQLDeserializer<Integer> {
 
     @Override
     public Node getNode(Object value) throws Exception {
-         return NodeFactory.createLiteralByValue(value, getDataType());
+        return NodeFactory.createLiteralByValue(value, getDataType());
     }
 
     @Override
     public XSDDatatype getDataType() {
         return XSDDatatype.XSDinteger;
     }
+
+    @Override
+    public XSDDatatype[] getAlternativeDataType() {
+        return new XSDDatatype[]{
+            XSDDatatype.XSDint,
+            XSDDatatype.XSDunsignedInt,
+            XSDDatatype.XSDnegativeInteger,
+            XSDDatatype.XSDnonNegativeInteger,
+            XSDDatatype.XSDpositiveInteger,
+            XSDDatatype.XSDnonPositiveInteger
+        };
+    }
+
 }

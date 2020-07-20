@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.core.scientificObject.api;
 
+import org.opensilex.core.ontology.api.CSVValidationDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -35,8 +36,11 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
 import org.opensilex.sparql.response.PartialResourceTreeDTO;
 import org.opensilex.sparql.response.PartialResourceTreeResponse;
@@ -124,27 +128,68 @@ public class ScientificObjectAPI {
     }
 
     @POST
+    @Path("create")
+    @ApiOperation("Create a scientific object for the given experiment")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Create a project", response = ObjectUriResponse.class),
+        @ApiResponse(code = 409, message = "A scientific object with the same URI already exists", response = ErrorResponse.class)
+    })
+    public Response createScientificObject(
+            @ApiParam(value = "Scientific object description", required = true) @NotNull @Valid ScientificObjectDescriptionDTO descriptionDto
+    ) throws Exception {
+
+        URI xpURI = descriptionDto.getExperiment();
+        URI soType = descriptionDto.getType();
+
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+
+        URI soURI = dao.create(xpURI, soType, descriptionDto.getUri(), descriptionDto.getRelations(), currentUser);
+
+        return new ObjectUriResponse(soURI).getResponse();
+    }
+
+    @POST
     @Path("csv-import")
     @ApiOperation(value = "Import a CSV file for the given experiement URI and scientific object type.")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Data file and metadata saved", response = Boolean.class)
     })
     @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importCSV(
-            @ApiParam(value = "File description with metadata", required = true, type = "string") @NotNull @Valid @FormDataParam("description") ScientificObjectCsvDescriptionDTO descriptionDto,
+            @ApiParam(value = "File description with metadata", required = true, type = "string") @NotNull @Valid @FormDataParam("description") ScientificObjectDescriptionDTO descriptionDto,
             @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
-        URI xpURI = descriptionDto.getExperimentURI();
-        URI soType = descriptionDto.getScientificObjectType();
+        URI xpURI = descriptionDto.getExperiment();
+        URI soType = descriptionDto.getType();
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-        dao.importCSV(xpURI, soType, file, currentUser);
-        // TODO import CSV
-        return new SingleObjectResponse<Boolean>(true).getResponse();
+
+        CSVValidationModel errors = dao.validateCSV(xpURI, soType, file, currentUser);
+
+        CSVValidationDTO csvValidation = new CSVValidationDTO();
+
+        csvValidation.setErrors(errors);
+
+        if (!errors.hasErrors()) {
+            sparql.create(SPARQLDeserializers.nodeURI(xpURI), errors.getObjects());
+        }
+
+        return new SingleObjectResponse<CSVValidationDTO>(csvValidation).getResponse();
     }
 
     @POST
@@ -154,6 +199,10 @@ public class ScientificObjectAPI {
         @ApiResponse(code = 201, message = "CSV validation errors or a validation token used for CSV import", response = CSVValidationDTO.class)
     })
     @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_READ_ID,
+            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_READ_LABEL_KEY
+    )
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(
@@ -162,8 +211,8 @@ public class ScientificObjectAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
-        URI xpURI = descriptionDto.getExperimentURI();
-        URI soType = descriptionDto.getScientificObjectType();
+        URI xpURI = descriptionDto.getExperiment();
+        URI soType = descriptionDto.getType();
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
 

@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 <rdf:RDF xmlns="http://www.opensilex.org/vocabulary/oeso#"
-     xml:base="http://www.opensilex.org/vocabulary/oeso"
-     xmlns:dc="http://purl.org/dc/elements/1.1/"
-     xmlns:owl="http://www.w3.org/2002/07/owl#"
-     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-     xmlns:xml="http://www.w3.org/XML/1998/namespace"
-     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     xmlns:skos="http://www.w3.org/2004/02/skos/core#"
-     xmlns:terms="http://purl.org/dc/terms/"
-     xmlns:object="http://www.mistea.supagro.inra.fr/object#"
-     xmlns:vocabulary="http://www.opensilex.org/vocabulary/oeso#">
+         xml:base="http://www.opensilex.org/vocabulary/oeso"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:xml="http://www.w3.org/XML/1998/namespace"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+         xmlns:terms="http://purl.org/dc/terms/"
+         xmlns:object="http://www.mistea.supagro.inra.fr/object#"
+         xmlns:vocabulary="http://www.opensilex.org/vocabulary/oeso#">
     <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeso">
         <owl:versionIRI rdf:resource="http://www.opensilex.org/vocabulary/oeso"/>
         <rdfs:comment>Authors : Anne TIREAU, Llorenç CABRERA-BOSQUET, Morgane VIDAL, Pascal NEVEU</rdfs:comment>
@@ -25,12 +25,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Datatypes
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Datatypes
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -133,12 +133,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Object Properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Object Properties
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -297,6 +297,15 @@
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
     </owl:ObjectProperty>
+    
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasFactorLevel -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFactorLevel">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorLevel"/>
+    </owl:ObjectProperty>
+    
     
 
 
@@ -460,12 +469,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Data properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Data properties
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -650,12 +659,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Classes
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Classes
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -724,7 +733,7 @@
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-                <rdfs:subClassOf>
+        <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasFactorLevel"/>
                 <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorLevel"/>
@@ -758,6 +767,8 @@
     </owl:Class>
     
 
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FactorLevel">
+    </owl:Class>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Device -->
 
@@ -1885,12 +1896,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Individuals
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Individuals
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 

@@ -22,6 +22,8 @@ public abstract class Ontology {
 
     public static final Path subClassAny;
 
+    public static final Resource SPARQLResourceModel = resource("https://www.opensilex.org/abstract#SPARQLResourceModel");
+
     static {
         subClassAny = new P_ZeroOrMore1(new P_Link(RDFS.subClassOf.asNode()));
     }
@@ -41,7 +43,7 @@ public abstract class Ontology {
     public static final Property property(URI uri) {
         return ResourceFactory.createProperty(uri.toString());
     }
-    
+
     public static final Property property(String namespace, String local) {
         return ResourceFactory.createProperty(namespace, local);
     }

@@ -29,4 +29,5 @@ public class StringDeserializer implements SPARQLDeserializer<String> {
     public XSDDatatype getDataType() {
         return XSDDatatype.XSDstring;
     }
+    
 }

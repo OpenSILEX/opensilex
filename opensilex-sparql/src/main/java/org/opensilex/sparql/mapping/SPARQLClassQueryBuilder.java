@@ -72,7 +72,8 @@ class SPARQLClassQueryBuilder {
 
     /**
      * @param objectFieldName the field name
-     * @return the name of the SPARQL variable which represent the object field name
+     * @return the name of the SPARQL variable which represent the object field
+     * name
      * @see SPARQLNamedResourceModel#getName()
      */
     public static String getObjectNameVarName(String objectFieldName) {
@@ -271,7 +272,7 @@ class SPARQLClassQueryBuilder {
             Class<?> valueType = relation.getType();
             Node valueNode = SPARQLDeserializers.getForClass(valueType).getNodeFromString(relation.getValue());
 
-            Triple triple = new Triple(SPARQLDeserializers.nodeURI(uri), relation.getProperty().asNode(), valueNode);
+            Triple triple = new Triple(SPARQLDeserializers.nodeURI(uri), SPARQLDeserializers.nodeURI(relation.getProperty()), valueNode);
 
             Node relationGraph = graph;
             if (relation.getGraph() != null) {

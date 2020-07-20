@@ -32,4 +32,5 @@ public class DateDeserializer implements SPARQLDeserializer<LocalDate> {
     public XSDDatatype getDataType() {
         return XSDDatatype.XSDdate;
     }
+
 }

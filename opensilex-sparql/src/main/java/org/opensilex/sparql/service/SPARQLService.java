@@ -1444,9 +1444,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             executeUpdateQuery(copy);
         }
     }
-    
+
     public void deleteAll(Node graph, List<URI> objectList) throws SPARQLException {
-         if (objectList.size() > 0) {
+        if (objectList.size() > 0) {
             UpdateBuilder delete = new UpdateBuilder();
             int varCount = 0;
             for (URI objectURI : objectList) {

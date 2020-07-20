@@ -29,4 +29,5 @@ public class DoubleDeserializer implements SPARQLDeserializer<Double> {
     public XSDDatatype getDataType() {
         return XSDDatatype.XSDdouble;
     }
+
 }

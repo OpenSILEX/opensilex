@@ -7,19 +7,12 @@ package org.opensilex.core.scientificObject.dal;
 
 import org.opensilex.core.ontology.dal.CSVValidationModel;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiConsumer;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
@@ -29,17 +22,19 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.factor.dal.FactorLevelModel;
 import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
-import org.opensilex.core.ontology.dal.OwlRestrictionModel;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.URIGenerator;
 
 /**
  *
@@ -83,62 +78,6 @@ public class ScientificObjectDAO {
                 select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
             }
         });
-    }
-
-    public void importCSV(URI xpURI, URI soType, File file, UserModel user) throws Exception {
-        Reader in = new InputStreamReader(new FileInputStream(file));
-        CSVParser rows = CSVFormat.DEFAULT.parse(in);
-
-        Map<String, OwlRestrictionModel> headers = getCSVHeaderRestrictions(soType, user.getLanguage());
-
-        for (CSVRecord row : rows) {
-            for (int i = 0; i < headers.size(); i++) {
-                String value = row.get(i);
-                ScientificObjectModel so = new ScientificObjectModel();
-                so.setType(soType);
-                switch (i) {
-                    case 0:
-                        so.setUri(new URI(value));
-                        break;
-                    case 1:
-                        so.setName(value);
-                        break;
-                    case 2:
-                        ScientificObjectModel parent = new ScientificObjectModel();
-                        parent.setUri(new URI(value));
-                        so.setParent(parent);
-                        break;
-                    default:
-
-                        break;
-                }
-
-            }
-
-        }
-    }
-
-    public Map<String, OwlRestrictionModel> getCSVHeaderRestrictions(URI soType, String lang) throws Exception {
-        Map<String, OwlRestrictionModel> headersMap = new HashMap<>();
-
-        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        ClassModel model = ontologyDAO.getClassModel(soType, lang);
-
-        model.getOrderedRestrictions().forEach(restriction -> {
-            if (!restriction.isList()) {
-                URI propertyURI = restriction.getOnProperty();
-
-                if (model.isDatatypePropertyRestriction(propertyURI)) {
-                    String header = model.getDatatypeProperty(propertyURI).getName();
-                    headersMap.put(header, restriction);
-                } else if (model.isObjectPropertyRestriction(propertyURI)) {
-                    String header = model.getObjectProperty(propertyURI).getName();
-                    headersMap.put(header, restriction);
-                }
-            }
-        });
-
-        return headersMap;
     }
 
     public CSVValidationModel validateCSV(URI xpURI, URI soType, File file, UserModel currentUser) throws Exception {
@@ -185,6 +124,73 @@ public class ScientificObjectDAO {
             }
         });
 
-        return ontologyDAO.validateCSV(soType, file, currentUser, customValidators);
+        return ontologyDAO.validateCSV(xpURI, soType, file, currentUser, customValidators, new ScientificObjectExperimentURIGenerator(xpURI));
+    }
+
+    public URI create(URI xpURI, URI soType, URI objectURI, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        xpDAO.validateExperimentAccess(xpURI, currentUser);
+
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        ClassModel model = ontologyDAO.getClassModel(soType, currentUser.getLanguage());
+
+        SPARQLResourceModel object = new SPARQLResourceModel();
+        object.setType(soType);
+        object.setUri(objectURI);
+
+        boolean isValid = false;
+        if (relations.size() != model.getRestrictions().size()) {
+            isValid = true;
+            for (RDFObjectRelationDTO relation : relations) {
+                isValid = isValid && ontologyDAO.validateObjectValue(xpURI, model, relation.getProperty(), relation.getValue(), object);
+                if (!isValid) {
+                    break;
+                }
+            }
+        }
+
+        if (isValid) {
+            sparql.create(SPARQLDeserializers.nodeURI(xpURI), object);
+        }
+
+        return object.getUri();
+    }
+
+    private class ScientificObjectExperimentURIGenerator implements URIGenerator<String> {
+
+        private final URI experimentURI;
+
+        public ScientificObjectExperimentURIGenerator(URI experimentURI) {
+            this.experimentURI = experimentURI;
+        }
+
+        @Override
+        public URI generateURI(String prefix, String name, int retryCount) throws Exception {
+            String baseURI = null;
+            if (name != null) {
+                baseURI = experimentURI.toString() + "/so-" + URIGenerator.normalize(name);
+            } else {
+                baseURI = experimentURI.toString() + "/so-" + randomAlphaNumeric(7);
+            }
+
+            if (retryCount > 0) {
+                baseURI += "-" + retryCount;
+            }
+
+            return new URI(baseURI);
+        }
+
+    }
+
+    private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    private static String randomAlphaNumeric(int count) {
+        StringBuilder builder = new StringBuilder();
+        while (count-- != 0) {
+            int character = (int) (Math.random() * ALPHA_NUMERIC_STRING.length());
+            builder.append(ALPHA_NUMERIC_STRING.charAt(character));
+        }
+
+        return builder.toString().toLowerCase();
     }
 }

@@ -9,7 +9,6 @@ import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 
-
 /**
  *
  * @author vincent
@@ -23,11 +22,19 @@ public class CharDeserializer implements SPARQLDeserializer<Character> {
 
     @Override
     public Node getNode(Object value) throws Exception {
+        if (value == null) {
+            return NodeFactory.createLiteral("");
+        }
         return NodeFactory.createLiteral(value.toString().substring(0, 1));
     }
-    
-        @Override
+
+    @Override
     public XSDDatatype getDataType() {
         return XSDDatatype.XSDstring;
+    }
+
+    @Override
+    public boolean validate(String value) {
+        return value == null || value.length() >= 1;
     }
 }

@@ -5,17 +5,18 @@
  */
 package org.opensilex.core.scientificObject.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.net.URI;
+import org.opensilex.core.ontology.api.RDFObjectDTO;
 
 /**
  *
  * @author vmigot
  */
-public class ScientificObjectCsvDescriptionDTO {
+public class ScientificObjectDescriptionDTO extends RDFObjectDTO {
 
     private URI experiment;
-
-    private URI type;
 
     public URI getExperiment() {
         return experiment;
@@ -25,12 +26,9 @@ public class ScientificObjectCsvDescriptionDTO {
         this.experiment = experiment;
     }
 
-    public URI getType() {
-        return type;
-    }
-
-    public void setType(URI type) {
-        this.type = type;
+    public static ScientificObjectCsvDescriptionDTO fromString(String param) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(param, ScientificObjectCsvDescriptionDTO.class);
     }
 
 }

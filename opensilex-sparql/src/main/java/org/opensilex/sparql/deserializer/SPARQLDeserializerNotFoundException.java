@@ -5,6 +5,8 @@
 //******************************************************************************
 package org.opensilex.sparql.deserializer;
 
+import java.net.URI;
+
 /**
  *
  * @author vincent
@@ -12,12 +14,16 @@ package org.opensilex.sparql.deserializer;
 public class SPARQLDeserializerNotFoundException extends Exception {
 
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 7068977181450600027L;
+     *
+     */
+    private static final long serialVersionUID = 7068977181450600027L;
 
-	public SPARQLDeserializerNotFoundException(Class<?> clazz) {
+    public SPARQLDeserializerNotFoundException(Class<?> clazz) {
         super("Deserializer not found for class: " + clazz.getCanonicalName());
+    }
+
+    public SPARQLDeserializerNotFoundException(URI datatypeURI) {
+        super("Deserializer not found for datatype: " + datatypeURI.toString());
     }
 
 }

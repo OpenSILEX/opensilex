@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.scientificObject.api;
+package org.opensilex.core.ontology.api;
 
 import org.opensilex.core.ontology.dal.CSVValidationModel;
 

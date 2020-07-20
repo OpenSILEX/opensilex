@@ -49,6 +49,13 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
         return null;
     }
 
+    public static String getExpandedURI(URI value) {
+        if (value == null) {
+            return null;
+        }
+        return getExpandedURI(value.toString());
+    }
+
     public static String getExpandedURI(String value) {
         if (prefixes == null || value == null) {
             return value;
@@ -80,6 +87,13 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
     @Override
     public XSDDatatype getDataType() {
         return XSDDatatype.XSDanyURI;
+    }
+
+    public static boolean validateURI(String value) {
+        if (value == null) {
+            return true;
+        }
+        return XSDDatatype.XSDanyURI.isValid(value);
     }
 
 }

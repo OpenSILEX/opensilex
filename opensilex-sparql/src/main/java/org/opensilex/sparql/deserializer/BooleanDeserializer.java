@@ -32,4 +32,5 @@ public class BooleanDeserializer implements SPARQLDeserializer<Boolean> {
     public XSDDatatype getDataType() {
         return XSDDatatype.XSDboolean;
     }
+
 }

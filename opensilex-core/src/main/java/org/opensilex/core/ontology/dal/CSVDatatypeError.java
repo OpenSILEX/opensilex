@@ -5,20 +5,22 @@
  */
 package org.opensilex.core.ontology.dal;
 
+import java.net.URI;
+
 /**
  *
  * @author vmigot
  */
 public class CSVDatatypeError extends CSVCell {
 
-    private String datatype;
+    private final URI datatype;
 
-    public CSVDatatypeError(CSVCell cell, String datatype) {
+    public CSVDatatypeError(CSVCell cell, URI datatype) {
         super(cell);
         this.datatype = datatype;
     }
 
-    public String getDatatype() {
+    public URI getDatatype() {
         return datatype;
     }
 

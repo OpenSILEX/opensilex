@@ -9,7 +9,6 @@ import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 
-
 /**
  *
  * @author vincent
@@ -25,9 +24,16 @@ public class FloatDeserializer implements SPARQLDeserializer<Float> {
     public Node getNode(Object value) throws Exception {
         return NodeFactory.createLiteralByValue(value, getDataType());
     }
-    
+
     @Override
     public XSDDatatype getDataType() {
         return XSDDatatype.XSDfloat;
+    }
+
+    @Override
+    public XSDDatatype[] getAlternativeDataType() {
+        return new XSDDatatype[]{
+            XSDDatatype.XSDdecimal
+        };
     }
 }

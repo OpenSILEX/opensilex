@@ -147,6 +147,8 @@ components["opensilex-Card"] = Card;
 import NavBar from './common/views/NavBar.vue'
 components["opensilex-NavBar"] = NavBar;
 
+import ExternalReferencesModalForm from './common/external-references/ExternalReferencesModalForm.vue'
+components["opensilex-ExternalReferencesModalForm"] = ExternalReferencesModalForm;
 import ExternalReferencesForm from './common/external-references/ExternalReferencesForm.vue'
 components["opensilex-ExternalReferencesForm"] = ExternalReferencesForm;
 import ExternalReferencesDetails from './common/external-references/ExternalReferencesDetails.vue'

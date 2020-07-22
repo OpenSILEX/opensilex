@@ -38,11 +38,11 @@
         ></opensilex-FactorList>
       </template>
     </opensilex-PageContent>
-    <opensilex-ExternalReferencesForm
+    <opensilex-ExternalReferencesModalForm
       ref="skosReferences"
-      :skosReferences="selectedFactor"
+      :references.sync="selectedFactor"
       @onUpdate="callUpdateFactorService"
-    ></opensilex-ExternalReferencesForm>
+    ></opensilex-ExternalReferencesModalForm>
   </div>
 </template>
 
@@ -53,11 +53,10 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
   FactorCreationDTO,
   FactorsService,
-  FactorGetDTO,
   FactorDetailsGetDTO,
-  FactorSearchDTO,
   FactorUpdateDTO
 } from "opensilex-core/index";
+import ExternalReferencesModalFormForm from "../common/external-references/ExternalReferencesModalForm.vue";
 
 @Component
 export default class FactorView extends Vue {
@@ -67,16 +66,6 @@ export default class FactorView extends Vue {
   $t: any;
   $i18n: any;
   $router: any;
-
-  selectedFactor: any = {
-    uri: null,
-    names: {},
-    comment: null,
-    exactMatch: [],
-    closeMatch: [],
-    broader: [],
-    narrower: []
-  };
 
   get user() {
     return this.$store.state.user;
@@ -92,7 +81,16 @@ export default class FactorView extends Vue {
 
   @Ref("factorList") readonly factorList!: any;
 
-  @Ref("skosReferences") readonly skosReferences!: any;
+  @Ref("skosReferences") readonly skosReferences!: ExternalReferencesModalFormForm;
+
+  selectedFactor: FactorCreationDTO = {
+    uri: undefined,
+    names: {},
+    exactMatch: [],
+    closeMatch: [],
+    broader: [],
+    narrower: []
+  };
 
   created() {
     console.debug("Loading FactorView view...");
@@ -103,8 +101,7 @@ export default class FactorView extends Vue {
     this.factorForm.showCreateForm();
   }
 
-  callUpdateFactorService(form: FactorUpdateDTO, done) {
-    done(
+  callUpdateFactorService(form: FactorUpdateDTO) {
       this.service
         .updateFactor(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
@@ -112,7 +109,6 @@ export default class FactorView extends Vue {
           console.debug("Updated factor", uri);
           this.factorList.refresh();
         })
-    );
   }
   showFactorDetails(factorUriResult: any) {
     factorUriResult.then(factorUri => {
@@ -130,7 +126,7 @@ export default class FactorView extends Vue {
         let result = http.response.result;
         if (result instanceof Promise) {
           result.then(resolve => {
-            this.selectedFactor = resolve;
+            this.selectedFactor = result;
             this.skosReferences.show();
           });
         } else {

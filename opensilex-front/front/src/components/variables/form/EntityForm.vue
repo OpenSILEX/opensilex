@@ -10,7 +10,7 @@
                 @on-error="handleErrorMessage"
                 ref="formWizard"
                 @on-complete="onValidate"
-                shape="square"
+                shape="square".co
                 color="#00a38d"
         >
 
@@ -68,9 +68,6 @@
                 </template>
 
             </tab-content>
-            <!--      <tab-content v-bind:title="$t('component.common.form-wizard.external-ontologies')">-->
-            <!--        <opensilex-ExternalReferencesForm :skosReferences="dto"></opensilex-ExternalReferencesForm>-->
-            <!--      </tab-content>-->
         </form-wizard>
     </b-modal>
 </template>

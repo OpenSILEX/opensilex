@@ -244,8 +244,8 @@ components["opensilex-VariableForm1"] = VariableForm1;
 import VariableForm2 from './variables/form/VariableForm2.vue';
 components["opensilex-VariableForm2"] = VariableForm2;
 // Entity
-import EntityForm from './variables/form/EntityForm.vue';
-components["opensilex-EntityForm"] = EntityForm;
+// import EntityForm from './variables/form/EntityForm.vue';
+// components["opensilex-EntityForm"] = EntityForm;
 // Method
 import MethodCreate from './variables/form/MethodCreate.vue';
 components["opensilex-MethodCreate"] = MethodCreate;

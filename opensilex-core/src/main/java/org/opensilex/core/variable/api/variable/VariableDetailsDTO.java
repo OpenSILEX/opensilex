@@ -1,13 +1,15 @@
+package org.opensilex.core.variable.api.variable;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.variable.api.variable;
 
 import java.net.URI;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.variable.dal.EntityModel;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.QualityModel;
@@ -18,13 +20,17 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  *
- * @author vidalmor
+ * @author Renaud COLIN
  */
-public class VariableGetDTO {
+public class VariableDetailsDTO extends SKOSReferencesDTO {
 
     private URI uri;
 
     private String name;
+
+    private String longName;
+
+    private String comment;
 
     private NamedResourceDTO<EntityModel> entity;
 
@@ -32,8 +38,15 @@ public class VariableGetDTO {
 
     private NamedResourceDTO<MethodModel> method;
 
+    private URI traitUri;
+
+    private String traitName;
+
     private NamedResourceDTO<UnitModel> unit;
 
+    private String synonym;
+
+    private String dimension;
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
@@ -53,7 +66,23 @@ public class VariableGetDTO {
         this.name = name;
     }
 
-    public NamedResourceDTO<EntityModel> getEntity() { return entity; }
+    @ApiModelProperty(example = "Plant_Height_Estimation_Cm")
+    public String getLongName() { return longName; }
+
+    public void setLongName(String longName) { this.longName = longName; }
+
+    @ApiModelProperty(example = "Describe the height of a plant.")
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public NamedResourceDTO<EntityModel> getEntity() {
+        return entity;
+    }
 
     public void setEntity(NamedResourceDTO<EntityModel> entity) {
         this.entity = entity;
@@ -64,6 +93,16 @@ public class VariableGetDTO {
     }
 
     public void setQuality(NamedResourceDTO<QualityModel> quality) { this.quality = quality; }
+
+    @ApiModelProperty(notes = "Additional trait URI. Could be used for interoperability", example = "http://purl.obolibrary.org/obo/TO_0002644")
+    public URI getTraitUri() { return traitUri; }
+
+    public void setTraitUri(URI traitUri) { this.traitUri = traitUri; }
+
+    @ApiModelProperty(notes = "Additional trait name. Could be used for interoperability if you describe the trait URI", example = "dry matter digestibility")
+    public String getTraitName() { return traitName; }
+
+    public void setTraitName(String traitName) { this.traitName = traitName; }
 
     public NamedResourceDTO<MethodModel> getMethod() { return method; }
 
@@ -77,12 +116,32 @@ public class VariableGetDTO {
         this.unit = unit;
     }
 
+    @ApiModelProperty(example = "Plant_Length")
+    public String getSynonym() {
+        return synonym;
+    }
 
-    public static VariableGetDTO fromModel(VariableModel model) {
+    public void setSynonym(String synonym) {
+        this.synonym = synonym;
+    }
 
-        VariableGetDTO dto = new VariableGetDTO();
+    @ApiModelProperty(notes = "Describe the dimension on which variables values are integrated", example = "minutes")
+    public String getDimension() { return dimension; }
+
+    public void setDimension(String dimension) { this.dimension = dimension; }
+
+    public static VariableDetailsDTO fromModel(VariableModel model) {
+        VariableDetailsDTO dto = new VariableDetailsDTO();
+
         dto.setUri(model.getUri());
         dto.setName(model.getName());
+        dto.setComment(model.getComment());
+        dto.setLongName(model.getLongName());
+        dto.setSynonym(model.getSynonym());
+        dto.setDimension(model.getDimension());
+
+        dto.setTraitUri(model.getTraitUri());
+        dto.setTraitName(model.getTraitName());
 
         NamedResourceDTO<EntityModel> entityDto = new NamedResourceDTO<>();
         EntityModel entity = model.getEntity();
@@ -108,6 +167,7 @@ public class VariableGetDTO {
         unitDto.setName(unit.getName());
         dto.setUnit(unitDto);
 
+        dto.setSkosReferencesFromModel(model);
         return dto;
     }
 }

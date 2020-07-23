@@ -7,8 +7,9 @@ package org.opensilex.core.variable.api.method;
 
 import java.net.URI;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
-import org.opensilex.core.variable.dal.method.MethodModel;
+import org.opensilex.core.variable.dal.MethodModel;
 
 
 /**
@@ -25,6 +26,7 @@ public class MethodGetDTO extends SKOSReferencesDTO {
 
     private URI type;
 
+    @ApiModelProperty(example = "http://opensilex.dev/set/variables/method/ImageAnalysis")
     public URI getUri() {
         return uri;
     }
@@ -33,6 +35,7 @@ public class MethodGetDTO extends SKOSReferencesDTO {
         this.uri = uri;
     }
 
+    @ApiModelProperty(example = "ImageAnalysis")
     public String getLabel() {
         return label;
     }
@@ -41,6 +44,7 @@ public class MethodGetDTO extends SKOSReferencesDTO {
         this.label = label;
     }
 
+    @ApiModelProperty(example = "Based on a software")
     public String getComment() {
         return comment;
     }
@@ -49,6 +53,7 @@ public class MethodGetDTO extends SKOSReferencesDTO {
         this.comment = comment;
     }
 
+    @ApiModelProperty(example = "http://www.opensilex.org/vocabulary/oeso#Method")
     public URI getType() { return type; }
 
     public void setType(URI type) { this.type = type; }

@@ -5,64 +5,85 @@
 //******************************************************************************
 package org.opensilex.core.variable.dal.variable;
 
-import java.net.URI;
-import java.util.List;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.core.variable.dal.EntityModel;
+import org.opensilex.core.variable.dal.QualityModel;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
+
+import java.util.List;
 
 /**
- *
  * @author vidalmor
  */
 public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
     public VariableDAO(SPARQLService sparql) {
-        super(VariableModel.class,sparql);
+        super(VariableModel.class, sparql);
     }
 
-    public ListWithPagination<VariableModel> search(
-            String labelPattern,
-            String commentPattern,
-            URI entity,
-            URI quality,
-            URI method,
-            URI unit,
-            List<OrderBy> orderByList,
-            Integer page,
-            Integer pageSize
-    ) throws Exception {
-        Expr labelFilter = SPARQLQueryHelper.regexFilter(VariableModel.LABEL_FIELD, labelPattern);
-        Expr commentFilter = SPARQLQueryHelper.regexFilter(VariableModel.COMMENT_FIELD, commentPattern);
+    static Var entityLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName("entity"));
+    static Var qualityLabelVar =  SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName("quality"));
+    static Var methodLabelVar =  SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName("method"));
+    static Var unitLabelVar =  SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName("unit"));
 
-        SPARQLDeserializer<URI> sparqlURI = SPARQLDeserializers.getForClass(URI.class);
+    /**
+     * Search all variables with a name, a long name, an entity name or a quality name
+     * corresponding with the given stringPattern
+     *
+     * @param stringPattern the string pattern to search
+     * @param orderByList   the {@link List} of {@link OrderBy} to apply on query
+     * @param page          the current page
+     * @param pageSize      the maximum page size
+     * @return the list of {@link VariableModel} founds
+     * @see VariableModel#getName()
+     * @see VariableModel#getLongName()
+     * @see EntityModel#getName()
+     * @see QualityModel#getName()
+     */
+    public ListWithPagination<VariableModel> search(String stringPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+
+        boolean hasStringFilter = !StringUtils.isEmpty(stringPattern);
+
+        if (!hasStringFilter && CollectionUtils.isEmpty(orderByList)) {
+            return sparql.searchWithPagination(
+                VariableModel.class,
+                null,
+                (SelectBuilder select) -> {
+                },
+                orderByList,
+                page,
+                pageSize
+            );
+        }
 
         return sparql.searchWithPagination(
                 VariableModel.class,
                 null,
                 (SelectBuilder select) -> {
-                    if (labelFilter != null) {
-                        select.addFilter(labelFilter);
-                    }
-                    if (commentFilter != null) {
-                        select.addFilter(commentFilter);
-                    }
-                    if (entity != null) {
-                        select.addWhereValueVar(VariableModel.ENTITY_FIELD_NAME, sparqlURI.getNode(entity));
-                    }
-                    if (quality != null) {
-                        select.addWhereValueVar(VariableModel.QUALITY_FIELD_NAME, sparqlURI.getNode(quality));
-                    }
-                    if (method != null) {
-                        select.addWhereValueVar(VariableModel.METHOD_FIELD_NAME, sparqlURI.getNode(method));
-                    }
-                    if (unit != null) {
-                        select.addWhereValueVar(VariableModel.UNIT_FIELD_NAME, sparqlURI.getNode(unit));
+
+                    ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+                    Expr uriStrRegex = exprFactory.str(exprFactory.asVar(VariableModel.URI_FIELD));
+
+                    if (hasStringFilter) {
+                        select.addFilter(
+                            SPARQLQueryHelper.or(
+                                SPARQLQueryHelper.regexFilter(VariableModel.NAME_FIELD, stringPattern),
+                                SPARQLQueryHelper.regexFilter(VariableModel.LONG_NAME_FIELD_NAME, stringPattern),
+                                SPARQLQueryHelper.regexFilter(uriStrRegex,stringPattern,null),
+                                SPARQLQueryHelper.regexFilter(entityLabelVar.getVarName(), stringPattern),
+                                SPARQLQueryHelper.regexFilter(qualityLabelVar.getVarName(), stringPattern),
+                                SPARQLQueryHelper.regexFilter(methodLabelVar.getVarName(), stringPattern),
+                                SPARQLQueryHelper.regexFilter(unitLabelVar.getVarName(), stringPattern)
+                            ));
                     }
                 },
                 orderByList,
@@ -70,5 +91,6 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                 pageSize
         );
     }
+
 }
 

@@ -43,7 +43,7 @@ public class Oeso {
     public static final Property endDate = Ontology.property(NS, "endDate");
     public static final Property hasKeyword = Ontology.property(NS, "hasKeyword");
     public static final Property hasPart = Ontology.property(NS, "hasPart");
- 	public static final Property hasLongName = Ontology.property(NS, "hasLongName");
+    public static final Property hasLongName = Ontology.property(NS, "hasLongName");
     public static final Property hasSynonym = Ontology.property(NS, "hasSynonym");
 
 
@@ -53,21 +53,20 @@ public class Oeso {
     public static final Resource Quality = Ontology.resource(NS, "Quality");
     public static final Resource Method = Ontology.resource(NS, "Method");
     public static final Resource Unit = Ontology.resource(NS, "Unit");
-    public static final Resource Trait = Ontology.resource(NS, "Trait");
 
     public static final Property hasEntity = Ontology.property(NS, "hasEntity");
     public static final Property hasQuality = Ontology.property(NS, "hasQuality");
-    public static final Property hasTrait = Ontology.property(NS,"hasTrait");
+    public static final Property hasTraitUri = Ontology.property(NS,"hasTraitUri");
+    public static final Property hasTraitName = Ontology.property(NS,"hasTraitName");
+
     public static final Property hasMethod = Ontology.property(NS, "hasMethod");
     public static final Property hasUnit = Ontology.property(NS, "hasUnit");
-    public static final Property hasUpperBound = Ontology.property(NS, "hasUpperBound");
-    public static final Property hasLowerBound = Ontology.property(NS, "hasLowerBound");
 
     // ---- VARIABLES UNIT ----
     public static final Property hasDimension = Ontology.property(NS, "hasDimension");
     public static final Property hasSymbol = Ontology.property(NS, "hasSymbol");
     public static final Property hasAlternativeSymbol = Ontology.property(NS, "hasAlternativeSymbol");
-    
+
     // ----- USERS ------
     public static final Resource ScientificSupervisor = Ontology.resource(NS, "ScientificSupervisor");
     public static final Resource TechnicalSupervisor = Ontology.resource(NS, "TechnicalSupervisor");

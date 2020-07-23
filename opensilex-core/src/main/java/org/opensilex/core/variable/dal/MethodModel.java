@@ -3,7 +3,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.core.variable.dal.entity;
+package org.opensilex.core.variable.dal;
 
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.dal.variable.BaseVariableModel;
@@ -11,29 +11,27 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 
 import java.net.URI;
 
-/**
- * @author vidalmor
- */
 @SPARQLResource(
         ontology = Oeso.class,
-        resource = "Entity",
+        resource = "Method",
         graph = "variable"
 )
-public class EntityModel extends BaseVariableModel<EntityModel> {
+public class MethodModel extends BaseVariableModel<MethodModel> {
 
-    public EntityModel() {
+    public MethodModel() {
+
     }
 
-    public EntityModel(URI uri) {
+    public MethodModel(URI uri) {
         setUri(uri);
     }
 
     @Override
-    public String[] getUriSegments(EntityModel instance) {
+    public String[] getUriSegments(MethodModel instance) {
         return new String[]{
-                "variable",
-                "entity",
-                instance.getName()
+            "variable",
+            "method",
+            instance.getName()
         };
     }
 }

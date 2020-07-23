@@ -7,8 +7,9 @@ package org.opensilex.core.variable.api.unit;
 
 import java.net.URI;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
-import org.opensilex.core.variable.dal.unit.UnitModel;
+import org.opensilex.core.variable.dal.UnitModel;
 
 
 /**
@@ -21,12 +22,15 @@ public class UnitGetDTO extends SKOSReferencesDTO {
 
     private String label;
 
+    private URI type;
+
     private String comment;
 
     private String symbol;
 
     private String alternativeSymbol;
 
+    @ApiModelProperty(example = "http://opensilex.dev/set/variables/unit/Centimeter")
     public URI getUri() {
         return uri;
     }
@@ -35,6 +39,7 @@ public class UnitGetDTO extends SKOSReferencesDTO {
         this.uri = uri;
     }
 
+    @ApiModelProperty(example = "Centimeter")
     public String getLabel() {
         return label;
     }
@@ -43,6 +48,7 @@ public class UnitGetDTO extends SKOSReferencesDTO {
         this.label = label;
     }
 
+    @ApiModelProperty(example = "A common unit for describing a length")
     public String getComment() {
         return comment;
     }
@@ -51,6 +57,7 @@ public class UnitGetDTO extends SKOSReferencesDTO {
         this.comment = comment;
     }
 
+    @ApiModelProperty(example = "cm")
     public String getSymbol() {
         return symbol;
     }
@@ -59,6 +66,7 @@ public class UnitGetDTO extends SKOSReferencesDTO {
         this.symbol = symbol;
     }
 
+    @ApiModelProperty(example = "cm")
     public String getAlternativeSymbol() {
         return alternativeSymbol;
     }
@@ -67,6 +75,12 @@ public class UnitGetDTO extends SKOSReferencesDTO {
         this.alternativeSymbol = alternativeSymbol;
     }
 
+    @ApiModelProperty(example = "http://www.opensilex.org/vocabulary/oeso#Unit")
+    public URI getType() { return type; }
+
+    public void setType(URI type) {
+        this.type = type;
+    }
 
     public static UnitGetDTO fromModel(UnitModel model) {
         UnitGetDTO dto = new UnitGetDTO();
@@ -75,6 +89,7 @@ public class UnitGetDTO extends SKOSReferencesDTO {
         dto.setLabel(model.getName());
         dto.setComment(model.getComment());
         dto.setSymbol(model.getSymbol());
+        dto.setType(model.getType());
         dto.setAlternativeSymbol(model.getAlternativeSymbol());
         dto.setSkosReferencesFromModel(model);
 

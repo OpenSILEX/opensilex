@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.variable.dal.unit;
+package org.opensilex.core.variable.dal;
 
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.dal.variable.BaseVariableModel;
@@ -21,8 +21,7 @@ public class UnitModel extends BaseVariableModel<UnitModel> {
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasSymbol",
-            required = true
+            property = "hasSymbol"
     )
     private String symbol;
 
@@ -56,7 +55,6 @@ public class UnitModel extends BaseVariableModel<UnitModel> {
     public void setSymbol(String symbol) {
         this.symbol = symbol;
     }
-
 
     public String getAlternativeSymbol() {
         return alternativeSymbol;

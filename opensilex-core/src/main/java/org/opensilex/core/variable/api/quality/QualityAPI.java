@@ -32,10 +32,11 @@ import static org.opensilex.core.variable.api.variable.VariableAPI.CREDENTIAL_VA
 import static org.opensilex.core.variable.api.variable.VariableAPI.CREDENTIAL_VARIABLE_READ_ID;
 import static org.opensilex.core.variable.api.variable.VariableAPI.CREDENTIAL_VARIABLE_READ_LABEL_KEY;
 
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.opensilex.core.variable.api.variable.VariableAPI;
-import org.opensilex.core.variable.dal.entity.EntityModel;
-import org.opensilex.core.variable.dal.quality.QualityModel;
+import org.opensilex.core.variable.dal.QualityModel;
 import org.opensilex.core.variable.dal.variable.BaseVariableDAO;
+import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorResponse;
@@ -45,6 +46,9 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
+import org.opensilex.sparql.response.NamedResourcePaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.utils.OrderBy;
@@ -65,6 +69,7 @@ public class QualityAPI {
     UserModel currentUser;
 
     @POST
+    @Path("create")
     @ApiOperation("Create a quality")
     @ApiProtected
     @ApiCredential(
@@ -89,16 +94,12 @@ public class QualityAPI {
             dao.create(model);
             return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-            return new ErrorResponse(
-                    Response.Status.CONFLICT,
-                    "Quality already exists",
-                    duplicateUriException.getMessage()
-            ).getResponse();
+            return new ErrorResponse(Response.Status.CONFLICT, "Quality already exists", duplicateUriException.getMessage()).getResponse();
         }
     }
 
     @PUT
-    @Path("{uri}")
+    @Path("update")
     @ApiOperation("Update a quality")
     @ApiProtected
     @ApiCredential(
@@ -109,40 +110,35 @@ public class QualityAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Quality updated", response = ObjectUriResponse.class),
-            @ApiResponse(code = 400, message = "Invalid or unknown Quality URI", response = ErrorResponse.class),
+            @ApiResponse(code = 400, message = "Invalid or unknown quality URI", response = ErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)}
     )
     public Response updateQuality(
-            @ApiParam(value = "Quality URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam("Quality description") @Valid QualityUpdateDTO dto
     ) throws Exception {
         BaseVariableDAO<QualityModel> dao = new BaseVariableDAO<>(QualityModel.class, sparql);
 
-        QualityModel model = dao.get(uri);
-        if (model != null) {
-            dao.update(dto.defineModel(model));
-            return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Quality not found",
-                    "Unknown quality URI: " + uri
-            ).getResponse();
-        }
+        QualityModel model = dto.newModel();
+        dao.update(model);
+        return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
     }
 
     @DELETE
-    @Path("{uri}")
+    @Path("delete/{uri}")
     @ApiOperation("Delete a quality")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Quality deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 404, message = "Quality URI not found", response = ErrorResponse.class)
+    })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteQuality(
-            @ApiParam(value = "Quality URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Quality URI", example = "http://opensilex.dev/set/variables/quality/Height", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<QualityModel> dao = new BaseVariableDAO<>(QualityModel.class, sparql);
         dao.delete(uri);
@@ -150,7 +146,7 @@ public class QualityAPI {
     }
 
     @GET
-    @Path("{uri}")
+    @Path("get/{uri}")
     @ApiOperation("Get a quality")
     @ApiProtected
     @ApiCredential(
@@ -163,7 +159,7 @@ public class QualityAPI {
             @ApiResponse(code = 200, message = "Quality retrieved", response = QualityGetDTO.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response getQuality(
-            @ApiParam(value = "Quality URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Quality URI", example = "http://opensilex.dev/set/variables/quality/Height", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<QualityModel> dao = new BaseVariableDAO<>(QualityModel.class, sparql);
         QualityModel model = dao.get(uri);
@@ -173,11 +169,7 @@ public class QualityAPI {
                     QualityGetDTO.fromModel(model)
             ).getResponse();
         } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Quality not found",
-                    "Unknown method URI: " + uri.toString()
-            ).getResponse();
+            throw new NotFoundURIException(uri);
         }
     }
 
@@ -190,7 +182,7 @@ public class QualityAPI {
             credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return Quality list", response = QualityGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Return Quality list", response = NamedResourceDTO.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -201,6 +193,7 @@ public class QualityAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize
     ) throws Exception {
+
         BaseVariableDAO<QualityModel> dao = new BaseVariableDAO<>(QualityModel.class, sparql);
         ListWithPagination<QualityModel> resultList = dao.search(
                 namePattern,
@@ -208,10 +201,6 @@ public class QualityAPI {
                 page,
                 pageSize
         );
-        ListWithPagination<QualityGetDTO> resultDTOList = resultList.convert(
-                QualityGetDTO.class,
-                QualityGetDTO::fromModel
-        );
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        return new NamedResourcePaginatedListResponse<>(resultList).getResponse();
     }
 }

@@ -6,16 +6,85 @@
 package org.opensilex.core.variable.api.unit;
 
 import java.net.URI;
-import org.opensilex.core.variable.dal.unit.UnitModel;
+import java.util.List;
+
+import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.ontology.OntologyReference;
+import org.opensilex.core.ontology.SKOSReferencesDTO;
+import org.opensilex.core.variable.dal.UnitModel;
+import org.opensilex.server.rest.validation.Required;
 
 /**
  *
  * @author vidalmor
  */
-public class UnitCreationDTO extends UnitUpdateDTO {
+public class UnitCreationDTO extends SKOSReferencesDTO {
 
-    protected URI uri;
+    @Required
+    private String label;
 
+    private String comment;
+
+    private List<OntologyReference> relations;
+
+    private URI type;
+
+    private URI uri;
+
+    private String symbol;
+
+    private String alternativeSymbol;
+
+    public UnitModel newModel() {
+        UnitModel model = new UnitModel();
+        model.setName(label);
+        model.setComment(comment);
+        if(type != null){
+            model.setType(type);
+        }
+        model.setUri(uri);
+        model.setSymbol(getSymbol());
+        model.setAlternativeSymbol(getAlternativeSymbol());
+        setSkosReferencesToModel(model);
+        return model;
+    }
+
+    @ApiModelProperty(example = "Centimeter")
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    @ApiModelProperty(example = "A common unit for describing a length")
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public List<OntologyReference> getRelations() {
+        return relations;
+    }
+
+    public void setRelations(List<OntologyReference> relations) {
+        this.relations = relations;
+    }
+
+    @ApiModelProperty(example = "http://www.opensilex.org/vocabulary/oeso#Unit")
+    public URI getType() {
+        return type;
+    }
+
+    public void setType(URI type) {
+        this.type = type;
+    }
+
+    @ApiModelProperty(example = "http://opensilex.dev/set/variables/unit/Centimeter")
     public URI getUri() {
         return uri;
     }
@@ -24,10 +93,22 @@ public class UnitCreationDTO extends UnitUpdateDTO {
         this.uri = uri;
     }
 
-    public UnitModel defineModel(UnitModel model) {
-        model = super.defineModel(model);
-        model.setUri(getUri());
-
-        return model;
+    @ApiModelProperty(example = "cm")
+    public String getSymbol() {
+        return symbol;
     }
+
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
+    }
+
+    @ApiModelProperty(example = "cm")
+    public String getAlternativeSymbol() {
+        return alternativeSymbol;
+    }
+
+    public void setAlternativeSymbol(String alternativeSymbol) {
+        this.alternativeSymbol = alternativeSymbol;
+    }
+    
 }

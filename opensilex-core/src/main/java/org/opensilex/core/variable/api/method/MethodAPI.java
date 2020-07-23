@@ -33,9 +33,9 @@ import static org.opensilex.core.variable.api.variable.VariableAPI.CREDENTIAL_VA
 import static org.opensilex.core.variable.api.variable.VariableAPI.CREDENTIAL_VARIABLE_READ_LABEL_KEY;
 
 import org.opensilex.core.variable.api.variable.VariableAPI;
-import org.opensilex.core.variable.dal.entity.EntityModel;
-import org.opensilex.core.variable.dal.method.MethodModel;
+import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.variable.BaseVariableDAO;
+import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorResponse;
@@ -45,6 +45,8 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.sparql.response.NamedResourceDTO;
+import org.opensilex.sparql.response.NamedResourcePaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.utils.OrderBy;
@@ -65,6 +67,7 @@ public class MethodAPI {
     UserModel currentUser;
 
     @POST
+    @Path("create")
     @ApiOperation("Create a method")
     @ApiProtected
     @ApiCredential(
@@ -88,6 +91,7 @@ public class MethodAPI {
 
             dao.create(model);
             return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
             return new ErrorResponse(
                     Response.Status.CONFLICT,
@@ -98,7 +102,7 @@ public class MethodAPI {
     }
 
     @PUT
-    @Path("{uri}")
+    @Path("update")
     @ApiOperation("Update a method")
     @ApiProtected
     @ApiCredential(
@@ -113,36 +117,31 @@ public class MethodAPI {
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)}
     )
     public Response updateMethod(
-            @ApiParam(value = "Method URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam("Method description") @Valid MethodUpdateDTO dto
     ) throws Exception {
         BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
 
-        MethodModel model = dao.get(uri);
-        if (model != null) {
-            dao.update(dto.defineModel(model));
-            return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Method not found",
-                    "Unknown method URI: " + uri
-            ).getResponse();
-        }
+        MethodModel model = dto.newModel();
+        dao.update(model);
+        return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
     }
 
     @DELETE
-    @Path("{uri}")
+    @Path("delete/{uri}")
     @ApiOperation("Delete a method")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Method deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 404, message = "Method URI not found", response = ErrorResponse.class)
+    })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteMethod(
-            @ApiParam(value = "Method URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Method URI", example = "http://opensilex.dev/set/variables/method/ImageAnalysis", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
         dao.delete(uri);
@@ -150,7 +149,7 @@ public class MethodAPI {
     }
 
     @GET
-    @Path("{uri}")
+    @Path("get/{uri}")
     @ApiOperation("Get a method")
     @ApiProtected
     @ApiCredential(
@@ -163,7 +162,7 @@ public class MethodAPI {
             @ApiResponse(code = 200, message = "Method retrieved", response = MethodGetDTO.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response getMethod(
-            @ApiParam(value = "Method URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Method URI", example = "http://opensilex.dev/set/variables/method/ImageAnalysis", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
         MethodModel model = dao.get(uri);
@@ -173,11 +172,7 @@ public class MethodAPI {
                     MethodGetDTO.fromModel(model)
             ).getResponse();
         } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Method not found",
-                    "Unknown method URI: " + uri.toString()
-            ).getResponse();
+            throw new NotFoundURIException(uri);
         }
     }
 
@@ -190,7 +185,7 @@ public class MethodAPI {
             credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return Method list", response = MethodGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Return Method list", response = NamedResourceDTO.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -208,10 +203,6 @@ public class MethodAPI {
                 page,
                 pageSize
         );
-        ListWithPagination<MethodGetDTO> resultDTOList = resultList.convert(
-                MethodGetDTO.class,
-                MethodGetDTO::fromModel
-        );
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        return new NamedResourcePaginatedListResponse<>(resultList).getResponse();
     }
 }

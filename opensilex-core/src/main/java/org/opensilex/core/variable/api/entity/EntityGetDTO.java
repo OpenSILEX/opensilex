@@ -7,8 +7,9 @@ package org.opensilex.core.variable.api.entity;
 
 import java.net.URI;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
-import org.opensilex.core.variable.dal.entity.EntityModel;
+import org.opensilex.core.variable.dal.EntityModel;
 
 
 /**
@@ -23,6 +24,9 @@ public class EntityGetDTO extends SKOSReferencesDTO {
 
     private String comment;
 
+    private URI type;
+
+    @ApiModelProperty(example = "http://opensilex.dev/set/variables/entity/Plant")
     public URI getUri() {
         return uri;
     }
@@ -31,6 +35,7 @@ public class EntityGetDTO extends SKOSReferencesDTO {
         this.uri = uri;
     }
 
+    @ApiModelProperty(example = "Plant")
     public String getLabel() {
         return label;
     }
@@ -39,6 +44,7 @@ public class EntityGetDTO extends SKOSReferencesDTO {
         this.label = label;
     }
 
+    @ApiModelProperty(example = "The entity which describe a plant")
     public String getComment() {
         return comment;
     }
@@ -47,14 +53,21 @@ public class EntityGetDTO extends SKOSReferencesDTO {
         this.comment = comment;
     }
 
+    @ApiModelProperty(example = "http://www.opensilex.org/vocabulary/oeso#Entity")
+    public URI getType() { return type; }
+
+    public void setType(URI type) { this.type = type; }
+
     public static EntityGetDTO fromModel(EntityModel model) {
+
         EntityGetDTO dto = new EntityGetDTO();
 
         dto.setUri(model.getUri());
         dto.setLabel(model.getName());
+        dto.setType(model.getType());
         dto.setComment(model.getComment());
         dto.setSkosReferencesFromModel(model);
-        
+
         return dto;
     }
 }

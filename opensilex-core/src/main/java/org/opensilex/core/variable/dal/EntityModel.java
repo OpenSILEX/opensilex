@@ -3,7 +3,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.core.variable.dal.quality;
+package org.opensilex.core.variable.dal;
 
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.dal.variable.BaseVariableModel;
@@ -11,27 +11,29 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 
 import java.net.URI;
 
+/**
+ * @author vidalmor
+ */
 @SPARQLResource(
         ontology = Oeso.class,
-        resource = "Quality",
+        resource = "Entity",
         graph = "variable"
 )
-public class QualityModel extends BaseVariableModel<QualityModel> {
+public class EntityModel extends BaseVariableModel<EntityModel> {
 
-    public QualityModel() {
-
+    public EntityModel() {
     }
 
-    public QualityModel(URI uri) {
+    public EntityModel(URI uri) {
         setUri(uri);
     }
 
     @Override
-    public String[] getUriSegments(QualityModel instance) {
+    public String[] getUriSegments(EntityModel instance) {
         return new String[]{
-            "variable",
-            "quality",
-            instance.getName()
+                "variable",
+                "entity",
+                instance.getName()
         };
     }
 }

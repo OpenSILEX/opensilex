@@ -5,23 +5,16 @@
 //******************************************************************************
 package org.opensilex.core.variable.dal.variable;
 
-import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.species.dal.SpeciesModel;
-import org.opensilex.core.variable.dal.quality.QualityModel;
-import org.opensilex.core.variable.dal.trait.TraitModel;
-import org.opensilex.core.variable.dal.unit.UnitModel;
-import org.opensilex.core.variable.dal.entity.EntityModel;
-import org.opensilex.core.variable.dal.method.MethodModel;
+import org.opensilex.core.variable.dal.EntityModel;
+import org.opensilex.core.variable.dal.MethodModel;
+import org.opensilex.core.variable.dal.QualityModel;
+import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
 import java.net.URI;
-import java.util.List;
 
 
 @SPARQLResource(
@@ -31,21 +24,6 @@ import java.util.List;
         ignoreValidation = true
 )
 public class VariableModel extends BaseVariableModel<VariableModel> implements ClassURIGenerator<VariableModel> {
-
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "label",
-            required = true
-    )
-    private String label;
-    public static final String LABEL_FIELD = "label";
-
-//    @SPARQLProperty(
-//            ontology = RDFS.class,
-//            property = "comment"
-//    )
-//    private String comment;
-//    public static final String COMMENT_FIELD = "comment";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -62,50 +40,47 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasEntity"
+            property = "hasEntity",
+            required = true
     )
-    private ClassModel entity;
+    private EntityModel entity;
     public static final String ENTITY_FIELD_NAME = "entity";
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasQuality"
+            property = "hasQuality",
+            required = true
     )
     private QualityModel quality;
     public static final String QUALITY_FIELD_NAME = "quality";
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasTrait"
+            property = "hasTraitUri"
     )
-    private TraitModel trait;
-    public static final String TRAIT_FIELD_NAME = "trait";
+    private URI traitUri;
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasMethod"
+            property = "hasTraitName"
+    )
+    private String traitName;
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasMethod",
+            required = true
     )
     private MethodModel method;
     public static final String METHOD_FIELD_NAME = "method";
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasUnit"
+            property = "hasUnit",
+            required = true
     )
     private UnitModel unit;
     public static final String UNIT_FIELD_NAME = "unit";
-
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasLowerBound"
-    )
-    private Double lowerBound;
-
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasUpperBound"
-    )
-    private Double upperBound;
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -113,31 +88,16 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     )
     private String dimension;
 
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-//    public String getComment() {
-//        return comment;
-//    }
-//
-//    public void setComment(String comment) {
-//        this.comment = comment;
-//    }
 
     public String getLongName() { return longName; }
 
     public void setLongName(String longName) { this.longName = longName; }
 
-    public ClassModel getEntity() {
+    public EntityModel getEntity() {
         return entity;
     }
 
-    public void setEntity(ClassModel entity) {
+    public void setEntity(EntityModel entity) {
         this.entity = entity;
     }
 
@@ -149,9 +109,13 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
         this.quality = quality;
     }
 
-    public TraitModel getTrait() { return trait; }
+    public URI getTraitUri() { return traitUri; }
 
-    public void setTrait(TraitModel trait) { this.trait = trait; }
+    public void setTraitUri(URI traitUri) { this.traitUri = traitUri; }
+
+    public String getTraitName() { return traitName; }
+
+    public void setTraitName(String traitName) { this.traitName = traitName; }
 
     public MethodModel getMethod() {
         return method;
@@ -169,14 +133,6 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
         this.unit = unit;
     }
 
-    public Double getLowerBound() { return lowerBound; }
-
-    public void setLowerBound(Double lowerBound) { this.lowerBound = lowerBound; }
-
-    public Double getUpperBound() { return upperBound; }
-
-    public void setUpperBound(Double upperBound) { this.upperBound = upperBound; }
-
     public String getSynonym() { return synonym; }
 
     public void setSynonym(String synonym) { this.synonym = synonym; }
@@ -193,7 +149,7 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     public String[] getUriSegments(VariableModel instance) {
         return new String[]{
             "variable",
-            instance.getLabel()
+            instance.getName()
         };
     }
 }

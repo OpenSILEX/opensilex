@@ -343,7 +343,7 @@ class SPARQLClassQueryBuilder {
 
         handler.addWhere(triple);
 
-        if (lang != null && ! isObject) {
+        if (lang != null && !isObject) {
             if (lang.isEmpty()) {
                 lang = OpenSilex.DEFAULT_LANGUAGE;
             }
@@ -364,19 +364,20 @@ class SPARQLClassQueryBuilder {
             TriplePath objectNameTriple = select.makeTriplePath(propertyFieldVar, RDFS.label, makeVar(objFieldName));
             Node objectPropertyGraph = mapperIndex.getForClass(field.getType()).getDefaultGraph();
 
+            // put label and label lang filtering into an optional clause
+            WhereHandler objectNameOptionalHandler = new WhereHandler();
+            objectNameOptionalHandler.addWhere(objectNameTriple);
+            if (lang != null) {
+                addLangFilter(objFieldName, lang, objectNameOptionalHandler);
+            }
+
             // if the object is stored in the same graph as the current model then try to get object name into this graph
             if (objectPropertyGraph == null || objectPropertyGraph.equals(graph)) {
-                handler.addWhere(objectNameTriple);
-                if (lang != null) {
-                    addLangFilter(objFieldName, lang, handler);
-                }
+                handler.addOptional(objectNameOptionalHandler);
             } else {
                 // else fetch the object label into his proper graph
                 WhereHandler objectGraphHandler = requiredHandlersByGraph.computeIfAbsent(objectPropertyGraph, objectHandler -> new WhereHandler());
-                objectGraphHandler.addWhere(objectNameTriple);
-                if (lang != null) {
-                    addLangFilter(objFieldName, lang, objectGraphHandler);
-                }
+                objectGraphHandler.addOptional(objectNameOptionalHandler);
             }
 
         } catch (SPARQLMapperNotFoundException | SPARQLInvalidClassDefinitionException e) {

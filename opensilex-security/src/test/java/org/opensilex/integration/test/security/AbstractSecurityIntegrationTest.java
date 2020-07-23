@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URI;
 import java.util.ArrayList;
 import org.junit.After;
+import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 
 import javax.ws.rs.client.Entity;
@@ -33,6 +34,8 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static junit.framework.TestCase.assertEquals;
 
 /**
  * @author Vincent MIGOT
@@ -165,7 +168,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         }
         return appendToken(target).header(HttpHeaders.ACCEPT_LANGUAGE, lang).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
-    
+
     /**
      *
      * Get {@link Response} from an {@link ApiProtected} PUT service call.
@@ -233,4 +236,31 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         return target.request(MediaType.APPLICATION_JSON_TYPE)
                 .header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + token.getToken());
     }
+
+    /**
+     * Call the createPath with the given entity, check if has been created, delete it and then check that the resource has been deleted
+     * @param getByUriPath the path to the service which allow to fetch an entity by it's URI
+     * @param createPath the path to the service which allow to create an entity
+     * @param delete the path to the service which allow to delete an entity
+     * @param entity the entity on which apply create, read and delete
+     */
+    protected void testCreateGetAndDelete(String createPath, String getByUriPath, String deletePath, Object entity) throws Exception {
+
+        final Response postResult = getJsonPostResponse(target(createPath),entity);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
+
+        // ensure that the result is a well formed URI, else throw exception
+        String uri = extractUriFromResponse(postResult).toString();
+
+        Response getResult = getJsonGetByUriResponse(target(getByUriPath), uri);
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        // delete object and check if URI no longer exists
+        final Response delResult = getDeleteByUriResponse(target(deletePath), uri);
+        assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
+
+        getResult = getJsonGetByUriResponse(target(getByUriPath), uri);
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+    }
+
 }

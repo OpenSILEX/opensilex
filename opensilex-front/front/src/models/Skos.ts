@@ -1,5 +1,7 @@
 
 export class Skos {
+
+    // TODO: get relations from web service
     // labels
     static narrower: string = "component.skos.narrower";
     static broader: string = "component.skos.broader";
@@ -23,4 +25,3 @@ export class Skos {
         return Object.entries(Skos);
     }
 }
- 

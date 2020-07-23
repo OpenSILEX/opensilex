@@ -18,7 +18,6 @@
 <script lang="ts">
     import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    import {Skos} from "../../../models/Skos";
     import ExternalReferencesForm from "./ExternalReferencesForm.vue";
 
     @Component

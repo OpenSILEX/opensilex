@@ -1,11 +1,11 @@
 export class ExternalOntologies {
 
-    static AGROPORTAL: string = "AGROPORTAL";
-    static AGROVOC: string = "AGROVOC";
-    static BIOPORTAL: string = "BioPortal";
-    static CROP_ONTOLOGY: string = "CO";
+    static AGROPORTAL: string = "http://agroportal.lirmm.fr/";
+    static AGROVOC: string = "http://agrovoc.uniroma2.it/agrovoc/agrovoc/en/";
+    static BIOPORTAL: string = "https://ncbo.bioontology.org/";
+    static CROP_ONTOLOGY: string = "https://www.cropontology.org/";
     static PLANT_ONTOLOGY: string = "https://www.ebi.ac.uk/ols/ontologies/po";
-    static PLANTEOME: string = "PO";
+    static PLANTEOME: string = "http://planteome.org/";
     static UNIT_OF_MEASUREMENT: string = "http://www.ontobee.org/ontology/UO";
     static UNIT_OF_MEASURE: string = "http://www.ontology-of-units-of-measure.org/page/om-2";
     static QUDT: string = "http://www.qudt.org/release2/qudt-catalog.html#vocabs";

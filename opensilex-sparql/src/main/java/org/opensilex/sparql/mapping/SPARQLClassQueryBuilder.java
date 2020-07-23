@@ -6,10 +6,8 @@
 package org.opensilex.sparql.mapping;
 
 import java.io.StringWriter;
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
+
+import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
@@ -27,6 +25,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
@@ -35,7 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import org.apache.jena.arq.querybuilder.ExprFactory;
+
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -48,7 +47,9 @@ import org.apache.jena.sparql.expr.Expr;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+
 import org.opensilex.sparql.utils.SHACL;
 
 /**
@@ -288,16 +289,16 @@ class SPARQLClassQueryBuilder {
     /**
      * Add the WHERE clause into handler, depending if the given field is optional or not, according {@link #analyzer}
      *
-     * @param select the root {@link SelectBuilder}, needed in order to create the {@link TriplePath} to add to the handler
+     * @param select       the root {@link SelectBuilder}, needed in order to create the {@link TriplePath} to add to the handler
      * @param uriFieldName name of the uri SPARQL variable
-     * @param property the {@link Property} to add
-     * @param field the property corresponding {@link Field}
-     * @param handler the {@link WhereHandler} in which the where clause is added when the field is required
+     * @param property     the {@link Property} to add
+     * @param field        the property corresponding {@link Field}
+     * @param handler      the {@link WhereHandler} in which the where clause is added when the field is required
      * @see SPARQLClassAnalyzer#isOptional(Field)
      * @see SelectBuilder#makeTriplePath(Object, Object, Object)
      */
     private void addSelectProperty(AbstractQueryBuilder<?> select, Node graph, String uriFieldName, Property property, Field field,
-            Map<Node, WhereHandler> requiredHandlersByGraph, Map<Node, List<WhereHandler>> optionalHandlersByGraph, String lang, boolean isObject) {
+                                   Map<Node, WhereHandler> requiredHandlersByGraph, Map<Node, List<WhereHandler>> optionalHandlersByGraph, String lang, boolean isObject) {
 
         Var uriFieldVar = makeVar(uriFieldName);
         Var propertyFieldVar = makeVar(field.getName());
@@ -354,73 +355,31 @@ class SPARQLClassQueryBuilder {
 
         // try to directly fetch object label in the query
         try {
-            if (isObject && SPARQLNamedResourceModel.class.isAssignableFrom(field.getType())) {
-                appendObjectNameWhere(select,handler,field,graph,isOptional,requiredHandlersByGraph,optionalHandlersByGraph);
+            if (!isObject || !SPARQLNamedResourceModel.class.isAssignableFrom(field.getType())) {
+                return;
             }
+
+            String objFieldName = getObjectNameVarName(field.getName());
+            TriplePath objectNameTriple = select.makeTriplePath(propertyFieldVar, RDFS.label, makeVar(objFieldName));
+            Node objectPropertyGraph = mapperIndex.getForClass(field.getType()).getDefaultGraph();
+
+            // if the object is stored in the same graph as the current model then try to get object name into this graph
+            if (objectPropertyGraph == null || objectPropertyGraph.equals(graph)) {
+                handler.addWhere(objectNameTriple);
+            } else {
+                // else fetch the object label into his proper graph
+                WhereHandler objectGraphHandler = requiredHandlersByGraph.computeIfAbsent(objectPropertyGraph, objectHandler -> new WhereHandler());
+                objectGraphHandler.addWhere(objectNameTriple);
+            }
+
         } catch (SPARQLMapperNotFoundException | SPARQLInvalidClassDefinitionException e) {
             throw new RuntimeException(e);
         }
     }
 
-    /**
-     * Append a WHERE clause which associate the given field with it's name into the given handler
-     * @param select the root {@link AbstractQueryBuilder}
-     * @param handler the current handler
-     * @param field the object field
-     * @param graph the main query graph
-     * @param isOptional a flag which indicate if the field is optional or not
-     * @param requiredHandlersByGraph map between graph and associated {@link WhereHandler}
-     * @param optionalHandlersByGraph map between graph and associated {@link List} of {@link WhereHandler}
-     * @throws SPARQLMapperNotFoundException
-     * @throws SPARQLInvalidClassDefinitionException
-     */
-    private void appendObjectNameWhere(
-            AbstractQueryBuilder<?> select,
-            WhereHandler handler,
-            Field field,
-            Node graph,
-            boolean isOptional,
-            Map<Node, WhereHandler> requiredHandlersByGraph,
-            Map<Node, List<WhereHandler>> optionalHandlersByGraph) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
-
-        Var propertyFieldVar = makeVar(field.getName());
-        Node objectPropertyGraph = mapperIndex.getForClass(field.getType()).getDefaultGraph();
-
-        // if the object is stored in the same graph as the current model then try to get object name into this graph
-        if (objectPropertyGraph.equals(graph)) {
-            String objFieldName = getObjectNameVarName(field.getName());
-            TriplePath objectNameTriple = select.makeTriplePath(propertyFieldVar, RDFS.label, makeVar(objFieldName));
-
-            if (isOptional) {
-                handler.addOptional(objectNameTriple);
-            } else {
-                handler.addWhere(objectNameTriple);
-            }
-
-        } else {
-            // else fetch the object label into his proper graph
-            WhereHandler objectGraphHandler;
-            if (isOptional) {
-                // get or create the handler list
-                List<WhereHandler> optionalHandlers = optionalHandlersByGraph.computeIfAbsent(objectPropertyGraph, handlers -> new ArrayList<>());
-                objectGraphHandler = new WhereHandler();
-                optionalHandlers.add(objectGraphHandler);
-
-            } else {
-                objectGraphHandler = requiredHandlersByGraph.get(objectPropertyGraph);
-                if (objectGraphHandler == null) {
-                    objectGraphHandler = new WhereHandler();
-                    requiredHandlersByGraph.put(objectPropertyGraph, objectGraphHandler);
-                }
-            }
-            String objFieldName = getObjectNameVarName(field.getName());
-            TriplePath objectNameTriple = select.makeTriplePath(propertyFieldVar, RDFS.label, makeVar(objFieldName));
-            objectGraphHandler.addWhere(objectNameTriple);
-        }
-    }
 
     private void addLangFilter(String fieldName, String lang,
-            WhereHandler handler) {
+                               WhereHandler handler) {
         Locale locale = Locale.forLanguageTag(lang);
         handler.addFilter(SPARQLQueryHelper.langFilter(fieldName, locale.getLanguage()));
     }

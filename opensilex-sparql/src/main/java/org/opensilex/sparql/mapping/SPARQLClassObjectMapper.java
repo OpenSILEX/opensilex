@@ -9,6 +9,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Resource;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
@@ -175,6 +177,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                 if(SPARQLNamedResourceModel.class.isAssignableFrom(fieldType)){
                     String fieldNameVar = SPARQLClassQueryBuilder.getObjectNameVarName(field.getName());
                     String name = result.getStringValue(fieldNameVar);
+
+                    if(StringUtils.isEmpty(name)){
+                        name = result.getStringValue(SPARQLClassQueryBuilder.getObjectDefaultNameVarName(field.getName()));
+                    }
                     proxy = new SparqlProxyNamedResource(mapperIndex,propertyGraph,objURI,fieldType,name,lang,service);
                 }else{
                     proxy = new SPARQLProxyResource<>(mapperIndex, propertyGraph, objURI, fieldType, lang, service);

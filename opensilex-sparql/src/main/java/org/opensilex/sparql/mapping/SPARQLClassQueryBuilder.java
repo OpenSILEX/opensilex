@@ -77,6 +77,15 @@ class SPARQLClassQueryBuilder {
         return "_" + objectFieldName + "_name";
     }
 
+    /**
+     * @param objectFieldName the field name
+     * @return the name of the SPARQL variable which represent the object field name
+     * @see SPARQLNamedResourceModel#getName()
+     */
+    public static String getObjectDefaultNameVarName(String objectFieldName) {
+        return "_" + objectFieldName + "_name_default";
+    }
+
     public SelectBuilder getSelectBuilder(Node graph, String lang) {
         SelectBuilder selectBuilder = new SelectBuilder();
         selectBuilder.setDistinct(true);
@@ -90,6 +99,7 @@ class SPARQLClassQueryBuilder {
             selectBuilder.addVar(field.getName());
             if (SPARQLNamedResourceModel.class.isAssignableFrom(field.getType())) {
                 selectBuilder.addVar(getObjectNameVarName(field.getName()));
+                selectBuilder.addVar(getObjectDefaultNameVarName(field.getName()));
             }
         });
 
@@ -293,7 +303,6 @@ class SPARQLClassQueryBuilder {
      * @param uriFieldName name of the uri SPARQL variable
      * @param property     the {@link Property} to add
      * @param field        the property corresponding {@link Field}
-     * @param handler      the {@link WhereHandler} in which the where clause is added when the field is required
      * @see SPARQLClassAnalyzer#isOptional(Field)
      * @see SelectBuilder#makeTriplePath(Object, Object, Object)
      */
@@ -361,23 +370,32 @@ class SPARQLClassQueryBuilder {
             }
 
             String objFieldName = getObjectNameVarName(field.getName());
-            TriplePath objectNameTriple = select.makeTriplePath(propertyFieldVar, RDFS.label, makeVar(objFieldName));
-            Node objectPropertyGraph = mapperIndex.getForClass(field.getType()).getDefaultGraph();
-
-            // put label and label lang filtering into an optional clause
             WhereHandler objectNameOptionalHandler = new WhereHandler();
+            TriplePath objectNameTriple = select.makeTriplePath(propertyFieldVar, RDFS.label, makeVar(objFieldName));
             objectNameOptionalHandler.addWhere(objectNameTriple);
             if (lang != null) {
                 addLangFilter(objFieldName, lang, objectNameOptionalHandler);
             }
+            handler.addOptional(objectNameOptionalHandler);
+
+
+            String objDefaultFieldName = getObjectDefaultNameVarName(field.getName());
+
+            TriplePath objectDefaultNameTriple = select.makeTriplePath(propertyFieldVar, RDFS.label, makeVar(objDefaultFieldName));
+            Node objectPropertyGraph = mapperIndex.getForClass(field.getType()).getDefaultGraph();
+
+            // put label and label lang filtering into an optional clause
+            WhereHandler objectNameDefaultOptionalHandler = new WhereHandler();
+            objectNameDefaultOptionalHandler.addWhere(objectDefaultNameTriple);
+            if (lang != null) {
+                addLangFilter(objDefaultFieldName, lang, objectNameDefaultOptionalHandler);
+            }
 
             // if the object is stored in the same graph as the current model then try to get object name into this graph
-            if (objectPropertyGraph == null || objectPropertyGraph.equals(graph)) {
-                handler.addOptional(objectNameOptionalHandler);
-            } else {
+            if (objectPropertyGraph != null && !objectPropertyGraph.equals(graph)) {
                 // else fetch the object label into his proper graph
                 WhereHandler objectGraphHandler = requiredHandlersByGraph.computeIfAbsent(objectPropertyGraph, objectHandler -> new WhereHandler());
-                objectGraphHandler.addOptional(objectNameOptionalHandler);
+                objectGraphHandler.addOptional(objectNameDefaultOptionalHandler);
             }
 
         } catch (SPARQLMapperNotFoundException | SPARQLInvalidClassDefinitionException e) {

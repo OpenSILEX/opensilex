@@ -5,7 +5,7 @@
 //******************************************************************************
 package org.opensilex.sparql.model;
 
-import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
@@ -16,8 +16,8 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 public class SPARQLNamedResourceModel<T extends SPARQLNamedResourceModel> extends SPARQLResourceModel implements ClassURIGenerator<T> {
 
     @SPARQLProperty(
-            ontology = DCTerms.class,
-            property = "title",
+            ontology = RDFS.class,
+            property = "label",
             required = true
     )
     protected String name;

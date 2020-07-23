@@ -555,7 +555,7 @@
             "relation" : "Relations",
             "relation-help" : "Relation associated between interoperable concept URI and this local individual",
             "relation-placeholder" : "Exact Match",
-            "add" : "Insert references",
+            "add" : "Add references",
             "update" : "Update relations",
             "exactMatch" : "Exact match",
             "closeMatch" : "Close match",

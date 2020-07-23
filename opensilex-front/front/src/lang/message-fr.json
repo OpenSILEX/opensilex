@@ -471,7 +471,7 @@
             "relation-help" : "Relation entre l'individu décrit et le concept intéropérable lié à cet identifiant",
             "relation-placeholder" : "Equivalent",
             "update" : "Mettre à jour les relations",
-            "add" : "Créer une nouvelle relation",
+            "add" : "Ajouter une nouvelle relation",
 
             "exactMatch" : "Equivalent",
             "closeMatch" : "Similaire",

@@ -12,7 +12,7 @@ import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
-import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -117,7 +117,7 @@ public final class ProfileDAO {
     public boolean profileNameExists(String name) throws Exception {
         return sparql.existsByUniquePropertyValue(
                 ProfileModel.class,
-                DCTerms.title,
+                RDFS.label,
                 name
         );
     }

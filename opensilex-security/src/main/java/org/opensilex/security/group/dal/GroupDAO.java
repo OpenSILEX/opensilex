@@ -12,7 +12,7 @@ import java.util.List;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -98,7 +98,7 @@ public final class GroupDAO {
     public boolean groupNameExists(String name) throws Exception {
         return sparql.existsByUniquePropertyValue(
                 GroupModel.class,
-                DCTerms.title,
+                RDFS.label,
                 name
         );
     }

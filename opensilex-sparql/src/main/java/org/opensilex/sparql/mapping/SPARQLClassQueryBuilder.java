@@ -366,10 +366,12 @@ class SPARQLClassQueryBuilder {
             // if the object is stored in the same graph as the current model then try to get object name into this graph
             if (objectPropertyGraph == null || objectPropertyGraph.equals(graph)) {
                 handler.addWhere(objectNameTriple);
+                addLangFilter(objFieldName,lang,handler);
             } else {
                 // else fetch the object label into his proper graph
                 WhereHandler objectGraphHandler = requiredHandlersByGraph.computeIfAbsent(objectPropertyGraph, objectHandler -> new WhereHandler());
                 objectGraphHandler.addWhere(objectNameTriple);
+                addLangFilter(objFieldName,lang,objectGraphHandler);
             }
 
         } catch (SPARQLMapperNotFoundException | SPARQLInvalidClassDefinitionException e) {

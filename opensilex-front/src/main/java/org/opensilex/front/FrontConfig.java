@@ -13,7 +13,7 @@ import org.opensilex.config.ConfigDescription;
  *
  * @author vincent
  */
-public interface FrontConfig   {
+public interface FrontConfig {
 
     @ConfigDescription(
             value = "Front login component definition",
@@ -56,10 +56,14 @@ public interface FrontConfig   {
             defaultString = "opensilex-front#phis"
     )
     String theme();
-    
+
     @ConfigDescription(
             value = "List of menu identifiers to exclude"
     )
     List<String> menuExclusions();
 
+    @ConfigDescription(
+            value = "Map of component to use for the given rdf class URI types"
+    )
+    Map<String, String> rdfClassComponents();
 }

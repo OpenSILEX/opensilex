@@ -5,8 +5,6 @@
 //******************************************************************************
 package org.opensilex.sparql.deserializer;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 
@@ -29,10 +27,6 @@ public interface SPARQLDeserializer<T> {
     }
 
     public XSDDatatype getDataType();
-
-    public default XSDDatatype[] getAlternativeDataType() {
-        return new XSDDatatype[]{};
-    }
 
     public default String getNodeString(Object value) throws Exception {
         return getNode(value).toString();

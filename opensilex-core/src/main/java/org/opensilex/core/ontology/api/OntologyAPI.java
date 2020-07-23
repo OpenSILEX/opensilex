@@ -12,6 +12,8 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -21,6 +23,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import static org.apache.jena.shacl.sys.C.rdfType;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -29,6 +32,7 @@ import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.response.ResourceTreeResponse;
 
@@ -89,6 +93,29 @@ public class OntologyAPI {
         ClassModel classDescription = dao.getClassModel(rdfType, currentUser.getLanguage());
 
         return new SingleObjectResponse<>(RDFClassDTO.fromModel(classDescription)).getResponse();
+    }
+
+    @GET
+    @Path("/get-classes")
+    @ApiOperation("Return class model definition with properties for a list of rdt types")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return group", response = RDFClassDTO.class, responseContainer = "List")
+    })
+    public Response getClasses(
+            @ApiParam(value = "RDF classes URI") @QueryParam("rdfType") @ValidURI List<URI> rdfTypes
+    ) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        List<RDFClassDTO> classes = new ArrayList<>(rdfTypes.size());
+        for (URI rdfType : rdfTypes) {
+            ClassModel classDescription = dao.getClassModel(rdfType, currentUser.getLanguage());
+            classes.add(RDFClassDTO.fromModel(classDescription));
+        }
+
+        return new PaginatedListResponse<>(classes).getResponse();
     }
 
 }

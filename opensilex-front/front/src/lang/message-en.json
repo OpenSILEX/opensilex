@@ -686,7 +686,8 @@
     "validations": {
         "url": "The {_field_} field must be a valid URL",
         "required_if": "The {_field_} field is required",
-        "emailOrUrl": "The {_field_} field must be a valid URL or email address"
+        "emailOrUrl": "The {_field_} field must be a valid URL or email address",
+        "decimal": "The {_field_} field must contain only decimal values"
     },
     "icon": {
         "component": {

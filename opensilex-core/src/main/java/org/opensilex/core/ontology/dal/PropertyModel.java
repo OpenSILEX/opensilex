@@ -8,6 +8,7 @@ package org.opensilex.core.ontology.dal;
 import java.util.List;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -53,7 +54,7 @@ public abstract class PropertyModel extends SPARQLTreeModel<PropertyModel> {
             property = "subPropertyOf"
     )
     protected PropertyModel parent;
-
+    
     @Override
     public String getName() {
         if (name != null) {

@@ -191,7 +191,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if (graph != null) {
             describe.from(graph.getURI());
         }
-        describe.addBind(new ExprFactory().iri(uri), uriVar);
+        describe.addBind(new ExprFactory().iri(SPARQLDeserializers.getExpandedURI(uri.toString())), uriVar);
         return executeDescribeQuery(describe);
     }
 

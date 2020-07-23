@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -55,7 +56,7 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
             property = "subClassOf"
     )
     protected ClassModel parent;
-
+    
     protected Map<URI, DatatypePropertyModel> datatypeProperties;
 
     protected Map<URI, ObjectPropertyModel> objectProperties;

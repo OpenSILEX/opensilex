@@ -18,6 +18,7 @@
         v-model="typeURI"
         @select="field.validator && field.validator.validate()"
         @close="field.validator && field.validator.validate()"
+        @input="$emit('input', $event)"
       />
     </template>
   </opensilex-FormField>
@@ -69,7 +70,7 @@ export default class TypeForm extends Vue {
 
   created() {
     this.service = this.$opensilex.getService(
-      "opensilex-security.OntologyService"
+      "opensilex.OntologyService"
     );
     this.id = this.$opensilex.generateID();
   }

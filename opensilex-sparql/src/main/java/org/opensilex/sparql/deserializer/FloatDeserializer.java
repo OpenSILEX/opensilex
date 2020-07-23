@@ -29,11 +29,4 @@ public class FloatDeserializer implements SPARQLDeserializer<Float> {
     public XSDDatatype getDataType() {
         return XSDDatatype.XSDfloat;
     }
-
-    @Override
-    public XSDDatatype[] getAlternativeDataType() {
-        return new XSDDatatype[]{
-            XSDDatatype.XSDdecimal
-        };
-    }
 }

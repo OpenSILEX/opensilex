@@ -221,7 +221,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         }
 
         Set<Property> properties = classAnalizer.getManagedProperties();
-        instance.setRelations(new SPARQLProxyRelationList(mapperIndex, null, uri, properties, lang, service).getInstance());
+        instance.setRelations(new SPARQLProxyRelationList(mapperIndex, graph, uri, properties, lang, service).getInstance());
         return instance;
     }
 

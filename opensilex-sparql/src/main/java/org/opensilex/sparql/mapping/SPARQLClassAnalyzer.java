@@ -24,6 +24,7 @@ import java.util.function.BiConsumer;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -422,6 +423,8 @@ final class SPARQLClassAnalyzer {
                     + " and for field " + field.getName()
             );
         }
+
+        managedProperties.add(RDF.type);
     }
 
     private boolean isGetter(Method method) {

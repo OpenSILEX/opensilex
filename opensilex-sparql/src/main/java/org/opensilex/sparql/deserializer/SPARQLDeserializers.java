@@ -11,6 +11,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,7 +36,34 @@ public class SPARQLDeserializers {
 
     private static BiMap<Class<?>, SPARQLDeserializer<?>> deserializersMap;
 
-    private static HashMap<String, Class<?>> datatypeClassMap;
+    private static HashMap<String, Class<?>> datatypeClassMap = new HashMap<>();
+
+    static {
+        datatypeClassMap.put(XSDDatatype.XSDboolean.getURI(), Boolean.class);
+        datatypeClassMap.put(XSDDatatype.XSDbyte.getURI(), Byte.class);
+        datatypeClassMap.put(XSDDatatype.XSDunsignedByte.getURI(), Byte.class);
+        datatypeClassMap.put(XSDDatatype.XSDdate.getURI(), LocalDate.class);
+        datatypeClassMap.put(XSDDatatype.XSDdateTime.getURI(), OffsetDateTime.class);
+        datatypeClassMap.put(XSDDatatype.XSDdouble.getURI(), Double.class);
+        datatypeClassMap.put(XSDDatatype.XSDfloat.getURI(), Float.class);
+        datatypeClassMap.put(XSDDatatype.XSDdecimal.getURI(), Float.class);
+        datatypeClassMap.put(XSDDatatype.XSDinteger.getURI(), Integer.class);
+        datatypeClassMap.put(XSDDatatype.XSDint.getURI(), Integer.class);
+        datatypeClassMap.put(XSDDatatype.XSDunsignedInt.getURI(), Integer.class);
+        datatypeClassMap.put(XSDDatatype.XSDnegativeInteger.getURI(), Integer.class);
+        datatypeClassMap.put(XSDDatatype.XSDnonNegativeInteger.getURI(), Integer.class);
+        datatypeClassMap.put(XSDDatatype.XSDpositiveInteger.getURI(), Integer.class);
+        datatypeClassMap.put(XSDDatatype.XSDnonPositiveInteger.getURI(), Integer.class);
+        datatypeClassMap.put(XSDDatatype.XSDpositiveInteger.getURI(), Integer.class);
+        datatypeClassMap.put(XSDDatatype.XSDpositiveInteger.getURI(), Integer.class);
+        datatypeClassMap.put(XSDDatatype.XSDpositiveInteger.getURI(), Integer.class);
+        datatypeClassMap.put(XSDDatatype.XSDlong.getURI(), Long.class);
+        datatypeClassMap.put(XSDDatatype.XSDunsignedLong.getURI(), Long.class);
+        datatypeClassMap.put(XSDDatatype.XSDshort.getURI(), Short.class);
+        datatypeClassMap.put(XSDDatatype.XSDunsignedShort.getURI(), Short.class);
+        datatypeClassMap.put(XSDDatatype.XSDstring.getURI(), String.class);
+        datatypeClassMap.put(XSDDatatype.XSDanyURI.getURI(), URI.class);
+    }
 
     private static Map<Class<?>, SPARQLDeserializer<?>> getDeserializerMap() {
         if (deserializersMap == null) {
@@ -45,10 +74,6 @@ public class SPARQLDeserializers {
     }
 
     private static Map<String, Class<?>> getDatatypeClassMap() {
-        if (deserializersMap == null) {
-            buildDeserializersMap();
-        }
-
         return datatypeClassMap;
     }
 
@@ -98,17 +123,11 @@ public class SPARQLDeserializers {
                 .forEach(deserializers::add);
 
         deserializersMap = HashBiMap.create(deserializers.size());
-        datatypeClassMap = new HashMap<>(deserializers.size());
 
         for (SPARQLDeserializer<?> deserializer : deserializers) {
             try {
                 Class<?> key = parameterizedClass(deserializer, SPARQLDeserializer.class, 0);
                 deserializersMap.put(key, deserializer);
-                datatypeClassMap.put(deserializer.getDataType().getURI(), key);
-                for (XSDDatatype dt : deserializer.getAlternativeDataType()) {
-                    datatypeClassMap.put(dt.getURI(), key);
-                }
-
             } catch (ClassNotFoundException ex) {
                 LOGGER.error("SPARQL deserializer not found (should never happend)", ex);
             }
@@ -160,6 +179,10 @@ public class SPARQLDeserializers {
 
     public static String getExpandedURI(String value) {
         return URIDeserializer.getExpandedURI(value);
+    }
+
+    public static String getExpandedURI(URI value) {
+        return getExpandedURI(value.toString());
     }
 
     public static URI formatURI(URI value) {

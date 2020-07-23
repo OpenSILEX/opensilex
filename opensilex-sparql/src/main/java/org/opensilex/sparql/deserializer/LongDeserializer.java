@@ -30,10 +30,4 @@ public class LongDeserializer implements SPARQLDeserializer<Long> {
         return XSDDatatype.XSDlong;
     }
 
-    @Override
-    public XSDDatatype[] getAlternativeDataType() {
-        return new XSDDatatype[]{
-            XSDDatatype.XSDunsignedLong
-        };
-    }
 }

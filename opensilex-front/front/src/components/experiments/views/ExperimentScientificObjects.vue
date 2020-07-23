@@ -24,21 +24,25 @@
               <span v-if="!node.data.selected">{{ node.title }}</span>
             </template>
 
-            <!-- <template v-slot:buttons="{ node }">
-              <opensilex-AddChildButton
+            <template v-slot:buttons="{ node }">
+              <opensilex-EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-                @click="addExistingScientificObjectAsChild(node.data.uri)"
-                label="ExperimentScientificObjects.add-facility-scientific-objects"
+                @click="editScientificObject(node.data.uri)"
+                label="ExperimentScientificObjects.edit-scientific-objects"
                 :small="true"
-              ></opensilex-AddChildButton>
-              <opensilex-DeleteButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-                @click="deleteScientificObjectRelation(node.data.uri)"
-                label="ExperimentScientificObjects.delete-facility-relation"
-                :small="true"
-              ></opensilex-DeleteButton>
-            </template>-->
+              ></opensilex-EditButton>
+            </template>
           </opensilex-TreeView>
+          <opensilex-ModalForm
+            v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+            ref="soForm"
+            component="opensilex-ScientificObjectForm"
+            createTitle="component.group.add"
+            editTitle="component.group.update"
+            modalSize="lg"
+            @onCreate="refresh()"
+            @onUpdate="refresh()"
+          ></opensilex-ModalForm>
         </b-card>
       </div>
       <div class="col-md-6">
@@ -61,6 +65,8 @@ export default class ExperimentScientificObjects extends Vue {
   $opensilex: any;
   soService: ScientificObjectsService;
   uri: string;
+
+  @Ref("soForm") readonly soForm!: any;
 
   get user() {
     return this.$store.state.user;
@@ -85,7 +91,7 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   refresh() {
-    this.soService.getExperimentScientificObjectsTree(this.uri).then(http => {
+    this.soService.getScientificObjectsTree(this.uri).then(http => {
       let treeNode = [];
       let first = true;
       for (let i in http.response.result) {
@@ -120,9 +126,11 @@ export default class ExperimentScientificObjects extends Vue {
     };
   }
 
-  addExistingScientificObjectAsChild(facilityURI) {}
-
-  deleteFacilityRelation(facilityURI) {}
+  editScientificObject(objectURI) {
+    this.soService.getScientificObjectDetail(this.uri, objectURI).then(http => {
+      this.soForm.showEditForm(http.response.result);
+    });
+  }
 
   public displayScientificObjectDetails(node: any) {}
 }

@@ -189,6 +189,26 @@ extend("emailOrUrl", (value) => {
   }
 });
 
+extend("decimal", (value, { decimals = '*', separator = '.' }: any = {}) => {
+  console.error("Check decimal", value, decimals, separator);
+  if (value === null || value === undefined || value === '') {
+    return {
+      valid: false
+    };
+  }
+  if (Number(decimals) === 0) {
+    return {
+      valid: /^-?\d*$/.test(value),
+    };
+  }
+  const regexPart = decimals === '*' ? '+' : `{1,${decimals}}`;
+  const regex = new RegExp(`^[-+]?\\d*(\\${separator}\\d${regexPart})?([eE]{1}[-]?\\d+)?$`);
+
+  return {
+    valid: regex.test(value),
+  };
+})
+
 
 let validationTranslations = {
   "validations": validationMessagesEN.messages
@@ -448,32 +468,40 @@ $opensilex.loadModules([
             console.debug("Application is embed");
           }
 
-          $opensilex.loadComponentModules(modulesToLoad)
-            .then(() => {
-              // Initialize main application rendering
-              console.debug("Initialize main application rendering");
-              new Vue({
-                router,
-                store,
-                render: h => h(App, {
-                  props: {
-                    embed: embed,
-                    footerComponent: config.footerComponent,
-                    headerComponent: config.headerComponent,
-                    loginComponent: config.loginComponent,
-                    menuComponent: config.menuComponent
-                  }
-                },
-                ),
-                i18n
-              }).$mount('#app').$nextTick(() => {
-                // Hide loader
-                console.debug("Hide application init loader");
-                document.getElementById('opensilex-loader').style.visibility = 'hidden';
-              });
-            })
-        })
-      })
+          let typeComponents = {};
+          vueJsService.getRDFTypeComponents().then(http => {
+            for (let i in http.response.result) {
+              let propertyComponent = http.response.result[i];
+              typeComponents[propertyComponent.property] = propertyComponent.component;
+            }
+            $opensilex.setTypeComponents(typeComponents);
 
-  })
-})
+            $opensilex.loadComponentModules(modulesToLoad)
+              .then(() => {
+                // Initialize main application rendering
+                console.debug("Initialize main application rendering");
+                new Vue({
+                  router,
+                  store,
+                  render: h => h(App, {
+                    props: {
+                      embed: embed,
+                      footerComponent: config.footerComponent,
+                      headerComponent: config.headerComponent,
+                      loginComponent: config.loginComponent,
+                      menuComponent: config.menuComponent
+                    }
+                  },
+                  ),
+                  i18n
+                }).$mount('#app').$nextTick(() => {
+                  // Hide loader
+                  console.debug("Hide application init loader");
+                  document.getElementById('opensilex-loader').style.visibility = 'hidden';
+                });
+              });
+          });
+        });
+      });
+  });
+});

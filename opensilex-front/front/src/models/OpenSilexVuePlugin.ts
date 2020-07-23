@@ -9,7 +9,7 @@ import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import { User } from './User';
 import OpenSilexHttpClient from './OpenSilexHttpClient';
 import Oeso from '../ontologies/Oeso';
-import { FrontConfigDTO, ThemeConfigDTO, IAPIConfiguration, ApiServiceBinder } from '../lib';
+import { FrontConfigDTO, ThemeConfigDTO, IAPIConfiguration, ApiServiceBinder, VueJsService } from '../lib';
 import { UploadFileBody } from './UploadFileBody';
 
 declare var $cookies: VueCookies;
@@ -86,6 +86,16 @@ export default class OpenSilexVuePlugin {
     loaderEnabled = true;
     enableLoader() {
         this.loaderEnabled = true;
+    }
+
+    private typeComponents = {};
+
+    setTypeComponents(typeComponents) {
+        this.typeComponents = typeComponents || {};
+    }
+    
+    getTypeComponent(rdfType) {
+        return this.typeComponents[rdfType];
     }
 
     disableLoader() {

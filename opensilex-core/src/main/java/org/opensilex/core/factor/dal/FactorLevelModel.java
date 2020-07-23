@@ -13,6 +13,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
@@ -26,15 +27,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
         graph = "set/factors",
         prefix = "factor"
 )
-public class FactorLevelModel extends SPARQLResourceModel implements ClassURIGenerator<FactorLevelModel> {
-
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "label",
-            required = true
-    )
-    String name;
-    public static final String NAME_FIELD = "name";
+public class FactorLevelModel extends SPARQLNamedResourceModel<FactorLevelModel> implements ClassURIGenerator<FactorLevelModel> {
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -47,14 +40,6 @@ public class FactorLevelModel extends SPARQLResourceModel implements ClassURIGen
             property = "hasFactor"
     )
     FactorModel factor;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String alias) {
-        this.name = alias;
-    }
 
     public String getComment() {
         return comment;

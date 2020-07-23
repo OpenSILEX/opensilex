@@ -46,7 +46,7 @@
                 <b-button
                   v-if="!props.isLastStep"
                   variant="primary"
-                  @click="validateStep(props)"
+                  @click="nextStepHandler(props)"
                 >{{$t('component.common.form-wizard.next')}}</b-button>
                 <b-button
                   v-if="props.isLastStep"
@@ -107,6 +107,9 @@ export default class WizardForm extends Vue {
   @Prop()
   updateAction: Function;
 
+  @Prop()
+  nextStepAction: Function;
+
   showCreateForm() {
     this.form = this.initForm();
     this.editMode = false;
@@ -148,15 +151,59 @@ export default class WizardForm extends Vue {
     let step: any = this.$refs["step" + props.activeTabIndex][0];
     if (step.validate) {
       return step.validate().then(isValid => {
-        if (isValid) {
-          props.nextTab();
-        }
-
         return isValid;
       });
     } else {
       return Promise.resolve(true);
     }
+  }
+
+  nextStepHandler(props) {
+    return this.validateStep(props)
+      .then(isValid => {
+        if (isValid && this.nextStepAction) {
+          let currentStepComponent: any = this.$refs[
+            "step" + props.activeTabIndex
+          ][0];
+          let nextStepComponent: any = this.$refs[
+            "step" + (props.activeTabIndex + 1)
+          ][0];
+          let nextStepResult = this.nextStepAction(
+            props.activeTabIndex,
+            this.form,
+            nextStepComponent,
+            currentStepComponent
+          );
+          if (!(nextStepResult instanceof Promise)) {
+            nextStepResult = Promise.resolve(nextStepResult);
+          }
+
+          return nextStepResult
+            .then(shouldContinue => {
+              console.error("shouldContinue", shouldContinue);
+              console.error("isValid", isValid);
+              if (isValid && shouldContinue !== false) {
+                props.nextTab();
+              }
+
+              return isValid;
+            })
+            .catch(error => {
+              console.error("WTF", error);
+              console.error("isValid", isValid);
+              return false;
+            });
+        } else {
+          if (isValid) {
+            props.nextTab();
+          }
+          return isValid;
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        return false;
+      });
   }
 
   validate(props) {

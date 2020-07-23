@@ -585,6 +585,7 @@
     "validations": {
         "url": "Le champ {_field_} doit être une URL valide",
         "required_if": "Le champ {_field_} est obligatoire",
-        "emailOrUrl": "Le champ {_field_} doit être une URL ou une adresse email valide"
+        "emailOrUrl": "Le champ {_field_} doit être une URL ou une adresse email valide",
+        "decimal": "Le champ {_field_} doit contenir une valeur décimale"
     }
 }

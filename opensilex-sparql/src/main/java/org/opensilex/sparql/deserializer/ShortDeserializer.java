@@ -30,10 +30,4 @@ public class ShortDeserializer implements SPARQLDeserializer<Short> {
         return XSDDatatype.XSDshort;
     }
 
-    @Override
-    public XSDDatatype[] getAlternativeDataType() {
-        return new XSDDatatype[]{
-            XSDDatatype.XSDunsignedShort
-        };
-    }
 }

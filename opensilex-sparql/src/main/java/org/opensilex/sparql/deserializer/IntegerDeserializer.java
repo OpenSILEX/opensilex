@@ -30,16 +30,4 @@ public class IntegerDeserializer implements SPARQLDeserializer<Integer> {
         return XSDDatatype.XSDinteger;
     }
 
-    @Override
-    public XSDDatatype[] getAlternativeDataType() {
-        return new XSDDatatype[]{
-            XSDDatatype.XSDint,
-            XSDDatatype.XSDunsignedInt,
-            XSDDatatype.XSDnegativeInteger,
-            XSDDatatype.XSDnonNegativeInteger,
-            XSDDatatype.XSDpositiveInteger,
-            XSDDatatype.XSDnonPositiveInteger
-        };
-    }
-
 }

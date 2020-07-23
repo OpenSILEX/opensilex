@@ -156,6 +156,13 @@ public class ScientificObjectDAO {
         return object.getUri();
     }
 
+    public ScientificObjectModel getByURIAndExperiment(URI xpURI, URI objectURI, UserModel currentUser) throws Exception {
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        xpDAO.validateExperimentAccess(xpURI, currentUser);
+
+        return sparql.getByURI(SPARQLDeserializers.nodeURI(xpURI), ScientificObjectModel.class, objectURI, currentUser.getLanguage());
+    }
+
     private class ScientificObjectExperimentURIGenerator implements URIGenerator<String> {
 
         private final URI experimentURI;

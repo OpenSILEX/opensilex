@@ -5,6 +5,7 @@
         <opensilex-FormInputLabelHelper :label="label" :labelFor="'field' + id"></opensilex-FormInputLabelHelper>
         <!-- helpMessage="component.common.uri.help-message" -->
       </b-form-checkbox>
+      <opensilex-FormInputLabelHelper v-else :label="label" :labelFor="'field' + id"></opensilex-FormInputLabelHelper>
     </ValidationProvider>
     <ValidationProvider
       :name="$t(label)"

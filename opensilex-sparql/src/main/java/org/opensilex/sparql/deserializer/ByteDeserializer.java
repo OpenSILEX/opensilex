@@ -30,11 +30,4 @@ public class ByteDeserializer implements SPARQLDeserializer<Byte> {
         return XSDDatatype.XSDbyte;
     }
 
-    @Override
-    public XSDDatatype[] getAlternativeDataType() {
-        return new XSDDatatype[]{
-            XSDDatatype.XSDunsignedByte
-        };
-    }
-
 }

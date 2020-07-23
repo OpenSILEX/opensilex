@@ -13,10 +13,16 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -31,16 +37,27 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.http.HttpStatus;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.opensilex.OpenSilex;
 import org.opensilex.front.FrontModule;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.config.ConfigManager;
+import org.opensilex.core.ontology.dal.ClassModel;
+import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.ontology.dal.OwlRestrictionModel;
+import org.opensilex.front.FrontConfig;
 import org.opensilex.front.theme.ThemeBuilder;
 import org.opensilex.front.theme.ThemeConfig;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.server.exceptions.NotFoundException;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Service to produce angular application configuration
@@ -56,6 +73,12 @@ public class FrontAPI {
 
     @Inject
     private FrontModule frontModule;
+
+    @Inject
+    private SPARQLService sparql;
+
+    @CurrentUser
+    private UserModel currentUser;
 
     @GET
     @Path("/config")
@@ -277,6 +300,63 @@ public class FrontAPI {
         } else {
             throw new NotFoundException("Resource file not found for module: " + moduleId + " - with theme: " + themeId + " - with path: " + filePath);
         }
+    }
+
+    private final static Map<String, String> primitiveDatatypeComponents = new HashMap<>();
+
+    static {
+        primitiveDatatypeComponents.put(XSDDatatype.XSDboolean.getURI(), "opensilex-XSDBooleanInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDbyte.getURI(), "opensilex-XSDIntegerInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDunsignedByte.getURI(), "opensilex-XSDIntegerInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDdate.getURI(), "opensilex-XSDDateInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDdateTime.getURI(), "opensilex-XSDDateTimeInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDdouble.getURI(), "opensilex-XSDDecimalInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDfloat.getURI(), "opensilex-XSDDecimalInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDdecimal.getURI(), "opensilex-XSDDecimalInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDinteger.getURI(), "opensilex-XSDIntegerInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDint.getURI(), "opensilex-XSDIntegerInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDunsignedInt.getURI(), "opensilex-XSDIntegerInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDnegativeInteger.getURI(), "opensilex-XSDIntegerInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDnonNegativeInteger.getURI(), "opensilex-XSDIntegerInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDpositiveInteger.getURI(), "opensilex-XSDIntegerInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDnonPositiveInteger.getURI(), "opensilex-XSDIntegerInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDpositiveInteger.getURI(), "opensilex-XSDIntegerInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDpositiveInteger.getURI(), "opensilex-XSDIntegerInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDpositiveInteger.getURI(), "opensilex-XSDIntegerInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDlong.getURI(), "opensilex-XSDIntegerInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDunsignedLong.getURI(), "opensilex-GenericUriInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDshort.getURI(), "opensilex-XSDIntegerInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDunsignedShort.getURI(), "opensilex-XSDIntegerInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDstring.getURI(), "opensilex-XSDStringInput");
+        primitiveDatatypeComponents.put(XSDDatatype.XSDanyURI.getURI(), "opensilex-XSDUriInput");
+    }
+
+    @GET
+    @Path("/rdf-type-components")
+    @ApiOperation(value = "Return the list of associated rdf type with their front VueJS component names")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return the list of associated rdf type with their component", response = RDFPropertyComponentDTO.class, responseContainer = "List")
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getRDFTypeComponents() throws Exception {
+
+        Map<String, String> componentByDatatypes = new HashMap<>();
+        componentByDatatypes.putAll(primitiveDatatypeComponents);
+        componentByDatatypes.putAll(frontModule.getConfig(FrontConfig.class).rdfClassComponents());
+
+        List<RDFPropertyComponentDTO> propertyComponents = new ArrayList<>(componentByDatatypes.size());
+        componentByDatatypes.forEach((propertyURI, componentName) -> {
+            try {
+                RDFPropertyComponentDTO propertyComponentDTO = new RDFPropertyComponentDTO();
+                propertyComponentDTO.setComponent(componentName);
+                propertyComponentDTO.setProperty(SPARQLDeserializers.formatURI(new URI(propertyURI)));
+                propertyComponents.add(propertyComponentDTO);
+            } catch (URISyntaxException ex) {
+                LOGGER.warn("Invalid URI for component association (should never happpend): " + propertyURI, ex);
+            }
+        });
+
+        return new PaginatedListResponse<RDFPropertyComponentDTO>(propertyComponents).getResponse();
     }
 
     public static String getModuleFrontLibFilePath(String moduleId) {

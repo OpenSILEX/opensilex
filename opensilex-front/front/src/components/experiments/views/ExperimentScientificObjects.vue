@@ -46,7 +46,7 @@
         </b-card>
       </div>
       <div class="col-md-6">
-        <b-card>SO details</b-card>
+        <opensilex-ScientificObjectDetail :selected="selected" />
       </div>
     </div>
   </div>
@@ -77,6 +77,8 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   public nodes = [];
+
+  public selected = null;
 
   @Ref("facilitySelector") readonly facilitySelector!: any;
 
@@ -132,7 +134,13 @@ export default class ExperimentScientificObjects extends Vue {
     });
   }
 
-  public displayScientificObjectDetails(node: any) {}
+  public displayScientificObjectDetails(node: any) {
+    this.soService
+      .getScientificObjectDetail(this.uri, node.data.uri)
+      .then(http => {
+        this.selected = http.response.result;
+      });
+  }
 }
 </script>
 

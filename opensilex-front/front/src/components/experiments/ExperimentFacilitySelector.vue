@@ -218,11 +218,11 @@ export default class ExperimentFacilitySelector extends Vue {
 
 en:
   ExperimentFacilitySelector:
-    set-facilities: Define experiment facilities
+    set-facilities: Define facilities
     label: experiment facilities
 
 fr:
   ExperimentFacilitySelector:
-    set-facilities: Définir les zones d'expérimentations
-    label: zones d'expérimentations
+    set-facilities: Définir les installations techniques
+    label: installations techniques
 </i18n>

@@ -304,6 +304,8 @@
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorLevel"/>
+        <rdfs:label xml:lang="en">Factor level</rdfs:label>
+        <rdfs:label xml:lang="fr">Modalité de facteur</rdfs:label>
     </owl:ObjectProperty>
     
     <!-- http://www.opensilex.org/vocabulary/oeso#hasInfrastructure -->
@@ -1298,15 +1300,14 @@
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <rdfs:label xml:lang="en">Facility</rdfs:label>
+        <rdfs:label xml:lang="fr">Installation technique</rdfs:label>
     </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam -->
@@ -1653,12 +1654,14 @@
                 <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorLevel"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-                <rdfs:subClassOf>
+        <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasGermplasm"/>
                 <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
             </owl:Restriction>
         </rdfs:subClassOf>
+        <rdfs:label xml:lang="en">Scientific object</rdfs:label>
+        <rdfs:label xml:lang="fr">Objet scientifique</rdfs:label>
     </owl:Class>
     
 

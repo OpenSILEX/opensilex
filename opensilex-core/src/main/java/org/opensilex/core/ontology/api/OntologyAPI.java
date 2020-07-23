@@ -23,7 +23,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import static org.apache.jena.shacl.sys.C.rdfType;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;

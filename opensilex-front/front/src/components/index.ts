@@ -255,6 +255,8 @@ import ScientificObjectCSVImporter from './scientificObjects/ScientificObjectCSV
 components["opensilex-ScientificObjectCSVImporter"] = ScientificObjectCSVImporter;
 import ScientificObjectForm from './scientificObjects/ScientificObjectForm.vue';
 components["opensilex-ScientificObjectForm"] = ScientificObjectForm;
+import ScientificObjectDetail from './scientificObjects/ScientificObjectDetail.vue';
+components["opensilex-ScientificObjectDetail"] = ScientificObjectDetail;
 
 // Variables
 import VariableList from './variables/VariableList.vue';

@@ -122,7 +122,7 @@ class SPARQLClassQueryBuilder {
                     addSelectProperty(builder, graph, uriFieldName, property, field, requiredHandlersByGraph, optionalHandlersByGraph, null, false);
                 },
                 (field, property) -> {
-                    addSelectProperty(builder, graph, uriFieldName, property, field, requiredHandlersByGraph, optionalHandlersByGraph, null, true);
+                    addSelectProperty(builder, graph, uriFieldName, property, field, requiredHandlersByGraph, optionalHandlersByGraph, lang, true);
                 },
                 (field, property) -> {
                     addSelectProperty(builder, graph, uriFieldName, property, field, requiredHandlersByGraph, optionalHandlersByGraph, lang, false);
@@ -342,7 +342,8 @@ class SPARQLClassQueryBuilder {
         }
 
         handler.addWhere(triple);
-        if (lang != null) {
+
+        if (lang != null && ! isObject) {
             if (lang.isEmpty()) {
                 lang = OpenSilex.DEFAULT_LANGUAGE;
             }

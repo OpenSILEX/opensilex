@@ -10,7 +10,7 @@
                 @on-error="handleErrorMessage"
                 ref="formWizard"
                 @on-complete="onValidate"
-                shape="square".co
+                shape="square"
                 color="#00a38d"
         >
 

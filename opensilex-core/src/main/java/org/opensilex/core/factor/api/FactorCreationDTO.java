@@ -33,7 +33,6 @@ public class FactorCreationDTO extends SKOSReferencesDTO {
     @ValidTranslationMap
     private Map<String, String> names;
 
-    @Required
     private String comment;
 
     @Valid

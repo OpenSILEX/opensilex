@@ -389,7 +389,7 @@ class SPARQLClassQueryBuilder {
         // if the object is stored in the same graph as the current model then try to get object name into this graph
         if (objectPropertyGraph.equals(graph)) {
             String objFieldName = getObjectNameVarName(field.getName());
-            TriplePath objectNameTriple = select.makeTriplePath(propertyFieldVar, DCTerms.title, makeVar(objFieldName));
+            TriplePath objectNameTriple = select.makeTriplePath(propertyFieldVar, RDFS.label, makeVar(objFieldName));
 
             if (isOptional) {
                 handler.addOptional(objectNameTriple);
@@ -414,7 +414,7 @@ class SPARQLClassQueryBuilder {
                 }
             }
             String objFieldName = getObjectNameVarName(field.getName());
-            TriplePath objectNameTriple = select.makeTriplePath(propertyFieldVar, DCTerms.title, makeVar(objFieldName));
+            TriplePath objectNameTriple = select.makeTriplePath(propertyFieldVar, RDFS.label, makeVar(objFieldName));
             objectGraphHandler.addWhere(objectNameTriple);
         }
     }

@@ -365,42 +365,49 @@ class SPARQLClassQueryBuilder {
 
         // try to directly fetch object label in the query
         try {
-            if (!isObject || !SPARQLNamedResourceModel.class.isAssignableFrom(field.getType())) {
-                return;
+            if (isObject && SPARQLNamedResourceModel.class.isAssignableFrom(field.getType())) {
+                addObjectPropertyName(field, select, propertyFieldVar, lang, graph, handler, requiredHandlersByGraph);
             }
-
-            String objFieldName = getObjectNameVarName(field.getName());
-            WhereHandler objectNameOptionalHandler = new WhereHandler();
-            TriplePath objectNameTriple = select.makeTriplePath(propertyFieldVar, RDFS.label, makeVar(objFieldName));
-            objectNameOptionalHandler.addWhere(objectNameTriple);
-            if (lang != null) {
-                addLangFilter(objFieldName, lang, objectNameOptionalHandler);
-            }
-            handler.addOptional(objectNameOptionalHandler);
-
-
-            String objDefaultFieldName = getObjectDefaultNameVarName(field.getName());
-
-            TriplePath objectDefaultNameTriple = select.makeTriplePath(propertyFieldVar, RDFS.label, makeVar(objDefaultFieldName));
-            Node objectPropertyGraph = mapperIndex.getForClass(field.getType()).getDefaultGraph();
-
-            // put label and label lang filtering into an optional clause
-            WhereHandler objectNameDefaultOptionalHandler = new WhereHandler();
-            objectNameDefaultOptionalHandler.addWhere(objectDefaultNameTriple);
-            if (lang != null) {
-                addLangFilter(objDefaultFieldName, lang, objectNameDefaultOptionalHandler);
-            }
-
-            // if the object is stored in the same graph as the current model then try to get object name into this graph
-            if (objectPropertyGraph != null && !objectPropertyGraph.equals(graph)) {
-                // else fetch the object label into his proper graph
-                WhereHandler objectGraphHandler = requiredHandlersByGraph.computeIfAbsent(objectPropertyGraph, objectHandler -> new WhereHandler());
-                objectGraphHandler.addOptional(objectNameDefaultOptionalHandler);
-            }
-
         } catch (SPARQLMapperNotFoundException | SPARQLInvalidClassDefinitionException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void addObjectPropertyName(Field field,
+                                       AbstractQueryBuilder<?> select, Var propertyFieldVar, String lang,
+                                       Node graph,
+                                       WhereHandler handler,
+                                       Map<Node, WhereHandler> requiredHandlersByGraph) throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
+
+        String objFieldName = getObjectNameVarName(field.getName());
+        WhereHandler objectNameOptionalHandler = new WhereHandler();
+        TriplePath objectNameTriple = select.makeTriplePath(propertyFieldVar, RDFS.label, makeVar(objFieldName));
+        objectNameOptionalHandler.addWhere(objectNameTriple);
+        if (lang != null) {
+            addLangFilter(objFieldName, lang, objectNameOptionalHandler);
+        }
+        handler.addOptional(objectNameOptionalHandler);
+
+
+        String objDefaultFieldName = getObjectDefaultNameVarName(field.getName());
+
+        TriplePath objectDefaultNameTriple = select.makeTriplePath(propertyFieldVar, RDFS.label, makeVar(objDefaultFieldName));
+        Node objectPropertyGraph = mapperIndex.getForClass(field.getType()).getDefaultGraph();
+
+        // put label and label lang filtering into an optional clause
+        WhereHandler objectNameDefaultOptionalHandler = new WhereHandler();
+        objectNameDefaultOptionalHandler.addWhere(objectDefaultNameTriple);
+        if (lang != null) {
+            addLangFilter(objDefaultFieldName, lang, objectNameDefaultOptionalHandler);
+        }
+
+        // if the object is stored in the same graph as the current model then try to get object name into this graph
+        if (objectPropertyGraph != null && !objectPropertyGraph.equals(graph)) {
+            // else fetch the object label into his proper graph
+            WhereHandler objectGraphHandler = requiredHandlersByGraph.computeIfAbsent(objectPropertyGraph, objectHandler -> new WhereHandler());
+            objectGraphHandler.addOptional(objectNameDefaultOptionalHandler);
+        }
+
     }
 
 

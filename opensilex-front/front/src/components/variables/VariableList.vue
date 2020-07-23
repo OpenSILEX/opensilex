@@ -118,11 +118,6 @@
             return this.$service
                 .searchVariables(
                     this.labelFilter,
-                    undefined,
-                    undefined,
-                    undefined,
-                    undefined,
-                    undefined,
                     options.orderBy,
                     options.currentPage,
                     options.pageSize
@@ -143,15 +138,15 @@
         }
 
         getQualityName(dto: VariableGetDTO): String {
-            return dto.quality ? dto.quality.label : null;
+            return dto.quality ? dto.quality.name : null;
         }
 
         getMethodName(dto: VariableGetDTO): String {
-            return dto.method ? dto.method.label : null;
+            return dto.method ? dto.method.name : null;
         }
 
         getUnitName(dto: VariableGetDTO): String {
-            return dto.unit ? dto.unit.label : null;
+            return dto.unit ? dto.unit.name : null;
         }
 
         fields = [

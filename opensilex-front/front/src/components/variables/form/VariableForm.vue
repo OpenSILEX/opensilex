@@ -55,14 +55,8 @@
         getEmptyForm() {
             return {
                 uri: undefined,
-                entity: {
-                    uri: undefined,
-                    name: undefined
-                },
-                quality: {
-                    uri: undefined,
-                    name: undefined
-                },
+                entity: undefined,
+                quality: undefined,
                 longName: undefined,
                 synonym: undefined,
                 label: undefined,
@@ -70,14 +64,8 @@
                 dimension: undefined,
                 traitUri: undefined,
                 traitName: undefined,
-                method: {
-                    uri: undefined,
-                    name: undefined
-                },
-                unit: {
-                    uri: undefined,
-                    name: undefined
-                },
+                method: undefined,
+                unit: undefined,
                 lowerBound: undefined,
                 upperBound: undefined
             };

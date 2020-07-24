@@ -20,7 +20,6 @@
                         :itemLoadingMethod="loadEntity"
                         placeholder="VariableForm.entity-placeholder"
                         :conversionMethod="objectToSelectNode"
-                        noResultsText="VariableForm1.no-entity"
                         @select="updateName(variable)"
                         :actionHandler="showEntityCreateForm"
                 ></opensilex-SelectForm>
@@ -38,7 +37,6 @@
                         :itemLoadingMethod="loadQuality"
                         placeholder="VariableForm.quality-placeholder"
                         :conversionMethod="objectToSelectNode"
-                        noResultsText="VariableForm1.no-quality"
                         @select="updateName(form)"
                         :actionHandler="showQualityCreateForm"
                 ></opensilex-SelectForm>
@@ -72,7 +70,6 @@
                         :conversionMethod="objectToSelectNode"
                         @select="updateName(form)"
                         :actionHandler="showMethodCreateForm"
-                        noResultsText="VariableForm1.no-method"
                 ></opensilex-SelectForm>
                 <opensilex-MethodCreate ref="methodForm"></opensilex-MethodCreate>
             </div>
@@ -90,7 +87,6 @@
                         placeholder="VariableForm.unit-placeholder"
                         @select="updateName(form)"
                         :actionHandler="showUnitCreateForm"
-                        noResultsText="VariableForm1.no-unit"
                 ></opensilex-SelectForm>
                 <opensilex-UnitCreate ref="unitForm"></opensilex-UnitCreate>
             </div>
@@ -128,38 +124,37 @@
         $opensilex: any;
 
         @Prop()
-        editMode: boolean;
+        editMode;
 
         @Prop({default: true})
-        uriGenerated: boolean;
+        uriGenerated;
 
         @PropSync("form")
         variable;
-
-        getLabel(dto: any, dtoList: Array<NamedResourceDTO>): string{
-            if(! dto){
-                return "";
-            }
-            if(dto.uri){
-                return dto.name.replace(/\s+/g, "_");
-            }
-            let returnedDto: NamedResourceDTO = dtoList.find(dtoElem => dtoElem.uri == dto)
-            if(returnedDto){
-                return returnedDto.name.replace(/\s+/g, "_");
-            }
-            return "";
-        }
 
         updateName(form) {
 
             let nameParts: string[] = [];
 
-            nameParts.push(this.getLabel(form.entity,this.entities));
-            nameParts.push(this.getLabel(form.quality,this.qualities));
+            if (form.entity) {
+                // get directly the entity name ( in case of editing, the service return the uri and name of the entity)
+                let label = form.entity.uri ? form.entity.name : this.entities.find(dto => dto.uri == form.entity).name;
+                nameParts.push(label.replace(/\s+/g, "_"));
+            }
+            if (form.quality) {
+                let label = form.quality.uri ? form.quality.name :this.qualities.find(dto => dto.uri == form.quality).name;
+                nameParts.push(label.replace(/\s+/g, "_"));
+            }
             form.name = nameParts.join("_");
 
-            nameParts.push(this.getLabel(form.method,this.methods));
-            nameParts.push(this.getLabel(form.unit,this.units));
+            if (form.method) {
+                let label = form.method.uri ? form.method.name : this.methods.find(dto => dto.uri == form.method).name;
+                nameParts.push(label.replace(/\s+/g, "_"));
+            }
+            if (form.unit) {
+                let label = form.unit.uri ? form.unit.name : this.units.find(dto => dto.uri == form.unit).name;
+                nameParts.push(label.replace(/\s+/g, "_"));
+            }
             form.longName = nameParts.join("_");
         }
 
@@ -169,6 +164,7 @@
         get user() {
             return this.$store.state.user;
         }
+
 
         reset() {
             return this.validatorRef.reset();

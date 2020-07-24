@@ -114,7 +114,7 @@ export default class ScientificObjectForm extends Vue {
             property.required = true;
             this.propertyComponents.push({
               property: property,
-              component: typeComponent
+              component: typeComponent.inputComponent
             });
           }
         }

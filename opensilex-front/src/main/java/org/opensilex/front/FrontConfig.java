@@ -65,5 +65,5 @@ public interface FrontConfig {
     @ConfigDescription(
             value = "Map of component to use for the given rdf class URI types"
     )
-    Map<String, String> rdfClassComponents();
+    Map<String, DatatypeComponentsConfig> datatypeComponents();
 }

@@ -469,10 +469,10 @@ $opensilex.loadModules([
           }
 
           let typeComponents = {};
-          vueJsService.getRDFTypeComponents().then(http => {
+          vueJsService.getDatatypeComponents().then(http => {
             for (let i in http.response.result) {
               let propertyComponent = http.response.result[i];
-              typeComponents[propertyComponent.property] = propertyComponent.component;
+              typeComponents[propertyComponent.uri] = propertyComponent;
             }
             $opensilex.setTypeComponents(typeComponents);
 

@@ -6,7 +6,6 @@
 package org.opensilex.core.variable.dal;
 
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.variable.dal.variable.BaseVariableModel;
 import org.opensilex.sparql.annotations.SPARQLResource;
 
 import java.net.URI;

@@ -6,9 +6,9 @@
 package org.opensilex.core.variable.api.entity;
 
 import io.swagger.annotations.*;
-import org.opensilex.core.variable.api.variable.VariableAPI;
+import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.core.variable.dal.EntityModel;
-import org.opensilex.core.variable.dal.variable.BaseVariableDAO;
+import org.opensilex.core.variable.dal.BaseVariableDAO;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -34,7 +34,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.List;
 
-import static org.opensilex.core.variable.api.variable.VariableAPI.*;
+import static org.opensilex.core.variable.api.VariableAPI.*;
 
 @Api(CREDENTIAL_VARIABLE_GROUP_ID)
 @Path("/core/variable/entity")

@@ -3,11 +3,11 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.core.variable.api.variable;
+package org.opensilex.core.variable.api;
 
 import io.swagger.annotations.*;
-import org.opensilex.core.variable.dal.variable.VariableDAO;
-import org.opensilex.core.variable.dal.variable.VariableModel;
+import org.opensilex.core.variable.dal.VariableDAO;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;

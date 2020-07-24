@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.variable.api.variable;
+package org.opensilex.core.variable.api;
 
 import java.net.URI;
 
@@ -12,7 +12,7 @@ import org.opensilex.core.variable.dal.EntityModel;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.QualityModel;
 import org.opensilex.core.variable.dal.UnitModel;
-import org.opensilex.core.variable.dal.variable.VariableModel;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 

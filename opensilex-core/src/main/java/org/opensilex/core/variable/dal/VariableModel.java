@@ -3,13 +3,9 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.core.variable.dal.variable;
+package org.opensilex.core.variable.dal;
 
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.variable.dal.EntityModel;
-import org.opensilex.core.variable.dal.MethodModel;
-import org.opensilex.core.variable.dal.QualityModel;
-import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.utils.ClassURIGenerator;

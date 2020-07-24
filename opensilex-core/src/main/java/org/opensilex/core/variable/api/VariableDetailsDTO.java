@@ -1,4 +1,4 @@
-package org.opensilex.core.variable.api.variable;
+package org.opensilex.core.variable.api;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -14,7 +14,7 @@ import org.opensilex.core.variable.dal.EntityModel;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.QualityModel;
 import org.opensilex.core.variable.dal.UnitModel;
-import org.opensilex.core.variable.dal.variable.VariableModel;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 

@@ -3,7 +3,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.core.variable.api.variable;
+package org.opensilex.core.variable.api;
 
 
 import javax.validation.constraints.NotNull;

@@ -64,15 +64,15 @@ public class OntologyAPI {
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
-        SPARQLTreeListModel<ClassModel> tree = dao.searchSubClasses(
+        SPARQLTreeListModel tree = dao.searchSubClasses(
                 parentClass,
+                ClassModel.class,
                 currentUser,
-                ignoreRootClasses
+                ignoreRootClasses,
+                null
         );
 
-        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree, (model, dto) -> {
-            dto.setDisabled(model.isAbstractClass());
-        })).getResponse();
+        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree)).getResponse();
     }
 
     @GET
@@ -89,9 +89,9 @@ public class OntologyAPI {
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
-        ClassModel classDescription = dao.getClassModel(rdfType, currentUser.getLanguage());
+        ClassModel classDescription = dao.getClassModel(rdfType, ClassModel.class, currentUser.getLanguage());
 
-        return new SingleObjectResponse<>(RDFClassDTO.fromModel(classDescription)).getResponse();
+        return new SingleObjectResponse<>(RDFClassDTO.fromModel(new RDFClassDTO(), classDescription)).getResponse();
     }
 
     @GET
@@ -110,8 +110,8 @@ public class OntologyAPI {
 
         List<RDFClassDTO> classes = new ArrayList<>(rdfTypes.size());
         for (URI rdfType : rdfTypes) {
-            ClassModel classDescription = dao.getClassModel(rdfType, currentUser.getLanguage());
-            classes.add(RDFClassDTO.fromModel(classDescription));
+            ClassModel classDescription = dao.getClassModel(rdfType, ClassModel.class, currentUser.getLanguage());
+            classes.add(RDFClassDTO.fromModel(new RDFClassDTO(), classDescription));
         }
 
         return new PaginatedListResponse<>(classes).getResponse();

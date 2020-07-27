@@ -91,20 +91,6 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
     public void setup() throws Exception {
         SPARQLService.addPrefix(Oeso.PREFIX, Oeso.NS);
         URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), true);
-
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode root = mapper.createObjectNode();
-        ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
-
-        for (OpenSilexModule module : getOpenSilex().getModules()) {
-            InputStream yamlInput = module.getFileInputStream("ontologies/opensilex-ontology.yml");
-            if (yamlInput != null) {
-                JsonNode node = yamlMapper.readTree(yamlInput);
-                root = mapper.updateValue(root, node);
-            }
-        }
-
-        OntologyDAO.customizeOntology(root);
     }
 
 }

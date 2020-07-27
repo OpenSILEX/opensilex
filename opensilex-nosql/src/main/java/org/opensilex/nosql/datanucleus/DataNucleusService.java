@@ -414,7 +414,7 @@ public class DataNucleusService extends BaseService implements NoSQLService {
     
     @Override
     public void shutdown() {
-        if (PMF == null) {
+        if (PMF != null) {
             PMF.close();
         }
     }

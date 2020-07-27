@@ -5,10 +5,11 @@
  */
 package org.opensilex.core.ontology.dal;
 
+import java.net.URI;
 import java.util.List;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.OpenSilexOwlExtension;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -54,7 +55,13 @@ public abstract class PropertyModel extends SPARQLTreeModel<PropertyModel> {
             property = "subPropertyOf"
     )
     protected PropertyModel parent;
-    
+
+    protected URI typeRestriction;
+
+    protected boolean isDatatypeProperty;
+
+    protected boolean isObjectProperty;
+
     @Override
     public String getName() {
         if (name != null) {
@@ -88,4 +95,29 @@ public abstract class PropertyModel extends SPARQLTreeModel<PropertyModel> {
     public void setComment(SPARQLLabel comment) {
         this.comment = comment;
     }
+
+    public URI getTypeRestriction() {
+        return typeRestriction;
+    }
+
+    public void setTypeRestriction(URI typeRestriction) {
+        this.typeRestriction = typeRestriction;
+    }
+
+    public boolean isIsDatatypeProperty() {
+        return isDatatypeProperty;
+    }
+
+    public void setIsDatatypeProperty(boolean isDatatypeProperty) {
+        this.isDatatypeProperty = isDatatypeProperty;
+    }
+
+    public boolean isIsObjectProperty() {
+        return isObjectProperty;
+    }
+
+    public void setIsObjectProperty(boolean isObjectProperty) {
+        this.isObjectProperty = isObjectProperty;
+    }
+
 }

@@ -9,9 +9,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.ontology.dal.DatatypePropertyModel;
-import org.opensilex.core.ontology.dal.ObjectPropertyModel;
 import org.opensilex.core.ontology.dal.OwlRestrictionModel;
+import org.opensilex.core.ontology.dal.PropertyModel;
 
 /**
  *
@@ -28,8 +27,6 @@ public class RDFClassDTO {
     private URI parent;
 
     protected List<RDFClassPropertyDTO> properties;
-    
-    private boolean abstractClass;
 
     public URI getUri() {
         return uri;
@@ -71,17 +68,7 @@ public class RDFClassDTO {
         this.properties = properties;
     }
 
-    public boolean isAbstractClass() {
-        return abstractClass;
-    }
-
-    public void setAbstractClass(boolean abstractClass) {
-        this.abstractClass = abstractClass;
-    }
-    
-    public static RDFClassDTO fromModel(ClassModel model) {
-        RDFClassDTO dto = new RDFClassDTO();
-
+    public static RDFClassDTO fromModel(RDFClassDTO dto, ClassModel<?> model) {
         dto.setUri(model.getUri());
         dto.setLabel(model.getName());
         if (model.getComment() != null) {
@@ -91,18 +78,16 @@ public class RDFClassDTO {
         if (model.getParent() != null) {
             dto.setParent(model.getParent().getUri());
         }
-        
-        dto.setAbstractClass(model.isAbstractClass());
 
         List<RDFClassPropertyDTO> properties = new ArrayList<>();
 
         for (OwlRestrictionModel restriction : model.getOrderedRestrictions()) {
             URI propertyURI = restriction.getOnProperty();
             if (model.isDatatypePropertyRestriction(propertyURI)) {
-                DatatypePropertyModel property = model.getDatatypeProperty(propertyURI);
+                PropertyModel property = model.getDatatypeProperty(propertyURI);
                 properties.add(RDFClassPropertyDTO.fromModel(property, restriction, true));
             } else if (model.isObjectPropertyRestriction(propertyURI)) {
-                ObjectPropertyModel property = model.getObjectProperty(propertyURI);
+                PropertyModel property = model.getObjectProperty(propertyURI);
                 properties.add(RDFClassPropertyDTO.fromModel(property, restriction, false));
             }
         }

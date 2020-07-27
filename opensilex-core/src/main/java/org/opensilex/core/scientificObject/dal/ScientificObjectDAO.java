@@ -31,6 +31,7 @@ import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
@@ -132,7 +133,7 @@ public class ScientificObjectDAO {
         xpDAO.validateExperimentAccess(xpURI, currentUser);
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        ClassModel model = ontologyDAO.getClassModel(soType, currentUser.getLanguage());
+        ScientificObjectClassModel model = ontologyDAO.getClassModel(soType, ScientificObjectClassModel.class, currentUser.getLanguage());
 
         SPARQLResourceModel object = new SPARQLResourceModel();
         object.setType(soType);
@@ -199,5 +200,20 @@ public class ScientificObjectDAO {
         }
 
         return builder.toString().toLowerCase();
+    }
+
+    public void create(ScientificObjectClassModel model, UserModel currentUser) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+        dao.create(model, ScientificObjectClassModel.class);
+    }
+    
+    public void getTypesTree(URI parentURI, UserModel currentUser) throws Exception {
+        
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        SPARQLTreeListModel<ScientificObjectClassModel> classTree = dao.searchSubClasses(parentURI, ScientificObjectClassModel.class, currentUser, true, (soModel) -> {
+            
+        });
+
     }
 }

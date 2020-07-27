@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.OpenSilexOwlExtension;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -27,7 +27,7 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
         resource = "Class",
         ignoreValidation = true
 )
-public class ClassModel extends SPARQLTreeModel<ClassModel> {
+public class ClassModel<T extends ClassModel> extends SPARQLTreeModel<T> {
 
     @SPARQLIgnore()
     protected String name;
@@ -56,16 +56,20 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
             property = "subClassOf"
     )
     protected ClassModel parent;
-    
-    protected Map<URI, DatatypePropertyModel> datatypeProperties;
 
-    protected Map<URI, ObjectPropertyModel> objectProperties;
+    @SPARQLProperty(
+            ontology = OpenSilexOwlExtension.class,
+            property = "isAbstractClass"
+    )
+    protected Boolean isAbstractClass;
+
+    protected Map<URI, PropertyModel> datatypeProperties;
+
+    protected Map<URI, PropertyModel> objectProperties;
 
     protected Map<URI, OwlRestrictionModel> restrictions;
 
-    protected Map<URI, Integer> propertiesOrder;
-    
-    protected boolean abstractClass;
+    protected Map<URI, ClassPropertyExtensionModel> propertyExtensions;
 
     @Override
     public String getName() {
@@ -93,19 +97,19 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
         this.comment = comment;
     }
 
-    public Map<URI, DatatypePropertyModel> getDatatypeProperties() {
+    public Map<URI, PropertyModel> getDatatypeProperties() {
         return datatypeProperties;
     }
 
-    public void setDatatypeProperties(Map<URI, DatatypePropertyModel> datatypeProperties) {
+    public void setDatatypeProperties(Map<URI, PropertyModel> datatypeProperties) {
         this.datatypeProperties = datatypeProperties;
     }
 
-    public Map<URI, ObjectPropertyModel> getObjectProperties() {
+    public Map<URI, PropertyModel> getObjectProperties() {
         return objectProperties;
     }
 
-    public void setObjectProperties(Map<URI, ObjectPropertyModel> objectProperties) {
+    public void setObjectProperties(Map<URI, PropertyModel> objectProperties) {
         this.objectProperties = objectProperties;
     }
 
@@ -118,14 +122,26 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
     }
 
     public List<OwlRestrictionModel> getOrderedRestrictions() {
+        Map<URI, ClassPropertyExtensionModel> extensions = getPropertyExtensions();
+
         return restrictions.values().stream().sorted((r1, r2) -> {
-            if (propertiesOrder == null) {
+            if (extensions == null) {
                 return 0;
             }
-            
-            Integer o1 = propertiesOrder.get(r1.getOnProperty());
-            Integer o2 = propertiesOrder.get(r2.getOnProperty());
-            
+
+            ClassPropertyExtensionModel ext1 = extensions.get(r1.getOnProperty());
+            ClassPropertyExtensionModel ext2 = extensions.get(r2.getOnProperty());
+
+            Integer o1 = null;
+            Integer o2 = null;
+            if (ext1 != null) {
+                o1 = ext1.getHasDisplayOrder();
+            }
+
+            if (ext2 != null) {
+                o2 = ext2.getHasDisplayOrder();
+            }
+
             if (o1 == null) {
                 if (o2 != null) {
                     return 1;
@@ -139,7 +155,7 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
                     return o1.compareTo(o2);
                 }
             }
-            
+
         }).collect(Collectors.toList());
     }
 
@@ -159,29 +175,27 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
         return getObjectProperties().containsKey(classURI);
     }
 
-    public DatatypePropertyModel getDatatypeProperty(URI propertyURI) {
+    public PropertyModel getDatatypeProperty(URI propertyURI) {
         return getDatatypeProperties().get(propertyURI);
     }
 
-    public ObjectPropertyModel getObjectProperty(URI propertyURI) {
+    public PropertyModel getObjectProperty(URI propertyURI) {
         return getObjectProperties().get(propertyURI);
     }
 
-    public Map<URI, Integer> getPropertiesOrder() {
-        return propertiesOrder;
+    public Map<URI, ClassPropertyExtensionModel> getPropertyExtensions() {
+        return propertyExtensions;
     }
 
-    public void setPropertiesOrder(Map<URI, Integer> propertiesOrder) {
-        this.propertiesOrder = propertiesOrder;
+    public void setPropertyExtensions(Map<URI, ClassPropertyExtensionModel> propertyExtensions) {
+        this.propertyExtensions = propertyExtensions;
     }
 
-    public boolean isAbstractClass() {
-        return abstractClass;
+    public Boolean getIsAbstractClass() {
+        return isAbstractClass;
     }
 
-    public void setAbstractClass(boolean abstractClass) {
-        this.abstractClass = abstractClass;
+    public void setIsAbstractClass(Boolean isAbstractClass) {
+        this.isAbstractClass = isAbstractClass;
     }
-
-    
 }

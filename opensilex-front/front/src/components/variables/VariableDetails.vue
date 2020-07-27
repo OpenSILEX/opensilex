@@ -49,7 +49,8 @@
                         <template v-slot:body>
                             <opensilex-StringView label="VariableForm.dimension" :value="variable.dimension"></opensilex-StringView>
                             <opensilex-StringView label="VariableForm.synonym" :value="variable.synonym"></opensilex-StringView>
-                            <opensilex-StringView label="VariableForm.trait-uri" :value="variable.traitUri"></opensilex-StringView>
+                            <opensilex-UriView title="VariableForm.trait-uri"
+                                               :uri="variable.traitUri" :url="variable.traitUri"></opensilex-UriView>
                             <opensilex-StringView label="VariableForm.trait-name" :value="variable.traitName"></opensilex-StringView>
                         </template>
                     </opensilex-Card>

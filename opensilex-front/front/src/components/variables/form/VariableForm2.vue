@@ -37,7 +37,8 @@
                         type="text"
                         helpMessage="VariableForm.trait-uri-help"
                         placeholder="VariableForm.trait-uri-placeholder"
-                        @required="isTraitUriFilled"
+                        :required.sync="traitRequired"
+                        @change="updateTraitRequired"
                 ></opensilex-InputForm>
             </div>
 
@@ -49,7 +50,8 @@
                         type="text"
                         helpMessage="VariableForm.trait-name-help"
                         placeholder="VariableForm.trait-name-placeholder"
-                        @required="isTraitNameFilled"
+                        :required.sync="traitRequired"
+                        @change="updateTraitRequired"
                 ></opensilex-InputForm>
             </div>
         </div>
@@ -62,7 +64,6 @@
     import Vue from "vue";
     import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
 
-
     @Component
     export default class VariableForm2 extends Vue {
 
@@ -71,8 +72,8 @@
 
         objectToSelectNode(dto) {
             return {
-                id: this.$i18n.t("VariableForm.dimension-values."+dto.label),
-                label: this.$i18n.t("VariableForm.dimension-values."+dto.label)
+                id: this.$i18n.t("VariableForm.dimension-values." + dto.label),
+                label: this.$i18n.t("VariableForm.dimension-values." + dto.label)
             };
         }
 
@@ -96,7 +97,7 @@
                 {label: "volume", children: [{label: "m3"}, {label: "liter"}]},
                 {label: "surface", children: [{label: "hectare"}, {label: "m2"}]},
                 {label: "time", children: [{label: "second"}, {label: "minute"}, {label: "hour"}, {label: "day"}]},
-                {label: "length", children: [{label: "cm"}, {label: "m"},  {label: "km"}]},
+                {label: "length", children: [{label: "cm"}, {label: "m"}, {label: "km"}]},
             ];
 
             this.dimensionList = this.objectListToSelect(dimensions);
@@ -105,8 +106,17 @@
         @Prop()
         editMode;
 
-        @Prop({default: true})
-        useTraitUri;
+        traitRequired: boolean = false;
+
+        updateTraitRequired() {
+            this.traitRequired = (this.variable.traitUri && this.variable.traitUri.length > 0) ||
+                (this.variable.traitName && this.variable.traitName.length > 0);
+
+            if(! this.traitRequired){
+                this.variable.traitName = undefined;
+                this.variable.traitUri = undefined;
+            }
+        }
 
         @Ref("validatorRef") readonly validatorRef!: any;
 
@@ -118,7 +128,6 @@
         variable: VariableCreationDTO;
 
         reset() {
-            this.useTraitUri = true;
             return this.validatorRef.reset();
         }
 
@@ -126,13 +135,6 @@
             return this.validatorRef.validate();
         }
 
-        isTraitUriFilled(): boolean {
-            return this.variable.traitName != undefined && this.variable.traitName.length > 0;
-        }
-
-        isTraitNameFilled(): boolean {
-            return this.variable.traitUri != undefined && this.variable.traitUri.length > 0;
-        }
     }
 </script>
 <style scoped lang="scss">

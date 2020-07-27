@@ -20,6 +20,7 @@
                         :itemLoadingMethod="loadEntity"
                         placeholder="VariableForm.entity-placeholder"
                         :conversionMethod="objectToSelectNode"
+                        noResultsText="VariableForm1.no-entity"
                         @select="updateName(variable)"
                         :actionHandler="showEntityCreateForm"
                 ></opensilex-SelectForm>
@@ -37,6 +38,7 @@
                         :itemLoadingMethod="loadQuality"
                         placeholder="VariableForm.quality-placeholder"
                         :conversionMethod="objectToSelectNode"
+                        noResultsText="VariableForm1.no-quality"
                         @select="updateName(form)"
                         :actionHandler="showQualityCreateForm"
                 ></opensilex-SelectForm>
@@ -70,6 +72,7 @@
                         :conversionMethod="objectToSelectNode"
                         @select="updateName(form)"
                         :actionHandler="showMethodCreateForm"
+                        noResultsText="VariableForm1.no-method"
                 ></opensilex-SelectForm>
                 <opensilex-MethodCreate ref="methodForm"></opensilex-MethodCreate>
             </div>
@@ -87,6 +90,7 @@
                         placeholder="VariableForm.unit-placeholder"
                         @select="updateName(form)"
                         :actionHandler="showUnitCreateForm"
+                        noResultsText="VariableForm1.no-unit"
                 ></opensilex-SelectForm>
                 <opensilex-UnitCreate ref="unitForm"></opensilex-UnitCreate>
             </div>

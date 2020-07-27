@@ -2,8 +2,8 @@
     <opensilex-WizardForm
             ref="wizardRef"
             :steps="steps"
-            createTitle="MethodForm.add"
-            editTitle="MethodForm.edit"
+            createTitle="EntityForm.add"
+            editTitle="EntityForm.edit"
             icon="fa#vials"
             modalSize="lg"
             :initForm="getEmptyForm"
@@ -21,13 +21,14 @@
     import Vue from "vue";
     import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
     import {VariablesService} from "opensilex-core/api/variables.service";
+    import {EntityCreationDTO} from "opensilex-core/model/entityCreationDTO";
 
     @Component
-    export default class MethodCreate extends Vue {
+    export default class EntityCreate extends Vue {
 
         steps = [
-            {component: "opensilex-MethodForm"}
-            ,{component : "opensilex-MethodExternalReferencesForm"}
+            {component: "opensilex-EntityForm"}
+            ,{component : "opensilex-EntityExternalReferencesForm"}
         ];
 
         title = "";
@@ -59,7 +60,7 @@
         @Ref("modalRef") readonly modalRef!: any;
         @Ref("validatorRef") readonly validatorRef!: any;
 
-        getEmptyForm() {
+        getEmptyForm(): EntityCreationDTO {
             return {
                 uri: null,
                 label: null,
@@ -77,16 +78,15 @@
                 form.type = form.type.uri;
             }
             return this.service
-                .createMethod(form)
+                .createEntity(form)
                 .then((http: HttpResponse<OpenSilexResponse<any>>) => {
                     form.uri = http.response.result;
-                    let message = this.$i18n.t("MethodForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
+                    let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
                     this.$opensilex.showSuccessToast(message);
-                    this.$emit("onCreate", form,);
+                    this.$emit("onCreate", form);
                 })
                 .catch(error => {
                     if (error.status == 409) {
-                        console.error("Method already exists", error);
                         this.$opensilex.errorHandler(
                             error,
                             this.$i18n.t("component.project.errors.project-already-exists")
@@ -116,15 +116,15 @@
 
 <i18n>
 en:
-    MethodForm:
-        name: The method
-        add: Add a method
-        edit: Edit a method
-        name-placeholder: Image analysis
+    EntityForm:
+        name: The entity
+        add: Add an entity
+        edit: Edit an entity
+        name-placeholder: Plant
 fr:
-    MethodForm:
-        name: La méthode
-        add: Créer une méthode
-        edit: Éditer une méthode
-        name-placeholder: Analyse d'image
+    EntityForm:
+        name: L'entité
+        add: Créer une entité
+        edit: Éditer une entité
+        name-placeholder: Plante
 </i18n>

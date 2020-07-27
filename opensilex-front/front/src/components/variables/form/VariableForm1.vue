@@ -1,290 +1,300 @@
 <template>
-  <ValidationObserver ref="validatorRef">
-    <!-- URI -->
-    <opensilex-UriForm
-      :uri.sync="form.uri"
-      label="component.variable.uri"
-      helpMessage="component.common.uri.help-message"
-      :editMode="editMode"
-      :generated.sync="uriGenerated"
-    ></opensilex-UriForm>
+    <ValidationObserver ref="validatorRef">
+        <!-- URI -->
+        <opensilex-UriForm
+                :uri.sync="form.uri"
+                label="component.common.uri"
+                :editMode="editMode"
+                :generated.sync="uriGenerated"
+        ></opensilex-UriForm>
 
-    <div class="row">
-      <div class="col-lg-6">
-        <!-- Name -->
-        <opensilex-InputForm
-          :value.sync="form.label"
-          label="component.variable.label"
-          type="text"
-          :required="true"
-          placeholder="component.variable.label-placeholder"
-        ></opensilex-InputForm>
-      </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <!-- Entity -->
+                <opensilex-SelectForm
+                        label="Variables.entity"
+                        :selected.sync="variable.entity"
+                        :multiple="false"
+                        required="true"
+                        :searchMethod="searchEntities"
+                        :itemLoadingMethod="loadEntity"
+                        placeholder="VariableForm.entity-placeholder"
+                        :conversionMethod="objectToSelectNode"
+                        noResultsText="VariableForm1.no-entity"
+                        @select="updateName(variable)"
+                        :actionHandler="showEntityCreateForm"
+                ></opensilex-SelectForm>
+                <opensilex-EntityCreate ref="entityForm"></opensilex-EntityCreate>
+            </div>
 
-      <div class="col-lg-6" style="display:none">
-        <!-- longname -->
-        <opensilex-InputForm
-          :value.sync="form.longName"
-          label="component.variable.longname"
-          type="text"
-        ></opensilex-InputForm>
-      </div>
-    </div>
+            <div class="col-lg-6">
+                <!-- Quality -->
+                <opensilex-SelectForm
+                        label="Variables.quality"
+                        :selected.sync="form.quality"
+                        :multiple="false"
+                        required="true"
+                        :searchMethod="searchQualities"
+                        :itemLoadingMethod="loadQuality"
+                        placeholder="VariableForm.quality-placeholder"
+                        :conversionMethod="objectToSelectNode"
+                        noResultsText="VariableForm1.no-quality"
+                        @select="updateName(form)"
+                        :actionHandler="showQualityCreateForm"
+                ></opensilex-SelectForm>
+                <opensilex-QualityCreate ref="qualityForm"></opensilex-QualityCreate>
+            </div>
+        </div>
 
-    <div class="row">
-      <div class="col-lg-6">
-        <!-- Entity -->
-        <opensilex-SelectForm
-          label="component.variable.entity"
-          :selected.sync="form.entity"
-          :multiple="false"
-          :optionsLoadingMethod="loadEntities"
-          :conversionMethod="objectToSelectNode"
-          placeholder="component.variable.form.placeholder.entity"
-          @select="updateName(form)"
-        ></opensilex-SelectForm>
-      </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <!-- Name -->
+                <opensilex-InputForm
+                        :value.sync="form.name"
+                        label="component.common.name"
+                        type="text"
+                        :required="true"
+                ></opensilex-InputForm>
+            </div>
+        </div>
 
-      <div class="col-lg-6">
-        <!-- Quality -->
-        <opensilex-SelectForm
-          label="component.variable.quality"
-          :selected.sync="form.quality"
-          :multiple="false"
-          :options="qualities"
-          :conversionMethod="objectToSelectNode"
-          placeholder="component.variable.form.placeholder.entity"
-          @select="updateName(form)"
-          :actionHandler="showQualityCreateForm"
-        ></opensilex-SelectForm>
-        <opensilex-QualityCreate ref="qualityForm" @onCreate="loadQualities"></opensilex-QualityCreate>
-      </div>
-    </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <!-- Method -->
+                <opensilex-SelectForm
+                        label="Variables.method"
+                        :selected.sync="form.method"
+                        :multiple="false"
+                        required="true"
+                        :searchMethod="searchMethods"
+                        :itemLoadingMethod="loadMethod"
+                        placeholder="VariableForm.method-placeholder"
+                        :conversionMethod="objectToSelectNode"
+                        @select="updateName(form)"
+                        :actionHandler="showMethodCreateForm"
+                        noResultsText="VariableForm1.no-method"
+                ></opensilex-SelectForm>
+                <opensilex-MethodCreate ref="methodForm"></opensilex-MethodCreate>
+            </div>
 
-    <div class="row">
-      <div class="col-lg-6">
-        <!-- Method uri -->
-        <opensilex-SelectForm
-          label="component.variable.method"
-          :selected.sync="form.method"
-          :multiple="false"
-          :options="methods"
-          :conversionMethod="objectToSelectNode"
-          placeholder="component.variable.form.placeholder.method"
-          @select="updateLongName(form)"
-          :actionHandler="showMethodCreateForm"
-        ></opensilex-SelectForm>
-        <opensilex-MethodCreate ref="methodForm" @onCreate="loadMethods"></opensilex-MethodCreate>
-      </div>
-      <div class="col-lg-6">
-        <opensilex-SelectForm
-          label="component.variable.unit"
-          :selected.sync="form.unit"
-          :multiple="false"
-          :options="units"
-          :conversionMethod="objectToSelectNode"
-          placeholder="component.variable.form.placeholder.unit"
-          @select="updateLongName(form)"
-          :actionHandler="showUnitCreateForm"
-        ></opensilex-SelectForm>
-        <opensilex-UnitCreate ref="unitForm" @onCreate="loadUnits"></opensilex-UnitCreate>
-      </div>
-    </div>
+            <!-- Unit -->
+            <div class="col-lg-6">
+                <opensilex-SelectForm
+                        label="Variables.unit"
+                        :selected.sync="form.unit"
+                        :multiple="false"
+                        required="true"
+                        :searchMethod="searchUnits"
+                        :itemLoadingMethod="loadUnit"
+                        :conversionMethod="objectToSelectNode"
+                        placeholder="VariableForm.unit-placeholder"
+                        @select="updateName(form)"
+                        :actionHandler="showUnitCreateForm"
+                        noResultsText="VariableForm1.no-unit"
+                ></opensilex-SelectForm>
+                <opensilex-UnitCreate ref="unitForm"></opensilex-UnitCreate>
+            </div>
+        </div>
 
-    <!-- description -->
-    <opensilex-TextAreaForm :value.sync="form.description" label="component.variable.comment"></opensilex-TextAreaForm>
-  </ValidationObserver>
+        <div class="row">
+            <div class="col-lg-6">
+                <!-- longname -->
+                <opensilex-InputForm
+                        :value.sync="form.longName"
+                        label="VariableForm.longName"
+                        type="text"
+                ></opensilex-InputForm>
+            </div>
+        </div>
+
+        <!-- description -->
+        <opensilex-TextAreaForm :value.sync="form.comment"
+                                label="component.common.description"></opensilex-TextAreaForm>
+    </ValidationObserver>
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
-import { VariableCreationDTO, ResourceTreeDTO } from "opensilex-core/index";
-import { VariablesService } from "opensilex-core/api/variables.service";
-import { OntologyService } from "opensilex-core/api/ontology.service";
-import { EntityCreationDTO } from "opensilex-core/model/entityCreationDTO";
-import { EntityGetDTO } from "opensilex-core/model/entityGetDTO";
-import { QualityGetDTO } from "opensilex-core/model/qualityGetDTO";
-import { MethodGetDTO } from "opensilex-core/model/methodGetDTO";
-import { UnitGetDTO } from "opensilex-core/model/unitGetDTO";
-import { QualityCreationDTO } from "opensilex-core/model/qualityCreationDTO";
-import { UnitCreationDTO } from "opensilex-core/model/unitCreationDTO";
-import { MethodCreationDTO } from "opensilex-core/model/methodCreationDTO";
+    import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+    import {VariablesService} from "opensilex-core/api/variables.service";
 
-import Vue from "vue";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
+    import Vue from "vue";
+    import HttpResponse, {
+        OpenSilexResponse
+    } from "opensilex-security/HttpResponse";
+    import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 
-@Component
-export default class VariableForm1 extends Vue {
-  $opensilex: any;
+    @Component
+    export default class VariableForm1 extends Vue {
+        $opensilex: any;
 
-  @Prop()
-  editMode;
+        @Prop()
+        editMode: boolean;
 
-  @Prop({ default: true })
-  uriGenerated;
+        @Prop({default: true})
+        uriGenerated: boolean;
 
-  @Prop({ default: true })
-  traitClassUriGenerated;
+        @PropSync("form")
+        variable;
 
-  areFielsRequired() {
-    console.log(this.uriGenerated);
-    return this.uriGenerated;
-  }
-
-  getConcatName(form): string {
-    let label: string = form.entity ? form.entity.name : "";
-    if (label.length) {
-      label += "_";
-    }
-    if (form.quality) {
-      label += form.quality.label;
-    }
-    return label.replace(/\s+/g, "_").toLowerCase();
-  }
-
-  getConcatLongName(form): string {
-    let label: string = form.method ? form.method.label : "";
-    if (label.length) {
-      label += "_";
-    }
-    if (form.unit) {
-      label += form.unit.label;
-    }
-    return label.replace(/\s+/g, "_").toLowerCase();
-  }
-
-  updateName(form) {
-    form.label = this.getConcatName(form);
-    form.trait.traitLabel = form.label;
-    form.longName = form.label;
-    if (form.longName.length) {
-      form.longName += "_";
-    }
-    form.longName += this.getConcatLongName(form);
-  }
-
-  updateLongName(form) {
-    form.longName = this.getConcatName(form);
-    if (form.longName.length > 0) {
-      form.longName += "_";
-    }
-    form.longName += this.getConcatLongName(form);
-  }
-
-  @Ref("validatorRef") readonly validatorRef!: any;
-
-  get user() {
-    return this.$store.state.user;
-  }
-
-  @PropSync("form")
-  variable: VariableCreationDTO;
-
-  reset() {
-    this.traitClassUriGenerated = true;
-    return this.validatorRef.reset();
-  }
-
-  validate() {
-    return this.validatorRef.validate();
-  }
-
-  service: VariablesService;
-  ontologyService: OntologyService;
-
-  dimensionList: Array<String> = ["volume", "surface", "time", "distance"];
-
-  traitClassUri: string = "http://www.opensilex.org/vocabulary/oeso#Trait";
-  entityClassUri: string = "http://www.opensilex.org/vocabulary/oeso#Entity";
-
-  @Ref("qualityForm") readonly qualityForm!: any;
-  @Ref("methodForm") readonly methodForm!: any;
-  @Ref("unitForm") readonly unitForm!: any;
-
-  units = [];
-  methods = [];
-  qualities = [];
-
-  showQualityCreateForm() {
-    this.qualityForm.showCreateForm();
-  }
-
-  showMethodCreateForm() {
-    this.methodForm.showCreateForm();
-  }
-
-  showUnitCreateForm() {
-    this.unitForm.showCreateForm();
-  }
-
-  created() {
-    this.service = this.$opensilex.getService("opensilex.VariablesService");
-    this.ontologyService = this.$opensilex.getService(
-      "opensilex.OntologyService"
-    );
-
-    this.loadMethods();
-    this.loadQualities();
-    this.loadUnits();
-  }
-
-  loadEntities() {
-    return this.ontologyService
-      .getSubClassesOf(this.entityClassUri, true)
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<any>>>) =>
-          http.response.result
-      );
-  }
-
-  loadQualities() {
-    return this.service
-      .searchQualities(undefined, undefined, 0, 100)
-      .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
-        this.qualities = this.objectListToSelect(http.response.result);
-      });
-  }
-
-  loadMethods() {
-    return this.service
-      .searchMethods(undefined, undefined, 0, 100)
-      .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
-        this.methods = this.objectListToSelect(http.response.result);
-      });
-  }
-
-  loadUnits() {
-    return this.service
-      .searchUnits(undefined, undefined, 0, 100)
-      .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
-        this.units = this.objectListToSelect(http.response.result);
-      });
-  }
-
-  objectListToSelect(list) {
-    let itemList = [];
-    if (list) {
-      for (let i in list) {
-        let baseItem: any = this.objectToSelectNode(list[i]);
-        let children = this.objectListToSelect(list[i].children);
-        if (children.length > 0) {
-          baseItem.children = children;
+        getLabel(dto: any, dtoList: Array<NamedResourceDTO>): string{
+            if(! dto){
+                return "";
+            }
+            if(dto.uri){
+                return dto.name.replace(/\s+/g, "_");
+            }
+            let returnedDto: NamedResourceDTO = dtoList.find(dtoElem => dtoElem.uri == dto)
+            if(returnedDto){
+                return returnedDto.name.replace(/\s+/g, "_");
+            }
+            return "";
         }
-        itemList.push(baseItem);
-      }
-    }
-    return itemList;
-  }
 
-  objectToSelectNode(dto) {
-    return {
-      id: dto.uri,
-      label: dto.label
-    };
-  }
-}
+        updateName(form) {
+
+            let nameParts: string[] = [];
+
+            nameParts.push(this.getLabel(form.entity,this.entities));
+            nameParts.push(this.getLabel(form.quality,this.qualities));
+            form.name = nameParts.join("_");
+
+            nameParts.push(this.getLabel(form.method,this.methods));
+            nameParts.push(this.getLabel(form.unit,this.units));
+            form.longName = nameParts.join("_");
+        }
+
+
+        @Ref("validatorRef") readonly validatorRef!: any;
+
+        get user() {
+            return this.$store.state.user;
+        }
+
+        reset() {
+            return this.validatorRef.reset();
+        }
+
+        validate() {
+            return this.validatorRef.validate();
+        }
+
+        service: VariablesService;
+
+        @Ref("entityForm") readonly entityForm!: any;
+        @Ref("qualityForm") readonly qualityForm!: any;
+        @Ref("methodForm") readonly methodForm!: any;
+        @Ref("unitForm") readonly unitForm!: any;
+
+        entities: Array<NamedResourceDTO> = [];
+        units: Array<NamedResourceDTO> = [];
+        methods: Array<NamedResourceDTO> = [];
+        qualities: Array<NamedResourceDTO> = [];
+
+        showEntityCreateForm() {
+            this.entityForm.showCreateForm();
+        }
+
+        showQualityCreateForm() {
+            this.qualityForm.showCreateForm();
+        }
+
+        showMethodCreateForm() {
+            this.methodForm.showCreateForm();
+        }
+
+        showUnitCreateForm() {
+            this.unitForm.showCreateForm();
+        }
+
+        created() {
+            this.service = this.$opensilex.getService("opensilex.VariablesService");
+        }
+
+        searchEntities(name): Promise<Array<NamedResourceDTO>> {
+            return this.service.searchEntities(name, ["name=asc"], 0, 10)
+                .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
+                    this.entities = http.response.result;
+                    return this.entities;
+                });
+        }
+
+        loadEntity(uri) {
+            if(this.variable.entity.uri){
+                return [this.variable.entity];
+            }
+            return [this.entities.find(dto => dto.uri = uri)];
+        }
+
+        searchQualities(name): Promise<Array<NamedResourceDTO>> {
+            return this.service
+                .searchQualities(name, ["name=asc"], 0, 10)
+                .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
+                    this.qualities = http.response.result;
+                    return this.qualities;
+                });
+        }
+
+        loadQuality(uri) {
+            if(this.variable.quality.uri){
+                return [this.variable.quality];
+            }
+            return [this.qualities.find(dto => dto.uri = uri)];
+        }
+
+        searchMethods(name): Promise<Array<NamedResourceDTO>> {
+            return this.service
+                .searchMethods(name, ["name=asc"], 0, 10)
+                .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
+                    this.methods = http.response.result;
+                    return this.methods;
+                });
+        }
+
+        loadMethod(uri) {
+            if(this.variable.method.uri){
+                return [this.variable.method];
+            }
+            return [this.methods.find(dto => dto.uri = uri)];
+        }
+
+        searchUnits(name): Promise<Array<NamedResourceDTO>> {
+            return this.service
+                .searchUnits(name, ["name=asc"], 0, 10)
+                .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
+                    this.units = http.response.result;
+                    return this.units;
+                });
+        }
+
+        loadUnit(uri) {
+            if(this.variable.unit.uri){
+                return [this.variable.unit];
+            }
+            return [this.units.find(dto => dto.uri = uri)];
+        }
+
+        objectToSelectNode(dto: NamedResourceDTO) {
+            if(dto){
+                return {id: dto.uri, label: dto.name};
+            }
+            return null;
+        }
+    }
 </script>
 <style scoped lang="scss">
 </style>
+
+<i18n>
+fr:
+    VariableForm1:
+        no-entity:  Aucune entité correspondante
+        no-quality: Aucune qualité correspondante
+        no-method:  Aucune méthode correspondante
+        no-unit:    Aucune unité correspondante
+en:
+    VariableForm1:
+        no-entity: No entity found
+        no-quality: No quality found
+        no-method:  No method found
+        no-unit:    No unit found
+</i18n>

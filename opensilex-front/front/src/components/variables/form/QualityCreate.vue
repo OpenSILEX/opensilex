@@ -2,8 +2,8 @@
     <opensilex-WizardForm
             ref="wizardRef"
             :steps="steps"
-            createTitle="component.variable.form.add.quality-description"
-            editTitle="component.variable.form.add.quality-description"
+            createTitle="QualityForm.add"
+            editTitle="QualityForm.edit"
             icon="fa#vials"
             modalSize="lg"
             :initForm="getEmptyForm"
@@ -28,6 +28,7 @@
 
         steps = [
             {component: "opensilex-QualityForm"}
+            ,{component: "opensilex-QualityExternalReferencesForm"}
         ];
 
         title = "";
@@ -78,13 +79,14 @@
             }
             return this.service
                 .createQuality(form)
-                .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+                .then((http: HttpResponse<OpenSilexResponse>) => {
                     form.uri = http.response.result;
+                    let message = this.$i18n.t("QualityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
+                    this.$opensilex.showSuccessToast(message);
                     this.$emit("onCreate", form);
                 })
                 .catch(error => {
                     if (error.status == 409) {
-                        console.error("Quality already exists", error);
                         this.$opensilex.errorHandler(
                             error,
                             this.$i18n.t("component.project.errors.project-already-exists")
@@ -104,10 +106,24 @@
         setLoading(value: boolean) {
             this.loadingWizard = value;
         }
-
     }
 
 </script>
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+en:
+    QualityForm:
+        name: The quality
+        add: Add a quality
+        edit: Edit a quality
+        name-placeholder: Height
+fr:
+    QualityForm:
+        name: La qualité
+        add: Créer une qualité
+        edit: Éditer une qualité
+        name-placeholder: Hauteur
+</i18n>

@@ -21,6 +21,11 @@ menu:
           path: /images
           component: phis-ImageView
           credentials: []
+      - id: variables
+        label: component.menu.variables
+        route:
+            path: /variables
+            component: opensilex-VariableView
   - id: projects
     label: component.menu.projects
     icon: ik-layers
@@ -41,7 +46,7 @@ menu:
 
   - id: scientificObjects
     label: component.menu.scientificObjects
-    route: 
+    route:
       path: /scientificObjects
       component: opensilex-ScientificObjectList
       credentials: []
@@ -94,11 +99,6 @@ menu:
           component: opensilex-GermplasmView
           credentials:
             - germplasm-read
-      - id: variables
-        label: component.menu.variables
-        route:
-          path: /variables
-          component: opensilex-VariableList
   - id: security
     label: component.menu.security.label
     children:
@@ -131,10 +131,14 @@ routes:
   - path: /experiment/scientific-objects/:uri
     component: opensilex-ExperimentView
     credentials:
-      - experiment-read      
+      - experiment-read
   - path: /VariableCreate
     component: opensilex-VariableCreate
     credentials: []
+  - path: /variable/:uri
+    component: opensilex-VariableDetails
+    credentials:
+      - variable-read
   - path: /factor/:uri
     component: opensilex-FactorDetails
     credentials: []

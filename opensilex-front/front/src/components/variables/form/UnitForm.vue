@@ -1,144 +1,131 @@
+K
 <template>
-  <ValidationObserver ref="unitValidatorRef">
-    <opensilex-UriForm
-      :uri.sync="form.uri"
-      label="component.variable.unit-uri"
-      helpMessage="component.common.unit-uri.help"
-      :editMode="editMode"
-      :generated.sync="uriGenerated"
-      :required="true"
-    ></opensilex-UriForm>
+    <ValidationObserver ref="unitValidatorRef">
+        <opensilex-UriForm
+                :uri.sync="form.uri"
+                label="component.common.uri"
+                :editMode="editMode"
+                :generated.sync="uriGenerated"
+                :required="true"
+        ></opensilex-UriForm>
 
-    <div class="row">
-      <!-- Name -->
-      <div class="col-lg-4">
-        <opensilex-InputForm
-          :value.sync="form.label"
-          label="component.variable.unit-name"
-          type="text"
-          :required="true"
-          placeholder="component.variable.unit-name-placeholder"
-        ></opensilex-InputForm>
-      </div>
-
-      <!-- symbol -->
-      <div class="col-lg-3">
-        <opensilex-InputForm
-          :value.sync="form.symbol"
-          label="component.variable.unit-symbol"
-          type="text"
-          :required="true"
-          placeholder="component.variable.unit-symbol-placeholder"
-        ></opensilex-InputForm>
-      </div>
-
-      <!-- alternative symbol -->
-      <div class="col-lg-3">
-        <opensilex-InputForm
-          :value.sync="form.alternativeSymbol"
-          label="component.variable.unit-alternative-symbol"
-          type="text"
-          :required="false"
-          placeholder="component.variable.unit-alternative-symbol-placeholder"
-        ></opensilex-InputForm>
-      </div>
-    </div>
-
-    <!-- <div class="row">
-            <div class="col-lg-6">
-                
-                <opensilex-FormInputLabelHelper
-                        label=component.variable.unit-class
-                        helpMessage="component.variable.unit-class-help">
-                </opensilex-FormInputLabelHelper>
-
-                <multiselect
-                        :limit="1"
-                        :closeOnSelect=true
-                        :placeholder="$t('component.variable.class-placeholder')"
-                        v-model="form.type"
-                        :options="classList"
-                        :custom-label="treeDto => treeDto.name"
-                        deselectLabel="You must select one element"
-                        track-by="uri"
-                        :allow-empty=true
-                        :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"
-                />
+        <div class="row">
+            <!-- Name -->
+            <div class="col-lg-4">
+                <opensilex-InputForm
+                        :value.sync="form.label"
+                        label="component.common.name"
+                        type="text"
+                        :required="true"
+                        placeholder="UnitForm.name-placeholder"
+                ></opensilex-InputForm>
             </div>
-    </div>-->
 
-    <opensilex-TextAreaForm
-      :value.sync="form.comment"
-      label="component.variable.unit-description"
-      placeholder="component.variable.unit-description-placeholder"
-    ></opensilex-TextAreaForm>
-  </ValidationObserver>
+            <!-- symbol -->
+            <div class="col-lg-3">
+                <opensilex-InputForm
+                        :value.sync="form.symbol"
+                        label="UnitForm.symbol"
+                        type="text"
+                        placeholder="UnitForm.symbol-placeholder"
+                ></opensilex-InputForm>
+            </div>
+
+            <!-- alternative symbol -->
+            <div class="col-lg-3">
+                <opensilex-InputForm
+                        :value.sync="form.alternativeSymbol"
+                        label="UnitForm.alternative-symbol"
+                        placeholder="UnitForm.alternative-symbol-placeholder"
+                        type="text"
+                        :required="false"
+                ></opensilex-InputForm>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6">
+                <!-- Class -->
+                <opensilex-SelectForm
+                        label="component.common.type"
+                        :selected.sync="form.type"
+                        :multiple="false"
+                        :options="classList"
+                        placeholder="VariableForm.class-placeholder"
+                ></opensilex-SelectForm>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6">
+                <opensilex-TextAreaForm
+                        :value.sync="form.comment"
+                        label="component.common.description"
+                ></opensilex-TextAreaForm>
+            </div>
+        </div>
+
+    </ValidationObserver>
 </template>
 
 <script lang="ts">
-import { Component, PropSync, Ref } from "vue-property-decorator";
-import Vue from "vue";
-import { ResourceTreeDTO } from "opensilex-core/model/resourceTreeDTO";
-import { OntologyService } from "opensilex-core/api/ontology.service";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
-import { UnitCreationDTO } from "opensilex-core/model/unitCreationDTO";
+    import {Component, PropSync, Ref} from "vue-property-decorator";
+    import Vue from "vue";
+    import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
+    import {OntologyService} from "opensilex-core/api/ontology.service";
+    import HttpResponse, {
+        OpenSilexResponse
+    } from "opensilex-security/HttpResponse";
+    import {UnitCreationDTO} from "opensilex-core/model/unitCreationDTO";
+    import {VariablesService} from "opensilex-core/api/variables.service";
 
-@Component
-export default class UnitForm extends Vue {
-  $opensilex: any;
+    @Component
+    export default class UnitForm extends Vue {
+        $opensilex: any;
 
-  title = "";
-  uriGenerated = true;
-  editMode = false;
+        title = "";
+        uriGenerated = true;
+        editMode = false;
 
-  errorMsg: String = "";
+        errorMsg: String = "";
 
-  @PropSync("form")
-  unitDto: UnitCreationDTO;
+        @PropSync("form")
+        unitDto: UnitCreationDTO;
 
-  classList: Array<ResourceTreeDTO> = [];
+        classList: Array<any> = [];
+        service: OntologyService;
 
-  created() {
-    let ontologyService: OntologyService = this.$opensilex.getService(
-      "opensilex.OntologyService"
-    );
-    let classUri: string = "http://www.opensilex.org/vocabulary/oeso#Unit";
-
-    ontologyService
-      .getSubClassesOf(classUri, true)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        for (let i = 0; i < http.response.result.length; i++) {
-          let dto: ResourceTreeDTO = http.response.result[i];
-          this.classList.push(dto);
-
-          if (dto.children) {
-            dto.children.forEach(subDto => this.classList.push(subDto));
-          }
+        created() {
+            this.service = this.$opensilex.getService("opensilex.OntologyService");
+            this.loadClasses();
         }
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
 
-  handleErrorMessage(errorMsg: string) {
-    this.errorMsg = errorMsg;
-  }
+        loadClasses() {
+            return this.service
+                .getSubClassesOf("http://www.opensilex.org/vocabulary/oeso#Unit",true)
+                .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+                    this.classList = this.$opensilex.buildTreeListOptions(http.response.result);
+                    this.$opensilex.setOntologyClasses(http.response.result);
+                })
+                .catch(this.$opensilex.errorHandler);
+        }
 
-  @Ref("modalRef") readonly modalRef!: any;
-  @Ref("unitValidatorRef") readonly unitValidatorRef!: any;
+        handleErrorMessage(errorMsg: string) {
+            this.errorMsg = errorMsg;
+        }
 
-  selectedClass: ResourceTreeDTO = null;
+        @Ref("modalRef") readonly modalRef!: any;
+        @Ref("unitValidatorRef") readonly unitValidatorRef!: any;
 
-  reset() {
-    this.uriGenerated = true;
-    return this.unitValidatorRef.reset();
-  }
+        reset() {
+            this.uriGenerated = true;
+            return this.unitValidatorRef.reset();
+        }
 
-  validate() {
-    return this.unitValidatorRef.validate();
-  }
-}
+        validate() {
+            return this.unitValidatorRef.validate();
+        }
+    }
 </script>
 
 <style scoped lang="scss">

@@ -2,8 +2,8 @@
     <opensilex-WizardForm
             ref="wizardRef"
             :steps="steps"
-            createTitle="component.variable.form.add.unit"
-            editTitle="component.variable.form.add.unit"
+            createTitle="UnitForm.add"
+            editTitle="UnitForm.edit"
             icon="fa#vials"
             modalSize="lg"
             :initForm="getEmptyForm"
@@ -22,12 +22,14 @@
     import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
     import {VariablesService} from "opensilex-core/api/variables.service";
     import {UnitCreationDTO} from "opensilex-core/model/unitCreationDTO";
+    import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
 
     @Component
     export default class UnitCreate extends Vue {
 
         steps = [
             {component: "opensilex-UnitForm"}
+            ,{component : "opensilex-UnitExternalReferencesForm"}
         ];
 
         title = "";
@@ -79,8 +81,10 @@
             }
             return this.service
                 .createUnit(form)
-                .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+                .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
                     form.uri = http.response.result;
+                    let message = this.$i18n.t("UnitForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
+                    this.$opensilex.showSuccessToast(message);
                     this.$emit("onCreate", form);
                 })
                 .catch(error => {
@@ -112,3 +116,27 @@
 
 <style scoped lang="scss">
 </style>
+
+
+<i18n>
+en:
+    UnitForm:
+        name: The unit
+        add: Add a unit
+        edit: Edit a unit
+        symbol: Symbol
+        alternative-symbol: Alternative symbol
+        name-placeholder: Kilogramm per hectare
+        symbol-placeholder: kg ha-1
+        alternative-symbol-placeholder: kg/ha
+fr:
+    UnitForm:
+        name: L'unité
+        add: Créer une unité
+        edit: Éditer une unité
+        symbol: Symbole
+        alternative-symbol: Symbole alternatif
+        name-placeholder: Kilogramme par hectare
+        symbol-placeholder: kg ha-1
+        alternative-symbol-placeholder: kg/ha
+</i18n>

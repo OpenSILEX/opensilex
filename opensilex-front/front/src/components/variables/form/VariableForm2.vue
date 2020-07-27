@@ -1,100 +1,141 @@
 <template>
-  <ValidationObserver ref="validatorRef">
+    <ValidationObserver ref="validatorRef">
 
-    <!-- dimension -->
+        <div class="row">
+            <div class="col-lg-6">
+                <!-- dimension -->
+                <opensilex-SelectForm
+                        label="VariableForm.dimension"
+                        :selected.sync="form.dimension"
+                        :multiple="false"
+                        :options="dimensionList"
+                        :conversionMethod="objectToSelectNode"
+                        placeholder="VariableForm.dimension-placeholder"
+                        helpMessage="VariableForm.dimension-help"
+                ></opensilex-SelectForm>
+            </div>
+        </div>
 
-    <!-- <b-form-group>
-      <opensilex-FormInputLabelHelper
-        label="component.variable.unit-dimension"
-        helpMessage="component.variable.unit-dimension-help"
-      ></opensilex-FormInputLabelHelper>
-      <ValidationProvider :name="$t('component.variable.unit-dimension')" v-slot="{ errors }">
-        <multiselect
-          :placeholder="$t('component.variable.unit-dimension-placeholder')"
-          :limit="1"
-          :closeOnSelect="true"
-          v-model="form.dimension"
-          :options="dimensionList"
-          selectLabel
-          selectedLabel="X"
-          deselectLabel="X"
-          :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"
-        />
-        <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-      </ValidationProvider>
-    </b-form-group> -->
+        <div class="row">
+            <div class="col-lg-6">
+                <!-- synonym -->
+                <opensilex-InputForm
+                        :value.sync="form.synonym"
+                        label="VariableForm.synonym"
+                        type="text"
+                ></opensilex-InputForm>
+            </div>
+        </div>
 
-    <div class="row">
-      <div class="col-lg-3">
-        <!-- lower bound -->
-        <opensilex-InputForm
-          :value.sync="form.lowerBound"
-          label="component.variable.lower-bound"
-          type="number"
-          placeholder="component.variable.lower-bound-placeholder"
-        ></opensilex-InputForm>
-      </div>
+        <div class="row">
+            <div class="col-lg-6">
 
-      <div class="col-lg-3">
-        <!-- upper bound -->
-        <opensilex-InputForm
-          :value.sync="form.upperBound"
-          label="component.variable.upper-bound"
-          type="number"
-          placeholder="component.variable.lower-bound-placeholder"
-        ></opensilex-InputForm>
-      </div>
-    </div>
+                <!-- trait uri-->
+                <opensilex-InputForm
+                        :value.sync="form.traitUri"
+                        label="VariableForm.trait-uri"
+                        type="text"
+                        helpMessage="VariableForm.trait-uri-help"
+                        placeholder="VariableForm.trait-uri-placeholder"
+                        :required.sync="traitRequired"
+                        @change="updateTraitRequired"
+                ></opensilex-InputForm>
+            </div>
 
-    <div class="row">
-      <div class="col-lg-3">
-        <!-- synonym -->
-        <opensilex-InputForm
-          :value.sync="form.synonym"
-          label="component.variable.synonym"
-          type="text"
-        ></opensilex-InputForm>
-      </div>
-    </div>
-  </ValidationObserver>
+            <div class="col-lg-6">
+                <!-- trait name-->
+                <opensilex-InputForm
+                        :value.sync="form.traitName"
+                        label="VariableForm.trait-name"
+                        type="text"
+                        helpMessage="VariableForm.trait-name-help"
+                        placeholder="VariableForm.trait-name-placeholder"
+                        :required.sync="traitRequired"
+                        @change="updateTraitRequired"
+                ></opensilex-InputForm>
+            </div>
+        </div>
+
+    </ValidationObserver>
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
-import Vue from "vue";
+    import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+    import Vue from "vue";
+    import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
 
-import { VariableCreationDTO } from "opensilex-core/index";
+    @Component
+    export default class VariableForm2 extends Vue {
 
-@Component
-export default class VariableForm2 extends Vue {
-  $opensilex: any;
+        dimensionList: Array<String> = [];
+        $i18n: any;
 
-  dimensionList: Array<String> = ["volume", "surface", "time", "distance"];
+        objectToSelectNode(dto) {
+            return {
+                id: this.$i18n.t("VariableForm.dimension-values." + dto.label),
+                label: this.$i18n.t("VariableForm.dimension-values." + dto.label)
+            };
+        }
 
-  @Prop()
-  editMode;
+        objectListToSelect(list) {
+            let itemList = [];
+            if (list) {
+                for (let i in list) {
+                    let baseItem: any = this.objectToSelectNode(list[i]);
+                    let children = this.objectListToSelect(list[i].children);
+                    if (children.length > 0) {
+                        baseItem.children = children;
+                    }
+                    itemList.push(baseItem);
+                }
+            }
+            return itemList;
+        }
 
-  @Prop({ default: true })
-  uriGenerated;
+        created() {
+            let dimensions = [
+                {label: "volume", children: [{label: "m3"}, {label: "liter"}]},
+                {label: "surface", children: [{label: "hectare"}, {label: "m2"}]},
+                {label: "time", children: [{label: "second"}, {label: "minute"}, {label: "hour"}, {label: "day"}]},
+                {label: "length", children: [{label: "cm"}, {label: "m"}, {label: "km"}]},
+            ];
 
-  @Ref("validatorRef") readonly validatorRef!: any;
+            this.dimensionList = this.objectListToSelect(dimensions);
+        }
 
-  get user() {
-    return this.$store.state.user;
-  }
+        @Prop()
+        editMode;
 
-  @PropSync("form")
-  variable: VariableCreationDTO;
+        traitRequired: boolean = false;
 
-  reset() {
-    this.uriGenerated = true;
-    return this.validatorRef.reset();
-  }
+        updateTraitRequired() {
+            this.traitRequired = (this.variable.traitUri && this.variable.traitUri.length > 0) ||
+                (this.variable.traitName && this.variable.traitName.length > 0);
 
-  validate() {
-    return this.validatorRef.validate();
-  }
-}
+            if(! this.traitRequired){
+                this.variable.traitName = undefined;
+                this.variable.traitUri = undefined;
+            }
+        }
+
+        @Ref("validatorRef") readonly validatorRef!: any;
+
+        get user() {
+            return this.$store.state.user;
+        }
+
+        @PropSync("form")
+        variable: VariableCreationDTO;
+
+        reset() {
+            return this.validatorRef.reset();
+        }
+
+        validate() {
+            return this.validatorRef.validate();
+        }
+
+    }
 </script>
 <style scoped lang="scss">
 </style>

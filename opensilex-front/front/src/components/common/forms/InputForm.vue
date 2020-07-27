@@ -10,9 +10,10 @@
         :id="field.id"
         :value="stringValue"
         @update="updateValue($event)"
+        @change="change"
         :disabled="disabled"
         :type="type"
-        :required="required"
+        :required="isRequired"
         :placeholder="$t(placeholder)"
         :autocomplete="autocomplete"
       ></b-form-input>
@@ -45,6 +46,10 @@ export default class InputForm extends Vue {
     }
   }
 
+  change(value){
+    this.$emit("change",value);
+  }
+
   @Prop({
     default: "text"
   })
@@ -59,8 +64,8 @@ export default class InputForm extends Vue {
   @Prop()
   placeholder: string;
 
-  @Prop()
-  required: boolean;
+  @PropSync("required")
+  isRequired: boolean;
 
   @Prop()
   disabled: boolean;

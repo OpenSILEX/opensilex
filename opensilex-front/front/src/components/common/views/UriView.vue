@@ -1,6 +1,6 @@
 <template>
   <div class="static-field">
-    <span class="field-view-title">{{$t("component.common.uri")}}:</span>
+    <span class="field-view-title">{{$t(title)}}:</span>
     <span class="static-field-line">
       <opensilex-UriLink :uri="uri" :value="value" :url="url"></opensilex-UriLink>
     </span>
@@ -22,6 +22,9 @@ export default class UriView extends Vue {
 
   @Prop()
   url: string;
+
+  @Prop({default : "component.common.uri"})
+  title: string;
 
   copy = copy;
 }

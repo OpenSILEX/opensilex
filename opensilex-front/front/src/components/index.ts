@@ -237,30 +237,49 @@ components["opensilex-ScientificObjectPropertyConfiguration"] = ScientificObject
 // Variables
 import VariableList from './variables/VariableList.vue';
 components["opensilex-VariableList"] = VariableList;
+import VariableView from './variables/VariableView.vue';
+components["opensilex-VariableView"] = VariableView;
+import VariableDetails from './variables/VariableDetails.vue';
+components["opensilex-VariableDetails"] = VariableDetails;
+
 import VariableForm from './variables/form/VariableForm.vue';
 components["opensilex-VariableForm"] = VariableForm;
 import VariableForm1 from './variables/form/VariableForm1.vue';
 components["opensilex-VariableForm1"] = VariableForm1;
 import VariableForm2 from './variables/form/VariableForm2.vue';
 components["opensilex-VariableForm2"] = VariableForm2;
+
 // Entity
 import EntityForm from './variables/form/EntityForm.vue';
 components["opensilex-EntityForm"] = EntityForm;
+import EntityCreate from './variables/form/EntityCreate.vue';
+components["opensilex-EntityCreate"] = EntityCreate;
+import EntityExternalReferencesForm from './variables/form/EntityExternalReferencesForm.vue';
+components["opensilex-EntityExternalReferencesForm"] = EntityExternalReferencesForm;
+
 // Method
 import MethodCreate from './variables/form/MethodCreate.vue';
 components["opensilex-MethodCreate"] = MethodCreate;
 import MethodForm from './variables/form/MethodForm.vue';
 components["opensilex-MethodForm"] = MethodForm;
+import MethodExternalReferencesForm from './variables/form/MethodExternalReferencesForm.vue';
+components["opensilex-MethodExternalReferencesForm"] = MethodExternalReferencesForm;
+
 //Quality
 import QualityForm from './variables/form/QualityForm.vue';
 components["opensilex-QualityForm"] = QualityForm;
 import QualityCreate from './variables/form/QualityCreate.vue';
 components["opensilex-QualityCreate"] = QualityCreate;
+import QualityExternalReferencesForm from './variables/form/QualityExternalReferencesForm.vue';
+components["opensilex-QualityExternalReferencesForm"] = QualityExternalReferencesForm;
+
 // Unit
 import UnitForm from './variables/form/UnitForm.vue';
 components["opensilex-UnitForm"] = UnitForm;
 import UnitCreate from './variables/form/UnitCreate.vue';
 components["opensilex-UnitCreate"] = UnitCreate;
+import UnitExternalReferencesForm from './variables/form/UnitExternalReferencesForm.vue';
+components["opensilex-UnitExternalReferencesForm"] = UnitExternalReferencesForm;
 
 // PHIS
 import ImageList from './phis/images/ImageList.vue';

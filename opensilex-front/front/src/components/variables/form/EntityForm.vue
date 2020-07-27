@@ -1,87 +1,58 @@
 <template>
-    <b-modal ref="entityModalRef" size="lg" hide-footer :static="true">
-        <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
-        <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
-        <template v-slot:modal-title>
-            <font-awesome-icon icon="sun"/>
-            {{title}}
-        </template>
-        <form-wizard
-                @on-error="handleErrorMessage"
-                ref="formWizard"
-                @on-complete="onValidate"
-                shape="square"
-                color="#00a38d"
-        >
+    <ValidationObserver ref="entityValidatorRef">
+        <opensilex-UriForm
+                :uri.sync="form.uri"
+                label="component.common.uri"
+                :editMode="editMode"
+                :generated.sync="uriGenerated"
+                :required="true"
+        ></opensilex-UriForm>
+        <!-- Name -->
+        <div class="row">
+            <div class="col-lg-6">
+                <opensilex-InputForm
+                        :value.sync="form.label"
+                        label="component.common.name"
+                        type="text"
+                        :required="true"
+                        placeholder="EntityForm.name-placeholder"
+                ></opensilex-InputForm>
+            </div>
 
-            <h2 slot="title"></h2>
-            <tab-content
-                    v-bind:title="$t('component.variable.form.add.entity-description')"
-                    :before-change="checkBeforeSkosStep"
-            >
-                <template slot="default">
-                    <ValidationObserver ref="validatorRef">
+            <div class="col-lg-6">
+                <!-- Class -->
+                <opensilex-SelectForm
+                        label="component.common.type"
+                        :selected.sync="form.type"
+                        :multiple="false"
+                        :options="classList"
+                        placeholder="VariableForm.class-placeholder"
+                ></opensilex-SelectForm>
+            </div>
+        </div>
 
-                        <b-form>
-                            <!-- URI -->
-                            <opensilex-UriForm
-                                    :uri.sync="dto.uri"
-                                    label="component.variable.entity-uri"
-                                    helpMessage="component.variable.entity-uri-help"
-                                    :editMode="editMode"
-                                    :generated.sync="uriGenerated"
-                            ></opensilex-UriForm>
+        <opensilex-TextAreaForm
+                :value.sync="form.comment"
+                label="component.common.description">
+        </opensilex-TextAreaForm>
 
-                            <opensilex-InputForm
-                                    :value.sync="dto.label"
-                                    label="component.variable.entity-name"
-                                    type="text"
-                                    :required=false
-                            ></opensilex-InputForm>
+    </ValidationObserver>
 
-                            <!-- class -->
-                            <b-form-group>
-                                <opensilex-FormInputLabelHelper label=component.variable.entity-class
-                                                                helpMessage="component.variable.entity-class-help">
-                                </opensilex-FormInputLabelHelper>
-                                <ValidationProvider :name="$t('component.variable.entity-class')" v-slot="{ errors }">
-
-                                    <multiselect
-                                            :limit="1"
-                                            :closeOnSelect=true
-                                            :placeholder="$t('component.variable.class-placeholder')"
-                                            v-model="selectedClass"
-                                            :options="classList"
-                                            :custom-label="treeDto => treeDto.name"
-                                            deselectLabel="You must select one element"
-                                            track-by="uri"
-                                            :allow-empty=true
-                                            :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"
-                                    />
-
-                                    <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-                                </ValidationProvider>
-                            </b-form-group>
-
-                        </b-form>
-                    </ValidationObserver>
-                </template>
-
-            </tab-content>
-        </form-wizard>
-    </b-modal>
 </template>
 
-
 <script lang="ts">
-    import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+    import {Component, PropSync, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    import {EntityCreationDTO} from "opensilex-core/index";
     import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
     import {OntologyService} from "opensilex-core/api/ontology.service";
+    import HttpResponse, {
+        OpenSilexResponse
+    } from "opensilex-security/HttpResponse";
+    import {EntityCreationDTO} from "opensilex-core/model/entityCreationDTO";
 
     @Component
     export default class EntityForm extends Vue {
+        $opensilex: any;
 
         title = "";
         uriGenerated = true;
@@ -89,114 +60,41 @@
 
         errorMsg: String = "";
 
-        classList: Array<ResourceTreeDTO> = [];
+        @PropSync("form")
+        entityDto: EntityCreationDTO;
 
-        set _classList(value: Array<ResourceTreeDTO>) {
-            this.classList = value;
+        classList: Array<any> = [];
+        service: OntologyService;
+
+        created() {
+            this.service = this.$opensilex.getService("opensilex.OntologyService");
+            this.loadClasses();
         }
 
-        get _classList(): Array<ResourceTreeDTO> {
-            return this.classList;
+        loadClasses() {
+            return this.service
+                .getSubClassesOf("http://www.opensilex.org/vocabulary/oeso#Entity",true)
+                .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+                    this.classList = this.$opensilex.buildTreeListOptions(http.response.result);
+                    this.$opensilex.setOntologyClasses(http.response.result);
+                })
+                .catch(this.$opensilex.errorHandler);
         }
 
         handleErrorMessage(errorMsg: string) {
             this.errorMsg = errorMsg;
         }
 
-        $opensilex: any;
+        @Ref("modalRef") readonly modalRef!: any;
+        @Ref("entityValidatorRef") readonly entityValidatorRef!: any;
 
-        @Ref("entityModalRef") readonly entityModalRef!: any;
-        @Ref("validatorRef") readonly validatorRef!: any;
-
-        dto: EntityCreationDTO = {
-            uri: null,
-            label: null,
-            comment: null,
-            type: null,
-            exactMatch: [],
-            narrower: [],
-            closeMatch: [],
-            broader: []
+        reset() {
+            this.uriGenerated = true;
+            return this.entityValidatorRef.reset();
         }
 
-        selectedClass: ResourceTreeDTO = null;
-
-
-        created() {
-            this.loadingWizard = false;
+        validate() {
+            return this.entityValidatorRef.validate();
         }
-
-        showCreateForm() {
-            this.title = this.$t("component.variable.form.add.entity").toString();
-            let entityModalRef: any = this.$refs.entityModalRef;
-            entityModalRef.show();
-        }
-
-        hideForm() {
-            let entityModalRef: any = this.entityModalRef;
-            entityModalRef.hide();
-        }
-
-        onValidate() {
-            if (this.selectedClass) {
-                this.dto.type = this.selectedClass.uri
-            }
-            return new Promise((resolve, reject) => {
-
-                if (this.editMode) {
-                    this.$emit("onUpdate", this.dto, result => {
-                        if (result instanceof Promise) {
-                            result.then(resolve).catch(reject);
-                        } else {
-                            resolve(result);
-                        }
-                    });
-                } else {
-                    return this.$emit("onCreate", this.dto, result => {
-                        if (result instanceof Promise) {
-                            result.then(resolve).catch(reject);
-                        } else {
-                            resolve(result);
-                        }
-                    });
-                }
-            });
-        }
-
-
-        validateForm() {
-            let validatorRef: any = this.$refs.validatorRef;
-            return validatorRef.validate();
-        }
-
-        private _loadingWizard: boolean = true;
-
-        get loadingWizard(): boolean {
-            return this._loadingWizard;
-        }
-
-        set loadingWizard(value: boolean) {
-            this._loadingWizard = value;
-        }
-
-        async checkBeforeSkosStep() {
-            return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    this.validateForm().then(isValid => {
-                        if (isValid) {
-                            resolve(true);
-                        } else {
-                            this.errorMsg = 'component.common.errors.form-step-errors'
-                            reject();
-                        }
-                    });
-                }, 400);
-            });
-        }
-
     }
-
 </script>
-
-<style scoped lang="scss">
-</style>

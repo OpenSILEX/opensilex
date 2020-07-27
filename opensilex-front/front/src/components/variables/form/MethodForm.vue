@@ -1,115 +1,104 @@
 <template>
-  <ValidationObserver ref="methodValidatorRef">
-    <!-- URI -->
+    <ValidationObserver ref="methodValidatorRef">
+        <!-- URI -->
 
-    <opensilex-UriForm
-      :uri.sync="form.uri"
-      label="component.variable.method-uri"
-      helpMessage="component.common.method-uri.help"
-      :editMode="editMode"
-      :generated.sync="uriGenerated"
-      :required="true"
-    ></opensilex-UriForm>
-    <!-- Name -->
-    <div class="row">
-      <div class="col-lg-6">
-        <opensilex-InputForm
-          :value.sync="form.label"
-          label="component.variable.method-name"
-          type="text"
-          :required="true"
-        ></opensilex-InputForm>
-      </div>
-      <!-- <div class="col-lg-6">
-                <opensilex-FormInputLabelHelper
-                        label=component.variable.method-class
-                        helpMessage="component.variable.method-class-help">
-                </opensilex-FormInputLabelHelper>
+        <opensilex-UriForm
+                :uri.sync="form.uri"
+                label="component.common.uri"
+                :editMode="editMode"
+                :generated.sync="uriGenerated"
+                :required="true"
+        ></opensilex-UriForm>
+        <!-- Name -->
+        <div class="row">
+            <div class="col-lg-6">
+                <opensilex-InputForm
+                        :value.sync="form.label"
+                        label="component.common.name"
+                        type="text"
+                        :required="true"
+                        placeholder="MethodForm.name-placeholder"
+                ></opensilex-InputForm>
+            </div>
 
-                <multiselect
-                        :limit="1"
-                        :closeOnSelect=true
-                        :placeholder="$t('component.variable.class-placeholder')"
-                        v-model="form.type"
+            <div class="col-lg-6">
+                <!-- Class -->
+                <opensilex-SelectForm
+                        label="component.common.type"
+                        :selected.sync="form.type"
+                        :multiple="false"
                         :options="classList"
-                        :custom-label="treeDto => treeDto.name"
-                        deselectLabel="You must select one element"
-                        track-by="uri"
-                        :allow-empty=true
-                        :limitText="count => $t('component.common.multiselect.label.x-more', {count: count})"
-                />
-      </div>-->
-    </div>
+                        placeholder="VariableForm.class-placeholder"
+                ></opensilex-SelectForm>
+            </div>
+        </div>
 
-    <opensilex-TextAreaForm :value.sync="form.comment" label="component.variable.comment"></opensilex-TextAreaForm>
-  </ValidationObserver>
+        <opensilex-TextAreaForm
+                :value.sync="form.comment"
+                label="component.common.description">
+        </opensilex-TextAreaForm>
+    </ValidationObserver>
 </template>
 
 
 <script lang="ts">
-import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
-import Vue from "vue";
-import { ResourceTreeDTO } from "opensilex-core/model/resourceTreeDTO";
-import { MethodCreationDTO } from "opensilex-core/model/methodCreationDTO";
-import { OntologyService } from "opensilex-core/api/ontology.service";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
+    import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+    import Vue from "vue";
+    import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
+    import {MethodCreationDTO} from "opensilex-core/model/methodCreationDTO";
+    import {OntologyService} from "opensilex-core/api/ontology.service";
+    import HttpResponse, {
+        OpenSilexResponse
+    } from "opensilex-security/HttpResponse";
+    import {VariablesService} from "opensilex-core/api/variables.service";
 
-@Component
-export default class MethodForm extends Vue {
-  $opensilex: any;
+    @Component
+    export default class MethodForm extends Vue {
+        $opensilex: any;
 
-  title = "";
-  uriGenerated = true;
-  editMode = false;
+        title = "";
+        uriGenerated = true;
+        editMode = false;
 
-  errorMsg: String = "";
+        errorMsg: String = "";
 
-  @PropSync("form")
-  methodDto: MethodCreationDTO;
+        @PropSync("form")
+        methodDto: MethodCreationDTO;
 
-  classList: Array<ResourceTreeDTO> = [];
+        classList: Array<any> = [];
+        service: OntologyService;
 
-  created() {
-    let ontologyService: OntologyService = this.$opensilex.getService(
-      "opensilex.OntologyService"
-    );
-    let classUri: string = "http://www.opensilex.org/vocabulary/oeso#Method";
-
-    ontologyService
-      .getSubClassesOf(classUri, true)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        for (let i = 0; i < http.response.result.length; i++) {
-          let dto: ResourceTreeDTO = http.response.result[i];
-          this.classList.push(dto);
-
-          if (dto.children) {
-            dto.children.forEach(subDto => this.classList.push(subDto));
-          }
+        created() {
+            this.service = this.$opensilex.getService("opensilex.OntologyService");
+            this.loadClasses();
         }
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
 
-  handleErrorMessage(errorMsg: string) {
-    this.errorMsg = errorMsg;
-  }
+        loadClasses() {
+            return this.service
+                .getSubClassesOf("http://www.opensilex.org/vocabulary/oeso#Method",false)
+                .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+                    this.classList = this.$opensilex.buildTreeListOptions(http.response.result);
+                    this.$opensilex.setOntologyClasses(http.response.result);
+                })
+                .catch(this.$opensilex.errorHandler);
+        }
 
-  @Ref("modalRef") readonly modalRef!: any;
-  @Ref("methodValidatorRef") readonly methodValidatorRef!: any;
+        handleErrorMessage(errorMsg: string) {
+            this.errorMsg = errorMsg;
+        }
 
-  selectedClass: ResourceTreeDTO = null;
+        @Ref("modalRef") readonly modalRef!: any;
+        @Ref("methodValidatorRef") readonly methodValidatorRef!: any;
 
-  reset() {
-    this.uriGenerated = true;
-    return this.methodValidatorRef.reset();
-  }
+        reset() {
+            this.uriGenerated = true;
+            return this.methodValidatorRef.reset();
+        }
 
-  validate() {
-    return this.methodValidatorRef.validate();
-  }
-}
+        validate() {
+            return this.methodValidatorRef.validate();
+        }
+    }
 </script>
 
 <style scoped lang="scss">

@@ -124,37 +124,38 @@
         $opensilex: any;
 
         @Prop()
-        editMode;
+        editMode: boolean;
 
         @Prop({default: true})
-        uriGenerated;
+        uriGenerated: boolean;
 
         @PropSync("form")
         variable;
+
+        getLabel(dto: any, dtoList: Array<NamedResourceDTO>): string{
+            if(! dto){
+                return "";
+            }
+            if(dto.uri){
+                return dto.name.replace(/\s+/g, "_");
+            }
+            let returnedDto: NamedResourceDTO = dtoList.find(dtoElem => dtoElem.uri == dto)
+            if(returnedDto){
+                return returnedDto.name.replace(/\s+/g, "_");
+            }
+            return "";
+        }
 
         updateName(form) {
 
             let nameParts: string[] = [];
 
-            if (form.entity) {
-                // get directly the entity name ( in case of editing, the service return the uri and name of the entity)
-                let label = form.entity.uri ? form.entity.name : this.entities.find(dto => dto.uri == form.entity).name;
-                nameParts.push(label.replace(/\s+/g, "_"));
-            }
-            if (form.quality) {
-                let label = form.quality.uri ? form.quality.name :this.qualities.find(dto => dto.uri == form.quality).name;
-                nameParts.push(label.replace(/\s+/g, "_"));
-            }
+            nameParts.push(this.getLabel(form.entity,this.entities));
+            nameParts.push(this.getLabel(form.quality,this.qualities));
             form.name = nameParts.join("_");
 
-            if (form.method) {
-                let label = form.method.uri ? form.method.name : this.methods.find(dto => dto.uri == form.method).name;
-                nameParts.push(label.replace(/\s+/g, "_"));
-            }
-            if (form.unit) {
-                let label = form.unit.uri ? form.unit.name : this.units.find(dto => dto.uri == form.unit).name;
-                nameParts.push(label.replace(/\s+/g, "_"));
-            }
+            nameParts.push(this.getLabel(form.method,this.methods));
+            nameParts.push(this.getLabel(form.unit,this.units));
             form.longName = nameParts.join("_");
         }
 
@@ -164,7 +165,6 @@
         get user() {
             return this.$store.state.user;
         }
-
 
         reset() {
             return this.validatorRef.reset();

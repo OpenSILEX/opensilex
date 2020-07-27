@@ -41,9 +41,6 @@ menu:
       component: opensilex-ExperimentList
       credentials:
         - experiment-read
-  - id: installations
-    label: component.menu.installations
-
   - id: scientificObjects
     label: component.menu.scientificObjects
     route:
@@ -123,6 +120,14 @@ menu:
           component: opensilex-ProfileView
           credentials:
             - profile-read
+  - id: configuration
+    label: componenent.menu.configuration.label
+    children:
+      - id: scientificObjectTypes
+        label: componenent.menu.scientificObjectTypes.label 
+        route:
+          path: /scientific-object-types
+          component: opensilex-ScientificObjectTypes
 routes:
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView

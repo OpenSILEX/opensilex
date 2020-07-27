@@ -185,8 +185,34 @@ components["opensilex-AddChildButton"] = AddChildButton;
 import HelpButton from './common/buttons/HelpButton.vue'
 components["opensilex-HelpButton"] = HelpButton;
 
-import XSDDecimalInput from './common/ontology/XSDDecimalInput.vue'
+import OntologyClassDetail from './ontology/OntologyClassDetail.vue'
+components["opensilex-OntologyClassDetail"] = OntologyClassDetail;
+import OntologyClassTreeView from './ontology/OntologyClassTreeView.vue'
+components["opensilex-OntologyClassTreeView"] = OntologyClassTreeView;
+import XSDBooleanInput from './ontology/XSDBooleanInput.vue'
+components["opensilex-XSDBooleanInput"] = XSDBooleanInput;
+import XSDBooleanView from './ontology/XSDBooleanView.vue'
+components["opensilex-XSDBooleanView"] = XSDBooleanView;
+import XSDDateInput from './ontology/XSDDateInput.vue'
+components["opensilex-XSDDateInput"] = XSDDateInput;
+import XSDDateTimeInput from './ontology/XSDDateTimeInput.vue'
+components["opensilex-XSDDateTimeInput"] = XSDDateTimeInput;
+import XSDDateTimeView from './ontology/XSDDateTimeView.vue'
+components["opensilex-XSDDateTimeView"] = XSDDateTimeView;
+import XSDDateView from './ontology/XSDDateView.vue'
+components["opensilex-XSDDateView"] = XSDDateView;
+import XSDDecimalInput from './ontology/XSDDecimalInput.vue'
 components["opensilex-XSDDecimalInput"] = XSDDecimalInput;
+import XSDIntegerInput from './ontology/XSDIntegerInput.vue'
+components["opensilex-XSDIntegerInput"] = XSDIntegerInput;
+import XSDRawView from './ontology/XSDRawView.vue'
+components["opensilex-XSDRawView"] = XSDRawView;
+import XSDStringInput from './ontology/XSDStringInput.vue'
+components["opensilex-XSDStringInput"] = XSDStringInput;
+import XSDUriInput from './ontology/XSDUriInput.vue'
+components["opensilex-XSDUriInput"] = XSDUriInput;
+import XSDUriView from './ontology/XSDUriView.vue'
+components["opensilex-XSDUriView"] = XSDUriView;
 
 // Experiments
 import ExperimentForm from './experiments/form/ExperimentForm.vue';
@@ -257,6 +283,9 @@ import ScientificObjectForm from './scientificObjects/ScientificObjectForm.vue';
 components["opensilex-ScientificObjectForm"] = ScientificObjectForm;
 import ScientificObjectDetail from './scientificObjects/ScientificObjectDetail.vue';
 components["opensilex-ScientificObjectDetail"] = ScientificObjectDetail;
+import ScientificObjectTypes from './scientificObjects/ScientificObjectTypes.vue';
+components["opensilex-ScientificObjectTypes"] = ScientificObjectTypes;
+
 
 // Variables
 import VariableList from './variables/VariableList.vue';

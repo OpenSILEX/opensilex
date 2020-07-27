@@ -28,7 +28,7 @@ import {
 import Vue from "vue";
 
 @Component
-export default class XSDDecimalInput extends Vue {
+export default class XSDDateTimeView extends Vue {
   $opensilex: any;
 
   @Prop()

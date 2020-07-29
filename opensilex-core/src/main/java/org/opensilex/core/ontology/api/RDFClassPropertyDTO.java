@@ -114,7 +114,7 @@ public class RDFClassPropertyDTO {
     public void setCardinality(Integer cardinality) {
         this.cardinality = cardinality;
     }
-    
+
     public static RDFClassPropertyDTO fromModel(PropertyModel property, OwlRestrictionModel restriction, boolean isLiteral) {
         RDFClassPropertyDTO dto = new RDFClassPropertyDTO();
         dto.setUri(restriction.getOnProperty());

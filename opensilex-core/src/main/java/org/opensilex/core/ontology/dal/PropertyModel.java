@@ -9,7 +9,6 @@ import java.net.URI;
 import java.util.List;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.core.ontology.OpenSilexOwlExtension;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -56,6 +55,13 @@ public abstract class PropertyModel extends SPARQLTreeModel<PropertyModel> {
     )
     protected PropertyModel parent;
 
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "domain"
+    )
+    protected URI domain;
+    public final static String DOMAIN_FIELD = "domain";
+
     protected URI typeRestriction;
 
     protected boolean isDatatypeProperty;
@@ -94,6 +100,14 @@ public abstract class PropertyModel extends SPARQLTreeModel<PropertyModel> {
 
     public void setComment(SPARQLLabel comment) {
         this.comment = comment;
+    }
+
+    public URI getDomain() {
+        return domain;
+    }
+
+    public void setDomain(URI domain) {
+        this.domain = domain;
     }
 
     public URI getTypeRestriction() {

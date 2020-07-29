@@ -17,7 +17,9 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
@@ -69,7 +71,9 @@ public final class OntologyDAO {
                 }
         );
 
-        classTree.traverse(handler);
+        if (handler != null) {
+            classTree.traverse(handler);
+        }
 
         return classTree;
     }
@@ -477,9 +481,26 @@ public final class OntologyDAO {
         return false;
     }
 
-    public void create(ClassModel<?> model, Class<? extends ClassModel<?>> clazz) throws Exception {
+    public void createClass(ClassModel<?> model, Class<? extends ClassModel<?>> clazz) throws Exception {
         sparql.create(model);
 
+    }
+
+    public List<PropertyModel> searchDomainProperties(URI rootDomain, URI childDomain, String lang) throws Exception {
+        // TODO problème de property model (DataProperty, Object Property) ????
+        return sparql.search(PropertyModel.class, lang, (select) -> {
+            Var uriVar = makeVar(PropertyModel.URI_FIELD);
+            Var domainFilterVar = makeVar("domainFilter");
+
+            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+            Node rootDomainNode = SPARQLDeserializers.nodeURI(rootDomain);
+            Node childDomainNode = SPARQLDeserializers.nodeURI(childDomain);
+            WhereBuilder subClassFilter = new WhereBuilder();
+            subClassFilter.addWhere(uriVar, RDFS.domain, domainFilterVar);
+            subClassFilter.addWhere(domainFilterVar, Ontology.subClassAny, rootDomainNode);
+            subClassFilter.addWhere(childDomainNode, Ontology.subClassAny, domainFilterVar);
+            select.addFilter(exprFactory.exists(subClassFilter));
+        });
     }
 
 }

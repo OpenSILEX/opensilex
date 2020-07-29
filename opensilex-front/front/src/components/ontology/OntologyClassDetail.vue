@@ -7,9 +7,7 @@
       <!-- URI -->
       <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
       <!-- Name -->
-      <opensilex-StringView label="component.common.name" :value="selected.name"></opensilex-StringView>
-      <!-- Type -->
-      <opensilex-TypeView :type="selected.type" :typeLabel="selected.typeLabel"></opensilex-TypeView>
+      <opensilex-StringView label="component.common.name" :value="selected.label"></opensilex-StringView>
       {{selected}}
     </div>
   </b-card>

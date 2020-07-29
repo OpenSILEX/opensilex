@@ -23,11 +23,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import static javax.ws.rs.core.Response.Status.OK;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.ontology.dal.PropertyModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
@@ -56,7 +58,7 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return group", response = ResourceTreeDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return sub-classes tree", response = ResourceTreeDTO.class, responseContainer = "List")
     })
     public Response getSubClassesOf(
             @ApiParam(value = "Parent RDF class URI") @QueryParam("parentClass") @ValidURI URI parentClass,
@@ -76,13 +78,13 @@ public class OntologyAPI {
     }
 
     @GET
-    @Path("/get-class")
+    @Path("/class")
     @ApiOperation("Return class model definition with properties")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return group", response = RDFClassDTO.class)
+        @ApiResponse(code = 200, message = "Return class model definition ", response = RDFClassDTO.class)
     })
     public Response getClass(
             @ApiParam(value = "RDF class URI") @QueryParam("rdfType") @ValidURI URI rdfType
@@ -95,13 +97,13 @@ public class OntologyAPI {
     }
 
     @GET
-    @Path("/get-classes")
-    @ApiOperation("Return class model definition with properties for a list of rdt types")
+    @Path("/classes")
+    @ApiOperation("Return classes models definitions with properties for a list of rdt types")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return group", response = RDFClassDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return classes models definitions", response = RDFClassDTO.class, responseContainer = "List")
     })
     public Response getClasses(
             @ApiParam(value = "RDF classes URI") @QueryParam("rdfType") @ValidURI List<URI> rdfTypes
@@ -117,4 +119,26 @@ public class OntologyAPI {
         return new PaginatedListResponse<>(classes).getResponse();
     }
 
+    @GET
+    @Path("/class-properties")
+    @ApiOperation("Return class properties model definition available for the given rdf type domain.")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return class properties model definition", response = RDFClassPropertyDTO.class, responseContainer = "List")
+    })
+    public Response getClassProperties(
+            @ApiParam(value = "RDF class URI") @QueryParam("rdfType") @ValidURI URI rdfType
+    ) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        List<PropertyModel> properties = dao.searchDomainProperties(new URI("vocabulary:Device"), rdfType, currentUser.getLanguage());
+
+        return Response.status(OK)
+                .entity(properties)
+                .type(MediaType.APPLICATION_JSON)
+                .build();
+//        return new PaginatedListResponse<Object>(properties).getResponse();
+    }
 }

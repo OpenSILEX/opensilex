@@ -204,7 +204,7 @@ public class ScientificObjectDAO {
 
     public void create(ScientificObjectClassModel model, UserModel currentUser) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
-        dao.create(model, ScientificObjectClassModel.class);
+        dao.createClass(model, ScientificObjectClassModel.class);
     }
     
     public void getTypesTree(URI parentURI, UserModel currentUser) throws Exception {

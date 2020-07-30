@@ -47,6 +47,8 @@ import org.opensilex.OpenSilex;
 @Documented
 public @interface ApiProtected {
 
+    public boolean adminOnly() default false;
+
     public final static String HEADER_NAME = "Authorization";
     public final static String TOKEN_PARAMETER_PREFIX = "Bearer ";
 

@@ -162,7 +162,7 @@ public final class OntologyDAO {
         model.setRestrictions(mergedRestrictions);
 
         Map<URI, PropertyModel> dataPropertiesMap = new HashMap<>();
-        List<PropertyModel> dataPropertiesList = sparql.getListByURIs(PropertyModel.class,
+        List<DatatypePropertyModel> dataPropertiesList = sparql.getListByURIs(DatatypePropertyModel.class,
                 datatypePropertiesURI.keySet(), lang);
 
         MapUtils.populateMap(dataPropertiesMap, dataPropertiesList, (pModel) -> {
@@ -174,7 +174,7 @@ public final class OntologyDAO {
         model.setDatatypeProperties(dataPropertiesMap);
 
         Map<URI, PropertyModel> objectPropertiesMap = new HashMap<>();
-        List<PropertyModel> objectPropertiesList = sparql.getListByURIs(PropertyModel.class, objectPropertiesURI.keySet(), lang);
+        List<ObjectPropertyModel> objectPropertiesList = sparql.getListByURIs(ObjectPropertyModel.class, objectPropertiesURI.keySet(), lang);
 
         MapUtils.populateMap(objectPropertiesMap, objectPropertiesList, (pModel) -> {
             pModel.setIsDatatypeProperty(false);
@@ -184,21 +184,6 @@ public final class OntologyDAO {
             return pModel.getUri();
         });
         model.setObjectProperties(objectPropertiesMap);
-
-        List<ClassPropertyExtensionModel> propertyExtensionsList = sparql.search(ClassPropertyExtensionModel.class, lang, (select) -> {
-            Var owlClassVar = makeVar(ClassPropertyExtensionModel.OWL_CLASS_FIELD);
-            Var classUriVar = makeVar("classURI");
-            select.addWhere(owlClassVar, Ontology.subClassAny, classUriVar);
-            select.addWhere(SPARQLDeserializers.nodeURI(rdfClass), Ontology.subClassAny, classUriVar);
-        });
-
-        Map<URI, ClassPropertyExtensionModel> propertyExtensionsMap = new HashMap<>();
-
-        MapUtils.populateMap(propertyExtensionsMap, propertyExtensionsList, (extModel) -> {
-            return extModel.getUri();
-        });
-
-        model.setPropertyExtensions(propertyExtensionsMap);
 
         return model;
     }
@@ -487,20 +472,38 @@ public final class OntologyDAO {
     }
 
     public List<PropertyModel> searchDomainProperties(URI rootDomain, URI childDomain, String lang) throws Exception {
-        // TODO problème de property model (DataProperty, Object Property) ????
-        return sparql.search(PropertyModel.class, lang, (select) -> {
-            Var uriVar = makeVar(PropertyModel.URI_FIELD);
-            Var domainFilterVar = makeVar("domainFilter");
+        List<DatatypePropertyModel> datatypeProperties = sparql.search(DatatypePropertyModel.class, lang, (select) -> {
+            OntologyDAO.addPropertyDomainFilter(select, rootDomain, childDomain);
+        });
 
-            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
-            Node rootDomainNode = SPARQLDeserializers.nodeURI(rootDomain);
+        List<ObjectPropertyModel> objectProperties = sparql.search(ObjectPropertyModel.class, lang, (select) -> {
+            OntologyDAO.addPropertyDomainFilter(select, rootDomain, childDomain);
+        });
+
+        List<PropertyModel> properties = new ArrayList<>(datatypeProperties.size() + objectProperties.size());
+
+        properties.addAll(datatypeProperties);
+        properties.addAll(objectProperties);
+
+        return properties;
+    }
+
+    private static void addPropertyDomainFilter(SelectBuilder select, URI rootDomain, URI childDomain) {
+        Var uriVar = makeVar(PropertyModel.URI_FIELD);
+        Var domainFilterVar = makeVar("domainFilter");
+        ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+        Node rootDomainNode = SPARQLDeserializers.nodeURI(rootDomain);
+
+        if (childDomain == null || childDomain.equals(rootDomain)) {
+            select.addFilter(SPARQLQueryHelper.eq(PropertyModel.DOMAIN_FIELD, rootDomainNode));
+        } else {
             Node childDomainNode = SPARQLDeserializers.nodeURI(childDomain);
             WhereBuilder subClassFilter = new WhereBuilder();
             subClassFilter.addWhere(uriVar, RDFS.domain, domainFilterVar);
             subClassFilter.addWhere(domainFilterVar, Ontology.subClassAny, rootDomainNode);
             subClassFilter.addWhere(childDomainNode, Ontology.subClassAny, domainFilterVar);
             select.addFilter(exprFactory.exists(subClassFilter));
-        });
+        }
     }
 
 }

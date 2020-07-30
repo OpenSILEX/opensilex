@@ -93,6 +93,8 @@ public class CredentialFilter implements ContainerRequestFilter {
                 boolean hasCredential = false;
                 if (user.isAdmin()) {
                     hasCredential = true;
+                } else if (securityAnnotation.adminOnly()) {
+                    hasCredential = false;
                 } else {
                     // If user is not an admin check credentials if needed
                     String credentialId = AuthenticationDAO.getCredentialIdFromMethod(apiMethod);

@@ -8,10 +8,8 @@ package org.opensilex.core.ontology.dal;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.core.ontology.OpenSilexOwlExtension;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -57,19 +55,11 @@ public class ClassModel<T extends ClassModel> extends SPARQLTreeModel<T> {
     )
     protected ClassModel parent;
 
-    @SPARQLProperty(
-            ontology = OpenSilexOwlExtension.class,
-            property = "isAbstractClass"
-    )
-    protected Boolean isAbstractClass;
-
     protected Map<URI, PropertyModel> datatypeProperties;
 
     protected Map<URI, PropertyModel> objectProperties;
 
     protected Map<URI, OwlRestrictionModel> restrictions;
-
-    protected Map<URI, ClassPropertyExtensionModel> propertyExtensions;
 
     @Override
     public String getName() {
@@ -121,44 +111,6 @@ public class ClassModel<T extends ClassModel> extends SPARQLTreeModel<T> {
         this.restrictions = restrictions;
     }
 
-    public List<OwlRestrictionModel> getOrderedRestrictions() {
-        Map<URI, ClassPropertyExtensionModel> extensions = getPropertyExtensions();
-
-        return restrictions.values().stream().sorted((r1, r2) -> {
-            if (extensions == null) {
-                return 0;
-            }
-
-            ClassPropertyExtensionModel ext1 = extensions.get(r1.getOnProperty());
-            ClassPropertyExtensionModel ext2 = extensions.get(r2.getOnProperty());
-
-            Integer o1 = null;
-            Integer o2 = null;
-            if (ext1 != null) {
-                o1 = ext1.getHasDisplayOrder();
-            }
-
-            if (ext2 != null) {
-                o2 = ext2.getHasDisplayOrder();
-            }
-
-            if (o1 == null) {
-                if (o2 != null) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            } else {
-                if (o2 == null) {
-                    return -1;
-                } else {
-                    return o1.compareTo(o2);
-                }
-            }
-
-        }).collect(Collectors.toList());
-    }
-
     public boolean isDatatypePropertyRestriction(URI datatype) {
         if (datatype == null) {
             return false;
@@ -181,21 +133,5 @@ public class ClassModel<T extends ClassModel> extends SPARQLTreeModel<T> {
 
     public PropertyModel getObjectProperty(URI propertyURI) {
         return getObjectProperties().get(propertyURI);
-    }
-
-    public Map<URI, ClassPropertyExtensionModel> getPropertyExtensions() {
-        return propertyExtensions;
-    }
-
-    public void setPropertyExtensions(Map<URI, ClassPropertyExtensionModel> propertyExtensions) {
-        this.propertyExtensions = propertyExtensions;
-    }
-
-    public Boolean getIsAbstractClass() {
-        return isAbstractClass;
-    }
-
-    public void setIsAbstractClass(Boolean isAbstractClass) {
-        this.isAbstractClass = isAbstractClass;
     }
 }

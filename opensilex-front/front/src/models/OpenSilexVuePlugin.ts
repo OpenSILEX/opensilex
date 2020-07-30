@@ -88,16 +88,6 @@ export default class OpenSilexVuePlugin {
         this.loaderEnabled = true;
     }
 
-    private typeComponents = {};
-
-    setTypeComponents(typeComponents) {
-        this.typeComponents = typeComponents || {};
-    }
-    
-    getTypeComponent(rdfType) {
-        return this.typeComponents[rdfType];
-    }
-
     disableLoader() {
         this.loaderEnabled = false;
     }

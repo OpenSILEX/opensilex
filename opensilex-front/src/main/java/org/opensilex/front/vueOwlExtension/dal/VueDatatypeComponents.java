@@ -3,22 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.front.datatypes;
+package org.opensilex.front.vueOwlExtension.dal;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author vmigot
  */
-public enum PrimitiveDatatypeComponents {
-    BOOLEAN(XSDDatatype.XSDboolean.getURI(), "opensilex-XSDBooleanInput", "opensilex-XSDBooleanView"),
+public enum VueDatatypeComponents {
+    BOOLEAN(XSDDatatype.XSDboolean.getURI(), "opensilex-XSDBooleanInput", "opensilex-XSDBooleanView", "datatypes.boolean"),
     NUMBER(new String[]{
         XSDDatatype.XSDbyte.getURI(),
         XSDDatatype.XSDunsignedByte.getURI(),
@@ -37,26 +33,27 @@ public enum PrimitiveDatatypeComponents {
         XSDDatatype.XSDunsignedLong.getURI(),
         XSDDatatype.XSDshort.getURI(),
         XSDDatatype.XSDunsignedShort.getURI()
-    }, "opensilex-XSDIntegerInput", "opensilex-XSDRawView"),
-    DATE(XSDDatatype.XSDdate.getURI(), "opensilex-XSDDateInput", "opensilex-XSDDateView"),
-    DATETIME(XSDDatatype.XSDdateTime.getURI(), "opensilex-XSDDateTimeInput", "opensilex-XSDDateTimeView"),
+    }, "opensilex-XSDIntegerInput", "opensilex-XSDRawView", "datatypes.number"),
+    DATE(XSDDatatype.XSDdate.getURI(), "opensilex-XSDDateInput", "opensilex-XSDDateView", "datatypes.date"),
+    DATETIME(XSDDatatype.XSDdateTime.getURI(), "opensilex-XSDDateTimeInput", "opensilex-XSDDateTimeView", "datatypes.datetime"),
     DECIMAL(new String[]{
         XSDDatatype.XSDdecimal.getURI(),
         XSDDatatype.XSDdouble.getURI(),
         XSDDatatype.XSDfloat.getURI()
 
-    }, "opensilex-XSDDecimalInput", "opensilex-XSDRawView"),
-    STRING(XSDDatatype.XSDstring.getURI(), "opensilex-XSDStringInput", "opensilex-XSDRawView"),
-    URI(XSDDatatype.XSDanyURI.getURI(), "opensilex-XSDUriInput", "opensilex-XSDUriView");
+    }, "opensilex-XSDDecimalInput", "opensilex-XSDRawView", "datatypes.decimal"),
+    STRING(XSDDatatype.XSDstring.getURI(), "opensilex-XSDStringInput", "opensilex-XSDRawView", "datatypes.string"),
+    URI(XSDDatatype.XSDanyURI.getURI(), "opensilex-XSDUriInput", "opensilex-XSDUriView", "datatypes.uri");
 
-    PrimitiveDatatypeComponents(String uri, String intputComponent, String viewComponent) {
-        this(new String[]{uri}, intputComponent, viewComponent);
+    VueDatatypeComponents(String uri, String intputComponent, String viewComponent, String label) {
+        this(new String[]{uri}, intputComponent, viewComponent, label);
     }
 
-    PrimitiveDatatypeComponents(String[] uris, String intputComponent, String viewComponent) {
+    VueDatatypeComponents(String[] uris, String intputComponent, String viewComponent, String label) {
         this.uris = uris;
         this.intputComponent = intputComponent;
         this.viewComponent = viewComponent;
+        this.label = label;
     }
 
     private final String[] uris;
@@ -64,6 +61,8 @@ public enum PrimitiveDatatypeComponents {
     private final String intputComponent;
 
     private final String viewComponent;
+
+    private final String label;
 
     public String[] getUris() {
         return uris;
@@ -77,20 +76,22 @@ public enum PrimitiveDatatypeComponents {
         return viewComponent;
     }
 
-    private final static Map<String, DatatypeComponents> datatypeComponentsMap = new HashMap<>(PrimitiveDatatypeComponents.values().length);
+    public String getLabel() {
+        return label;
+    }
+
+    private final static Map<String, VueDatatypeComponents> datatypeComponentsMap = new HashMap<>(VueDatatypeComponents.values().length);
 
     static {
-        for (PrimitiveDatatypeComponents datatypeComponent : PrimitiveDatatypeComponents.values()) {
+        for (VueDatatypeComponents datatypeComponent : VueDatatypeComponents.values()) {
             for (String uri : datatypeComponent.getUris()) {
-                DatatypeComponents dtc = DatatypeComponents.fromString(uri, datatypeComponent.getIntputComponent(), datatypeComponent.getViewComponent());
-                if (dtc != null) {
-                    datatypeComponentsMap.put(uri, dtc);
-                }
+                datatypeComponentsMap.put(uri, datatypeComponent);
             }
         }
     }
 
-    public static Map<String, DatatypeComponents> getMap() {
+    public static Map<String, VueDatatypeComponents> getMap() {
         return datatypeComponentsMap;
     }
+
 }

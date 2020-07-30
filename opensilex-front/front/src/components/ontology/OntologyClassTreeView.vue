@@ -63,9 +63,17 @@ export default class OntologyClassTreeView extends Vue {
     this.onRootClassChange();
   }
 
+  mounted() {
+    this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        this.onRootClassChange();
+      }
+    );
+  }
+
   @Watch("rdfClass")
   onRootClassChange() {
-    console.error("ERDF", this.rdfClass)
     if (this.rdfClass) {
       this.refresh();
     }

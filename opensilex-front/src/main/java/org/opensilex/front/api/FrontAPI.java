@@ -13,13 +13,9 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.inject.Inject;
 import javax.validation.constraints.Pattern;
 import javax.ws.rs.GET;
@@ -39,20 +35,12 @@ import org.opensilex.OpenSilex;
 import org.opensilex.front.FrontModule;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.config.ConfigManager;
-import org.opensilex.front.FrontConfig;
-import org.opensilex.front.datatypes.DatatypeComponents;
-import org.opensilex.front.datatypes.PrimitiveDatatypeComponents;
 import org.opensilex.front.theme.ThemeBuilder;
 import org.opensilex.front.theme.ThemeConfig;
-import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.server.exceptions.NotFoundException;
-import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * Service to produce angular application configuration
@@ -68,12 +56,6 @@ public class FrontAPI {
 
     @Inject
     private FrontModule frontModule;
-
-    @Inject
-    private SPARQLService sparql;
-
-    @CurrentUser
-    private UserModel currentUser;
 
     @GET
     @Path("/config")
@@ -295,27 +277,6 @@ public class FrontAPI {
         } else {
             throw new NotFoundException("Resource file not found for module: " + moduleId + " - with theme: " + themeId + " - with path: " + filePath);
         }
-    }
-
-    @GET
-    @Path("/rdf-type-components")
-    @ApiOperation(value = "Return the list of associated rdf type with their front VueJS component names")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return the list of associated rdf type with their component", response = DatatypeComponents.class, responseContainer = "List")
-    })
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getDatatypeComponents() throws Exception {
-
-        List<DatatypeComponents> datatypeComponents = new ArrayList<>();
-        datatypeComponents.addAll(PrimitiveDatatypeComponents.getMap().values());
-        frontModule.getConfig(FrontConfig.class).datatypeComponents().forEach((uri, components) -> {
-            DatatypeComponents dtc = DatatypeComponents.fromString(uri, components.inputComponent(), components.viewComponent());
-            if (dtc != null) {
-                datatypeComponents.add(dtc);
-            }
-        });
-
-        return new PaginatedListResponse<DatatypeComponents>(datatypeComponents).getResponse();
     }
 
     public static String getModuleFrontLibFilePath(String moduleId) {

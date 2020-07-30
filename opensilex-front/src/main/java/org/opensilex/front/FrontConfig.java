@@ -61,9 +61,4 @@ public interface FrontConfig {
             value = "List of menu identifiers to exclude"
     )
     List<String> menuExclusions();
-
-    @ConfigDescription(
-            value = "Map of component to use for the given rdf class URI types"
-    )
-    Map<String, DatatypeComponentsConfig> datatypeComponents();
 }

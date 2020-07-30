@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.ontology;
+package org.opensilex.front.vueOwlExtension;
 
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -13,9 +13,9 @@ import org.opensilex.sparql.utils.Ontology;
  *
  * @author vince
  */
-public class OpenSilexOwlExtension {
+public class VueOwlExtension {
 
-    public static final String DOMAIN = "http://www.opensilex.org/vocabulary/owl-extension";
+    public static final String DOMAIN = "http://www.opensilex.org/vocabulary/owl-vue-extension";
 
     public static final String PREFIX = "oeso-owl";
 
@@ -38,15 +38,17 @@ public class OpenSilexOwlExtension {
      * Vocabulary namespace
      */
     public static final Resource NAMESPACE = Ontology.resource(NS);
-    
-    public static final Resource ClassPropertyExtension = Ontology.resource(NS, "ClassPropertyExtension");
+
+    public static final Resource ClassExtension = Ontology.resource(NS, "ClassExtension");
 
     public static final Property isAbstractClass = Ontology.property(NS, "isAbstractClass");
+    public static final Property hasIcon = Ontology.property(NS, "hasIcon");
     
+    public static final Resource ClassPropertyExtension = Ontology.resource(NS, "ClassPropertyExtension");
     public static final Property fromOwlClass = Ontology.property(NS, "fromOwlClass");
     public static final Property toOwlProperty = Ontology.property(NS, "toOwlProperty");
     public static final Property hasInputComponent = Ontology.property(NS, "hasInputComponent");
     public static final Property hasViewComponent = Ontology.property(NS, "hasViewComponent");
     public static final Property hasDisplayOrder = Ontology.property(NS, "hasDisplayOrder");
-    
+
 }

@@ -81,7 +81,7 @@ public class RDFClassDTO {
 
         List<RDFClassPropertyDTO> properties = new ArrayList<>();
 
-        for (OwlRestrictionModel restriction : model.getOrderedRestrictions()) {
+        for (OwlRestrictionModel restriction : model.getRestrictions().values()) {
             URI propertyURI = restriction.getOnProperty();
             if (model.isDatatypePropertyRestriction(propertyURI)) {
                 PropertyModel property = model.getDatatypeProperty(propertyURI);

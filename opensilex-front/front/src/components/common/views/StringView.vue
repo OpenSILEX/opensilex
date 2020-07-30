@@ -1,7 +1,9 @@
 <template>
   <div class="static-field">
     <span class="field-view-title">{{$t(label)}}:</span>
-    <span class="static-field-line">{{value}}</span>
+    <span class="static-field-line capitalize-first-letter">
+      <slot>{{value}}</slot>
+    </span>
   </div>
 </template>
 

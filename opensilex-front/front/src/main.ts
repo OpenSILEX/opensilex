@@ -468,39 +468,30 @@ $opensilex.loadModules([
             console.debug("Application is embed");
           }
 
-          let typeComponents = {};
-          vueJsService.getDatatypeComponents().then(http => {
-            for (let i in http.response.result) {
-              let propertyComponent = http.response.result[i];
-              typeComponents[propertyComponent.uri] = propertyComponent;
-            }
-            $opensilex.setTypeComponents(typeComponents);
-
-            $opensilex.loadComponentModules(modulesToLoad)
-              .then(() => {
-                // Initialize main application rendering
-                console.debug("Initialize main application rendering");
-                new Vue({
-                  router,
-                  store,
-                  render: h => h(App, {
-                    props: {
-                      embed: embed,
-                      footerComponent: config.footerComponent,
-                      headerComponent: config.headerComponent,
-                      loginComponent: config.loginComponent,
-                      menuComponent: config.menuComponent
-                    }
-                  },
-                  ),
-                  i18n
-                }).$mount('#app').$nextTick(() => {
-                  // Hide loader
-                  console.debug("Hide application init loader");
-                  document.getElementById('opensilex-loader').style.visibility = 'hidden';
-                });
+          $opensilex.loadComponentModules(modulesToLoad)
+            .then(() => {
+              // Initialize main application rendering
+              console.debug("Initialize main application rendering");
+              new Vue({
+                router,
+                store,
+                render: h => h(App, {
+                  props: {
+                    embed: embed,
+                    footerComponent: config.footerComponent,
+                    headerComponent: config.headerComponent,
+                    loginComponent: config.loginComponent,
+                    menuComponent: config.menuComponent
+                  }
+                },
+                ),
+                i18n
+              }).$mount('#app').$nextTick(() => {
+                // Hide loader
+                console.debug("Hide application init loader");
+                document.getElementById('opensilex-loader').style.visibility = 'hidden';
               });
-          });
+            });
         });
       });
   });

@@ -13,8 +13,11 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -23,7 +26,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import static javax.ws.rs.core.Response.Status.OK;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -126,19 +128,28 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return class properties model definition", response = RDFClassPropertyDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return class properties model definition", response = RDFPropertyDTO.class, responseContainer = "List")
     })
     public Response getClassProperties(
-            @ApiParam(value = "RDF class URI") @QueryParam("rdfType") @ValidURI URI rdfType
+            @ApiParam(value = "RDF root class URI") @QueryParam("rootClassDomain") @NotNull @ValidURI URI rootType,
+            @ApiParam(value = "RDF child class URI") @QueryParam("childClassDomain") @ValidURI URI childType
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
-        List<PropertyModel> properties = dao.searchDomainProperties(new URI("vocabulary:Device"), rdfType, currentUser.getLanguage());
+        List<PropertyModel> properties = dao.searchDomainProperties(rootType, childType, currentUser.getLanguage());
 
-        return Response.status(OK)
-                .entity(properties)
-                .type(MediaType.APPLICATION_JSON)
-                .build();
-//        return new PaginatedListResponse<Object>(properties).getResponse();
+        List<RDFPropertyDTO> dtoList = new ArrayList<>(properties.size());
+        properties.forEach(property -> {
+            RDFPropertyDTO dto = new RDFPropertyDTO();
+            dto.setUri(property.getUri());
+            dto.setLabel(property.getName());
+            if (property.getComment() != null) {
+                dto.setComment(property.getComment().getDefaultValue());
+            }
+            dto.setDomain(property.getDomain());
+            dtoList.add(dto);
+        });
+
+        return new PaginatedListResponse<RDFPropertyDTO>(dtoList).getResponse();
     }
 }

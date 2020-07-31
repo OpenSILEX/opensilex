@@ -6,7 +6,11 @@
 //******************************************************************************
 package org.opensilex.core.germplasm.dal;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -42,7 +46,22 @@ public class GermplasmModel extends SPARQLResourceModel implements ClassURIGener
     public void setLabel(SPARQLLabel label) {
         this.label = label;
     }
+    
+     @SPARQLProperty(
+        ontology = Oeso.class,
+        property = "hasId"
+    )
+    String code;
+    public static final String CODE_VAR = "code";
 
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+    
     @SPARQLProperty(
         ontology = Oeso.class,
         property = "fromSpecies"
@@ -83,6 +102,15 @@ public class GermplasmModel extends SPARQLResourceModel implements ClassURIGener
     )
     Integer productionYear;
     public static final String PRODUCTION_YEAR_SPARQL_VAR = "productionYear"; 
+    
+    Map<String, String> attributes;
+    
+    @SPARQLProperty(
+        ontology = SKOS.class,
+        property = "altLabel"
+    )
+    List<String> synonyms;
+    public static final String  SYNONYM_VAR= "synonym"; 
     
     public GermplasmModel getSpecies() {
         return species;
@@ -130,6 +158,22 @@ public class GermplasmModel extends SPARQLResourceModel implements ClassURIGener
 
     public void setProductionYear(Integer productionYear) {
         this.productionYear = productionYear;
+    }
+
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
+    }
+
+    public List<String> getSynonyms() {
+        return synonyms;
+    }
+
+    public void setSynonyms(List<String> synonyms) {
+        this.synonyms = synonyms;
     }
     
     @Override

@@ -26,9 +26,22 @@
       :required="true"
       helpMessage="GermplasmForm.label-help"
     ></opensilex-InputForm>
+
+    <!-- synonyms -->
+    <opensilex-TagInputForm
+      :value.sync="form.synonyms"
+      label="GermplasmForm.synonyms"
+      helpMessage="GermplasmForm.synonyms-help"
+      variant="primary"
+    ></opensilex-TagInputForm>
+    <!-- <label for="tags-basic">Type a new tag and press enter</label>
+    <b-form-tags
+        v-model="value"        
+    ></b-form-tags> -->
     
     <!-- fromSpecies -->
     <opensilex-InputForm
+      v-if= '!form.rdfType.endsWith("Species")'
       :value.sync="form.fromSpecies"
       label="GermplasmForm.fromSpecies"
       type="text"
@@ -37,6 +50,7 @@
  
     <!-- fromVariety -->
     <opensilex-InputForm
+      v-if= '! (form.rdfType.endsWith("Species") || form.rdfType.endsWith("Variety"))'
       :value.sync="form.fromVariety"
       label="GermplasmForm.fromVariety"
       type="text"
@@ -45,6 +59,7 @@
     
     <!-- fromAccession -->
     <opensilex-InputForm
+      v-if= '! (form.rdfType.endsWith("Species") || form.rdfType.endsWith("Variety") || form.rdfType.endsWith("Accession"))'
       :value.sync="form.fromAccession"
       label="GermplasmForm.fromAccession"
       type="text"
@@ -53,6 +68,7 @@
     
     <!-- institute -->
     <opensilex-InputForm
+      v-if= '!form.rdfType.endsWith("Species")'
       :value.sync="form.institute"
       label="GermplasmForm.institute"
       type="text"
@@ -61,6 +77,7 @@
     
     <!-- year -->
     <opensilex-InputForm
+      v-if= '!form.rdfType.endsWith("Species")'
       :value.sync="form.productionYear"
       label="GermplasmForm.year"
       type="text"
@@ -74,13 +91,20 @@
       type="text"
       helpMessage="GermplasmForm.comment-help"
     ></opensilex-InputForm>
+
+    <opensilex-GermplasmAttributesTable
+      ref="germplasmAttributesTable"
+      :editMode="editMode"
+      :attributesArray='attributesArray'
+    ></opensilex-GermplasmAttributesTable>
+
   </ValidationObserver>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Ref  } from "vue-property-decorator";
 import Vue from "vue";
-import { GermplasmCreationDTO, GermplasmGetDTO, GermplasmSearchDTO, GermplasmService, OntologyService, ResourceTreeDTO } from "opensilex-core/index"; 
+import { GermplasmCreationDTO, GermplasmGetSingleDTO, GermplasmSearchDTO, GermplasmService, OntologyService, ResourceTreeDTO } from "opensilex-core/index"; 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import Oeso from "../../ontologies/Oeso";
 
@@ -107,6 +131,8 @@ export default class GermplasmForm extends Vue {
 
   uriGenerated = true;
 
+  attributesArray;
+
   @Prop()
   editMode;
 
@@ -116,12 +142,15 @@ export default class GermplasmForm extends Vue {
         uri: null,
         rdfType: null,
         label: null,
+        code: null,
         fromSpecies: null,
         fromVariety: null,
         fromAccession: null,
         institute: null,
         productionYear: null,
-        comment: null
+        comment: null,
+        synonyms:[],
+        attributes: null
       };
     }
   })
@@ -136,16 +165,21 @@ export default class GermplasmForm extends Vue {
       uri: null,
       rdfType: null,
       label: null,
+      code: null,
       fromSpecies: null,
       fromVariety: null,
       fromAccession: null,
       institute: null,
       productionYear: null,
-      comment: null
+      comment: null,
+      synonyms:[],
+      attributes: null
     };
   }
+  @Ref("germplasmAttributesTable") readonly table!: any;
 
   update(form) {
+    form.attributes = this.table.pushAttributes();
     return this.$opensilex
       .getService("opensilex.GermplasmService")
       .updateGermplasm(form)
@@ -155,6 +189,21 @@ export default class GermplasmForm extends Vue {
       })
       .catch(this.$opensilex.errorHandler);
   }
+  
+  getAttributes(form) {
+    this.attributesArray = [];
+    if (form.attributes != null) {   
+      for (const property in form.attributes) {
+        let att = {
+          attribute: property,
+          value: form.attributes[property]
+        }
+        this.attributesArray.push(att);
+      } 
+    }
+  }
+    
+
 
 }
 </script>
@@ -184,6 +233,8 @@ en:
     comment-help: Description associated to the germplasm 
     year: Production Year
     year-help: Year when the ressource has been produced
+    synonyms: Synonyms
+    synonyms-help: Fill with a synonym and press Enter
 
 fr:
   GermplasmForm:
@@ -205,5 +256,7 @@ fr:
     comment-help: Description associée au germplasm
     year: Année de production
     year-help: Year when the ressource has been produced
+    synonyms: Synonymes
+    synonyms-help: Entrer un synonyme et appuyer sur Entrée
 </i18n>
 

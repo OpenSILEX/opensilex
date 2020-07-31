@@ -278,25 +278,25 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
                 }
                 
                 //Check if the given germplasm exists
-                if (property.getRelation().equals(Oeso.RELATION_HAS_GERMPLASM.toString())) {
-                    if (property.getRdfType() != null) {
-                        org.opensilex.core.germplasm.dal.GermplasmDAO germplasmDAO = new org.opensilex.core.germplasm.dal.GermplasmDAO(sparql);
-                        GermplasmModel germplasm = germplasmDAO.get(new URI(property.getValue()), null);
-                        if (germplasm != null) {
-                            if (!germplasm.getType().toString().equals(property.getRdfType())) {
-                                dataOk = false;
-                                checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "The given germplasm doesn't correspond to the given rdfType"));
-                            }
-                        } else {
-                            dataOk = false;
-                            checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "The given germplasm doesn't exist"));
-                        }
-                    } else {
-                            dataOk = false;
-                            checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "The property hasGermplasm requires to give rdfType"));
-                    }                   
-                        
-                }
+//                if (property.getRelation().equals(Oeso.RELATION_HAS_GERMPLASM.toString())) {
+//                    if (property.getRdfType() != null) {
+//                        org.opensilex.core.germplasm.dal.GermplasmDAO germplasmDAO = new org.opensilex.core.germplasm.dal.GermplasmDAO(sparql, nosql);
+//                        GermplasmModel germplasm = germplasmDAO.get(new URI(property.getValue()), null, null);
+//                        if (germplasm != null) {
+//                            if (!germplasm.getType().toString().equals(property.getRdfType())) {
+//                                dataOk = false;
+//                                checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "The given germplasm doesn't correspond to the given rdfType"));
+//                            }
+//                        } else {
+//                            dataOk = false;
+//                            checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "The given germplasm doesn't exist"));
+//                        }
+//                    } else {
+//                            dataOk = false;
+//                            checkStatusList.add(new Status(StatusCodeMsg.WRONG_VALUE, StatusCodeMsg.ERR, "The property hasGermplasm requires to give rdfType"));
+//                    }                   
+//                        
+//                }
 
                 //Check if property exists in the ontology Vocabulary --> see how to check rdfs
                 if (!propertyUriCache.contains(property.getRelation())) {
@@ -605,6 +605,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * @param rdfType
      * @param experiment
      * @param alias
+     * @param withProperties
      * @return scientific objects list, result of the user query, empty if no
      * result
      */
@@ -615,10 +616,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             String rdfType, 
             String experiment, 
             String alias, 
-            Boolean withProperties, 
-            String germplasmURI, 
-            Boolean withAallRelatedGermplasm) throws Exception {
-        SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(false, page, pageSize, uri, rdfType, experiment, alias, germplasmURI, withAallRelatedGermplasm);
+            Boolean withProperties) throws Exception {
+        SPARQLQueryBuilder sparqlQuery = prepareSearchQuery(false, page, pageSize, uri, rdfType, experiment, alias);
 
         TupleQuery tupleQuery = prepareRDF4JTupleQuery(sparqlQuery);
         Map<String, ScientificObject> foundedScientificObjects = new HashMap<>();
@@ -700,9 +699,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
             String uri, 
             String rdfType, 
             String experiment, 
-            String alias, 
-            String germplasmURI, 
-            Boolean withAallRelatedGermplasm) throws URISyntaxException, Exception {
+            String alias) throws URISyntaxException, Exception {
         SPARQLQueryBuilder sparqlQuery = new SPARQLQueryBuilder();
 
         sparqlQuery.appendDistinct(true);
@@ -745,37 +742,37 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
         }
         
         //germplasm filter
-        if (germplasmURI != null) {
-            //filter also on the linked germplasm (if the germplasm is a species, then we find also varieties of this species)
-            if (withAallRelatedGermplasm) {
-                org.opensilex.core.germplasm.dal.GermplasmDAO germplasmDAO = new org.opensilex.core.germplasm.dal.GermplasmDAO(sparql);
-                GermplasmModel germplasm = germplasmDAO.get(new URI(germplasmURI), null);
-                URI germplasmType = germplasm.getType();
-                ListWithPagination<GermplasmModel> germplasmList = null;
-                if (germplasmType.equals(Oeso.CONCEPT_SPECIES)) {
-                    germplasmList = germplasmDAO.search(null,null, null, null, new URI(germplasmURI), null, null, null, null, null, null, 0, 5000);
-                } else if (germplasmType.equals(Oeso.CONCEPT_VARIETY)) {
-                    germplasmList = germplasmDAO.search(null,null, null, null, null, new URI(germplasmURI), null, null, null, null, null, 0, 5000);
-                } else if (germplasmType.equals(Oeso.CONCEPT_ACCESSION)) {
-                    germplasmList = germplasmDAO.search(null,null, null, null, null, null, new URI(germplasmURI), null, null, null, null, 0, 5000);
-                }
-                
-                String filter = "<" + germplasmURI + ">";
-                if (!germplasmList.getList().isEmpty()) {
-                    for (GermplasmModel germpl:germplasmList.getList()) {
-                        String germURI = SPARQLDeserializers.getExpandedURI(germpl.getUri().toString());
-                        filter = filter + ", <"+ germURI + ">";
-                    } 
-                }                 
-                sparqlQuery.appendSelect("?" + GERMPLASM);
-                sparqlQuery.appendTriplet("?" + URI, Oeso.RELATION_HAS_GERMPLASM.toString(), "?" + GERMPLASM, null);
-                sparqlQuery.appendAndFilter("?" + GERMPLASM + " IN (" + filter + ")");
-            
-            //filter only on this specific germplasm
-            } else {
-                sparqlQuery.appendTriplet("?" + URI, Oeso.RELATION_HAS_GERMPLASM.toString(), "<" + germplasmURI + ">", null); 
-            }
-        }
+//        if (germplasmURI != null) {
+//            //filter also on the linked germplasm (if the germplasm is a species, then we find also varieties of this species)
+//            if (withAallRelatedGermplasm) {
+//                org.opensilex.core.germplasm.dal.GermplasmDAO germplasmDAO = new org.opensilex.core.germplasm.dal.GermplasmDAO(sparql);
+//                GermplasmModel germplasm = germplasmDAO.get(new URI(germplasmURI), null, null);
+//                URI germplasmType = germplasm.getType();
+//                ListWithPagination<GermplasmModel> germplasmList = null;
+//                if (germplasmType.equals(Oeso.CONCEPT_SPECIES)) {
+//                    germplasmList = germplasmDAO.search(null,null, null, null, new URI(germplasmURI), null, null, null, null, null, null, 0, 5000);
+//                } else if (germplasmType.equals(Oeso.CONCEPT_VARIETY)) {
+//                    germplasmList = germplasmDAO.search(null,null, null, null, null, new URI(germplasmURI), null, null, null, null, null, 0, 5000);
+//                } else if (germplasmType.equals(Oeso.CONCEPT_ACCESSION)) {
+//                    germplasmList = germplasmDAO.search(null,null, null, null, null, null, new URI(germplasmURI), null, null, null, null, 0, 5000);
+//                }
+//                
+//                String filter = "<" + germplasmURI + ">";
+//                if (!germplasmList.getList().isEmpty()) {
+//                    for (GermplasmModel germpl:germplasmList.getList()) {
+//                        String germURI = SPARQLDeserializers.getExpandedURI(germpl.getUri().toString());
+//                        filter = filter + ", <"+ germURI + ">";
+//                    } 
+//                }                 
+//                sparqlQuery.appendSelect("?" + GERMPLASM);
+//                sparqlQuery.appendTriplet("?" + URI, Oeso.RELATION_HAS_GERMPLASM.toString(), "?" + GERMPLASM, null);
+//                sparqlQuery.appendAndFilter("?" + GERMPLASM + " IN (" + filter + ")");
+//            
+//            //filter only on this specific germplasm
+//            } else {
+//                sparqlQuery.appendTriplet("?" + URI, Oeso.RELATION_HAS_GERMPLASM.toString(), "<" + germplasmURI + ">", null); 
+//            }
+//        }
 
         if (page != null && pageSize != null) {
             sparqlQuery.appendLimit(pageSize);
@@ -1024,7 +1021,7 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * does not exist.
      */
     public ScientificObject getScientificObjectInContext(String uri, String context) throws Exception {
-        ArrayList<ScientificObject> scientificObjects = find(null, null, uri, null, context, null, true, null, false);
+        ArrayList<ScientificObject> scientificObjects = find(null, null, uri, null, context, null, true);
         if (!scientificObjects.isEmpty()) {
             return scientificObjects.get(0);
         } else {
@@ -1263,8 +1260,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * ?uri <http://www.opensilex.org/vocabulary/oeso#participatesIn>
      * ?experiment . } }
      */
-    private SPARQLQueryBuilder prepareCount(String uri, String rdfType, String experimentURI, String alias, String germplasmURI, Boolean withAllRelatedGermplasm) throws Exception {
-        SPARQLQueryBuilder query = prepareSearchQuery(true, null, null, uri, rdfType, experimentURI, alias, germplasmURI, withAllRelatedGermplasm);
+    private SPARQLQueryBuilder prepareCount(String uri, String rdfType, String experimentURI, String alias) throws Exception {
+        SPARQLQueryBuilder query = prepareSearchQuery(true, null, null, uri, rdfType, experimentURI, alias);
         query.clearSelect();
         query.clearLimit();
         query.clearOffset();
@@ -1283,8 +1280,8 @@ public class ScientificObjectRdf4jDAO extends Rdf4jDAO<ScientificObject> {
      * @param alias
      * @return The number of scientific objects.
      */
-    public Integer count(String uri, String rdfType, String experimentURI, String alias, String germplasmURI, Boolean withAallRelatedGermplasm) throws Exception {
-        SPARQLQueryBuilder prepareCount = prepareCount(uri, rdfType, experimentURI, alias, germplasmURI, withAallRelatedGermplasm);
+    public Integer count(String uri, String rdfType, String experimentURI, String alias) throws Exception {
+        SPARQLQueryBuilder prepareCount = prepareCount(uri, rdfType, experimentURI, alias);
         TupleQuery tupleQuery = prepareRDF4JTupleQuery(prepareCount);
         Integer count = 0;
         try (TupleQueryResult result = tupleQuery.evaluate()) {

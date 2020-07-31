@@ -212,7 +212,7 @@ public class DatasetDAO extends MongoDAO<Dataset> {
     private void updateScientificObjectsWithExperimentsScientificObjects() throws Exception {
         ScientificObjectRdf4jDAO agronomicalObjectDao = new ScientificObjectRdf4jDAO(sparql);
         
-        ArrayList<ScientificObject> scientificObjectsSearched = agronomicalObjectDao.find(null, null, null, null, experiment, null, true, null, null);
+        ArrayList<ScientificObject> scientificObjectsSearched = agronomicalObjectDao.find(null, null, null, null, experiment, null, true);
         
         scientificObjectsSearched.forEach((scientificObject) -> {
             this.scientificObjects.add(scientificObject.getUri());

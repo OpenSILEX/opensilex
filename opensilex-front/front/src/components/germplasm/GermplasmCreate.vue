@@ -5,22 +5,38 @@
       title="GermplasmCreate.title"
       description="GermplasmCreate.description"
     ></opensilex-PageHeader>
-    <opensilex-NavBar returnTo="/germplasm" returnToTitle="GermplasmCreate.backToList">
-    </opensilex-NavBar>
-    <b-input-group class="mt-3 mb-3" size="sm">
-      <b-form-select ref="germplasmType" 
-        v-model="selected" :options="germplasmTypes" 
-        @change="refreshTable">
-        <template v-slot:first>
-          <b-form-select-option :value="null">{{$t('GermplasmCreate.select')}}</b-form-select-option>
-        </template>
-      </b-form-select>
-    </b-input-group>
-    <opensilex-GermplasmTable
-    v-if = this.selected
-    ref="germplasmTable" 
-    :germplasmType=selected
-    ></opensilex-GermplasmTable>
+    
+    <opensilex-PageActions>
+      <template v-slot>
+        <b-nav pills>
+          <router-link
+            to="/germplasm/"
+            class="btn btn-outline-primary back-button"
+            :title="$t('GermplasmDetails.backToList')"
+          >
+            <i class="ik ik-corner-up-left"></i>
+          </router-link>
+          
+        </b-nav>
+      </template>
+    </opensilex-PageActions>
+    
+    <opensilex-PageContent>
+      <b-input-group class="mt-3 mb-3" size="sm">
+        <b-form-select ref="germplasmType" 
+          v-model="selected" :options="germplasmTypes" 
+          @change="refreshTable">
+          <template v-slot:first>
+            <b-form-select-option :value="null">{{$t('GermplasmCreate.select')}}</b-form-select-option>
+          </template>
+        </b-form-select>
+      </b-input-group>
+      <opensilex-GermplasmTable
+      v-if = this.selected
+      ref="germplasmTable" 
+      :germplasmType=selected
+      ></opensilex-GermplasmTable>
+    </opensilex-PageContent>
   </div>
 </template>
 
@@ -106,13 +122,13 @@ export default class GermplasmCreate extends Vue {
 
 en:
   GermplasmCreate:
-    title: Add Germplasm
+    title: Declare Germplasm
     description: Add species, varieties, accessions ...
     backToList: Return to germplasm list
     select: Please select a type
 fr:
   GermplasmCreate:
-    title: Ajout de resources génétiques
+    title: Déclarer des ressources génétiques
     description: Créer des espèces, des variétiés, des accessions ...
     backToList: Revenir à la liste des germplasm
     select: Veuillez sélectionner un type de germplasm

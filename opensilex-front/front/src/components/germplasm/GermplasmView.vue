@@ -21,7 +21,7 @@
         <opensilex-GermplasmList
           v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_READ_ID)"
           ref="germplasmList"
-          @onEdit="germplasmForm.showEditForm($event)"
+          @onEdit="editGermplasm"
           @onDetails="showGermplasmDetails"
         ></opensilex-GermplasmList>
       </template>
@@ -52,7 +52,8 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import { 
   GermplasmService, 
   GermplasmCreationDTO, 
-  GermplasmGetDTO,
+  GermplasmGetAllDTO,
+  GermplasmGetSingleDTO,
   OntologyService, 
   ResourceTreeDTO 
   } from "opensilex-core/index"
@@ -77,14 +78,11 @@ export default class GermplasmView extends Vue {
   @Ref("germplasmForm") readonly germplasmForm!: any;
   @Ref("germplasmList") readonly germplasmList!: any;
   @Ref("germplasmDetails") readonly germplasmDetails!: any;
+  @Ref("germplasmAttributesForm") readonly germplasmAttributesForm!: any;
 
   created() {
     console.debug("Loading form view...");
     this.service = this.$opensilex.getService("opensilex.GermplasmService");
-  }
-
-  showCreateForm() {
-    this.germplasmForm.showCreateForm();
   }
 
   goToGermplasmCreate(){    
@@ -118,32 +116,47 @@ export default class GermplasmView extends Vue {
     );
   }
 
+
   editGermplasm(uri: string) {
-    console.log("editGermplasm " + uri);
+    console.debug("editGermplasm " + uri);
     this.service
       .getGermplasm(uri)
-      .then((http: HttpResponse<OpenSilexResponse<GermplasmGetDTO>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<GermplasmGetSingleDTO>>) => {
+        console.log(http.response.result);
+        this.germplasmForm.getFormRef().getAttributes(http.response.result);
         this.germplasmForm.showEditForm(http.response.result);
+        
       })
       .catch(this.$opensilex.errorHandler);
   }
 
-  deleteGermplasm(uri: string) {
-    console.log("deleteGermplasm " + uri);
-    this.service
-      .deleteGermplasm(uri)
-      .then(() => {
-        this.germplasmList.refresh();
-        let message =
-          this.$i18n.t("component.germplasm.germplasm") +
-          " " +
-          uri +
-          " " +
-          this.$i18n.t("component.common.success.delete-success-message");
-        //this.$opensilex.showSuccessToast(message);
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
+  // getAttributes(attributesMap) {
+  //   let attributesArray = [];
+  //   for (const property in attributesMap) {
+  //     let att = {
+  //       attribute: property,
+  //       value: attributesMap[property]
+  //     }
+  //     attributesArray.push(att);
+  //   } 
+  //   return attributesArray;
+  // }
+  // deleteGermplasm(uri: string) {
+  //   console.debug("deleteGermplasm " + uri);
+  //   this.service
+  //     .deleteGermplasm(uri)
+  //     .then(() => {
+  //       this.germplasmList.refresh();
+  //       let message =
+  //         this.$i18n.t("component.germplasm.germplasm") +
+  //         " " +
+  //         uri +
+  //         " " +
+  //         this.$i18n.t("component.common.success.delete-success-message");
+  //       //this.$opensilex.showSuccessToast(message);
+  //     })
+  //     .catch(this.$opensilex.errorHandler);
+  // }
 
 
 }
@@ -158,14 +171,14 @@ en:
   GermplasmView:
     title: Germplasm 
     description: Manage Genetic Resources Information
-    add: Add germplasm
+    add: Declare germplasm
     update: Update Germplasm
     delete: Delete Germplasm
 fr:
   GermplasmView:
     title: Ressources Génétiques 
     description: Gérer les informations du matériel génétique
-    add: Ajouter des ressources génétiques
+    add: Déclarer des ressources génétiques
     update: éditer germplasm
     delete: supprimer germplasm
 </i18n>

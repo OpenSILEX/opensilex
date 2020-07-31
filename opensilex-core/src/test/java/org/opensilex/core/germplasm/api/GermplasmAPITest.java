@@ -22,10 +22,13 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertFalse;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.integration.test.IntegrationTestCategory;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.nosql.DataNucleusServiceTest;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -35,8 +38,9 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
  *
  * @author Alice BOIZET
  */
+@Category(IntegrationTestCategory.class)
 public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
-    
+        
     protected String path = "/core/germplasm";
 
     protected String uriPath = path + "/get/{uri}";
@@ -132,9 +136,9 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
         ObjectMapper mapper = new ObjectMapper();
-        SingleObjectResponse<GermplasmGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<GermplasmGetDTO>>() {
+        SingleObjectResponse<GermplasmGetSingleDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {
         });
-        GermplasmGetDTO germplasmGetDto = getResponse.getResult();
+        GermplasmGetSingleDTO germplasmGetDto = getResponse.getResult();
         assertNotNull(germplasmGetDto);
     }
     
@@ -155,8 +159,8 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
 
         JsonNode node = getResult.readEntity(JsonNode.class);
         ObjectMapper mapper = new ObjectMapper();
-        PaginatedListResponse<GermplasmGetDTO> germplasmListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GermplasmGetDTO>>() {});
-        List<GermplasmGetDTO> germplasmList = germplasmListResponse.getResult();
+        PaginatedListResponse<GermplasmGetAllDTO> germplasmListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GermplasmGetAllDTO>>() {});
+        List<GermplasmGetAllDTO> germplasmList = germplasmListResponse.getResult();
 
         assertFalse(germplasmList.isEmpty());    
     }
@@ -181,9 +185,9 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
         ObjectMapper mapper = new ObjectMapper();
-        SingleObjectResponse<GermplasmGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<GermplasmGetDTO>>() {
+        SingleObjectResponse<GermplasmGetSingleDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {
         });
-        GermplasmGetDTO dtoFromApi = getResponse.getResult();
+        GermplasmGetSingleDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
         assertEquals(germplasm.getLabel(), dtoFromApi.getLabel());
@@ -195,22 +199,25 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
         // create the species that can be deleted and check if URI exists
         GermplasmCreationDTO speciesToDelete = getCreationSpeciesDTO();
         Response postResponse1 = getJsonPostResponse(target(createPath), speciesToDelete);
-        URI uriToDelete = extractUriFromResponse(postResponse1);        
+        URI uriToDelete = extractUriFromResponse(postResponse1);  
         // delete the species that can be deleted 
         Response delResult = getDeleteByUriResponse(target(deletePath), uriToDelete.toString());
         assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
+        
         // check if URI no longer exists
         Response getResult = getJsonGetByUriResponse(target(uriPath), uriToDelete.toString());
+        LOGGER.info("status no longer exists " + getResult.getStatus());
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
                 
         // create the species that can't be deleted because it is linked to a variety
         GermplasmCreationDTO speciesNotToDelete = getCreationSpeciesDTO();
-        Response postResponse2 = getJsonPostResponse(target(createPath), speciesNotToDelete);
+        Response postResponse2 = getJsonPostResponse(target(createPath), speciesNotToDelete);        
         URI  uriNotToDelete = extractUriFromResponse(postResponse2);
+        LOGGER.info("uri not to delete " + uriNotToDelete);
         
         // create Variety linked to this species
         Response postResultVariety = getJsonPostResponse(target(createPath), getCreationVarietyDTO(uriNotToDelete));
-        LOGGER.info(postResultVariety.toString());
+        LOGGER.info("variety creation " +postResultVariety.toString());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultVariety.getStatus());
 
         // try to delete the species that can't be deleted and get a bad request status

@@ -108,6 +108,8 @@ import SearchForm from './common/forms/SearchForm.vue'
 components["opensilex-SearchForm"] = SearchForm;
 import FileInputForm from './common/forms/FileInputForm.vue'
 components["opensilex-FileInputForm"] = FileInputForm;
+import TagInputForm from './common/forms/TagInputForm.vue'
+components["opensilex-TagInputForm"] = TagInputForm;
 
 
 import WizardForm from './common/forms/WizardForm.vue'
@@ -209,6 +211,8 @@ import GermplasmDetails from './germplasm/GermplasmDetails.vue';
 components["opensilex-GermplasmDetails"] = GermplasmDetails;
 import GermplasmModalList from './germplasm/GermplasmModalList.vue';
 components["opensilex-GermplasmModalList"] = GermplasmModalList;
+import GermplasmAttributesTable from './germplasm/GermplasmAttributesTable.vue';
+components["opensilex-GermplasmAttributesTable"] = GermplasmAttributesTable;
 
 // Projects
 import ProjectForm from './projects/ProjectForm.vue';

@@ -1,7 +1,7 @@
 <template>
   <div>
     <opensilex-SearchFilterField
-      @search="updateFilter()"
+      @search="updateFilters()"
       @clear="clearFilters()"
       label="GermplasmList.filter.description"
     >
@@ -133,9 +133,10 @@
       :fields="fields"
       defaultSortBy="label"
     >
-      <template v-slot:cell(uri)="{data}">
+      <template v-slot:cell(label)="{data}">
         <opensilex-UriLink
           :uri="data.item.uri"
+          :value="data.item.label"
           :to="{path: '/germplasm/'+ encodeURIComponent(data.item.uri)}"
         ></opensilex-UriLink>
       </template>
@@ -152,7 +153,7 @@
         <b-button-group size="sm">
           <opensilex-EditButton
             v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
-            @click="$emit('onEdit', data.item)"
+            @click="$emit('onEdit', data.item.uri)"
             label="GermplasmList.update"
             :small="true"
           ></opensilex-EditButton>
@@ -174,7 +175,7 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import { 
   GermplasmService,
-  GermplasmGetDTO,
+  GermplasmGetAllDTO,
   OntologyService,
   ResourceTreeDTO,
   ExperimentGetListDTO,
@@ -225,6 +226,7 @@ export default class GermplasmList extends Vue {
   }
 
   private filter: any = "";
+
   created() {
     this.service = this.$opensilex.getService("opensilex.GermplasmService");
     this.$opensilex.disableLoader();
@@ -236,7 +238,7 @@ export default class GermplasmList extends Vue {
     
   }
 
-  updateFilter() {
+  updateFilters() {
     this.$opensilex.updateURLParameter("filter", this.filter, "");
     this.refresh();
   }
@@ -295,17 +297,12 @@ export default class GermplasmList extends Vue {
     return this.searchForm.experiment;
   }
   
-  // updateFilter() {
-  //   this.$opensilex.updateURLParameter("filter", this.filter, "");
-  //   this.refresh();
-  // }
-
   fields = [
-    {
-      key: "uri",
-      label: "GermplasmList.uri",
-      sortable: true
-    },
+    // {
+    //   key: "uri",
+    //   label: "GermplasmList.uri",
+    //   sortable: true
+    // },
     {
       key: "label",
       label: "GermplasmList.label",
@@ -325,7 +322,7 @@ export default class GermplasmList extends Vue {
     {
       key: "speciesLabel",
       label: "GermplasmList.speciesLabel",
-      sortable: true
+      //sortable: true
     },
     {
       key: "actions",
@@ -389,7 +386,7 @@ export default class GermplasmList extends Vue {
     this.speciesList = [];
     this.service
     .searchGermplasm(undefined, undefined,100, germplasmPostDTO)
-    .then((http: HttpResponse<OpenSilexResponse<Array<GermplasmGetDTO>>>) => {
+    .then((http: HttpResponse<OpenSilexResponse<Array<GermplasmGetAllDTO>>>) => {
       //console.log(http.response.result)
         for(let i=0; i<http.response.result.length; i++) {
           let germplasmDTO = http.response.result[i];          
@@ -432,7 +429,7 @@ export default class GermplasmList extends Vue {
     this.refresh();
   }
 
-  resetFilters() {
+  clearFilters() {
     this.filterByLabel = null;
     this.filterByRdfType = null;
     this.filterBySpecies = null;

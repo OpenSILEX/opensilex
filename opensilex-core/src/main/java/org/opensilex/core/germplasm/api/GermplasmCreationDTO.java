@@ -9,7 +9,11 @@ package org.opensilex.core.germplasm.api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import javax.validation.constraints.NotNull;
+import org.opensilex.core.germplasm.dal.GermplasmAttributeModel;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -20,68 +24,146 @@ import org.opensilex.sparql.model.SPARQLLabel;
  * @author Alice Boizet
  */
 @ApiModel
-public class GermplasmCreationDTO extends GermplasmSearchDTO{
+public class GermplasmCreationDTO {
+    
+    /**
+     * Germplasm URI
+     */
     @ValidURI
     @ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
-    @Override
-    public URI getUri() {
-        return uri;
-    }
+    protected URI uri;
     
+    /**
+     * Germplasm Type : Species, Variety, Accession or subclass of PlantMaterialLot
+     */
     @NotNull
     @ApiModelProperty(value = "rdfType URI", example = "http://www.opensilex.org/vocabulary/oeso#SeedLot")
-    @Override
-    public URI getRdfType() {
-        return rdfType;
-    }
+    protected URI rdfType;
     
+    /**
+     * Germplasm label
+     */
     @Required
     @ApiModelProperty(value = "Germplasm label", example = "SL_001", required = true)
-    @Override
-    public String getLabel() {
-        return label;
-    }
+    protected String label;
     
+    /**
+     * Germplasm id (accessionNumber, varietyCode...)
+     */
+    @ApiModelProperty(value = "Germplasm code (accessionNumber, varietyCode...)", example = "", required = true)
+    protected String code;
+    
+    /**
+     * Germplasm species URI
+     */
     @ValidURI
     @ApiModelProperty(value = "species URI", example = "http://opensilex.dev/opensilex/id/species#zeamays")
-    @Override
-    public URI getFromSpecies() {
-        return fromSpecies;
-    }
+    protected URI fromSpecies;
     
+    /**
+     * Germplasm Variety URI
+     */
     @ValidURI
     @ApiModelProperty(value = "variety URI", example = "http://opensilex.dev/opensilex/id/variety#B73")
-    @Override
-    public URI getFromVariety() {
-        return fromVariety;
-    }
+    protected URI fromVariety;
     
+    /**
+     * Germplasm Accession URI
+     */    
     @ValidURI
     @ApiModelProperty(value = "accession URI", example = "http://opensilex.dev/opensilex/id/accession#B73_INRA")
-    @Override
-    public URI getFromAccession() {
-        return fromAccession;
-    }
-    
+    protected URI fromAccession;
 
+    /**
+     * institute where the accession has been created
+     */
     @ApiModelProperty(value = "institute", example = "INRA")
-    @Override
-    public String getInstitute() {
-        return institute;
-    }
+    protected String institute;
     
+    /**
+     * productionYear
+     */
     @ApiModelProperty(value = "production year", example = "2015")
-    @Override
-    public Integer getProductionYear() {
-        return productionYear;
-    }
-    
-    @ApiModelProperty(value = "comment")
+    protected Integer productionYear;
+        
     /**
      * comment
      */
-    protected String comment; 
-    
+    @ApiModelProperty(value = "comment")
+    protected String comment;    
+
+    public URI getUri() {
+        return uri;
+    }
+
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
+
+    public URI getRdfType() {
+        return rdfType;
+    }
+
+    public void setRdfType(URI rdfType) {
+        this.rdfType = rdfType;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public URI getFromSpecies() {
+        return fromSpecies;
+    }
+
+    public void setFromSpecies(URI fromSpecies) {
+        this.fromSpecies = fromSpecies;
+    }
+
+    public URI getFromVariety() {
+        return fromVariety;
+    }
+
+    public void setFromVariety(URI fromVariety) {
+        this.fromVariety = fromVariety;
+    }
+
+    public URI getFromAccession() {
+        return fromAccession;
+    }
+
+    public void setFromAccession(URI fromAccession) {
+        this.fromAccession = fromAccession;
+    }
+
+    public String getInstitute() {
+        return institute;
+    }
+
+    public void setInstitute(String institute) {
+        this.institute = institute;
+    }
+
+    public Integer getProductionYear() {
+        return productionYear;
+    }
+
+    public void setProductionYear(Integer productionYear) {
+        this.productionYear = productionYear;
+    }
+
     public String getComment() {
         return comment;
     }
@@ -89,6 +171,26 @@ public class GermplasmCreationDTO extends GermplasmSearchDTO{
     public void setComment(String comment) {
         this.comment = comment;
     }
+    
+    protected List<String> synonyms;
+
+    public List<String> getSynonyms() {
+        return synonyms;
+    }
+
+    public void setSynonyms(List<String> synonyms) {
+        this.synonyms = synonyms;
+    }
+
+    protected Map<String, String> attributes;
+
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
+    }  
     
     public GermplasmModel newModel() {
         GermplasmModel model = new GermplasmModel();
@@ -130,6 +232,22 @@ public class GermplasmCreationDTO extends GermplasmSearchDTO{
         if (comment != null) {
             model.setComment(comment);
         }        
+        
+        if (attributes != null ) {
+           model.setAttributes(attributes);
+        }
+                
+        if (synonyms != null) {
+            List<String> synonymsList = new ArrayList<>(synonyms.size());
+            synonyms.forEach((String synonym) -> {
+                synonymsList.add(synonym);
+            });
+            model.setSynonyms(synonymsList);
+        }        
+        
+        if (code != null) {
+            model.setCode(code);
+        }
                 
         return model;
     }   

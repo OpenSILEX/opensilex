@@ -373,7 +373,7 @@ public class VariableResourceService extends ResourceService implements BrapiCal
 
         ArrayList<BrapiObservationDTO> observations = new ArrayList();
         ScientificObjectRdf4jDAO objectDAO = new ScientificObjectRdf4jDAO(sparql);
-        ArrayList<ScientificObject> objectsList = objectDAO.find(null, null, null, null, studyDbId, null, false, null, null);
+        ArrayList<ScientificObject> objectsList = objectDAO.find(null, null, null, null, studyDbId, null, false);
 
         ArrayList<Variable> variablesList = new ArrayList();
 

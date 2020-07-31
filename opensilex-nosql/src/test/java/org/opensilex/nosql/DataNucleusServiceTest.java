@@ -18,6 +18,7 @@ import org.junit.Assert;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import org.opensilex.integration.test.AbstractIntegrationTest;
 import org.opensilex.nosql.model.QTestModel;
 import org.opensilex.nosql.model.TestModel;
 import org.opensilex.nosql.service.NoSQLService;
@@ -27,7 +28,7 @@ import org.opensilex.unit.test.AbstractUnitTest;
  *
  * @author vincent
  */
-public abstract class DataNucleusServiceTest extends AbstractUnitTest {
+public abstract class DataNucleusServiceTest extends AbstractIntegrationTest {
 
     protected static NoSQLService service;
 

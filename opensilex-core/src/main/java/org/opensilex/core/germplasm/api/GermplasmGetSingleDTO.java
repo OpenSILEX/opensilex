@@ -1,58 +1,80 @@
 //******************************************************************************
-//                          GermplasmGetDTO.java
+//                          GermplasmGetSingleDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.core.germplasm.api;
 
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.opensilex.core.germplasm.dal.GermplasmAttributeModel;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
-import org.opensilex.sparql.model.SPARQLLabel;
 
 /**
  * DTO representing JSON for searching germplasm or getting them by uri
  * @author Alice Boizet
  */
-public class GermplasmGetDTO extends GermplasmSearchDTO {  
+public class GermplasmGetSingleDTO extends GermplasmGetAllDTO {  
+        
     /**
-     * typeLabel
+     * Germplasm Variety URI
      */
-    protected String typeLabel; 
-    
-    /**
-     * speciesLabel
-     */
-    protected String speciesLabel;   
+    protected URI fromVariety;
     
     /**
      * varietyLabel
      */
-    protected String varietyLabel;   
+    protected String varietyLabel; 
     
+    /**
+     * Germplasm Accession URI
+     */
+    protected URI fromAccession;
+
     /**
      * accessionLabel
      */
     protected String accessionLabel;   
+
+    /**
+     * institute where the accession has been created
+     */
+    protected String institute;
+    
+    /**
+     * Germplasm id (accessionNumber, varietyCode...)
+     */
+    protected String code;
+    
+    /**
+     * productionYear
+     */
+    protected Integer productionYear;
+    
+    /**
+     * experiment
+     */
+    protected URI experiment;   
     
     /**
      * comment
      */
     protected String comment;  
+    
+    protected List<String> synonyms;
+    
+    protected Map<String, String> attributes;
 
-    public String getTypeLabel() {
-        return typeLabel;
+    public URI getFromVariety() {
+        return fromVariety;
     }
 
-    public void setTypeLabel(String typeLabel) {
-        this.typeLabel = typeLabel;
-    }
-
-    public String getSpeciesLabel() {
-        return speciesLabel;
-    }
-
-    public void setSpeciesLabel(String speciesLabel) {
-        this.speciesLabel = speciesLabel;
+    public void setFromVariety(URI fromVariety) {
+        this.fromVariety = fromVariety;
     }
 
     public String getVarietyLabel() {
@@ -63,6 +85,14 @@ public class GermplasmGetDTO extends GermplasmSearchDTO {
         this.varietyLabel = varietyLabel;
     }
 
+    public URI getFromAccession() {
+        return fromAccession;
+    }
+
+    public void setFromAccession(URI fromAccession) {
+        this.fromAccession = fromAccession;
+    }
+
     public String getAccessionLabel() {
         return accessionLabel;
     }
@@ -70,7 +100,31 @@ public class GermplasmGetDTO extends GermplasmSearchDTO {
     public void setAccessionLabel(String accessionLabel) {
         this.accessionLabel = accessionLabel;
     }
-    
+
+    public String getInstitute() {
+        return institute;
+    }
+
+    public void setInstitute(String institute) {
+        this.institute = institute;
+    }
+
+    public Integer getProductionYear() {
+        return productionYear;
+    }
+
+    public void setProductionYear(Integer productionYear) {
+        this.productionYear = productionYear;
+    }
+
+    public URI getExperiment() {
+        return experiment;
+    }
+
+    public void setExperiment(URI experiment) {
+        this.experiment = experiment;
+    }
+
     public String getComment() {
         return comment;
     }
@@ -79,14 +133,38 @@ public class GermplasmGetDTO extends GermplasmSearchDTO {
         this.comment = comment;
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public List<String> getSynonyms() {
+        return synonyms;
+    }
+
+    public void setSynonyms(List<String> synonyms) {
+        this.synonyms = synonyms;
+    }
+    
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
+    }
+    
     /**
      * Convert Germplasm Model into Germplasm DTO
      *
      * @param model Germplasm Model to convert
      * @return Corresponding user DTO
      */
-    public static GermplasmGetDTO fromModel(GermplasmModel model) {
-        GermplasmGetDTO dto = new GermplasmGetDTO();
+    public static GermplasmGetSingleDTO fromModel(GermplasmModel model) {
+        GermplasmGetSingleDTO dto = new GermplasmGetSingleDTO();
 
         dto.setUri(model.getUri());
         dto.setRdfType(model.getType());
@@ -130,6 +208,18 @@ public class GermplasmGetDTO extends GermplasmSearchDTO {
         if (model.getProductionYear() != null) {
             dto.setProductionYear(model.getProductionYear());
         }  
+        
+        if (model.getCode()!= null) {
+            dto.setCode(model.getCode());
+        }
+        
+        if (model.getAttributes() != null) {
+            dto.setAttributes(model.getAttributes());
+        }
+        
+        if (model.getSynonyms() != null) {
+            dto.setSynonyms(model.getSynonyms());
+        }
 
         return dto;
     }

@@ -18,6 +18,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -40,9 +41,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.germplasm.dal.GermplasmAttributeModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -109,6 +112,9 @@ public class GermplasmAPI {
     @Inject
     private SPARQLService sparql;
     
+    @Inject
+    NoSQLService nosql;  
+    
     @CurrentUser
     UserModel currentUser;
 
@@ -139,7 +145,7 @@ public class GermplasmAPI {
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {
 
-        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql);
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
         
         ErrorResponse error = check(germplasmDTO, germplasmDAO, false);
         if (error != null) {
@@ -150,9 +156,9 @@ public class GermplasmAPI {
             germplasmDTO = completeDTO(germplasmDTO, germplasmDAO);
             // create new germplasm
             GermplasmModel model = germplasmDTO.newModel();
-            GermplasmModel germplasm = germplasmDAO.create(model,currentUser);
+            GermplasmModel germplasm = germplasmDAO.create(model,currentUser, nosql);
             //return germplasm uri
-            
+
             return new ObjectUriResponse(Response.Status.CREATED, germplasm.getUri()).getResponse();
         } else {
             return new ObjectUriResponse().getResponse();
@@ -175,7 +181,7 @@ public class GermplasmAPI {
     )
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return profile", response = GermplasmGetDTO.class),
+        @ApiResponse(code = 200, message = "Return profile", response = GermplasmGetSingleDTO.class),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
         @ApiResponse(code = 404, message = "Germplasm not found", response = ErrorDTO.class)
     })
@@ -183,14 +189,14 @@ public class GermplasmAPI {
             @ApiParam(value = "germplasm URI", example = "dev-users:Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         // Get germplasm from DAO by URI
-        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql);
-        GermplasmModel model = germplasmDAO.get(uri, currentUser);
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+        GermplasmModel model = germplasmDAO.get(uri, currentUser, nosql);
 
         // Check if germplasm is found
         if (model != null) {
             // Return GermplasmGetDTO
             return new SingleObjectResponse<>(
-                    GermplasmGetDTO.fromModel(model)
+                    GermplasmGetSingleDTO.fromModel(model)
             ).getResponse();
         } else {
             // Otherwise return a 404 - NOT_FOUND error response
@@ -229,7 +235,7 @@ public class GermplasmAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         // Get germplasm from DAO by URI
-        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql);
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
         ListWithPagination<ExperimentModel> experiments = germplasmDAO.getExpFromGermplasm(currentUser, uri,orderByList,page,pageSize);
 
         // Convert paginated list to DTO
@@ -259,7 +265,7 @@ public class GermplasmAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return profile", response = GermplasmGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Return profile", response = GermplasmGetAllDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
         @ApiResponse(code = 404, message = "Germplasm not found", response = ErrorDTO.class)
     })
@@ -270,13 +276,13 @@ public class GermplasmAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         // Get germplasm from DAO by URI
-        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql);
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
         ListWithPagination<GermplasmModel> germplasmList = germplasmDAO.getGermplasmFromExp(currentUser, uri, orderByList, page, pageSize);
 
 // Convert paginated list to DTO
-        ListWithPagination<GermplasmGetDTO> resultDTOList = germplasmList.convert(
-                GermplasmGetDTO.class,
-                GermplasmGetDTO::fromModel
+        ListWithPagination<GermplasmGetSingleDTO> resultDTOList = germplasmList.convert(
+                GermplasmGetSingleDTO.class,
+                GermplasmGetSingleDTO::fromModel
         );
 
         // Return paginated list of profiles DTO
@@ -308,7 +314,7 @@ public class GermplasmAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return germplasm list", response = GermplasmGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Return germplasm list", response = GermplasmGetAllDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchGermplasmList(
@@ -326,7 +332,7 @@ public class GermplasmAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         // Search germplasm with germplasm DAO
-        GermplasmDAO dao = new GermplasmDAO(sparql);
+        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
         ListWithPagination<GermplasmModel> resultList = dao.search(
                 currentUser,
                 uri,
@@ -344,9 +350,9 @@ public class GermplasmAPI {
         );
 
         // Convert paginated list to DTO
-        ListWithPagination<GermplasmGetDTO> resultDTOList = resultList.convert(
-                GermplasmGetDTO.class,
-                GermplasmGetDTO::fromModel
+        ListWithPagination<GermplasmGetAllDTO> resultDTOList = resultList.convert(
+                GermplasmGetAllDTO.class,
+                GermplasmGetAllDTO::fromModel
         );
 
         // Return paginated list of profiles DTO
@@ -364,7 +370,7 @@ public class GermplasmAPI {
      */
     @POST
     @Path("search")
-    @ApiOperation("Search factors")
+    @ApiOperation("Search germplasm")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_GERMPLASM_READ_ID,
@@ -373,7 +379,7 @@ public class GermplasmAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return germplasm list", response = GermplasmGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Return germplasm list", response = GermplasmGetAllDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchGermplasm(
@@ -384,7 +390,7 @@ public class GermplasmAPI {
     ) throws Exception {
 
         // Search germplasm with germplasm DAO
-        GermplasmDAO dao = new GermplasmDAO(sparql);
+        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
         ListWithPagination<GermplasmModel> resultList = dao.search(
                 currentUser,
                 germplasmSearchDTO.getUri(),
@@ -402,9 +408,9 @@ public class GermplasmAPI {
         );
 
         // Convert paginated list to DTO
-        ListWithPagination<GermplasmGetDTO> resultDTOList = resultList.convert(
-                GermplasmGetDTO.class,
-                GermplasmGetDTO::fromModel
+        ListWithPagination<GermplasmGetAllDTO> resultDTOList = resultList.convert(
+                GermplasmGetAllDTO.class,
+                GermplasmGetAllDTO::fromModel
         );
 
         // Return paginated list of factor DTO
@@ -434,7 +440,7 @@ public class GermplasmAPI {
             @ApiParam("Germplasm description") @Valid GermplasmCreationDTO germplasmDTO
     ) {
         try {
-            GermplasmDAO germplasmDAO = new GermplasmDAO(sparql);        
+            GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);        
             ErrorResponse error = check(germplasmDTO, germplasmDAO, true);
             if (error != null) {
                 return error.getResponse();
@@ -443,7 +449,7 @@ public class GermplasmAPI {
             germplasmDTO = completeDTO(germplasmDTO, germplasmDAO);
             
             GermplasmModel model = germplasmDTO.newModel();
-            germplasmDAO.update(model);
+            germplasmDAO.update(model, nosql);
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
 
         } catch (SPARQLInvalidURIException e) {
@@ -466,10 +472,10 @@ public class GermplasmAPI {
     public Response deleteGermplasm(
             @ApiParam(value = "Germplasm URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
-        GermplasmDAO dao = new GermplasmDAO(sparql);
+        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
         
         //check
-        GermplasmModel germplasmToDelete = dao.get(uri, currentUser);
+        GermplasmModel germplasmToDelete = dao.get(uri, currentUser, nosql);
         
         boolean linkedGermplasm;
         if (URIDeserializer.getExpandedURI(URIDeserializer.formatURI(germplasmToDelete.getType()).toString()).equals(Oeso.Species.getURI())) {
@@ -489,7 +495,7 @@ public class GermplasmAPI {
                         "You can't delete a germplasm linked to another one"
                 ).getResponse();
         } else {
-            dao.delete(uri);
+            dao.delete(uri, nosql);
             return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
         }
         
@@ -510,13 +516,13 @@ public class GermplasmAPI {
             }
 
             // check if germplasm label already exists
-            boolean exists = germplasmDAO.labelExistsCaseSensitive(germplasmDTO.getLabel(),germplasmDTO.getRdfType());
+            boolean exists = germplasmDAO.labelExistsCaseSensitiveBySpecies(germplasmDTO);
             //boolean exists = germplasmDAO.labelExistsCaseInsensitive(germplasmDTO.getLabel(),germplasmDTO.getRdfType());
             if (exists) {
                 // Return error response 409 - CONFLICT if label already exists
                 error = new ErrorResponse(
-                        Response.Status.CONFLICT,
-                        "Germplasm label already exists",
+                        Response.Status.PRECONDITION_FAILED,
+                        "Germplasm label already exists for this species",
                         "Duplicated label: " + germplasmDTO.getLabel()
                 );
             }
@@ -644,9 +650,9 @@ public class GermplasmAPI {
     }
     
     public boolean checkVarietySpecies(URI speciesURI, URI varietyURI) {
-        GermplasmDAO dao = new GermplasmDAO(sparql);
+        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
         try {
-            GermplasmModel variety = dao.get(varietyURI, currentUser);
+            GermplasmModel variety = dao.get(varietyURI, currentUser, nosql);
             if (variety.getSpecies().getUri().equals(URIDeserializer.formatURI(speciesURI))) {
                 return true;
             } else {
@@ -662,9 +668,9 @@ public class GermplasmAPI {
     }
 
     private boolean checkAccessionSpecies(URI speciesURI, URI accessionURI) {
-        GermplasmDAO dao = new GermplasmDAO(sparql);
+        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
         try {
-            GermplasmModel accession = dao.get(accessionURI, currentUser);            
+            GermplasmModel accession = dao.get(accessionURI, currentUser, nosql);            
             if (accession.getSpecies().getUri().equals(URIDeserializer.formatURI(speciesURI))) {
                 return true;
             } else {
@@ -680,9 +686,9 @@ public class GermplasmAPI {
     }
 
     private boolean checkAccessionVariety(URI varietyURI, URI accessionURI) {
-        GermplasmDAO dao = new GermplasmDAO(sparql);
+        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
         try {
-            GermplasmModel accession = dao.get(accessionURI, currentUser);            
+            GermplasmModel accession = dao.get(accessionURI, currentUser, nosql);            
             if (accession.getVariety().getUri().equals(URIDeserializer.formatURI(varietyURI))) {
                 return true;
             } else {
@@ -772,7 +778,7 @@ public class GermplasmAPI {
     }
     
     private boolean checkType(KeyType key) {
-        GermplasmDAO dao = new GermplasmDAO((sparql));
+        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
         try {
             return dao.isGermplasmType(key.type);
         } catch (Exception e) {
@@ -814,9 +820,9 @@ public class GermplasmAPI {
     }
     
     private GermplasmModel getGermplasm(KeyGermplasm key) {
-        GermplasmDAO dao = new GermplasmDAO((sparql));
+        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
         try {
-            GermplasmModel germplasm = dao.get(key.uri, currentUser);
+            GermplasmModel germplasm = dao.get(key.uri, currentUser, nosql);
             return germplasm;
         } catch (Exception e) {
             return null;

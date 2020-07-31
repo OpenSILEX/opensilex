@@ -96,7 +96,7 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import { 
   GermplasmService,
-  GermplasmGetDTO,
+  GermplasmGetAllDTO,
   GermplasmSearchDTO,
   ResourceTreeDTO
 } 
@@ -157,10 +157,10 @@ export default class GermplasmModalList extends GermplasmList {
     }
     return this.service
       .searchGermplasm(undefined, undefined, 100, germplasmPostDTO)
-      .then((http: HttpResponse<OpenSilexResponse<Array<GermplasmGetDTO>>>) => http.response.result);
+      .then((http: HttpResponse<OpenSilexResponse<Array<GermplasmGetAllDTO>>>) => http.response.result);
   }
 
-  germplasmToSelectNode(dto: GermplasmGetDTO) {
+  germplasmToSelectNode(dto: GermplasmGetAllDTO) {
     return {
       id: dto.uri,
       label: dto.label

@@ -30,6 +30,11 @@ public class GermplasmSearchDTO {
     protected String label;
     
     /**
+     * Germplasm id (accessionNumber, varietyCode...)
+     */
+    protected String id;
+    
+    /**
      * Germplasm species URI
      */
     protected URI fromSpecies;
@@ -143,6 +148,14 @@ public class GermplasmSearchDTO {
 
     public void setExperiment(URI experiment) {
         this.experiment = experiment;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
     
 }

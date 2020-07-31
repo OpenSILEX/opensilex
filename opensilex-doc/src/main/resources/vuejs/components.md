@@ -21,6 +21,7 @@ OpenSilex Vue.JS components
     - [Type form field](#type-form-field)
     - [CSV file input](#csv-file-input)
     - [File input form field](#file-input-form-field)
+    - [Tags input form field](#tags-input-form-field)
   - [Forms containers](#forms-containers)
     - [Modal form](#modal-form)
     - [Wizard form](#wizard-form)
@@ -60,7 +61,7 @@ Identifier: **opensilex-Button**
 
 Description: 
 
-This component is the base for all button displayed in OpenSilex based on [Bootstrap-vue button.](https://bootstrap-vue.org/docs/components/button)
+This component is the base for all buttons displayed in OpenSilex and is based on [Bootstrap-vue button.](https://bootstrap-vue.org/docs/components/button)
 
 Other buttons described in this documentation are a predefined variation of this component.
 
@@ -77,7 +78,7 @@ icon | string | *-* | Button icon identifier see [icon component](#Icons) for mo
 Slots:
 Name | Props | Description
 --- | --- | ---
-icon | *-* | This slot allow you to completly replace button icon (usefull if you need to switch icon depending of some other variable).
+icon | *-* | This slot allows you to completely replace the button icon (usefull if you need to switch icon depending of some other variable).
 
 Events:
 ID | Parameter | Description
@@ -111,7 +112,7 @@ Identifier: **opensilex-DeleteButton**
 
 Description: 
 
-Button component for "Delete" action, this component display a confirmation message box before emitting "click" event.
+Button component for "Delete" action, this component displays a confirmation message box before emitting "click" event.
 
 Properties:
 
@@ -227,6 +228,7 @@ This component is an abstraction which should be used by all form components imp
 - [URI](#URI%20form%20field)
 - [Type](#Type%20form%20field)
 - [File](#file-input-form-field)
+- [Tags](#tags-input-form-field)
 
 Properties:
 
@@ -240,7 +242,7 @@ rules | string or function | *-* | [vee-validate rules](https://logaretm.github.
 Slots:
 Name | Props | Description
 --- | --- | ---
-field | *id*: form input id, *validator*: reference vee-validate validator | This slot allow to define real form field implementation (input, textarea, ...)
+field | *id*: form input id, *validator*: reference vee-validate validator | This slot allows to define real form field implementation (input, textarea, ...)
 
 ### Input form field
 
@@ -254,7 +256,7 @@ Properties:
 
 ID | Type | Default value | Description
 --- | --- | --- | ---
-value | string | *-* | Input field value (generally used whith "sync" flag)
+value | string | *-* | Input field value (generally used with "sync" flag)
 type | string | *text* | HTML input type
 label | string | *-* | Translation key of the input form label
 helpMessage | string | *-* | Optional translation key for tooltip help message
@@ -276,7 +278,7 @@ Properties:
 
 ID | Type | Default value | Description
 --- | --- | --- | ---
-value | string | *-* | Textarea field value (generally used whith "sync" flag)
+value | string | *-* | Textarea field value (generally used with "sync" flag)
 label | string | *-* | Translation key of the textarea form label
 helpMessage | string | *-* | Optional translation key for tooltip help message
 placeholder | string | *-* | Optional translation key for textarea placeholder
@@ -297,7 +299,7 @@ Properties:
 
 ID | Type | Default value | Description
 --- | --- | --- | ---
-value | string | *-* | Checkbox field value (generally used whith "sync" flag)
+value | string | *-* | Checkbox field value (generally used with "sync" flag)
 title | string | *-* | Translation key of the checkbox title (Text of the checkbox option)
 label | string | *-* | Translation key of the checkbox form label
 helpMessage | string | *-* | Optional translation key for tooltip help message
@@ -320,7 +322,7 @@ This component is based on [vue-treeselect](https://vue-treeselect.js.org/) comp
 
 Options are represented by node, see [vue-treeselect documentation](https://vue-treeselect.js.org/#node) for more information.
 
-This component support different options loading mechanisms :
+This component supports different options loading mechanisms :
 
 - options: Directly define fixed array of options (see UserForm language selection for an example)
 - optionsLoadingMethod: Asyncronously load options from a webservice when component is loaded (see ExperimentForm1 species selection for an example)
@@ -360,10 +362,10 @@ Properties:
 
 ID | Type | Default value | Description
 --- | --- | --- | ---
-uri | string | *-* | URI value (generally used whith "sync" flag)
+uri | string | *-* | URI value (generally used with "sync" flag)
 editMode | boolean | *false* | Flag to determine if URI field is displayed for creation (possibility to be changed) or edition (simply display disabled input with URI value)
 label | string | *-* | Translation key of the checkbox form label
-uriGenerated | boolean | *-* | Flag to determine if URI value must be generated or is user defined (generally used whith "sync" flag)
+uriGenerated | boolean | *-* | Flag to determine if URI value must be generated or is user defined (generally used with "sync" flag)
 
 ### Type form field
 
@@ -377,7 +379,7 @@ Properties:
 
 ID | Type | Default value | Description
 --- | --- | --- | ---
-type | string | *-* | Ontology selected type URI value (generally used whith "sync" flag)
+type | string | *-* | Ontology selected type URI value (generally used with "sync" flag)
 baseType | string | *-* | Ontology type URI to get all subclasses options
 placeholder | string | *-* | Optional translation key for type placeholder
 disabled | boolean | *false* | Flag to determine if form field is disabled or not
@@ -433,7 +435,7 @@ Inherited properties of [Generic form field](#generic-form-field)
 
 ID | Type | Default value | Description
 --- | --- | --- | ---
-file | File | *-* | file value (generally used whith "sync" flag)
+file | File | *-* | file value (generally used with "sync" flag)
 
 * In template :
   
@@ -442,6 +444,39 @@ file | File | *-* | file value (generally used whith "sync" flag)
       :required="true"
       :file.sync="form.file"
       label="data-analysis.application.file"
+   ></opensilex-FileInputForm>
+```
+
+### Tags input form field 
+
+Identifier: **opensilex-TagInputForm**
+
+Description:
+
+Component used to display a form tags input field.
+
+Properties:
+
+Inherited properties of [Generic form field](#generic-form-field)
+
+ID | Type | Default value | Description
+--- | --- | --- | ---
+value | Array[String] | *-* | Input field value (generally used with "sync" flag)
+label | string | *-* | Translation key of the input form label
+helpMessage | string | *-* | Optional translation key for tooltip help message
+placeholder | string | *-* | Optional translation key for input placeholder
+disabled | boolean | *false* | Flag to determine if form field is disabled or not
+required | boolean | *false* | Flag to determine if form field is required
+variant | string | - | [Bootstrap color variant](https://getbootstrap.com/docs/4.1/components/buttons/)
+
+* In template :
+  
+```html
+   <opensilex-TagInputForm
+      :value.sync="form.tags"
+      label="Form.tags"
+      helpMessage="Form.tags-help"
+      variant="primary"
    ></opensilex-FileInputForm>
 ```
 
@@ -455,7 +490,7 @@ Description:
 
 Component used to display a validated form component in a modal box for creation and update.
 
-Form component should implements the following properties:
+Form component should implement the following properties:
 - editMode: boolean flag to define if form is displayed in create or update mode
 - form: syncronized form object
 
@@ -464,8 +499,8 @@ Form component must implements the following methods:
 - reset: Method reseting form component values before modal display (for both creation and update)
 
 Form component could also implements the following methods:
-- create: Method taking "form" object as parameter to realize action when form is validated and edit mode is false
-- update: Method taking "form" object as parameter to realize action when form is validated and edit mode is true
+- create: Method taking "form" object as parameter to realize an action when form is validated and edit mode is false
+- update: Method taking "form" object as parameter to realize an action when form is validated and edit mode is true
 
 If these methods are not defined "createAction" and/or "updateAction" properties must be defined.
 
@@ -496,11 +531,11 @@ Identifier: **opensilex-WizardForm**
 
 Description: 
 
-Component used to display a multi-steps wizard forms components in a modal box for creation and update.
+Component used to display a multi-steps wizard form components in a modal box for creation and update.
 
-Each form step component should implements the following properties:
+Each form step component should implement the following properties:
 - editMode: boolean flag to define if form is displayed in create or update mode
-- form: syncronized form object
+- form: synchronized form object
 
 Form component could implements the following methods:
 - reset: Method reseting form step component values before modal display (for both creation and update)
@@ -535,11 +570,11 @@ Identifier: **opensilex-UriLink**
 
 Description:
 
-Component used to display a value identifier (uri or other). It allows  user to copy the uri linked to his identifier in this clipboard.
+Component used to display a value identifier (uri or other). It allows the user to copy the uri linked to his identifier in this clipboard.
 
 Interaction:  
 
-On mouse hover clickable link appears.
+The clickable link appears by mouse hovering.
 
 Properties:
 

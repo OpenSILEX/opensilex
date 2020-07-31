@@ -202,7 +202,7 @@
     import VueI18n from 'vue-i18n';
     import { BDropdown } from 'bootstrap-vue';
     import { 
-        GermplasmGetDTO,
+        GermplasmGetAllDTO,
         ProjectCreationDTO, 
         SpeciesDTO, 
         ExperimentGetDTO, 
@@ -464,7 +464,7 @@
             return null;
         }
 
-        germplasmGetDTOToSelectNode(dto: GermplasmGetDTO) {
+        germplasmGetDTOToSelectNode(dto: GermplasmGetAllDTO) {
             if(dto) {
                 return {
                     id: dto.uri,

@@ -33,7 +33,7 @@
           @deselect="deselect"
           @select="select"
           @input="clearIfNeeded"
-          @close="field.validator && field.validator.validate()"
+          @close="close(field)"
           @updade="setCurrentSelectedNodes($event)"
           :noResultsText="$t(noResultsText)"
           :searchPromptText="$t('component.common.search-prompt-text')"
@@ -53,7 +53,7 @@
           @deselect="deselect"
           @select="select"
           @input="clearIfNeeded"
-          @close="field.validator && field.validator.validate()"
+          @close="close(field)"
           :noResultsText="$t(noResultsText)"
           :searchPromptText="$t('component.common.search-prompt-text')"
         ></treeselect>
@@ -290,6 +290,12 @@ export default class SelectForm extends Vue {
       this.selection = null;
     }
     this.$emit("deselect", value);
+  }
+
+  close(field){
+      if (field.validator) {
+          this.$nextTick(() => field.validator.validate());
+      }
   }
 
   clearIfNeeded(values) {

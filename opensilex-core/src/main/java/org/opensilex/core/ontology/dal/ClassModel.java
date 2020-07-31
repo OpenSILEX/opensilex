@@ -25,7 +25,7 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
         resource = "Class",
         ignoreValidation = true
 )
-public class ClassModel<T extends ClassModel> extends SPARQLTreeModel<T> {
+public class ClassModel extends SPARQLTreeModel<ClassModel> {
 
     @SPARQLIgnore()
     protected String name;
@@ -55,9 +55,9 @@ public class ClassModel<T extends ClassModel> extends SPARQLTreeModel<T> {
     )
     protected ClassModel parent;
 
-    protected Map<URI, PropertyModel> datatypeProperties;
+    protected Map<URI, DatatypePropertyModel> datatypeProperties;
 
-    protected Map<URI, PropertyModel> objectProperties;
+    protected Map<URI, ObjectPropertyModel> objectProperties;
 
     protected Map<URI, OwlRestrictionModel> restrictions;
 
@@ -87,19 +87,19 @@ public class ClassModel<T extends ClassModel> extends SPARQLTreeModel<T> {
         this.comment = comment;
     }
 
-    public Map<URI, PropertyModel> getDatatypeProperties() {
+    public Map<URI, DatatypePropertyModel> getDatatypeProperties() {
         return datatypeProperties;
     }
 
-    public void setDatatypeProperties(Map<URI, PropertyModel> datatypeProperties) {
+    public void setDatatypeProperties(Map<URI, DatatypePropertyModel> datatypeProperties) {
         this.datatypeProperties = datatypeProperties;
     }
 
-    public Map<URI, PropertyModel> getObjectProperties() {
+    public Map<URI, ObjectPropertyModel> getObjectProperties() {
         return objectProperties;
     }
 
-    public void setObjectProperties(Map<URI, PropertyModel> objectProperties) {
+    public void setObjectProperties(Map<URI, ObjectPropertyModel> objectProperties) {
         this.objectProperties = objectProperties;
     }
 

@@ -8,6 +8,7 @@ package org.opensilex.core.ontology.api;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OwlRestrictionModel;
 import org.opensilex.core.ontology.dal.PropertyModel;
@@ -18,13 +19,17 @@ import org.opensilex.core.ontology.dal.PropertyModel;
  */
 public class RDFClassDTO {
 
-    private URI uri;
+    protected URI uri;
 
-    private String label;
+    protected String label;
 
-    private String comment;
+    protected String comment;
 
-    private URI parent;
+    protected Map<String, String> labelTranslations;
+
+    protected Map<String, String> commentTranslations;
+
+    protected URI parent;
 
     protected List<RDFClassPropertyDTO> properties;
 
@@ -52,6 +57,22 @@ public class RDFClassDTO {
         this.comment = comment;
     }
 
+    public Map<String, String> getLabelTranslations() {
+        return labelTranslations;
+    }
+
+    public void setLabelTranslations(Map<String, String> labelTranslations) {
+        this.labelTranslations = labelTranslations;
+    }
+
+    public Map<String, String> getCommentTranslations() {
+        return commentTranslations;
+    }
+
+    public void setCommentTranslations(Map<String, String> commentTranslations) {
+        this.commentTranslations = commentTranslations;
+    }
+
     public URI getParent() {
         return parent;
     }
@@ -68,7 +89,7 @@ public class RDFClassDTO {
         this.properties = properties;
     }
 
-    public static RDFClassDTO fromModel(RDFClassDTO dto, ClassModel<?> model) {
+    public static RDFClassDTO fromModel(RDFClassDTO dto, ClassModel model) {
         dto.setUri(model.getUri());
         dto.setLabel(model.getName());
         if (model.getComment() != null) {

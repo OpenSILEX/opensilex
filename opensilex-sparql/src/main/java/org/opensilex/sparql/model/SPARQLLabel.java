@@ -19,11 +19,11 @@ public class SPARQLLabel {
     private String defaultLang;
     
     private Map<String, String> translations;
-
+    
     public SPARQLLabel() {
         translations = new HashMap<>();
     }
-
+    
     public SPARQLLabel(String value, String lang) {
         this();
         setDefaultValue(value);
@@ -33,11 +33,11 @@ public class SPARQLLabel {
     public String getDefaultValue() {
         return defaultValue;
     }
-
+    
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
     }
-
+    
     public String getDefaultLang() {
         return defaultLang;
     }
@@ -45,11 +45,11 @@ public class SPARQLLabel {
     public void setDefaultLang(String defaultLang) {
         this.defaultLang = defaultLang;
     }
-
+    
     public Map<String, String> getTranslations() {
         return translations;
     }
-
+    
     public void setTranslations(Map<String, String> translations) {
         this.translations = translations;
     }
@@ -64,11 +64,14 @@ public class SPARQLLabel {
     public void addTranslation(String value, String lang) {
         translations.put(lang, value);
     }
-
+    
+    public void addAllTranslations(Map<String, String> labelTranslations) {
+        translations.putAll(labelTranslations);
+    }
+    
     @Override
     public String toString() {
         return defaultValue;
     }
-    
     
 }

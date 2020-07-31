@@ -13,9 +13,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
@@ -93,7 +91,7 @@ public class OntologyAPI {
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
-        ClassModel classDescription = dao.getClassModel(rdfType, ClassModel.class, currentUser.getLanguage());
+        ClassModel classDescription = dao.getClassModel(rdfType, currentUser.getLanguage());
 
         return new SingleObjectResponse<>(RDFClassDTO.fromModel(new RDFClassDTO(), classDescription)).getResponse();
     }
@@ -114,7 +112,7 @@ public class OntologyAPI {
 
         List<RDFClassDTO> classes = new ArrayList<>(rdfTypes.size());
         for (URI rdfType : rdfTypes) {
-            ClassModel classDescription = dao.getClassModel(rdfType, ClassModel.class, currentUser.getLanguage());
+            ClassModel classDescription = dao.getClassModel(rdfType, currentUser.getLanguage());
             classes.add(RDFClassDTO.fromModel(new RDFClassDTO(), classDescription));
         }
 

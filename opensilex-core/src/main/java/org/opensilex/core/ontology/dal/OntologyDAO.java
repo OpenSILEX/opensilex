@@ -33,6 +33,7 @@ import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.model.SPARQLTreeModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
@@ -56,7 +57,7 @@ public final class OntologyDAO {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(OntologyDAO.class);
 
-    public <T extends ClassModel<T>> SPARQLTreeListModel<T> searchSubClasses(URI parent, Class<T> clazz, UserModel user, boolean excludeRoot, Consumer<T> handler) throws Exception {
+    public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchSubClasses(URI parent, Class<T> clazz, UserModel user, boolean excludeRoot, Consumer<T> handler) throws Exception {
         SPARQLTreeListModel<T> classTree = sparql.searchResourceTree(
                 clazz,
                 user.getLanguage(),
@@ -109,8 +110,8 @@ public final class OntologyDAO {
 
     }
 
-    public <T extends ClassModel> T getClassModel(URI rdfClass, Class<T> clazz, String lang) throws Exception {
-        T model = sparql.getByURI(clazz,
+    public ClassModel getClassModel(URI rdfClass, String lang) throws Exception {
+        ClassModel model = sparql.getByURI(ClassModel.class,
                 rdfClass, lang);
 
         if (model == null) {
@@ -144,7 +145,7 @@ public final class OntologyDAO {
                     datatypePropertiesURI.put(propertyURI, restriction.getOnDataRange());
                 }
             } else if (restriction.getOnClass() != null) {
-                if (sparql.uriExists(clazz,
+                if (sparql.uriExists(ClassModel.class,
                         restriction.getOnClass())) {
                     objectPropertiesURI.put(propertyURI, restriction.getOnClass());
                 }
@@ -152,7 +153,7 @@ public final class OntologyDAO {
                 URI someValueFrom = restriction.getSomeValuesFrom();
                 if (SPARQLDeserializers.existsForDatatype(someValueFrom)) {
                     datatypePropertiesURI.put(propertyURI, someValueFrom);
-                } else if (sparql.uriExists(clazz,
+                } else if (sparql.uriExists(ClassModel.class,
                         someValueFrom)) {
                     objectPropertiesURI.put(propertyURI, someValueFrom);
                 }
@@ -161,7 +162,7 @@ public final class OntologyDAO {
 
         model.setRestrictions(mergedRestrictions);
 
-        Map<URI, PropertyModel> dataPropertiesMap = new HashMap<>();
+        Map<URI, DatatypePropertyModel> dataPropertiesMap = new HashMap<>();
         List<DatatypePropertyModel> dataPropertiesList = sparql.getListByURIs(DatatypePropertyModel.class,
                 datatypePropertiesURI.keySet(), lang);
 
@@ -173,7 +174,7 @@ public final class OntologyDAO {
         });
         model.setDatatypeProperties(dataPropertiesMap);
 
-        Map<URI, PropertyModel> objectPropertiesMap = new HashMap<>();
+        Map<URI, ObjectPropertyModel> objectPropertiesMap = new HashMap<>();
         List<ObjectPropertyModel> objectPropertiesList = sparql.getListByURIs(ObjectPropertyModel.class, objectPropertiesURI.keySet(), lang);
 
         MapUtils.populateMap(objectPropertiesMap, objectPropertiesList, (pModel) -> {
@@ -191,7 +192,7 @@ public final class OntologyDAO {
     public CSVValidationModel validateCSV(URI graph, URI rdfType, File file, UserModel currentUser, Map<Property, BiConsumer<CSVCell, CSVValidationModel>> customValidators, URIGenerator<String> uriGenerator) throws Exception {
         Map<URI, OwlRestrictionModel> restrictionsByID = new HashMap<>();
 
-        ClassModel<?> model = getClassModel(rdfType, ClassModel.class, currentUser.getLanguage());
+        ClassModel model = getClassModel(rdfType, currentUser.getLanguage());
 
         model.getRestrictions().values().forEach(restriction -> {
             URI propertyURI = restriction.getOnProperty();
@@ -424,7 +425,7 @@ public final class OntologyDAO {
 
     public boolean validateObjectValue(
             URI graph,
-            ClassModel<?> model,
+            ClassModel model,
             URI propertyURI,
             String value,
             SPARQLResourceModel object
@@ -464,11 +465,6 @@ public final class OntologyDAO {
         }
 
         return false;
-    }
-
-    public void createClass(ClassModel<?> model, Class<? extends ClassModel<?>> clazz) throws Exception {
-        sparql.create(model);
-
     }
 
     public List<PropertyModel> searchDomainProperties(URI rootDomain, URI childDomain, String lang) throws Exception {

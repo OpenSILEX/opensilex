@@ -5,6 +5,7 @@
  */
 package org.opensilex.front.vueOwlExtension.dal;
 
+import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -19,5 +20,14 @@ public class VueOwlExtensionDAO {
         this.sparql = sparql;
     }
 
-    
+    public void createExtendedClass(ClassModel instance, VueClassExtensionModel instanceExtension) throws Exception {
+        try {
+            sparql.startTransaction();
+            sparql.create(instance);
+            sparql.create(instanceExtension);
+            sparql.commitTransaction();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction(ex);
+        }
+    }
 }

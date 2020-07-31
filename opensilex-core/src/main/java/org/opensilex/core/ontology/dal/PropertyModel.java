@@ -24,7 +24,7 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
         resource = "Property",
         ignoreValidation = true
 )
-public abstract class PropertyModel extends SPARQLTreeModel<PropertyModel> {
+public class PropertyModel extends SPARQLTreeModel<PropertyModel> {
 
     @SPARQLIgnore()
     protected String name;

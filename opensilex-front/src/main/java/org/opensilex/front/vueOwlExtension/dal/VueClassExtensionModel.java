@@ -5,6 +5,7 @@
  */
 package org.opensilex.front.vueOwlExtension.dal;
 
+import java.util.List;
 import org.opensilex.front.vueOwlExtension.VueOwlExtension;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -34,6 +35,13 @@ public class VueClassExtensionModel extends SPARQLResourceModel {
     )
     protected String icon;
 
+    @SPARQLProperty(
+            ontology = VueOwlExtension.class,
+            property = "fromOwlClass",
+            inverse = true
+    )
+    protected List<VueClassPropertyExtensionModel> properties;
+
     public Boolean getIsAbstractClass() {
         return isAbstractClass;
     }
@@ -50,4 +58,13 @@ public class VueClassExtensionModel extends SPARQLResourceModel {
         this.icon = icon;
     }
 
+    public List<VueClassPropertyExtensionModel> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(List<VueClassPropertyExtensionModel> properties) {
+        this.properties = properties;
+    }
+
+    
 }

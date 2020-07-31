@@ -3,6 +3,7 @@
     :label="label"
     :selected.sync="speciesURI"
     :multiple="multiple"
+    :required="required"
     :optionsLoadingMethod="loadSpecies"
     :conversionMethod="speciesToSelectNode"
     :placeholder="placeholder"
@@ -39,6 +40,9 @@ export default class SpeciesSelector extends Vue {
     default: "component.experiment.form.placeholder.species"
   })
   placeholder;
+
+  @Prop()
+  required;
 
   @Prop()
   multiple;

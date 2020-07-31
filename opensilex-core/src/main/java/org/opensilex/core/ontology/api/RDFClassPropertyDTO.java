@@ -5,9 +5,14 @@
  */
 package org.opensilex.core.ontology.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.net.URI;
+import java.util.Map;
+import org.opensilex.core.ontology.dal.DatatypePropertyModel;
+import org.opensilex.core.ontology.dal.ObjectPropertyModel;
 import org.opensilex.core.ontology.dal.OwlRestrictionModel;
 import org.opensilex.core.ontology.dal.PropertyModel;
+import org.opensilex.sparql.model.SPARQLLabel;
 
 /**
  *
@@ -15,25 +20,31 @@ import org.opensilex.core.ontology.dal.PropertyModel;
  */
 public class RDFClassPropertyDTO {
 
-    URI uri;
+    protected URI uri;
 
-    String label;
+    protected String label;
 
-    String comment;
+    protected String comment;
 
-    boolean literal;
+    protected Map<String, String> labelTranslations;
 
-    boolean list;
+    protected Map<String, String> commentTranslations;
 
-    boolean required;
+    protected URI parent;
 
-    URI typeRestriction;
+    protected boolean literal;
 
-    Integer minCardinality;
+    protected boolean list;
 
-    Integer maxCardinality;
+    protected boolean required;
 
-    Integer cardinality;
+    protected URI typeRestriction;
+
+    protected Integer minCardinality;
+
+    protected Integer maxCardinality;
+
+    protected Integer cardinality;
 
     public URI getUri() {
         return uri;
@@ -57,6 +68,30 @@ public class RDFClassPropertyDTO {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public Map<String, String> getLabelTranslations() {
+        return labelTranslations;
+    }
+
+    public void setLabelTranslations(Map<String, String> labelTranslations) {
+        this.labelTranslations = labelTranslations;
+    }
+
+    public Map<String, String> getCommentTranslations() {
+        return commentTranslations;
+    }
+
+    public void setCommentTranslations(Map<String, String> commentTranslations) {
+        this.commentTranslations = commentTranslations;
+    }
+
+    public URI getParent() {
+        return parent;
+    }
+
+    public void setParent(URI parent) {
+        this.parent = parent;
     }
 
     public boolean isLiteral() {
@@ -133,6 +168,63 @@ public class RDFClassPropertyDTO {
         dto.setCardinality(restriction.getCardinality());
 
         return dto;
+    }
+
+    public DatatypePropertyModel getDatatypePropertyModel(String lang) {
+        DatatypePropertyModel property = new DatatypePropertyModel();
+        getPropertyModel(property, new DatatypePropertyModel(), lang);
+        return property;
+    }
+
+    public ObjectPropertyModel getObjectPropertyModel(String lang) {
+        ObjectPropertyModel property = new ObjectPropertyModel();
+        getPropertyModel(property, new DatatypePropertyModel(), lang);
+        return property;
+    }
+
+    @JsonIgnore
+    public OwlRestrictionModel getOwlRestriction() {
+        OwlRestrictionModel restriction = new OwlRestrictionModel();
+
+        restriction.setOnProperty(getUri());
+
+        if (isList()) {
+            if (isRequired()) {
+                restriction.setMinCardinality(1);
+            } else {
+                restriction.setMinCardinality(0);
+            }
+        } else {
+            if (isRequired()) {
+                restriction.setCardinality(1);
+            } else {
+                restriction.setMaxCardinality(1);
+                restriction.setMinCardinality(0);
+            }
+        }
+
+        if (isLiteral()) {
+            restriction.setOnDataRange(getTypeRestriction());
+        } else {
+            restriction.setOnClass(getTypeRestriction());
+        }
+
+        return restriction;
+    }
+
+    private void getPropertyModel(PropertyModel property, PropertyModel parentModel, String lang) {
+        property.setUri(getUri());
+
+        SPARQLLabel sparqlLabel = new SPARQLLabel(getLabel(), lang);
+        sparqlLabel.addAllTranslations(getLabelTranslations());
+        property.setLabel(sparqlLabel);
+
+        SPARQLLabel sparqlComment = new SPARQLLabel(getComment(), lang);
+        sparqlComment.addAllTranslations(getCommentTranslations());
+        property.setComment(sparqlComment);
+
+        parentModel.setUri(getParent());
+        property.setParent(parentModel);
     }
 
 }

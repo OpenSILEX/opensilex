@@ -17,10 +17,9 @@ import org.opensilex.core.ontology.Oeso;
 public enum VueDatatypeComponents {
     BOOLEAN(XSDDatatype.XSDboolean.getURI(), "opensilex-XSDBooleanInput", "opensilex-XSDBooleanView", "datatypes.boolean"),
     NUMBER(new String[]{
+        XSDDatatype.XSDinteger.getURI(),
         XSDDatatype.XSDbyte.getURI(),
         XSDDatatype.XSDunsignedByte.getURI(),
-        XSDDatatype.XSDinteger.getURI(),
-        XSDDatatype.XSDinteger.getURI(),
         XSDDatatype.XSDint.getURI(),
         XSDDatatype.XSDunsignedInt.getURI(),
         XSDDatatype.XSDnegativeInteger.getURI(),
@@ -44,8 +43,8 @@ public enum VueDatatypeComponents {
 
     }, "opensilex-XSDDecimalInput", "opensilex-XSDRawView", "datatypes.decimal"),
     STRING(XSDDatatype.XSDstring.getURI(), "opensilex-XSDStringInput", "opensilex-XSDRawView", "datatypes.string"),
-    LONGSTRING(XSDDatatype.XSDstring.getURI(), "opensilex-XSDLongStringInput", "opensilex-XSDRawView", "datatypes.longstring"),
-    URI(Oeso.longString.getURI(), "opensilex-XSDUriInput", "opensilex-XSDUriView", "datatypes.uri");
+    LONGSTRING(Oeso.longString.getURI(), "opensilex-XSDLongStringInput", "opensilex-XSDRawView", "datatypes.longstring"),
+    URI(XSDDatatype.XSDanyURI.getURI(), "opensilex-XSDUriInput", "opensilex-XSDUriView", "datatypes.uri");
 
     VueDatatypeComponents(String uri, String intputComponent, String viewComponent, String label) {
         this(new String[]{uri}, intputComponent, viewComponent, label);
@@ -80,6 +79,10 @@ public enum VueDatatypeComponents {
 
     public String getLabel() {
         return label;
+    }
+    
+    public String getMainURI() {
+        return uris[0];
     }
 
     private final static Map<String, VueDatatypeComponents> datatypeComponentsMap = new HashMap<>(VueDatatypeComponents.values().length);

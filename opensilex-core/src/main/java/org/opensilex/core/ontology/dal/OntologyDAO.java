@@ -17,12 +17,11 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.user.dal.UserModel;
@@ -34,7 +33,6 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
@@ -77,24 +75,6 @@ public final class OntologyDAO {
         }
 
         return classTree;
-    }
-
-    public SPARQLTreeListModel<PropertyModel> searchSubProperties(URI parent, UserModel user, boolean excludeRoot) throws Exception {
-        return sparql.searchResourceTree(
-                PropertyModel.class,
-                user.getLanguage(),
-                parent,
-                excludeRoot,
-                (SelectBuilder select) -> {
-                    Node parentNode = SPARQLDeserializers.nodeURI(parent);
-                    if (parentNode
-                    != null) {
-                        Var parentVar = makeVar(PropertyModel.PARENT_FIELD);
-                        select.addWhere(parentVar, Ontology.subClassAny, parentNode);
-                        select.addWhere(makeVar(PropertyModel.URI_FIELD), RDFS.subClassOf, parentVar);
-                    }
-                }
-        );
     }
 
     public List<OwlRestrictionModel> getOwlRestrictions(URI rdfClass, String lang) throws Exception {
@@ -167,8 +147,6 @@ public final class OntologyDAO {
                 datatypePropertiesURI.keySet(), lang);
 
         MapUtils.populateMap(dataPropertiesMap, dataPropertiesList, (pModel) -> {
-            pModel.setIsDatatypeProperty(true);
-            pModel.setIsObjectProperty(false);
             pModel.setTypeRestriction(datatypePropertiesURI.get(pModel.getUri()));
             return pModel.getUri();
         });
@@ -178,9 +156,6 @@ public final class OntologyDAO {
         List<ObjectPropertyModel> objectPropertiesList = sparql.getListByURIs(ObjectPropertyModel.class, objectPropertiesURI.keySet(), lang);
 
         MapUtils.populateMap(objectPropertiesMap, objectPropertiesList, (pModel) -> {
-            pModel.setIsDatatypeProperty(false);
-            pModel.setIsObjectProperty(true);
-            pModel.setTypeRestriction(objectPropertiesURI.get(pModel.getUri()));
             pModel.setTypeRestriction(objectPropertiesURI.get(pModel.getUri()));
             return pModel.getUri();
         });
@@ -467,39 +442,42 @@ public final class OntologyDAO {
         return false;
     }
 
-    public List<PropertyModel> searchDomainProperties(URI rootDomain, URI childDomain, String lang) throws Exception {
-        List<DatatypePropertyModel> datatypeProperties = sparql.search(DatatypePropertyModel.class, lang, (select) -> {
-            OntologyDAO.addPropertyDomainFilter(select, rootDomain, childDomain);
-        });
-
-        List<ObjectPropertyModel> objectProperties = sparql.search(ObjectPropertyModel.class, lang, (select) -> {
-            OntologyDAO.addPropertyDomainFilter(select, rootDomain, childDomain);
-        });
-
-        List<PropertyModel> properties = new ArrayList<>(datatypeProperties.size() + objectProperties.size());
-
-        properties.addAll(datatypeProperties);
-        properties.addAll(objectProperties);
-
-        return properties;
+    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(UserModel user) throws Exception {
+        URI dataPropertiesParent = new URI(OWL2.topDataProperty.getURI());
+        return sparql.searchResourceTree(
+                DatatypePropertyModel.class,
+                user.getLanguage(),
+                dataPropertiesParent,
+                false,
+                (SelectBuilder select) -> {
+                    Node parentNode = SPARQLDeserializers.nodeURI(dataPropertiesParent);
+                    if (parentNode
+                    != null) {
+                        Var parentVar = makeVar(DatatypePropertyModel.PARENT_FIELD);
+                        select.addWhere(parentVar, Ontology.subClassAny, parentNode);
+                        select.addWhere(makeVar(DatatypePropertyModel.URI_FIELD), RDFS.subClassOf, parentVar);
+                    }
+                }
+        );
     }
 
-    private static void addPropertyDomainFilter(SelectBuilder select, URI rootDomain, URI childDomain) {
-        Var uriVar = makeVar(PropertyModel.URI_FIELD);
-        Var domainFilterVar = makeVar("domainFilter");
-        ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
-        Node rootDomainNode = SPARQLDeserializers.nodeURI(rootDomain);
-
-        if (childDomain == null || childDomain.equals(rootDomain)) {
-            select.addFilter(SPARQLQueryHelper.eq(PropertyModel.DOMAIN_FIELD, rootDomainNode));
-        } else {
-            Node childDomainNode = SPARQLDeserializers.nodeURI(childDomain);
-            WhereBuilder subClassFilter = new WhereBuilder();
-            subClassFilter.addWhere(uriVar, RDFS.domain, domainFilterVar);
-            subClassFilter.addWhere(domainFilterVar, Ontology.subClassAny, rootDomainNode);
-            subClassFilter.addWhere(childDomainNode, Ontology.subClassAny, domainFilterVar);
-            select.addFilter(exprFactory.exists(subClassFilter));
-        }
+    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(UserModel user) throws Exception {
+        URI objectPropertiesParent = new URI(OWL2.topObjectProperty.getURI());
+        return sparql.searchResourceTree(
+                ObjectPropertyModel.class,
+                user.getLanguage(),
+                objectPropertiesParent,
+                false,
+                (SelectBuilder select) -> {
+                    Node parentNode = SPARQLDeserializers.nodeURI(objectPropertiesParent);
+                    if (parentNode
+                    != null) {
+                        Var parentVar = makeVar(ObjectPropertyModel.PARENT_FIELD);
+                        select.addWhere(parentVar, Ontology.subClassAny, parentNode);
+                        select.addWhere(makeVar(ObjectPropertyModel.URI_FIELD), RDFS.subClassOf, parentVar);
+                    }
+                }
+        );
     }
 
 }

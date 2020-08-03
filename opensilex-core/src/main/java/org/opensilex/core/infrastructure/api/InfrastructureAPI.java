@@ -174,7 +174,7 @@ public class InfrastructureAPI {
         SPARQLTreeListModel<InfrastructureModel> tree = dao.searchTree(pattern, infraURIs, currentUser);
 
         boolean enableSelection = (pattern != null && !pattern.isEmpty());
-        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree, enableSelection)).getResponse();
+        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(enableSelection, tree)).getResponse();
     }
 
     @PUT

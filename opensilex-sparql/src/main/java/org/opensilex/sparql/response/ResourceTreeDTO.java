@@ -22,7 +22,7 @@ public class ResourceTreeDTO extends NamedResourceDTO {
     private URI parent;
 
     private boolean selected;
-    
+
     private boolean disabled;
 
     private List<ResourceTreeDTO> children;
@@ -58,26 +58,29 @@ public class ResourceTreeDTO extends NamedResourceDTO {
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
     }
-    
-    public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(SPARQLTreeListModel<T> tree) {
-        return fromResourceTree(tree, null);
+
+    public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(SPARQLTreeListModel<T>... trees) {
+        return fromResourceTree(null, trees);
     }
 
-    public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(SPARQLTreeListModel<T> tree, BiConsumer<T, ResourceTreeDTO> handler) {
-        return fromResourceTree(tree, false, handler);
+    public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(BiConsumer<T, ResourceTreeDTO> handler, SPARQLTreeListModel<T>... trees) {
+        return fromResourceTree(false, handler, trees);
     }
 
-    public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(SPARQLTreeListModel<T> tree, boolean enableSelection) {
-        return fromResourceTree(tree, enableSelection, null);
+    public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(boolean enableSelection, SPARQLTreeListModel<T>... trees) {
+        return fromResourceTree(enableSelection, null, trees);
     }
 
-    public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(SPARQLTreeListModel<T> tree, boolean enableSelection, BiConsumer<T, ResourceTreeDTO> handler) {
-        List<ResourceTreeDTO> list = new ArrayList<>(tree.getRootsCount());
+    public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(boolean enableSelection, BiConsumer<T, ResourceTreeDTO> handler, SPARQLTreeListModel<T>... trees) {
+        List<ResourceTreeDTO> list = new ArrayList<>();
 
-        tree.listRoots(root -> {
-            ResourceTreeDTO rootDto = fromResourceTreeRecursive(root, tree, enableSelection, handler);
-            list.add(rootDto);
-        });
+        for (SPARQLTreeListModel<T> tree : trees) {
+
+            tree.listRoots(root -> {
+                ResourceTreeDTO rootDto = fromResourceTreeRecursive(root, tree, enableSelection, handler);
+                list.add(rootDto);
+            });
+        }
 
         return list;
     }

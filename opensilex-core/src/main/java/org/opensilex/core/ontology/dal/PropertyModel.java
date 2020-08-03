@@ -6,132 +6,38 @@
 package org.opensilex.core.ontology.dal;
 
 import java.net.URI;
-import java.util.List;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.sparql.annotations.SPARQLIgnore;
-import org.opensilex.sparql.annotations.SPARQLProperty;
-import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.model.SPARQLTreeModel;
 
 /**
  *
  * @author vince
  */
-@SPARQLResource(
-        ontology = RDF.class,
-        resource = "Property",
-        ignoreValidation = true
-)
-public class PropertyModel extends SPARQLTreeModel<PropertyModel> {
+public interface PropertyModel {
 
-    @SPARQLIgnore()
-    protected String name;
+    public URI getUri();
 
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "label"
-    )
-    protected SPARQLLabel label;
-    public final static String LABEL_FIELD = "label";
+    public void setUri(URI uri);
 
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "comment"
-    )
-    protected SPARQLLabel comment;
+    public String getName();
 
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "subPropertyOf",
-            inverse = true
-    )
-    protected List<PropertyModel> children;
+    public void setLabel(SPARQLLabel label);
 
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "subPropertyOf"
-    )
-    protected PropertyModel parent;
+    public SPARQLLabel getLabel();
 
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "domain"
-    )
-    protected URI domain;
-    public final static String DOMAIN_FIELD = "domain";
+    public void setComment(SPARQLLabel comment);
 
-    protected URI typeRestriction;
+    public SPARQLLabel getComment();
 
-    protected boolean isDatatypeProperty;
+    public URI getDomain();
 
-    protected boolean isObjectProperty;
+    public void setDomain(URI domain);
 
-    @Override
-    public String getName() {
-        if (name != null) {
-            return name;
-        }
-        SPARQLLabel slabel = getLabel();
-        if (slabel != null) {
-            return getLabel().getDefaultValue();
-        } else {
-            return getUri().toString();
-        }
-    }
+    public URI getRange();
 
-    @Override
-    public void setName(String name) {
-        this.name = name;
-    }
+    public void setRange(URI range);
 
-    public SPARQLLabel getLabel() {
-        return label;
-    }
+    public URI getTypeRestriction();
 
-    public void setLabel(SPARQLLabel label) {
-        this.label = label;
-    }
-
-    public SPARQLLabel getComment() {
-        return comment;
-    }
-
-    public void setComment(SPARQLLabel comment) {
-        this.comment = comment;
-    }
-
-    public URI getDomain() {
-        return domain;
-    }
-
-    public void setDomain(URI domain) {
-        this.domain = domain;
-    }
-
-    public URI getTypeRestriction() {
-        return typeRestriction;
-    }
-
-    public void setTypeRestriction(URI typeRestriction) {
-        this.typeRestriction = typeRestriction;
-    }
-
-    public boolean isIsDatatypeProperty() {
-        return isDatatypeProperty;
-    }
-
-    public void setIsDatatypeProperty(boolean isDatatypeProperty) {
-        this.isDatatypeProperty = isDatatypeProperty;
-    }
-
-    public boolean isIsObjectProperty() {
-        return isObjectProperty;
-    }
-
-    public void setIsObjectProperty(boolean isObjectProperty) {
-        this.isObjectProperty = isObjectProperty;
-    }
+    public void setTypeRestriction(URI typeRestriction);
 
 }

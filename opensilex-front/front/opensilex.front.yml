@@ -128,6 +128,11 @@ menu:
         route:
           path: /scientific-object-types
           component: opensilex-ScientificObjectTypes
+      - id: scientificObjectProperties
+        label: componenent.menu.scientificObjectProperties.label 
+        route:
+          path: /scientific-object-properties
+          component: opensilex-ScientificObjectProperties          
 routes:
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView

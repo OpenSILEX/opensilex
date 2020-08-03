@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -21,18 +23,19 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
+import org.opensilex.front.vueOwlExtension.dal.VueDatatypeComponents;
 import org.opensilex.front.vueOwlExtension.dal.VueOwlExtensionDAO;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 
@@ -100,58 +103,27 @@ public class VueOwlExtensionAPI {
         }
     }
 
-//    @GET
-//    @Path("/classes")
-//    @ApiOperation("Return classes models definitions with properties for a list of rdt types")
-//    @ApiProtected
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @ApiResponses(value = {
-//        @ApiResponse(code = 200, message = "Return classes models definitions", response = RDFClassDTO.class, responseContainer = "List")
-//    })
-//    public Response getClasses(
-//            @ApiParam(value = "RDF classes URI") @QueryParam("rdfType") @ValidURI List<URI> rdfTypes
-//    ) throws Exception {
-//        OntologyDAO dao = new OntologyDAO(sparql);
-//
-//        List<RDFClassDTO> classes = new ArrayList<>(rdfTypes.size());
-//        for (URI rdfType : rdfTypes) {
-//            ClassModel classDescription = dao.getClassModel(rdfType, ClassModel.class, currentUser.getLanguage());
-//            classes.add(RDFClassDTO.fromModel(new RDFClassDTO(), classDescription));
-//        }
-//
-//        return new PaginatedListResponse<>(classes).getResponse();
-//    }
-//
-//    @GET
-//    @Path("/class-properties")
-//    @ApiOperation("Return class properties model definition available for the given rdf type domain.")
-//    @ApiProtected
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @ApiResponses(value = {
-//        @ApiResponse(code = 200, message = "Return class properties model definition", response = RDFPropertyDTO.class, responseContainer = "List")
-//    })
-//    public Response getClassProperties(
-//            @ApiParam(value = "RDF root class URI") @QueryParam("rootClassDomain") @NotNull @ValidURI URI rootType,
-//            @ApiParam(value = "RDF child class URI") @QueryParam("childClassDomain") @ValidURI URI childType
-//    ) throws Exception {
-//        OntologyDAO dao = new OntologyDAO(sparql);
-//
-//        List<PropertyModel> properties = dao.searchDomainProperties(rootType, childType, currentUser.getLanguage());
-//
-//        List<RDFPropertyDTO> dtoList = new ArrayList<>(properties.size());
-//        properties.forEach(property -> {
-//            RDFPropertyDTO dto = new RDFPropertyDTO();
-//            dto.setUri(property.getUri());
-//            dto.setLabel(property.getName());
-//            if (property.getComment() != null) {
-//                dto.setComment(property.getComment().getDefaultValue());
-//            }
-//            dto.setDomain(property.getDomain());
-//            dtoList.add(dto);
-//        });
-//
-//        return new PaginatedListResponse<RDFPropertyDTO>(dtoList).getResponse();
-//    }
+    @GET
+    @Path("get-datatypes")
+    @ApiOperation("Return literal datatypes definition")
+    @ApiProtected()
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return literal datatypes definition ", response = VueDatatypeDTO.class, responseContainer = "List")
+    })
+    public Response getDatatypes() throws Exception {
+        List<VueDatatypeDTO> datatypeDTOs = new ArrayList<>();
+
+        for (VueDatatypeComponents datatype : VueDatatypeComponents.values()) {
+            VueDatatypeDTO dto = new VueDatatypeDTO();
+            dto.setUri(new URI(datatype.getMainURI()));
+            dto.setIntputComponent(datatype.getIntputComponent());
+            dto.setViewComponent(datatype.getViewComponent());
+            dto.setLabelKey(datatype.getLabel());
+            datatypeDTOs.add(dto);
+        }
+        return new PaginatedListResponse<VueDatatypeDTO>(datatypeDTOs).getResponse();
+    }
+
 }

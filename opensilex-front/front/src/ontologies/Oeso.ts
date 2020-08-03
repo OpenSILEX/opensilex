@@ -11,7 +11,7 @@ let ontologies = {
     HAS_EXPERIMENT_MODALITIES: OESO_URI + "#hasExperimentModalities",
     HAS_REPLICATION: OESO_URI + "#hasReplication",
     HAS_VARIETY: OESO_URI + "#hasVariety",
-    HAS_SPECIES: OESO_URI + "#hasSpecies"
+    HAS_SPECIES: OESO_URI + "#hasSpecies",
 };
 
 export default ontologies;

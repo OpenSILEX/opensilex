@@ -172,13 +172,19 @@ public class RDFClassPropertyDTO {
 
     public DatatypePropertyModel getDatatypePropertyModel(String lang) {
         DatatypePropertyModel property = new DatatypePropertyModel();
-        getPropertyModel(property, new DatatypePropertyModel(), lang);
+        getPropertyModel(property, lang);
+        DatatypePropertyModel parentModel = new DatatypePropertyModel();
+        parentModel.setUri(getParent());
+        property.setParent(parentModel);
         return property;
     }
 
     public ObjectPropertyModel getObjectPropertyModel(String lang) {
         ObjectPropertyModel property = new ObjectPropertyModel();
-        getPropertyModel(property, new DatatypePropertyModel(), lang);
+        getPropertyModel(property, lang);
+        ObjectPropertyModel parentModel = new ObjectPropertyModel();
+        parentModel.setUri(getParent());
+        property.setParent(parentModel);
         return property;
     }
 
@@ -212,7 +218,7 @@ public class RDFClassPropertyDTO {
         return restriction;
     }
 
-    private void getPropertyModel(PropertyModel property, PropertyModel parentModel, String lang) {
+    private void getPropertyModel(PropertyModel property, String lang) {
         property.setUri(getUri());
 
         SPARQLLabel sparqlLabel = new SPARQLLabel(getLabel(), lang);
@@ -222,9 +228,6 @@ public class RDFClassPropertyDTO {
         SPARQLLabel sparqlComment = new SPARQLLabel(getComment(), lang);
         sparqlComment.addAllTranslations(getCommentTranslations());
         property.setComment(sparqlComment);
-
-        parentModel.setUri(getParent());
-        property.setParent(parentModel);
     }
 
 }

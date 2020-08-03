@@ -5,8 +5,10 @@
 //******************************************************************************
 package org.opensilex.core.ontology;
 
+import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.opensilex.sparql.utils.Ontology;
 
 /**
@@ -37,6 +39,8 @@ public class Oeso {
      * Vocabulary namespace
      */
     public static final Resource NAMESPACE = Ontology.resource(NS);
+
+    public static final Property longString = Ontology.property(NS, "longString");
 
     // ---- COMMON PROPERTIES ----
     public static final Property startDate = Ontology.property(NS, "startDate");
@@ -128,7 +132,7 @@ public class Oeso {
     public static final Property hasProductionYear = Ontology.property(NS, "hasProductionYear");
     public static final Property hasGermplasm = Ontology.property(NS, "hasGermplasm");
     public static final Property hasId = Ontology.property(NS, "hasId");
-    
+
     // ---- SCIENTIFIC OBJECTS ----
     public static final Resource ScientificObject = Ontology.resource(NS, "ScientificObject");
     public static final Property isPartOf = Ontology.property(NS, "isPartOf");

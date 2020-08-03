@@ -8,6 +8,7 @@ package org.opensilex.front.vueOwlExtension.dal;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.opensilex.core.ontology.Oeso;
 
 /**
  *
@@ -43,7 +44,8 @@ public enum VueDatatypeComponents {
 
     }, "opensilex-XSDDecimalInput", "opensilex-XSDRawView", "datatypes.decimal"),
     STRING(XSDDatatype.XSDstring.getURI(), "opensilex-XSDStringInput", "opensilex-XSDRawView", "datatypes.string"),
-    URI(XSDDatatype.XSDanyURI.getURI(), "opensilex-XSDUriInput", "opensilex-XSDUriView", "datatypes.uri");
+    LONGSTRING(XSDDatatype.XSDstring.getURI(), "opensilex-XSDLongStringInput", "opensilex-XSDRawView", "datatypes.longstring"),
+    URI(Oeso.longString.getURI(), "opensilex-XSDUriInput", "opensilex-XSDUriView", "datatypes.uri");
 
     VueDatatypeComponents(String uri, String intputComponent, String viewComponent, String label) {
         this(new String[]{uri}, intputComponent, viewComponent, label);

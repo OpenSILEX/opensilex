@@ -76,16 +76,7 @@ public class SPARQLCommands extends AbstractOpenSilexCommand implements OpenSile
             sparql.enableSHACL();
         } catch (SPARQLValidationException ex) {
             System.out.println("Error while enable SHACL validation:");
-            Map<URI, Map<URI, List<URI>>> errors = ex.getValidationErrors();
-            errors.forEach((URI uri, Map<URI, List<URI>> error) -> {
-                System.out.println("--> " + uri + ":");
-                error.forEach((URI protpertyUri, List<URI> brokenConstraints) -> {
-                    System.out.println("    " + protpertyUri + ":");
-                    brokenConstraints.forEach(constraintURI -> {
-                        System.out.println("      " + constraintURI);
-                    });
-                });
-            });
+            System.out.println(ex.getMessage());
             sparql.disableSHACL();
         }
         factory.dispose(sparql);

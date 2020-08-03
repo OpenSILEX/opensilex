@@ -716,5 +716,15 @@
                 }
             }
         }
+    },
+    "datatypes": {
+        "boolean": "boolean",
+        "number": "integer number",
+        "date": "date",
+        "datetime": "date and time",
+        "decimal": "decimal number",
+        "string": "short string",
+        "longstring": "long string",
+        "uri": "uri"
     }
 }

@@ -104,16 +104,7 @@ public class SPARQLModule extends OpenSilexModule {
                     sparqlService.enableSHACL();
                 } catch (SPARQLValidationException ex) {
                     LOGGER.warn("Error while enable SHACL validation:");
-                    Map<URI, Map<URI, List<URI>>> errors = ex.getValidationErrors();
-                    errors.forEach((URI uri, Map<URI, List<URI>> error) -> {
-                        LOGGER.warn("--> " + uri + ":");
-                        error.forEach((URI protpertyUri, List<URI> brokenConstraints) -> {
-                            LOGGER.warn("    " + protpertyUri + ":");
-                            brokenConstraints.forEach(constraintURI -> {
-                                LOGGER.warn("      " + constraintURI);
-                            });
-                        });
-                    });
+                    LOGGER.warn(ex.getMessage());
                 }
             } else {
                 sparqlService.disableSHACL();

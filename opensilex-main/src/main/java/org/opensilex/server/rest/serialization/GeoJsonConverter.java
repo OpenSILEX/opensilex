@@ -30,35 +30,35 @@ import org.geojson.Point;
 @Provider
 @SwaggerDefinition
 public class GeoJsonConverter implements MessageBodyReader<GeoJsonObject>, MessageBodyWriter<GeoJsonObject>, ReaderListener {
-
+    
     @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return true;
     }
-
+    
     @Override
     public GeoJsonObject readFrom(Class<GeoJsonObject> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
         return ObjectMapperContextResolver.getObjectMapper().readValue(entityStream, type);
     }
-
+    
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return true;
     }
-
+    
     @Override
     public void writeTo(GeoJsonObject t, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
         ObjectMapperContextResolver.getObjectMapper().writeValue(entityStream, t);
     }
-
+    
     @Override
     public void beforeScan(Reader reader, Swagger swagger) {
     }
-
+    
     @Override
     public void afterScan(Reader reader, Swagger swagger) {
         ModelImpl geoJsonModel = new ModelImpl();
-
+        
         Map<PropertyBuilder.PropertyId, Object> typeProperties = new HashMap<>();
         typeProperties.put(PropertyBuilder.PropertyId.ENUM, Arrays.asList(
                 "Feature",
@@ -72,24 +72,24 @@ public class GeoJsonConverter implements MessageBodyReader<GeoJsonObject>, Messa
                 "GeometryCollection"
         ));
         typeProperties.put(PropertyBuilder.PropertyId.REQUIRED, true);
-
+        
         Property typeProperty = PropertyBuilder.build("string", null, typeProperties);
-
+        
         ArrayProperty bboxProperty = new ArrayProperty();
         bboxProperty.setItems(PropertyBuilder.build("number", "double", new HashMap<>()));
-
+        
         ArrayProperty coordinatesProperty = new ArrayProperty();
         coordinatesProperty.setItems(PropertyBuilder.build("number", "double", new HashMap<>()));
-
+        
         ObjectProperty geometryProperty = new ObjectProperty();
         geometryProperty.setType("GeoJsonObject");
-
+        
         ObjectProperty crsProperty = new ObjectProperty();
         crsProperty.setType("Crs");
-
+        
         Point geoJsonExample = new Point() {
             private final String type = "Point";
-
+            
             public String getType() {
                 return type;
             }
@@ -97,7 +97,7 @@ public class GeoJsonConverter implements MessageBodyReader<GeoJsonObject>, Messa
         geoJsonExample.setBbox(null);
         geoJsonExample.setCrs(null);
         geoJsonExample.setCoordinates(new LngLatAlt(43.618316, 3.856912));
-
+        
         geoJsonModel
                 .name("GeoJsonObject")
                 .type("object")
@@ -108,8 +108,11 @@ public class GeoJsonConverter implements MessageBodyReader<GeoJsonObject>, Messa
                 .property("coordinates", coordinatesProperty)
                 .property("geometry", geometryProperty)
                 .example(geoJsonExample);
-
+        
+        if (swagger.getDefinitions() == null) {
+            swagger.setDefinitions(new HashMap<>());
+        }
         swagger.getDefinitions().put("GeoJsonObject", geoJsonModel);
     }
-
+    
 }

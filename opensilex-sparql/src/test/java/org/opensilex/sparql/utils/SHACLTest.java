@@ -48,7 +48,7 @@ public abstract class SHACLTest extends AbstractUnitTest {
             sparql.loadOntology(sparqlModule.getSuffixedURI("data"), ontologyData, TEST_ONTOLOGY.SHACL_FAIL_FILE_FORMAT);
             throw new Exception("This ontology should fail to validate with SHACL");
         } catch (SPARQLValidationException ex) {
-            Map<URI, Map<URI, List<URI>>> errors = ex.getValidationErrors();
+            Map<URI, Map<URI, Map<URI, String>>> errors = ex.getValidationErrors();
             URI aURI = new URI("http://test.opensilex.org/a/002");
             URI bURI = new URI("http://test.opensilex.org/b/002");
             URI cURI = new URI("http://test.opensilex.org/c/002");
@@ -62,77 +62,77 @@ public abstract class SHACLTest extends AbstractUnitTest {
             URI classConstraintURI = new URI(SHACL.ClassConstraintComponent.getURI());
             URI uniqueLangConstraintURI = new URI(SHACL.UniqueLangConstraintComponent.getURI());
 
-            Map<URI, List<URI>> aErrors = errors.get(aURI);
+            Map<URI, Map<URI, String>> aErrors = errors.get(aURI);
 
             URI propertyURI = new URI(TEST_ONTOLOGY.hasString.getURI());
             assertTrue(aErrors.containsKey(propertyURI));
-            List<URI> brokenConstraints = aErrors.get(propertyURI);
+            Map<URI, String> brokenConstraints = aErrors.get(propertyURI);
             assertEquals(1, brokenConstraints.size());
-            assertEquals(datatypeConstraintURI, brokenConstraints.get(0));
+            assertTrue(brokenConstraints.containsKey(datatypeConstraintURI));
 
             propertyURI = new URI(TEST_ONTOLOGY.hasChar.getURI());
             assertTrue(aErrors.containsKey(propertyURI));
             brokenConstraints = aErrors.get(propertyURI);
             assertEquals(1, brokenConstraints.size());
-            assertEquals(datatypeConstraintURI, brokenConstraints.get(0));
+            assertTrue(brokenConstraints.containsKey(datatypeConstraintURI));
 
             propertyURI = new URI(TEST_ONTOLOGY.hasBoolean.getURI());
             assertTrue(aErrors.containsKey(propertyURI));
             brokenConstraints = aErrors.get(propertyURI);
             assertEquals(1, brokenConstraints.size());
-            assertEquals(datatypeConstraintURI, brokenConstraints.get(0));
+            assertTrue(brokenConstraints.containsKey(datatypeConstraintURI));
 
             propertyURI = new URI(TEST_ONTOLOGY.hasDate.getURI());
             assertTrue(aErrors.containsKey(propertyURI));
             brokenConstraints = aErrors.get(propertyURI);
             assertEquals(1, brokenConstraints.size());
-            assertEquals(datatypeConstraintURI, brokenConstraints.get(0));
+            assertTrue(brokenConstraints.containsKey(datatypeConstraintURI));
 
             propertyURI = new URI(TEST_ONTOLOGY.hasDateTime.getURI());
             assertTrue(aErrors.containsKey(propertyURI));
             brokenConstraints = aErrors.get(propertyURI);
             assertEquals(1, brokenConstraints.size());
-            assertEquals(datatypeConstraintURI, brokenConstraints.get(0));
+            assertTrue(brokenConstraints.containsKey(datatypeConstraintURI));
 
             propertyURI = new URI(TEST_ONTOLOGY.hasRelationToB.getURI());
             assertTrue(aErrors.containsKey(propertyURI));
             brokenConstraints = aErrors.get(propertyURI);
             assertEquals(1, brokenConstraints.size());
-            assertEquals(classConstraintURI, brokenConstraints.get(0));
+            assertTrue(brokenConstraints.containsKey(classConstraintURI));
 
-            Map<URI, List<URI>> bErrors = errors.get(bURI);
+            Map<URI, Map<URI, String>> bErrors = errors.get(bURI);
 
             propertyURI = new URI(TEST_ONTOLOGY.hasChar.getURI());
             assertTrue(bErrors.containsKey(propertyURI));
             brokenConstraints = bErrors.get(propertyURI);
             assertEquals(1, brokenConstraints.size());
-            assertEquals(minCountURI, brokenConstraints.get(0));
+            assertTrue(brokenConstraints.containsKey(minCountURI));
 
             propertyURI = new URI(TEST_ONTOLOGY.hasDouble.getURI());
             assertTrue(bErrors.containsKey(propertyURI));
             brokenConstraints = bErrors.get(propertyURI);
             assertEquals(1, brokenConstraints.size());
-            assertEquals(minCountURI, brokenConstraints.get(0));
+            assertTrue(brokenConstraints.containsKey(minCountURI));
 
             propertyURI = new URI(TEST_ONTOLOGY.hasFloat.getURI());
             assertTrue(bErrors.containsKey(propertyURI));
             brokenConstraints = bErrors.get(propertyURI);
             assertEquals(1, brokenConstraints.size());
-            assertEquals(minCountURI, brokenConstraints.get(0));
+            assertTrue(brokenConstraints.containsKey(minCountURI));
 
             propertyURI = new URI(TEST_ONTOLOGY.hasShort.getURI());
             assertTrue(bErrors.containsKey(propertyURI));
             brokenConstraints = bErrors.get(propertyURI);
             assertEquals(2, brokenConstraints.size());
-            assertTrue(brokenConstraints.contains(maxCountURI));
-            assertTrue(brokenConstraints.contains(datatypeConstraintURI));
+            assertTrue(brokenConstraints.containsKey(maxCountURI));
+            assertTrue(brokenConstraints.containsKey(datatypeConstraintURI));
 
-            Map<URI, List<URI>> cErrors = errors.get(cURI);
+            Map<URI, Map<URI, String>> cErrors = errors.get(cURI);
             propertyURI = new URI(TEST_ONTOLOGY.hasLabel.getURI());
             assertTrue(cErrors.containsKey(propertyURI));
             brokenConstraints = cErrors.get(propertyURI);
             assertEquals(1, brokenConstraints.size());
-            assertEquals(uniqueLangConstraintURI, brokenConstraints.get(0));
+            assertTrue(brokenConstraints.containsKey(uniqueLangConstraintURI));
 
         }
     }

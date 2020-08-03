@@ -347,6 +347,7 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
         Map<Resource, URI> invalidObject = new HashMap<>();
         Map<Resource, URI> invalidObjectProperty = new HashMap<>();
         Map<Resource, URI> brokenConstraint = new HashMap<>();
+        Map<Resource, String> invalidValue = new HashMap<>();
         for (Statement stmt : model) {
             Resource errorURI = stmt.getSubject();
             try {
@@ -356,10 +357,12 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
                     invalidObjectProperty.put(errorURI, new URI(stmt.getObject().stringValue()));
                 } else if (stmt.getPredicate().toString().equals(SHACL.sourceConstraintComponent.toString())) {
                     brokenConstraint.put(errorURI, new URI(stmt.getObject().stringValue()));
+                } else if (stmt.getPredicate().toString().equals(SHACL.value.toString())) {
+                    invalidValue.put(errorURI, stmt.getObject().stringValue());
                 }
 
                 if (invalidObject.containsKey(errorURI) && invalidObjectProperty.containsKey(errorURI) && brokenConstraint.containsKey(errorURI)) {
-                    exception.addValidationError(invalidObject.get(errorURI), invalidObjectProperty.get(errorURI), brokenConstraint.get(errorURI));
+                    exception.addValidationError(invalidObject.get(errorURI), invalidObjectProperty.get(errorURI), brokenConstraint.get(errorURI), invalidValue.get(errorURI));
 
                 }
             } catch (Exception ex) {

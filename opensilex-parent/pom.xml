@@ -56,28 +56,28 @@
         
         <!-- dependencies version -->
         <jersey.version>2.31</jersey.version>
-        <tomcat.version>9.0.36</tomcat.version>
+        <tomcat.version>9.0.37</tomcat.version>
         <hibernate.validator.version>6.1.5.Final</hibernate.validator.version>
-        <jackson.version>2.11.0</jackson.version>
+        <jackson.version>2.11.2</jackson.version>
         <geojson.jackson.version>1.14</geojson.jackson.version>
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
-        <swagger.jersey2.jaxrs.version>1.6.1</swagger.jersey2.jaxrs.version>
+        <swagger.jersey2.jaxrs.version>1.6.2</swagger.jersey2.jaxrs.version>
         <commons.jcs.cache.version>2.2.1</commons.jcs.cache.version>
         <maven.resolver.version>1.4.2</maven.resolver.version>
         <maven.resolver.provider.version>3.6.3</maven.resolver.provider.version>
-        <rdf4j.version>3.2.2</rdf4j.version>
-        <jena.query.builder.version>3.15.0</jena.query.builder.version>
-        <data.nucleus.version>5.2.2</data.nucleus.version>
-        <data.nucleus.api.jdo.version>5.2.3</data.nucleus.api.jdo.version>
+        <rdf4j.version>3.3.0</rdf4j.version>
+        <jena.query.builder.version>3.16.0</jena.query.builder.version>
+        <data.nucleus.version>5.2.4</data.nucleus.version>
+        <data.nucleus.api.jdo.version>5.2.4</data.nucleus.api.jdo.version>
         <data.nucleus.jdo.version>3.2.0-m13</data.nucleus.jdo.version>
         <datanucleus-jdo-query.version>5.0.9</datanucleus-jdo-query.version>
         <data.nucleus.jta.version>5.10.5.Final</data.nucleus.jta.version>
         <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
-        <data.nucleus.accessplatform.mongodb.version>5.2.3</data.nucleus.accessplatform.mongodb.version>
+        <data.nucleus.accessplatform.mongodb.version>5.2.5</data.nucleus.accessplatform.mongodb.version>
         <data.nucleus.maven.plugin.version>5.2.1</data.nucleus.maven.plugin.version>
-        <bytebuddy.version>1.10.12</bytebuddy.version>
+        <bytebuddy.version>1.10.14</bytebuddy.version>
         <java.jwt.version>3.10.3</java.jwt.version>
-        <picocli.version>4.3.2</picocli.version>
+        <picocli.version>4.5.0</picocli.version>
         <bcript.version>0.9.0</bcript.version>
         <commons.io.version>2.7</commons.io.version>
         <logback.version>1.2.3</logback.version>
@@ -98,7 +98,7 @@
         
         <!-- test only dependencies version -->
         <junit.version>4.13</junit.version>
-        <mockito.version>3.3.3</mockito.version>
+        <mockito.version>3.4.6</mockito.version>
         
         <!-- maven plugins versions -->
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>

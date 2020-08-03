@@ -587,5 +587,15 @@
         "required_if": "Le champ {_field_} est obligatoire",
         "emailOrUrl": "Le champ {_field_} doit être une URL ou une adresse email valide",
         "decimal": "Le champ {_field_} doit contenir une valeur décimale"
+    },
+    "datatypes": {
+        "boolean": "booléen",
+        "number": "nombre entier",
+        "date": "date",
+        "datetime": "date et heure",
+        "decimal": "nombre décimal",
+        "string": "texte court",
+        "longstring": "texte long",
+        "uri": "uri"
     }
 }

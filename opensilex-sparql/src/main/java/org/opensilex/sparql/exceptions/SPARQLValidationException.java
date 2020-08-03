@@ -6,9 +6,7 @@
 package org.opensilex.sparql.exceptions;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,25 +15,25 @@ import java.util.Map;
  */
 public class SPARQLValidationException extends SPARQLException {
 
-    Map<URI, Map<URI, List<URI>>> validationErrors = new HashMap<>();
+    Map<URI, Map<URI, Map<URI, String>>> validationErrors = new HashMap<>();
 
-    public void addValidationError(URI invalidObject, URI invalidObjectProperty, URI brokenConstraint) {
-        Map<URI, List<URI>> objectErrors = validationErrors.get(invalidObject);
+    public void addValidationError(URI invalidObject, URI invalidObjectProperty, URI brokenConstraint, String invalidValue) {
+        Map<URI, Map<URI, String>> objectErrors = validationErrors.get(invalidObject);
         if (objectErrors == null) {
             objectErrors = new HashMap<>();
             validationErrors.put(invalidObject, objectErrors);
         }
 
-        List<URI> propertyBrokenConstraints = objectErrors.get(invalidObjectProperty);
+        Map<URI, String> propertyBrokenConstraints = objectErrors.get(invalidObjectProperty);
         if (propertyBrokenConstraints == null) {
-            propertyBrokenConstraints = new ArrayList<>();
+            propertyBrokenConstraints = new HashMap<>();
             objectErrors.put(invalidObjectProperty, propertyBrokenConstraints);
         }
 
-        propertyBrokenConstraints.add(brokenConstraint);
+        propertyBrokenConstraints.put(brokenConstraint, invalidValue);
     }
 
-    public Map<URI, Map<URI, List<URI>>> getValidationErrors() {
+    public Map<URI, Map<URI, Map<URI, String>>> getValidationErrors() {
         return validationErrors;
     }
 
@@ -47,8 +45,8 @@ public class SPARQLValidationException extends SPARQLException {
             msg.append(uri.toString() + "\n");
             objectErrors.forEach((property, brokenConstraints) -> {
                 msg.append("  " + property.toString() + "\n");
-                brokenConstraints.forEach((brokenConstraint) -> {
-                    msg.append("    " + brokenConstraint.toString() + "\n");
+                brokenConstraints.forEach((brokenConstraint, invalidValue) -> {
+                    msg.append("    " + brokenConstraint.toString() + " -> " + invalidValue + "\n");
                 });
             });
         });

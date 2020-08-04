@@ -19,15 +19,15 @@ import org.opensilex.sparql.model.SPARQLLabel;
  *
  * @author vmigot
  */
-public class RDFPropertyDTO {
+public class RDFPropertyDetailDTO {
 
     protected URI uri;
 
     protected URI type;
 
-    protected Map<String, String> label;
+    protected String label;
 
-    protected Map<String, String> comment;
+    protected String comment;
 
     protected URI domain;
 
@@ -53,19 +53,19 @@ public class RDFPropertyDTO {
         this.type = type;
     }
 
-    public Map<String, String> getLabel() {
+    public String getLabel() {
         return label;
     }
 
-    public void setLabel(Map<String, String> label) {
+    public void setLabel(String label) {
         this.label = label;
     }
 
-    public Map<String, String> getComment() {
+    public String getComment() {
         return comment;
     }
 
-    public void setComment(Map<String, String> comment) {
+    public void setComment(String comment) {
         this.comment = comment;
     }
 
@@ -102,36 +102,17 @@ public class RDFPropertyDTO {
         this.parent = parent;
     }
 
-    @JsonIgnore
-    public boolean isDataProperty() {
-        return isDataProperty(getType());
-    }
-
-    public PropertyModel toModel(PropertyModel model) {
-
-        model.setUri(getUri());
-        model.setLabel(SPARQLLabel.fromMap(getLabel()));
-        model.setComment(SPARQLLabel.fromMap(getComment()));
-        ClassModel pDomain = new ClassModel();
-        pDomain.setUri(getDomain());
-        model.setDomain(pDomain);
-
-        return model;
-    }
-
-    public static RDFPropertyDTO fromModel(PropertyModel model, PropertyModel parentModel) {
-        RDFPropertyDTO dto = new RDFPropertyDTO();
+    public static RDFPropertyDetailDTO fromModel(PropertyModel model, PropertyModel parentModel) {
+        RDFPropertyDetailDTO dto = new RDFPropertyDetailDTO();
 
         dto.setUri(model.getUri());
         dto.setType(model.getType());
         if (parentModel != null) {
             dto.setParent(parentModel.getUri());
         }
-        dto.setLabel(model.getLabel().getAllTranslations());
+        dto.setLabel(model.getLabel().getDefaultValue());
         if (model.getComment() != null) {
-            dto.setComment(model.getComment().getAllTranslations());
-        } else {
-            dto.setComment(new HashMap<>());
+            dto.setComment(model.getComment().getDefaultValue());
         }
 
         if (model.getDomain() != null) {
@@ -141,7 +122,4 @@ public class RDFPropertyDTO {
         return dto;
     }
 
-    public static boolean isDataProperty(URI propertyType) {
-        return SPARQLDeserializers.compareURIs(propertyType.toString(), OWL2.DatatypeProperty.getURI());
-    }
 }

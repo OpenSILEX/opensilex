@@ -185,6 +185,7 @@ public class SPARQLDeserializers {
         return getExpandedURI(value.toString());
     }
 
+    
     public static URI formatURI(URI value) {
         return URIDeserializer.formatURI(value);
     }
@@ -202,5 +203,4 @@ public class SPARQLDeserializers {
     public static boolean compareURIs(String uri1, String uri2) {
         return getExpandedURI(uri1).equals(getExpandedURI(uri2));
     }
-
 }

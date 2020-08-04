@@ -9,8 +9,9 @@ import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import { User } from './User';
 import OpenSilexHttpClient from './OpenSilexHttpClient';
 import Oeso from '../ontologies/Oeso';
-import { FrontConfigDTO, ThemeConfigDTO, IAPIConfiguration, ApiServiceBinder, VueJsService } from '../lib';
+import { FrontConfigDTO, ThemeConfigDTO, IAPIConfiguration, ApiServiceBinder, VueJsService, VueDatatypeDTO } from '../lib';
 import { UploadFileBody } from './UploadFileBody';
+import { VueJsOntologyExtensionService } from 'src/lib/api/vueJsOntologyExtension.service';
 
 declare var $cookies: VueCookies;
 
@@ -706,6 +707,34 @@ export default class OpenSilexVuePlugin {
                     this.hideLoader();
                     reject(error);
                 });
+        });
+    }
+
+    private datatypes = [];
+    private datatypesByURI = {};
+
+    public getDatatype(uri) {
+        return this.datatypesByURI[uri];
+    }
+
+    public loadXSDTypes() {
+        return new Promise((resolve, reject)  => {
+            this.loadService<VueJsOntologyExtensionService>("opensilex.VueJsOntologyExtensionService")
+            .then((service) => {
+                console.error(service);
+                service.getDatatypes()
+                    .then((http) => {
+                        this.datatypes = http.response.result;
+                        for (let i in this.datatypes) {
+                            let datatype = this.datatypes[i];
+                            this.datatypesByURI[datatype.uri] = datatype;
+                            this.datatypesByURI[datatype.shortUri] = datatype;
+                        }
+                        resolve();
+                    })
+                    .catch(reject);
+            })
+            .catch(reject)
         });
     }
 }

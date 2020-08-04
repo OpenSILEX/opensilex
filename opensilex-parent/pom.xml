@@ -741,6 +741,9 @@
                             </configuration>
                         </execution>
                     </executions>
+                    <configuration>
+                        <skip>${skipIntegrationTest}</skip>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

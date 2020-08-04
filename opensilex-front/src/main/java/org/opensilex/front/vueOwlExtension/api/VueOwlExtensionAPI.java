@@ -43,7 +43,7 @@ import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
  *
  * @author vince
  */
-@Api("OntologyVueExtension")
+@Api("Vue.js - Ontology extension")
 @Path("/vuejs/owl-extension")
 public class VueOwlExtensionAPI {
 
@@ -106,7 +106,6 @@ public class VueOwlExtensionAPI {
     @GET
     @Path("get-datatypes")
     @ApiOperation("Return literal datatypes definition")
-    @ApiProtected()
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

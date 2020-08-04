@@ -54,6 +54,7 @@
             "delete": "delete",
             "cancel": "cancel",
             "name": "Name",
+            "comment": "Comment",
             "description": "Description",
             "startDate": "Start date",
             "endDate": "End date",

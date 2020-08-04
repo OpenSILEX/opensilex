@@ -15,8 +15,8 @@
         <opensilex-ModalForm
           ref="propertyForm"
           component="opensilex-OntologyPropertyForm"
-          createTitle="component.group.add"
-          editTitle="component.group.update"
+          createTitle="ScientificObjectProperties.add"
+          editTitle="ScientificObjectProperties.update"
           modalSize="lg"
           icon="ik#ik-users"
         ></opensilex-ModalForm>
@@ -38,6 +38,8 @@ import Vue from "vue";
 @Component
 export default class ScientificObjectProperties extends Vue {
   $opensilex: any;
+
+  @Ref("propertyForm") readonly propertyForm!: any;
 }
 </script>
 
@@ -49,9 +51,13 @@ export default class ScientificObjectProperties extends Vue {
 en:
   ScientificObjectProperties:
     title: Scientific objects properties
+    add: Create property
+    update: Update property
 
 fr:
   ScientificObjectProperties:
     title: Propriétés des objets scientifiques
+    add: Créer une propriété
+    update: Mettre à jour la propriété
 
 </i18n>

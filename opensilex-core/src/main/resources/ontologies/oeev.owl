@@ -146,7 +146,6 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     <!-- http://www.opensilex.org/vocabulary/oeev#fromDevice -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#fromDevice">
-        <rdfs:label xml:lang="fr">Config, descr du terminal si existe, cf scannex</rdfs:label>
         <rdfs:label xml:lang="fr">Depuis le terminal</rdfs:label>
         <rdfs:label xml:lang="en">From device</rdfs:label>
     </owl:DatatypeProperty>

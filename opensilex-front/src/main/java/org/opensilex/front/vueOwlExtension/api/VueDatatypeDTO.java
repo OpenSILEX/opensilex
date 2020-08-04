@@ -6,6 +6,7 @@
 package org.opensilex.front.vueOwlExtension.api;
 
 import java.net.URI;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
  *
@@ -14,6 +15,7 @@ import java.net.URI;
 public class VueDatatypeDTO {
 
     protected URI uri;
+    protected URI shortUri;
     protected String intputComponent;
     protected String viewComponent;
     protected String labelKey;
@@ -24,6 +26,10 @@ public class VueDatatypeDTO {
 
     public void setUri(URI uri) {
         this.uri = uri;
+    }
+
+    public URI getShortUri() {
+        return SPARQLDeserializers.formatURI(getUri());
     }
 
     public String getIntputComponent() {

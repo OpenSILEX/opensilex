@@ -57,7 +57,9 @@ public class SPARQLLabel {
     public Map<String, String> getAllTranslations() {
         Map<String, String> allTranslations = new HashMap<>();
         allTranslations.putAll(translations);
-        allTranslations.put(defaultLang, defaultValue);
+        if (defaultLang != null && defaultValue != null) {
+            allTranslations.put(defaultLang, defaultValue);
+        }
         return allTranslations;
     }
 

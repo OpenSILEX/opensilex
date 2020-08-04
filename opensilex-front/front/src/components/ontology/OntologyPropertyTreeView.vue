@@ -3,8 +3,11 @@
     <div class="row">
       <div class="col-md-6">
         <b-card>
-          <opensilex-TreeView :nodes.sync="nodes" @select="displayPropertyDetail">
+          <opensilex-TreeView :nodes.sync="nodes" @select="displayPropertyNodeDetail">
             <template v-slot:node="{ node }">
+              <span class="item-icon">
+                <opensilex-Icon :icon="getPropertyIcon(node)" />
+              </span>&nbsp;
               <strong v-if="node.data.selected">{{ node.title }}</strong>
               <span v-if="!node.data.selected">{{ node.title }}</span>
             </template>
@@ -31,6 +34,7 @@ import { Component, Ref, Prop, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import { OntologyService, ResourceTreeDTO } from "opensilex-core/index";
 import HttpResponse from "opensilex-core/HttpResponse";
+import OWL from "../../ontologies/OWL";
 @Component
 export default class OntologyPropertyTreeView extends Vue {
   $opensilex: any;
@@ -65,6 +69,9 @@ export default class OntologyPropertyTreeView extends Vue {
       () => this.$store.getters.language,
       lang => {
         this.onDomainChange();
+        if (this.selected) {
+          this.displayPropertyDetail(this.selected.uri, this.selected.type);
+        }
       }
     );
   }
@@ -77,7 +84,7 @@ export default class OntologyPropertyTreeView extends Vue {
   }
 
   refresh() {
-    this.ontologyService.getProperties().then(http => {
+    this.ontologyService.getProperties(this.domain).then(http => {
       let treeNode = [];
       let first = true;
       for (let i in http.response.result) {
@@ -90,10 +97,24 @@ export default class OntologyPropertyTreeView extends Vue {
     });
   }
 
-  displayPropertyDetail(node) {
-    this.ontologyService.getProperty(node.data.uri).then(http => {
-      this.selected = http.response.result;
-    });
+  displayPropertyNodeDetail(node) {
+    this.displayPropertyDetail(node.data.uri, node.data.type);
+  }
+
+  displayPropertyDetail(uri, type) {
+    this.ontologyService
+      .getProperty(uri, type)
+      .then(http => {
+        this.selected = http.response.result;
+      });
+  }
+
+  getPropertyIcon(node) {
+    if (OWL.isDatatypeProperty(node.data.type)) {
+      return "fa#database";
+    } else {
+      return "fa#link";
+    }
   }
 
   private dtoToNode(dto: ResourceTreeDTO) {
@@ -112,7 +133,7 @@ export default class OntologyPropertyTreeView extends Vue {
       isLeaf: isLeaf,
       children: childrenDTOs,
       isExpanded: true,
-      isSelected: dto,
+      isSelected: (this.selected && this.selected.uri == dto.uri),
       isDraggable: false,
       isSelectable: !dto.disabled
     };

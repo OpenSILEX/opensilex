@@ -144,7 +144,9 @@ export default class ModalForm extends Vue {
     this.modalRef.show();
     this.editMode = false;
     this.validatorRef.reset();
-    this.getFormRef().reset();
+    if (this.getFormRef().reset) {
+      this.getFormRef().reset();
+    }
   }
 
   showEditForm(form) {
@@ -152,7 +154,9 @@ export default class ModalForm extends Vue {
     this.modalRef.show();
     this.editMode = true;
     this.validatorRef.reset();
-    this.getFormRef().reset();
+    if (this.getFormRef().reset) {
+      this.getFormRef().reset();
+    }
   }
 
   hide() {

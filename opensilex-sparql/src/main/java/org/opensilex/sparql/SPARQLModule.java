@@ -7,8 +7,6 @@ package org.opensilex.sparql;
 
 import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.sparql.exceptions.SPARQLValidationException;
 import org.opensilex.sparql.extensions.SPARQLExtension;

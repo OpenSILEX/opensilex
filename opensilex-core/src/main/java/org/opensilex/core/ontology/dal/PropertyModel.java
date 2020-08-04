@@ -18,6 +18,10 @@ public interface PropertyModel {
 
     public void setUri(URI uri);
 
+    public URI getType();
+
+    public void setType(URI uri);
+
     public String getName();
 
     public void setLabel(SPARQLLabel label);
@@ -28,13 +32,9 @@ public interface PropertyModel {
 
     public SPARQLLabel getComment();
 
-    public URI getDomain();
+    public ClassModel getDomain();
 
-    public void setDomain(URI domain);
-
-    public URI getRange();
-
-    public void setRange(URI range);
+    public void setDomain(ClassModel domain);
 
     public URI getTypeRestriction();
 

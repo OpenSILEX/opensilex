@@ -21,11 +21,14 @@ import org.apache.jena.vocabulary.RDFS;
 public abstract class Ontology {
 
     public static final Path subClassAny;
+    
+    public static final Path subPropertyAny;
 
     public static final Resource SPARQLResourceModel = resource("https://www.opensilex.org/abstract#SPARQLResourceModel");
 
     static {
         subClassAny = new P_ZeroOrMore1(new P_Link(RDFS.subClassOf.asNode()));
+        subPropertyAny = new P_ZeroOrMore1(new P_Link(RDFS.subPropertyOf.asNode()));
     }
 
     public static final Resource resource(String uri) {

@@ -25,12 +25,15 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.jena.graph.Node;
+import org.apache.jena.vocabulary.OWL2;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.core.ontology.dal.ClassModel;
+import org.opensilex.core.ontology.dal.DatatypePropertyModel;
+import org.opensilex.core.ontology.dal.ObjectPropertyModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
-import org.opensilex.core.ontology.dal.PropertyModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
@@ -38,6 +41,8 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.ResourceTreeResponse;
 
@@ -54,6 +59,9 @@ public class OntologyAPI {
 
     @Inject
     private SPARQLService sparql;
+
+    @Inject
+    private SPARQLModule sparqlModule;
 
     @GET
     @Path("/get-subclass-of")
@@ -122,51 +130,95 @@ public class OntologyAPI {
 
         return new PaginatedListResponse<>(classes).getResponse();
     }
-//
-//    @POST
-//    @Path("create-property")
-//    @ApiOperation("Create a RDF property")
-//    @ApiProtected(adminOnly = true)
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @ApiResponses(value = {
-//        @ApiResponse(code = 201, message = "Create a RDF property", response = ObjectUriResponse.class),
-//        @ApiResponse(code = 409, message = "A property with the same URI already exists", response = ErrorResponse.class)
-//    })
-//
-//    public Response createProperty(
-//            @ApiParam("Property description") @Valid RDFPropertyDTO dto
-//    ) throws Exception {
-//        try {
-//            OntologyDAO dao = new OntologyDAO(sparql);
-//
-//            PropertyModel propertyModel = dto.toModel();
-//            dao.createProperty(propertyModel);
-//            return new ObjectUriResponse(Response.Status.CREATED, propertyModel.getUri()).getResponse();
-//
-//        } catch (SPARQLAlreadyExistingUriException e) {
-//            return new ErrorResponse(Response.Status.CONFLICT, "Property already exists", e.getMessage()).getResponse();
-//        }
-//    }
 
-//    @GET
-//    @Path("/get-property")
-//    @ApiOperation("Return property model definition detail")
-//    @ApiProtected
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @ApiResponses(value = {
-//        @ApiResponse(code = 200, message = "Return property model definition ", response = RDFPropertyDTO.class)
-//    })
-//    public Response getProperty(
-//            @ApiParam(value = "Property URI") @QueryParam("propertyURI") @ValidURI URI propertyURI
-//    ) throws Exception {
-//        OntologyDAO dao = new OntologyDAO(sparql);
-//
-//        PropertyModel propertyDescription = dao.getProperty(propertyURI, currentUser.getLanguage());
-//
-//        return new SingleObjectResponse<>(RDFPropertyDTO.fromModel(propertyDescription)).getResponse();
-//    }
+    @POST
+    @Path("create-property")
+    @ApiOperation("Create a RDF property")
+    @ApiProtected(adminOnly = true)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Create a RDF property", response = ObjectUriResponse.class),
+        @ApiResponse(code = 409, message = "A property with the same URI already exists", response = ErrorResponse.class)
+    })
+
+    public Response createProperty(
+            @ApiParam("Property description") @Valid RDFPropertyDTO dto
+    ) throws Exception {
+        try {
+            OntologyDAO dao = new OntologyDAO(sparql);
+
+            Node propertyGraph = SPARQLDeserializers.nodeURI(sparqlModule.getSuffixedURI("properties"));
+
+            boolean isDataProperty = dto.isDataProperty();
+            if (isDataProperty) {
+                DatatypePropertyModel dtModel = new DatatypePropertyModel();
+                DatatypePropertyModel parentModel = new DatatypePropertyModel();
+                if (dto.getParent() != null) {
+                    parentModel.setUri(dto.getParent());
+                } else {
+                    parentModel.setUri(new URI(OWL2.topDataProperty.getURI()));
+                }
+                dtModel.setParent(parentModel);
+                dto.toModel(dtModel);
+                dtModel.setRange(dto.getRange());
+                dao.createDataProperty(propertyGraph, dtModel);
+                return new ObjectUriResponse(Response.Status.CREATED, dtModel.getUri()).getResponse();
+            } else {
+                ObjectPropertyModel objModel = new ObjectPropertyModel();
+                ObjectPropertyModel parentModel = new ObjectPropertyModel();
+                if (dto.getParent() != null) {
+                    parentModel.setUri(dto.getParent());
+                } else {
+                    parentModel.setUri(new URI(OWL2.topObjectProperty.getURI()));
+                }
+                objModel.setParent(parentModel);
+
+                dto.toModel(objModel);
+                ClassModel range = new ClassModel();
+                range.setUri(dto.getRange());
+                objModel.setRange(range);
+                dao.createObjectProperty(propertyGraph, objModel);
+                return new ObjectUriResponse(Response.Status.CREATED, objModel.getUri()).getResponse();
+            }
+
+        } catch (SPARQLAlreadyExistingUriException e) {
+            return new ErrorResponse(Response.Status.CONFLICT, "Property already exists", e.getMessage()).getResponse();
+        }
+    }
+
+    @GET
+    @Path("/get-property")
+    @ApiOperation("Return property model definition detail")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return property model definition ", response = RDFPropertyDetailDTO.class)
+    })
+    public Response getProperty(
+            @ApiParam(value = "Property URI") @QueryParam("propertyURI") @ValidURI URI propertyURI,
+            @ApiParam(value = "Property type") @QueryParam("propertyType") URI propertyType
+    ) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        RDFPropertyDetailDTO dto;
+        if (RDFPropertyDTO.isDataProperty(propertyType)) {
+            DatatypePropertyModel property = dao.getDataProperty(propertyURI, currentUser);
+            dto = RDFPropertyDetailDTO.fromModel(property, property.getParent());
+            dto.setRange(property.getRange());
+        } else {
+            ObjectPropertyModel property = dao.getObjectProperty(propertyURI, currentUser);
+            dto = RDFPropertyDetailDTO.fromModel(property, property.getParent());
+            if (property.getRange() != null) {
+                dto.setRange(property.getRange().getUri());
+                dto.setRangeLabel(property.getRange().getName());
+            }
+        }
+
+        return new SingleObjectResponse<>(dto).getResponse();
+    }
+
     @GET
     @Path("/get-properties")
     @ApiOperation("Search properties tree")
@@ -176,12 +228,14 @@ public class OntologyAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return property tree", response = ResourceTreeDTO.class, responseContainer = "List")
     })
-    public Response getProperties() throws Exception {
+    public Response getProperties(
+            @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI
+    ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
-        SPARQLTreeListModel dataPropertyTree = dao.searchDataProperties(currentUser);
+        SPARQLTreeListModel dataPropertyTree = dao.searchDataProperties(domainURI, currentUser);
 
-        SPARQLTreeListModel objectPropertyTree = dao.searchObjectProperties(currentUser);
+        SPARQLTreeListModel objectPropertyTree = dao.searchObjectProperties(domainURI, currentUser);
 
         return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(dataPropertyTree, objectPropertyTree)).getResponse();
     }

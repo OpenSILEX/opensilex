@@ -33,6 +33,7 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
@@ -442,42 +443,50 @@ public final class OntologyDAO {
         return false;
     }
 
-    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(UserModel user) throws Exception {
+    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, UserModel user) throws Exception {
         URI dataPropertiesParent = new URI(OWL2.topDataProperty.getURI());
         return sparql.searchResourceTree(
                 DatatypePropertyModel.class,
                 user.getLanguage(),
                 dataPropertiesParent,
-                false,
-                (SelectBuilder select) -> {
-                    Node parentNode = SPARQLDeserializers.nodeURI(dataPropertiesParent);
-                    if (parentNode
-                    != null) {
-                        Var parentVar = makeVar(DatatypePropertyModel.PARENT_FIELD);
-                        select.addWhere(parentVar, Ontology.subClassAny, parentNode);
-                        select.addWhere(makeVar(DatatypePropertyModel.URI_FIELD), RDFS.subClassOf, parentVar);
+                true,
+                (select) -> {
+                    if (domain != null) {
+                        select.addFilter(SPARQLQueryHelper.eq(DatatypePropertyModel.DOMAIN_FIELD, domain));
                     }
                 }
         );
     }
 
-    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(UserModel user) throws Exception {
+    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, UserModel user) throws Exception {
         URI objectPropertiesParent = new URI(OWL2.topObjectProperty.getURI());
         return sparql.searchResourceTree(
                 ObjectPropertyModel.class,
                 user.getLanguage(),
                 objectPropertiesParent,
-                false,
-                (SelectBuilder select) -> {
-                    Node parentNode = SPARQLDeserializers.nodeURI(objectPropertiesParent);
-                    if (parentNode
-                    != null) {
-                        Var parentVar = makeVar(ObjectPropertyModel.PARENT_FIELD);
-                        select.addWhere(parentVar, Ontology.subClassAny, parentNode);
-                        select.addWhere(makeVar(ObjectPropertyModel.URI_FIELD), RDFS.subClassOf, parentVar);
+                true,
+                (select) -> {
+                    if (domain != null) {
+                        select.addFilter(SPARQLQueryHelper.eq(DatatypePropertyModel.DOMAIN_FIELD, domain));
                     }
                 }
         );
+    }
+
+    public void createDataProperty(Node graph, DatatypePropertyModel dataProperty) throws Exception {
+        sparql.create(graph, dataProperty);
+    }
+
+    public void createObjectProperty(Node graph, ObjectPropertyModel objectProperty) throws Exception {
+        sparql.create(graph, objectProperty);
+    }
+
+    public DatatypePropertyModel getDataProperty(URI propertyURI, UserModel user) throws Exception {
+        return sparql.getByURI(DatatypePropertyModel.class, propertyURI, user.getLanguage());
+    }
+
+    public ObjectPropertyModel getObjectProperty(URI propertyURI, UserModel user) throws Exception {
+        return sparql.getByURI(ObjectPropertyModel.class, propertyURI, user.getLanguage());
     }
 
 }

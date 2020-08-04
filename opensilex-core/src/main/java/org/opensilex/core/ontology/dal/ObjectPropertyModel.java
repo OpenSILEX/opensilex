@@ -60,14 +60,14 @@ public class ObjectPropertyModel extends SPARQLTreeModel<ObjectPropertyModel> im
             ontology = RDFS.class,
             property = "domain"
     )
-    protected URI domain;
+    protected ClassModel domain;
     public final static String DOMAIN_FIELD = "domain";
 
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "range"
     )
-    protected URI range;
+    protected ClassModel range;
     public final static String RANGE_FIELD = "range";
 
     protected URI typeRestriction;
@@ -106,19 +106,19 @@ public class ObjectPropertyModel extends SPARQLTreeModel<ObjectPropertyModel> im
         this.comment = comment;
     }
 
-    public URI getDomain() {
+    public ClassModel getDomain() {
         return domain;
     }
 
-    public void setDomain(URI domain) {
+    public void setDomain(ClassModel domain) {
         this.domain = domain;
     }
 
-    public URI getRange() {
+    public ClassModel getRange() {
         return range;
     }
 
-    public void setRange(URI range) {
+    public void setRange(ClassModel range) {
         this.range = range;
     }
 

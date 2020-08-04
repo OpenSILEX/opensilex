@@ -25,10 +25,10 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
         ignoreValidation = true
 )
 public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel> implements PropertyModel {
-    
+
     @SPARQLIgnore()
     protected String name;
-    
+
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "label",
@@ -36,42 +36,42 @@ public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel
     )
     protected SPARQLLabel label;
     public final static String LABEL_FIELD = "label";
-    
+
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "comment"
     )
     protected SPARQLLabel comment;
-    
+
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "subPropertyOf",
             inverse = true
     )
     protected List<DatatypePropertyModel> children;
-    
+
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "subPropertyOf"
     )
     protected DatatypePropertyModel parent;
-    
+
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "domain"
     )
-    protected URI domain;
+    protected ClassModel domain;
     public final static String DOMAIN_FIELD = "domain";
-    
+
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "range"
     )
     protected URI range;
     public final static String RANGE_FIELD = "range";
-    
+
     protected URI typeRestriction;
-    
+
     @Override
     public String getName() {
         if (name != null) {
@@ -84,50 +84,50 @@ public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel
             return getUri().toString();
         }
     }
-    
+
     @Override
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public SPARQLLabel getLabel() {
         return label;
     }
-    
+
     public void setLabel(SPARQLLabel label) {
         this.label = label;
     }
-    
+
     public SPARQLLabel getComment() {
         return comment;
     }
-    
+
     public void setComment(SPARQLLabel comment) {
         this.comment = comment;
     }
-    
-    public URI getDomain() {
+
+    public ClassModel getDomain() {
         return domain;
     }
-    
-    public void setDomain(URI domain) {
+
+    public void setDomain(ClassModel domain) {
         this.domain = domain;
     }
-    
+
     public URI getRange() {
         return range;
     }
-    
+
     public void setRange(URI range) {
         this.range = range;
     }
-    
+
     public URI getTypeRestriction() {
         return typeRestriction;
     }
-    
+
     public void setTypeRestriction(URI typeRestriction) {
         this.typeRestriction = typeRestriction;
     }
-    
+
 }

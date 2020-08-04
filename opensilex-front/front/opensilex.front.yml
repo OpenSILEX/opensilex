@@ -88,7 +88,7 @@ menu:
         label: component.menu.experimentalDesign.factors
         route:
           path: /factors
-          component: opensilex-FactorView
+          component: opensilex-FactorsView
           credentials:
             - factor-read
       - id: germplasm
@@ -139,8 +139,8 @@ routes:
     component: opensilex-VariableDetails
     credentials:
       - variable-read
-  - path: /factor/:uri
-    component: opensilex-FactorDetails
+  - path: /factor/details/:uri
+    component: opensilex-FactorView
     credentials: []
   - path: /germplasm/create
     component: opensilex-GermplasmCreate
@@ -151,7 +151,8 @@ routes:
 
   - path: /factor/create
     component: opensilex-FactorForm
-    credentials: []
+    credentials:
+      - factor-modification
 # Route item example:
 #  - path: /users/create
 #    component: opensilex-UserCreate

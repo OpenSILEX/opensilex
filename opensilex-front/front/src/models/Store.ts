@@ -115,9 +115,9 @@ let store = new Vuex.Store({
       CREDENTIAL_VARIABLE_MODIFICATION_ID: "variable-modification",
       CREDENTIAL_VARIABLE_DELETE_ID: "variable-delete",
       CREDENTIAL_VARIABLE_READ_ID: "variable-read",
-      CREDENTIAL_FACTOR_READ_ID: "factors-read",
-      CREDENTIAL_FACTOR_MODIFICATION_ID: "factors-modification",
-      CREDENTIAL_FACTOR_DELETE_ID: "factors-delete",
+      CREDENTIAL_FACTOR_READ_ID: "factor-read",
+      CREDENTIAL_FACTOR_MODIFICATION_ID: "factor-modification",
+      CREDENTIAL_FACTOR_DELETE_ID: "factor-delete",
       CREDENTIAL_GERMPLASM_READ_ID: "germplasm-read",
       CREDENTIAL_GERMPLASM_MODIFICATION_ID: "germplasm-modification",
       CREDENTIAL_GERMPLASM_DELETE_ID: "germplasm-delete"

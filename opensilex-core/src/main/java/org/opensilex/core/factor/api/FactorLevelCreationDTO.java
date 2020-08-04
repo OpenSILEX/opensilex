@@ -10,7 +10,6 @@
 package org.opensilex.core.factor.api;
 
 import java.net.URI;
-import javax.validation.Valid;
 import org.opensilex.core.factor.dal.FactorLevelModel;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;

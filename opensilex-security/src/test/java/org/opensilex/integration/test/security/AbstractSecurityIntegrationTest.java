@@ -151,6 +151,18 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     protected Response getJsonPostResponse(WebTarget target, Object entity) throws Exception {
         return appendToken(target).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
+    
+    /**
+     *
+     * Get {@link Response} from an {@link ApiProtected} POST service call.
+     *
+     * @param target the {@link WebTarget} on which GET the given entity
+     * @return target invocation response.
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getJsonGetResponse(WebTarget target ) throws Exception {
+        return appendToken(target).get();
+    }
 
     /**
      *

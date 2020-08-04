@@ -46,6 +46,7 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
     protected String uriPath = pathFactors + "/get/{uri}";
     protected String factorsLevelsPath = pathFactors + "/get/{uri}/levels";
     protected String searchPath = pathFactors + "/search";
+    protected String getAllPath = pathFactors + "/get-all";
     protected String createPath = pathFactors + "/create";
     protected String updatePath = pathFactors + "/update";
     protected String deleteFactorPath = pathFactors + "/delete/{uri}";
@@ -57,10 +58,8 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
     public FactorCreationDTO getCreationDTO() throws URISyntaxException {
         factorCount++;
         FactorCreationDTO dto = new FactorCreationDTO();
-        Map<String, String> names = new HashMap<>();
-        names.put(OpenSilex.DEFAULT_LANGUAGE, "Factor name " + factorCount);
-        names.put("fr", "Nom du facteur " + factorCount);
-        dto.setNames(names);
+        dto.setName("Factor name " + factorCount);
+        dto.setCategory("Nom du facteur " + factorCount);
         dto.setComment("Factor Comment" + factorCount);
         // skos model
         SkosModelTest.setValidSkosReferences(dto);
@@ -94,7 +93,7 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
     public FactorUpdateDTO getUpdateDTOFromCreationDTO(FactorCreationDTO creationDto) throws URISyntaxException {
         FactorUpdateDTO dto = new FactorUpdateDTO();
         dto.setUri(creationDto.getUri());
-        dto.setNames(creationDto.getNames());
+        dto.setName(creationDto.getName());
         dto.setComment(creationDto.getComment());
         // skos model
         SkosModelTest.setValidSkosReferences(dto);
@@ -106,9 +105,7 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
 
     public FactorSearchDTO getFactorSearchDTO(FactorCreationDTO creationDTO) throws URISyntaxException {
         FactorSearchDTO dto = new FactorSearchDTO();
-//        System.out.println("org.opensilex.core.factors.api.FactorsAPITest.getFactorSearchDTO()");
-//        System.out.println(creationDTO.getNames().get(OpenSilex.DEFAULT_LANGUAGE));
-        dto.setName(creationDTO.getNames().get(OpenSilex.DEFAULT_LANGUAGE));
+        dto.setName(creationDTO.getName());
         return dto;
     }
 
@@ -136,7 +133,8 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
         ObjectMapper mapper = new ObjectMapper();
-        SingleObjectResponse<FactorDetailsGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
+        SingleObjectResponse<FactorDetailsGetDTO> getResponse = mapper.convertValue(node,
+                new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
         });
         FactorDetailsGetDTO factorGetDto = getResponse.getResult();
         assertNotNull(factorGetDto);
@@ -165,9 +163,10 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
         ObjectMapper mapper = new ObjectMapper();
-        SingleObjectResponse<FactorDetailsGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
+        SingleObjectResponse<FactorDetailsGetDTO> getResponse = mapper.convertValue(node,
+                new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
         });
-//        System.out.println(node.toPrettyString());
+        // System.out.println(node.toPrettyString());
         FactorDetailsGetDTO factorGetDto = getResponse.getResult();
         assertNotNull(factorGetDto);
 
@@ -187,35 +186,67 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
         Response getResult1 = getJsonPostResponse(target(searchPath), new FactorSearchDTO());
         JsonNode node1 = getResult1.readEntity(JsonNode.class);
 
-//        System.out.println(node1.toPrettyString());
+        // System.out.println(node1.toPrettyString());
         ObjectMapper mapper = new ObjectMapper();
-        PaginatedListResponse<FactorGetDTO> factorListResponse1 = mapper.convertValue(node1, new TypeReference<PaginatedListResponse<FactorGetDTO>>() {
+        PaginatedListResponse<FactorGetDTO> factorListResponse1 = mapper.convertValue(node1,
+                new TypeReference<PaginatedListResponse<FactorGetDTO>>() {
         });
         List<FactorGetDTO> list1 = factorListResponse1.getResult();
 
-//        System.out.println("System.out.println(list1.size());"+list1.size());
+        // System.out.println("System.out.println(list1.size());"+list1.size());
         assertTrue(list1.size() == 3);
 
         // wtih parameters
-//        System.out.println(creationDTO.getNames().get("en"));
-//        System.out.println("search");
-
+        // System.out.println(creationDTO.getNames().get("en"));
+        // System.out.println("search");
         FactorSearchDTO factorSearchDTO = getFactorSearchDTO(creationDTO);
-//        System.out.println(factorSearchDTO.getName());
+        // System.out.println(factorSearchDTO.getName());
 
         Response getResult2 = getJsonPostResponse(target(searchPath), factorSearchDTO, OpenSilex.DEFAULT_LANGUAGE);
 
         assertEquals(Status.OK.getStatusCode(), getResult2.getStatus());
 
         JsonNode node2 = getResult2.readEntity(JsonNode.class);
-//        System.out.println(node2.toPrettyString());
-        PaginatedListResponse<FactorGetDTO> factorListResponse2 = mapper.convertValue(node2, new TypeReference<PaginatedListResponse<FactorGetDTO>>() {
+        // System.out.println(node2.toPrettyString());
+        PaginatedListResponse<FactorGetDTO> factorListResponse2 = mapper.convertValue(node2,
+                new TypeReference<PaginatedListResponse<FactorGetDTO>>() {
         });
         List<FactorGetDTO> list2 = factorListResponse2.getResult();
-//        System.out.println(list2.toString());
+        // System.out.println(list2.toString());
 
         assertTrue(!list2.isEmpty());
 
+    }
+
+    @Test
+    public void testGetAll() throws Exception {
+        FactorCreationDTO creationDTO = getCreationDTO();
+        FactorCreationDTO creationDTOTwo = getCreationDTO();
+
+        getJsonPostResponse(target(createPath), creationDTO);
+        getJsonPostResponse(target(createPath), creationDTOTwo);
+        getJsonPostResponse(target(createPath), getCreationDTO());
+        getJsonPostResponse(target(createPath), getCreationDTO());
+        getJsonPostResponse(target(createPath), getCreationDTO());
+        getJsonPostResponse(target(createPath), getCreationDTO());
+        getJsonPostResponse(target(createPath), getCreationDTO());
+        getJsonPostResponse(target(createPath), getCreationDTO());
+        getJsonPostResponse(target(createPath), getCreationDTO());
+        getJsonPostResponse(target(createPath), getCreationDTO());
+
+        
+        Response getResult1 = getJsonGetResponse(target(getAllPath));
+        JsonNode node1 = getResult1.readEntity(JsonNode.class);
+
+        // System.out.println(node1.toPrettyString());
+        ObjectMapper mapper = new ObjectMapper();
+        PaginatedListResponse<FactorGetDTO> factorListResponse1 = mapper.convertValue(node1,
+                new TypeReference<PaginatedListResponse<FactorGetDTO>>() {
+        });
+        List<FactorGetDTO> list1 = factorListResponse1.getResult();
+
+        // System.out.println("System.out.println(list1.size());"+list1.size());
+        assertTrue(list1.size() == 10);
     }
 
     @Test
@@ -225,17 +256,14 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
         Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO());
         String uri = extractUriFromResponse(postResponse).toString();
         assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
-        
         // delete object and check if URI no longer exists
         Response delResult = getDeleteByUriResponse(target(deleteFactorPath), uri);
-        JsonNode node2 = delResult.readEntity(JsonNode.class);
-        System.out.println(node2);
         assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
 
         Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
-    
+
     @Test
     public void testDeleteFactorLevel() throws Exception {
 
@@ -243,16 +271,16 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
         Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO());
         String uri = extractUriFromResponse(postResponse).toString();
         assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
-        
-        
-         // ensure that the result is a well formed URI, else throw exception
+
+        // ensure that the result is a well formed URI, else throw exception
         Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
         ObjectMapper mapper = new ObjectMapper();
-        SingleObjectResponse<FactorDetailsGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
+        SingleObjectResponse<FactorDetailsGetDTO> getResponse = mapper.convertValue(node,
+                new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
         });
         FactorDetailsGetDTO factorGetDto = getResponse.getResult();
         int factorLevelSize = factorGetDto.getFactorLevels().size();
@@ -263,46 +291,47 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
 
         Response getResult2 = getJsonGetByUriResponse(target(getFactorsLevelPath), uriToRemove.toString());
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult2.getStatus());
-        
+
         getResult = getJsonGetByUriResponse(target(uriPath), uri);
         node = getResult.readEntity(JsonNode.class);
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
         getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
         });
         factorGetDto = getResponse.getResult();
-        assertEquals(factorLevelSize - 1, factorGetDto.getFactorLevels().size() );
+        assertEquals(factorLevelSize - 1, factorGetDto.getFactorLevels().size());
     }
-    
+
     @Test
     public void testGetFactorLevel() throws Exception {
 
         // create object and check if URI exists
-        Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO());
+        FactorCreationDTO creationDTO = getCreationDTO();
+        Response postResponse = getJsonPostResponse(target(createPath), creationDTO);
         String uri = extractUriFromResponse(postResponse).toString();
         assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
-        
-        
-         // ensure that the result is a well formed URI, else throw exception
+
+        // ensure that the result is a well formed URI, else throw exception
         final Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
         ObjectMapper mapper = new ObjectMapper();
-        SingleObjectResponse<FactorDetailsGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
+        SingleObjectResponse<FactorDetailsGetDTO> getResponse = mapper.convertValue(node,
+                new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
         });
         FactorDetailsGetDTO factorGetDto = getResponse.getResult();
         int factorLevelSize = factorGetDto.getFactorLevels().size();
+        assertEquals(factorLevelSize, creationDTO.getFactorLevels().size());
         URI uriToFind = factorGetDto.getFactorLevels().get(0).getUri();
-       
+
         Response getResult2 = getJsonGetByUriResponse(target(getFactorsLevelPath), uriToFind.toString());
-        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+        assertEquals(Status.OK.getStatusCode(), getResult2.getStatus());
     }
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Stream.of(FactorModel.class, FactorLevelModel.class)
-                .collect(Collectors.toList());
+        return Stream.of(FactorModel.class, FactorLevelModel.class).collect(Collectors.toList());
 
     }
 }

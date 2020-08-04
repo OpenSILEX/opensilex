@@ -10,6 +10,7 @@ OpenSilex Vue.JS components
     - [Edit button](#edit-button)
     - [Details button](#details-button)
     - [Add child button](#add-child-button)
+    - [HelpButton](#helpbutton)
   - [Forms fields components](#forms-fields-components)
     - [Generic form field label](#generic-form-field-label)
     - [Generic form field](#generic-form-field)
@@ -177,6 +178,27 @@ Identifier: **opensilex-AddChildButton**
 Description: 
 
 Button component for "Add child" action, this component could be usefull for tree interactions.
+
+Properties:
+
+ID | Type | Default value | Description
+--- | --- | --- | ---
+label | string | *-* | Translation key of the button label (should always be present even if not visible for accessibility purpose)
+small | boolean | *true* | Flag to determine if button should be small (equivalent to bootstrap "sm" class)
+disabled | boolean | *false* | Flag to determine if button is disabled or not
+
+Events:
+ID | Parameter | Description
+--- | --- | ---
+@click | *-* | Event called after button click
+
+### HelpButton
+
+Identifier: **opensilex-HelpButton**
+
+Description: 
+
+Button component for "Help" action, this component could be usefull to get help about a concept.
 
 Properties:
 

@@ -78,6 +78,8 @@ components["opensilex-InfrastructureSelector"] = InfrastructureSelector;
 // Factors
 import FactorView from './factors/FactorView.vue';
 components["opensilex-FactorView"] = FactorView;
+import FactorsView from './factors/FactorsView.vue';
+components["opensilex-FactorsView"] = FactorsView;
 import FactorList from './factors/FactorList.vue';
 components["opensilex-FactorList"] = FactorList;
 import FactorForm from './factors/FactorForm.vue';
@@ -86,6 +88,12 @@ import FactorDetails from './factors/FactorDetails.vue';
 components["opensilex-FactorDetails"] = FactorDetails;
 import FactorLevelTable from './factors/FactorLevelTable.vue';
 components["opensilex-FactorLevelTable"] = FactorLevelTable;
+import FactorSelector from './factors/FactorSelector.vue';
+components["opensilex-FactorSelector"] = FactorSelector;
+import FactorCategorySelector from './factors/FactorCategorySelector.vue';
+components["opensilex-FactorCategorySelector"] = FactorCategorySelector;
+import FactorsHelp from './factors/FactorsHelp.vue';
+components["opensilex-FactorsHelp"] = FactorsHelp;
 
 // Common
 import FormInputLabelHelper from './common/forms/FormInputLabelHelper.vue'
@@ -100,8 +108,8 @@ import SelectForm from './common/forms/SelectForm.vue'
 components["opensilex-SelectForm"] = SelectForm;
 import CheckboxForm from './common/forms/CheckboxForm.vue'
 components["opensilex-CheckboxForm"] = CheckboxForm;
-import NameInputForm from './common/forms/NameInputForm.vue'
-components["opensilex-NameInputForm"] = NameInputForm;
+import TranslatedNameInputForm from './common/forms/TranslatedNameInputForm.vue'
+components["opensilex-TranslatedNameInputForm"] = TranslatedNameInputForm;
 import CSVInputFile from './common/forms/CSVInputFile.vue'
 components["opensilex-CSVInputFile"] = CSVInputFile;
 import SearchForm from './common/forms/SearchForm.vue'
@@ -110,6 +118,7 @@ import FileInputForm from './common/forms/FileInputForm.vue'
 components["opensilex-FileInputForm"] = FileInputForm;
 import TagInputForm from './common/forms/TagInputForm.vue'
 components["opensilex-TagInputForm"] = TagInputForm;
+
 
 
 import WizardForm from './common/forms/WizardForm.vue'
@@ -146,8 +155,6 @@ import TableAsyncView from './common/views/TableAsyncView.vue'
 components["opensilex-TableAsyncView"] = TableAsyncView;
 import Card from './common/views/Card.vue'
 components["opensilex-Card"] = Card;
-import NavBar from './common/views/NavBar.vue'
-components["opensilex-NavBar"] = NavBar;
 
 import ExternalReferencesModalForm from './common/external-references/ExternalReferencesModalForm.vue'
 components["opensilex-ExternalReferencesModalForm"] = ExternalReferencesModalForm;
@@ -177,6 +184,8 @@ import InteroperabilityButton from './common/buttons/InteroperabilityButton.vue'
 components["opensilex-InteroperabilityButton"] = InteroperabilityButton;
 import AddChildButton from './common/buttons/AddChildButton.vue'
 components["opensilex-AddChildButton"] = AddChildButton;
+import HelpButton from './common/buttons/HelpButton.vue'
+components["opensilex-HelpButton"] = HelpButton;
 
 // Experiments
 import ExperimentForm from './experiments/form/ExperimentForm.vue';
@@ -195,6 +204,8 @@ import ExperimentScientificObjects from './experiments/views/ExperimentScientifi
 components["opensilex-ExperimentScientificObjects"] = ExperimentScientificObjects;
 import ExperimentModalList from './experiments/ExperimentModalList.vue';
 components["opensilex-ExperimentModalList"] = ExperimentModalList;
+import ExperimentSelector from './experiments/ExperimentSelector.vue';
+components["opensilex-ExperimentSelector"] = ExperimentSelector;
 
 // Germplasm
 import GermplasmView from './germplasm/GermplasmView.vue';

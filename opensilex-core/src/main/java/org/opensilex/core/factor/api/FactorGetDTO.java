@@ -22,6 +22,8 @@ public class FactorGetDTO {
     
     private String name;
     
+    private String category;
+    
     private String comment;
     
     public URI getUri() {
@@ -48,15 +50,20 @@ public class FactorGetDTO {
         this.comment = comment;
     }
     
+    public String getCategory() {
+        return category;
+    }
+    
+    public void setCategory(String category) {
+        this.category = category;
+    }
+    
     public static FactorGetDTO fromModel(FactorModel model) {
         FactorGetDTO dto = new FactorGetDTO();
         dto.setUri(model.getUri());        
-        if (model.getName() == null) {
-            dto.setName(null);
-        } else {
-            dto.setName(model.getName().getDefaultValue());
-        }
+        dto.setName(model.getName());
         dto.setComment(model.getComment());
+        dto.setCategory(model.getCategory());
         return dto;
     }
 }

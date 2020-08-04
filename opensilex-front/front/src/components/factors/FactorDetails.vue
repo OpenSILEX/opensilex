@@ -1,113 +1,51 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
-      icon="fa#sun"
-      title="component.menu.experimentalDesign.factors"
-      description="component.factor.details.label"
-    ></opensilex-PageHeader>
-    <opensilex-NavBar returnTo="/factors">
-      <template v-slot:linksLeft>
-        <li class="active">
-          <b-button
-            class="mb-2 mr-2"
-            variant="outline-primary"
-          >{{$t('component.factor.details.label')}}</b-button>
-        </li>
-        <li>
-          <b-button
-            class="mb-2 mr-2"
-            variant="outline-primary"
-            disabled
-          >{{$t('component.common.details.document')}}</b-button>
-        </li>
-        <li>
-          <b-button
-            class="mb-2 mr-2"
-            variant="outline-primary"
-            disabled
-          >{{$t('component.common.details.experiment')}}</b-button>
-        </li>
-      </template>
-    </opensilex-NavBar>
-    <div class="container-fluid">
-      <b-row>
-        <b-col>
-          <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
-            <template v-slot:body>
-              <opensilex-StringView label="component.factor.uri" :value="factor.uri"></opensilex-StringView>
-              <opensilex-StringView label="component.factor.names.en" :value="factor.names.en"></opensilex-StringView>
-              <opensilex-StringView
-                label="component.factor.names.local-name"
-                :value="factor.names[localNameCode]"
-              ></opensilex-StringView>
-              <opensilex-StringView label="component.factor.comment" :value="factor.comment"></opensilex-StringView>
-            </template>
-          </opensilex-Card>
-        </b-col>
-        <b-col>
-          <opensilex-Card label="component.skos.ontologies-references-label" icon="ik#ik-clipboard">
-            <template v-slot:body>
-              <opensilex-ExternalReferencesDetails :skosReferences="factor"></opensilex-ExternalReferencesDetails>
-            </template>
-          </opensilex-Card>
-        </b-col>
-      </b-row>
-      <b-row>
-        <b-col>
-          <opensilex-Card label="component.factor.details.factorLevels" icon="ik#ik-clipboard">
-            <template v-slot:body>
-              <b-table
-                v-if="factor.factorLevels.length != 0"
-                striped
-                bordered
-                :items="factor.factorLevels"
-                :fields="factorLevelFields"
-              >
-                <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
-                <template v-slot:head(name)="data">{{$t(data.label)}}</template>
-                <template v-slot:head(comment)="data">{{$t(data.label)}}</template>
-              </b-table>
-              <p v-else>
-                <strong>{{$t('component.skos.no-external-links-provided')}}</strong>
-              </p>
-            </template>
-          </opensilex-Card>
-        </b-col>
-      </b-row>
-    </div>
-    <!-- <div class="tab-content">
-      <div class="tab-pane fade show active" id="p1">Panneau 1</div>
-      <div class="tab-pane fade" id="p2">Panneau 2</div>
-    </div>-->
+    <b-row>
+      <b-col sm="5">
+        <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
+          <template v-slot:body>
+            <opensilex-StringView label="component.factor.uri" :value="factor.uri"></opensilex-StringView>
+            <opensilex-StringView label="component.factor.name" :value="factor.name"></opensilex-StringView>
+            <opensilex-StringView
+              label="component.factor.category"
+              :value="$i18n.t(factorCategoriesMap[factor.category])"
+            ></opensilex-StringView>
+            <opensilex-StringView label="component.factor.comment" :value="factor.comment"></opensilex-StringView>
+          </template>
+        </opensilex-Card>
+      </b-col>
 
-    <!-- <b-tabs content-class="mt-3" pills card>
-      <b-tab :title="$t('component.factor.tabs.factor')" active>
-        <div class="row"></div>
-      </b-tab>
-      <b-tab :title="$t('component.common.tabs.factorLevels')">
-        <div>
-          <b-table
-            v-if="this.factor.factorLevels.length != 0"
-            striped
-            bordered
-            :items="this.factor.factorLevels"
-            :fields="this.factorLevelFields"
-          >
-            <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
-            <template v-slot:head(name)="data">{{$t(data.label)}}</template>
-            <template v-slot:head(comment)="data">{{$t(data.label)}}</template>
-          </b-table>
-          <p v-else>
-            <strong>{{$t('component.skos.no-external-links-provided')}}</strong>
-          </p>
-        </div>
-      </b-tab>
-      <b-tab :title="$t('component.skos.ontologies-references-label')">
-        <opensilex-ExternalReferencesDetails :skosReferences="this.factor"></opensilex-ExternalReferencesDetails>
-      </b-tab>
-      <b-tab :title="$t('component.common.tabs.document')" disabled></b-tab>
-      <b-tab :title="$t('component.common.tabs.experiment')" disabled></b-tab>
-    </b-tabs>-->
+      <b-col>
+        <opensilex-Card label="component.factor.details.factorLevels" icon="ik#ik-clipboard">
+          <template v-slot:body>
+            <b-table
+              v-if="factor.factorLevels.length != 0"
+              striped
+              bordered
+              :items="factor.factorLevels"
+              :fields="factorLevelFields"
+            >
+              <template v-slot:head(uri)="data">{{$t(data.label)}}</template>
+              <template v-slot:head(name)="data">{{$t(data.label)}}</template>
+              <template v-slot:head(category)="data">{{$t(data.label)}}</template>
+              <template v-slot:head(comment)="data">{{$t(data.label)}}</template>
+            </b-table>
+            <p v-else>
+              <strong>{{$t('component.factor.details.no-factorLevels-provided')}}</strong>
+            </p>
+          </template>
+        </opensilex-Card>
+      </b-col>
+    </b-row>
+    <b-row>
+      <b-col>
+        <opensilex-Card label="component.skos.ontologies-references-label" icon="ik#ik-clipboard">
+          <template v-slot:body>
+            <opensilex-ExternalReferencesDetails :skosReferences="factor"></opensilex-ExternalReferencesDetails>
+          </template>
+        </opensilex-Card>
+      </b-col>
+    </b-row>
   </div>
 </template>
 
@@ -116,6 +54,7 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import { FactorDetailsGetDTO, FactorsService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import { FactorCategory } from "./FactorCategory";
 
 @Component
 export default class FactorDetails extends Vue {
@@ -130,37 +69,46 @@ export default class FactorDetails extends Vue {
     return this.$store.state.user;
   }
 
+  get credentials() {
+    return this.$store.state.credentials;
+  }
+  isDetailsTab() {
+    return this.$route.path.startsWith("/factor/");
+  }
+
+  factorCategoriesMap: Map<
+    string,
+    string
+  > = FactorCategory.getFactorCategories();
+
   factor: any = {
     uri: null,
-    names: { },
+    name: null,
+    category: null,
     comment: null,
     exactMatch: [],
     closeMatch: [],
     broader: [],
     narrower: [],
-    factorLevels: []
+    factorLevels: [],
   };
-
-  get localNameCode(): string {
-    return this.$opensilex.getLocalLangCode();
-  }
 
   factorLevelFields: any[] = [
     {
       key: "uri",
       label: "component.factorLevel.uri",
-      sortable: false
+      sortable: false,
     },
     {
       key: "name",
       label: "component.factorLevel.name",
-      sortable: true
+      sortable: true,
     },
     {
       key: "comment",
       label: "component.factorLevel.comment",
-      sortable: false
-    }
+      sortable: false,
+    },
   ];
 
   created() {

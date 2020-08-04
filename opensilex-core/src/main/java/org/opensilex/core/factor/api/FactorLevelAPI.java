@@ -15,24 +15,18 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import javax.inject.Inject;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.opensilex.core.factor.dal.FactorDAO;
 import org.opensilex.core.factor.dal.FactorLevelDAO;
 import org.opensilex.core.factor.dal.FactorLevelModel;
-import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -59,19 +53,6 @@ import org.slf4j.LoggerFactory;
 public class FactorLevelAPI {
 
     public static final String FACTOR_LEVEL_EXAMPLE_URI = "http://opensilex/set/factorLevel/irrigation.ww";
-
-    public static final String CREDENTIAL_FACTOR_GROUP_ID = "Factors";
-    public static final String CREDENTIAL_FACTOR_GROUP_LABEL_KEY = "credential-groups.factors";
-
-    public static final String CREDENTIAL_FACTOR_MODIFICATION_ID = "factors-modification";
-    public static final String CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY = "credential.factors.modification";
-
-    public static final String CREDENTIAL_FACTOR_READ_ID = "factors-read";
-    public static final String CREDENTIAL_FACTOR_READ_LABEL_KEY = "credential.factors.read";
-
-    public static final String CREDENTIAL_FACTOR_DELETE_ID = "factors-delete";
-    public static final String CREDENTIAL_FACTOR_DELETE_LABEL_KEY = "credential.factors.delete";
-
     public static final String DEFAULT_TRANSLATION_LANGUAGE = "en";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(FactorAPI.class);
@@ -95,8 +76,8 @@ public class FactorLevelAPI {
     @ApiOperation("Get an factor level")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_FACTOR_READ_ID,
-            credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY
+            credentialId = FactorAPI.CREDENTIAL_FACTOR_READ_ID,
+            credentialLabelKey = FactorAPI.CREDENTIAL_FACTOR_READ_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -136,8 +117,8 @@ public class FactorLevelAPI {
     @ApiOperation("Delete an factor Level")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_FACTOR_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_FACTOR_DELETE_LABEL_KEY
+            credentialId = FactorAPI.CREDENTIAL_FACTOR_DELETE_ID,
+            credentialLabelKey = FactorAPI.CREDENTIAL_FACTOR_DELETE_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

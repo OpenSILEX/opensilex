@@ -23,10 +23,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -74,6 +72,7 @@ public class ExperimentAPI {
      *
      * @param dto the Experiment to create
      * @return a {@link Response} with a {@link ObjectUriResponse} containing the created Experiment {@link URI}
+     * @throws java.lang.Exception
      */
     @POST
     @Path("create")
@@ -247,7 +246,7 @@ public class ExperimentAPI {
     }
 
     /**
-     * Updates the sensors linked to an experiment.
+     * Updates the factors linked to an experiment.
      *
      * @param xpUri
      * @param factors

@@ -14,9 +14,13 @@
           :multiple="true"
           :openOnClick="false"
           :searchable="false"
+          :clearable="clearable"
           valueFormat="object"
           v-model="selection"
           :placeholder="$t(placeholder)"
+          :disable-branch-nodes="disableBranchNodes"
+          :search-nested="searchNested"
+          :show-count="showCount"
         ></treeselect>
         <treeselect
           v-else-if="optionsLoadingMethod"
@@ -30,6 +34,7 @@
           :options="internalOption"
           :placeholder="$t(placeholder)"
           :disabled="disabled"
+          :clearable="clearable"
           @deselect="deselect"
           @select="select"
           @input="clearIfNeeded"
@@ -37,6 +42,9 @@
           @updade="setCurrentSelectedNodes($event)"
           :noResultsText="$t(noResultsText)"
           :searchPromptText="$t('component.common.search-prompt-text')"
+          :disable-branch-nodes="disableBranchNodes"
+          :search-nested="searchNested"
+          :show-count="showCount"
         ></treeselect>
         <treeselect
           v-else
@@ -50,12 +58,16 @@
           :options="options || internalOption"
           :placeholder="$t(placeholder)"
           :disabled="disabled"
+          :clearable="clearable"
           @deselect="deselect"
           @select="select"
           @input="clearIfNeeded"
           @close="close(field)"
           :noResultsText="$t(noResultsText)"
           :searchPromptText="$t('component.common.search-prompt-text')"
+          :disable-branch-nodes="disableBranchNodes"
+          :search-nested="searchNested"
+          :show-count="showCount"
         ></treeselect>
         <b-input-group-append v-if="isModalSearch">
           <b-button variant="primary" @click="showModal">+</b-button>
@@ -113,6 +125,16 @@ export default class SelectForm extends Vue {
   })
   isModalSearch;
 
+  @Prop({
+    default: true
+  })
+  clearable;
+
+  @Prop({
+    default: false
+  })
+  showCount;
+
   @Prop()
   modalComponent;
 
@@ -159,6 +181,16 @@ export default class SelectForm extends Vue {
   onSelectionChange() {
     this.currentValue = null;
   }
+
+  @Prop({
+    default: false
+  })
+  disableBranchNodes: boolean;
+
+  @Prop({
+    default: false
+  })
+  searchNested: boolean;
 
   @AsyncComputedProp()
   selectedValues(): Promise<any> {
@@ -419,5 +451,4 @@ export default class SelectForm extends Vue {
 ::v-deep .multiselect-popup .vue-treeselect__menu-container {
   display: none;
 }
-
 </style>

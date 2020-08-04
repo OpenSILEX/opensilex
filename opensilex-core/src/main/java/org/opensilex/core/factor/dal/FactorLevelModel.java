@@ -23,8 +23,8 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "FactorLevel",
-        graph = "set/factorsLevels",
-        prefix = "factorLevel"
+        graph = "set/factors",
+        prefix = "factor"
 )
 public class FactorLevelModel extends SPARQLResourceModel implements ClassURIGenerator<FactorLevelModel> {
 
@@ -44,8 +44,7 @@ public class FactorLevelModel extends SPARQLResourceModel implements ClassURIGen
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasFactorLevel",
-            inverse = true
+            property = "hasFactor"
     )
     FactorModel factor;
 
@@ -76,7 +75,7 @@ public class FactorLevelModel extends SPARQLResourceModel implements ClassURIGen
     @Override
     public String[] getUriSegments(FactorLevelModel instance) {
         return new String[]{
-            getFactor().getName().toString(),
+            getFactor().getName(),
             instance.getName()
         };
     }

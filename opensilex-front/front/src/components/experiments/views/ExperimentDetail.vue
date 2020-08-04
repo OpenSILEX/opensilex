@@ -143,6 +143,23 @@
             <div class="static-field">
               <span
                 class="static-field-key"
+              >{{ $t('component.menu.experimentalDesign.factors') }}{{ $t('component.common.colon') }}</span>
+              <span class="static-field-line">
+                <span :key="index" v-for="(factor, index) in factorsList">
+                  <span :title="factor.name">
+                    <opensilex-UriLink
+                      :uri="factor.uri"
+                      :value="factor.name"
+                      :to="{path: '/factor/details/'+ encodeURIComponent(factor.uri)}"
+                    ></opensilex-UriLink>
+                  </span>
+                  <span v-if="index + 1 < factor.length">,</span>
+                </span>
+              </span>
+            </div>
+            <div class="static-field">
+              <span
+                class="static-field-key"
               >{{ $t('component.experiment.groups') }}{{ $t('component.common.colon') }}</span>
               <ul class="static-field-list" :key="index" v-for="(group, index) in groupsList">
                 <li class="inline-action">
@@ -227,7 +244,9 @@ import {
   ProjectsService,
   InfrastructuresService,
   SpeciesDTO,
-  SpeciesService
+  SpeciesService,
+  FactorsService,
+  FactorGetDTO
 } from "opensilex-core/index";
 import {
   SecurityService,
@@ -249,6 +268,7 @@ export default class ExperimentDetail extends Vue {
   experiment: ExperimentGetDTO = null;
 
   speciesList = [];
+  factorsList = [];
   groupsList = [];
   projectsList = [];
   scientificSupervisorsList = [];
@@ -282,6 +302,7 @@ export default class ExperimentDetail extends Vue {
           this.loadProjects();
           this.loadUsers();
           this.loadSpecies();
+          this.loadFactors();
           this.loadGroups();
           this.loadInstallations();
           this.loadInfrastructures();
@@ -394,6 +415,29 @@ export default class ExperimentDetail extends Vue {
               )
             ) {
               this.speciesList.push(http.response.result[i]);
+            }
+          }
+        })
+        .catch(this.$opensilex.errorHandler);
+    }
+  }
+
+  loadFactors() {
+    let service: FactorsService = this.$opensilex.getService(
+      "opensilex.FactorsService"
+    );
+
+    if (this.experiment.species) {
+      service
+        .getAllFactors()
+        .then((http: HttpResponse<OpenSilexResponse<Array<FactorGetDTO>>>) => {
+          for (let i = 0; i < http.response.result.length; i++) {
+            if (
+              this.experiment.factors.find(
+                factors => factors == http.response.result[i].uri
+              )
+            ) {
+              this.factorsList.push(http.response.result[i]);
             }
           }
         })

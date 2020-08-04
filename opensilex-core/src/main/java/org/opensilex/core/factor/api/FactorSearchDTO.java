@@ -12,17 +12,19 @@ package org.opensilex.core.factor.api;
 import java.net.URI;
 
 /**
- * 
+ *
  * @author Arnaud Charleroy
  */
 public class FactorSearchDTO {
-    
+
     private URI uri;
 
     private String name;
 
     private String comment;
-    
+
+    private String category;
+
     private URI experiment;
 
     public URI getUri() {
@@ -34,16 +36,16 @@ public class FactorSearchDTO {
     }
 
     public String getName() {
-        if(name != null && name.trim().isEmpty()){
+        if (name != null && name.trim().isEmpty()) {
             return null;
-        } 
+        }
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
     }
-   
+
     public String getComment() {
         return comment;
     }
@@ -59,7 +61,17 @@ public class FactorSearchDTO {
     public void setExperiment(URI experiment) {
         this.experiment = experiment;
     }
-    
-    
- 
+
+    public String getCategory() {
+         if (category != null && category.trim().isEmpty()) {
+            return null;
+        }
+
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
 }

@@ -16,7 +16,6 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SKOSReferencesModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
 /**
@@ -35,9 +34,16 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
             ontology = RDFS.class,
             property = "label"
     )
-    SPARQLLabel name;
+    String name;
     public static final String NAME_FIELD = "name";
 
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasCategory"
+    )
+    String category;
+    public static final String CATEGORY_FIELD = "category";
+    
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "comment"
@@ -46,19 +52,31 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasFactorLevel",
-            cascadeDelete = true
+            property = "hasFactor",
+            inverse = true,
+            cascadeDelete = true,
+            autoUpdate = true
     )
     List<FactorLevelModel> factorLevels = new ArrayList<>();
     public static final String FACTORLEVELS_SPARQL_VAR = "factorLevels";
 
-    public SPARQLLabel getName() {
+    public String getName() {
         return name;
     }
 
-    public void setName(SPARQLLabel name) {
+    public void setName(String name) {
         this.name = name;
     }
+
+    public String getCategory(){
+        return category;
+    }
+
+    public void setCategory(String localName) {
+        this.category = localName;
+    }
+
+    
 
     public String getComment() {
         return comment;
@@ -79,7 +97,7 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
     @Override
     public String[] getUriSegments(FactorModel instance) {
         return new String[]{
-            instance.getName().getDefaultValue()
+            instance.getName()
         };
     }
 }

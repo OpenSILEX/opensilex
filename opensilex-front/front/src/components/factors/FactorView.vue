@@ -3,174 +3,105 @@
     <opensilex-PageHeader
       icon="fa#sun"
       title="component.menu.experimentalDesign.factors"
-      description="component.factor.description"
+      description="component.factor.details.label"
     ></opensilex-PageHeader>
-    <opensilex-PageActions>
+
+    <opensilex-PageActions :returnButton="true" :returnTo="goBack()" :returnToTitle="returnTitle()">
       <template v-slot>
-        <opensilex-CreateButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
-          @click="factorForm.showCreateForm()"
-          label="component.factor.add-button"
-        ></opensilex-CreateButton>
+        <b-nav-item
+          :active="isDetailsTab()"
+          :disabled="!isDetailsTab()"
+          :to="{path: '/factor/details/' + encodeURIComponent(uri)}"
+        >{{ $t('component.factor.details.label') }}</b-nav-item>
+        <b-nav-item
+          :active="false"
+          :disabled="true"
+          :to="{path: '/factor/document/' + encodeURIComponent(uri)}"
+        >{{ $t('component.common.details.document') }}</b-nav-item>
+        <b-nav-item
+          :active="false"
+          :disabled="true"
+          :to="{path: '/factor/experiment/' + encodeURIComponent(uri)}"
+        >{{ $t('component.common.details.experiment') }}</b-nav-item>
       </template>
     </opensilex-PageActions>
-    <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
-      ref="factorForm"
-      modalSize="xl"
-      :successMessage="successMessage"
-      component="opensilex-FactorForm"
-      createTitle="component.factor.add"
-      editTitle="component.factor.update"
-      icon="fa#sun"
-      @onCreate="showFactorDetails"
-      @onUpdate="factorList.refresh()"
-    ></opensilex-ModalForm>
     <opensilex-PageContent>
       <template v-slot>
-        <opensilex-FactorList
-          v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_READ_ID)"
-          ref="factorList"
-          @onEdit="editFactor"
-          @onDetails="showFactorDetails"
-          @onInteroperability="showSkosReferences"
-          @onDelete="deleteFactor"
-        ></opensilex-FactorList>
+        <opensilex-FactorDetails v-if="isDetailsTab()" :uri="uri"></opensilex-FactorDetails>
       </template>
     </opensilex-PageContent>
-    <opensilex-ExternalReferencesModalForm
-      ref="skosReferences"
-      :references.sync="selectedFactor"
-      @onUpdate="callUpdateFactorService"
-    ></opensilex-ExternalReferencesModalForm>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import {
-  FactorCreationDTO,
-  FactorsService,
-  FactorDetailsGetDTO,
-  FactorUpdateDTO
-} from "opensilex-core/index";
-import ExternalReferencesModalFormForm from "../common/external-references/ExternalReferencesModalForm.vue";
+import VueRouter from "vue-router";
 
 @Component
 export default class FactorView extends Vue {
+  uri = null;
+  createdFactor = false;
   $opensilex: any;
   $store: any;
-  service: FactorsService;
+  $route: any;
   $t: any;
   $i18n: any;
-  $router: any;
 
   get user() {
     return this.$store.state.user;
   }
 
-  get credentials() {
-    return this.$store.state.credentials;
-  }
-
-  @Ref("modalRef") readonly modalRef!: any;
-
-  @Ref("factorForm") readonly factorForm!: any;
-
-  @Ref("factorList") readonly factorList!: any;
-
-  @Ref("skosReferences") readonly skosReferences!: ExternalReferencesModalFormForm;
-
-  selectedFactor: FactorCreationDTO = {
-    uri: undefined,
-    names: {},
-    exactMatch: [],
-    closeMatch: [],
-    broader: [],
-    narrower: []
-  };
-
   created() {
-    console.debug("Loading FactorView view...");
-    this.service = this.$opensilex.getService("opensilex.FactorsService");
+    this.uri = this.$route.params.uri;
+    if (this.$route.query.created != null) {
+      this.createdFactor = this.$route.query.created;
+    }
   }
 
-  showCreateForm() {
-    this.factorForm.showCreateForm();
+  isDetailsTab() {
+    return this.$route.path.startsWith("/factor/details/");
   }
 
-  callUpdateFactorService(form: FactorUpdateDTO) {
-      this.service
-        .updateFactor(form)
-        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-          let uri = http.response.result;
-          console.debug("Updated factor", uri);
-          this.factorList.refresh();
-        })
+  goBack() {
+    // return to the previous page
+    if (!this.createdFactor) {
+      return false;
+    } else {
+      // return to the list if factor has just been created
+      return "/factors";
+    }
   }
-  showFactorDetails(factorUriResult: any) {
-    factorUriResult.then(factorUri => {
-      console.debug("showFactorDetails", factorUri);
-      this.factorList.refresh();
-      this.$router.push({ path: "/factor/" + encodeURIComponent(factorUri) });
-    });
-  }
-
-  showSkosReferences(uri: string) {
-    console.debug("showSkosReferences" + uri);
-    this.service
-      .getFactor(uri)
-      .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
-        let result = http.response.result;
-        if (result instanceof Promise) {
-          result.then(resolve => {
-            this.selectedFactor = result;
-            this.skosReferences.show();
-          });
-        } else {
-          this.selectedFactor = result;
-          this.skosReferences.show();
-        }
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-
-  editFactor(uri: any) {
-    console.debug("editFactor" + uri);
-    this.service
-      .getFactor(uri)
-      .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
-        console.log(http.response.result);
-        this.factorForm.showEditForm(http.response.result);
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-
-  deleteFactor(uri: string) {
-    console.debug("deleteFactor " + uri);
-    this.service
-      .deleteFactor(uri)
-      .then(() => {
-        this.factorList.refresh();
-        let message =
-          this.$i18n.t("component.factor.label") +
-          " " +
-          uri +
-          " " +
-          this.$i18n.t("component.common.success.delete-success-message");
-        this.$opensilex.showSuccessToast(message);
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-
-  successMessage(factor) {
-    return this.$i18n.t("component.factor.label") + " " + factor.names.en;
+  
+  returnTitle() {
+    // return to the previous page
+    if (this.createdFactor) {
+      // return to the list if factor has just been created
+      return "component.factor.returnButton";
+    }
   }
 }
 </script>
 
 <style scoped lang="scss">
+.back-button {
+  margin-right: 15px;
+  height: 37px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 </style>
 
+<i18n>
+en:
+  component: 
+    factor:
+      returnButton: Return to the factor list
+ 
+            
+fr:
+  component: 
+    factor:
+      returnButton: Retourner à la liste des facteurs
+</i18n>

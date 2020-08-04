@@ -4,21 +4,19 @@
       <h6 class="mb-3">
         <strong>{{$t('component.factorLevel.associated')}}</strong>
       </h6>
-      <b-row class="ml-2">
-        <b-col md="2">
+      <b-row>
+        <b-col>
           <opensilex-AddChildButton
-            class="mr-2"
+            class="mb-2 mr-4"
             @click="addEmptyRow"
             variant="outline-primary"
             label="component.factorLevel.add"
+            :small="false"
           ></opensilex-AddChildButton>
-          <span class="mt-1 ml-1">{{$t('component.factorLevel.add')}}</span>
-        </b-col>
-        <b-col md="6" class="mb-2">
           <!-- <p>{{$t('component.common.tabulator.add-multiple')}}</p> -->
           <b-button-group>
             <b-button
-              class="mb-2 mr-2"
+              class="mr-2"
               @click="csvExport"
               variant="outline-primary"
             >{{$t('component.common.import-files.csv-template')}}</b-button>
@@ -27,7 +25,6 @@
               variant="outline-secondary"
             >{{$t('component.common.tabulator.reset-table')}}</b-button>-->
             <opensilex-CSVInputFile :headersToCheck="['name','comment']" v-on:updated="uploaded"></opensilex-CSVInputFile>
-            <span class="mt-1">{{$t('component.factorLevel.add')}}s</span>
           </b-button-group>
         </b-col>
       </b-row>
@@ -42,6 +39,7 @@
           />
         </b-col>
       </b-row>
+      <!-- <span class="error-message alert alert-info"> Number of factor{{this.internalFactorLevels.length}}</span> -->
     </b-col>
   </b-row>
 </template>
@@ -61,6 +59,43 @@ export default class FactorLevelTable extends Vue {
   $store: any;
   $i18n: any;
   service: FactorsService;
+  langs: any = {
+    fr: {
+      //French language definition
+      columns: {
+        name: "Nom",
+        comment: "Description",
+        actions: "Supprimer"
+      },
+      pagination: {
+        first: "Premier",
+        first_title: "Premier Page",
+        last: "Dernier",
+        last_title: "Dernier Page",
+        prev: "Précédent",
+        prev_title: "Précédent Page",
+        next: "Prochain",
+        next_title: "Prochain Page"
+      }
+    },
+    en: {
+      columns: {
+        name: "Name", //replace the title of column name with the value "Name"
+        comment: "Comment",
+        actions: "Delete"
+      },
+      pagination: {
+        first: "First", //text for the first page button
+        first_title: "First Page", //tooltip text for the first page button
+        last: "Last",
+        last_title: "Last Page",
+        prev: "Prev",
+        prev_title: "Prev Page",
+        next: "Next",
+        next_title: "Next Page"
+      }
+    }
+  };
 
   @Ref("tabulatorRef") readonly tabulatorRef!: any;
   @Ref("langInput") readonly langInput!: any;
@@ -113,6 +148,15 @@ export default class FactorLevelTable extends Vue {
     this.service = this.$opensilex.getService("opensilex.FactorsService");
   }
 
+  mounted() {
+    this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        this.changeTableLang(lang);
+      }
+    );
+  }
+
   uploaded(data) {
     let tmpLength = this.internalFactorLevels.length;
     for (let row in data) {
@@ -133,7 +177,8 @@ export default class FactorLevelTable extends Vue {
     columns: this.tableColumns,
     maxHeight: "100%", //do not let table get bigger than the height of its parent element
     pagination: "local", //enable local pagination.
-    paginationSize: 5 // this option can take any positive integer value (default = 10)
+    paginationSize: 5, // this option can take any positive integer value (default = 10)
+    langs: this.langs
   };
 
   removeFactorLevel(evt, clickedCell) {
@@ -195,6 +240,11 @@ export default class FactorLevelTable extends Vue {
     if (row.name != undefined && row.name != null && row.name != "") {
       this.internalFactorLevels.unshift(row);
     }
+  }
+
+  changeTableLang(lang: string) {
+    let tabulatorInstance = this.tabulatorRef.getInstance();
+    tabulatorInstance.setLocale(lang);
   }
 
   csvExport() {

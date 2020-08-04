@@ -7,12 +7,13 @@
   >
     <template v-slot:field="field">
       <b-input-group size="sm" class="mt-3">
-        <b-input-group-prepend v-if="countryCode" size="sm" tag="span">
+        <b-input-group-prepend v-if="countryCode" size="sm" class="bg-transparent">
           <country-flag
             :country="countryCode"
             size="small"
             v-b-tooltip.hover
             :title="languageCode"
+            class="input-group-text bg-transparent border-0"
           />
         </b-input-group-prepend>
         <b-form-input
@@ -40,7 +41,7 @@ import {
 import Vue from "vue";
 
 @Component
-export default class NameInputForm extends Vue {
+export default class TranslatedNameInputForm extends Vue {
   $opensilex: any;
   $i18n: any;
 

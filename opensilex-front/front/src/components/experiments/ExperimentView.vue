@@ -2,25 +2,16 @@
   <div v-if="uri" class="container-fluid">
     <opensilex-PageHeader icon="ik#ik-layers" title="component.experiment.view.title"></opensilex-PageHeader>
 
-    <opensilex-PageActions>
+    <opensilex-PageActions :returnButton="true">
       <template v-slot>
-        <b-nav pills>
-          <router-link
-            to="/experiments/"
-            class="btn btn-outline-primary back-button"
-            :title="$t('component.experiment.view.list.return')"
-          >
-            <i class="ik ik-corner-up-left"></i>
-          </router-link>
-          <b-nav-item
-            :active="isDetailsTab()"
-            :to="{path: '/experiment/details/' + encodeURIComponent(uri)}"
-          >{{ $t('Details') }}</b-nav-item>
-          <b-nav-item
-            :active="isScientificObjectsTab()"
-            :to="{path: '/experiment/scientific-objects/' + encodeURIComponent(uri)}"
-          >{{ $t('Objets scientifiques') }}</b-nav-item>
-        </b-nav>
+        <b-nav-item
+          :active="isDetailsTab()"
+          :to="{path: '/experiment/details/' + encodeURIComponent(uri)}"
+        >{{ $t('Details') }}</b-nav-item>
+        <b-nav-item
+          :active="isScientificObjectsTab()"
+          :to="{path: '/experiment/scientific-objects/' + encodeURIComponent(uri)}"
+        >{{ $t('Objets scientifiques') }}</b-nav-item>
       </template>
     </opensilex-PageActions>
 
@@ -61,11 +52,4 @@ export default class ExperimentView extends Vue {
 </script>
 
 <style scoped lang="scss">
-.back-button {
-  margin-right: 15px;
-  height: 37px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 </style>

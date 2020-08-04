@@ -78,7 +78,7 @@ public class ExperimentDAO {
 
     public void updateWithFactors(URI xpUri, List<URI> factorsUris, UserModel user) throws Exception {
         validateExperimentAccess(xpUri, user);
-        sparql.updateSubjectRelations(SPARQLDeserializers.nodeURI(xpUri), factorsUris, Oeso.influencedBy, xpUri);
+        sparql.updateSubjectRelations(SPARQLDeserializers.nodeURI(xpUri), factorsUris, Oeso.studyEffectOf, xpUri);
     }
 
     public void delete(URI xpUri, UserModel user) throws Exception {

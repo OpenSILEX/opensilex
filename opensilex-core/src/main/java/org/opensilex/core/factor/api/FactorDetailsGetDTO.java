@@ -25,7 +25,9 @@ public class FactorDetailsGetDTO extends SKOSReferencesDTO {
 
     private URI uri;
 
-    private Map<String,String> names;
+    private String name;
+
+    private String category;
 
     private String comment;
 
@@ -39,12 +41,20 @@ public class FactorDetailsGetDTO extends SKOSReferencesDTO {
         this.uri = uri;
     }
 
-    public Map<String,String> getNames() {
-        return names;
+    public String getName() {
+        return name;
     }
 
-    public void setNames(Map<String,String> names) {
-        this.names = names;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public String getComment() {
@@ -66,7 +76,8 @@ public class FactorDetailsGetDTO extends SKOSReferencesDTO {
     public static FactorDetailsGetDTO fromModel(FactorModel model) {
         FactorDetailsGetDTO dto = new FactorDetailsGetDTO();
         dto.setUri(model.getUri());
-        dto.setNames(model.getName().getAllTranslations());
+        dto.setName(model.getName());
+        dto.setCategory(model.getCategory());
         dto.setComment(model.getComment());
         List<FactorLevelGetDTO> factorLevels = new ArrayList<>();
         model.getFactorLevels().forEach(factorLevelModel -> {

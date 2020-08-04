@@ -5,7 +5,7 @@
       title="GermplasmCreate.title"
       description="GermplasmCreate.description"
     ></opensilex-PageHeader>
-    
+
     <opensilex-PageActions>
       <template v-slot>
         <b-nav pills>
@@ -16,34 +16,36 @@
           >
             <i class="ik ik-corner-up-left"></i>
           </router-link>
-          
         </b-nav>
       </template>
     </opensilex-PageActions>
-    
+
     <opensilex-PageContent>
       <b-input-group class="mt-3 mb-3" size="sm">
-        <b-form-select ref="germplasmType" 
-          v-model="selected" :options="germplasmTypes" 
-          @change="refreshTable">
+        <b-form-select
+          ref="germplasmType"
+          v-model="selected"
+          :options="germplasmTypes"
+          @change="refreshTable"
+        >
           <template v-slot:first>
             <b-form-select-option :value="null">{{$t('GermplasmCreate.select')}}</b-form-select-option>
           </template>
         </b-form-select>
       </b-input-group>
-      <opensilex-GermplasmTable
-      v-if = this.selected
-      ref="germplasmTable" 
-      :germplasmType=selected
-      ></opensilex-GermplasmTable>
+      <opensilex-GermplasmTable v-if="this.selected" ref="germplasmTable" :germplasmType="selected"></opensilex-GermplasmTable>
     </opensilex-PageContent>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import { Component } from 'vue-property-decorator'
-import { GermplasmCreationDTO, OntologyService, ResourceTreeDTO } from "opensilex-core/index"; 
+import { Component } from "vue-property-decorator";
+import {
+  GermplasmCreationDTO,
+  OntologyService,
+  ResourceTreeDTO,
+} from "opensilex-core/index";
 import Oeso from "../../ontologies/Oeso";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
@@ -69,53 +71,52 @@ export default class GermplasmCreate extends Vue {
   mounted() {
     this.$store.watch(
       () => this.$store.getters.language,
-      lang => {       
+      (lang) => {
         this.loadGermplasmTypes();
       }
     );
   }
 
+  loadGermplasmTypes() {
+    this.germplasmTypes = [];
+    let ontoService: OntologyService = this.$opensilex.getService(
+      "opensilex.OntologyService"
+    );
 
-  loadGermplasmTypes(){
-    this.germplasmTypes = []
-    let ontoService: OntologyService = this.$opensilex.getService("opensilex.OntologyService");
-
-    ontoService.getSubClassesOf(Oeso.GERMPLASM_TYPE_URI,true)
-    .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-      console.log(http.response.result)
-        for(let i=0; i<http.response.result.length; i++) {
+    ontoService
+      .getSubClassesOf(Oeso.GERMPLASM_TYPE_URI, true)
+      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+        console.log(http.response.result);
+        for (let i = 0; i < http.response.result.length; i++) {
           let resourceDTO = http.response.result[i];
           if (resourceDTO.uri.endsWith("PlantMaterialLot")) {
             //retrieve plantMaterialLot children
             let children = resourceDTO.children;
-            for (let j=0; j<children.length; j++) {
+            for (let j = 0; j < children.length; j++) {
               this.germplasmTypes.push({
                 value: children[j].uri,
-                text: children[j].name
+                text: children[j].name,
               });
             }
           } else {
             this.germplasmTypes.push({
-                value: resourceDTO.uri,
-                text: resourceDTO.name
+              value: resourceDTO.uri,
+              text: resourceDTO.name,
             });
           }
         }
-    }).catch(this.$opensilex.errorHandler);
-  
+      })
+      .catch(this.$opensilex.errorHandler);
   }
-    
+
   refreshTable() {
     let germplasmTable: any = this.$refs.germplasmTable;
     germplasmTable.updateColumns();
-  }  
-
+  }
 }
-
 </script>
 
 <style scoped lang="scss">
-
 </style>
 
 <i18n>

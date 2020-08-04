@@ -9,25 +9,22 @@
       :generated.sync="uriGenerated"
     ></opensilex-UriForm>
 
-    <!-- Name en -->
-    <opensilex-NameInputForm
-      :value.sync="form.names"
-      label="component.factor.names.en"
-      helpMessage="component.factor.names.en-help"
+    <!-- Name -->
+    <opensilex-InputForm
+      :value.sync="form.name"
+      label="component.factor.name"
+      helpMessage="component.factor.name-help"
       type="text"
       :required="true"
-      placeholder="component.factor.names.en-placeholder"
-    ></opensilex-NameInputForm>
+      placeholder="component.factor.name-placeholder"
+    ></opensilex-InputForm>
 
-    <!-- Local name -->
-    <opensilex-NameInputForm
-      :value.sync="form.names"
-      label="component.factor.names.local-name"
-      type="text"
-      helpMessage="component.factor.names.local-name-help"
-      placeholder="component.factor.names.local-name-placeholder"
-      :localName="true"
-    ></opensilex-NameInputForm>
+    <!-- Category-->
+    <opensilex-FactorCategorySelector
+      label="component.factor.category"
+      placeholder="component.factor.category-placeholder"
+      :category.sync="form.category"
+    ></opensilex-FactorCategorySelector>
 
     <!-- Comment -->
     <opensilex-TextAreaForm
@@ -37,7 +34,11 @@
       placeholder="component.factor.comment-placeholder"
     ></opensilex-TextAreaForm>
 
-    <opensilex-FactorLevelTable :editMode="editMode" :factorLevels.sync="form.factorLevels"></opensilex-FactorLevelTable>
+    <opensilex-FactorLevelTable
+      ref="factorLevelTable"
+      :editMode="editMode"
+      :factorLevels.sync="form.factorLevels"
+    ></opensilex-FactorLevelTable>
   </b-form>
 </template>
 
@@ -60,6 +61,8 @@ export default class FactorForm extends Vue {
     return this.$store.state.user;
   }
 
+  @Ref("factorLevelTable") readonly factorLevelTable!: any;
+
   uriGenerated = true;
 
   @Prop()
@@ -67,18 +70,22 @@ export default class FactorForm extends Vue {
 
   @Prop({
     default: () => {
-      let names = {};
-      let defaultLang = "en";
-      names[defaultLang] = "";
       return {
         uri: null,
-        names: names,
-        comment: "",
+        name: null,
+        category: null,
+        comment: null,
         exactMatch: [],
         closeMatch: [],
         broader: [],
         narrower: [],
-        factorLevels: []
+        factorLevels: [
+          {
+            uri: null,
+            name: null,
+            comment: null
+          }
+        ]
       };
     }
   })
@@ -88,21 +95,32 @@ export default class FactorForm extends Vue {
     this.uriGenerated = true;
   }
 
+  addEmptyRow() {
+    console.debug("add row");
+    this.form.factorLevels.unshift({
+      uri: null,
+      name: null,
+      comment: null
+    });
+  }
+
   getEmptyForm() {
-    let names = {};
-    let lang = this.languageCode;
-    let defaultLang = "en";
-    names[lang] = "";
-    names[defaultLang] = "";
     return {
       uri: null,
-      names: names,
-      comment: "",
+      name: null,
+      category: null,
+      comment: null,
       exactMatch: [],
       closeMatch: [],
       broader: [],
       narrower: [],
-      factorLevels: []
+      factorLevels: [
+        {
+          uri: null,
+          name: null,
+          comment: null
+        }
+      ]
     };
   }
 
@@ -152,6 +170,7 @@ export default class FactorForm extends Vue {
   }
 
   create(form) {
+    this.clearEmptyFactorsLevels();
     console.log("factor", form);
     return this.$opensilex
       .getService("opensilex.FactorsService")
@@ -176,6 +195,7 @@ export default class FactorForm extends Vue {
   }
 
   update(form) {
+    this.clearEmptyFactorsLevels();
     return this.$opensilex
       .getService("opensilex.FactorsService")
       .updateFactor(form)
@@ -184,6 +204,12 @@ export default class FactorForm extends Vue {
         console.debug("Factor updated", uri);
       })
       .catch(this.$opensilex.errorHandler);
+  }
+
+  clearEmptyFactorsLevels() {
+    this.form.factorLevels = this.form.factorLevels.filter(
+      factorLevel => factorLevel.name !== null && factorLevel.name !== ""
+    );
   }
 
   get languageCode(): string {

@@ -46,8 +46,7 @@ public class ExperimentGetDTO extends ExperimentDTO {
                 .setKeywords(model.getKeywords())
                 .setIsPublic(model.getIsPublic())
                 .setSensors(model.getSensors())
-                .setVariables(model.getVariables())
-                .setFactors(model.getFactors());
+                .setVariables(model.getVariables());
 
         if (model.getEndDate() != null) {
             dto.setEndDate(model.getEndDate());
@@ -58,7 +57,8 @@ public class ExperimentGetDTO extends ExperimentDTO {
                 .setProjects(getUriList(model.getProjects()))
                 .setGroups(getUriList(model.getGroups()))
                 .setSpecies(getUriList(model.getSpecies()))
-                .setInfrastructures(getUriList(model.getInfrastructures()));
+                .setInfrastructures(getUriList(model.getInfrastructures()))
+                .setFactors(getUriList(model.getFactors()));
 
         return dto;
     }

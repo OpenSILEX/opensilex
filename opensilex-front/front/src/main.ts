@@ -138,7 +138,7 @@ if (urlParams.has('lang')) {
 }
 
 if (lang && lang.length > 2) {
-  lang = lang.substr(0,2);
+  lang = lang.substr(0, 2);
 }
 
 console.debug("Detected language", lang);

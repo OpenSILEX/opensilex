@@ -48,12 +48,9 @@
     ></opensilex-InputForm>
 
     <!-- Species -->
-    <opensilex-SpeciesSelector
-      :required="true"
-      :multiple="true"
-      :species.sync="experiment.species"
-    ></opensilex-SpeciesSelector>
-
+    <opensilex-SpeciesSelector :required="true" :multiple="true" :species.sync="experiment.species"></opensilex-SpeciesSelector>
+    <!-- Factor -->
+    <opensilex-FactorSelector :multiple="true" :factors.sync="experiment.factors"></opensilex-FactorSelector>
     <!-- Objective -->
     <opensilex-TextAreaForm
       :value.sync="experiment.objective"

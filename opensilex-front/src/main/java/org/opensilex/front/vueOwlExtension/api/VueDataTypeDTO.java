@@ -12,7 +12,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
  *
  * @author vmigot
  */
-public class VueDatatypeDTO {
+public class VueDataTypeDTO {
 
     protected URI uri;
     protected URI shortUri;

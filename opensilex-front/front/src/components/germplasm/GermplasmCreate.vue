@@ -85,13 +85,18 @@ export default class GermplasmCreate extends Vue {
     this.loadGermplasmTypes();
   }
 
+  private langUnwatcher;
   mounted() {
-    this.$store.watch(
+    this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
-      (lang) => {
+      lang => {
         this.loadGermplasmTypes();
       }
     );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
   }
 
   loadGermplasmTypes() {

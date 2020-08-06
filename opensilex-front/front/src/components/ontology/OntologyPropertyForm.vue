@@ -1,5 +1,5 @@
 <template>
-  <b-form v-if="form.label">
+  <b-form v-if="form.labelTranslations">
     <opensilex-InputForm
       :value.sync="form.uri"
       label="component.common.uri"
@@ -25,41 +25,41 @@
     <opensilex-SelectForm
       v-if="form.type == OWL.DATATYPE_PROPERTY_URI"
       label="OntologyPropertyForm.value-type"
-      required="true"
+      :required="true"
       :selected.sync="form.range"
       :options="datatypes"
     ></opensilex-SelectForm>
 
-    <opensilex-SelectForm
+    <opensilex-TypeForm
       v-if="form.type == OWL.OBJECT_PROEPRTY_URI"
       label="OntologyPropertyForm.value-type"
-      required="true"
-      :selected.sync="form.range"
-      :options="objectTypes"
-    ></opensilex-SelectForm>
+      :required="true"
+      :type.sync="form.range"
+      :baseType="undefined"
+    ></opensilex-TypeForm>
 
     <opensilex-InputForm
-      :value.sync="form.label.en"
+      :value.sync="form.labelTranslations.en"
       label="OntologyPropertyForm.labelEN"
       type="text"
       :required="true"
     ></opensilex-InputForm>
 
     <opensilex-TextAreaForm
-      :value.sync="form.comment.en"
+      :value.sync="form.commentTranslations.en"
       label="OntologyPropertyForm.commentEN"
       :required="true"
     ></opensilex-TextAreaForm>
 
     <opensilex-InputForm
-      :value.sync="form.label.fr"
+      :value.sync="form.labelTranslations.fr"
       label="OntologyPropertyForm.labelFR"
       type="text"
       :required="true"
     ></opensilex-InputForm>
 
     <opensilex-TextAreaForm
-      :value.sync="form.comment.fr"
+      :value.sync="form.commentTranslations.fr"
       label="OntologyPropertyForm.commentFR"
       :required="true"
     ></opensilex-TextAreaForm>
@@ -83,8 +83,10 @@ export default class OntologyPropertyForm extends Vue {
         uri: null,
         type: OWL.DATATYPE_PROPERTY_URI,
         parent: null,
-        label: {},
-        comment: {},
+        label: null,
+        labelTranslations: {},
+        comment: null,
+        commentTranslations: {},
         domain: null,
         range: null
       };
@@ -97,8 +99,10 @@ export default class OntologyPropertyForm extends Vue {
       uri: null,
       type: OWL.DATATYPE_PROPERTY_URI,
       parent: null,
-      label: {},
-      comment: {},
+      label: null,
+      labelTranslations: {},
+      comment: null,
+      commentTranslations: {},
       domain: null,
       range: null
     };
@@ -107,7 +111,7 @@ export default class OntologyPropertyForm extends Vue {
   get datatypes() {
     let datatypeOptions = [];
     for (let i in this.$opensilex.datatypes) {
-      let label = this.$t(this.$opensilex.datatypes[i].labelKey);
+      let label: any = this.$t(this.$opensilex.datatypes[i].labelKey);
       datatypeOptions.push({
         id: this.$opensilex.datatypes[i].uri,
         label: label.charAt(0).toUpperCase() + label.slice(1)
@@ -127,12 +131,7 @@ export default class OntologyPropertyForm extends Vue {
     return datatypeOptions;
   }
 
-  get objectTypes() {
-    return [];
-  }
-
   create(form) {
-    console.error(form);
     return this.$opensilex
       .getService("opensilex.OntologyService")
       .createProperty(form)
@@ -179,8 +178,8 @@ en:
         value-type: Type of value
         labelEN: English name
         labelFR: French name
-        commentEN: English comment
-        commentFR: French comment
+        commentEN: English description
+        commentFR: French description
         property-already-exists: Property with same URI already exists
 
 fr:
@@ -191,7 +190,7 @@ fr:
         value-type: Type de valeur
         labelEN: Nom anglais
         labelFR: Nom français
-        commentEN: Commentaire anglais
-        commentFR: Commentaire français   
+        commentEN: Description anglaise
+        commentFR: Description française
         property-already-exists: La propriété existe déjà avec la même URI
 </i18n>

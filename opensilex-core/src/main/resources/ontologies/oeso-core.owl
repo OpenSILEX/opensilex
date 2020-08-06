@@ -42,12 +42,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Annotation properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Annotation properties
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -116,12 +116,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Datatypes
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Datatypes
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -390,7 +390,6 @@
     </owl:ObjectProperty>
     
 
-
     <!-- http://www.opensilex.org/vocabulary/oeso#hasSpecies -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasSpecies">
@@ -423,8 +422,6 @@
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variety"/>
     </owl:ObjectProperty>
     
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#isPartOf -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#isPartOf"/>
@@ -439,24 +436,12 @@
     </owl:ObjectProperty>
     
 
-
     <!-- http://www.opensilex.org/vocabulary/oeso#participatesIn -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#participatesIn">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
     </owl:ObjectProperty>
     
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#startDate -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#startDate">
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasDate"/>
-        <rdfs:label xml:lang="fr">date de début</rdfs:label>
-        <rdfs:label xml:lang="en">start date</rdfs:label>
-    </owl:ObjectProperty>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#studyEffectOf -->
 
@@ -483,27 +468,21 @@
     <owl:DatatypeProperty rdf:about="http://purl.org/dc/elements/1.1/description"/>
     
 
-
     <!-- http://purl.org/dc/elements/1.1/title -->
 
     <owl:DatatypeProperty rdf:about="http://purl.org/dc/elements/1.1/title"/>
     
 
-
     <!-- http://www.opensilex.org/security#hasCredential -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#hasCredential"/>
     
-
-
     <!-- http://www.opensilex.org/security#hasLanguage -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#hasLanguage">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
     </owl:DatatypeProperty>
     
-
-
     <!-- http://www.opensilex.org/security#hasPasswordHash -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#hasPasswordHash"/>
@@ -581,12 +560,14 @@
     </owl:DatatypeProperty>
     
 
-
     <!-- http://www.opensilex.org/vocabulary/oeso#startDate -->
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#startDate"/>
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#startDate">
+        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasDate"/>
+        <rdfs:label xml:lang="fr">date de début</rdfs:label>
+        <rdfs:label xml:lang="en">start date</rdfs:label>
+    </owl:DatatypeProperty>
     
-
 
     <!-- http://www.w3.org/2000/01/rdf-schema#comment -->
 
@@ -743,30 +724,21 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Classes
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
-
-    
-
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Classes
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     <!-- http://www.opensilex.org/security#Group -->
 
     <owl:Class rdf:about="http://www.opensilex.org/security#Group"/>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Accession -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Accession">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-    </owl:Class>
-    
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FactorLevel">
     </owl:Class>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Device -->
@@ -802,6 +774,9 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#Experiment -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Experiment">
+        <rdfs:comment xml:lang="en">An EXPERIMENT is a planned activity carried out by a given set of persons on a given set of observation unit, like plants or microplots (see §2.1), involving a protocol, methods and a resulting dataset.</rdfs:comment>
+        <rdfs:label xml:lang="en">experiment</rdfs:label>
+        <rdfs:label xml:lang="fr">expérimentation</rdfs:label>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/security#hasGroup"/>
@@ -820,77 +795,6 @@
                 <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Infrastructure"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#CapacitanceSensor -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#CapacitanceSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#HumiditySensor"/>
-        <dc:source>skos:closeMatch capacitance sensor [ET-AWS] http://www.hydrometeoindustry.org/Meetings2010/ET-AWS-6/Doc8[1]-AWS-MetadataCatalogues.pdf</dc:source>
-        <rdfs:comment>certain materials interact with water vapour and undergo a change in capacitance, in relation to ambient humidity.</rdfs:comment>
-        <rdfs:label xml:lang="en">capacitance sensor</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#CapacitiveThinFilmPolymer -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#CapacitiveThinFilmPolymer">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#CapacitanceSensor"/>
-        <rdfs:comment>certain materials interact with water vapour and undergo a change in capacitance, in relation to ambient humidity.</rdfs:comment>
-        <rdfs:label xml:lang="en">capacitive - thin film polymer</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Compartment -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Compartment">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ProtectiveStructure"/>
-        <rdfs:label xml:lang="fr">compartiment</rdfs:label>
-        <rdfs:label xml:lang="en">compartment</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Contract -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Contract">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
-        <rdfs:label xml:lang="en">contract</rdfs:label>
-        <rdfs:label xml:lang="fr">contrat</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#CultivatedLand -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#CultivatedLand">
-        <rdfs:label xml:lang="en">Cultivated Land</rdfs:label>
-        <rdfs:label xml:lang="fr">Terre cultivée</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#CupAnemometer -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#CupAnemometer">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#WindSensor"/>
-        <dc:source>skos:closeMatch Cup anemometer [GAMP 2.4.1.5] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
-        <rdfs:comment>the angular velocity of the cup is directly proportional to the component of the wind speed parallel to the axis of rotation.</rdfs:comment>
-        <rdfs:label xml:lang="en">cup anemometer</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#DataFile -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#DataFile">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
-        <rdfs:label xml:lang="en">data file</rdfs:label>
-        <rdfs:label xml:lang="fr">fichier de données</rdfs:label>
     </owl:Class>
     
 
@@ -921,49 +825,6 @@
     </owl:Class>
     
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#ElectricSensorWhichExploitsTheConductivityVariationAsAFunctionOfWetness -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ElectricSensorWhichExploitsTheConductivityVariationAsAFunctionOfWetness">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#HumiditySensor"/>
-        <dc:source>skos:closeMatch electric sensor, which exploits the conductivity variation as a function of wetness [GAMP 2.4.1.6.3] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
-        <rdfs:label xml:lang="en">electric sensor, which exploits the conductivity variation as a function of wetness</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceBlock -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceBlock">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#HumiditySensor"/>
-        <dc:source>skos:closeMatch Electrical resistance block [GAMP 2.4.1.6.2] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
-        <rdfs:label xml:lang="en">electrical resistance block</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceHumiditySensor -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceHumiditySensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#HumiditySensor"/>
-        <dc:source>skos:closeMatch electrical resistance humidity sensor [ET-AWS] http://www.hydrometeoindustry.org/Meetings2010/ET-AWS-6/Doc8[1]-AWS-MetadataCatalogues.pdf</dc:source>
-        <rdfs:comment>certain materials interact with water vapour and undergo a change in electrical resistance, in relation to ambient humidity.</rdfs:comment>
-        <rdfs:label xml:lang="en">electrical resistance humidity sensor</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceThermometer -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceThermometer">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#TemperatureSensor"/>
-        <dc:source>skos:closeMatch Resistance thermometer [GAMP 2.4.1.2] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
-        <rdfs:comment>For small temperature changes, the increase in resistance of pure metals is proportional to the change in temperature. Often made in Platinum.</rdfs:comment>
-        <rdfs:label xml:lang="en">electrical resistance thermometer</rdfs:label>
-    </owl:Class>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Equipement -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Equipement">
@@ -975,15 +836,6 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#Experiment -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Experiment">
-        <rdfs:comment xml:lang="en">An EXPERIMENT is a planned activity carried out by a given set of persons on a given set of observation unit, like plants or microplots (see §2.1), involving a protocol, methods and a resulting dataset.</rdfs:comment>
-        <rdfs:label xml:lang="en">experiment</rdfs:label>
-        <rdfs:label xml:lang="fr">expérimentation</rdfs:label>
-    </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition -->
 
@@ -994,18 +846,6 @@
         <rdfs:label xml:lang="en">experimental context</rdfs:label>
     </owl:Class>
     
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalDesign -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalDesign">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
-        <rdfs:label xml:lang="en">experimental design</rdfs:label>
-        <rdfs:label xml:lang="fr">protocole expérimental</rdfs:label>
-    </owl:Class>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Factor -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Factor">
@@ -1026,65 +866,7 @@
         <rdfs:label xml:lang="fr">Niveau de facteur</rdfs:label>
         <rdfs:seeAlso rdf:resource="http://www.opensilex.org/vocabulary/oeso#Factor"/>
     </owl:Class>
-    
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Fan -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Fan">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Actuator"/>
-        <rdfs:label xml:lang="en">fan</rdfs:label>
-        <rdfs:label xml:lang="fr">ventilateur</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#FiberGlassBlock -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FiberGlassBlock">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceBlock"/>
-        <rdfs:label xml:lang="en">fiber-glass block</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Field -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Field">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Area"/>
-        <rdfs:label xml:lang="fr">champ</rdfs:label>
-        <rdfs:label xml:lang="en">field</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#FieldRobot -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FieldRobot">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Vector"/>
-        <rdfs:label xml:lang="en">field robot</rdfs:label>
-        <rdfs:label xml:lang="fr">phenomobile</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#FinancialFunding -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FinancialFunding">
-        <rdfs:label xml:lang="en">financial funding</rdfs:label>
-        <rdfs:label xml:lang="fr">support financier</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Gantry -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Gantry">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Vector"/>
-        <rdfs:label xml:lang="en">gantry</rdfs:label>
-        <rdfs:label xml:lang="fr">portique</rdfs:label>
-    </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
@@ -1095,127 +877,9 @@
     </owl:Class>
     
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#GreenSeeker -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GreenSeeker">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Spectroradiometer"/>
-        <rdfs:label xml:lang="en">green seeker</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#GypsumBlock -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GypsumBlock">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceBlock"/>
-        <rdfs:label xml:lang="en">gypsum block</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#HemisphericalCamera -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#HemisphericalCamera">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Camera"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasProject"/>
-                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Project"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasScientificSupervisor"/>
-                <owl:someValuesFrom rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasSpecies"/>
-                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasTechnicalSupervisor"/>
-                <owl:someValuesFrom rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#measures"/>
-                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variable"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasKeyword"/>
-                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#comment"/>
-                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#startDate"/>
-                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#label"/>
-                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#endDate"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasCampaign"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasObjective"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#isPublic"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-    </owl:Class>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Infrastructure -->
@@ -1227,17 +891,6 @@
     </owl:Class>
     
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
-        <rdfs:label xml:lang="fr">Dispositif</rdfs:label>
-        <rdfs:label xml:lang="en">Facility</rdfs:label>
-    </owl:Class>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam">
@@ -1246,61 +899,6 @@
         <rdfs:label xml:lang="en">Team</rdfs:label>
     </owl:Class>
     
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#IrrigationSystem -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#IrrigationSystem">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Actuator"/>
-        <rdfs:label xml:lang="en">irrigation system</rdfs:label>
-        <rdfs:label xml:lang="fr">système d&apos;irrigation</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Leaf -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Leaf">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
-        <dc:source>skos:closeMatch http://www.ontobee.org/ontology/rdf/PO?iri=http://purl.obolibrary.org/obo/PO_0000036</dc:source>
-        <rdfs:comment xml:lang="en">A phyllome vascular system (PO:0025206) that includes the totality of the portions of  vascular tissue in their specific arrangement in a vascular leaf  (PO:0009025). [database_cross_reference:  POC:Ramona_Walls]</rdfs:comment>
-        <rdfs:label xml:lang="fr">feuille</rdfs:label>
-        <rdfs:label xml:lang="en">leaf</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Lens -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Lens">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/security#hasGroup"/>
-                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasFacility"/>
-                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasPart"/>
-                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Infrastructure"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#label"/>
-                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-    </owl:Class>
-
     <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility">
@@ -1310,178 +908,17 @@
     </owl:Class>
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/security#Group"/>
-    </owl:Class>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Method -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Method">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
     </owl:Class>
     
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Project -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Project">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasAdministrativeContact"/>
-                <owl:someValuesFrom rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasCoordinator"/>
-                <owl:someValuesFrom rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasRelatedProject"/>
-                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Project"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasKeyword"/>
-                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#label"/>
-                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://purl.org/dc/elements/1.1/description"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="foaf:homepage"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:label xml:lang="fr">caméra multispectrale</rdfs:label>
-        <rdfs:label xml:lang="en">multispectral camera</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#MultispectralImage -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#MultispectralImage">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Image"/>
-        <rdfs:label xml:lang="fr">image multispectrale</rdfs:label>
-        <rdfs:label xml:lang="en">multispectral image</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#NetRadiometerOrNetPyrradiometerOrNetExchangeRadiometerOrBalancemeter -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#NetRadiometerOrNetPyrradiometerOrNetExchangeRadiometerOrBalancemeter">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#RadiationSensor"/>
-        <dc:source>skos:closeMatch Net radiometers or net pyrradiometers or net exchange radiometers or balancemeters [GAMP 2.4.1.1] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
-        <rdfs:comment>Net all-wave radiation (net flux of downward and upward total radiation i.e. solar, terrestrial and atmospheric)</rdfs:comment>
-        <rdfs:label xml:lang="en">net radiometer or net pyrradiometer or net exchange radiometer or balancemeter</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#NylonUnit -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#NylonUnit">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceBlock"/>
-        <rdfs:label xml:lang="en">nylon unit</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Paper -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Paper">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
-        <rdfs:label xml:lang="en">paper</rdfs:label>
-        <rdfs:label xml:lang="fr">publication scientifique</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#PhDThesis -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PhDThesis">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
-        <rdfs:label xml:lang="en">PhD thesis</rdfs:label>
-        <rdfs:label xml:lang="fr">thèse</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Plant -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Plant">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
-        <dc:source>skos:closeMatch http://www.ontobee.org/ontology/rdf/PO?iri=http://purl.obolibrary.org/obo/PO_0000003</dc:source>
-        <rdfs:comment xml:lang="en">the continuous organism originating from a single seed, callus, rhizome or any other propagation mean</rdfs:comment>
-        <rdfs:label xml:lang="en">plant</rdfs:label>
-        <rdfs:label xml:lang="fr">plante</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Platform -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Platform">
-        <rdfs:label xml:lang="fr">plateforme</rdfs:label>
-        <rdfs:label xml:lang="en">platform</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Plot -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Plot"/>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#PrecipitationSensor -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PrecipitationSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:label xml:lang="fr">capteur de précipitation</rdfs:label>
-        <rdfs:label xml:lang="en">precipitation sensor</rdfs:label>
-    </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Project -->
@@ -1495,36 +932,6 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#PropellerAnemometer -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PropellerAnemometer">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#WindSensor"/>
-        <dc:source>skos:closeMatch Propeller and vane anemometer [GAMP 2.4.1.5] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
-        <rdfs:comment>the angular velocity of the propeller rotor is directly proportional to the component of the wind speed parallel to the axis of rotation.</rdfs:comment>
-        <rdfs:label xml:lang="en">propeller anemometer</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#ProtectiveStructure -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ProtectiveStructure">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
-        <rdfs:label xml:lang="en">protective structure</rdfs:label>
-        <rdfs:label xml:lang="fr">structure protectrice</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Protocol -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Protocol">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
-        <rdfs:label xml:lang="en">protocol</rdfs:label>
-        <rdfs:label xml:lang="fr">protocole</rdfs:label>
-    </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Provenance -->
 
@@ -1533,96 +940,6 @@
         <rdfs:label xml:lang="fr">provenance</rdfs:label>
     </owl:Class>
     
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Pyranometer -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Pyranometer">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#RadiationSensor"/>
-        <dc:source>skos:closeMatch solarimeter (pyranometer) [GAMP 2.3.1.1] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
-        <rdfs:comment>total solar irradiance on a horizontal surface</rdfs:comment>
-        <rdfs:label xml:lang="en">pyranometer</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#PyranometerWithShadeRing -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PyranometerWithShadeRing">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#RadiationSensor"/>
-        <dc:source>skos:broaderMatch solarimeter (pyranometer) [GAMP 2.3.1.1] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
-        <rdfs:label xml:lang="en">pyranometer with shade ring</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#QuantumSensor -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#QuantumSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#RadiationSensor"/>
-        <dc:source>skos:closeMatch quantum sensor [GAMP 2.4.1.1] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
-        <rdfs:comment>measure the PAR directly in the range 0.4 to 0.7 micrometers</rdfs:comment>
-        <rdfs:label xml:lang="en">quantum sensor</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#RGBCamera -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#RGBCamera">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Camera"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#endDate"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasFinancialFunding"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasObjective"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasShortname"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#startDate"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://xmlns.com/foaf/0.1/homepage"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Provenance -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Provenance"/>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Quality -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Quality">
@@ -1680,8 +997,6 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
     </owl:Class>
     
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Unit -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Unit">
@@ -1801,27 +1116,6 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#VegetalExperiment -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VegetalExperiment">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
-        <oxapi:propertyMapping></oxapi:propertyMapping>
-        <rdfs:label xml:lang="fr">expérimentation végétale</rdfs:label>
-        <rdfs:label xml:lang="en">vegetal experiment</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#VignettingDocument -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VignettingDocument">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
-        <rdfs:label xml:lang="fr">Fichier de Vignettage</rdfs:label>
-        <rdfs:label xml:lang="en">Vignetting Document</rdfs:label>
-    </owl:Class>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Vitroplant -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Vitroplant">
@@ -1830,27 +1124,6 @@
         <rdfs:label xml:lang="en">Vitroplant Lot</rdfs:label>
     </owl:Class>
     
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#WeighingScale -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#WeighingScale">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:label xml:lang="fr">balance</rdfs:label>
-        <rdfs:label xml:lang="en">weighing scale</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#WindSensor -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VegetalExperiment">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
-        <rdfs:label xml:lang="fr">expérimentation végétale</rdfs:label>
-        <rdfs:label xml:lang="en">vegetal experiment</rdfs:label>
-    </owl:Class>
-    
-
 
     <!-- http://www.w3.org/2002/07/owl#DatatypeProperty -->
 
@@ -1907,72 +1180,14 @@
     
 
 
+
     <!-- 
    ///////////////////////////////////////////////////////////////////////////////////////
    //
-   // Individuals
+   // Annotations
    //
    ///////////////////////////////////////////////////////////////////////////////////////
     -->
-
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#anrsupport -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#anrsupport">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label>ANR</rdfs:label>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#europeanfunding -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#europeanfunding">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label xml:lang="en">European</rdfs:label>
-        <rdfs:label xml:lang="fr">Européen</rdfs:label>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#inrafunding -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#inrafunding">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label>INRA</rdfs:label>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#internationalfunding -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#internationalfunding">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label xml:lang="en">International</rdfs:label>
-        <rdfs:label xml:lang="fr">International</rdfs:label>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#researchunitfunding -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#researchunitfunding">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label xml:lang="en">Research Unit</rdfs:label>
-        <rdfs:label xml:lang="fr">Unité de recherche</rdfs:label>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Annotations
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
 
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/">
         <terms:publisher rdf:resource="http://purl.org/dc/aboutdcmi#DCMI"/>

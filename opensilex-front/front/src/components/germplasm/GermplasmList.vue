@@ -180,13 +180,18 @@ export default class GermplasmList extends Vue {
     // Only if search and reset button are use in list
   }
 
+  private langUnwatcher;
   mounted() {
-    this.$store.watch(
+    this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       lang => {
         this.updateLang();
       }
     );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
   }
 
   created() {

@@ -46,29 +46,42 @@
       <b-button class="mb-2 mr-2 " @click="insertData()" variant="success" v-bind:disabled="disableInsert">{{$t('GermplasmTable.insert')}}</b-button>
     </b-input-group>
 
-    <b-modal id="progressModal" size="lg" :no-close-on-backdrop="true" :no-close-on-esc="true" hide-header @shown="insertOrCheckData()">
-      <b-alert ref="progressAlert" variant="light" show> {{this.max}} {{$t('GermplasmTable.progressTitle')}} 
+    <b-modal
+      id="progressModal"
+      size="lg"
+      :no-close-on-backdrop="true"
+      :no-close-on-esc="true"
+      hide-header
+      @shown="insertOrCheckData()"
+    >
+      <b-alert ref="progressAlert" variant="light" show>
+        {{this.max}} {{$t('GermplasmTable.progressTitle')}}
         <b-progress :max="max" show-progress animated>
           <b-progress-bar :value="progressValue" :max="max" variant="info">
-            <strong> Progress: {{ progressValue }} / {{ max }}</strong>        
+            <strong>Progress: {{ progressValue }} / {{ max }}</strong>
           </b-progress-bar>
         </b-progress>
       </b-alert>
-      <b-alert variant="primary" :show="infoMessage"> {{this.summary}} </b-alert>
-      <b-alert variant="danger" :show="alertEmptyTable"> {{$t('GermplasmTable.emptyMessage')}} </b-alert>
+      <b-alert variant="primary" :show="infoMessage">{{this.summary}}</b-alert>
+      <b-alert variant="danger" :show="alertEmptyTable">{{$t('GermplasmTable.emptyMessage')}}</b-alert>
       <template v-slot:modal-footer>
-        <b-button v-bind:disabled="disableCloseButton" class="mb-2 mr-2" @click="$bvModal.hide('progressModal')" variant="primary">{{$t('GermplasmTable.close')}}</b-button>
+        <b-button
+          v-bind:disabled="disableCloseButton"
+          class="mb-2 mr-2"
+          @click="$bvModal.hide('progressModal')"
+          variant="primary"
+        >{{$t('GermplasmTable.close')}}</b-button>
       </template>
     </b-modal>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch, Ref } from 'vue-property-decorator'
-import { GermplasmCreationDTO, GermplasmService } from "opensilex-core/index"; 
+import { Component, Vue, Watch, Ref } from "vue-property-decorator";
+import { GermplasmCreationDTO, GermplasmService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import JsonCSV from 'vue-json-csv';
-Vue.component('downloadCsv', JsonCSV);
+import JsonCSV from "vue-json-csv";
+Vue.component("downloadCsv", JsonCSV);
 var Tabulator = require("tabulator-tables");
 
 @Component
@@ -88,8 +101,8 @@ export default class GermplasmTable extends Vue {
   okNumber: number = 0;
   emptyLines: number = 0;
   summary: string = "";
-  progressValue = 0
-  max = 0
+  progressValue = 0;
+  max = 0;
   modalTitle: string = "Scanning lines";
   infoMessage: boolean = false;
   alertEmptyTable: boolean = false;
@@ -99,15 +112,17 @@ export default class GermplasmTable extends Vue {
   @Ref("progressBar") readonly progressBar!: any;
   @Ref("colModal") readonly colModal!: any;
 
-  props = [{
-    germplasmType: {
-      type: String,
-      default: 'vocabulary:Species'
+  props = [
+    {
+      germplasmType: {
+        type: String,
+        default: "vocabulary:Species"
+      }
     }
-  }]
+  ];
 
-  tabulator = null
-  
+  tabulator = null;
+
   tableData = [];
 
   tableColumns = [];
@@ -128,9 +143,10 @@ export default class GermplasmTable extends Vue {
 
   checkedLines: number = 0;
 
+  private langUnwatcher;
   mounted() {
     //this.$nextTick(() => {
-      this.$store.watch(
+      this.langUnwatcher = this.$store.watch(
         () => this.$store.getters.language,
         lang => {       
           this.updateColumns();
@@ -139,10 +155,14 @@ export default class GermplasmTable extends Vue {
       this.updateColumns();
     //})
   }
+  
+  beforeDestroy() {
+    this.langUnwatcher();
+  }
 
-  @Watch('tableData',{deep: true })
+  @Watch("tableData", { deep: true })
   newData(value: string, oldValue: string) {
-    this.tabulator.replaceData(value)
+    this.tabulator.replaceData(value);
   }
 
   updateColumns() {
@@ -205,36 +225,35 @@ export default class GermplasmTable extends Vue {
       let codeLot = {title:this.$t('GermplasmTable.lotNumber'), field:"id", visible:true, editor:true};
       this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, codeLot,  speciesCol, varietyCol, accessionCol, instituteCol, productionYearCol, commentCol, checkingStatusCol, insertionStatusCol]  
     }
-    
+
     this.tableData = [];
     this.addInitialXRows(5);
 
     this.tabulator = new Tabulator(this.$refs.table, {
       data: this.tableData, //link data to table
-      reactiveData:true, //enable data reactivity
+      reactiveData: true, //enable data reactivity
       columns: this.tableColumns, //define table columns
-      layout:"fitData",
+      layout: "fitData",
       layoutColumnsOnNewData: true,
-      index:"rowNumber",
-      rowFormatter:function(row){
+      index: "rowNumber",
+      rowFormatter: function(row) {
         let r = row.getData().status;
         if (row.getData().status == "OK") {
           row.getElement().style.backgroundColor = "#a5e051";
-        } else if (row.getData().status == "NOK"){
-          row.getElement().style.backgroundColor = "#ed6661"; 
-        }   
-      },
-
+        } else if (row.getData().status == "NOK") {
+          row.getElement().style.backgroundColor = "#ed6661";
+        }
+      }
     });
 
     this.jsonForTemplate = [];
     let jsonHeader = {};
-    for (var i=1;i<this.tableColumns.length;i++) {
+    for (var i = 1; i < this.tableColumns.length; i++) {
       if (this.tableColumns[i].visible == true) {
         jsonHeader[this.tableColumns[i].field] = null;
-      }      
+      }
     }
-    this.jsonForTemplate.push(jsonHeader)
+    this.jsonForTemplate.push(jsonHeader);
     this.$attrs.downloadCsv;
     this.checkedLines = 0;
     this.disableCheck = false;
@@ -243,30 +262,32 @@ export default class GermplasmTable extends Vue {
   }
 
   addInitialXRows(X) {
-    for (let i = 1; i < X+1; i++) {
-         this.tableData.push({rowNumber:i});
-    }      
+    for (let i = 1; i < X + 1; i++) {
+      this.tableData.push({ rowNumber: i });
+    }
   }
 
   showColumnModal() {
-    this.colModal.show(); 
+    this.colModal.show();
   }
 
   addColumn() {
     this.colModal.hide();
-    this.tabulator.addColumn({title:this.colName, field:this.colName, editor:true}, false, "comment");
+    this.tabulator.addColumn(
+      { title: this.colName, field: this.colName, editor: true },
+      false,
+      "comment"
+    );
     this.suppColumnsNames.push(this.colName);
     this.jsonForTemplate[0][this.colName] = null;
     this.$attrs.downloadCsv;
     this.colName = null;
   }
 
-
-
   addRow() {
-    let size = this.tabulator.getData().length;   
-    this.tabulator.addRow({rowNumber:size+1});
-    console.log(this.tabulator.getData().length)
+    let size = this.tabulator.getData().length;
+    this.tabulator.addRow({ rowNumber: size + 1 });
+    console.log(this.tabulator.getData().length);
   }
 
   resetModal() {
@@ -278,17 +299,17 @@ export default class GermplasmTable extends Vue {
     this.infoMessage = false;
     this.alertEmptyTable = false;
   }
-  
+
   showModal() {
     this.resetModal();
     this.max = this.tabulator.getData().length;
-    this.modalTitle = this.max + " lines to scan"
-    this.$bvModal.show('progressModal') 
+    this.modalTitle = this.max + " lines to scan";
+    this.$bvModal.show("progressModal");
   }
 
   checkData() {
     this.onlyChecking = true;
-    this.showModal();  
+    this.showModal();
     this.tabulator.showColumn("checkingStatus");
     this.tabulator.hideColumn("insertionStatus");    
     this.disableInsert = false;
@@ -297,7 +318,7 @@ export default class GermplasmTable extends Vue {
   }
 
   insertData() {
-    this.onlyChecking = false; 
+    this.onlyChecking = false;
     this.showModal();
     this.tabulator.hideColumn("checkingStatus");
     this.tabulator.showColumn("insertionStatus");   
@@ -305,64 +326,83 @@ export default class GermplasmTable extends Vue {
     this.disableCheck = true;
   }
 
-  insertOrCheckData() {     
+  insertOrCheckData() {
     this.disableCloseButton = true;
-    let dataToInsert = this.tabulator.getData();  
+    let dataToInsert = this.tabulator.getData();
 
-    let promises = [];    
+    let promises = [];
     this.$opensilex.disableLoader();
 
     let colDefs = this.tabulator.getColumnDefinitions();
 
     for (let idx = 0; idx < dataToInsert.length; idx++) {
-
       let form: GermplasmCreationDTO = {
         rdfType: null,
         label: null,
         uri: null,
-        fromSpecies:null,
-        fromVariety:null,
-        fromAccession:null,
-        institute:null,
-        productionYear:null,
-        comment:null,
-        code:null,
+        fromSpecies: null,
+        fromVariety: null,
+        fromAccession: null,
+        institute: null,
+        productionYear: null,
+        comment: null,
+        code: null,
         synonyms: [],
         attributes: null
-        
-      } 
+      };
 
       form.rdfType = this.$attrs.germplasmType;
-      
+
       if (dataToInsert[idx].uri != null && dataToInsert[idx].uri != "") {
         form.uri = dataToInsert[idx].uri;
       }
       if (dataToInsert[idx].name != null && dataToInsert[idx].name != "") {
         form.label = dataToInsert[idx].name;
       }
-      if (dataToInsert[idx].fromSpecies != null && dataToInsert[idx].fromSpecies != "") {
+      if (
+        dataToInsert[idx].fromSpecies != null &&
+        dataToInsert[idx].fromSpecies != ""
+      ) {
         form.fromSpecies = dataToInsert[idx].fromSpecies;
       }
-      if (dataToInsert[idx].fromVariety != null && dataToInsert[idx].fromVariety != "") {
+      if (
+        dataToInsert[idx].fromVariety != null &&
+        dataToInsert[idx].fromVariety != ""
+      ) {
         form.fromVariety = dataToInsert[idx].fromVariety;
       }
-      if (dataToInsert[idx].fromAccession != null && dataToInsert[idx].fromAccession != "") {
+      if (
+        dataToInsert[idx].fromAccession != null &&
+        dataToInsert[idx].fromAccession != ""
+      ) {
         form.fromAccession = dataToInsert[idx].fromAccession;
       }
-      if (dataToInsert[idx].institute != null && dataToInsert[idx].institute != "") {
+      if (
+        dataToInsert[idx].institute != null &&
+        dataToInsert[idx].institute != ""
+      ) {
         form.institute = dataToInsert[idx].institute;
       }
-      if (dataToInsert[idx].productionYear != null && dataToInsert[idx].productionYear != "") {
+      if (
+        dataToInsert[idx].productionYear != null &&
+        dataToInsert[idx].productionYear != ""
+      ) {
         form.productionYear = dataToInsert[idx].productionYear;
       }
-      if (dataToInsert[idx].comment != null && dataToInsert[idx].comment != "") {
+      if (
+        dataToInsert[idx].comment != null &&
+        dataToInsert[idx].comment != ""
+      ) {
         form.comment = dataToInsert[idx].comment;
       }
       if (dataToInsert[idx].code != null && dataToInsert[idx].code != "") {
         form.code = dataToInsert[idx].code;
       }
 
-      if (dataToInsert[idx].synonyms != null && dataToInsert[idx].synonyms != "") {
+      if (
+        dataToInsert[idx].synonyms != null &&
+        dataToInsert[idx].synonyms != ""
+      ) {
         let stringSynonyms = dataToInsert[idx].synonyms;
         form.synonyms = stringSynonyms.split("|");
       }
@@ -372,54 +412,54 @@ export default class GermplasmTable extends Vue {
         for (let y = 0; y < this.suppColumnsNames.length; y++) {
           let key = this.suppColumnsNames[y];
           if (dataToInsert[idx][key] != null && dataToInsert[idx][key] != "") {
-              attributes[key] = dataToInsert[idx][key];
+            attributes[key] = dataToInsert[idx][key];
           }
         }
 
         if (Object.keys(attributes).length !== 0) {
           form.attributes = attributes;
         }
-        
       }
-            
-      if (((form.label == null) 
-          && (form.uri == null) 
-          && (form.fromSpecies == null) 
-          && (form.fromVariety == null) 
-          && (form.fromAccession == null)
-          && (form.institute == null)
-          && (form.productionYear == null)
-          && (form.comment == null)
-          && (form.code == null)
-          && (form.synonyms.length == 0)
-          && (form.attributes == null))) {
+
+      if (
+        form.label == null &&
+        form.uri == null &&
+        form.fromSpecies == null &&
+        form.fromVariety == null &&
+        form.fromAccession == null &&
+        form.institute == null &&
+        form.productionYear == null &&
+        form.comment == null &&
+        form.code == null &&
+        form.synonyms.length == 0 &&
+        form.attributes == null
+      ) {
         this.emptyLines = this.emptyLines + 1;
         this.progressValue = this.progressValue + 1;
-        
       } else {
-        promises.push(this.callCreateGermplasmService(form, idx+1, this.onlyChecking));
-      } 
+        promises.push(
+          this.callCreateGermplasmService(form, idx + 1, this.onlyChecking)
+        );
+      }
     }
 
-    Promise.all(promises).then((result) => {
+    Promise.all(promises).then(result => {
       if (this.onlyChecking) {
         this.summary = this.okNumber + " " + this.$t('GermplasmTable.infoMessageGermplReady') + ", " + this.errorNumber + " " + this.$t('GermplasmTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('GermplasmTable.infoMessageEmptyLines');
       } else {
         this.summary = this.okNumber + " " + this.$t('GermplasmTable.infoMessageGermplInserted') +", " + this.errorNumber + " " + this.$t('GermplasmTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('GermplasmTable.infoMessageEmptyLines');
       }
-      this.infoMessage = true; 
+      this.infoMessage = true;
       this.disableCloseButton = false;
-      this.$opensilex.enableLoader();     
-    }) 
+      this.$opensilex.enableLoader();
+    });
 
     if (this.emptyLines == this.max) {
       this.alertEmptyTable = true;
       this.disableCloseButton = false;
       this.$opensilex.enableLoader();
     }
-    
   }
-
 
   get user() {
     return this.$store.state.user;
@@ -434,8 +474,11 @@ export default class GermplasmTable extends Vue {
     this.service = this.$opensilex.getService("opensilex.GermplasmService");
   }
 
-  callCreateGermplasmService(form: GermplasmCreationDTO, index: number, onlyChecking: boolean) {
-    
+  callCreateGermplasmService(
+    form: GermplasmCreationDTO,
+    index: number,
+    onlyChecking: boolean
+  ) {
     return new Promise((resolve, reject) => {
     this.service
     .createGermplasm(onlyChecking, form)
@@ -464,35 +507,57 @@ export default class GermplasmTable extends Vue {
           failure = true;
         }
 
-        if (failure) {
+          let row = this.tabulator.getRow(index);
+          row.reformat();
+          this.okNumber = this.okNumber + 1;
+          this.progressValue = this.progressValue + 1;
+
+          resolve();
+        })
+        .catch(error => {
+          let errorMessage: string;
+          let errorMessage2: string;
+          let failure = true;
           try {
-            errorMessage = error.response.metadata.status[0].exception.details;
-          } catch (e2) {
-            errorMessage = "uncatched error";
+            errorMessage = error.response.result.message;
+            failure = false;
+          } catch (e1) {
+            failure = true;
           }
-        }
 
-        if (onlyChecking) {
-          this.tabulator.updateData([{rowNumber:index, checkingStatus:errorMessage, status:"NOK"}])
-        } else {
-          this.tabulator.updateData([{rowNumber:index, insertionStatus:errorMessage, status:"NOK"}])
-        } 
+          if (failure) {
+            try {
+              errorMessage =
+                error.response.metadata.status[0].exception.details;
+            } catch (e2) {
+              errorMessage = "uncatched error";
+            }
+          }
 
-        
-        let row = this.tabulator.getRow(index);
-        row.reformat();
-        this.errorNumber = this.errorNumber + 1;
-        this.progressValue = this.progressValue + 1;
-        resolve();
-      })
-    })
+          if (onlyChecking) {
+            this.tabulator.updateData([
+              { rowNumber: index, checkingStatus: errorMessage, status: "NOK" }
+            ]);
+          } else {
+            this.tabulator.updateData([
+              { rowNumber: index, insertionStatus: errorMessage, status: "NOK" }
+            ]);
+          }
+
+          let row = this.tabulator.getRow(index);
+          row.reformat();
+          this.errorNumber = this.errorNumber + 1;
+          this.progressValue = this.progressValue + 1;
+          resolve();
+        });
+    });
   }
-  
+
   uploaded(data) {
     for (let idx = 0; idx < data.length; idx++) {
-      data[idx]["rowNumber"] = idx+1;
+      data[idx]["rowNumber"] = idx + 1;
     }
-    this.tabulator.setData(data);  
+    this.tabulator.setData(data);
   }
 
   filterLines() {
@@ -505,7 +570,6 @@ export default class GermplasmTable extends Vue {
   }
 
 }
-
 </script>
 
 <style scoped lang="scss">
@@ -532,7 +596,7 @@ export default class GermplasmTable extends Vue {
 }
 
 .tabulator .tabulator-header .tabulator-col {
-  border-right:1px solid #dee2e6;
+  border-right: 1px solid #dee2e6;
 }
 
 .tabulator .tabulator-table .tabulator-row .tabulator-cell {

@@ -567,7 +567,8 @@ public final class OpenSilex {
     }
 
     /**
-     * Return module instance corresponding to the given class Throw an exception if the corresponding module is not find.
+     * Return module instance corresponding to the given class Throw an exception if the corresponding module is not
+     * find.
      *
      * @param <T> The module class of returned instance
      * @param moduleClass The module class from which the instance should be returned

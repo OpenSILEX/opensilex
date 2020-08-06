@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URI;
 import java.util.ArrayList;
 import org.junit.After;
-import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 
 import javax.ws.rs.client.Entity;

@@ -1,9 +1,5 @@
 <template>
-  <opensilex-FormField
-    :rules="rules"
-    :required="required"
-    :label="label ||'component.common.type'"
-  >
+  <opensilex-FormField :rules="rules" :required="required" :label="label ||'component.common.type'">
     <!-- helpMessage="component.common.type.help-message" -->
     <template v-slot:field="field">
       <treeselect
@@ -22,7 +18,6 @@
       />
     </template>
   </opensilex-FormField>
-  
 </template>
 
 <script lang="ts">
@@ -69,19 +64,22 @@ export default class TypeForm extends Vue {
   id: string;
 
   created() {
-    this.service = this.$opensilex.getService(
-      "opensilex.OntologyService"
-    );
+    this.service = this.$opensilex.getService("opensilex.OntologyService");
     this.id = this.$opensilex.generateID();
   }
 
+  private langUnwatcher;
   mounted() {
-    this.$store.watch(
+    this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       lang => {
         this.loadTypes();
       }
     );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
   }
 
   initTypes({ action, parentNode, callback }) {

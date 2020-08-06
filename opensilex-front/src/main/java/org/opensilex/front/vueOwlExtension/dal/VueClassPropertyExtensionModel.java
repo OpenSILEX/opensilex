@@ -44,18 +44,6 @@ public class VueClassPropertyExtensionModel extends SPARQLResourceModel {
     )
     protected Integer hasDisplayOrder;
 
-    @SPARQLProperty(
-            ontology = VueOwlExtension.class,
-            property = "hasInputComponent"
-    )
-    protected String inputComponent;
-
-    @SPARQLProperty(
-            ontology = VueOwlExtension.class,
-            property = "hasViewComponent"
-    )
-    protected String viewComponent;
-
     public URI getFromOwlClass() {
         return fromOwlClass;
     }
@@ -79,20 +67,5 @@ public class VueClassPropertyExtensionModel extends SPARQLResourceModel {
     public void setHasDisplayOrder(Integer hasDisplayOrder) {
         this.hasDisplayOrder = hasDisplayOrder;
     }
-
-    public String getInputComponent() {
-        return inputComponent;
-    }
-
-    public void setInputComponent(String inputComponent) {
-        this.inputComponent = inputComponent;
-    }
-
-    public String getViewComponent() {
-        return viewComponent;
-    }
-
-    public void setViewComponent(String viewComponent) {
-        this.viewComponent = viewComponent;
-    }
+  
 }

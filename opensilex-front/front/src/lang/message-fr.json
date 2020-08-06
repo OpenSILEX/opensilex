@@ -176,7 +176,10 @@
                 "factorLevels": "Niveaux de facteurs",
                 "germplasm": "Ressources Génétiques"
             },
-            "infrastructures": "Infrastructures"
+            "infrastructures": "Infrastructures",
+            "configuration": "Paramètres",
+            "scientificObjectTypes": "Types d'objet scientifique",
+            "scientificObjectProperties":  "Propriétés des objets scientifiques"
         },
         "login": {
             "input": {

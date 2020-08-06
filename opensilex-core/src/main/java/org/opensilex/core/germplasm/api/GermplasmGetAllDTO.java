@@ -13,12 +13,12 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
  * @author boizetal
  */
 public class GermplasmGetAllDTO {
-    
+
     /**
      * Germplasm URI
      */
     protected URI uri;
-    
+
     /**
      * Germplasm Type : Species, Variety, Accession or subclass of PlantMaterialLot
      */
@@ -27,22 +27,22 @@ public class GermplasmGetAllDTO {
     /**
      * typeLabel
      */
-    protected String typeLabel; 
-    
+    protected String typeLabel;
+
     /**
      * Germplasm label
      */
     protected String label;
-    
+
     /**
      * Germplasm species URI
      */
     protected URI fromSpecies;
-    
+
     /**
      * speciesLabel
      */
-    protected String speciesLabel;   
+    protected String speciesLabel;
 
     public URI getUri() {
         return uri;
@@ -67,7 +67,6 @@ public class GermplasmGetAllDTO {
     public void setTypeLabel(String typeLabel) {
         this.typeLabel = typeLabel;
     }
-    
 
     public String getLabel() {
         return label;
@@ -92,7 +91,7 @@ public class GermplasmGetAllDTO {
     public void setSpeciesLabel(String speciesLabel) {
         this.speciesLabel = speciesLabel;
     }
-    
+
     /**
      * Convert Germplasm Model into Germplasm DTO
      *
@@ -105,17 +104,17 @@ public class GermplasmGetAllDTO {
         dto.setUri(model.getUri());
         dto.setRdfType(model.getType());
         dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
-        dto.setLabel(model.getLabel().getDefaultValue());
-        
+        dto.setLabel(model.getName());
+
         if (model.getSpecies() != null) {
             dto.setFromSpecies(model.getSpecies().getUri());
-            try {                
-                dto.setSpeciesLabel(model.getSpecies().getLabel().getDefaultValue());
-            } catch (Exception e){                
+            try {
+                dto.setSpeciesLabel(model.getSpecies().getName());
+            } catch (Exception e) {
             }
         }
-        
+
         return dto;
     }
-        
+
 }

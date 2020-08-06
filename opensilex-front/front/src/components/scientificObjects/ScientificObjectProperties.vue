@@ -2,8 +2,7 @@
   <div class="container-fluid">
     <opensilex-PageHeader
       icon="ik#ik-globe"
-      title="component.menu.infrastructures"
-      description="component.infrastructure.description"
+      title="component.menu.scientificObjectProperties"
     ></opensilex-PageHeader>
 
     <opensilex-PageActions>
@@ -53,11 +52,12 @@ en:
     title: Scientific objects properties
     add: Create property
     update: Update property
+    create-property: Create property
 
 fr:
   ScientificObjectProperties:
     title: Propriétés des objets scientifiques
     add: Créer une propriété
     update: Mettre à jour la propriété
-
+    create-property: Créer une propriété
 </i18n>

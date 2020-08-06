@@ -7,28 +7,27 @@
 package org.opensilex.core.germplasm.api;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 
 /**
  * DTO representing JSON for searching germplasm or getting them by uri
+ *
  * @author Alice Boizet
  */
-public class GermplasmGetSingleDTO extends GermplasmGetAllDTO {  
-        
+public class GermplasmGetSingleDTO extends GermplasmGetAllDTO {
+
     /**
      * Germplasm Variety URI
      */
     protected URI fromVariety;
-    
+
     /**
      * varietyLabel
      */
-    protected String varietyLabel; 
-    
+    protected String varietyLabel;
+
     /**
      * Germplasm Accession URI
      */
@@ -37,33 +36,33 @@ public class GermplasmGetSingleDTO extends GermplasmGetAllDTO {
     /**
      * accessionLabel
      */
-    protected String accessionLabel;   
+    protected String accessionLabel;
 
     /**
      * institute where the accession has been created
      */
     protected String institute;
-    
+
     /**
      * Germplasm id (accessionNumber, varietyCode...)
      */
     protected String code;
-    
+
     /**
      * productionYear
      */
     protected Integer productionYear;
-    
+
     /**
      * experiment
      */
-    protected URI experiment;   
-    
+    protected URI experiment;
+
     /**
      * comment
      */
-    protected String comment;  
-    
+    protected String comment;
+
     protected List<String> synonyms;
 
     protected Map<String, String> attributes;
@@ -155,7 +154,7 @@ public class GermplasmGetSingleDTO extends GermplasmGetAllDTO {
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
     }
-    
+
     /**
      * Convert Germplasm Model into Germplasm DTO
      *
@@ -168,54 +167,54 @@ public class GermplasmGetSingleDTO extends GermplasmGetAllDTO {
         dto.setUri(model.getUri());
         dto.setRdfType(model.getType());
         dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
-        dto.setLabel(model.getLabel().getDefaultValue());
-        
+        dto.setLabel(model.getName());
+
         if (model.getSpecies() != null) {
             dto.setFromSpecies(model.getSpecies().getUri());
-            try {                
-                dto.setSpeciesLabel(model.getSpecies().getLabel().getDefaultValue());
-            } catch (Exception e){                
+            try {
+                dto.setSpeciesLabel(model.getSpecies().getName());
+            } catch (Exception e) {
             }
         }
-        
+
         if (model.getVariety() != null) {
             dto.setFromVariety(model.getVariety().getUri());
-            try {                
-                dto.setVarietyLabel(model.getVariety().getLabel().getDefaultValue());
-            } catch (Exception e){                
+            try {
+                dto.setVarietyLabel(model.getVariety().getName());
+            } catch (Exception e) {
             }
-            
+
         }
-        
+
         if (model.getAccession() != null) {
             dto.setFromAccession(model.getAccession().getUri());
-            try {                
-                dto.setAccessionLabel(model.getAccession().getLabel().getDefaultValue());
-            } catch (Exception e){                
+            try {
+                dto.setAccessionLabel(model.getAccession().getName());
+            } catch (Exception e) {
             }
-           
-        }         
-        
+
+        }
+
         if (model.getComment() != null) {
             dto.setComment(model.getComment());
         }
-        
+
         if (model.getInstitute() != null) {
             dto.setInstitute(model.getInstitute());
         }
-        
+
         if (model.getProductionYear() != null) {
             dto.setProductionYear(model.getProductionYear());
-        }  
-        
-        if (model.getCode()!= null) {
+        }
+
+        if (model.getCode() != null) {
             dto.setCode(model.getCode());
         }
-        
+
         if (model.getAttributes() != null) {
             dto.setAttributes(model.getAttributes());
         }
-        
+
         if (model.getSynonyms() != null) {
             dto.setSynonyms(model.getSynonyms());
         }

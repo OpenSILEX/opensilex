@@ -710,31 +710,46 @@ export default class OpenSilexVuePlugin {
         });
     }
 
-    private datatypes = [];
+    public datatypes = [];
     private datatypesByURI = {};
 
     public getDatatype(uri) {
         return this.datatypesByURI[uri];
     }
 
-    public loadXSDTypes() {
-        return new Promise((resolve, reject)  => {
-            this.loadService<VueJsOntologyExtensionService>("opensilex.VueJsOntologyExtensionService")
-            .then((service) => {
-                console.error(service);
-                service.getDatatypes()
-                    .then((http) => {
-                        this.datatypes = http.response.result;
-                        for (let i in this.datatypes) {
-                            let datatype = this.datatypes[i];
-                            this.datatypesByURI[datatype.uri] = datatype;
-                            this.datatypesByURI[datatype.shortUri] = datatype;
-                        }
-                        resolve();
-                    })
-                    .catch(reject);
-            })
-            .catch(reject)
+    public loadDataTypes() {
+        return new Promise((resolve, reject) => {
+            this.getService<VueJsOntologyExtensionService>("opensilex.VueJsOntologyExtensionService")
+                .getDataTypes()
+                .then((http) => {
+                    this.datatypes = http.response.result;
+                    for (let i in this.datatypes) {
+                        let datatype = this.datatypes[i];
+                        this.datatypesByURI[datatype.uri] = datatype;
+                        this.datatypesByURI[datatype.shortUri] = datatype;
+                    }
+                    resolve();
+                })
+                .catch(reject);
         });
     }
+
+    public loadObjectTypes() {
+        return new Promise((resolve, reject) => {
+            this.getService<VueJsOntologyExtensionService>("opensilex.VueJsOntologyExtensionService")
+                .getObjectTypes()
+                .then((http) => {
+                    this.datatypes = http.response.result;
+                    for (let i in this.datatypes) {
+                        let datatype = this.datatypes[i];
+                        this.datatypesByURI[datatype.uri] = datatype;
+                        this.datatypesByURI[datatype.shortUri] = datatype;
+                    }
+                    resolve();
+                })
+                .catch(reject);
+        });
+    }
+
+
 }

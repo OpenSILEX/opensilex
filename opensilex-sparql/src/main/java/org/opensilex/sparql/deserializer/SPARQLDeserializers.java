@@ -113,6 +113,9 @@ public class SPARQLDeserializers {
     }
 
     public static Class<?> getDeserializerClass(SPARQLDeserializer<?> deserializer) {
+        if (deserializersMap == null) {
+            buildDeserializersMap();
+        }
         return deserializersMap.inverse().get(deserializer);
     }
 
@@ -185,7 +188,6 @@ public class SPARQLDeserializers {
         return getExpandedURI(value.toString());
     }
 
-    
     public static URI formatURI(URI value) {
         return URIDeserializer.formatURI(value);
     }

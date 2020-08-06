@@ -114,6 +114,25 @@
                 <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
                 <version>${revision}</version>
             </plugin>
+            
+            <!-- Allow to extends SPARQL deserializers --> 
+            <plugin>
+                <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
+                <artifactId>serviceloader-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>opensilex-vue-types-services</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <services>
+                                <param>org.opensilex.front.vueOwlExtension.types.VueOntologyType</param>
+                            </services>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>

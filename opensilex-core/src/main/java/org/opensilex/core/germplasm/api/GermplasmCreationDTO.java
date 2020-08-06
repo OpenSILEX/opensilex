@@ -13,11 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
-import org.opensilex.core.germplasm.dal.GermplasmAttributeModel;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.model.SPARQLLabel;
 
 /**
  * DTO representing JSON for posting germplasm
@@ -199,7 +197,7 @@ public class GermplasmCreationDTO {
             model.setUri(uri);
         }
         if (label != null) {
-            model.setLabel(new SPARQLLabel(label,null));
+            model.setName(label);
         }
         if (rdfType != null) {
             model.setType(rdfType);

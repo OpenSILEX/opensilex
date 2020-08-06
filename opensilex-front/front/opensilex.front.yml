@@ -121,15 +121,15 @@ menu:
           credentials:
             - profile-read
   - id: configuration
-    label: componenent.menu.configuration.label
+    label: component.menu.configuration
     children:
       - id: scientificObjectTypes
-        label: componenent.menu.scientificObjectTypes.label 
+        label: component.menu.scientificObjectTypes 
         route:
           path: /scientific-object-types
           component: opensilex-ScientificObjectTypes
       - id: scientificObjectProperties
-        label: componenent.menu.scientificObjectProperties.label 
+        label: component.menu.scientificObjectProperties 
         route:
           path: /scientific-object-properties
           component: opensilex-ScientificObjectProperties          
@@ -158,7 +158,6 @@ routes:
   - path: /germplasm/:uri
     component: opensilex-GermplasmDetails
     credentials: []
-
   - path: /factor/create
     component: opensilex-FactorForm
     credentials:

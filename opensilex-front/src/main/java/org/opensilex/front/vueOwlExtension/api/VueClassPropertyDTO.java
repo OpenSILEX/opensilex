@@ -7,6 +7,8 @@ package org.opensilex.front.vueOwlExtension.api;
 
 import java.net.URI;
 import org.opensilex.front.vueOwlExtension.dal.VueClassPropertyExtensionModel;
+import org.opensilex.front.vueOwlExtension.dal.VueOwlExtensionDAO;
+import org.opensilex.front.vueOwlExtension.types.VueOntologyType;
 
 /**
  *
@@ -57,8 +59,11 @@ public class VueClassPropertyDTO {
     static VueClassPropertyDTO fromModel(VueClassPropertyExtensionModel extProperty) {
         VueClassPropertyDTO dto = new VueClassPropertyDTO();
         dto.setProperty(extProperty.getUri());
-        dto.setViewComponent(extProperty.getViewComponent());
-        dto.setInputComponent(extProperty.getInputComponent());
+        VueOntologyType vueType = VueOwlExtensionDAO.getVueType(extProperty.getUri());
+        if (vueType != null) {
+            dto.setViewComponent(vueType.getViewComponent());
+            dto.setInputComponent(vueType.getInputComponent());
+        }
         dto.setOrder(extProperty.getHasDisplayOrder());
 
         return dto;

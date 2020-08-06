@@ -180,8 +180,6 @@ export default class WizardForm extends Vue {
 
           return nextStepResult
             .then(shouldContinue => {
-              console.error("shouldContinue", shouldContinue);
-              console.error("isValid", isValid);
               if (isValid && shouldContinue !== false) {
                 props.nextTab();
               }
@@ -189,8 +187,6 @@ export default class WizardForm extends Vue {
               return isValid;
             })
             .catch(error => {
-              console.error("WTF", error);
-              console.error("isValid", isValid);
               return false;
             });
         } else {

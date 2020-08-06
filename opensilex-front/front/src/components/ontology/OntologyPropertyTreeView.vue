@@ -64,8 +64,9 @@ export default class OntologyPropertyTreeView extends Vue {
     this.onDomainChange();
   }
 
+  private langUnwatcher;
   mounted() {
-    this.$store.watch(
+    this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       lang => {
         this.onDomainChange();
@@ -74,6 +75,10 @@ export default class OntologyPropertyTreeView extends Vue {
         }
       }
     );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
   }
 
   @Watch("domain")
@@ -102,11 +107,9 @@ export default class OntologyPropertyTreeView extends Vue {
   }
 
   displayPropertyDetail(uri, type) {
-    this.ontologyService
-      .getProperty(uri, type)
-      .then(http => {
-        this.selected = http.response.result;
-      });
+    this.ontologyService.getProperty(uri, type).then(http => {
+      this.selected = http.response.result;
+    });
   }
 
   getPropertyIcon(node) {
@@ -133,7 +136,7 @@ export default class OntologyPropertyTreeView extends Vue {
       isLeaf: isLeaf,
       children: childrenDTOs,
       isExpanded: true,
-      isSelected: (this.selected && this.selected.uri == dto.uri),
+      isSelected: this.selected && this.selected.uri == dto.uri,
       isDraggable: false,
       isSelectable: !dto.disabled
     };

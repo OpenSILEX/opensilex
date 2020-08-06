@@ -194,7 +194,7 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return property model definition ", response = RDFPropertyDetailDTO.class)
+        @ApiResponse(code = 200, message = "Return property model definition ", response = RDFPropertyDTO.class)
     })
     public Response getProperty(
             @ApiParam(value = "Property URI") @QueryParam("propertyURI") @ValidURI URI propertyURI,
@@ -202,14 +202,14 @@ public class OntologyAPI {
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
-        RDFPropertyDetailDTO dto;
+        RDFPropertyDTO dto;
         if (RDFPropertyDTO.isDataProperty(propertyType)) {
             DatatypePropertyModel property = dao.getDataProperty(propertyURI, currentUser);
-            dto = RDFPropertyDetailDTO.fromModel(property, property.getParent());
+            dto = RDFPropertyDTO.fromModel(property, property.getParent());
             dto.setRange(property.getRange());
         } else {
             ObjectPropertyModel property = dao.getObjectProperty(propertyURI, currentUser);
-            dto = RDFPropertyDetailDTO.fromModel(property, property.getParent());
+            dto = RDFPropertyDTO.fromModel(property, property.getParent());
             if (property.getRange() != null) {
                 dto.setRange(property.getRange().getUri());
                 dto.setRangeLabel(property.getRange().getName());

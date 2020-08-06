@@ -61,7 +61,6 @@ export default class ExperimentFacilitySelector extends Vue {
   uri;
 
   show() {
-    console.error(this.facilitySelector);
     this.facilitySelector.show();
   }
 

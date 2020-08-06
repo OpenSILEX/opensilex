@@ -131,9 +131,6 @@ public class VueClassDTO extends RDFClassDTO {
             propertyModel.setFromOwlClass(getUri());
             propertyModel.setToOwlProperty(extPropertyDTO.getProperty());
             propertyModel.setHasDisplayOrder(extPropertyDTO.getOrder());
-            propertyModel.setInputComponent(extPropertyDTO.getInputComponent());
-            propertyModel.setViewComponent(extPropertyDTO.getViewComponent());
-
             extendedProperties.add(propertyModel);
         }
         model.setProperties(extendedProperties);

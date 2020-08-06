@@ -63,13 +63,18 @@ export default class OntologyClassTreeView extends Vue {
     this.onRootClassChange();
   }
 
+  private langUnwatcher;
   mounted() {
-    this.$store.watch(
+    this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       lang => {
         this.onRootClassChange();
       }
     );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
   }
 
   @Watch("rdfClass")
@@ -115,7 +120,7 @@ export default class OntologyClassTreeView extends Vue {
       isLeaf: isLeaf,
       children: childrenDTOs,
       isExpanded: true,
-      isSelected: dto,
+      isSelected: this.selected && this.selected.uri == dto.uri,
       isDraggable: false,
       isSelectable: !dto.disabled
     };

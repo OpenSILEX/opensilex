@@ -25,14 +25,18 @@ public class RDFPropertyDTO {
 
     protected URI type;
 
-    protected Map<String, String> label;
+    protected String label;
 
-    protected Map<String, String> comment;
+    protected String comment;
+
+    protected Map<String, String> labelTranslations;
+
+    protected Map<String, String> commentTranslations;
 
     protected URI domain;
 
     protected URI range;
-    
+
     protected String rangeLabel;
 
     protected URI parent;
@@ -53,20 +57,36 @@ public class RDFPropertyDTO {
         this.type = type;
     }
 
-    public Map<String, String> getLabel() {
+    public String getLabel() {
         return label;
     }
 
-    public void setLabel(Map<String, String> label) {
+    public void setLabel(String label) {
         this.label = label;
     }
 
-    public Map<String, String> getComment() {
+    public String getComment() {
         return comment;
     }
 
-    public void setComment(Map<String, String> comment) {
+    public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public Map<String, String> getLabelTranslations() {
+        return labelTranslations;
+    }
+
+    public void setLabelTranslations(Map<String, String> labelTranslations) {
+        this.labelTranslations = labelTranslations;
+    }
+
+    public Map<String, String> getCommentTranslations() {
+        return commentTranslations;
+    }
+
+    public void setCommentTranslations(Map<String, String> commentTranslations) {
+        this.commentTranslations = commentTranslations;
     }
 
     public URI getDomain() {
@@ -93,7 +113,6 @@ public class RDFPropertyDTO {
         this.rangeLabel = rangeLabel;
     }
 
-    
     public URI getParent() {
         return parent;
     }
@@ -110,8 +129,8 @@ public class RDFPropertyDTO {
     public PropertyModel toModel(PropertyModel model) {
 
         model.setUri(getUri());
-        model.setLabel(SPARQLLabel.fromMap(getLabel()));
-        model.setComment(SPARQLLabel.fromMap(getComment()));
+        model.setLabel(SPARQLLabel.fromMap(getLabelTranslations()));
+        model.setComment(SPARQLLabel.fromMap(getCommentTranslations()));
         ClassModel pDomain = new ClassModel();
         pDomain.setUri(getDomain());
         model.setDomain(pDomain);
@@ -127,11 +146,13 @@ public class RDFPropertyDTO {
         if (parentModel != null) {
             dto.setParent(parentModel.getUri());
         }
-        dto.setLabel(model.getLabel().getAllTranslations());
+        dto.setLabel(model.getLabel().getDefaultValue());
+        dto.setLabelTranslations(model.getLabel().getAllTranslations());
         if (model.getComment() != null) {
-            dto.setComment(model.getComment().getAllTranslations());
+            dto.setComment(model.getComment().getDefaultValue());
+            dto.setCommentTranslations(model.getComment().getAllTranslations());
         } else {
-            dto.setComment(new HashMap<>());
+            dto.setCommentTranslations(new HashMap<>());
         }
 
         if (model.getDomain() != null) {

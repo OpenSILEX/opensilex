@@ -153,7 +153,7 @@
             </plugin>
             
                   
-            <!-- Allow to extends SPARQL deserializers --> 
+            <!-- Allow to extends SPARQL deserializers and ontology types for vue.js --> 
             <plugin>
                 <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
                 <artifactId>serviceloader-maven-plugin</artifactId>
@@ -169,11 +169,27 @@
                             </services>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>opensilex-vue-types-services</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <services>
+                                <param>org.opensilex.front.vueOwlExtension.types.VueOntologyType</param>
+                            </services>
+                        </configuration>
+                    </execution>
                 </executions>
                 <dependencies>
                     <dependency>
                         <groupId>org.opensilex</groupId>
                         <artifactId>opensilex-sparql</artifactId>
+                        <version>${revision}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.opensilex</groupId>
+                        <artifactId>opensilex-front</artifactId>
                         <version>${revision}</version>
                     </dependency>
                 </dependencies>

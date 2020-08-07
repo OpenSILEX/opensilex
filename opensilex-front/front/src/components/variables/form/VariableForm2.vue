@@ -18,17 +18,6 @@
 
         <div class="row">
             <div class="col-lg-6">
-                <!-- synonym -->
-                <opensilex-InputForm
-                        :value.sync="form.synonym"
-                        label="VariableForm.synonym"
-                        type="text"
-                ></opensilex-InputForm>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-lg-6">
 
                 <!-- trait uri-->
                 <opensilex-InputForm

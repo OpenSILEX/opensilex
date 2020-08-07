@@ -64,7 +64,7 @@
         getEmptyForm(): UnitCreationDTO {
             return {
                 uri: null,
-                label: null,
+                name: null,
                 comment: null,
                 symbol: null,
                 alternativeSymbol: null,

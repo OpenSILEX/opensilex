@@ -20,7 +20,7 @@ public class QualityGetDTO extends SKOSReferencesDTO {
 
     private URI uri;
 
-    private String label;
+    private String name;
 
     private String comment;
 
@@ -36,12 +36,12 @@ public class QualityGetDTO extends SKOSReferencesDTO {
     }
 
     @ApiModelProperty(example = "Height")
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @ApiModelProperty(example = "Describe the height of a an entity")
@@ -62,7 +62,7 @@ public class QualityGetDTO extends SKOSReferencesDTO {
         QualityGetDTO dto = new QualityGetDTO();
 
         dto.setUri(model.getUri());
-        dto.setLabel(model.getName());
+        dto.setName(model.getName());
         dto.setType(model.getType());
         dto.setComment(model.getComment());
         dto.setSkosReferencesFromModel(model);

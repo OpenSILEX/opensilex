@@ -42,7 +42,7 @@ public class MethodApiTest extends AbstractSecurityIntegrationTest {
 
     private MethodCreationDTO getCreationDto() {
         MethodCreationDTO dto = new MethodCreationDTO();
-        dto.setLabel("SVM");
+        dto.setName("SVM");
         dto.setComment("A machine learning based method");
         return dto;
     }
@@ -75,7 +75,7 @@ public class MethodApiTest extends AbstractSecurityIntegrationTest {
         final Response postResult = getJsonPostResponse(target(createPath), dto);
 
         dto.setUri(extractUriFromResponse(postResult));
-        dto.setLabel("new alias");
+        dto.setName("new alias");
         dto.setComment("new comment");
 
         final Response updateResult = getJsonPutResponse(target(updatePath), dto);
@@ -91,7 +91,7 @@ public class MethodApiTest extends AbstractSecurityIntegrationTest {
         MethodCreationDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
-        assertEquals(dto.getLabel(), dtoFromApi.getLabel());
+        assertEquals(dto.getName(), dtoFromApi.getName());
         assertEquals(dto.getComment(), dtoFromApi.getComment());
     }
 
@@ -111,7 +111,7 @@ public class MethodApiTest extends AbstractSecurityIntegrationTest {
         });
         MethodGetDTO dtoFromDb = getResponse.getResult();
         assertNotNull(dtoFromDb);
-        assertEquals(creationDTO.getLabel(),dtoFromDb.getLabel());
+        assertEquals(creationDTO.getName(),dtoFromDb.getName());
         assertEquals(creationDTO.getComment(),dtoFromDb.getComment());
         assertEquals(Oeso.Method.getURI(),dtoFromDb.getType().toString());
     }

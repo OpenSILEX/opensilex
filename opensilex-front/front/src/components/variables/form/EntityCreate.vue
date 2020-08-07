@@ -22,6 +22,7 @@
     import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
     import {VariablesService} from "opensilex-core/api/variables.service";
     import {EntityCreationDTO} from "opensilex-core/model/entityCreationDTO";
+    import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
 
     @Component
     export default class EntityCreate extends Vue {
@@ -63,7 +64,7 @@
         getEmptyForm(): EntityCreationDTO {
             return {
                 uri: null,
-                label: null,
+                name: null,
                 comment: null,
                 type: null,
                 exactMatch: [],
@@ -79,7 +80,7 @@
             }
             return this.service
                 .createEntity(form)
-                .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+                .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
                     form.uri = http.response.result;
                     let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
                     this.$opensilex.showSuccessToast(message);

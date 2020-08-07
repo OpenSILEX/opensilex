@@ -21,7 +21,7 @@ import org.opensilex.server.rest.validation.Required;
 public class UnitCreationDTO extends SKOSReferencesDTO {
 
     @Required
-    private String label;
+    private String name;
 
     private String comment;
 
@@ -37,7 +37,7 @@ public class UnitCreationDTO extends SKOSReferencesDTO {
 
     public UnitModel newModel() {
         UnitModel model = new UnitModel();
-        model.setName(label);
+        model.setName(name);
         model.setComment(comment);
         if(type != null){
             model.setType(type);
@@ -50,12 +50,12 @@ public class UnitCreationDTO extends SKOSReferencesDTO {
     }
 
     @ApiModelProperty(example = "Centimeter")
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @ApiModelProperty(example = "A common unit for describing a length")

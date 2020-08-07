@@ -13,7 +13,7 @@ K
             <!-- Name -->
             <div class="col-lg-4">
                 <opensilex-InputForm
-                        :value.sync="form.label"
+                        :value.sync="form.name"
                         label="component.common.name"
                         type="text"
                         :required="true"

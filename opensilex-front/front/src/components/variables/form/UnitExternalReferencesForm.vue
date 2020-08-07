@@ -1,5 +1,5 @@
 <template>
-    <ValidationObserver ref="entityValidatorRef">
+    <ValidationObserver ref="unitValidatorRef">
         <opensilex-ExternalReferencesForm
                 :references.sync="form"
                 :displayInsertButton="false"

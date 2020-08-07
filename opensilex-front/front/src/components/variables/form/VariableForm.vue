@@ -55,14 +55,8 @@
         getEmptyForm() {
             return {
                 uri: undefined,
-                entity: {
-                    uri: undefined,
-                    name: undefined
-                },
-                quality: {
-                    uri: undefined,
-                    name: undefined
-                },
+                entity: undefined,
+                quality: undefined,
                 longName: undefined,
                 synonym: undefined,
                 label: undefined,
@@ -70,16 +64,8 @@
                 dimension: undefined,
                 traitUri: undefined,
                 traitName: undefined,
-                method: {
-                    uri: undefined,
-                    name: undefined
-                },
-                unit: {
-                    uri: undefined,
-                    name: undefined
-                },
-                lowerBound: undefined,
-                upperBound: undefined
+                method: undefined,
+                unit: undefined
             };
         }
 
@@ -108,7 +94,7 @@ en:
         dimension: integration dimension
         dimension-help: 'The dimension on which variable data are recorded. E.g. :  a sensor which send data each minute, here, the dimension is the time (in minute)'
         dimension-placeholder: Select a dimension
-        synonym: Synonym(s)
+        synonym: Synonym
         trait-name: Trait name
         trait-name-help: Variable trait name (Describe the trait name if a trait uri has been specified)
         trait-name-placeholder:  Number of grains per square meter
@@ -142,7 +128,7 @@ fr:
         dimension: Dimension d'intégration
         dimension-help: Définis la dimension sur laquelle les valeurs d'une variable vont être insérées. Par exemple un capteur qui envoie une donnée chaque minute , ici la dimension est le temps (en minutes)
         dimension-placeholder: Sélectionnez une dimension
-        synonym : Synonyme(s)
+        synonym : Synonyme
         trait-name: Nom du trait
         trait-name-help: Nom du trait (si une URI décrivant un trait a étée saisie)
         trait-name-placeholder:  Nombre de grains par mètre carré

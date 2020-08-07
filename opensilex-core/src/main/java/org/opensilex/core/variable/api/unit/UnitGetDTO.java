@@ -20,7 +20,7 @@ public class UnitGetDTO extends SKOSReferencesDTO {
 
     private URI uri;
 
-    private String label;
+    private String name;
 
     private URI type;
 
@@ -40,12 +40,12 @@ public class UnitGetDTO extends SKOSReferencesDTO {
     }
 
     @ApiModelProperty(example = "Centimeter")
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @ApiModelProperty(example = "A common unit for describing a length")
@@ -86,7 +86,7 @@ public class UnitGetDTO extends SKOSReferencesDTO {
         UnitGetDTO dto = new UnitGetDTO();
 
         dto.setUri(model.getUri());
-        dto.setLabel(model.getName());
+        dto.setName(model.getName());
         dto.setComment(model.getComment());
         dto.setSymbol(model.getSymbol());
         dto.setType(model.getType());

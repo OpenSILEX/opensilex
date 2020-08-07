@@ -20,7 +20,7 @@ public class EntityGetDTO extends SKOSReferencesDTO {
 
     private URI uri;
 
-    private String label;
+    private String name;
 
     private String comment;
 
@@ -36,12 +36,12 @@ public class EntityGetDTO extends SKOSReferencesDTO {
     }
 
     @ApiModelProperty(example = "Plant")
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @ApiModelProperty(example = "The entity which describe a plant")
@@ -63,7 +63,7 @@ public class EntityGetDTO extends SKOSReferencesDTO {
         EntityGetDTO dto = new EntityGetDTO();
 
         dto.setUri(model.getUri());
-        dto.setLabel(model.getName());
+        dto.setName(model.getName());
         dto.setType(model.getType());
         dto.setComment(model.getComment());
         dto.setSkosReferencesFromModel(model);

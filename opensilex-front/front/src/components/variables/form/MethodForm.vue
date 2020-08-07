@@ -13,7 +13,7 @@
         <div class="row">
             <div class="col-lg-6">
                 <opensilex-InputForm
-                        :value.sync="form.label"
+                        :value.sync="form.name"
                         label="component.common.name"
                         type="text"
                         :required="true"

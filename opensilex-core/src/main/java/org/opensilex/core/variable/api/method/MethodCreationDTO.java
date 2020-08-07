@@ -21,7 +21,7 @@ import org.opensilex.server.rest.validation.Required;
 public class MethodCreationDTO extends SKOSReferencesDTO {
 
     @Required
-    private String label;
+    private String name;
 
     private String comment;
 
@@ -33,7 +33,7 @@ public class MethodCreationDTO extends SKOSReferencesDTO {
 
     public MethodModel newModel() {
         MethodModel model = new MethodModel();
-        model.setName(label);
+        model.setName(name);
         model.setComment(comment);
         if(type != null){
             model.setType(type);
@@ -44,12 +44,12 @@ public class MethodCreationDTO extends SKOSReferencesDTO {
     }
 
     @ApiModelProperty(example = "ImageAnalysis")
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @ApiModelProperty(example = "Based on a software")

@@ -35,7 +35,18 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
     /**
      * Search all variables with a name, a long name, an entity name or a quality name
-     * corresponding with the given stringPattern
+     * corresponding with the given stringPattern.
+     *
+     * <br></br>
+     * <br> The following SPARQL variables are used  : </br>
+     * <pre>
+     *     _entity_name : the name of the variable entity
+     *     _quality_name : the name of the variable quality
+     *     _method_name : the name of the variable method
+     *     _unit_name : the name of the variable unit
+     * </pre>
+     *
+     * You can use them into the orderByList
      *
      * @param stringPattern the string pattern to search
      * @param orderByList   the {@link List} of {@link OrderBy} to apply on query

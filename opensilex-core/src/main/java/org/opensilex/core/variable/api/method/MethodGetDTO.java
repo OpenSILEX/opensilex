@@ -20,7 +20,7 @@ public class MethodGetDTO extends SKOSReferencesDTO {
 
     private URI uri;
 
-    private String label;
+    private String name;
 
     private String comment;
 
@@ -36,12 +36,12 @@ public class MethodGetDTO extends SKOSReferencesDTO {
     }
 
     @ApiModelProperty(example = "ImageAnalysis")
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @ApiModelProperty(example = "Based on a software")
@@ -62,7 +62,7 @@ public class MethodGetDTO extends SKOSReferencesDTO {
         MethodGetDTO dto = new MethodGetDTO();
 
         dto.uri = model.getUri();
-        dto.label = model.getName();
+        dto.name = model.getName();
         dto.comment = model.getComment();
         dto.type = model.getType();
 

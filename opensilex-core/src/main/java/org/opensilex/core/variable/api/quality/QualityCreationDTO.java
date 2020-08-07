@@ -21,7 +21,7 @@ import org.opensilex.server.rest.validation.Required;
 public class QualityCreationDTO extends SKOSReferencesDTO {
 
     @Required
-    private String label;
+    private String name;
 
     private String comment;
 
@@ -33,7 +33,7 @@ public class QualityCreationDTO extends SKOSReferencesDTO {
 
     public QualityModel newModel() {
         QualityModel model = new QualityModel();
-        model.setName(label);
+        model.setName(name);
         model.setComment(comment);
         if(type != null){
             model.setType(type);
@@ -44,12 +44,12 @@ public class QualityCreationDTO extends SKOSReferencesDTO {
     }
 
     @ApiModelProperty(example = "Height")
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @ApiModelProperty(example = "Describe the height of a an entity")

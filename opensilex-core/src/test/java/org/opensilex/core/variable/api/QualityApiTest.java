@@ -42,7 +42,7 @@ public class QualityApiTest extends AbstractSecurityIntegrationTest {
 
     private QualityCreationDTO getCreationDto() {
         QualityCreationDTO dto = new QualityCreationDTO();
-        dto.setLabel("size");
+        dto.setName("size");
         dto.setComment("The size of an object");
         return dto;
     }
@@ -75,7 +75,7 @@ public class QualityApiTest extends AbstractSecurityIntegrationTest {
         final Response postResult = getJsonPostResponse(target(createPath), dto);
 
         dto.setUri(extractUriFromResponse(postResult));
-        dto.setLabel("new alias");
+        dto.setName("new alias");
         dto.setComment("new comment");
 
         final Response updateResult = getJsonPutResponse(target(updatePath), dto);
@@ -91,7 +91,7 @@ public class QualityApiTest extends AbstractSecurityIntegrationTest {
         QualityGetDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
-        assertEquals(dto.getLabel(), dtoFromApi.getLabel());
+        assertEquals(dto.getName(), dtoFromApi.getName());
         assertEquals(dto.getComment(), dtoFromApi.getComment());
     }
 
@@ -111,7 +111,7 @@ public class QualityApiTest extends AbstractSecurityIntegrationTest {
         });
         QualityGetDTO dtoFromDb = getResponse.getResult();
         assertNotNull(dtoFromDb);
-        assertEquals(creationDTO.getLabel(),dtoFromDb.getLabel());
+        assertEquals(creationDTO.getName(),dtoFromDb.getName());
         assertEquals(creationDTO.getComment(),dtoFromDb.getComment());
         assertEquals(Oeso.Quality.getURI(),dtoFromDb.getType().toString());
     }

@@ -25,6 +25,7 @@ import org.opensilex.utils.OrderBy;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -162,7 +163,14 @@ public class VariableAPI {
 
     @GET
     @Path("search")
-    @ApiOperation("Search variables by name, long-name, entity name or quality name")
+    @ApiOperation(
+            value = "Search variables by name, long-name, entity name or quality name",
+            notes = "The following fields could be used for sorting : \n\n" +
+                    " _entity_name : the name of the variable entity\n\n"+
+                    " _quality_name : the name of the variable quality\n\n"+
+                    " _method_name : the name of the variable method\n\n"+
+                    " _unit_name : the name of the variable unit\n\n"
+            )
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_READ_ID,
@@ -174,10 +182,10 @@ public class VariableAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchVariables(
-            @ApiParam(value = "Name regex pattern") @QueryParam("name") String namePattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("orderBy") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number") @QueryParam("page") int page,
-            @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize
+            @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern ,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         VariableDAO dao = new VariableDAO(sparql);
         ListWithPagination<VariableModel> resultList = dao.search(
@@ -190,6 +198,47 @@ public class VariableAPI {
         ListWithPagination<VariableGetDTO> resultDTOList = resultList.convert(
                 VariableGetDTO.class,
                 VariableGetDTO::fromModel
+        );
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+
+    @GET
+    @Path("search/details")
+    @ApiOperation(
+            value = "Search variables details by name, long-name, entity name or quality name",
+            notes = "The following fields could be used for sorting : \n\n" +
+                    " _entity_name : the name of the variable entity\n\n"+
+                    " _quality_name : the name of the variable quality\n\n"+
+                    " _method_name : the name of the variable method\n\n"+
+                    " _unit_name : the name of the variable unit\n\n"
+    )
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_VARIABLE_READ_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return Variable list", response = VariableDetailsDTO.class, responseContainer = "List")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchVariablesDetails(
+            @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern ,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "_entity_name=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+        VariableDAO dao = new VariableDAO(sparql);
+        ListWithPagination<VariableModel> resultList = dao.search(
+                namePattern,
+                orderByList,
+                page,
+                pageSize
+        );
+
+        ListWithPagination<VariableDetailsDTO> resultDTOList = resultList.convert(
+                VariableDetailsDTO.class,
+                VariableDetailsDTO::fromModel
         );
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }

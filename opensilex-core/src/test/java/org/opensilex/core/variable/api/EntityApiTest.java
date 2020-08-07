@@ -40,7 +40,7 @@ public class EntityApiTest extends AbstractSecurityIntegrationTest {
 
     private EntityCreationDTO getCreationDto() {
         EntityCreationDTO dto = new EntityCreationDTO();
-        dto.setLabel("Artemisia absinthium");
+        dto.setName("Artemisia absinthium");
         dto.setComment("A plant which was used in the past for building methanol");
         return dto;
     }
@@ -73,7 +73,7 @@ public class EntityApiTest extends AbstractSecurityIntegrationTest {
         final Response postResult = getJsonPostResponse(target(createPath), dto);
 
         dto.setUri(extractUriFromResponse(postResult));
-        dto.setLabel("new alias");
+        dto.setName("new alias");
         dto.setComment("new comment");
 
         final Response updateResult = getJsonPutResponse(target(updatePath), dto);
@@ -89,7 +89,7 @@ public class EntityApiTest extends AbstractSecurityIntegrationTest {
         EntityGetDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
-        assertEquals(dto.getLabel(), dtoFromApi.getLabel());
+        assertEquals(dto.getName(), dtoFromApi.getName());
         assertEquals(dto.getComment(), dtoFromApi.getComment());
     }
 
@@ -109,7 +109,7 @@ public class EntityApiTest extends AbstractSecurityIntegrationTest {
         });
         EntityGetDTO dtoFromDb = getResponse.getResult();
         assertNotNull(dtoFromDb);
-        assertEquals(creationDTO.getLabel(),dtoFromDb.getLabel());
+        assertEquals(creationDTO.getName(),dtoFromDb.getName());
         assertEquals(creationDTO.getComment(),dtoFromDb.getComment());
         assertEquals(Oeso.Entity.getURI(),dtoFromDb.getType().toString());
     }

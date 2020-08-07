@@ -17,7 +17,7 @@ import java.util.List;
 public class EntityCreationDTO extends SKOSReferencesDTO {
 
     @Required
-    private String label;
+    private String name;
 
     private String comment;
 
@@ -29,7 +29,7 @@ public class EntityCreationDTO extends SKOSReferencesDTO {
 
     public EntityModel newModel() {
         EntityModel model = new EntityModel();
-        model.setName(label);
+        model.setName(name);
         model.setComment(comment);
         if(type != null){
             model.setType(type);
@@ -40,12 +40,12 @@ public class EntityCreationDTO extends SKOSReferencesDTO {
     }
 
     @ApiModelProperty(example = "Plant")
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @ApiModelProperty(example = "The entity which describe a plant")

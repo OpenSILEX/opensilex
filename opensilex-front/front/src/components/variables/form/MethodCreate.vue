@@ -21,6 +21,8 @@
     import Vue from "vue";
     import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
     import {VariablesService} from "opensilex-core/api/variables.service";
+    import {EntityCreationDTO} from "opensilex-core/model/entityCreationDTO";
+    import {MethodCreationDTO} from "opensilex-core/model/methodCreationDTO";
 
     @Component
     export default class MethodCreate extends Vue {
@@ -59,10 +61,10 @@
         @Ref("modalRef") readonly modalRef!: any;
         @Ref("validatorRef") readonly validatorRef!: any;
 
-        getEmptyForm() {
+        getEmptyForm() : MethodCreationDTO {
             return {
                 uri: null,
-                label: null,
+                name: null,
                 comment: null,
                 type: null,
                 exactMatch: [],
@@ -82,11 +84,10 @@
                     form.uri = http.response.result;
                     let message = this.$i18n.t("MethodForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
                     this.$opensilex.showSuccessToast(message);
-                    this.$emit("onCreate", form,);
+                    this.$emit("onCreate", form);
                 })
                 .catch(error => {
                     if (error.status == 409) {
-                        console.error("Method already exists", error);
                         this.$opensilex.errorHandler(
                             error,
                             this.$i18n.t("component.project.errors.project-already-exists")

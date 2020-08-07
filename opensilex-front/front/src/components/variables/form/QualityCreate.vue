@@ -63,7 +63,7 @@
         getEmptyForm(): QualityCreationDTO {
             return {
                 uri: null,
-                label: null,
+                name: null,
                 comment: null,
                 type: null,
                 exactMatch: [],

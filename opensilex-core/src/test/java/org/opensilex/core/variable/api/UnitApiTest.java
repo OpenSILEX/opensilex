@@ -42,7 +42,7 @@ public class UnitApiTest extends AbstractSecurityIntegrationTest {
     
     private UnitCreationDTO getCreationDto() {
         UnitCreationDTO dto = new UnitCreationDTO();
-        dto.setLabel("minute");
+        dto.setName("minute");
         dto.setComment("I really need to comment it ?");
         dto.setSymbol("m");
         dto.setAlternativeSymbol("mn");
@@ -77,7 +77,7 @@ public class UnitApiTest extends AbstractSecurityIntegrationTest {
         final Response postResult = getJsonPostResponse(target(createPath), dto);
 
         dto.setUri(extractUriFromResponse(postResult));
-        dto.setLabel("new alias");
+        dto.setName("new alias");
         dto.setComment("new comment");
 
         final Response updateResult = getJsonPutResponse(target(updatePath), dto);
@@ -93,7 +93,7 @@ public class UnitApiTest extends AbstractSecurityIntegrationTest {
         UnitCreationDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
-        assertEquals(dto.getLabel(), dtoFromApi.getLabel());
+        assertEquals(dto.getName(), dtoFromApi.getName());
         assertEquals(dto.getComment(), dtoFromApi.getComment());
     }
 
@@ -113,7 +113,7 @@ public class UnitApiTest extends AbstractSecurityIntegrationTest {
         });
         UnitGetDTO dtoFromDb = getResponse.getResult();
         assertNotNull(dtoFromDb);
-        assertEquals(creationDTO.getLabel(),dtoFromDb.getLabel());
+        assertEquals(creationDTO.getName(),dtoFromDb.getName());
         assertEquals(creationDTO.getComment(),dtoFromDb.getComment());
         assertEquals(creationDTO.getSymbol(),dtoFromDb.getSymbol());
         assertEquals(creationDTO.getAlternativeSymbol(),dtoFromDb.getAlternativeSymbol());

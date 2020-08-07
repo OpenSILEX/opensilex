@@ -38,7 +38,8 @@ public class VueClassExtensionModel extends SPARQLResourceModel {
     @SPARQLProperty(
             ontology = VueOwlExtension.class,
             property = "fromOwlClass",
-            inverse = true
+            inverse = true,
+            ignoreUpdateIfNull = true
     )
     protected List<VueClassPropertyExtensionModel> properties;
 

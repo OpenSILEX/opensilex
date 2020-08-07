@@ -178,7 +178,7 @@
                 "germplasm": "Ressources Génétiques"
             },
             "infrastructures": "Infrastructures",
-            "configuration": "Paramètres",
+            "configuration": "Administration",
             "scientificObjectTypes": "Types d'objet scientifique",
             "scientificObjectProperties":  "Propriétés des objets scientifiques"
         },

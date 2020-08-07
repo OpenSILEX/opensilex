@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -31,11 +32,16 @@ import org.opensilex.core.ontology.api.RDFPropertyDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.core.ontology.dal.ClassModel;
+import org.opensilex.core.ontology.dal.DatatypePropertyModel;
+import org.opensilex.core.ontology.dal.ObjectPropertyModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.ontology.dal.OwlRestrictionModel;
 import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
+import org.opensilex.front.vueOwlExtension.dal.VueClassPropertyExtensionModel;
 import org.opensilex.front.vueOwlExtension.dal.VueOwlExtensionDAO;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
+import org.opensilex.front.vueOwlExtension.types.VueOntologyType;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
@@ -104,7 +110,7 @@ public class VueOwlExtensionAPI {
         try {
             VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
 
-            ClassModel classModel = dto.getClassModel(currentUser.getLanguage(), false);
+            ClassModel classModel = dto.getClassModel(currentUser.getLanguage());
 
             VueClassExtensionModel classExtModel = dto.getExtClassModel();
 
@@ -131,7 +137,7 @@ public class VueOwlExtensionAPI {
     ) throws Exception {
         VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
 
-        ClassModel classModel = dto.getClassModel(currentUser.getLanguage(), true);
+        ClassModel classModel = dto.getClassModel(currentUser.getLanguage());
 
         VueClassExtensionModel classExtModel = dto.getExtClassModel();
 
@@ -154,6 +160,89 @@ public class VueOwlExtensionAPI {
         VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
         dao.deleteExtendedClass(classURI);
         return new ObjectUriResponse(Response.Status.OK, classURI).getResponse();
+    }
+
+    @GET
+    @Path("/get-class-properties")
+    @ApiOperation("Return class model properties definitions")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return class model properties definitions ", response = VueClassDTO.class)
+    })
+    public Response getClassProperties(
+            @ApiParam(value = "RDF class URI") @QueryParam("rdfType") @ValidURI URI rdfType
+    ) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        ClassModel classDescription = dao.getClassModel(rdfType, currentUser.getLanguage());
+
+        VueClassDTO classProperties = new VueClassDTO();
+        VueClassExtensionModel classExtension = sparql.getByURI(VueClassExtensionModel.class, classDescription.getUri(), currentUser.getLanguage());
+        VueClassDTO.fromModel(classProperties, classDescription, classExtension);
+
+        ClassModel parentModel = classDescription.getParent();
+        dao.buildProperties(parentModel, currentUser.getLanguage());
+
+        List<VueClassPropertyDTO> dataProperties = new ArrayList<>(classDescription.getDatatypeProperties().size());
+        for (DatatypePropertyModel dt : classDescription.getDatatypeProperties().values()) {
+            VueClassPropertyDTO pDTO = new VueClassPropertyDTO();
+            pDTO.setProperty(dt.getUri());
+            pDTO.setName(dt.getName());
+            OwlRestrictionModel restriction = classDescription.getRestrictions().get(dt.getUri());
+            pDTO.setIsList(restriction.isList());
+            pDTO.setIsRequired(restriction.isRequired());
+            VueOntologyType vueType = VueOwlExtensionDAO.getVueType(dt.getTypeRestriction());
+            if (vueType != null) {
+                pDTO.setInputComponent(vueType.getInputComponent());
+                pDTO.setViewComponent(vueType.getViewComponent());
+            }
+            if (parentModel.isDatatypePropertyRestriction(dt.getUri())) {
+                 pDTO.setInherited(true);
+            } else {
+                pDTO.setInherited(false);
+            }
+            dataProperties.add(pDTO);
+        }
+        classProperties.setDataProperties(dataProperties);
+
+        List<VueClassPropertyDTO> objectProperties = new ArrayList<>(classDescription.getObjectProperties().size());
+        for (ObjectPropertyModel obj : classDescription.getObjectProperties().values()) {
+            VueClassPropertyDTO pDTO = new VueClassPropertyDTO();
+            pDTO.setProperty(obj.getUri());
+            pDTO.setName(obj.getName());
+            OwlRestrictionModel restriction = classDescription.getRestrictions().get(obj.getUri());
+            pDTO.setIsList(restriction.isList());
+            pDTO.setIsRequired(restriction.isRequired());
+            VueOntologyType vueType = VueOwlExtensionDAO.getVueType(obj.getTypeRestriction());
+            if (vueType != null) {
+                pDTO.setInputComponent(vueType.getInputComponent());
+                pDTO.setViewComponent(vueType.getViewComponent());
+            }
+            if (parentModel.isObjectPropertyRestriction(obj.getUri())) {
+                pDTO.setInherited(true);
+            } else {
+                pDTO.setInherited(false);
+            }
+            objectProperties.add(pDTO);
+        }
+        classProperties.setObjectProperties(objectProperties);
+
+        if (classExtension != null && classExtension.getProperties() != null) {
+            List<URI> propertiesOrderList = classExtension.getProperties().stream().sorted(
+                    (VueClassPropertyExtensionModel a, VueClassPropertyExtensionModel b) -> {
+                        return a.getHasDisplayOrder() - b.getHasDisplayOrder();
+                    }).map(
+                            (VueClassPropertyExtensionModel a) -> a.getToOwlProperty()
+                    ).collect(Collectors.toList());
+
+            classProperties.setPropertiesOrder(propertiesOrderList);
+        } else {
+            classProperties.setPropertiesOrder(new ArrayList<>());
+        }
+
+        return new SingleObjectResponse<>(classProperties).getResponse();
     }
 
     @GET

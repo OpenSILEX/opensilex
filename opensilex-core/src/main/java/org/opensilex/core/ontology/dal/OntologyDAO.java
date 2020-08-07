@@ -91,15 +91,8 @@ public final class OntologyDAO {
 
     }
 
-    public ClassModel getClassModel(URI rdfClass, String lang) throws Exception {
-        ClassModel model = sparql.getByURI(ClassModel.class,
-                rdfClass, lang);
-
-        if (model == null) {
-            throw new NotFoundURIException(rdfClass);
-        }
-
-        List<OwlRestrictionModel> restrictions = getOwlRestrictions(rdfClass, lang);
+    public void buildProperties(ClassModel model, String lang) throws Exception {
+        List<OwlRestrictionModel> restrictions = getOwlRestrictions(model.getUri(), lang);
 
         Map<URI, URI> datatypePropertiesURI = new HashMap<>();
         Map<URI, URI> objectPropertiesURI = new HashMap<>();
@@ -161,6 +154,17 @@ public final class OntologyDAO {
             return pModel.getUri();
         });
         model.setObjectProperties(objectPropertiesMap);
+    }
+
+    public ClassModel getClassModel(URI rdfClass, String lang) throws Exception {
+        ClassModel model = sparql.getByURI(ClassModel.class,
+                rdfClass, lang);
+
+        if (model == null) {
+            throw new NotFoundURIException(rdfClass);
+        }
+
+        buildProperties(model, lang);
 
         return model;
     }

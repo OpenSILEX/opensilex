@@ -182,7 +182,7 @@
                 "germplasm": "Germplasm"
             },
             "infrastructures": "Infrastructures",
-            "configuration": "Settings",
+            "configuration": "Administration",
             "scientificObjectTypes": "Scientific object types",
             "scientificObjectProperties":  "Scientific object properties"
         },

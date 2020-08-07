@@ -77,8 +77,12 @@ export default class OntologyPropertyView extends Vue {
 
   initForm(form) {
     form.parent = this.parentURI;
-    if (this.parentURI != null) {
+    if (OWL.hasParent(form.parent)) {
       form.type = null;
+    } else if (OWL.isDatatypeProperty(form.type)) {
+      form.type = OWL.DATATYPE_PROPERTY_URI;
+    } else if (OWL.isObjectTypeProperty(form.type)) {
+      form.type = OWL.OBJECT_PROPERTY_URI;
     }
   }
 
@@ -86,6 +90,11 @@ export default class OntologyPropertyView extends Vue {
 
   showCreateForm(parentURI?) {
     this.parentURI = parentURI;
+    let propertyFormComponent = this.propertyForm.getFormRef();
+    propertyFormComponent.setParentPropertiesTree(
+      this.propertiesTree.getTree()
+    );
+    propertyFormComponent.setDomain(this.domain);
     this.propertyForm.showCreateForm();
   }
 
@@ -99,20 +108,21 @@ export default class OntologyPropertyView extends Vue {
       let form = http.response.result;
       if (OWL.hasParent(form.parent)) {
         form.type = null;
-      } else if(OWL.isDatatypeProperty(form.type)) {
-          form.type = OWL.DATATYPE_PROPERTY_URI;
-      }else if(OWL.isObjectTypeProperty(form.type)) {
-          form.type = OWL.OBJECT_PROPERTY_URI;
+      } else if (OWL.isDatatypeProperty(form.type)) {
+        form.type = OWL.DATATYPE_PROPERTY_URI;
+      } else if (OWL.isObjectTypeProperty(form.type)) {
+        form.type = OWL.OBJECT_PROPERTY_URI;
       }
+      console.error(form, form.range,  this.$opensilex.getDatatype(form.range));
+      form.range = this.$opensilex.getDatatype(form.range).uri;
       this.propertyForm.showEditForm(form);
     });
   }
 
   deleteProperty(data) {
-      this.ontologyService.deleteProperty(data.uri, data.type)
-        .then(() => {
-            this.refresh();
-        });
+    this.ontologyService.deleteProperty(data.uri, data.type).then(() => {
+      this.refresh();
+    });
   }
 
   refresh() {

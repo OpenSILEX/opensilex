@@ -27,8 +27,6 @@ public class RDFClassDTO {
 
     protected URI parent;
 
-    protected List<RDFClassPropertyDTO> properties;
-
     public URI getUri() {
         return uri;
     }
@@ -61,14 +59,6 @@ public class RDFClassDTO {
         this.parent = parent;
     }
 
-    public List<RDFClassPropertyDTO> getProperties() {
-        return properties;
-    }
-
-    public void setProperties(List<RDFClassPropertyDTO> properties) {
-        this.properties = properties;
-    }
-
     public static RDFClassDTO fromModel(RDFClassDTO dto, ClassModel model) {
         dto.setUri(model.getUri());
         dto.setLabel(model.getName());
@@ -79,21 +69,6 @@ public class RDFClassDTO {
         if (model.getParent() != null) {
             dto.setParent(model.getParent().getUri());
         }
-
-        List<RDFClassPropertyDTO> properties = new ArrayList<>();
-
-        for (OwlRestrictionModel restriction : model.getRestrictions().values()) {
-            URI propertyURI = restriction.getOnProperty();
-            if (model.isDatatypePropertyRestriction(propertyURI)) {
-                PropertyModel property = model.getDatatypeProperty(propertyURI);
-                properties.add(RDFClassPropertyDTO.fromModel(property, restriction, true));
-            } else if (model.isObjectPropertyRestriction(propertyURI)) {
-                PropertyModel property = model.getObjectProperty(propertyURI);
-                properties.add(RDFClassPropertyDTO.fromModel(property, restriction, false));
-            }
-        }
-
-        dto.setProperties(properties);
 
         return dto;
     }

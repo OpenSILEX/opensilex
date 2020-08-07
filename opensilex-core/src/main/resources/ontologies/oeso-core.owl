@@ -285,6 +285,8 @@
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:label xml:lang="en">Germplasm</rdfs:label>
+        <rdfs:label xml:lang="fr">Matériel génétique</rdfs:label>
     </owl:ObjectProperty>
     
     <!-- http://www.opensilex.org/vocabulary/oeso#hasFactorLevel -->
@@ -958,12 +960,6 @@
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasFactorLevel"/>
                 <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorLevel"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasGermplasm"/>
-                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:label xml:lang="en">Scientific object</rdfs:label>

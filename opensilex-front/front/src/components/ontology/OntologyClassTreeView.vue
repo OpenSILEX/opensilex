@@ -52,12 +52,7 @@ export default class OntologyClassTreeView extends Vue {
 
   public selected = null;
 
-  ontologyService: OntologyService;
-
   created() {
-    this.ontologyService = this.$opensilex.getService(
-      "opensilex-core.OntologyService"
-    );
 
     this.onRootClassChange();
   }
@@ -90,7 +85,9 @@ export default class OntologyClassTreeView extends Vue {
   }
 
   refresh() {
-    this.ontologyService.getSubClassesOf(this.rdfClass, false).then(http => {
+    this.$opensilex.getService(
+      "opensilex-core.OntologyService"
+    ).getSubClassesOf(this.rdfClass, false).then(http => {
       let treeNode = [];
       let first = true;
       this.resourceTree = http.response.result;
@@ -104,7 +101,9 @@ export default class OntologyClassTreeView extends Vue {
   }
 
   displayClassDetail(node) {
-    this.ontologyService.getClass(node.data.uri).then(http => {
+    this.$opensilex.getService(
+      "opensilex-core.VueJsOntologyExtensionService"
+    ).getClassProperties(node.data.uri).then(http => {
       this.selected = http.response.result;
       this.$emit("selectionChange", this.selected);
     });

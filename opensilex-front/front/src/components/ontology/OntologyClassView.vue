@@ -67,14 +67,6 @@ export default class OntologyClassView extends Vue {
   @Ref("classForm") readonly classForm!: any;
   @Ref("classesTree") readonly classesTree!: any;
 
-  ontologyService: OntologyService;
-
-  created() {
-    this.ontologyService = this.$opensilex.getService(
-      "opensilex-core.OntologyService"
-    );
-  }
-
   initForm(form) {
     form.parent = this.parentURI;
   }
@@ -88,7 +80,7 @@ export default class OntologyClassView extends Vue {
   }
 
   showEditForm(data) {
-    this.ontologyService = this.$opensilex
+    this.$opensilex
       .getService("opensilex.VueJsOntologyExtensionService")
       .getClass(data.uri)
       .then(http => {
@@ -99,7 +91,7 @@ export default class OntologyClassView extends Vue {
   }
 
   deleteClass(data) {
-    this.ontologyService = this.$opensilex
+    this.$opensilex
       .getService("opensilex.VueJsOntologyExtensionService")
       .deleteClass(data.uri)
       .then(http => {

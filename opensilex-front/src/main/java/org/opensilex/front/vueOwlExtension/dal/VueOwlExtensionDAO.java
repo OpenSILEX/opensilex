@@ -56,7 +56,7 @@ public class VueOwlExtensionDAO {
             sparql.rollbackTransaction(ex);
         }
     }
-
+    
     public void deleteExtendedClass(URI classURI) throws Exception {
         try {
             sparql.startTransaction();
@@ -68,6 +68,8 @@ public class VueOwlExtensionDAO {
         }
     }
 
+    
+    
     private static List<VueOntologyDataType> dataTypes;
     private static List<VueOntologyObjectType> objectTypes;
     private static Map<String, VueOntologyType> typesByURI;

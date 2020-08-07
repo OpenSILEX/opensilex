@@ -155,14 +155,14 @@ export default class ScientificObjectCSVImporter extends Vue {
         }
       ];
 
-      for (let i in classModel.properties) {
-        let property = classModel.properties[i];
-        columns.push({
-          title: property.label,
-          field: property.uri,
-          editor: true
-        });
-      }
+      // for (let i in classModel.properties) {
+      //   let property = classModel.properties[i];
+      //   columns.push({
+      //     title: property.label,
+      //     field: property.uri,
+      //     editor: true
+      //   });
+      // }
 
       this.tabulatorOptions.columns = columns;
       this.content = [];

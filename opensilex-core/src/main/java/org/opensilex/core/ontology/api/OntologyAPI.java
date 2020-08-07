@@ -173,6 +173,7 @@ public class OntologyAPI {
                     DatatypePropertyModel parentModel = new DatatypePropertyModel();
                     parentModel.setUri(new URI(OWL2.topDataProperty.getURI()));
                     dtModel.setParent(parentModel);
+                    dtModel.setRange(dto.getRange());
                 }
                 dto.toModel(dtModel);
                 dao.createDataProperty(propertyGraph, dtModel);
@@ -238,6 +239,7 @@ public class OntologyAPI {
                 DatatypePropertyModel parentModel = new DatatypePropertyModel();
                 parentModel.setUri(new URI(OWL2.topDataProperty.getURI()));
                 dtModel.setParent(parentModel);
+                dtModel.setRange(dto.getRange());
             }
             dto.toModel(dtModel);
             dao.updateDataProperty(propertyGraph, dtModel);
@@ -314,7 +316,7 @@ public class OntologyAPI {
             @ApiParam(value = "Property type") @QueryParam("propertyType") URI propertyType
     ) throws Exception {
         Node propertyGraph = getPropertyGraph();
-        
+
         if (RDFPropertyDTO.isDataProperty(propertyType)) {
             sparql.delete(propertyGraph, DatatypePropertyModel.class, propertyURI);
         } else {

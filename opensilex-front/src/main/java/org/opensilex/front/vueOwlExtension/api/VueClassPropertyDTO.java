@@ -6,23 +6,26 @@
 package org.opensilex.front.vueOwlExtension.api;
 
 import java.net.URI;
-import org.opensilex.front.vueOwlExtension.dal.VueClassPropertyExtensionModel;
-import org.opensilex.front.vueOwlExtension.dal.VueOwlExtensionDAO;
-import org.opensilex.front.vueOwlExtension.types.VueOntologyType;
 
 /**
  *
  * @author vmigot
  */
-public class VueClassPropertyDTO {
+public class VueClassPropertyDTO{
 
     protected URI property;
-
-    protected Integer order;
+    
+    protected String name;
 
     protected String inputComponent;
 
     protected String viewComponent;
+    
+    protected boolean inherited;
+    
+    protected boolean isList;
+    
+    protected boolean isRequired;
 
     public URI getProperty() {
         return property;
@@ -32,14 +35,15 @@ public class VueClassPropertyDTO {
         this.property = property;
     }
 
-    public Integer getOrder() {
-        return order;
+    public String getName() {
+        return name;
     }
 
-    public void setOrder(Integer order) {
-        this.order = order;
+    public void setName(String name) {
+        this.name = name;
     }
 
+    
     public String getInputComponent() {
         return inputComponent;
     }
@@ -56,17 +60,30 @@ public class VueClassPropertyDTO {
         this.viewComponent = viewComponent;
     }
 
-    static VueClassPropertyDTO fromModel(VueClassPropertyExtensionModel extProperty) {
-        VueClassPropertyDTO dto = new VueClassPropertyDTO();
-        dto.setProperty(extProperty.getUri());
-        VueOntologyType vueType = VueOwlExtensionDAO.getVueType(extProperty.getUri());
-        if (vueType != null) {
-            dto.setViewComponent(vueType.getViewComponent());
-            dto.setInputComponent(vueType.getInputComponent());
-        }
-        dto.setOrder(extProperty.getHasDisplayOrder());
-
-        return dto;
+    public boolean isInherited() {
+        return inherited;
     }
+
+    public void setInherited(boolean inherited) {
+        this.inherited = inherited;
+    }
+
+    public boolean isIsList() {
+        return isList;
+    }
+
+    public void setIsList(boolean isList) {
+        this.isList = isList;
+    }
+
+    public boolean isIsRequired() {
+        return isRequired;
+    }
+
+    public void setIsRequired(boolean isRequired) {
+        this.isRequired = isRequired;
+    }
+    
+    
 
 }

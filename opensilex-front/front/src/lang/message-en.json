@@ -718,7 +718,9 @@
                 "experimentalDesign": {
                     "label": "ik-map"
                 },
-                "configuration": "ik-settings"
+                "configuration": "ik-settings",
+                "scientificObjectTypes": "ik-settings",
+                "scientificObjectProperties": "ik-settings"
             }
         }
     },

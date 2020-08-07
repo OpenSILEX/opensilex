@@ -55,14 +55,13 @@ public class VueOwlExtensionDAO {
         dataTypes = new ArrayList<>();
         objectTypes = new ArrayList<>();
         typesByURI = new HashMap<>();
-        List<VueOntologyType> ontologyTypes = new ArrayList<>();
 
         ServiceLoader.load(VueOntologyType.class, OpenSilex.getClassLoader())
                 .forEach((type -> {
                     typesByURI.put(SPARQLDeserializers.getExpandedURI(type.getUri()), type);
                 }));
 
-        for (VueOntologyType ontologyType : ontologyTypes) {
+        for (VueOntologyType ontologyType : typesByURI.values()) {
             if (ontologyType instanceof VueOntologyDataType) {
                 dataTypes.add((VueOntologyDataType) ontologyType);
             } else if (ontologyType instanceof VueOntologyObjectType) {

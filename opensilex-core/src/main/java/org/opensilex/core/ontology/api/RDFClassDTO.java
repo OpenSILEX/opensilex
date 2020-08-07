@@ -25,10 +25,6 @@ public class RDFClassDTO {
 
     protected String comment;
 
-    protected Map<String, String> labelTranslations;
-
-    protected Map<String, String> commentTranslations;
-
     protected URI parent;
 
     protected List<RDFClassPropertyDTO> properties;
@@ -55,22 +51,6 @@ public class RDFClassDTO {
 
     public void setComment(String comment) {
         this.comment = comment;
-    }
-
-    public Map<String, String> getLabelTranslations() {
-        return labelTranslations;
-    }
-
-    public void setLabelTranslations(Map<String, String> labelTranslations) {
-        this.labelTranslations = labelTranslations;
-    }
-
-    public Map<String, String> getCommentTranslations() {
-        return commentTranslations;
-    }
-
-    public void setCommentTranslations(Map<String, String> commentTranslations) {
-        this.commentTranslations = commentTranslations;
     }
 
     public URI getParent() {

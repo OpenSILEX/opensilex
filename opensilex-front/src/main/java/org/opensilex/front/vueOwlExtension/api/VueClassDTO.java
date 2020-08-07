@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.opensilex.core.ontology.api.RDFClassDTO;
 import org.opensilex.core.ontology.api.RDFClassPropertyDTO;
+import org.opensilex.core.ontology.api.RDFClassTranslatedDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.DatatypePropertyModel;
 import org.opensilex.core.ontology.dal.ObjectPropertyModel;
@@ -24,7 +24,7 @@ import org.opensilex.sparql.model.SPARQLLabel;
  *
  * @author vmigot
  */
-public class VueClassDTO extends RDFClassDTO {
+public class VueClassDTO extends RDFClassTranslatedDTO {
 
     protected boolean isAbstract;
 
@@ -57,11 +57,7 @@ public class VueClassDTO extends RDFClassDTO {
     }
 
     public static VueClassDTO fromModel(VueClassDTO dto, ClassModel model, VueClassExtensionModel extClass) {
-        RDFClassDTO.fromModel(dto, model);
-
-        dto.setLabelTranslations(model.getLabel().getTranslations());
-
-        dto.setCommentTranslations(model.getComment().getTranslations());
+        RDFClassTranslatedDTO.fromModel(dto, model);
 
         if (extClass != null) {
             dto.setIsAbstract(extClass.getIsAbstractClass());

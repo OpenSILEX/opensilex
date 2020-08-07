@@ -196,6 +196,8 @@ import OntologyPropertyDetail from './ontology/OntologyPropertyDetail.vue'
 components["opensilex-OntologyPropertyDetail"] = OntologyPropertyDetail;
 import OntologyPropertyForm from './ontology/OntologyPropertyForm.vue'
 components["opensilex-OntologyPropertyForm"] = OntologyPropertyForm;
+import OntologyPropertyView from './ontology/OntologyPropertyView.vue'
+components["opensilex-OntologyPropertyView"] = OntologyPropertyView;
 import XSDBooleanInput from './ontology/XSDBooleanInput.vue'
 components["opensilex-XSDBooleanInput"] = XSDBooleanInput;
 import XSDBooleanView from './ontology/XSDBooleanView.vue'

@@ -131,9 +131,11 @@ public class RDFPropertyDTO {
         model.setUri(getUri());
         model.setLabel(SPARQLLabel.fromMap(getLabelTranslations()));
         model.setComment(SPARQLLabel.fromMap(getCommentTranslations()));
-        ClassModel pDomain = new ClassModel();
-        pDomain.setUri(getDomain());
-        model.setDomain(pDomain);
+        if (getDomain() != null) {
+            ClassModel pDomain = new ClassModel();
+            pDomain.setUri(getDomain());
+            model.setDomain(pDomain);
+        }
 
         return model;
     }

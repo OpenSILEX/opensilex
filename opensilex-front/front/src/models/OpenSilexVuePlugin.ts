@@ -1,17 +1,17 @@
 import { Container } from 'inversify';
 import moment from 'moment';
+import { VueJsOntologyExtensionService } from 'src/lib/api/vueJsOntologyExtension.service';
 import Vue from 'vue';
 import { VueCookies } from 'vue-cookies';
 import VueI18n from 'vue-i18n';
 import { Store } from 'vuex';
+import { ApiServiceBinder, FrontConfigDTO, IAPIConfiguration, ThemeConfigDTO } from '../lib';
 import IHttpClient from '../lib/IHttpClient';
-import { ModuleComponentDefinition } from './ModuleComponentDefinition';
-import { User } from './User';
-import OpenSilexHttpClient from './OpenSilexHttpClient';
 import Oeso from '../ontologies/Oeso';
-import { FrontConfigDTO, ThemeConfigDTO, IAPIConfiguration, ApiServiceBinder, VueJsService, VueDatatypeDTO } from '../lib';
+import { ModuleComponentDefinition } from './ModuleComponentDefinition';
+import OpenSilexHttpClient from './OpenSilexHttpClient';
 import { UploadFileBody } from './UploadFileBody';
-import { VueJsOntologyExtensionService } from 'src/lib/api/vueJsOntologyExtension.service';
+import { User } from './User';
 
 declare var $cookies: VueCookies;
 
@@ -734,21 +734,32 @@ export default class OpenSilexVuePlugin {
         });
     }
 
+    public objectTypes = [];
+    private objectTypesByURI = {};
+
+    public getObjectType(uri) {
+        return this.objectTypesByURI[uri];
+    }
+
     public loadObjectTypes() {
         return new Promise((resolve, reject) => {
             this.getService<VueJsOntologyExtensionService>("opensilex.VueJsOntologyExtensionService")
                 .getObjectTypes()
                 .then((http) => {
-                    this.datatypes = http.response.result;
-                    for (let i in this.datatypes) {
-                        let datatype = this.datatypes[i];
-                        this.datatypesByURI[datatype.uri] = datatype;
-                        this.datatypesByURI[datatype.shortUri] = datatype;
+                    this.objectTypes = http.response.result;
+                    for (let i in this.objectTypes) {
+                        let datatype = this.objectTypes[i];
+                        this.objectTypesByURI[datatype.uri] = datatype;
+                        this.objectTypesByURI[datatype.shortUri] = datatype;
                     }
                     resolve();
                 })
                 .catch(reject);
         });
+    }
+
+    getType(uri) {
+        return this.getDatatype(uri) || this.getObjectType(uri);
     }
 
 

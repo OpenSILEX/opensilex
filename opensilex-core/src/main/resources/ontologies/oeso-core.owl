@@ -273,17 +273,6 @@
     </owl:ObjectProperty>
     
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasFactorLevel -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFactorLevel">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Factor"/>
-        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorLevel"/>
-    </owl:ObjectProperty>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#hasFinancialFunding -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFacility"/>

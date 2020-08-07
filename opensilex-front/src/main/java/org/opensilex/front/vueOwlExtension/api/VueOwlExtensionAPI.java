@@ -24,6 +24,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.OpenSilex;
+import org.opensilex.core.ontology.api.RDFClassDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.core.ontology.dal.ClassModel;
@@ -39,6 +40,7 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 
 /**
@@ -48,16 +50,19 @@ import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 @Api("Vue.js - Ontology extension")
 @Path("/vuejs/owl-extension")
 public class VueOwlExtensionAPI {
-    
+
     @CurrentUser
     UserModel currentUser;
-    
+
     @Inject
     private SPARQLService sparql;
-    
+
     @Inject
     private OpenSilex opensilex;
-    
+
+    @Inject
+    private SPARQLModule sparqlModule;
+
     @GET
     @Path("get-class")
     @ApiOperation("Return class model definition with properties")
@@ -71,14 +76,14 @@ public class VueOwlExtensionAPI {
             @ApiParam(value = "RDF class URI") @QueryParam("rdfType") @ValidURI URI rdfType
     ) throws Exception {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        
+
         ClassModel classDescription = ontologyDAO.getClassModel(rdfType, currentUser.getLanguage());
-        
+
         VueClassExtensionModel classExtension = sparql.getByURI(VueClassExtensionModel.class, classDescription.getUri(), currentUser.getLanguage());
-        
+
         return new SingleObjectResponse<>(VueClassDTO.fromModel(new VueClassDTO(), classDescription, classExtension)).getResponse();
     }
-    
+
     @POST
     @Path("create-class")
     @ApiOperation("Create a custom class")
@@ -89,25 +94,25 @@ public class VueOwlExtensionAPI {
         @ApiResponse(code = 201, message = "Create a custom class", response = ObjectUriResponse.class),
         @ApiResponse(code = 409, message = "A class with the same URI already exists", response = ErrorResponse.class)
     })
-    
+
     public Response createClass(
             @ApiParam("Class description") @Valid VueClassDTO dto
     ) throws Exception {
         try {
             VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
-            
+
             ClassModel classModel = dto.getClassModel(currentUser.getLanguage());
-            
+
             VueClassExtensionModel classExtModel = dto.getExtClassModel();
-            
+
             dao.createExtendedClass(classModel, classExtModel);
             return new ObjectUriResponse(Response.Status.CREATED, classModel.getUri()).getResponse();
-            
+
         } catch (SPARQLAlreadyExistingUriException e) {
             return new ErrorResponse(Response.Status.CONFLICT, "Infrastructure already exists", e.getMessage()).getResponse();
         }
     }
-    
+
     @GET
     @Path("get-data-types")
     @ApiOperation("Return literal datatypes definition")
@@ -118,7 +123,7 @@ public class VueOwlExtensionAPI {
     })
     public Response getDataTypes() throws Exception {
         List<VueDataTypeDTO> datatypeDTOs = new ArrayList<>();
-        
+
         for (VueOntologyDataType datatype : VueOwlExtensionDAO.getDataTypes()) {
             VueDataTypeDTO dto = new VueDataTypeDTO();
             dto.setUri(new URI(datatype.getUri()));
@@ -129,7 +134,7 @@ public class VueOwlExtensionAPI {
         }
         return new PaginatedListResponse<VueDataTypeDTO>(datatypeDTOs).getResponse();
     }
-    
+
     @GET
     @Path("get-object-types")
     @ApiOperation("Return object types definition")
@@ -140,14 +145,17 @@ public class VueOwlExtensionAPI {
     })
     public Response getObjectTypes() throws Exception {
         List<VueObjectTypeDTO> datatypeDTOs = new ArrayList<>();
-        
+
+        OntologyDAO dao = new OntologyDAO(sparql);
+
         for (VueOntologyObjectType objectType : VueOwlExtensionDAO.getObjectTypes()) {
             VueObjectTypeDTO dto = new VueObjectTypeDTO();
             dto.setUri(new URI(objectType.getUri()));
             dto.setIntputComponent(objectType.getInputComponent());
             dto.setViewComponent(objectType.getViewComponent());
-            ClassModel objectClass = sparql.getByURI(ClassModel.class, dto.getUri(), currentUser.getLanguage());
-            dto.setLabel(objectClass.getName());
+
+            ClassModel objectClass = dao.getClassModel(dto.getUri(), currentUser.getLanguage());
+            dto.setRdfClass(RDFClassDTO.fromModel(new RDFClassDTO(), objectClass));
             datatypeDTOs.add(dto);
         }
         return new PaginatedListResponse<VueObjectTypeDTO>(datatypeDTOs).getResponse();

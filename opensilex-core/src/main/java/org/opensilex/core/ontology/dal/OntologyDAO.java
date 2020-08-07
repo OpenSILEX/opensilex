@@ -489,4 +489,12 @@ public final class OntologyDAO {
         return sparql.getByURI(ObjectPropertyModel.class, propertyURI, user.getLanguage());
     }
 
+    public void updateDataProperty(Node graph, DatatypePropertyModel dataProperty) throws Exception {
+        sparql.update(graph, dataProperty);
+    }
+
+    public void updateObjectProperty(Node graph, ObjectPropertyModel objectProperty) throws Exception {
+        sparql.update(graph, objectProperty);
+    }
+
 }

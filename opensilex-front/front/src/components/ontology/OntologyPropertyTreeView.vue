@@ -1,32 +1,31 @@
 <template>
-  <div>
-    <div class="row">
-      <div class="col-md-6">
-        <b-card>
-          <opensilex-TreeView :nodes.sync="nodes" @select="displayPropertyNodeDetail">
-            <template v-slot:node="{ node }">
-              <span class="item-icon">
-                <opensilex-Icon :icon="getPropertyIcon(node)" />
-              </span>&nbsp;
-              <strong v-if="node.data.selected">{{ node.title }}</strong>
-              <span v-if="!node.data.selected">{{ node.title }}</span>
-            </template>
+  <opensilex-TreeView :nodes.sync="nodes" @select="displayPropertyNodeDetail">
+    <template v-slot:node="{ node }">
+      <span class="item-icon">
+        <opensilex-Icon :icon="getPropertyIcon(node)" />
+      </span>&nbsp;
+      <strong v-if="node.data.selected">{{ node.title }}</strong>
+      <span v-if="!node.data.selected">{{ node.title }}</span>
+    </template>
 
-            <!-- <template v-slot:buttons="{ node }">
-              <opensilex-EditButton
-                @click="editOntologyType(node.data.uri)"
-                label="OntologyClassTreeView.edit"
-                :small="true"
-              ></opensilex-EditButton>
-            </template>-->
-          </opensilex-TreeView>
-        </b-card>
-      </div>
-      <div class="col-md-6">
-        <opensilex-OntologyPropertyDetail :selected="selected" />
-      </div>
-    </div>
-  </div>
+    <template v-slot:buttons="{ node }">
+      <opensilex-EditButton
+        @click="$emit('editProperty' ,node.data)"
+        label="OntologyPropertyTreeView.edit"
+        :small="true"
+      ></opensilex-EditButton>
+      <opensilex-AddChildButton
+        @click="$emit('createChildProperty' ,node.data.uri)"
+        label="OntologyPropertyTreeView.add-child"
+        :small="true"
+      ></opensilex-AddChildButton>
+      <opensilex-DeleteButton
+        @click="$emit('deleteProperty' ,node.data)"
+        label="OntologyPropertyTreeView.delete"
+        :small="true"
+      ></opensilex-DeleteButton>
+    </template>
+  </opensilex-TreeView>
 </template>
 
 <script lang="ts">
@@ -35,6 +34,7 @@ import Vue from "vue";
 import { OntologyService, ResourceTreeDTO } from "opensilex-core/index";
 import HttpResponse from "opensilex-core/HttpResponse";
 import OWL from "../../ontologies/OWL";
+import { PropSync } from "vue-property-decorator";
 @Component
 export default class OntologyPropertyTreeView extends Vue {
   $opensilex: any;
@@ -52,7 +52,7 @@ export default class OntologyPropertyTreeView extends Vue {
 
   public nodes = [];
 
-  public selected = null;
+  selected = null;
 
   ontologyService: OntologyService;
 
@@ -62,6 +62,10 @@ export default class OntologyPropertyTreeView extends Vue {
     );
 
     this.onDomainChange();
+  }
+
+  getTree() {
+    return this.nodes;
   }
 
   private langUnwatcher;
@@ -99,16 +103,21 @@ export default class OntologyPropertyTreeView extends Vue {
 
         this.nodes = treeNode;
       }
+
+      this.$emit("selectionChange", this.selected);
     });
   }
 
   displayPropertyNodeDetail(node) {
-    this.displayPropertyDetail(node.data.uri, node.data.type);
+    if (!this.selected || node.data.uri != this.selected.uri) {
+      this.displayPropertyDetail(node.data.uri, node.data.type);
+    }
   }
 
   displayPropertyDetail(uri, type) {
     this.ontologyService.getProperty(uri, type).then(http => {
       this.selected = http.response.result;
+      this.$emit("selectionChange", this.selected);
     });
   }
 
@@ -148,4 +157,15 @@ export default class OntologyPropertyTreeView extends Vue {
 </style>
 
 <i18n>
+en:
+  OntologyPropertyTreeView:
+    edit: Edit property
+    add-child: Add sub-property
+    delete: Delete property
+
+fr:
+  OntologyPropertyTreeView:
+    edit: Editer la propriété
+    add-child: Ajouter une sous-propriété
+    delete: Supprimer la propriété
 </i18n>

@@ -961,7 +961,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 String var = "?x" + statementCount;
                 SPARQLClassObjectMapper<SPARQLResourceModel> reverseMapper = mapperIndex.getForClass(entry.getKey());
                 Property reverseProp = reverseMapper.getFieldProperty(entry.getValue());
-                deleteAllReverseReferencesBuilder.addDelete(reverseMapper.getDefaultGraph(), var, reverseProp, uriNode);
+                Node defaultGraph = reverseMapper.getDefaultGraph();
+                if (defaultGraph != null) {
+                    deleteAllReverseReferencesBuilder.addDelete(reverseMapper.getDefaultGraph(), var, reverseProp, uriNode);
+                } else {
+                    deleteAllReverseReferencesBuilder.addDelete(var, reverseProp, uriNode);
+                }
                 deleteAllReverseReferencesBuilder.addWhere(var, reverseProp, uriNode);
             }
             if (statementCount > 0) {

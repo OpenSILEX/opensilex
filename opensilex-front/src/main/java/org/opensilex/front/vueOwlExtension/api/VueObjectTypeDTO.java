@@ -6,6 +6,7 @@
 package org.opensilex.front.vueOwlExtension.api;
 
 import java.net.URI;
+import org.opensilex.core.ontology.api.RDFClassDTO;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
@@ -19,6 +20,8 @@ public class VueObjectTypeDTO {
     protected String intputComponent;
     protected String viewComponent;
     protected String label;
+
+    protected RDFClassDTO rdfClass;
 
     public URI getUri() {
         return uri;
@@ -54,6 +57,14 @@ public class VueObjectTypeDTO {
 
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    public RDFClassDTO getRdfClass() {
+        return rdfClass;
+    }
+
+    public void setRdfClass(RDFClassDTO rdfClass) {
+        this.rdfClass = rdfClass;
     }
 
 }

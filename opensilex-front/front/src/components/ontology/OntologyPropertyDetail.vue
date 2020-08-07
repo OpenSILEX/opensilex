@@ -7,26 +7,19 @@
       <!-- URI -->
       <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
       <!-- Type -->
-      <opensilex-StringView
-        label="OntologyPropertyDetail.type"
-        :value="typeValue"
-      ></opensilex-StringView>
+      <opensilex-StringView label="OntologyPropertyDetail.type" :value="typeValue"></opensilex-StringView>
       <!-- Value Type -->
-      <opensilex-StringView
-        label="OntologyPropertyForm.value-type"
-        :value="rangeValue"
-      ></opensilex-StringView>
+      <opensilex-StringView label="OntologyPropertyDetail.value-type" :value="rangeValue"></opensilex-StringView>
       <!-- Name -->
       <opensilex-StringView label="component.common.name" :value="selected.label"></opensilex-StringView>
       <!-- Comment -->
       <opensilex-StringView label="component.common.comment" :value="selected.comment"></opensilex-StringView>
-      {{selected}}
     </div>
   </b-card>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import { Component, Prop, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import OWL from "../../ontologies/OWL";
 
@@ -46,8 +39,13 @@ export default class OntologyPropertyDetail extends Vue {
   }
 
   get rangeValue() {
-   if (OWL.isDatatypeProperty(this.selected.type)) {
-      return this.$opensilex.getDatatype(this.selected.range);
+    if (OWL.isDatatypeProperty(this.selected.type)) {
+      let dt = this.$opensilex.getDatatype(this.selected.range);
+      if (dt) {
+        return this.$t(dt.labelKey);
+      } else {
+        return this.selected.range;
+      }
     } else {
       return this.selected.rangeLabel;
     }
@@ -64,10 +62,12 @@ en:
   OntologyPropertyDetail:
     title: Property detail
     type: Type
+    value-type: Value type
 
 fr:
   OntologyPropertyDetail:
     title: Détail de la propriété
     type: Type
+    value-type: Type de valeur
 
 </i18n>

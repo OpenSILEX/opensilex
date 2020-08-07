@@ -303,7 +303,7 @@ public class OntologyAPI {
     @DELETE
     @Path("/delete-property")
     @ApiOperation("Delete a property")
-    @ApiProtected
+    @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

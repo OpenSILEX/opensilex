@@ -6,10 +6,12 @@
 package org.opensilex.front.vueOwlExtension.api;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.jena.vocabulary.OWL2;
 import org.opensilex.core.ontology.api.RDFClassPropertyDTO;
 import org.opensilex.core.ontology.api.RDFClassTranslatedDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
@@ -32,7 +34,7 @@ public class VueClassDTO extends RDFClassTranslatedDTO {
 
     protected Map<String, VueClassPropertyDTO> propertiesExtensions;
 
-    public boolean isAbstract() {
+    public boolean getIsAbstract() {
         return isAbstract;
     }
 
@@ -62,55 +64,62 @@ public class VueClassDTO extends RDFClassTranslatedDTO {
         if (extClass != null) {
             dto.setIsAbstract(extClass.getIsAbstractClass());
             dto.setIcon(extClass.getIcon());
+            List<VueClassPropertyExtensionModel> extProperties = extClass.getProperties();
+            Map<String, VueClassPropertyDTO> extPropertiesMap = new HashMap<>(extProperties.size());
+            for (VueClassPropertyExtensionModel extProperty : extProperties) {
+                VueClassPropertyDTO propertyDTO = VueClassPropertyDTO.fromModel(extProperty);
+                extPropertiesMap.put(extProperty.getToOwlProperty().toString(), propertyDTO);
+            }
         } else {
             dto.setIsAbstract(false);
+            dto.setPropertiesExtensions(new HashMap<>());
         }
-
-        List<VueClassPropertyExtensionModel> extProperties = extClass.getProperties();
-        Map<String, VueClassPropertyDTO> extPropertiesMap = new HashMap<>(extProperties.size());
-        for (VueClassPropertyExtensionModel extProperty : extProperties) {
-            VueClassPropertyDTO propertyDTO = VueClassPropertyDTO.fromModel(extProperty);
-            extPropertiesMap.put(extProperty.getToOwlProperty().toString(), propertyDTO);
-        }
-        dto.setPropertiesExtensions(extPropertiesMap);
 
         return dto;
     }
 
-    public ClassModel getClassModel(String lang) {
+    public ClassModel getClassModel(String lang, boolean ignoreProperties) throws URISyntaxException {
         ClassModel model = new ClassModel();
 
         model.setUri(getUri());
 
-        SPARQLLabel sparqlLabel = new SPARQLLabel(getLabel(), lang);
+        SPARQLLabel sparqlLabel = new SPARQLLabel();
         sparqlLabel.addAllTranslations(getLabelTranslations());
         model.setLabel(sparqlLabel);
 
-        SPARQLLabel sparqlComment = new SPARQLLabel(getComment(), lang);
+        SPARQLLabel sparqlComment = new SPARQLLabel();
         sparqlComment.addAllTranslations(getCommentTranslations());
         model.setComment(sparqlComment);
 
-        ClassModel parentClass = new ClassModel();
-        parentClass.setUri(getParent());
-        model.setParent(parentClass);
-
-        Map<URI, DatatypePropertyModel> dtProperties = new HashMap<>();
-        Map<URI, ObjectPropertyModel> oProperties = new HashMap<>();
-        Map<URI, OwlRestrictionModel> restrictions = new HashMap<>();
-        for (RDFClassPropertyDTO property : getProperties()) {
-            if (property.isLiteral()) {
-                DatatypePropertyModel dtProperty = property.getDatatypePropertyModel(lang);
-                dtProperties.put(dtProperty.getUri(), dtProperty);
-            } else {
-                ObjectPropertyModel oProperty = property.getObjectPropertyModel(lang);
-                oProperties.put(oProperty.getUri(), oProperty);
-            }
-            OwlRestrictionModel restriction = property.getOwlRestriction();
-            restrictions.put(property.getUri(), restriction);
+        if (getParent() == null) {
+            ClassModel parentClass = new ClassModel();
+            parentClass.setUri(new URI(OWL2.Class.getURI()));
+            model.setParent(parentClass);
+        } else {
+            ClassModel parentClass = new ClassModel();
+            parentClass.setUri(getParent());
+            model.setParent(parentClass);
         }
-        model.setDatatypeProperties(dtProperties);
-        model.setObjectProperties(oProperties);
-        model.setRestrictions(restrictions);
+
+        if (!ignoreProperties && getProperties() != null) {
+            Map<URI, DatatypePropertyModel> dtProperties = new HashMap<>();
+            Map<URI, ObjectPropertyModel> oProperties = new HashMap<>();
+            Map<URI, OwlRestrictionModel> restrictions = new HashMap<>();
+            for (RDFClassPropertyDTO property : getProperties()) {
+                if (property.isLiteral()) {
+                    DatatypePropertyModel dtProperty = property.getDatatypePropertyModel(lang);
+                    dtProperties.put(dtProperty.getUri(), dtProperty);
+                } else {
+                    ObjectPropertyModel oProperty = property.getObjectPropertyModel(lang);
+                    oProperties.put(oProperty.getUri(), oProperty);
+                }
+                OwlRestrictionModel restriction = property.getOwlRestriction();
+                restrictions.put(property.getUri(), restriction);
+            }
+            model.setDatatypeProperties(dtProperties);
+            model.setObjectProperties(oProperties);
+            model.setRestrictions(restrictions);
+        }
 
         return model;
     }
@@ -118,16 +127,19 @@ public class VueClassDTO extends RDFClassTranslatedDTO {
     public VueClassExtensionModel getExtClassModel() {
         VueClassExtensionModel model = new VueClassExtensionModel();
 
+        model.setUri(getUri());
         model.setIcon(getIcon());
-        model.setIsAbstractClass(isAbstract());
+        model.setIsAbstractClass(getIsAbstract());
 
         List<VueClassPropertyExtensionModel> extendedProperties = new ArrayList<>();
-        for (VueClassPropertyDTO extPropertyDTO : getPropertiesExtensions().values()) {
-            VueClassPropertyExtensionModel propertyModel = new VueClassPropertyExtensionModel();
-            propertyModel.setFromOwlClass(getUri());
-            propertyModel.setToOwlProperty(extPropertyDTO.getProperty());
-            propertyModel.setHasDisplayOrder(extPropertyDTO.getOrder());
-            extendedProperties.add(propertyModel);
+        if (getPropertiesExtensions() != null) {
+            for (VueClassPropertyDTO extPropertyDTO : getPropertiesExtensions().values()) {
+                VueClassPropertyExtensionModel propertyModel = new VueClassPropertyExtensionModel();
+                propertyModel.setFromOwlClass(getUri());
+                propertyModel.setToOwlProperty(extPropertyDTO.getProperty());
+                propertyModel.setHasDisplayOrder(extPropertyDTO.getOrder());
+                extendedProperties.add(propertyModel);
+            }
         }
         model.setProperties(extendedProperties);
 

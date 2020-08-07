@@ -1,14 +1,14 @@
 <template>
   <b-card v-if="selected">
     <template v-slot:header>
-      <h3>TITLE TODO</h3>
+      <h3>{{$t("OntologyClassDetail.title")}}</h3>
     </template>
     <div>
       <!-- URI -->
       <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
       <!-- Name -->
       <opensilex-StringView label="component.common.name" :value="selected.label"></opensilex-StringView>
-      {{selected}}
+      <!-- {{selected}} -->
     </div>
   </b-card>
 </template>
@@ -31,4 +31,13 @@ export default class OntologyClassDetail extends Vue {
 
 
 <i18n>
+en:
+  OntologyClassDetail:
+    title: Object type detail 
+
+fr:
+  OntologyClassDetail:
+    title: Détail du type d'objet
+
 </i18n>
+

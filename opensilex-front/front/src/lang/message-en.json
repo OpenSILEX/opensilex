@@ -55,6 +55,7 @@
             "cancel": "cancel",
             "name": "Name",
             "comment": "Comment",
+            "element": "The element",
             "description": "Description",
             "startDate": "Start date",
             "endDate": "End date",

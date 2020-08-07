@@ -287,5 +287,5 @@ fr:
         labelFR: Nom français
         commentEN: Description anglaise
         commentFR: Description française
-        property-already-exists: La propriété existe déjà avec la même URI
+        property-already-exists: Une propriété existe déjà avec la même URI
 </i18n>

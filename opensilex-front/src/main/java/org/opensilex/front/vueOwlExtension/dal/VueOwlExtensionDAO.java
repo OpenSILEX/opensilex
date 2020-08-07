@@ -46,6 +46,28 @@ public class VueOwlExtensionDAO {
         }
     }
 
+    public void updateExtendedClass(ClassModel instance, VueClassExtensionModel instanceExtension) throws Exception {
+        try {
+            sparql.startTransaction();
+            sparql.update(instance);
+            sparql.update(instanceExtension);
+            sparql.commitTransaction();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction(ex);
+        }
+    }
+
+    public void deleteExtendedClass(URI classURI) throws Exception {
+        try {
+            sparql.startTransaction();
+            sparql.delete(ClassModel.class, classURI);
+            sparql.delete(VueClassExtensionModel.class, classURI);
+            sparql.commitTransaction();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction(ex);
+        }
+    }
+
     private static List<VueOntologyDataType> dataTypes;
     private static List<VueOntologyObjectType> objectTypes;
     private static Map<String, VueOntologyType> typesByURI;
@@ -95,4 +117,5 @@ public class VueOwlExtensionDAO {
 
         return typesByURI.get(SPARQLDeserializers.getExpandedURI(uri));
     }
+
 }

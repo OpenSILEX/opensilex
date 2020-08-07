@@ -1,5 +1,5 @@
 <template>
-  <opensilex-OntologyClassTreeView :rdfClass="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"></opensilex-OntologyClassTreeView>
+  <opensilex-OntologyClassView :rdfClass="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"></opensilex-OntologyClassView>
 </template>
 
 <script lang="ts">

@@ -52,6 +52,7 @@
             "delete": "supprimer",
             "name": "Nom",
             "comment": "Description",
+            "element": "L'élément",
             "startDate" : "Date de début",
             "endDate" : "Date de fin",
             "description": "Description",
@@ -88,9 +89,9 @@
             "delete-confirmation": "Cette action est définitive, merci de confirmer la supression.",
             "success": {
                 "success-title": "Succès",
-                "creation-success-message": "a été crée",
-                "update-success-message": "a été modifié(e)",
-                "delete-success-message": "a été supprimé(e)"
+                "creation-success-message": " a été crée",
+                "update-success-message": " a été modifié(e)",
+                "delete-success-message": " a été supprimé(e)"
             },
             "details": {
                 "document": "Documents associés",

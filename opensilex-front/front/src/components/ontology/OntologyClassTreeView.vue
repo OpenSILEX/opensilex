@@ -1,32 +1,31 @@
 <template>
-  <div>
-    <div class="row">
-      <div class="col-md-6">
-        <b-card>
-          <opensilex-TreeView :nodes.sync="nodes" @select="displayClassDetail">
-            <template v-slot:node="{ node }">
-              <span class="item-icon">
-                <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.uri)" />
-              </span>&nbsp;
-              <strong v-if="node.data.selected">{{ node.title }}</strong>
-              <span v-if="!node.data.selected">{{ node.title }}</span>
-            </template>
+  <opensilex-TreeView :nodes.sync="nodes" @select="displayClassDetail">
+    <template v-slot:node="{ node }">
+      <span class="item-icon">
+        <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.uri)" />
+      </span>&nbsp;
+      <strong v-if="node.data.selected">{{ node.title }}</strong>
+      <span v-if="!node.data.selected">{{ node.title }}</span>
+    </template>
 
-            <!-- <template v-slot:buttons="{ node }">
-              <opensilex-EditButton
-                @click="editOntologyType(node.data.uri)"
-                label="OntologyClassTreeView.edit"
-                :small="true"
-              ></opensilex-EditButton>
-            </template>-->
-          </opensilex-TreeView>
-        </b-card>
-      </div>
-      <div class="col-md-6">
-        <opensilex-OntologyClassDetail :selected="selected" />
-      </div>
-    </div>
-  </div>
+        <template v-slot:buttons="{ node }">
+      <opensilex-EditButton
+        @click="$emit('editClass' ,node.data)"
+        label="OntologyClassTreeView.edit"
+        :small="true"
+      ></opensilex-EditButton>
+      <opensilex-AddChildButton
+        @click="$emit('createChildClass' ,node.data.uri)"
+        label="OntologyClassTreeView.add-child"
+        :small="true"
+      ></opensilex-AddChildButton>
+      <opensilex-DeleteButton
+        @click="$emit('deleteClass' ,node.data)"
+        label="OntologyClassTreeView.delete"
+        :small="true"
+      ></opensilex-DeleteButton>
+    </template>
+  </opensilex-TreeView>
 </template>
 
 <script lang="ts">
@@ -68,13 +67,13 @@ export default class OntologyClassTreeView extends Vue {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       lang => {
-        this.onRootClassChange();
+        this.refresh();
       }
     );
   }
 
   beforeDestroy() {
-    this.langUnwatcher();
+    // this.langUnwatcher();
   }
 
   @Watch("rdfClass")
@@ -84,13 +83,19 @@ export default class OntologyClassTreeView extends Vue {
     }
   }
 
+  resourceTree: Array<ResourceTreeDTO> = null;
+
+  getTree() {
+    return this.resourceTree;
+  }
+
   refresh() {
-    this.ontologyService.getSubClassesOf(this.rdfClass, true).then(http => {
+    this.ontologyService.getSubClassesOf(this.rdfClass, false).then(http => {
       let treeNode = [];
       let first = true;
-      for (let i in http.response.result) {
-        let resourceTree: ResourceTreeDTO = http.response.result[i];
-        let node = this.dtoToNode(resourceTree);
+      this.resourceTree = http.response.result;
+      for (let i in this.resourceTree[0].children ) {
+        let node = this.dtoToNode(this.resourceTree[0].children[i]);
         treeNode.push(node);
 
         this.nodes = treeNode;
@@ -101,6 +106,7 @@ export default class OntologyClassTreeView extends Vue {
   displayClassDetail(node) {
     this.ontologyService.getClass(node.data.uri).then(http => {
       this.selected = http.response.result;
+      this.$emit("selectionChange", this.selected);
     });
   }
 
@@ -132,4 +138,15 @@ export default class OntologyClassTreeView extends Vue {
 </style>
 
 <i18n>
+en:
+  OntologyClassTreeView:
+    edit: Edit object type
+    add-child: Add sub-object type
+    delete: Delete object type
+
+fr:
+  OntologyClassTreeView:
+    edit: Editer le type d'objet
+    add-child: Ajouter un sous-type d'objet
+    delete: Supprimer le type d'objet
 </i18n>

@@ -16,8 +16,10 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -25,6 +27,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.ontology.api.RDFClassDTO;
+import org.opensilex.core.ontology.api.RDFPropertyDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.core.ontology.dal.ClassModel;
@@ -101,7 +104,7 @@ public class VueOwlExtensionAPI {
         try {
             VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
 
-            ClassModel classModel = dto.getClassModel(currentUser.getLanguage());
+            ClassModel classModel = dto.getClassModel(currentUser.getLanguage(), false);
 
             VueClassExtensionModel classExtModel = dto.getExtClassModel();
 
@@ -111,6 +114,46 @@ public class VueOwlExtensionAPI {
         } catch (SPARQLAlreadyExistingUriException e) {
             return new ErrorResponse(Response.Status.CONFLICT, "Infrastructure already exists", e.getMessage()).getResponse();
         }
+    }
+
+    @PUT
+    @Path("update-class")
+    @ApiOperation("Update a custom class")
+    @ApiProtected(adminOnly = true)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Update a RDF property", response = ObjectUriResponse.class)
+    })
+
+    public Response updateClass(
+            @ApiParam("Class description") @Valid VueClassDTO dto
+    ) throws Exception {
+        VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
+
+        ClassModel classModel = dto.getClassModel(currentUser.getLanguage(), true);
+
+        VueClassExtensionModel classExtModel = dto.getExtClassModel();
+
+        dao.updateExtendedClass(classModel, classExtModel);
+        return new ObjectUriResponse(Response.Status.CREATED, classModel.getUri()).getResponse();
+    }
+
+    @DELETE
+    @Path("/delete-class")
+    @ApiOperation("Delete a class")
+    @ApiProtected(adminOnly = true)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Class deleted ", response = RDFPropertyDTO.class)
+    })
+    public Response deleteClass(
+            @ApiParam(value = "Class URI") @QueryParam("classURI") @ValidURI URI classURI
+    ) throws Exception {
+        VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
+        dao.deleteExtendedClass(classURI);
+        return new ObjectUriResponse(Response.Status.OK, classURI).getResponse();
     }
 
     @GET

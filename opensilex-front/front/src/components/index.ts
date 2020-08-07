@@ -189,6 +189,10 @@ import OntologyClassDetail from './ontology/OntologyClassDetail.vue'
 components["opensilex-OntologyClassDetail"] = OntologyClassDetail;
 import OntologyClassTreeView from './ontology/OntologyClassTreeView.vue'
 components["opensilex-OntologyClassTreeView"] = OntologyClassTreeView;
+import OntologyClassForm from './ontology/OntologyClassForm.vue'
+components["opensilex-OntologyClassForm"] = OntologyClassForm;
+import OntologyClassView from './ontology/OntologyClassView.vue'
+components["opensilex-OntologyClassView"] = OntologyClassView;
 
 import OntologyPropertyTreeView from './ontology/OntologyPropertyTreeView.vue'
 components["opensilex-OntologyPropertyTreeView"] = OntologyPropertyTreeView;

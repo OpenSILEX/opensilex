@@ -7,6 +7,7 @@ package org.opensilex.core.ontology.api;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.opensilex.core.ontology.dal.ClassModel;
@@ -43,7 +44,11 @@ public class RDFClassTranslatedDTO extends RDFClassDTO {
         RDFClassDTO.fromModel(dto, model);
 
         dto.setLabelTranslations(model.getLabel().getAllTranslations());
-        dto.setCommentTranslations(model.getComment().getAllTranslations());
+        if (model.getComment() != null) {
+            dto.setCommentTranslations(model.getComment().getAllTranslations());
+        } else {
+            dto.setCommentTranslations(new HashMap<>());
+        }
 
         return dto;
     }

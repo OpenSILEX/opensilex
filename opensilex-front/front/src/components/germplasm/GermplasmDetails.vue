@@ -231,6 +231,7 @@ export default class GermplasmDetails extends Vue {
       this.addInfo.push(tableData);
     }
   }
+  
 }
 </script>
 

@@ -5,7 +5,6 @@
       title="GermplasmCreate.title"
       description="GermplasmCreate.description"
     ></opensilex-PageHeader>
-
     <opensilex-PageActions>
       <template v-slot>
         <b-nav pills>

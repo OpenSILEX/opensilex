@@ -119,8 +119,6 @@ components["opensilex-FileInputForm"] = FileInputForm;
 import TagInputForm from './common/forms/TagInputForm.vue'
 components["opensilex-TagInputForm"] = TagInputForm;
 
-
-
 import WizardForm from './common/forms/WizardForm.vue'
 components["opensilex-WizardForm"] = WizardForm;
 import ModalForm from './common/forms/ModalForm.vue'

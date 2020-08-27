@@ -30,8 +30,8 @@ variables:
   OPENSILEX_BUILD_PATH: "opensilex-release/target"
   #APP DEPLOY CONFIG
   DEV_TOOLS_REPO_CONF_FILES_PATH: "instances-configuration"
-  OPENSILEX_STOP_SERVER_OPTS: "--CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
-  OPENSILEX_START_SERVER_OPTS: "--port=$OPENSILEX_JAR_PORT --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
+  OPENSILEX_STOP_SERVER_OPTS: "server stop --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
+  OPENSILEX_START_SERVER_OPTS: "server start --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
   OPENSILEX_RESET_ONTOLOGIES_OPTS: "sparql reset-ontologies --DEBUG"
 
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
@@ -155,13 +155,13 @@ variables:
     - |
       if [[ "$RESET_ONTOLOGIES" == "true" ]]; then
         echo "Reset ontologies java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar ${OPENSILEX_CONFIG_SERVER_OPTS} ${OPENSILEX_RESET_ONTOLOGIES_OPTS}";
-        ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar opensilex.jar ${OPENSILEX_CONFIG_SERVER_OPTS} ${OPENSILEX_RESET_ONTOLOGIES_OPTS} --BASE_DIRECTORY=${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}";
+        ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar opensilex.jar ${OPENSILEX_CONFIG_SERVER_OPTS} ${OPENSILEX_RESET_ONTOLOGIES_OPTS}";
       fi
     - echo "Restart server java -jar ${RSYNC_INSTANCES_BIN_PATH}/$REMOTE_SERVER_RSYNC_DIR/opensilex.jar"
     - echo "Stop with options --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_STOP_SERVER_OPTS}"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server stop --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_STOP_SERVER_OPTS}"
-    - echo "Start with options --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
-    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}/opensilex.jar server start --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar opensilex.jar ${OPENSILEX_STOP_SERVER_OPTS} --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP"
+    - echo "Start with options --adminPort=$OPENSILEX_JAR_ADMIN_PORT --port=$OPENSILEX_JAR_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_START_SERVER_OPTS}"
+    - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; java -jar opensilex.jar ${OPENSILEX_START_SERVER_OPTS} --adminPort=$OPENSILEX_JAR_ADMIN_PORT --port=$OPENSILEX_JAR_PORT --host=$REMOTE_SERVER_IP"
     - AUTOGENERATE_ENVIRONMENT_URL="$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT"
     - echo "Deploy To $AUTOGENERATE_ENVIRONMENT_URL" # In script, get the environment URL.
     - echo "AUTOGENERATE_ENVIRONMENT_URL=$AUTOGENERATE_ENVIRONMENT_URL" >> deploy.env
@@ -221,6 +221,17 @@ trigger:dataanalysis:deploy:test:
   image: curlimages/curl
   script:
     - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" https://forgemia.inra.fr/api/v4/projects/2076/trigger/pipeline
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+  needs:
+    - job: "opensilex:build"
+    
+# Trigger pipeline for data-analysis module deployment
+trigger:vitioeno:deploy:test:
+  stage: deploy
+  image: curlimages/curl
+  script:
+    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" https://forgemia.inra.fr/api/v4/projects/2420/trigger/pipeline
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
   needs:

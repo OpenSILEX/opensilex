@@ -35,7 +35,6 @@ import org.opensilex.utils.ListWithPagination;
  */
 public class FactorDAO {
 
-    // 1. TODO list properties skos
     protected final SPARQLService sparql;
 
     public FactorDAO(SPARQLService sparql) {
@@ -60,17 +59,12 @@ public class FactorDAO {
         return sparql.getByURI(FactorModel.class, instanceURI, null);
     }
 
-    public ListWithPagination<FactorModel> search(URI uri, String name, String category, URI experimentUri, List<OrderBy> orderByList, Integer page, Integer pageSize, String lang) throws Exception {
-        return sparql.searchWithPagination(FactorModel.class,
-                lang,
-                (SelectBuilder select) -> {
-                    // TODO implements filters
-                    appendFilters(uri, name, category, experimentUri, select);
-                },
-                orderByList,
-                page,
-                pageSize
-        );
+    public ListWithPagination<FactorModel> search(URI uri, String name, String category, URI experimentUri,
+            List<OrderBy> orderByList, Integer page, Integer pageSize, String lang) throws Exception {
+        return sparql.searchWithPagination(FactorModel.class, lang, (SelectBuilder select) -> {
+            // TODO implements filters
+            appendFilters(uri, name, category, experimentUri, select);
+        }, orderByList, page, pageSize);
     }
 
     public List<FactorModel> getAll(String lang) throws Exception {
@@ -78,28 +72,26 @@ public class FactorDAO {
     }
 
     /**
-     * Append FILTER or VALUES clause on the given {@link SelectBuilder} for
-     * each non-empty simple attribute ( not a {@link List} from the
+     * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each
+     * non-empty simple attribute ( not a {@link List} from the
      * {@link FactorSearchDTO}
      *
-     * @param uri uri factor uri attribute
-     * @param name name search attribute
-     * @param category category of the factor
+     * @param uri           uri factor uri attribute
+     * @param name          name search attribute
+     * @param category      category of the factor
      * @param experimentUri experiment uri
-     * @param select search query
+     * @param select        search query
      * @throws java.lang.Exception can throw an exception
      * @see SPARQLQueryHelper the utility class used to build Expr
      */
-    protected void appendFilters(URI uri, String name, String category, URI experimentUri, SelectBuilder select) throws Exception {
+    protected void appendFilters(URI uri, String name, String category, URI experimentUri, SelectBuilder select)
+            throws Exception {
         // build regex filters
         if (!StringUtils.isEmpty(name) && uri != null) {
             Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
             Expr strUriExpr = SPARQLQueryHelper.getExprFactory().str(uriVar);
-            select.addFilter(
-                    SPARQLQueryHelper.or(
-                            SPARQLQueryHelper.regexFilter(FactorModel.NAME_FIELD, name),
-                            SPARQLQueryHelper.regexFilter(strUriExpr, uri.toString(), null)
-                    ));
+            select.addFilter(SPARQLQueryHelper.or(SPARQLQueryHelper.regexFilter(FactorModel.NAME_FIELD, name),
+                    SPARQLQueryHelper.regexFilter(strUriExpr, uri.toString(), null)));
         } else {
             if (uri != null) {
                 Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
@@ -122,17 +114,10 @@ public class FactorDAO {
     }
 
     private static void addWhere(SelectBuilder select, URI subjectVar, Property property, String objectVar) {
-        select.getWhereHandler().getClause().addTriplePattern(new Triple(SPARQLDeserializers.nodeURI(subjectVar), property.asNode(), makeVar(objectVar)));
+        select.getWhereHandler().getClause().addTriplePattern(
+                new Triple(SPARQLDeserializers.nodeURI(subjectVar), property.asNode(), makeVar(objectVar)));
     }
 
-    private void appendUriRegexFilter(SelectBuilder select, URI uri) {
-        if (uri != null) {
-            Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
-            Expr strUriExpr = SPARQLQueryHelper.getExprFactory().str(uriVar);
-            select.addFilter(SPARQLQueryHelper.regexFilter(strUriExpr, uri.toString(), null));
-        }
-    }
-    
     public List<FactorModel> getList(List<URI> uris) throws Exception {
         return sparql.getListByURIs(FactorModel.class, uris, null);
     }

@@ -8,20 +8,12 @@
       <template v-slot:filters>
         <opensilex-FilterField>
           <b-form-group>
-            <label>{{$t('component.factor.list.filter.name')}}</label>
-            <b-input-group>
-              <b-form-input
-                v-model="filter.name"
-                type="text"
-                default="null"
-                :placeholder="$t('component.factor.name-placeholder')"
-              ></b-form-input>
-              <template v-slot:append>
-                <b-btn variant="primary" @click="updateFilters(filter.name = null)">
-                  <font-awesome-icon icon="times" size="sm" />
-                </b-btn>
-              </template>
-            </b-input-group>
+            <label for="name">{{$t('component.factor.list.filter.name')}}</label>
+            <opensilex-StringFilter
+              id="name"
+              :filter.sync="filter.name" 
+              placeholder="component.factor.name-placeholder"
+            ></opensilex-StringFilter>
           </b-form-group>
         </opensilex-FilterField>
 
@@ -69,7 +61,7 @@
         <opensilex-UriLink
           :uri="data.item.uri"
           :value="data.item.name"
-          :to="{path: '/factor/details/'+ encodeURIComponent(data.item.uri)}"
+          :to="{path: '/factor/details/'+ encodeURIComponent(data.item.uri),query: { name: data.item.name }}"
         ></opensilex-UriLink>
       </template>
       <template v-slot:cell(category)="{data}">{{$t(getCategoryLabel(data.value))}}</template>
@@ -78,19 +70,19 @@
           <opensilex-EditButton
             v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
             :small="true"
-            label="component.factor.list.update"
+            label="component.common.list.buttons.update"
             @click="$emit('onEdit', data.item.uri)"
           ></opensilex-EditButton>
           <opensilex-InteroperabilityButton
             v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
             :small="true"
-            label="component.factor.list.interoperrability"
+            label="component.common.list.buttons.interoperability"
             @click="$emit('onInteroperability', data.item.uri)"
           ></opensilex-InteroperabilityButton>
           <opensilex-DeleteButton
             v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_DELETE_ID)"
             :small="true"
-            label="component.factor.list.delete"
+            label="component.common.list.buttons.delete"
             @click="$emit('onDelete', data.item.uri)"
           ></opensilex-DeleteButton>
         </b-button-group>
@@ -137,7 +129,7 @@ export default class FactorList extends Vue {
     name: "",
     comment: "",
     experiment: null,
-    category: ""
+    category: "",
   };
 
   resetSearch() {
@@ -180,11 +172,6 @@ export default class FactorList extends Vue {
   }
 
   fields = [
-    // {
-    //   key: "uri",
-    //   label: "component.factor.list.uri",
-    //   sortable: true
-    // },
     {
       key: "name",
       label: "component.factor.list.name",
@@ -242,15 +229,14 @@ en:
   component: 
     factor: 
       list:
-        uri: Factor URI
         name: Name
         category: Category
         comment: Comment
         filter: 
           label: Filter factors
-          name: By name
-          experiment: By experiment
-          category: By category
+          name: Name
+          experiment: Experiment
+          category: Category
           name-placeholder: Irrigation, Shading, ...
           experiment-placeholder: Select experiment
             
@@ -258,15 +244,14 @@ fr:
   component: 
     factor: 
       list:
-        uri: URI du facteur
         name: Nom
         category: Categorie
         comment: Commentaire
         filter: 
           label: Filtrer les facteurs
-          name: Par nom
-          category: Par catégorie
-          experiment: Par expérimentationn
+          name: Nom
+          category: Catégorie
+          experiment: Expérimentationn
           name-placeholder: Irrigation, Ombrage, ...
           experiment-placeholder: Sélectionner experimentation
 

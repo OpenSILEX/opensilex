@@ -31,6 +31,7 @@
         :sort-desc.sync="sortDesc"
         :items="loadData"
         :fields="fields"
+        sort-icon-left
         @row-selected="onRowSelected"
       >
         <template v-for="(field, index) in fields" v-slot:[getHeadTemplateName(field.key)]="data">

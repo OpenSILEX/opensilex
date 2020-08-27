@@ -88,14 +88,11 @@
         </p>
       </li>
     </ol>
-    <pre><code
-  class="language-r"
-  data-line-start="40"
-  data-line-end="44"
->Factors can either be fixed or random.
-A factor is fixed when the levels under study are the only levels of interest.  
-A factor is random when the levels under study are a random sample from a larger population   and the goal of the study is to make a statement regarding the larger population.
-</code></pre>
+    <p>Factors can either be fixed or random.</p>
+    <ul>
+      <li>A factor is fixed when the levels under study are the only levels of interest.</li>
+      <li>A factor is random when the levels under study are a random sample from a larger population and the goal of the study is to make a statement regarding the larger population.</li>
+    </ul>
     <p class="has-line-data" data-line-start="45" data-line-end="49">
       Remarque:
       <br />Selon l’objectif l’expérience le même facteur sera fixe ou aléatoire.
@@ -191,14 +188,12 @@ A factor is random when the levels under study are a random sample from a larger
         <br />Interpretation of a factor (subordonate) is conditionned by the value taken by another factor (the superior)
       </li>
     </ol>
-    <pre><code
-  class="language-r"
-  data-line-start="39"
-  data-line-end="43"
->Factors can either be fixed or random.
-A factor is fixed when the levels under study are the only levels of interest.  
-A factor is random when the levels under study are a random sample from a larger population   and the goal of the study is to make a statement regarding the larger population.
-</code></pre>
+    <p>Factors can either be fixed or random.</p>
+    <ul>
+      <li>A factor is fixed when the levels under study are the only levels of interest.</li>
+      <li>A factor is random when the levels under study are a random sample from a larger population and the goal of the study is to make a statement regarding the larger population.</li>
+    </ul>
+
     <p class="has-line-data" data-line-start="44" data-line-end="48">
       <em>Nota bene</em>:
       <br />According to the objective of the experiment, the factor can be random or fixed.

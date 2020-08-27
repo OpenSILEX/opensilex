@@ -25,7 +25,7 @@ public class FactorCreationDTO extends SKOSReferencesDTO {
 
     @ValidURI
     private URI uri;
-    
+
     @Required
     private String name;
 
@@ -58,7 +58,7 @@ public class FactorCreationDTO extends SKOSReferencesDTO {
 
     public void setCategory(String category) {
         this.category = category;
-    } 
+    }
 
     public String getComment() {
         return comment;
@@ -78,7 +78,7 @@ public class FactorCreationDTO extends SKOSReferencesDTO {
 
     public FactorModel newModel() {
         FactorModel model = new FactorModel();
-        model.setUri(getUri()); 
+        model.setUri(getUri());
         model.setName(getName());
         model.setCategory(getCategory());
         model.setComment(getComment());

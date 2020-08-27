@@ -120,7 +120,14 @@
                 "search-button": "Rechercher",
                 "clear-button": "Réinitialiser"
             },
-            "help-button": "Aide"
+            "help-button": "Aide",
+            "list": {
+                "buttons": {
+                    "interoperability": "Interopérabilité",
+                    "update": "Modifier",
+                    "delete": "Supprimer"
+                }
+            }
         },
         "copyToClipboard": {
             "copyUri": "Copier l'URI dans le presse papier",
@@ -415,66 +422,6 @@
             },
             "errors": {
                 "infrastructure-already-exists": "Une utilisateur existe déjà avec cette URI ou cette adresse email."
-            }
-        },
-        "factor": {
-            "description": "Gestion des facteurs expérimentaux",
-            "label": "Facteur",
-            "uri": "URI du facteur",
-            "uri-help": "Identifiant unique du facteur",
-            "names-placeholder": "Renseignez un alias de facteur",
-            "filter-placeholder": "Utiliser ce filter pour filter les facteurs",
-            "factors": "facteur",
-            "add": "Créer facteur",
-            "add-button": "Créer facteur",
-            "update": "Mettre à jour un facteur",
-            "name": "Nom",
-            "name-en": "Nom",
-            "name-help": "Nom par défaut",
-            "name-placeholder": "Irrigation, Ombrage, Année de plantation, etc.",
-            "category": "Catégorie",
-            "category-help": "Catégorie liée au facteur",
-            "category-placeholder": "Irrigation-Environnement, Conduite au champ , etc.",
-            "comment": "description",
-            "comment-help": "Description associée à ce facteur (protocole, apport de composé)",
-            "form-comment-placeholder": "Protocole n°1289 - Apport d'eau de 5 ml/jour.",
-            "errors": {
-                "user-already-exists": "URI du facteur déjà existante."
-            },
-            "details": {
-                "label": "Vue détaillée du facteur",
-                "factorLevels": "Niveaux de facteurs associés",
-                "no-factorLevels-provided": "Aucun niveau de facteur associé"
-            },
-            "select": {
-                "other": "Autre",
-                "fieldManagement": "Conduite culturale",
-                "lightManagement": "Gestion de la lumière",
-                "waterManagement": "Gestion de l'eau",
-                "chemical": "Chimique",
-                "bioticStress": "Stress biotique",
-                "soil": "Sol",
-                "nutrient": "Nutriments",
-                "atmospheric": "Atmosphérique",
-                "temperature": "Température"
-            }
-        },
-        "factorLevel": {
-            "uri": "URI du niveau de facteur",
-            "name-placeholder": "Renseignez le nom d'un niveau de facteur",
-            "factor-selector-placeholder": "Sélectionnez un nom de facteur",
-            "filter-placeholder": "Utilisez ce change pour filter vos niveau de facteur",
-            "factorLevel": "niveau de facteur",
-            "add": "Ajouter une ligne",
-            "associated": "Niveaux de facteurs associés",
-            "unique-name": "Le nom est requis et doit être unique",
-            "update": "Modifier un niveau de facteur",
-            "name": "nom",
-            "factor": "facteur",
-            "comment": "description",
-            "hasFactor": "est lié au facteur",
-            "errors": {
-                "user-already-exists": "URI du niveau de facteur déjà existante."
             }
         },
         "skos": {

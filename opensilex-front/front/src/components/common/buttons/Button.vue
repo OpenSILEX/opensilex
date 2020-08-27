@@ -26,12 +26,12 @@ export default class Button extends Vue {
   variant: string;
 
   @Prop({
-    default: true
+    default: true,
   })
   small: boolean;
 
   @Prop({
-    default: false
+    default: false,
   })
   disabled: boolean;
 
@@ -43,6 +43,7 @@ export default class Button extends Vue {
 <style scoped lang="scss">
 .button-label {
   margin-left: 5px;
+  padding-right: 13px;
 }
 </style>
 

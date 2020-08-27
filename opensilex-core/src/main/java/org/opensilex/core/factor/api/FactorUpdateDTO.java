@@ -22,68 +22,68 @@ import org.opensilex.server.rest.validation.ValidURI;
  * @author Arnaud Charleroy
  */
 public class FactorUpdateDTO extends SKOSReferencesDTO {
-    
+
     @NotNull
     @ValidURI
     private URI uri;
-    
+
     private String name;
-    
+
     private String category;
-    
+
     private String comment;
-    
+
     @Valid
     private List<FactorLevelCreationDTO> factorLevels;
-    
+
     public URI getUri() {
         return uri;
     }
-    
+
     public void setUri(URI uri) {
         this.uri = uri;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getCategory() {
         return category;
     }
-    
+
     public void setCategory(String category) {
         this.category = category;
     }
-    
+
     public String getComment() {
         return comment;
     }
-    
+
     public void setComment(String comment) {
         this.comment = comment;
     }
-    
+
     public List<FactorLevelCreationDTO> getFactorLevels() {
         return factorLevels;
     }
-    
+
     public void setFactorLevels(List<FactorLevelCreationDTO> factorsLevels) {
         this.factorLevels = factorsLevels;
     }
-    
+
     public FactorModel newModel() {
         FactorModel model = new FactorModel();
-        model.setUri(getUri());        
+        model.setUri(getUri());
         model.setName(getName());
         model.setCategory(getCategory());
         model.setComment(getComment());
         this.setSkosReferencesToModel(model);
-        
+
         return model;
     }
 }

@@ -6,7 +6,7 @@
     :optionsLoadingMethod="loadExperiments"
     :conversionMethod="experimentToSelectNode"
     :clearable="clearable"
-    placeholder="component.experiment.form.selector.placeholder"
+    :placeholder="placeholder"
     noResultsText="component.experiment.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
@@ -42,6 +42,12 @@ export default class ExperimentSelector extends Vue {
   clearable;
 
   filterLabel = "";
+
+  get placeholder() {
+    return this.multiple
+      ? "component.experiment.form.selector.placeholder-multiple"
+      : "component.experiment.form.selector.placeholder";
+  }
 
   loadExperiments(options) {
     return this.$opensilex
@@ -90,7 +96,8 @@ en:
     experiment: 
         form:
           selector:
-            placeholder : Select one or more experiments
+            placeholder : Select one experiment
+            placeholder-multiple : Selectionner une ou plusieurs expérimentations
             filter-search-no-result : No experiment found
     
             
@@ -99,7 +106,8 @@ fr:
     experiment: 
         form: 
           selector:
-            placeholder : Selectionner une ou plusieurs expérimentations
+            placeholder : Selectionner une expérimentation
+            placeholder-multiple : Selectionner une ou plusieurs expérimentations
             filter-search-no-result : Aucune expérimentation trouvée
 
 </i18n>

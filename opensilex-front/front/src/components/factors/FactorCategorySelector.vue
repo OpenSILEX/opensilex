@@ -19,12 +19,12 @@ import { SecurityService, UserGetDTO } from "opensilex-security/index";
 import { FactorCategory } from "./FactorCategory";
 
 import HttpResponse, {
-  OpenSilexResponse
+  OpenSilexResponse,
 } from "opensilex-security/HttpResponse";
 import {
   FactorsService,
   FactorGetDTO,
-  FactorSearchDTO
+  FactorSearchDTO,
 } from "opensilex-core/index";
 
 @Component
@@ -36,7 +36,7 @@ export default class FactorCategorySelector extends Vue {
   categoryString;
 
   @Prop({
-    default: "component.factors.category"
+    default: "component.factors.category",
   })
   label;
 
@@ -49,7 +49,7 @@ export default class FactorCategorySelector extends Vue {
     for (let category of Object.keys(factorCategoriesMap)) {
       categoryArray.push({
         id: category,
-        label: this.$i18n.t(factorCategoriesMap[category])
+        label: this.$i18n.t(factorCategoriesMap[category]),
       });
     }
     return categoryArray;
@@ -77,7 +77,19 @@ en:
         form: 
             placeholder:
                 factors : Select one category
-                filter-search-no-result : No category found    
+                filter-search-no-result : No category found
+    factor:
+      select:
+        other: Other
+        fieldManagement: Field management
+        lightManagement: Light management
+        waterManagement: Water management
+        chemical: Chemical
+        bioticStress: Biotic stress
+        soil: Soil
+        nutrient: Nutrient
+        atmospheric: Atmospheric
+        temperature: Temperature 
 fr:
   component: 
     factors:
@@ -85,7 +97,18 @@ fr:
         factor : Facteurs
         form: 
             placeholder:
-                factors : Selectionner un catégorie
+                factors : Selectionner une catégorie
                 filter-search-no-result : Aucun facteur trouvé
-
+    factor:
+      select:
+        other: Autre
+        fieldManagement: Conduite culturale
+        lightManagement: Gestion de la lumière
+        waterManagement: Gestion de l'eau
+        chemical: Chimique
+        bioticStress: Stress biotique
+        soil: Sol
+        nutrient: Nutriments
+        atmospheric: Atmosphérique
+        temperature: Température
 </i18n>

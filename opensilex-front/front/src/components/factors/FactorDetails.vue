@@ -38,7 +38,7 @@
       </b-col>
     </b-row>
     <b-row>
-      <b-col>
+      <b-col sm="5">
         <opensilex-Card label="component.skos.ontologies-references-label" icon="ik#ik-clipboard">
           <template v-slot:body>
             <opensilex-ExternalReferencesDetails :skosReferences="factor"></opensilex-ExternalReferencesDetails>
@@ -50,10 +50,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import { Component, Prop, Ref, PropSync } from "vue-property-decorator";
 import Vue from "vue";
-import { FactorDetailsGetDTO, FactorsService } from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import { FactorCategory } from "./FactorCategory";
 
 @Component
@@ -63,7 +61,6 @@ export default class FactorDetails extends Vue {
   $route: any;
   $t: any;
   $i18n: any;
-  service: FactorsService;
 
   get user() {
     return this.$store.state.user;
@@ -71,27 +68,29 @@ export default class FactorDetails extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
-  }
-  isDetailsTab() {
-    return this.$route.path.startsWith("/factor/");
-  }
+  } 
 
   factorCategoriesMap: Map<
     string,
     string
   > = FactorCategory.getFactorCategories();
 
-  factor: any = {
-    uri: null,
-    name: null,
-    category: null,
-    comment: null,
-    exactMatch: [],
-    closeMatch: [],
-    broader: [],
-    narrower: [],
-    factorLevels: [],
-  };
+  @Prop({
+    default: () => {
+      return {
+        uri: null,
+        name: null,
+        category: null,
+        comment: null,
+        exactMatch: [],
+        closeMatch: [],
+        broader: [],
+        narrower: [],
+        factorLevels: []
+      }
+    }
+  })
+  factor: any ;
 
   factorLevelFields: any[] = [
     {
@@ -110,24 +109,25 @@ export default class FactorDetails extends Vue {
       sortable: false,
     },
   ];
-
-  created() {
-    this.service = this.$opensilex.getService("opensilex.FactorsService");
-
-    let uri = this.$route.params.uri;
-    this.loadFactor(uri);
-  }
-
-  loadFactor(uri: string) {
-    this.service
-      .getFactor(uri)
-      .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
-        this.factor = http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
 }
 </script>
 
 <style scoped lang="scss">
 </style>
+<i18n>
+en:
+  component:
+    factor :
+      details:
+        label: Details
+        factorLevels: Levels
+        no-factorLevels-provided: No factor levels provided
+fr:
+  component:
+    factor:
+      details:
+        label: Détails
+        factorLevels: Niveaux de facteurs associés
+        no-factorLevels-provided: Aucun niveau de facteur associé
+
+</i18n>

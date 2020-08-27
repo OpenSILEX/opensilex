@@ -189,3 +189,79 @@ export default class FactorsView extends Vue {
 <style scoped lang="scss">
 </style>
 
+
+<i18n>
+en:
+  component:
+    factor :
+      description: Manage experimental factors
+      label: Factor
+      uri: URI
+      uri-help: Unique factor identifier
+      alias-placeholder: Enter factor alias
+      factors: factor
+      add: Add factor
+      add-button: Add factor
+      update: Update factor
+      name: Name
+      name-help: Default name
+      name-placeholder: Irrigation, Shading, Planting year, etc.
+      category: Category
+      category-help: Category of the factor
+      category-placeholder: Environnement-Irrigation, Field management, etc ...
+      comment: comment
+      comment-help: Description associated to this factors (protocol, amount of component)
+      comment-error: Must contains at least 10 characters
+      comment-placeholder: Protocol n°1289 - Amount of water 5 ml/Days.
+      errors:
+        user-already-exists: Factor already exists with this URI.
+      select:
+        other: Other
+        fieldManagement: Field management
+        lightManagement: Light management
+        waterManagement: Water management
+        chemical: Chemical
+        bioticStress: Biotic stress
+        soil: Soil
+        nutrient: Nutrient
+        atmospheric: Atmospheric
+        temperature: Temperature
+
+fr:
+  component:
+    factor:
+      description: Gestion des facteurs expérimentaux
+      label: Facteur
+      uri: URI
+      uri-help: Identifiant unique du facteur
+      names-placeholder: Renseignez un alias de facteur
+      filter-placeholder: Utiliser ce filter pour filter les facteurs
+      factors: facteur
+      add: Ajouter facteur
+      add-button: Ajouter facteur
+      update: Mettre à jour un facteur
+      name: Nom
+      name-en: Nom
+      name-help: Nom par défaut
+      name-placeholder: Irrigation, Ombrage, Année de plantation, etc.
+      category: Catégorie
+      category-help: Catégorie liée au facteur
+      category-placeholder: Irrigation-Environnement, Conduite au champ , etc.
+      comment: description
+      comment-help: Description associée à ce facteur (protocole, apport de composé)
+      form-comment-placeholder: Protocole n°1289 - Apport d'eau de 5 ml/jour.
+      errors:
+        user-already-exists: URI du facteur déjà existante.
+      select:
+        other: Autre
+        fieldManagement: Conduite culturale
+        lightManagement: Gestion de la lumière
+        waterManagement: Gestion de l'eau
+        chemical: Chimique
+        bioticStress: Stress biotique
+        soil: Sol
+        nutrient: Nutriments
+        atmospheric: Atmosphérique
+        temperature: Température
+
+</i18n>

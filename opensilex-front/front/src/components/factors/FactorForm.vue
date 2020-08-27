@@ -48,7 +48,7 @@ import { Component, Prop, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import { FactorsService } from "opensilex-core/index";
 import HttpResponse, {
-  OpenSilexResponse
+  OpenSilexResponse,
 } from "opensilex-security/HttpResponse";
 
 @Component
@@ -83,11 +83,11 @@ export default class FactorForm extends Vue {
           {
             uri: null,
             name: null,
-            comment: null
-          }
-        ]
+            comment: null,
+          },
+        ],
       };
-    }
+    },
   })
   form;
 
@@ -100,7 +100,7 @@ export default class FactorForm extends Vue {
     this.form.factorLevels.unshift({
       uri: null,
       name: null,
-      comment: null
+      comment: null,
     });
   }
 
@@ -118,9 +118,9 @@ export default class FactorForm extends Vue {
         {
           uri: null,
           name: null,
-          comment: null
-        }
-      ]
+          comment: null,
+        },
+      ],
     };
   }
 
@@ -131,13 +131,13 @@ export default class FactorForm extends Vue {
   updatefactor() {
     return new Promise((resolve, reject) => {
       console.log("update", this.form);
-      return this.$emit("onUpdate", this.form, result => {
+      return this.$emit("onUpdate", this.form, (result) => {
         if (result instanceof Promise) {
           return result
-            .then(resolve => {
+            .then((resolve) => {
               console.log("resolve", resolve);
             })
-            .catch(reject => {
+            .catch((reject) => {
               console.log("resolve", reject);
             });
         } else {
@@ -149,10 +149,10 @@ export default class FactorForm extends Vue {
 
   createFactor() {
     return new Promise((resolve, reject) => {
-      return this.$emit("onCreate", this.form, result => {
+      return this.$emit("onCreate", this.form, (result) => {
         if (result instanceof Promise) {
           return result
-            .then(uri => {
+            .then((uri) => {
               this.afterCreate(uri);
               return uri;
             })
@@ -181,7 +181,7 @@ export default class FactorForm extends Vue {
         form.uri = uri;
         return uri;
       })
-      .catch(error => {
+      .catch((error) => {
         if (error.status == 409) {
           console.error("Factor already exists", error);
           this.$opensilex.errorHandler(
@@ -208,7 +208,7 @@ export default class FactorForm extends Vue {
 
   clearEmptyFactorsLevels() {
     this.form.factorLevels = this.form.factorLevels.filter(
-      factorLevel => factorLevel.name !== null && factorLevel.name !== ""
+      (factorLevel) => factorLevel.name !== null && factorLevel.name !== ""
     );
   }
 

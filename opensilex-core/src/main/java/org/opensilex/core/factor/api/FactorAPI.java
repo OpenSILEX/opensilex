@@ -17,7 +17,6 @@ import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -35,7 +34,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.factor.dal.FactorDAO;
-import org.opensilex.core.factor.dal.FactorLevelDAO;
 import org.opensilex.core.factor.dal.FactorLevelModel;
 import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -193,10 +191,9 @@ public class FactorAPI {
      *
      * @param factorSearchDTO
      * @see org.opensilex.core.factor.dal.FactorDAO
-     * @param orderByList List of fields to sort as an array of
-     * fieldName=asc|desc
-     * @param page Page number
-     * @param pageSize Page size
+     * @param orderByList List of fields to sort as an array of fieldName=asc|desc
+     * @param page        Page number
+     * @param pageSize    Page size
      * @return filtered, ordered and paginated list
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
@@ -272,8 +269,8 @@ public class FactorAPI {
      * Remove an factor
      *
      * @param factorUri the factor URI
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing
-     * the deleted Factor {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing the
+     *         deleted Factor {@link URI}
      */
     @DELETE
     @Path("delete/{uri}")
@@ -305,8 +302,8 @@ public class FactorAPI {
 
     /**
      * @param dto the Factor to update
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing
-     * the updated Factor {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing the
+     *         updated Factor {@link URI}
      */
     @PUT
     @Path("update")
@@ -345,8 +342,7 @@ public class FactorAPI {
     }
     
     /**
-     * *
-     * Return a list of factors corresponding to the given URIs
+     * * Return a list of factors corresponding to the given URIs
      *
      * @param uris list of factors uri
      * @return Corresponding list of factors

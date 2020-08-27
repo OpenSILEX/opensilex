@@ -46,7 +46,6 @@ public class Oeso {
     public static final Property hasLongName = Ontology.property(NS, "hasLongName");
     public static final Property hasSynonym = Ontology.property(NS, "hasSynonym");
 
-
     // ---- VARIABLES ----
     public static final Resource Variable = Ontology.resource(NS, "Variable");
     public static final Resource Entity = Ontology.resource(NS, "Entity");
@@ -56,8 +55,8 @@ public class Oeso {
 
     public static final Property hasEntity = Ontology.property(NS, "hasEntity");
     public static final Property hasQuality = Ontology.property(NS, "hasQuality");
-    public static final Property hasTraitUri = Ontology.property(NS,"hasTraitUri");
-    public static final Property hasTraitName = Ontology.property(NS,"hasTraitName");
+    public static final Property hasTraitUri = Ontology.property(NS, "hasTraitUri");
+    public static final Property hasTraitName = Ontology.property(NS, "hasTraitName");
 
     public static final Property hasMethod = Ontology.property(NS, "hasMethod");
     public static final Property hasUnit = Ontology.property(NS, "hasUnit");
@@ -105,14 +104,13 @@ public class Oeso {
     public static final Property hasFacility = Ontology.property(NS, "hasFacility");
 
     // ---- SPECIES ----
-    //public static final Resource Species = Ontology.resource(NS, "Species");
+    // public static final Resource Species = Ontology.resource(NS, "Species");
     // ---- FACTORS ----
     public static final Resource Factor = Ontology.resource(NS, "Factor");
     public static final Resource FactorLevel = Ontology.resource(NS, "FactorLevel");
     public static final Property hasFactorLevel = Ontology.property(NS, "hasFactorLevel");
     public static final Property hasFactor = Ontology.property(NS, "hasFactor");
     public static final Property hasCategory = Ontology.property(NS, "hasCategory");
-    
     // Link with experiment
     public static final Property studyEffectOf = Ontology.property(NS, "studyEffectOf");
 
@@ -133,4 +131,3 @@ public class Oeso {
     public static final Property hasId = Ontology.property(NS, "hasId");
 
 }
-

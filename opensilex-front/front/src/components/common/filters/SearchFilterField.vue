@@ -11,16 +11,23 @@
         <div class="row">
           <div class="col-md-12 text-right">
             <slot name="clear">
-              <b-button @click="$emit('clear',$event)" class="btn btn-light mr-3">
-                <opensilex-Icon icon="ik#ik-x" />
-                {{$t('component.common.search.clear-button')}}
-              </b-button>
+              <opensilex-Button
+                label="component.common.search.clear-button"
+                icon="ik#ik-x"
+                @click="$emit('clear',$event)"
+                variant="light"
+                class="mr-3"
+                :small="false"
+              ></opensilex-Button>
             </slot>
             <slot name="search">
-              <b-button @click="$emit('search',$event)" class="btn btn-primary">
-                <opensilex-Icon icon="ik#ik-search" />
-                {{$t('component.common.search.search-button')}}
-              </b-button>
+              <opensilex-Button
+                label="component.common.search.search-button"
+                @click="$emit('search',$event)"
+                icon="ik#ik-search"
+                variant="primary"
+                :small="false"
+              ></opensilex-Button>
             </slot>
           </div>
         </div>
@@ -35,7 +42,7 @@ import {
   Prop,
   Model,
   Provide,
-  PropSync
+  PropSync,
 } from "vue-property-decorator";
 import Vue from "vue";
 

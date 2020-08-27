@@ -125,7 +125,14 @@
                 "search-button": "Search",
                 "clear-button": "Reset"
             },
-            "help-button": "Help"
+            "help-button": "Help",
+            "list": {
+                "buttons": {
+                    "interoperability": "Interoperability",
+                    "update": "Update",
+                    "delete": "Delete"
+                }
+            }
         },
         "copyToClipboard": {
             "copyUri": "Copy URI to clipboard",
@@ -487,65 +494,6 @@
             },
             "errors": {
                 "infrastructure-already-exists": "Infrastructure already exists with this URI or this name"
-            }
-        },
-        "factor": {
-            "description": "Manage experimental factors",
-            "label": "Factor",
-            "uri": "Factor URI",
-            "uri-help": "Unique factor identifier",
-            "alias-placeholder": "Enter factor alias",
-            "factors": "factor",
-            "add": "Create factor",
-            "add-button": "Create factor",
-            "update": "Update factor",
-            "name": "Name",
-            "name-help": "Default name",
-            "name-placeholder": "Irrigation, Shading, Planting year, etc.",
-            "category": "Category",
-            "category-help": "Category of the factor",
-            "category-placeholder": "Environnement-Irrigation, Field management, etc ...",
-            "comment": "comment",
-            "comment-help": "Description associated to this factors (protocol, amount of component)",
-            "comment-error": "Must contains at least 10 characters",
-            "comment-placeholder": "Protocol n°1289 - Amount of water 5 ml/Days.",
-            "errors": {
-                "user-already-exists": "Factor already exists with this URI."
-            },
-            "details": {
-                "label": "Detailled Factor view",
-                "factorLevels": "Levels",
-                "no-factorLevels-provided": "No factor levels provided"
-            },
-            "select": {
-                "other": "Other",
-                "fieldManagement": "Field management",
-                "lightManagement": "Light management",
-                "waterManagement": "Water management",
-                "chemical": "Chemical",
-                "bioticStress": "Biotic stress",
-                "soil": "Soil",
-                "nutrient": "Nutrient",
-                "atmospheric": "Atmospheric",
-                "temperature": "Temperature"
-            }
-        },
-        "factorLevel": {
-            "uri": "Factor level URI",
-            "name-placeholder": "Enter factor level name",
-            "selector-placeholder": "Please select a factor to search factor levels",
-            "filter-placeholder": "Use this field to search factor levels",
-            "factorLevel": "factor level",
-            "add": "Add row",
-            "associated": "Levels",
-            "unique-name": "Name is required and must be unique",
-            "update": "update factor level",
-            "name": "name",
-            "factor": "factor",
-            "comment": "comment",
-            "hasFactor": "has factor",
-            "errors": {
-                "user-already-exists": "Factor level already exists with this URI."
             }
         },
         "skos": {

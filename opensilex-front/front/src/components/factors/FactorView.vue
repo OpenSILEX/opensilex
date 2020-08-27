@@ -3,7 +3,7 @@
     <opensilex-PageHeader
       icon="fa#sun"
       title="component.menu.experimentalDesign.factors"
-      description="component.factor.details.label"
+      :description="factor.name"
     ></opensilex-PageHeader>
 
     <opensilex-PageActions :returnButton="true" :returnTo="goBack()" :returnToTitle="returnTitle()">
@@ -27,7 +27,7 @@
     </opensilex-PageActions>
     <opensilex-PageContent>
       <template v-slot>
-        <opensilex-FactorDetails v-if="isDetailsTab()" :uri="uri"></opensilex-FactorDetails>
+        <opensilex-FactorDetails v-if="isDetailsTab()" :factor="factor"></opensilex-FactorDetails>
       </template>
     </opensilex-PageContent>
   </div>
@@ -37,6 +37,8 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
+import { FactorDetailsGetDTO, FactorsService } from "opensilex-core/index";
+import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
 export default class FactorView extends Vue {
@@ -47,16 +49,42 @@ export default class FactorView extends Vue {
   $route: any;
   $t: any;
   $i18n: any;
+  service: FactorsService;
+  factor: any = {
+        uri: null,
+        name: null,
+        category: null,
+        comment: null,
+        exactMatch: [],
+        closeMatch: [],
+        broader: [],
+        narrower: [],
+        factorLevels: []
+      };
 
   get user() {
     return this.$store.state.user;
   }
 
   created() {
+    this.service = this.$opensilex.getService("opensilex.FactorsService");
     this.uri = this.$route.params.uri;
     if (this.$route.query.created != null) {
       this.createdFactor = this.$route.query.created;
     }
+    let uri = this.$route.params.uri;
+    this.loadFactor(uri);
+  }
+
+ 
+
+  loadFactor(uri: string) {
+    this.service
+      .getFactor(uri)
+      .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
+        this.factor = http.response.result;
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 
   isDetailsTab() {

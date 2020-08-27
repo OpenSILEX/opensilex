@@ -1,11 +1,11 @@
 <template>
-  <opensilex-SelectForm
+  <opensilex-SelectForm ref="selectForm"
     :label="label"
     :selected.sync="speciesURI"
     :multiple="multiple"
     :optionsLoadingMethod="loadSpecies"
     :conversionMethod="speciesToSelectNode"
-    placeholder="component.experiment.form.placeholder.species"
+    :placeholder="placeholder"
     noResultsText="component.user.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync } from "vue-property-decorator";
+import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue, { PropOptions } from "vue";
 import { SecurityService, UserGetDTO } from "opensilex-security/index";
 import HttpResponse, {
@@ -35,8 +35,24 @@ export default class SpeciesSelector extends Vue {
   })
   label;
 
+  @Prop({
+    default: "component.experiment.form.placeholder.species"
+  })
+  placeholder;
+
   @Prop()
   multiple;
+
+  @Ref("selectForm") readonly selectForm!: any;
+
+  mounted() {
+    this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        this.loadSpecies();
+      }
+    );
+  }
 
   loadSpecies() {
     return this.$opensilex

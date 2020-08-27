@@ -22,7 +22,7 @@
           v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_READ_ID)"
           ref="germplasmList"
           @onEdit="editGermplasm"
-          @onDetails="showGermplasmDetails"
+          @onDelete="deleteGermplasm"
         ></opensilex-GermplasmList>
       </template>
     </opensilex-PageContent>
@@ -130,33 +130,22 @@ export default class GermplasmView extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
-  // getAttributes(attributesMap) {
-  //   let attributesArray = [];
-  //   for (const property in attributesMap) {
-  //     let att = {
-  //       attribute: property,
-  //       value: attributesMap[property]
-  //     }
-  //     attributesArray.push(att);
-  //   } 
-  //   return attributesArray;
-  // }
-  // deleteGermplasm(uri: string) {
-  //   console.debug("deleteGermplasm " + uri);
-  //   this.service
-  //     .deleteGermplasm(uri)
-  //     .then(() => {
-  //       this.germplasmList.refresh();
-  //       let message =
-  //         this.$i18n.t("component.germplasm.germplasm") +
-  //         " " +
-  //         uri +
-  //         " " +
-  //         this.$i18n.t("component.common.success.delete-success-message");
-  //       //this.$opensilex.showSuccessToast(message);
-  //     })
-  //     .catch(this.$opensilex.errorHandler);
-  // }
+  deleteGermplasm(uri: string) {
+    console.debug("deleteGermplasm " + uri);
+    this.service
+      .deleteGermplasm(uri)
+      .then(() => {
+        this.germplasmList.refresh();
+        let message =
+          this.$i18n.t("GermplasmView.title") +
+          " " +
+          uri +
+          " " +
+          this.$i18n.t("component.common.success.delete-success-message");
+        this.$opensilex.showSuccessToast(message);
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
 
 
 }
@@ -171,14 +160,14 @@ en:
   GermplasmView:
     title: Germplasm 
     description: Manage Genetic Resources Information
-    add: Declare germplasm
+    add: Add germplasm
     update: Update Germplasm
     delete: Delete Germplasm
 fr:
   GermplasmView:
     title: Ressources Génétiques 
     description: Gérer les informations du matériel génétique
-    add: Déclarer des ressources génétiques
+    add: Ajouter des ressources génétiques
     update: éditer germplasm
     delete: supprimer germplasm
 </i18n>

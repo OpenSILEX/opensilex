@@ -151,15 +151,14 @@ public class GermplasmDAO {
     
     public GermplasmModel get(URI uri, UserModel user, NoSQLService nosql) throws Exception {
         GermplasmModel germplasm = sparql.getByURI(GermplasmModel.class, uri, user.getLanguage());        
-        GermplasmModel germplasmWithAttr = null;
         if (germplasm != null) {
             try {
-                germplasmWithAttr = getAttributesByURI(germplasm);
+                germplasm = getAttributesByURI(germplasm);
             } catch (Exception e) {                
             }
         }
         
-        return germplasmWithAttr;
+        return germplasm;
     }
     
     public ListWithPagination<GermplasmModel> search(

@@ -189,6 +189,41 @@ input:invalid {
 
 .tabulator .tabulator-header .tabulator-col.tabulator-sortable.required .tabulator-col-title{
   color: #D00; 
+  font-size: 13px;
+}
+
+.tabulator {
+  font-size: 13px;
+}
+
+.tabulator .tabulator-row {
+  min-height: 1rem;
+  height: 30px;
+}
+
+.tabulator .tabulator-cell {
+  height: 30px;
+  font-size: 13px;
+}
+
+.tabulator .tabulator-col-title {
+  font-size: 13px;
+}
+
+.tabulator .tabulator-col-content {
+  height:30px;
+}
+
+.tabulator .tabulator-header .tabulator-col {
+  border-right:1px solid #dee2e6;
+}
+
+.tabulator .tabulator-table .tabulator-row .tabulator-cell {
+  border-right:1px solid #dee2e6;
+}
+
+.requiredOnCondition {
+  color: blue; 
 }
 
 .badge-icon {

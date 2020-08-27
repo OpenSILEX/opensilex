@@ -1,8 +1,8 @@
 <template>
   <div class="card"> 
-    <b-modal ref="colModal" title="Add columns" size="sm" hide-footer>
+    <b-modal ref="colModal" :title="$t('GermplasmTable.addColumn')" size="sm" hide-footer>
       <b-form-input v-model="colName" placeholder="Enter column name"></b-form-input>
-      <b-button class="mt-3" variant="outline-primary" block @click="addColumn">add column</b-button>
+      <b-button class="mt-3" variant="primary" block @click="addColumn">{{$t('GermplasmTable.addColumn')}}</b-button>
     </b-modal>
 
     <div>
@@ -27,13 +27,22 @@
       </opensilex-CSVInputFile>
       <b-button class="mb-2 mr-2" @click="updateColumns" variant="outline-secondary">{{$t('GermplasmTable.resetTable')}}</b-button>
       <b-button class="mb-2 mr-2" @click="addRow" variant="outline-info">{{$t('GermplasmTable.addRow')}}</b-button>
-      <b-button class="mb-2 mr-2" @click="showColumnModal" variant="outline-info">{{$t('GermplasmTable.addColumn')}}</b-button>
-    </b-input-group>
+      <b-button class="mb-2 mr-2" @click="showColumnModal" variant="outline-info">{{$t('GermplasmTable.addColumn')}}</b-button>  
+      <b-form-select v-if="this.checkedLines>0"
+        id="filter"
+        v-model="filter"
+        :options="checkBoxOptions"
+        name="filter"
+        size="sm"
+        @input="filterLines()"
+        
+      ></b-form-select> 
+    </b-input-group>    
 
     <div ref="table"></div>
     <b-input-group class="mt-3 mb-3" size="sm">
-      <b-button class="mb-2 mr-2" @click="checkData()" variant="primary">{{$t("GermplasmTable.check")}}</b-button>
-      <b-button class="mb-2 mr-2 " @click="insertData()" variant="success">{{$t('GermplasmTable.insert')}}</b-button>
+      <b-button class="mb-2 mr-2" @click="checkData()" variant="primary" v-bind:disabled="disableCheck">{{$t("GermplasmTable.check")}}</b-button>
+      <b-button class="mb-2 mr-2 " @click="insertData()" variant="success" v-bind:disabled="disableInsert">{{$t('GermplasmTable.insert')}}</b-button>
     </b-input-group>
 
     <b-modal id="progressModal" size="lg" :no-close-on-backdrop="true" :no-close-on-esc="true" hide-header @shown="insertOrCheckData()">
@@ -106,13 +115,28 @@ export default class GermplasmTable extends Vue {
 
   jsonForTemplate = [];
 
+  checkBoxOptions = [
+          { text: 'See all lines', value: 'all' },
+          { text: 'See lines with errors', value: 'NOK' }
+        ];
+
+  filter = "all";
+
+  disableInsert: boolean = false;
+  disableCheck: boolean = false;
+
+  checkedLines: number = 0;
+
   mounted() {
-    this.$store.watch(
-      () => this.$store.getters.language,
-      lang => {       
-        this.updateColumns();
-      }
-    );
+    //this.$nextTick(() => {
+      this.$store.watch(
+        () => this.$store.getters.language,
+        lang => {       
+          this.updateColumns();
+        }
+      );
+      this.updateColumns();
+    //})
   }
 
   @Watch('tableData',{deep: true })
@@ -121,17 +145,18 @@ export default class GermplasmTable extends Vue {
   }
 
   updateColumns() {
+    console.log(this.$attrs.germplasmType);
     this.suppColumnsNames = [];
     this.colName = null;
 
     let idCol = {title:"", field:"rowNumber",visible:true,formatter:"rownum"};
 
-    let statusCol ={title:"status", field:"status",visible:false};
+    let statusCol ={title:"status", field:"status",visible:true};
 
     let uriCol = {title:"URI", field:"uri", visible:true, editor:true, minWidth:150};
 
     let labelCol = 
-      {title:this.$t('GermplasmTable.label'), field:"name", visible:true, editor:true, minWidth:150, 
+      {title:this.$t('GermplasmTable.label') + '<span class="required">*</span>', field:"name", visible:true, editor:true, minWidth:150, 
         validator: "unique"
         // [{
         //   type:function(cell, value, parameters){
@@ -158,9 +183,9 @@ export default class GermplasmTable extends Vue {
         // }] 
       };
     let synonymCol = {title:this.$t('GermplasmTable.synonyms'), field:"synonyms", visible:true, editor:true};
-    let speciesCol = {title:this.$t('GermplasmTable.fromSpecies'), field:"fromSpecies", visible:true, editor:true};
-    let varietyCol = {title:this.$t('GermplasmTable.fromVariety'), field:"fromVariety", visible:true, editor:true};
-    let accessionCol = {title:this.$t('GermplasmTable.fromAccession'), field:"fromAccession", visible:true, editor:true}
+    let speciesCol = {title:this.$t('GermplasmTable.fromSpecies') + '<span class="requiredOnCondition">*</span>', field:"fromSpecies", visible:true, editor:true};
+    let varietyCol = {title:this.$t('GermplasmTable.fromVariety') + '<span class="requiredOnCondition">*</span>', field:"fromVariety", visible:true, editor:true};
+    let accessionCol = {title:this.$t('GermplasmTable.fromAccession') + '<span class="requiredOnCondition">*</span>', field:"fromAccession", visible:true, editor:true}
     let instituteCol =  {title:this.$t('GermplasmTable.institute'), field:"institute", visible:true, editor:true};
     let productionYearCol =  {title:this.$t('GermplasmTable.year'), field:"productionYear", visible:true, editor:true};
     let commentCol = {title:this.$t('GermplasmTable.comment'), field:"comment", visible:true, editor:true};
@@ -171,13 +196,13 @@ export default class GermplasmTable extends Vue {
       this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, commentCol, checkingStatusCol, insertionStatusCol]
     } else if (this.$attrs.germplasmType.endsWith('Variety'))  {
       let codeVar = {title:this.$t('GermplasmTable.varietyCode'), field:"id", visible:true, editor:true};
-      this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, codeVar, instituteCol, speciesCol, commentCol, checkingStatusCol, insertionStatusCol]
+      this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, codeVar,  speciesCol, instituteCol, commentCol, checkingStatusCol, insertionStatusCol]
     } else if (this.$attrs.germplasmType.endsWith('Accession')) {
       let codeAcc = {title:this.$t('GermplasmTable.accessionNumber'), field:"id", visible:true, editor:true};
-      this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, codeAcc, instituteCol, speciesCol, varietyCol,  commentCol, checkingStatusCol, insertionStatusCol]        
+      this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, codeAcc, speciesCol, varietyCol, instituteCol, commentCol, checkingStatusCol, insertionStatusCol]        
     } else {
       let codeLot = {title:this.$t('GermplasmTable.lotNumber'), field:"id", visible:true, editor:true};
-      this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, codeLot, instituteCol, speciesCol, varietyCol, accessionCol, productionYearCol, commentCol, checkingStatusCol, insertionStatusCol]  
+      this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, codeLot,  speciesCol, varietyCol, accessionCol, instituteCol, productionYearCol, commentCol, checkingStatusCol, insertionStatusCol]  
     }
     
     this.tableData = [];
@@ -210,6 +235,10 @@ export default class GermplasmTable extends Vue {
     }
     this.jsonForTemplate.push(jsonHeader)
     this.$attrs.downloadCsv;
+    this.checkedLines = 0;
+    this.disableCheck = false;
+    this.disableInsert = false;
+    
   }
 
   addInitialXRows(X) {
@@ -261,6 +290,9 @@ export default class GermplasmTable extends Vue {
     this.showModal();  
     this.tabulator.showColumn("checkingStatus");
     this.tabulator.hideColumn("insertionStatus");    
+    this.disableInsert = false;
+    this.checkedLines++;
+    this.disableInsert = false;
   }
 
   insertData() {
@@ -268,7 +300,8 @@ export default class GermplasmTable extends Vue {
     this.showModal();
     this.tabulator.hideColumn("checkingStatus");
     this.tabulator.showColumn("insertionStatus");   
-
+    this.disableInsert = true;
+    this.disableCheck = true;
   }
 
   insertOrCheckData() {     
@@ -369,9 +402,9 @@ export default class GermplasmTable extends Vue {
 
     Promise.all(promises).then((result) => {
       if (this.onlyChecking) {
-        this.summary = this.okNumber + " germplasm ready to be inserted, " + this.errorNumber + " errors, " + this.emptyLines + " empty lines"
+        this.summary = this.okNumber + " " + this.$t('GermplasmTable.infoMessageGermplReady') + ", " + this.errorNumber + " " + this.$t('GermplasmTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('GermplasmTable.infoMessageEmptyLines');
       } else {
-        this.summary = this.okNumber + " germplasm inserted, " + this.errorNumber + " errors, " + this.emptyLines + " empty lines"
+        this.summary = this.okNumber + " " + this.$t('GermplasmTable.infoMessageGermplInserted') +", " + this.errorNumber + " " + this.$t('GermplasmTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('GermplasmTable.infoMessageEmptyLines');
       }
       this.infoMessage = true; 
       this.disableCloseButton = false;
@@ -407,9 +440,9 @@ export default class GermplasmTable extends Vue {
     .createGermplasm(onlyChecking, form)
     .then((http: HttpResponse<OpenSilexResponse<any>>) => {
       if(onlyChecking) {
-        this.tabulator.updateData([{rowNumber:index, checkingStatus:"ready to be inserted", status:"OK"}])
+        this.tabulator.updateData([{rowNumber:index, checkingStatus:this.$t('GermplasmTable.checkingStatusMessage'), status:"OK"}])
       } else {
-        this.tabulator.updateData([{rowNumber:index, insertionStatus:"germplasm created", status:"OK", uri:http.response.result}])
+        this.tabulator.updateData([{rowNumber:index, insertionStatus:this.$t('GermplasmTable.insertionStatusMessage'), status:"OK", uri:http.response.result}])
       }
       
       let row = this.tabulator.getRow(index);
@@ -460,13 +493,40 @@ export default class GermplasmTable extends Vue {
     }
     this.tabulator.setData(data);  
   }
+
+  filterLines() {
+    if (this.filter != "all") {
+      this.tabulator.setFilter("status", "=", this.filter);
+    } else {
+      this.tabulator.clearFilter();
+    }
+    
+  }
+
 }
 
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 
-.tabulator .tabulator-header .tabulator-col[tabulator-field="label"] {
+.requiredOnCondition {
+  color:blue
+}
+
+.tabulator {
+  font-size: 13px;
+}
+
+.tabulator-row {
+  min-height: 0rem;
+  height: 30px;
+}
+
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content {
+  height: 30px;
+}
+
+.tabulator .tabulator-header .tabulator-col[tabulator-field="name"] {
   color:#f00;
 }
 
@@ -476,7 +536,12 @@ export default class GermplasmTable extends Vue {
 
 .tabulator .tabulator-table .tabulator-row .tabulator-cell {
   border-right:1px solid #dee2e6;
+  height: 30px;
 }
+
+// .tabulator .tabulator-header .tabulator-row  {
+//   height: 30px;
+// }
   
 </style>
 
@@ -497,7 +562,7 @@ en:
     insertionStatus: Insertion Status
     downloadTemplate : Dowload template
     resetTable : Reset table
-    check : Check before insertion
+    check : Check
     insert : Insert
     progressTitle: lines to scan
     emptyMessage: The table is empty
@@ -513,6 +578,13 @@ en:
     infoLot: You have to fill species, variety or accession
     infoAccession: You have to fill at least species or variety
     help: Help
+    infoMessageGermplReady: germplasm ready to be inserted
+    infoMessageErrors: errors
+    infoMessageEmptyLines: empty lines
+    infoMessageGermplInserted: germplasm inserted
+    checkingStatusMessage: ready
+    insertionStatusMessage: created
+    filterLines: Filter the lines
 
 fr:
   GermplasmTable:
@@ -527,9 +599,9 @@ fr:
     year: Année
     checkingStatus: Statut
     insertionStatus: Statut
-    downloadTemplate : Télécharger le template
+    downloadTemplate : Télécharger un gabarit
     resetTable : Vider tableau
-    check : Valider avant d'insérer
+    check : Valider
     insert : Insérer
     progressTitle: lignes à parcourir
     emptyMessage: Le tableau est vide
@@ -545,4 +617,12 @@ fr:
     infoLot: Vous devez renseigner au moins l'espèce, la variété ou l'accession
     infoAccession: Vous devez renseigner l'espèce ou la variété
     help: Aide
+    infoMessageGermplReady: germplasm prêts à être insérer
+    infoMessageErrors: erreurs
+    infoMessageEmptyLines: lignes vides
+    infoMessageGermplInserted: germplasm insérés
+    checkingStatusMessage: validé
+    insertionStatusMessage: créé
+    seeErrorLines: See lines
+    seeAll : see all 
 </i18n>

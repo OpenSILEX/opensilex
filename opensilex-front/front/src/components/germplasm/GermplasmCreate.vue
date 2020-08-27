@@ -20,8 +20,26 @@
     </opensilex-PageActions>
 
     <opensilex-PageContent>
-      <b-input-group class="mt-3 mb-3" size="sm">
-        <b-form-select
+      <!-- <opensilex-FilterField>    
+        <b-select
+          ref="germplasmType"
+          v-model="selectedType"
+          :options="germplasmTypes"
+          @change="refreshTable"
+        >
+          <template v-slot:first>
+            <b-form-select-option :value="null">{{$t('GermplasmCreate.select')}}</b-form-select-option>
+          </template>
+        </b-select>
+      </opensilex-FilterField> -->
+      <opensilex-TypeForm
+        :type.sync="selectedType"
+        :baseType="$opensilex.Oeso.GERMPLASM_TYPE_URI"
+        :placeholder="$t('GermplasmCreate.form-type-placeholder')"
+        @update:type="refreshTable"
+      ></opensilex-TypeForm>
+      <!-- <b-input-group class="mt-3 mb-3" size="sm">
+        <b-select
           ref="germplasmType"
           v-model="selected"
           :options="germplasmTypes"
@@ -30,9 +48,9 @@
           <template v-slot:first>
             <b-form-select-option :value="null">{{$t('GermplasmCreate.select')}}</b-form-select-option>
           </template>
-        </b-form-select>
-      </b-input-group>
-      <opensilex-GermplasmTable v-if="this.selected" ref="germplasmTable" :germplasmType="selected"></opensilex-GermplasmTable>
+        </b-select>
+      </b-input-group> -->
+      <opensilex-GermplasmTable v-if="selectedType" ref="germplasmTable" :germplasmType="selectedType" :key="tabulatorRefresh"></opensilex-GermplasmTable>
     </opensilex-PageContent>
   </div>
 </template>
@@ -53,8 +71,8 @@ export default class GermplasmCreate extends Vue {
   service: OntologyService;
   $opensilex: any;
   germplasmTypes: any = [];
-  selected: string = null;
-
+  selectedType: string = null;
+  tabulatorRefresh = 0;;
   get user() {
     return this.$store.state.user;
   }
@@ -110,6 +128,8 @@ export default class GermplasmCreate extends Vue {
 
   refreshTable() {
     let germplasmTable: any = this.$refs.germplasmTable;
+    console.log(this.selectedType);    
+    this.tabulatorRefresh++;
     germplasmTable.updateColumns();
   }
 }
@@ -125,12 +145,12 @@ en:
     title: Declare Germplasm
     description: Add species, varieties, accessions ...
     backToList: Return to germplasm list
-    select: Please select a type
+    form-type-placeholder: Please select a type
 fr:
   GermplasmCreate:
     title: Déclarer des ressources génétiques
     description: Créer des espèces, des variétiés, des accessions ...
     backToList: Revenir à la liste des germplasm
-    select: Veuillez sélectionner un type de germplasm
+    form-type-placeholder: Veuillez sélectionner un type de germplasm
   
 </i18n>

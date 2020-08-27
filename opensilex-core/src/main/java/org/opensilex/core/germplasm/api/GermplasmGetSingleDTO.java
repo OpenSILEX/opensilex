@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.opensilex.core.germplasm.dal.GermplasmAttributeModel;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 
 /**
@@ -66,7 +65,7 @@ public class GermplasmGetSingleDTO extends GermplasmGetAllDTO {
     protected String comment;  
     
     protected List<String> synonyms;
-    
+
     protected Map<String, String> attributes;
 
     public URI getFromVariety() {
@@ -148,7 +147,7 @@ public class GermplasmGetSingleDTO extends GermplasmGetAllDTO {
     public void setSynonyms(List<String> synonyms) {
         this.synonyms = synonyms;
     }
-    
+
     public Map<String, String> getAttributes() {
         return attributes;
     }

@@ -11,7 +11,6 @@ import javax.jdo.annotations.Convert;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.persistence.Id;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
  *

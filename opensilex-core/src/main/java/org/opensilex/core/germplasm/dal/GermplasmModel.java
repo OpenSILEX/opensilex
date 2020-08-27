@@ -51,6 +51,7 @@ public class GermplasmModel extends SPARQLResourceModel implements ClassURIGener
         ontology = Oeso.class,
         property = "hasId"
     )
+
     String code;
     public static final String CODE_VAR = "code";
 
@@ -175,7 +176,8 @@ public class GermplasmModel extends SPARQLResourceModel implements ClassURIGener
     public void setSynonyms(List<String> synonyms) {
         this.synonyms = synonyms;
     }
-    
+
+
     @Override
     public String[] getUriSegments(GermplasmModel instance) {
         String germplasmType = new String();

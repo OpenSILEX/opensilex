@@ -2,22 +2,17 @@
   <div class="container-fluid">
     <opensilex-PageHeader
       icon="fa#sun"
-      :title="germplasm.label"
-      description="GermplasmDetails.description"
+      title="GermplasmDetails.title"
+      :description="germplasm.label"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions>
-      <template v-slot>
-        <b-nav pills>
-          <router-link
-            to="/germplasm/"
-            class="btn btn-outline-primary back-button"
-            :title="$t('GermplasmDetails.backToList')"
-          >
-            <i class="ik ik-corner-up-left"></i>
-          </router-link>
-        </b-nav>
-      </template>
+    <opensilex-PageActions :returnButton="true" >   
+        <b-button
+          v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"           
+          @click="update"
+          label="update"
+          variant="primary"
+        >update</b-button>      
     </opensilex-PageActions>
 
     <opensilex-PageContent>
@@ -30,7 +25,7 @@
                 :uri="germplasm.uri"
                 :url="germplasm.uri"
               ></opensilex-UriView>
-              <opensilex-StringView v-else label="GermplasmDetails.uri" :value="germplasm.uri"></opensilex-StringView>
+              <opensilex-StringView class="test" v-else label="GermplasmDetails.uri" :value="germplasm.uri"></opensilex-StringView>
               <opensilex-StringView label="GermplasmDetails.rdfType" :value="germplasm.typeLabel"></opensilex-StringView>
               <opensilex-StringView label="GermplasmDetails.label" :value="germplasm.label"></opensilex-StringView>
               <opensilex-StringView
@@ -49,9 +44,9 @@
                 :value="germplasm.institute"
               ></opensilex-StringView>
               <opensilex-StringView
-                v-if="germplasm.year != null"
+                v-if="germplasm.productionYear != null"
                 label="GermplasmDetails.year"
-                :value="germplasm.year"
+                :value="germplasm.productionYear"
               ></opensilex-StringView>
               <opensilex-StringView
                 v-if="germplasm.comment != null"
@@ -78,7 +73,7 @@
               ></opensilex-LabelUriView>
             </template>
           </opensilex-Card>
-          <opensilex-Card label="GermplasmDetails.additionalInfo" icon="ik#ik-clipboard">
+          <opensilex-Card label="GermplasmDetails.additionalInfo" icon="ik#ik-clipboard" v-if="addInfo.length != 0">
             <template v-slot:body>
               <b-table
                 ref="tableAtt"
@@ -116,6 +111,14 @@
         </b-col>
       </b-row>
     </opensilex-PageContent>
+    <opensilex-ModalForm
+      
+      ref="germplasmForm"
+      component="opensilex-GermplasmForm"
+      editTitle="udpate"
+      icon="ik#ik-user"
+      modalSize="lg"
+    ></opensilex-ModalForm>
   </div>
 </template>
 
@@ -146,6 +149,11 @@ export default class GermplasmDetails extends Vue {
   get user() {
     return this.$store.state.user;
   }
+
+  get credentials() {
+    return this.$store.state.credentials;
+  }
+
 
   germplasm: GermplasmGetSingleDTO = {
     uri: null,
@@ -186,7 +194,7 @@ export default class GermplasmDetails extends Vue {
   expFields = [
     {
       key: "uri",
-      label: "GermplasmDetails.attribute",
+      label: "component.experiment.uri",
       sortable: true,
     },
     {
@@ -231,26 +239,23 @@ export default class GermplasmDetails extends Vue {
       this.addInfo.push(tableData);
     }
   }
+
+  @Ref("germplasmForm") readonly germplasmForm!: any;
+  update() {
+    this.germplasmForm.showEditForm(this.germplasm);
+  }
   
 }
 </script>
 
 <style scoped lang="scss">
-.uri-info {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: inline-block;
-  max-width: 300px;
-}
 </style>
 
 <i18n>
 
 en:
   GermplasmDetails:
-    title: Germplasm Details
+    title: Germplasm
     description: Detailed Information
     info: Germplasm Information
     experiment: Associated experiments
@@ -262,7 +267,7 @@ en:
     variety: Variety
     accession: Accession
     institute: Institute
-    year: Production Year
+    year: Year
     comment: Comment
     backToList: Go back to Germplasm list
     code: Code
@@ -273,22 +278,22 @@ en:
 
 fr:
   GermplasmDetails:
-    title: Détails du Germplasm
+    title: Ressource génétique
     description: Information détaillées
     info: Informations générales
     experiment: Expérimentations associées
     document: Documents associées
-    uri: URI
-    label: Nom
-    rdfType: Type
-    species: Espèce
-    variety: Variété
-    accession: Accession
-    institute: Institut
-    year: Année de production
-    comment: Commentaire
+    uri: URI 
+    label: Nom 
+    rdfType: Type 
+    species: Espèce 
+    variety: Variété 
+    accession: Accession 
+    institute: Institut 
+    year: Année 
+    comment: Commentaire 
     backToList: Retourner à la liste des germplasm
-    code: Code
+    code: Code 
     synonyms: Synonymes
     additionalInfo: Informations supplémentaires
     attribute: Attribut

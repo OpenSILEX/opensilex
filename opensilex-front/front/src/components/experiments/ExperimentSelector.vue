@@ -21,7 +21,7 @@ import { SecurityService, UserGetDTO } from "opensilex-security/index";
 import HttpResponse, {
   OpenSilexResponse,
 } from "opensilex-security/HttpResponse";
-import { ExperimentsService, ExperimentGetDTO } from "opensilex-core/index";
+import { ExperimentsService, ExperimentGetListDTO } from "opensilex-core/index";
 
 @Component
 export default class ExperimentSelector extends Vue {
@@ -53,24 +53,24 @@ export default class ExperimentSelector extends Vue {
     return this.$opensilex
       .getService("opensilex.ExperimentsService")
       .searchExperiments(
-        null,
-        null,
+        undefined,
+        undefined,
         this.filterLabel,
-        null,
-        null,
-        null,
-        null,
-        null,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
         0,
         10
       )
       .then(
-        (http: HttpResponse<OpenSilexResponse<Array<ExperimentGetDTO>>>) =>
+        (http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>) =>
           http.response.result
       );
   }
 
-  experimentToSelectNode(dto: ExperimentGetDTO) {
+  experimentToSelectNode(dto: ExperimentGetListDTO) {
     return {
       id: dto.uri,
       label: dto.label,

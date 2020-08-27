@@ -236,7 +236,7 @@ public class GermplasmCreationDTO {
         if (attributes != null ) {
            model.setAttributes(attributes);
         }
-                
+
         if (synonyms != null) {
             List<String> synonymsList = new ArrayList<>(synonyms.size());
             synonyms.forEach((String synonym) -> {
@@ -248,7 +248,7 @@ public class GermplasmCreationDTO {
         if (code != null) {
             model.setCode(code);
         }
-                
+
         return model;
     }   
 

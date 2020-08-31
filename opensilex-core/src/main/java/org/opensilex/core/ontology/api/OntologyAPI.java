@@ -346,4 +346,42 @@ public class OntologyAPI {
 
         return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(dataPropertyTree, objectPropertyTree)).getResponse();
     }
+
+    @GET
+    @Path("/get-data-properties")
+    @ApiOperation("Search data properties tree")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return data property tree", response = ResourceTreeDTO.class, responseContainer = "List")
+    })
+    public Response getDataProperties(
+            @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI
+    ) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        SPARQLTreeListModel dataPropertyTree = dao.searchDataProperties(domainURI, currentUser);
+
+        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(dataPropertyTree)).getResponse();
+    }
+
+    @GET
+    @Path("/get-object-properties")
+    @ApiOperation("Search object properties tree")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return object property tree", response = ResourceTreeDTO.class, responseContainer = "List")
+    })
+    public Response getObjectProperties(
+            @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI
+    ) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        SPARQLTreeListModel objectPropertyTree = dao.searchObjectProperties(domainURI, currentUser);
+
+        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(objectPropertyTree)).getResponse();
+    }
 }

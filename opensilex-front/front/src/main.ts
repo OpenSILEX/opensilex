@@ -448,6 +448,11 @@ $opensilex.loadModules([
               i18n.locale = user.getLocale() || lang;
             }
 
+            if (i18n.locale != lang) {
+              lang = i18n.locale;
+              store.commit("lang", i18n.locale);
+            }
+
             // Init user
             console.debug("Initialize global user");
             store.commit("login", user);

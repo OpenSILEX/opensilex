@@ -1,5 +1,5 @@
 <template>
-  <opensilex-TreeView :nodes.sync="nodes" @select="displayClassDetail">
+  <opensilex-TreeView :nodes.sync="nodes" @select="displayClassDetail($event.data.uri)">
     <template v-slot:node="{ node }">
       <span class="item-icon">
         <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.uri)" />
@@ -53,7 +53,6 @@ export default class OntologyClassTreeView extends Vue {
   public selected = null;
 
   created() {
-
     this.onRootClassChange();
   }
 
@@ -62,13 +61,15 @@ export default class OntologyClassTreeView extends Vue {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       lang => {
-        this.refresh();
+          if (this.selected) {
+            this.displayClassDetail(this.selected.uri);
+          }
       }
     );
   }
 
   beforeDestroy() {
-    // this.langUnwatcher();
+    this.langUnwatcher();
   }
 
   @Watch("rdfClass")
@@ -84,7 +85,7 @@ export default class OntologyClassTreeView extends Vue {
     return this.resourceTree;
   }
 
-  refresh() {
+  refresh(selection?) {
     this.$opensilex.getService(
       "opensilex-core.OntologyService"
     ).getSubClassesOf(this.rdfClass, false).then(http => {
@@ -92,7 +93,7 @@ export default class OntologyClassTreeView extends Vue {
       let first = true;
       this.resourceTree = http.response.result;
       for (let i in this.resourceTree[0].children ) {
-        let node = this.dtoToNode(this.resourceTree[0].children[i]);
+        let node = this.dtoToNode(this.resourceTree[0].children[i], selection);
         treeNode.push(node);
 
         this.nodes = treeNode;
@@ -100,24 +101,31 @@ export default class OntologyClassTreeView extends Vue {
     });
   }
 
-  displayClassDetail(node) {
+  displayClassDetail(uri) {
     this.$opensilex.getService(
       "opensilex-core.VueJsOntologyExtensionService"
-    ).getClassProperties(node.data.uri).then(http => {
+    ).getClassProperties(uri).then(http => {
       this.selected = http.response.result;
       this.$emit("selectionChange", this.selected);
     });
   }
+  
 
-  private dtoToNode(dto: ResourceTreeDTO) {
+  private dtoToNode(dto: ResourceTreeDTO, selection) {
     let isLeaf = dto.children.length == 0;
 
     let childrenDTOs = [];
     if (!isLeaf) {
       for (let i in dto.children) {
-        childrenDTOs.push(this.dtoToNode(dto.children[i]));
+        childrenDTOs.push(this.dtoToNode(dto.children[i], selection));
       }
     }
+
+    if (selection && selection.uri == dto.uri) {
+      this.selected = selection;
+    }
+
+    let isSelected = this.selected && this.selected.uri == dto.uri;
 
     return {
       title: dto.name,
@@ -125,7 +133,7 @@ export default class OntologyClassTreeView extends Vue {
       isLeaf: isLeaf,
       children: childrenDTOs,
       isExpanded: true,
-      isSelected: this.selected && this.selected.uri == dto.uri,
+      isSelected: isSelected,
       isDraggable: false,
       isSelectable: !dto.disabled
     };

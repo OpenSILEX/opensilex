@@ -110,11 +110,11 @@ export default class OntologyPropertyView extends Vue {
         form.type = null;
       } else if (OWL.isDatatypeProperty(form.type)) {
         form.type = OWL.DATATYPE_PROPERTY_URI;
+        form.range = this.$opensilex.getDatatype(form.range).uri;
       } else if (OWL.isObjectTypeProperty(form.type)) {
         form.type = OWL.OBJECT_PROPERTY_URI;
+        form.range = this.$opensilex.getObjectType(form.range).uri;
       }
-      console.error(form, form.range,  this.$opensilex.getDatatype(form.range));
-      form.range = this.$opensilex.getDatatype(form.range).uri;
       this.propertyForm.showEditForm(form);
     });
   }

@@ -138,6 +138,11 @@ import TextView from './common/views/TextView.vue'
 components["opensilex-TextView"] = TextView;
 import DateView from './common/views/DateView.vue'
 components["opensilex-DateView"] = DateView;
+import BooleanView from './common/views/BooleanView.vue'
+components["opensilex-BooleanView"] = BooleanView;
+import IconView from './common/views/IconView.vue'
+components["opensilex-IconView"] = IconView;
+
 
 import UriView from './common/views/UriView.vue'
 components["opensilex-UriView"] = UriView;
@@ -193,6 +198,8 @@ import OntologyClassForm from './ontology/OntologyClassForm.vue'
 components["opensilex-OntologyClassForm"] = OntologyClassForm;
 import OntologyClassView from './ontology/OntologyClassView.vue'
 components["opensilex-OntologyClassView"] = OntologyClassView;
+import OntologyClassPropertyForm from './ontology/OntologyClassPropertyForm.vue'
+components["opensilex-OntologyClassPropertyForm"] = OntologyClassPropertyForm;
 
 import OntologyPropertyTreeView from './ontology/OntologyPropertyTreeView.vue'
 components["opensilex-OntologyPropertyTreeView"] = OntologyPropertyTreeView;

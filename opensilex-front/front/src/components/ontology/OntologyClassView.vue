@@ -35,7 +35,7 @@
             </b-card>
           </div>
           <div class="col-md-6">
-            <opensilex-OntologyClassDetail :selected="selected" />
+            <opensilex-OntologyClassDetail :rdfClass="rdfClass" :selected="selected" />
           </div>
         </div>
       </template>
@@ -99,8 +99,22 @@ export default class OntologyClassView extends Vue {
       });
   }
 
+  private langUnwatcher;
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        this.refresh();
+      }
+    );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
+  }
+
   refresh() {
-    this.classesTree.refresh();
+    this.classesTree.refresh(this.selected);
   }
 }
 </script>

@@ -115,6 +115,7 @@ export default class InfrastructureTree extends Vue {
     this.refresh();
   }
 
+  private langUnwatcher;
   mounted() {
     this.$store.watch(
       () => this.$store.getters.language,
@@ -124,6 +125,10 @@ export default class InfrastructureTree extends Vue {
         }
       }
     );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
   }
 
   refresh(uri?) {

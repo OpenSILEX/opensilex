@@ -56,29 +56,36 @@ export default class OntologyClassPropertyForm extends Vue {
     this.excludedProperties = excludedProperties;
   }
 
+  domain = null;
+  setDomain(domain) {
+    this.domain = domain;
+  }
+
+  isObjectProperty = false;
+  setIsObjectProperty(isObjectProperty) {
+    this.isObjectProperty = isObjectProperty;
+  }
+
   get propertiesOptions() {
     return this.$opensilex.buildTreeListOptions(this.availableProperties);
   }
 
   create(form) {
-    // return this.$opensilex
-    //   .getService("opensilex.VueJsOntologyExtensionService")
-    //   .createClass(form)
-    //   .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-    //     let uri = http.response.result;
-    //     console.debug("Object type created", uri);
-    //   })
-    //   .catch(error => {
-    //     if (error.status == 409) {
-    //       console.error("Object type already exists", error);
-    //       this.$opensilex.errorHandler(
-    //         error,
-    //         this.$t("OntologyClassForm.object-type-already-exists")
-    //       );
-    //     } else {
-    //       this.$opensilex.errorHandler(error);
-    //     }
-    //   });
+    let propertyForm = {
+      domain: this.domain,
+      property: form.property,
+      required: form.required,
+      list: form.list,
+      isObjectProperty: this.isObjectProperty
+    }
+
+    return this.$opensilex
+      .getService("opensilex.OntologyService")
+      .addClassProperty(propertyForm)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        let uri = http.response.result;
+        console.debug("Object type property added", uri);
+      })
   }
 
   update(form) {

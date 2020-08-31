@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.apache.jena.arq.querybuilder.ExprFactory;
@@ -728,12 +729,16 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist) throws Exception {
+        create(graph, instance, checkUriExist, false, null);
+    }
+    
+    public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         try {
             startTransaction();
             SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
-            prepareInstanceCreation(graph, instance, mapper, checkUriExist);
-            UpdateBuilder create = mapper.getCreateBuilder(graph, instance);
+            prepareInstanceCreation(graph, instance, mapper, checkUriExist, blankNode);
+            UpdateBuilder create = mapper.getCreateBuilder(graph, instance, blankNode, createExtension);
             executeUpdateQuery(create);
             commitTransaction();
         } catch (Exception ex) {
@@ -742,14 +747,17 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
-    private <T extends SPARQLResourceModel> void prepareInstanceCreation(Node graph, T instance, SPARQLClassObjectMapper<T> mapper, boolean checkUriExist) throws Exception {
+    private <T extends SPARQLResourceModel> void prepareInstanceCreation(Node graph, T instance, SPARQLClassObjectMapper<T> mapper, boolean checkUriExist, boolean blankNode) throws Exception {
         URI rdfType = instance.getType();
         if (rdfType == null) {
             instance.setType(new URI(mapper.getRDFType().getURI()));
         } else {
             instance.setType(rdfType);
         }
-        generateUniqueUriIfNullOrValidateCurrent(graph, mapper, instance, checkUriExist);
+        
+        if (!blankNode) {
+            generateUniqueUriIfNullOrValidateCurrent(graph, mapper, instance, checkUriExist);
+        }
 
         validate(instance);
 
@@ -771,8 +779,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             validate(instances);
             for (T instance : instances) {
                 SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
-                prepareInstanceCreation(graph, instance, mapper, true);
-                mapper.addCreateBuilder(graph, instance, create);
+                prepareInstanceCreation(graph, instance, mapper, true, false);
+                mapper.addCreateBuilder(graph, instance, create, false);
             }
 
             executeUpdateQuery(create);

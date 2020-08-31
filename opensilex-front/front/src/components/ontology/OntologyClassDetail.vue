@@ -146,14 +146,20 @@ export default class OntologyClassDetail extends Vue {
 
   addDataProperty() {
     this.ontologyService.getDataProperties(this.rdfClass).then(http => {
-      this.classPropertyForm.getFormRef().setProperties(http.response.result, this.selected.dataProperties);
+      let formRef = this.classPropertyForm.getFormRef();
+      formRef.setDomain(this.selected.uri);
+      formRef.setProperties(http.response.result, this.selected.dataProperties);
+      formRef.setIsObjectProperty(false);
       this.classPropertyForm.showCreateForm();
     });
   }
 
   addObjectProperty() {
     this.ontologyService.getObjectProperties(this.rdfClass).then(http => {
-      this.classPropertyForm.getFormRef().setProperties(http.response.result, this.selected.objectProperties);
+      let formRef = this.classPropertyForm.getFormRef();
+      formRef.setDomain(this.selected.uri);
+      formRef.setProperties(http.response.result, this.selected.objectProperties);
+      formRef.setIsObjectProperty(true);
       this.classPropertyForm.showCreateForm();
     });
   }

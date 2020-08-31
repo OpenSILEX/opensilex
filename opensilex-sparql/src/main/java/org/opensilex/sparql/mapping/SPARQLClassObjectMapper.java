@@ -15,12 +15,12 @@ import org.apache.jena.rdf.model.Resource;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
@@ -299,15 +299,19 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public UpdateBuilder getCreateBuilder(Node graph, T instance) throws Exception {
-        return classQueryBuilder.getCreateBuilder(graph, instance);
+        return getCreateBuilder(graph, instance, false, null);
+    }
+    
+    public UpdateBuilder getCreateBuilder(Node graph, T instance, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
+        return classQueryBuilder.getCreateBuilder(graph, instance, blankNode, createExtension);
     }
 
     public void addCreateBuilder(T instance, UpdateBuilder create) throws Exception {
-        addCreateBuilder(getDefaultGraph(), instance, create);
+        addCreateBuilder(getDefaultGraph(), instance, create, false);
     }
 
-    public void addCreateBuilder(Node graph, T instance, UpdateBuilder create) throws Exception {
-        classQueryBuilder.addCreateBuilder(graph, instance, create);
+    public void addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode) throws Exception {
+        classQueryBuilder.addCreateBuilder(graph, instance, create, blankNode);
     }
 
     public UpdateBuilder getDeleteBuilder(T instance) throws Exception {

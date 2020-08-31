@@ -249,30 +249,30 @@ class SPARQLClassQueryBuilder {
 
     }
 
-    public <T extends SPARQLResourceModel> UpdateBuilder getCreateBuilder(Node graph, T instance) throws Exception {
+    public <T extends SPARQLResourceModel> UpdateBuilder getCreateBuilder(Node graph, T instance, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
         UpdateBuilder create = new UpdateBuilder();
-        addCreateBuilder(graph, instance, create);
-
+        Node uriNode = addCreateBuilder(graph, instance, create, blankNode);
+        if (createExtension != null) {
+            createExtension.accept(create, uriNode);
+        }
         return create;
     }
 
-    public <T extends SPARQLResourceModel> void addCreateBuilder(Node graph, T instance, UpdateBuilder create) throws Exception {
-        executeOnInstanceTriples(graph, instance, (Quad quad, Field field) -> {
+    public <T extends SPARQLResourceModel> Node addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode) throws Exception {
+        Node uriNode = executeOnInstanceTriples(graph, instance, (Quad quad, Field field) -> {
             if (graph == null) {
                 create.addInsert(quad.asTriple());
             } else {
                 create.addInsert(quad);
             }
-        });
-
-        URI uri = instance.getUri();
+        }, blankNode);
 
         for (SPARQLModelRelation relation : instance.getRelations()) {
 
             Class<?> valueType = relation.getType();
             Node valueNode = SPARQLDeserializers.getForClass(valueType).getNodeFromString(relation.getValue());
 
-            Triple triple = new Triple(SPARQLDeserializers.nodeURI(uri), SPARQLDeserializers.nodeURI(relation.getProperty()), valueNode);
+            Triple triple = new Triple(uriNode, SPARQLDeserializers.nodeURI(relation.getProperty()), valueNode);
 
             Node relationGraph = graph;
             if (relation.getGraph() != null) {
@@ -280,6 +280,8 @@ class SPARQLClassQueryBuilder {
             }
             create.addInsert(relationGraph, triple);
         }
+        
+        return uriNode;
     }
 
     public <T extends SPARQLResourceModel> UpdateBuilder getDeleteBuilder(Node graph, T instance) throws Exception {
@@ -296,7 +298,7 @@ class SPARQLClassQueryBuilder {
             } else {
                 delete.addDelete(quad);
             }
-        });
+        }, false);
     }
 
     /**
@@ -421,12 +423,18 @@ class SPARQLClassQueryBuilder {
         handler.addFilter(SPARQLQueryHelper.langFilter(fieldName, locale.getLanguage()));
     }
 
-    private <T extends SPARQLResourceModel> void executeOnInstanceTriples(Node graph, T instance, BiConsumer<Quad, Field> tripleHandler) throws Exception {
+    private <T extends SPARQLResourceModel> Node executeOnInstanceTriples(Node graph, T instance, BiConsumer<Quad, Field> tripleHandler, boolean blankNode) throws Exception {
         Quad quad;
         Triple triple;
-        URI uri = analyzer.getURI(instance);
-        Node uriNode = SPARQLDeserializers.nodeURI(uri);
-
+        
+        Node uriNode;
+        if (blankNode) {
+            uriNode = NodeFactory.createBlankNode();
+        } else {
+            URI uri = analyzer.getURI(instance);
+            uriNode = SPARQLDeserializers.nodeURI(uri);
+        }
+        
         if (instance.getType() == null) {
             instance.setType(new URI(analyzer.getRDFType().getURI()));
         }
@@ -447,9 +455,9 @@ class SPARQLClassQueryBuilder {
                 Property property = analyzer.getDataPropertyByField(field);
                 Node fieldNodeValue = SPARQLDeserializers.getForClass(fieldValue.getClass()).getNode(fieldValue);
                 if (analyzer.isReverseRelation(field)) {
-                    triple = new Triple(fieldNodeValue, property.asNode(), SPARQLDeserializers.nodeURI(uri));
+                    triple = new Triple(fieldNodeValue, property.asNode(), uriNode);
                 } else {
-                    triple = new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), fieldNodeValue);
+                    triple = new Triple(uriNode, property.asNode(), fieldNodeValue);
                 }
                 quad = new Quad(graph, triple);
                 tripleHandler.accept(quad, field);
@@ -473,10 +481,10 @@ class SPARQLClassQueryBuilder {
                 } else {
                     Property property = analyzer.getObjectPropertyByField(field);
                     if (analyzer.isReverseRelation(field)) {
-                        triple = new Triple(SPARQLDeserializers.nodeURI(propertyFieldURI), property.asNode(), SPARQLDeserializers.nodeURI(uri));
+                        triple = new Triple(SPARQLDeserializers.nodeURI(propertyFieldURI), property.asNode(), uriNode);
                         quad = new Quad(fieldMapper.getDefaultGraph(), triple);
                     } else {
-                        triple = new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), SPARQLDeserializers.nodeURI(propertyFieldURI));
+                        triple = new Triple(uriNode, property.asNode(), SPARQLDeserializers.nodeURI(propertyFieldURI));
                         quad = new Quad(graph, triple);
                     }
 
@@ -498,9 +506,9 @@ class SPARQLClassQueryBuilder {
                 for (Map.Entry<String, String> translation : label.getAllTranslations().entrySet()) {
                     Node translationNode = NodeFactory.createLiteral(translation.getValue(), translation.getKey());
                     if (analyzer.isReverseRelation(field)) {
-                        triple = new Triple(translationNode, property.asNode(), SPARQLDeserializers.nodeURI(uri));
+                        triple = new Triple(translationNode, property.asNode(), uriNode);
                     } else {
-                        triple = new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), translationNode);
+                        triple = new Triple(uriNode, property.asNode(), translationNode);
                     }
                     quad = new Quad(graph, triple);
                     tripleHandler.accept(quad, field);
@@ -517,9 +525,9 @@ class SPARQLClassQueryBuilder {
                 for (Object listValue : fieldValues) {
                     Node listNodeValue = SPARQLDeserializers.getForClass(listValue.getClass()).getNode(listValue);
                     if (analyzer.isReverseRelation(field)) {
-                        triple = new Triple(listNodeValue, property.asNode(), SPARQLDeserializers.nodeURI(uri));
+                        triple = new Triple(listNodeValue, property.asNode(), uriNode);
                     } else {
-                        triple = new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), listNodeValue);
+                        triple = new Triple(uriNode, property.asNode(), listNodeValue);
                     }
                     quad = new Quad(graph, triple);
                     tripleHandler.accept(quad, field);
@@ -547,10 +555,10 @@ class SPARQLClassQueryBuilder {
                             Property property = analyzer.getObjectListPropertyByField(field);
 
                             if (analyzer.isReverseRelation(field)) {
-                                triple = new Triple(SPARQLDeserializers.nodeURI(propertyFieldURI), property.asNode(), SPARQLDeserializers.nodeURI(uri));
+                                triple = new Triple(SPARQLDeserializers.nodeURI(propertyFieldURI), property.asNode(), uriNode);
                                 quad = new Quad(fieldMapper.getDefaultGraph(), triple);
                             } else {
-                                triple = new Triple(SPARQLDeserializers.nodeURI(uri), property.asNode(), SPARQLDeserializers.nodeURI(propertyFieldURI));
+                                triple = new Triple(uriNode, property.asNode(), SPARQLDeserializers.nodeURI(propertyFieldURI));
                                 quad = new Quad(graph, triple);
                             }
 
@@ -561,6 +569,8 @@ class SPARQLClassQueryBuilder {
                 }
             }
         }
+        
+        return uriNode;
     }
 
     public String generateSHACL() {

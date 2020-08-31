@@ -501,4 +501,10 @@ public final class OntologyDAO {
         sparql.update(graph, objectProperty);
     }
 
+    public void addClassRestriction(URI domain, OwlRestrictionModel restriction) throws Exception {
+        sparql.create(null, restriction, false, true, (create, node) -> {
+            create.addInsert(SPARQLDeserializers.nodeURI(domain), RDFS.subClassOf, node);
+        });
+    }
+
 }

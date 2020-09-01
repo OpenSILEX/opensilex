@@ -35,7 +35,7 @@
             </b-card>
           </div>
           <div class="col-md-6">
-            <opensilex-OntologyClassDetail :rdfClass="rdfClass" :selected="selected" />
+            <opensilex-OntologyClassDetail :rdfClass="rdfClass" :selected="selected" @onDetailChange="refresh()" />
           </div>
         </div>
       </template>

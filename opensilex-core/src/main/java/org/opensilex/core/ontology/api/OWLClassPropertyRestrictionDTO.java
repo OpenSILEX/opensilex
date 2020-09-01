@@ -11,9 +11,9 @@ import java.net.URI;
  *
  * @author vmigot
  */
-public class RDFClassPropertyRelationDTO {
+public class OWLClassPropertyRestrictionDTO {
 
-    private URI domain;
+    private URI classURI;
     
     private URI property;
 
@@ -23,12 +23,12 @@ public class RDFClassPropertyRelationDTO {
 
     private boolean isObjectProperty;
 
-    public URI getDomain() {
-        return domain;
+    public URI getClassURI() {
+        return classURI;
     }
 
-    public void setDomain(URI domain) {
-        this.domain = domain;
+    public void setClassURI(URI classURI) {
+        this.classURI = classURI;
     }
 
     public URI getProperty() {

@@ -33,6 +33,7 @@
         <template v-slot:head(isList)="data">{{$t(data.label)}}</template>
         <template v-slot:head(isRequired)="data">{{$t(data.label)}}</template>
         <template v-slot:head(inherited)="data">{{$t(data.label)}}</template>
+        <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
 
         <template v-slot:cell(isList)="data">
           <span
@@ -48,6 +49,22 @@
           <span
             class="capitalize-first-letter"
           >{{data.item.inherited ? $t("component.common.yes") : $t("component.common.no")}}</span>
+        </template>
+
+        <template v-slot:cell(actions)="data">
+          <b-button-group size="sm">
+            <!-- <opensilex-EditButton
+                @click="showEditForm(data.item.uri)"
+                label="component.experiment.update"
+                :small="true"
+            ></opensilex-EditButton>-->
+            <opensilex-DeleteButton
+              v-if="!data.item.inherited"
+              @click="deleteClassPropertyRestriction(data.item.property)"
+              label="component.experiment.delete"
+              :small="true"
+            ></opensilex-DeleteButton>
+          </b-button-group>
         </template>
       </b-table>
 
@@ -69,6 +86,7 @@
         <template v-slot:head(isList)="data">{{$t(data.label)}}</template>
         <template v-slot:head(isRequired)="data">{{$t(data.label)}}</template>
         <template v-slot:head(inherited)="data">{{$t(data.label)}}</template>
+        <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
 
         <template v-slot:cell(isList)="data">
           <span
@@ -85,12 +103,29 @@
             class="capitalize-first-letter"
           >{{data.item.inherited ? $t("component.common.yes") : $t("component.common.no")}}</span>
         </template>
+        <template v-slot:cell(actions)="data">
+          <b-button-group size="sm">
+            <!-- <opensilex-EditButton
+                @click="showEditForm(data.item.uri)"
+                label="component.experiment.update"
+                :small="true"
+            ></opensilex-EditButton>-->
+            <opensilex-DeleteButton
+              v-if="!data.item.inherited"
+              @click="deleteClassPropertyRestriction(data.item.property)"
+              label="component.experiment.delete"
+              :small="true"
+            ></opensilex-DeleteButton>
+          </b-button-group>
+        </template>
       </b-table>
       <opensilex-ModalForm
         ref="classPropertyForm"
         component="opensilex-OntologyClassPropertyForm"
         createTitle="OntologyClassDetail.addProperty"
         editTitle="OntologyClassDetail.updateProperty"
+        @onCreate="$emit('onDetailChange')"
+        @onUpdate="$emit('onDetailChange')"
       ></opensilex-ModalForm>
     </div>
   </b-card>
@@ -133,6 +168,10 @@ export default class OntologyClassDetail extends Vue {
     {
       key: "inherited",
       label: "OntologyClassDetail.inherited"
+    },
+    {
+      label: "component.common.actions",
+      key: "actions"
     }
   ];
 
@@ -147,7 +186,7 @@ export default class OntologyClassDetail extends Vue {
   addDataProperty() {
     this.ontologyService.getDataProperties(this.rdfClass).then(http => {
       let formRef = this.classPropertyForm.getFormRef();
-      formRef.setDomain(this.selected.uri);
+      formRef.setClassURI(this.selected.uri);
       formRef.setProperties(http.response.result, this.selected.dataProperties);
       formRef.setIsObjectProperty(false);
       this.classPropertyForm.showCreateForm();
@@ -157,11 +196,19 @@ export default class OntologyClassDetail extends Vue {
   addObjectProperty() {
     this.ontologyService.getObjectProperties(this.rdfClass).then(http => {
       let formRef = this.classPropertyForm.getFormRef();
-      formRef.setDomain(this.selected.uri);
-      formRef.setProperties(http.response.result, this.selected.objectProperties);
+      formRef.setClassURI(this.selected.uri);
+      formRef.setProperties(
+        http.response.result,
+        this.selected.objectProperties
+      );
       formRef.setIsObjectProperty(true);
       this.classPropertyForm.showCreateForm();
     });
+  }
+
+  deleteClassPropertyRestriction(propertyURI) {
+    this.ontologyService.deleteClassPropertyRestriction(this.selected.uri, propertyURI);
+    this.$emit("onDetailChange");
   }
 }
 </script>

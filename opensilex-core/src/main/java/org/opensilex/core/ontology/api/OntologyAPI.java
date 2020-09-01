@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -28,6 +29,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.jena.graph.Node;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -41,6 +43,7 @@ import org.opensilex.core.ontology.dal.OwlRestrictionModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -50,6 +53,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.response.ResourceTreeResponse;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
  *
@@ -283,7 +287,7 @@ public class OntologyAPI {
     })
     public Response getProperty(
             @ApiParam(value = "Property URI") @QueryParam("propertyURI") @ValidURI URI propertyURI,
-            @ApiParam(value = "Property type") @QueryParam("propertyType") URI propertyType
+            @ApiParam(value = "Property type") @QueryParam("propertyType") @ValidURI URI propertyType
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
@@ -311,11 +315,11 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Property deleted ", response = RDFPropertyDTO.class)
+        @ApiResponse(code = 200, message = "Property deleted ", response = ObjectUriResponse.class)
     })
     public Response deleteProperty(
             @ApiParam(value = "Property URI") @QueryParam("propertyURI") @ValidURI URI propertyURI,
-            @ApiParam(value = "Property type") @QueryParam("propertyType") URI propertyType
+            @ApiParam(value = "Property type") @QueryParam("propertyType") @ValidURI URI propertyType
     ) throws Exception {
         Node propertyGraph = getPropertyGraph();
 
@@ -388,17 +392,16 @@ public class OntologyAPI {
     }
 
     @POST
-    @Path("add-class-property")
-    @ApiOperation("Add a class property")
+    @Path("add-class-property-restriction")
+    @ApiOperation("Add a class property restriction")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Class property added", response = ObjectUriResponse.class)
+        @ApiResponse(code = 200, message = "Class property restriction added", response = ObjectUriResponse.class)
     })
-
-    public Response addClassProperty(
-            @ApiParam("Property description") @Valid RDFClassPropertyRelationDTO dto
+    public Response addClassPropertyRestriction(
+            @ApiParam("Property description") @Valid OWLClassPropertyRestrictionDTO dto
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
@@ -418,13 +421,40 @@ public class OntologyAPI {
         }
 
         if (dto.getIsObjectProperty()) {
-            restriction.setOnClass(dao.getObjectProperty(propertyURI, currentUser).getRange().getUri());
+            URI objectRangeURI = dao.getObjectProperty(propertyURI, currentUser).getRange().getUri();
+            restriction.setOnClass(objectRangeURI);
         } else {
-            restriction.setOnDataRange(dao.getDataProperty(propertyURI, currentUser).getRange());
+            URI dataRangeURI = dao.getDataProperty(propertyURI, currentUser).getRange();
+            restriction.setOnDataRange(dataRangeURI);
         }
 
-        dao.addClassRestriction(dto.getDomain(), restriction);
+        Node propertyGraph = getPropertyGraph();
+        if (!dao.addClassPropertyRestriction(propertyGraph, dto.getClassURI(), restriction, currentUser.getLanguage())) {
+            return new ErrorResponse(Response.Status.CONFLICT, "Property restriction already exists for class", "Class URI: " + dto.getClassURI().toString() + " - Property URI: " + propertyURI.toString()).getResponse();
+        }
 
         return new ObjectUriResponse(new URI("about:blank")).getResponse();
+    }
+
+    @DELETE
+    @Path("/delete-class-property-restriction")
+    @ApiOperation("Delete a class property restriction")
+    @ApiProtected(adminOnly = true)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Class property restriction deleted ", response = ObjectUriResponse.class)
+    })
+    public Response deleteClassPropertyRestriction(
+            @ApiParam(value = "Class URI") @QueryParam("classURI") @ValidURI @NotNull URI classURI,
+            @ApiParam(value = "Property URI") @QueryParam("propertyURI") @ValidURI @NotNull URI propertyURI
+    ) throws Exception {
+        Node propertyGraph = getPropertyGraph();
+
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        dao.deleteClassPropertyRestriction(propertyGraph, classURI, propertyURI, currentUser.getLanguage());
+
+        return new ObjectUriResponse(Response.Status.OK, propertyURI).getResponse();
     }
 }

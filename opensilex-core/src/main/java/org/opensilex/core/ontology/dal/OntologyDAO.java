@@ -18,6 +18,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
@@ -25,6 +26,7 @@ import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -501,10 +503,42 @@ public final class OntologyDAO {
         sparql.update(graph, objectProperty);
     }
 
-    public void addClassRestriction(URI domain, OwlRestrictionModel restriction) throws Exception {
-        sparql.create(null, restriction, false, true, (create, node) -> {
-            create.addInsert(SPARQLDeserializers.nodeURI(domain), RDFS.subClassOf, node);
-        });
+    public boolean addClassPropertyRestriction(Node graph, URI classURI, OwlRestrictionModel restriction, String lang) throws Exception {
+        List<OwlRestrictionModel> results = getClassPropertyRestriction(graph, classURI, restriction.getOnProperty(), lang);
+
+        if (results.size() == 0) {
+            sparql.create(graph, restriction, false, true, (create, node) -> {
+                create.addInsert(graph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, node);
+            });
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public List<OwlRestrictionModel> getClassPropertyRestriction(Node graph, URI classURI, URI propertyURI, String lang) throws Exception {
+        return sparql.search(graph, OwlRestrictionModel.class, lang, (select) -> {
+            Var uriVar = makeVar(OwlRestrictionModel.URI_FIELD);
+            select.addWhere(SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, uriVar);
+            select.addWhere(uriVar, OWL2.onProperty, SPARQLDeserializers.nodeURI(propertyURI));
+        }, null, 0, 1);
+    }
+
+    public void deleteClassPropertyRestriction(Node graph, URI classURI, URI propertyURI, String lang) throws Exception {
+        List<OwlRestrictionModel> results = getClassPropertyRestriction(graph, classURI, propertyURI, lang);
+
+        if (results.size() == 0) {
+            throw new NotFoundException("Class property restriction not found for : " + classURI.toString() + " - " + propertyURI.toString());
+        } else if (results.size() > 1) {
+            throw new NotFoundException("Multiple class property restrictions found (should never happend) for : " + classURI.toString() + " - " + propertyURI.toString());
+        } else {
+            UpdateBuilder delete = new UpdateBuilder();
+            delete.addDelete(graph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, "?s");
+            delete.addDelete(graph, "?s", "?p", "?o");
+            delete.addWhere("?s", OWL2.onProperty, SPARQLDeserializers.nodeURI(propertyURI));
+            delete.addWhere("?s", "?p", "?o");
+            sparql.executeDeleteQuery(delete);
+        }
     }
 
 }

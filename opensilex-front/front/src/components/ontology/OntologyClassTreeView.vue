@@ -98,6 +98,10 @@ export default class OntologyClassTreeView extends Vue {
 
         this.nodes = treeNode;
       }
+
+      if (selection) {
+        this.displayClassDetail(selection.uri);
+      }
     });
   }
 

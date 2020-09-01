@@ -932,9 +932,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         try {
             startTransaction();
-            if (!uriExists(graph, uri)) {
-                throw new SPARQLInvalidURIException(uri);
-            }
+//            if (!uriExists(graph, uri)) {
+//                throw new SPARQLInvalidURIException(uri);
+//            }
             SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
 
             Map<Class<? extends SPARQLResourceModel>, List<URI>> relationsToDelete = new HashMap<>();
@@ -1034,7 +1034,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             }
         }
     }
-
+    
     public <T extends SPARQLResourceModel, U extends SPARQLResourceModel> List<URI> getRelationsURI(Class<T> objectClass, Class<U> relationClass, Field objectField, URI objectURI) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         SPARQLClassObjectMapper<T> objectMapper = mapperIndex.getForClass(objectClass);
@@ -1417,6 +1417,15 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         Node nodeUri = SPARQLDeserializers.nodeURI(uri);
         delete.addDelete(graph, nodeUri, property, "?value");
         delete.addWhere(nodeUri, property, "?value");
+        executeDeleteQuery(delete);
+    }
+    
+    public void deletePrimitive(Node graph, URI uri, Property property, Object value) throws Exception {
+        UpdateBuilder delete = new UpdateBuilder();
+        Node nodeUri = SPARQLDeserializers.nodeURI(uri);
+        delete.addDelete(graph, nodeUri, property, "?value");
+        delete.addWhere(nodeUri, property, "?value");
+        delete.addFilter(SPARQLQueryHelper.eq("?value", value));
         executeDeleteQuery(delete);
     }
 

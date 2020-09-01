@@ -72,6 +72,11 @@
             <artifactId>datanucleus-jdo-query</artifactId>
             <version>${datanucleus-jdo-query.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-api-jpa</artifactId>
+            <version>${data.nucleus.version}</version>
+        </dependency>
         <!--DataNucleus - MongoDB driver --> 
         <dependency>
             <groupId>org.datanucleus</groupId>
@@ -85,7 +90,6 @@
             <version>${data.nucleus.accessplatform.mongodb.version}</version>
             <type>pom</type>
         </dependency>
-
         
         <!--DataNucleus - JTA Transaction--> 
         <dependency>

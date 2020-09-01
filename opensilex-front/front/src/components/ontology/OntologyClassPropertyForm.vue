@@ -53,12 +53,15 @@ export default class OntologyClassPropertyForm extends Vue {
   excludedProperties = [];
   setProperties(properties, excludedProperties) {
     this.availableProperties = properties;
-    this.excludedProperties = excludedProperties;
+    this.excludedProperties = [];
+    excludedProperties.forEach(prop => {
+      this.excludedProperties.push(prop.property);
+    });
   }
 
-  domain = null;
-  setDomain(domain) {
-    this.domain = domain;
+  classURI = null;
+  setClassURI(classURI) {
+    this.classURI = classURI;
   }
 
   isObjectProperty = false;
@@ -67,12 +70,12 @@ export default class OntologyClassPropertyForm extends Vue {
   }
 
   get propertiesOptions() {
-    return this.$opensilex.buildTreeListOptions(this.availableProperties);
+    return this.buildTreeListOptions(this.availableProperties, this.excludedProperties);
   }
 
   create(form) {
     let propertyForm = {
-      domain: this.domain,
+      classURI: this.classURI,
       property: form.property,
       required: form.required,
       list: form.list,
@@ -81,7 +84,7 @@ export default class OntologyClassPropertyForm extends Vue {
 
     return this.$opensilex
       .getService("opensilex.OntologyService")
-      .addClassProperty(propertyForm)
+      .addClassPropertyRestriction(propertyForm)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("Object type property added", uri);
@@ -98,6 +101,45 @@ export default class OntologyClassPropertyForm extends Vue {
     //   })
     //   .catch(this.$opensilex.errorHandler);
   }
+
+   buildTreeListOptions(resourceTrees: Array<any>, excludeProperties) {
+        let options = [];
+
+        if (resourceTrees != null) {
+            resourceTrees.forEach((resourceTree: any) => {
+                let subOption = this.buildTreeOptions(resourceTree, excludeProperties);
+                options.push(subOption);
+            });
+        }
+
+        return options;
+    }
+
+    buildTreeOptions(resourceTree: any, excludeProperties: Array<string>) {
+
+        let option = {
+            id: resourceTree.uri,
+            label: resourceTree.name,
+            isDefaultExpanded: true,
+            isDisabled: excludeProperties.indexOf(resourceTree.uri) >= 0,
+            children: []
+        };
+
+        resourceTree.children.forEach(child => {
+            let subOption = this.buildTreeOptions(child, excludeProperties);
+            option.children.push(subOption);
+        });
+
+        if (resourceTree.disabled) {
+            option.isDisabled = true;
+        }
+
+        if (option.children.length == 0) {
+            delete option.children;
+        }
+
+        return option;
+    }
 }
 </script>
 

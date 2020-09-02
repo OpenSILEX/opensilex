@@ -18,13 +18,12 @@
             <li class="breadcrumb-item">
               <router-link :to="{path: '/dashboard'}" :title="$t('component.menu.backToDashboard')">
                 <opensilex-Icon icon="ik#ik-grid" />
-                
                 {{ $t('component.menu.dashboard') }}
               </router-link>
             </li>
             <li class="breadcrumb-item active">
               <opensilex-Icon :icon="icon" />
-              &nbsp;{{ $t(title) }}
+              <span class="navbar-title">&nbsp;{{ $t(title) }}</span>
             </li>
           </ol>
         </nav>
@@ -71,5 +70,9 @@ export default class PageHeader extends Vue {
 
 h5 {
   margin-bottom: 0;
+}
+
+.navbar-title {
+  white-space: pre;
 }
 </style>

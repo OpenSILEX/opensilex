@@ -8,16 +8,10 @@ package org.opensilex.front.vueOwlExtension.api;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.apache.jena.vocabulary.OWL2;
-import org.opensilex.core.ontology.api.RDFClassPropertyDTO;
 import org.opensilex.core.ontology.api.RDFClassTranslatedDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.ontology.dal.DatatypePropertyModel;
-import org.opensilex.core.ontology.dal.ObjectPropertyModel;
-import org.opensilex.core.ontology.dal.OwlRestrictionModel;
 import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
 import org.opensilex.sparql.model.SPARQLLabel;
 

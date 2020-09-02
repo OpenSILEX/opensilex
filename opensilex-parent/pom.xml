@@ -65,7 +65,7 @@
         <commons.jcs.cache.version>2.2.1</commons.jcs.cache.version>
         <maven.resolver.version>1.4.2</maven.resolver.version>
         <maven.resolver.provider.version>3.6.3</maven.resolver.provider.version>
-        <rdf4j.version>3.3.0</rdf4j.version>
+        <rdf4j.version>3.4.0</rdf4j.version>
         <jena.query.builder.version>3.16.0</jena.query.builder.version>
         <data.nucleus.version>5.2.4</data.nucleus.version>
         <data.nucleus.api.jdo.version>5.2.4</data.nucleus.api.jdo.version>
@@ -77,7 +77,7 @@
         <data.nucleus.maven.plugin.version>5.2.1</data.nucleus.maven.plugin.version>
         <bytebuddy.version>1.10.14</bytebuddy.version>
         <java.jwt.version>3.10.3</java.jwt.version>
-        <picocli.version>4.5.0</picocli.version>
+        <picocli.version>4.5.1</picocli.version>
         <bcript.version>0.9.0</bcript.version>
         <commons.io.version>2.7</commons.io.version>
         <logback.version>1.2.3</logback.version>
@@ -98,7 +98,7 @@
         
         <!-- test only dependencies version -->
         <junit.version>4.13</junit.version>
-        <mockito.version>3.4.6</mockito.version>
+        <mockito.version>3.5.9</mockito.version>
         
         <!-- maven plugins versions -->
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>

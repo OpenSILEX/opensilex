@@ -26,7 +26,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.opensilex.OpenSilex;
 import org.opensilex.core.ontology.api.RDFClassDTO;
 import org.opensilex.core.ontology.api.RDFPropertyDTO;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -49,7 +48,6 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 
 /**
@@ -65,12 +63,6 @@ public class VueOwlExtensionAPI {
 
     @Inject
     private SPARQLService sparql;
-
-    @Inject
-    private OpenSilex opensilex;
-
-    @Inject
-    private SPARQLModule sparqlModule;
 
     @GET
     @Path("get-class")
@@ -190,6 +182,9 @@ public class VueOwlExtensionAPI {
             VueClassPropertyDTO pDTO = new VueClassPropertyDTO();
             pDTO.setProperty(dt.getUri());
             pDTO.setName(dt.getName());
+            if (dt.getComment() != null) {
+                pDTO.setComment(dt.getComment().getDefaultValue());
+            }
             OwlRestrictionModel restriction = classDescription.getRestrictions().get(dt.getUri());
             pDTO.setIsList(restriction.isList());
             pDTO.setIsRequired(restriction.isRequired());
@@ -199,7 +194,7 @@ public class VueOwlExtensionAPI {
                 pDTO.setViewComponent(vueType.getViewComponent());
             }
             if (parentModel.isDatatypePropertyRestriction(dt.getUri())) {
-                 pDTO.setInherited(true);
+                pDTO.setInherited(true);
             } else {
                 pDTO.setInherited(false);
             }
@@ -212,6 +207,9 @@ public class VueOwlExtensionAPI {
             VueClassPropertyDTO pDTO = new VueClassPropertyDTO();
             pDTO.setProperty(obj.getUri());
             pDTO.setName(obj.getName());
+            if (obj.getComment() != null) {
+                pDTO.setComment(obj.getComment().getDefaultValue());
+            }
             OwlRestrictionModel restriction = classDescription.getRestrictions().get(obj.getUri());
             pDTO.setIsList(restriction.isList());
             pDTO.setIsRequired(restriction.isRequired());

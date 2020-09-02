@@ -29,9 +29,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.jena.graph.Node;
-import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.OWL2;
-import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -43,7 +41,6 @@ import org.opensilex.core.ontology.dal.OwlRestrictionModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -53,7 +50,6 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.response.ResourceTreeResponse;
-import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
  *
@@ -405,32 +401,12 @@ public class OntologyAPI {
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
-        OwlRestrictionModel restriction = new OwlRestrictionModel();
-
-        URI propertyURI = dto.getProperty();
-        restriction.setOnProperty(propertyURI);
-
-        if (dto.isRequired()) {
-            restriction.setMinCardinality(1);
-        } else {
-            restriction.setMinCardinality(0);
-        }
-
-        if (!dto.isList()) {
-            restriction.setMaxCardinality(1);
-        }
-
-        if (dto.getIsObjectProperty()) {
-            URI objectRangeURI = dao.getObjectProperty(propertyURI, currentUser).getRange().getUri();
-            restriction.setOnClass(objectRangeURI);
-        } else {
-            URI dataRangeURI = dao.getDataProperty(propertyURI, currentUser).getRange();
-            restriction.setOnDataRange(dataRangeURI);
-        }
+        OwlRestrictionModel restriction = this.restrictionDtoToModel(dao, dto);
 
         Node propertyGraph = getPropertyGraph();
+
         if (!dao.addClassPropertyRestriction(propertyGraph, dto.getClassURI(), restriction, currentUser.getLanguage())) {
-            return new ErrorResponse(Response.Status.CONFLICT, "Property restriction already exists for class", "Class URI: " + dto.getClassURI().toString() + " - Property URI: " + propertyURI.toString()).getResponse();
+            return new ErrorResponse(Response.Status.CONFLICT, "Property restriction already exists for class", "Class URI: " + dto.getClassURI().toString() + " - Property URI: " + dto.getProperty().toString()).getResponse();
         }
 
         return new ObjectUriResponse(new URI("about:blank")).getResponse();
@@ -456,5 +432,55 @@ public class OntologyAPI {
         dao.deleteClassPropertyRestriction(propertyGraph, classURI, propertyURI, currentUser.getLanguage());
 
         return new ObjectUriResponse(Response.Status.OK, propertyURI).getResponse();
+    }
+
+    @PUT
+    @Path("update-class-property-restriction")
+    @ApiOperation("Update a class property restriction")
+    @ApiProtected(adminOnly = true)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Class property restriction updated", response = ObjectUriResponse.class)
+    })
+    public Response updateClassPropertyRestriction(
+            @ApiParam("Property description") @Valid OWLClassPropertyRestrictionDTO dto
+    ) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        OwlRestrictionModel restriction = this.restrictionDtoToModel(dao, dto);
+
+        Node propertyGraph = getPropertyGraph();
+
+        dao.updateClassPropertyRestriction(propertyGraph, dto.getClassURI(), restriction, currentUser.getLanguage());
+
+        return new ObjectUriResponse(new URI("about:blank")).getResponse();
+    }
+
+    private OwlRestrictionModel restrictionDtoToModel(OntologyDAO dao, OWLClassPropertyRestrictionDTO dto) throws Exception {
+        OwlRestrictionModel restriction = new OwlRestrictionModel();
+
+        URI propertyURI = dto.getProperty();
+        restriction.setOnProperty(propertyURI);
+
+        if (dto.isRequired()) {
+            restriction.setMinCardinality(1);
+        } else {
+            restriction.setMinCardinality(0);
+        }
+
+        if (!dto.isList()) {
+            restriction.setMaxCardinality(1);
+        }
+
+        if (dto.getIsObjectProperty()) {
+            URI objectRangeURI = dao.getObjectProperty(propertyURI, currentUser).getRange().getUri();
+            restriction.setOnClass(objectRangeURI);
+        } else {
+            URI dataRangeURI = dao.getDataProperty(propertyURI, currentUser).getRange();
+            restriction.setOnDataRange(dataRangeURI);
+        }
+
+        return restriction;
     }
 }

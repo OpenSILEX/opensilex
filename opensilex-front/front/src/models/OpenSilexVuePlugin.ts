@@ -671,13 +671,15 @@ export default class OpenSilexVuePlugin {
         // and file as binary
         for (const name in body) {
             if (name != "file") {
-                formData.append(name, JSON.stringify(body[name]));
+                formData.append(name, new Blob([JSON.stringify(body[name])], {
+                    type: "application/json"
+                }));
             } else {
                 formData.append(name, body[name]);
             }
-
         }
-        console.debug("formData", JSON.stringify(body));
+        
+        console.debug("formData", body, JSON.stringify(body));
         let headers = {};
         let user: User = this.getUser();
         if (user != User.ANONYMOUS()) {

@@ -346,6 +346,7 @@
             "description": "Description",
             "add": "Create experiment",
             "update": "Update experiment",
+            "delete": "Delete experiment",
             "public-label": "Public experiment",
             "public-title": "Select this option to make experiment data publicly available",
             "common": {

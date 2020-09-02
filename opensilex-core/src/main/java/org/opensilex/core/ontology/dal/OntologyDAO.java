@@ -6,8 +6,8 @@
 package org.opensilex.core.ontology.dal;
 
 import com.opencsv.CSVReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -171,7 +171,7 @@ public final class OntologyDAO {
         return model;
     }
 
-    public CSVValidationModel validateCSV(URI graph, URI rdfType, File file, UserModel currentUser, Map<Property, BiConsumer<CSVCell, CSVValidationModel>> customValidators, URIGenerator<String> uriGenerator) throws Exception {
+    public CSVValidationModel validateCSV(URI graph, URI rdfType, InputStream file, UserModel currentUser, Map<Property, BiConsumer<CSVCell, CSVValidationModel>> customValidators, URIGenerator<String> uriGenerator) throws Exception {
         Map<URI, OwlRestrictionModel> restrictionsByID = new HashMap<>();
 
         ClassModel model = getClassModel(rdfType, currentUser.getLanguage());
@@ -187,11 +187,12 @@ public final class OntologyDAO {
 
         CSVValidationModel csvValidation = new CSVValidationModel();
 
-        try (CSVReader csvReader = new CSVReader(new FileReader(file));) {
+        try (CSVReader csvReader = new CSVReader(new InputStreamReader(file));) {
             String[] ids = csvReader.readNext();
 
             csvReader.readNext();
-
+            csvReader.readNext();
+            
             if (ids != null) {
 
                 for (int i = 0; i < ids.length; i++) {
@@ -538,6 +539,18 @@ public final class OntologyDAO {
             delete.addWhere("?s", OWL2.onProperty, SPARQLDeserializers.nodeURI(propertyURI));
             delete.addWhere("?s", "?p", "?o");
             sparql.executeDeleteQuery(delete);
+        }
+    }
+
+    public void updateClassPropertyRestriction(Node graph, URI classURI, OwlRestrictionModel restriction, String language) throws Exception {
+        try {
+            sparql.startTransaction();
+            deleteClassPropertyRestriction(graph, classURI, restriction.getOnProperty(), language);
+            addClassPropertyRestriction(graph, classURI, restriction, language);
+            sparql.commitTransaction();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction(ex);
+            throw ex;
         }
     }
 

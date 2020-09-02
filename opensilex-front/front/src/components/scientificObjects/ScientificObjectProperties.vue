@@ -3,9 +3,6 @@
     :domain="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
     icon="ik#ik-settings"
     title="ScientificObjectProperties.title"
-    add="ScientificObjectProperties.add"
-    update="ScientificObjectProperties.update"
-    create="ScientificObjectProperties."
   />
 </template>
 

@@ -11,7 +11,7 @@
             ></opensilex-ExperimentFacilitySelector>
             <opensilex-ScientificObjectCSVImporter
               class="btn-group"
-              :uri="uri"
+              :experimentUri="uri"
               @csvImported="refresh"
             ></opensilex-ScientificObjectCSVImporter>
           </b-button-group>

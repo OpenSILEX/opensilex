@@ -129,7 +129,7 @@ public class OwlRestrictionModel extends SPARQLResourceModel {
             return getMaxCardinality() > 1;
         }
         if (getMinCardinality() != null) {
-            return getMinCardinality() > 1;
+            return getMinCardinality() > 1 || getMaxCardinality() == null;
         }
 
         return getSomeValuesFrom() != null;

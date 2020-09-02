@@ -53,15 +53,16 @@
 
         <template v-slot:cell(actions)="data">
           <b-button-group size="sm">
-            <!-- <opensilex-EditButton
-                @click="showEditForm(data.item.uri)"
-                label="component.experiment.update"
-                :small="true"
-            ></opensilex-EditButton>-->
+            <opensilex-EditButton
+              v-if="!data.item.inherited"
+              @click="editDataProperty(data.item)"
+              label="OntologyClassDetail.updateProperty"
+              :small="true"
+            ></opensilex-EditButton>
             <opensilex-DeleteButton
               v-if="!data.item.inherited"
               @click="deleteClassPropertyRestriction(data.item.property)"
-              label="component.experiment.delete"
+              label="OntologyClassDetail.deleteProperty"
               :small="true"
             ></opensilex-DeleteButton>
           </b-button-group>
@@ -105,15 +106,16 @@
         </template>
         <template v-slot:cell(actions)="data">
           <b-button-group size="sm">
-            <!-- <opensilex-EditButton
-                @click="showEditForm(data.item.uri)"
-                label="component.experiment.update"
-                :small="true"
-            ></opensilex-EditButton>-->
+            <opensilex-EditButton
+              v-if="!data.item.inherited"
+              @click="editObjectProperty(data.item)"
+              label="OntologyClassDetail.updateProperty"
+              :small="true"
+            ></opensilex-EditButton>
             <opensilex-DeleteButton
               v-if="!data.item.inherited"
               @click="deleteClassPropertyRestriction(data.item.property)"
-              label="component.experiment.delete"
+              label="OntologyClassDetail.deleteProperty"
               :small="true"
             ></opensilex-DeleteButton>
           </b-button-group>
@@ -193,6 +195,17 @@ export default class OntologyClassDetail extends Vue {
     });
   }
 
+  editDataProperty(item) {
+    this.ontologyService.getDataProperties(this.rdfClass).then(http => {
+      let formRef = this.classPropertyForm.getFormRef();
+      formRef.setClassURI(this.selected.uri);
+      formRef.setProperties(http.response.result, this.selected.dataProperties);
+      formRef.setIsObjectProperty(false);
+      console.error(item);
+      this.classPropertyForm.showEditForm(item);
+    });
+  }
+
   addObjectProperty() {
     this.ontologyService.getObjectProperties(this.rdfClass).then(http => {
       let formRef = this.classPropertyForm.getFormRef();
@@ -206,10 +219,29 @@ export default class OntologyClassDetail extends Vue {
     });
   }
 
+  editObjectProperty(item) {
+    this.ontologyService.getObjectProperties(this.rdfClass).then(http => {
+      let formRef = this.classPropertyForm.getFormRef();
+      formRef.setClassURI(this.selected.uri);
+      formRef.setProperties(
+        http.response.result,
+        this.selected.objectProperties
+      );
+      formRef.setIsObjectProperty(true);
+      this.classPropertyForm.showEditForm(item);
+    });
+  }
+
+
   deleteClassPropertyRestriction(propertyURI) {
-    this.ontologyService.deleteClassPropertyRestriction(this.selected.uri, propertyURI);
+    this.ontologyService.deleteClassPropertyRestriction(
+      this.selected.uri,
+      propertyURI
+    );
     this.$emit("onDetailChange");
   }
+
+  
 }
 </script>
 
@@ -233,6 +265,7 @@ en:
     addObjectProperty: Add object property
     addProperty: Add property
     updateProperty: Update property
+    deleteProperty: Delete property
 
 fr:
   OntologyClassDetail:
@@ -246,5 +279,6 @@ fr:
     addObjectProperty: Ajouter une relation vers un objet
     addProperty: Ajouter une propriété
     updateProperty: Mettre à jour la propriété
+    deleteProperty: Supprimer la propriété
 </i18n>
 

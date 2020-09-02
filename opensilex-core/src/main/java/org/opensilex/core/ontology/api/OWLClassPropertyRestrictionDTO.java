@@ -6,6 +6,7 @@
 package org.opensilex.core.ontology.api;
 
 import java.net.URI;
+import org.opensilex.core.ontology.dal.OwlRestrictionModel;
 
 /**
  *
@@ -62,5 +63,5 @@ public class OWLClassPropertyRestrictionDTO {
     public void setIsObjectProperty(boolean isObjectProperty) {
         this.isObjectProperty = isObjectProperty;
     }
-
+    
 }

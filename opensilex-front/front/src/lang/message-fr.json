@@ -179,7 +179,7 @@
             },
             "infrastructures": "Infrastructures",
             "configuration": "Administration",
-            "scientificObjectTypes": "Types d'objet scientifique",
+            "scientificObjectTypes": "Types d'objets scientifiques",
             "scientificObjectProperties":  "Propriétés des objets scientifiques"
         },
         "login": {
@@ -333,6 +333,7 @@
             "contacts": "Contacts",
             "add": "Ajouter une expérimentation",
             "update": "Modifier l'expérimentation",
+            "delete": "Supprimer l'expérimentation",
             "public-label": "Expérimentation publique",
             "public-title": "Sélectionner cette option pour rendre les données publiques",
             "common": {

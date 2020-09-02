@@ -415,7 +415,10 @@
     
     <!-- http://www.opensilex.org/vocabulary/oeso#isPartOf -->
 
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#isPartOf"/>
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#isPartOf">
+        <rdfs:label xml:lang="fr">URI du parent</rdfs:label>
+        <rdfs:label xml:lang="en">Parent URI</rdfs:label>
+    </owl:ObjectProperty>
     
 
 

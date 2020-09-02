@@ -1,5 +1,3 @@
-import Component from "vue-class-component";
-
  <template>
   <div>
     <opensilex-CreateButton @click="show" label="ScientificObjectCSVImporter.import"></opensilex-CreateButton>
@@ -15,44 +13,76 @@ import Component from "vue-class-component";
           <span>{{$t("ScientificObjectCSVImporter.import")}}</span>
         </i>
       </template>
-      <!-- Type -->
-      <opensilex-TypeForm
-        :type.sync="scientificObjectType"
-        @update:type="typeSwitch"
-        :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
-        :required="true"
-        label="ScientificObjectCSVImporter.object-type"
-        placeholder="ScientificObjectCSVImporter.object-type-placeholder"
-      ></opensilex-TypeForm>
+      <ValidationObserver ref="validatorRef">
+        <!-- Type -->
+        <opensilex-TypeForm
+          :type.sync="scientificObjectType"
+          @update:type="typeSwitch"
+          :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
+          :required="true"
+          label="ScientificObjectCSVImporter.object-type"
+          placeholder="ScientificObjectCSVImporter.object-type-placeholder"
+        ></opensilex-TypeForm>
 
-      <div v-if="scientificObjectType">
-        <div class="row">
-          <div class="col-md-4">
-            <b-form-file
-              size="sm"
-              ref="inputFile"
-              accept="text/csv, .csv"
-              @change="csvUploaded"
-              placeholder="Drop or select CSV file here..."
-              drop-placeholder="Drop file here..."
-            ></b-form-file>
+        <div v-if="scientificObjectType && fields.length > 0">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="static-field">
+                <span class="field-view-title">{{$t("ScientificObjectCSVImporter.expectedFormat")}}:</span>
+              </div>
+
+              <b-table-simple hover small responsive :items="rows" :fields="fields">
+                <b-thead>
+                  <b-tr>
+                    <b-th>1</b-th>
+                    <b-th
+                      v-for="field in fields"
+                      v-bind:key="field.key"
+                      class="row-header"
+                    >{{field.key}}</b-th>
+                  </b-tr>
+                </b-thead>
+                <b-tbody>
+                  <b-tr v-for="(row, index) in rows" v-bind:key="index">
+                    <b-th>{{index + 2}}</b-th>
+                    <b-td v-for="cell in row" v-bind:key="cell">{{cell}}</b-td>
+                  </b-tr>
+                </b-tbody>
+                <b-tfoot>
+                  <b-tr>
+                    <b-th variant="secondary">4</b-th>
+                    <b-td :colspan="fields.length" variant="secondary">
+                      <div class="csv-import-helper">
+                        {{$t("ScientificObjectCSVImporter.dataPlaceholder")}}
+                        <br />
+                        {{$t("ScientificObjectCSVImporter.ignoredFirstRows")}}
+                        <br />
+                        {{$t("ScientificObjectCSVImporter.columnModification")}}
+                      </div>
+                    </b-td>
+                  </b-tr>
+                </b-tfoot>
+              </b-table-simple>
+            </div>
           </div>
-          <div class="col">
-            <b-button @click="downloadCSVTemplate">Download CSV template</b-button>
+          <div class="row">
+            <div class="col-md-4">
+              <b-form-file
+                size="sm"
+                ref="inputFile"
+                accept="text/csv, .csv"
+                @change="csvUploaded"
+                v-model="csvFile"
+                placeholder="Drop or select CSV file here..."
+                drop-placeholder="Drop file here..."
+              ></b-form-file>
+            </div>
+            <div class="col">
+              <b-button @click="downloadCSVTemplate">Download CSV template</b-button>
+            </div>
           </div>
         </div>
-        <div class="row row-tabulator">
-          <div class="col">
-            <VueTabulator
-              :key="tabulatorRefresh"
-              class="table-light table-bordered"
-              v-model="content"
-              :options="tabulatorOptions"
-              placeholder="Import a CSV file "
-            />
-          </div>
-        </div>
-      </div>
+      </ValidationObserver>
     </b-modal>
   </div>
 </template>
@@ -67,24 +97,18 @@ import {
   OntologyService,
   RDFClassDTO
 } from "opensilex-core/index";
+
 @Component
 export default class ScientificObjectCSVImporter extends Vue {
   $opensilex: any;
   ontologyService: OntologyService;
   infraService: InfrastructuresService;
+  $t: any;
 
   @Ref("ScientificObjectCSVImporter")
   readonly ScientificObjectCSVImporter!: any;
 
-  content = [];
-
-  tabulatorOptions = {
-    reactiveData: true,
-    columns: [],
-    layout: "fitColumns"
-  };
-
-  tabulatorRefresh = 0;
+  @Ref("validatorRef") readonly validatorRef!: any;
 
   scientificObjectType = null;
 
@@ -92,6 +116,8 @@ export default class ScientificObjectCSVImporter extends Vue {
   experimentUri;
 
   show() {
+    this.scientificObjectType = null;
+    this.validatorRef.reset();
     this.ScientificObjectCSVImporter.show();
   }
 
@@ -105,33 +131,33 @@ export default class ScientificObjectCSVImporter extends Vue {
     );
   }
 
-  importCSV() {
-    // this.xpService
-    //   .setFacilities(this.uri, this.selected)
-    //   .then(result => {
-    //     this.$nextTick(() => {
-    //       this.$emit("csvImported");
-    //       this.hide();
-    //     });
-    //   })
-    //   .catch(console.error);
-  }
-
   downloadCSVTemplate() {
     let csvContent = "data:text/csv;charset=utf-8,";
 
-    let columnTitles = [];
     let columnIDs = [];
-    
-    for (let i in this.tabulatorOptions.columns) {
-      let column = this.tabulatorOptions.columns[i];
-      columnTitles.push(column.title);
-      columnIDs.push(column.field);
+    let rowsValues = [];
+
+    for (let i in this.fields) {
+      let fieldKey = this.fields[i].key;
+      columnIDs.push(fieldKey);
+
+      for (let j in this.rows) {
+        let row = this.rows[j];
+        let value = row[fieldKey];
+        if (!rowsValues[j]) {
+          rowsValues[j] = [];
+        }
+        rowsValues[j].push(row[fieldKey]);
+      }
     }
 
     let csvRows = [];
     csvRows.push(columnIDs.join(","));
-    csvRows.push(columnTitles.join(","));
+
+    for (let i in rowsValues) {
+      let rowValues = rowsValues[i];
+      csvRows.push(rowValues.join(","));
+    }
 
     csvContent += csvRows.join("\r\n");
 
@@ -143,43 +169,113 @@ export default class ScientificObjectCSVImporter extends Vue {
     document.body.removeChild(link);
   }
 
+  fields = [];
+  rows = [];
+
   typeSwitch() {
-    this.ontologyService.getClass(this.scientificObjectType).then(http => {
-      let classModel: RDFClassDTO = http.response.result;
+    this.fields = [];
+    this.rows = [];
 
-      let columns = [
-        {
-          title: "URI",
-          field: "uri",
-          editor: true
-        }
-      ];
+    if (this.scientificObjectType != null) {
+      return this.$opensilex
+        .getService("opensilex.VueJsOntologyExtensionService")
+        .getClassProperties(this.scientificObjectType)
+        .then(http => {
+          let classModel: any = http.response.result;
 
-      // for (let i in classModel.properties) {
-      //   let property = classModel.properties[i];
-      //   columns.push({
-      //     title: property.label,
-      //     field: property.uri,
-      //     editor: true
-      //   });
-      // }
+          this.fields = [
+            {
+              key: "URI",
+              label: "URI"
+            }
+          ];
 
-      this.tabulatorOptions.columns = columns;
-      this.content = [];
+          let propertiesByURI = {};
 
-      this.tabulatorRefresh++;
-    });
+          for (let i in classModel.dataProperties) {
+            let dataProperty = classModel.dataProperties[i];
+
+            this.fields.push({
+              key: dataProperty.property,
+              label: dataProperty.property
+            });
+
+            propertiesByURI[dataProperty.property] = dataProperty;
+          }
+
+          for (let i in classModel.objectProperties) {
+            let objectProperty = classModel.objectProperties[i];
+
+            this.fields.push({
+              key: objectProperty.property,
+              label: objectProperty.property
+            });
+
+            propertiesByURI[objectProperty.property] = objectProperty;
+          }
+
+          // TODO sort by properties order
+
+          let nameRow = {};
+          let commentRow = {};
+          this.fields.forEach(field => {
+            if (field.key == "URI") {
+              nameRow[field.key] = this.$t(
+                "ScientificObjectCSVImporter.objectURI"
+              );
+              commentRow[field.key] = this.$t(
+                "ScientificObjectCSVImporter.objectURIComment"
+              );
+            } else {
+              let fieldKey = field.key;
+              let property = propertiesByURI[fieldKey];
+
+              nameRow[fieldKey] = property.name;
+              commentRow[fieldKey] = property.comment;
+            }
+          });
+
+          this.rows = [nameRow, commentRow];
+        });
+    }
   }
 
+  csvFile;
+
   csvUploaded() {
-    
+    this.$opensilex.uploadFileToService(
+      "/core/scientific-object/csv-validate",
+      {
+        description: {
+          experiment: this.experimentUri,
+          type: this.scientificObjectType
+        },
+        file: this.csvFile
+      }
+    );
+  }
+
+  importCSV() {
+     this.$opensilex.uploadFileToService(
+      "/core/scientific-object/csv-import",
+      {
+        description: {
+          experiment: this.experimentUri,
+          type: this.scientificObjectType
+        },
+        file: this.csvFile
+      }
+    );
   }
 }
 </script>
 
 <style scoped lang="scss">
-.row-tabulator {
-  margin-top: 15px;
+.csv-import-helper {
+  font-style: italic;
+}
+.row-header::first-letter {
+  text-transform: none;
 }
 </style>
 
@@ -190,10 +286,22 @@ en:
     import: CSV Import
     object-type: object type
     object-type-placeholder: Type here to search in object types
+    expectedFormat: Expected CSV format
+    objectURI: Object URI
+    objectURIComment: You can set a custom URI or leave it empty to generate one.
+    dataPlaceholder: Your can insert your data from this row.
+    ignoredFirstRows: First three rows of CSV content will be ignored.
+    columnModification: You can change columns' order and add new ones as long as you don't change the ID of the first row.
 
 fr:
   ScientificObjectCSVImporter:
     import: Import CSV
     object-type: type d'objet
     object-type-placeholder: Utiliser cette zone pour rechercher un type d'objet
+    expectedFormat: Format de fichier CSV attendu
+    objectURI: URI de l'objet
+    objectURIComment: Vous pouvez définir une URI personnalisé ou laisser vide pour en générer une.
+    dataPlaceholder: Vous pouvez insérer vos données à partir de cette ligne.
+    ignoredFirstRows: Les trois premières lignes de contenu du CSV seront ignorées.
+    columnModification: Vous pouvez changer l'ordre des colonnes et en ajouter tant que vous ne modifiez pas l'identifiant de la première ligne.
 </i18n>

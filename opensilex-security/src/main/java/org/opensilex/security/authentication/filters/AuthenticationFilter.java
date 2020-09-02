@@ -11,6 +11,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -23,6 +24,7 @@ import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
+import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -86,6 +88,9 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     @Context
     HttpHeaders headers;
 
+    @Context
+    ResourceInfo resourceInfo;
+        
     @Inject
     AuthenticationService authentication;
 
@@ -121,6 +126,16 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         // get user header token
         String tokenValue = requestContext.getHeaderString(ApiProtected.HEADER_NAME);
 
+        boolean isSecuredAPI = false;
+        Method apiMethod = resourceInfo.getResourceMethod();
+
+        if (apiMethod != null) {
+            // Get method ApiProtected annotation
+            ApiProtected securityAnnotation = apiMethod.getAnnotation(ApiProtected.class);
+
+            isSecuredAPI = (securityAnnotation != null);
+        }
+        
         // Ignore user definition if no token
         UserModel user;
         if (tokenValue != null) {
@@ -139,7 +154,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
             } catch (JWTVerificationException | URISyntaxException ex) {
                 LOGGER.debug("Error while decoding and verifying token: " + ex.getMessage());
-                throw new UnauthorizedException();
+                if (isSecuredAPI) {
+                    throw new UnauthorizedException();
+                } else {
+                    user = UserModel.getAnonymous();
+                }
             } catch (ForbiddenException ex) {
                 throw ex;
             } catch (Throwable ex) {

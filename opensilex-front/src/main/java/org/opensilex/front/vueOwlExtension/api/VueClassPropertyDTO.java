@@ -16,6 +16,8 @@ public class VueClassPropertyDTO{
     protected URI property;
     
     protected String name;
+    
+    protected String comment;
 
     protected String inputComponent;
 
@@ -43,7 +45,14 @@ public class VueClassPropertyDTO{
         this.name = name;
     }
 
-    
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
     public String getInputComponent() {
         return inputComponent;
     }

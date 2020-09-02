@@ -9,10 +9,10 @@
     ></opensilex-SelectForm>
 
     <!-- is abstract -->
-    <opensilex-CheckboxForm :value.sync="form.required" title="OntologyClassDetail.required"></opensilex-CheckboxForm>
+    <opensilex-CheckboxForm :value.sync="form.isRequired" title="OntologyClassDetail.required"></opensilex-CheckboxForm>
 
     <!-- is abstract -->
-    <opensilex-CheckboxForm :value.sync="form.list" title="OntologyClassDetail.list"></opensilex-CheckboxForm>
+    <opensilex-CheckboxForm :value.sync="form.isList" title="OntologyClassDetail.list"></opensilex-CheckboxForm>
   </b-form>
 </template>
 
@@ -34,8 +34,8 @@ export default class OntologyClassPropertyForm extends Vue {
     default: () => {
       return {
         property: null,
-        required: false,
-        list: false
+        isRequired: false,
+        isList: false
       };
     }
   })
@@ -44,8 +44,8 @@ export default class OntologyClassPropertyForm extends Vue {
   getEmptyForm() {
     return {
       property: null,
-      required: false,
-      list: false
+      isRequired: false,
+      isList: false
     };
   }
 
@@ -77,8 +77,8 @@ export default class OntologyClassPropertyForm extends Vue {
     let propertyForm = {
       classURI: this.classURI,
       property: form.property,
-      required: form.required,
-      list: form.list,
+      required: form.isRequired,
+      list: form.isList,
       isObjectProperty: this.isObjectProperty
     }
 
@@ -92,14 +92,21 @@ export default class OntologyClassPropertyForm extends Vue {
   }
 
   update(form) {
-    // return this.$opensilex
-    //   .getService("opensilex.VueJsOntologyExtensionService")
-    //   .updateClass(form)
-    //   .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-    //     let uri = http.response.result;
-    //     console.debug("Object type updated", uri);
-    //   })
-    //   .catch(this.$opensilex.errorHandler);
+     let propertyForm = {
+      classURI: this.classURI,
+      property: form.property,
+      required: form.isRequired,
+      list: form.isList,
+      isObjectProperty: this.isObjectProperty
+    }
+
+    return this.$opensilex
+      .getService("opensilex.OntologyService")
+      .updateClassPropertyRestriction(propertyForm)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        let uri = http.response.result;
+        console.debug("Object type property updated", uri);
+      })
   }
 
    buildTreeListOptions(resourceTrees: Array<any>, excludeProperties) {

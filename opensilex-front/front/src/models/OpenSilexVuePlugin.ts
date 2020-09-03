@@ -673,12 +673,12 @@ export default class OpenSilexVuePlugin {
             if (name != "file") {
                 formData.append(name, new Blob([JSON.stringify(body[name])], {
                     type: "application/json"
-                }));
+                }), name);
             } else {
                 formData.append(name, body[name]);
             }
         }
-        
+
         console.debug("formData", body, JSON.stringify(body));
         let headers = {};
         let user: User = this.getUser();
@@ -697,7 +697,7 @@ export default class OpenSilexVuePlugin {
                 .then(response => response.json())
                 .then((http) => {
                     console.debug("uploaded file result", http);
-                    return resolve(http);
+                    return http;
                 });
 
             promise

@@ -17,6 +17,8 @@ public class ScientificObjectCsvDescriptionDTO {
 
     private URI type;
 
+    private String validationToken;
+    
     public URI getExperiment() {
         return experiment;
     }
@@ -33,4 +35,12 @@ public class ScientificObjectCsvDescriptionDTO {
         this.type = type;
     }
 
+    public String getValidationToken() {
+        return validationToken;
+    }
+
+    public void setValidationToken(String validationToken) {
+        this.validationToken = validationToken;
+    }
+    
 }

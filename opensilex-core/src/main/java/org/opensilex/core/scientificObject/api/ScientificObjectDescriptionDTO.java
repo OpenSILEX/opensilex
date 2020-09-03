@@ -17,7 +17,7 @@ import org.opensilex.core.ontology.api.RDFObjectDTO;
 public class ScientificObjectDescriptionDTO extends RDFObjectDTO {
 
     private URI experiment;
-
+    
     public URI getExperiment() {
         return experiment;
     }

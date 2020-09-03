@@ -11,9 +11,15 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.security.NoSuchAlgorithmException;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -26,6 +32,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.jena.ext.com.google.common.cache.Cache;
+import org.apache.jena.ext.com.google.common.cache.CacheBuilder;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.ontology.dal.CSVValidationModel;
@@ -45,6 +53,7 @@ import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
 import org.opensilex.sparql.response.PartialResourceTreeDTO;
 import org.opensilex.sparql.response.PartialResourceTreeResponse;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.TokenGenerator;
 
 /**
  * @author Julien BONNEFONT
@@ -80,8 +89,7 @@ public class ScientificObjectAPI {
 
     /**
      * @param experimentURI the experiment URI
-     * @return Return list of scientific objetcs tree corresponding to the given
-     * experiment URI
+     * @return Return list of scientific objetcs tree corresponding to the given experiment URI
      */
     @GET
     @Path("get-tree/{xpuri}")
@@ -191,17 +199,24 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importCSV(
-            @ApiParam(value = "File description with metadata", required = true, type = "string") @NotNull @Valid @FormDataParam("description") ScientificObjectDescriptionDTO descriptionDto,
+            @ApiParam(value = "File description with metadata", required = true, type = "string") @NotNull @Valid @FormDataParam("description") ScientificObjectCsvDescriptionDTO descriptionDto,
             @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
-
         URI xpURI = descriptionDto.getExperiment();
         URI soType = descriptionDto.getType();
-
+        String validationToken = descriptionDto.getValidationToken();
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
 
-        CSVValidationModel errors = dao.validateCSV(xpURI, soType, file, currentUser);
+        CSVValidationModel errors;
+        if (validationToken == null) {
+            errors = dao.validateCSV(xpURI, soType, file, currentUser);
+        } else {
+            errors = filesValidationCache.getIfPresent(validationToken);
+            if (errors == null) {
+                errors = dao.validateCSV(xpURI, soType, file, currentUser);
+            }
+        }
 
         CSVValidationDTO csvValidation = new CSVValidationDTO();
 
@@ -245,10 +260,42 @@ public class ScientificObjectAPI {
         csvValidation.setErrors(errors);
 
         if (!errors.hasErrors()) {
-            csvValidation.setValidationToken("VALIDATION TOKEN");
+            csvValidation.setValidationToken(generateCSVValidationToken(xpURI, soType));
+            filesValidationCache.put(csvValidation.getValidationToken(), errors);
         }
 
         return new SingleObjectResponse<CSVValidationDTO>(csvValidation).getResponse();
     }
+
+    private static String generateCSVValidationToken(URI experiementURI, URI objectTypeURI) throws NoSuchAlgorithmException, IOException {
+        Map<String, Object> additionalClaims = new HashMap<>();
+        additionalClaims.put(CLAIM_EXPERIMENT_URI, experiementURI);
+        additionalClaims.put(CLAIM_OBJECT_TYPE_URI, objectTypeURI);
+        return TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, additionalClaims);
+    }
+
+    private static Cache<String, CSVValidationModel> filesValidationCache;
+
+    static {
+        filesValidationCache = CacheBuilder.newBuilder()
+                .maximumSize(1000)
+                .expireAfterWrite(5, TimeUnit.MINUTES)
+                .build();
+    }
+
+    /**
+     * Experiment URI claim key
+     */
+    private static final String CLAIM_EXPERIMENT_URI = "experiment_uri";
+
+    /**
+     * Experiment URI claim key
+     */
+    private static final String CLAIM_OBJECT_TYPE_URI = "object_type_uri";
+
+    /**
+     * File Hash claim key
+     */
+    private static final String CLAIM_FILE_HASH_URI = "file_hash";
 
 }

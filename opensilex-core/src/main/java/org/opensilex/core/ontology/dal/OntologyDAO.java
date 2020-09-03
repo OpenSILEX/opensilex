@@ -300,7 +300,7 @@ public final class OntologyDAO {
             if (object.getUri() == null) {
                 int retry = 0;
                 URI objectURI = uriGenerator.generateURI(graph.toString(), name, retry);
-                while (checkedURIs.containsKey(objectURI) || sparql.uriExists(graph, objectURI)) {
+                while (checkedURIs.containsKey(objectURI) || sparql.uriExists(SPARQLDeserializers.nodeURI(graph), objectURI)) {
                     retry++;
                     objectURI = uriGenerator.generateURI(graph.toString(), name, retry);
                 }

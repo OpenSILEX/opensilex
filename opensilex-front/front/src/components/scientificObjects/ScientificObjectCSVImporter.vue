@@ -71,7 +71,7 @@
                 size="sm"
                 ref="inputFile"
                 accept="text/csv, .csv"
-                @change="csvUploaded"
+                @input="csvUploaded"
                 v-model="csvFile"
                 placeholder="Drop or select CSV file here..."
                 drop-placeholder="Drop file here..."
@@ -109,6 +109,7 @@ export default class ScientificObjectCSVImporter extends Vue {
   readonly ScientificObjectCSVImporter!: any;
 
   @Ref("validatorRef") readonly validatorRef!: any;
+  @Ref("inputFile") readonly inputFile!: any;
 
   scientificObjectType = null;
 
@@ -240,9 +241,12 @@ export default class ScientificObjectCSVImporter extends Vue {
     }
   }
 
-  csvFile;
+  csvFile = null;
+
+  validationToken = null;
 
   csvUploaded() {
+    this.validationToken = null;
     this.$opensilex.uploadFileToService(
       "/core/scientific-object/csv-validate",
       {
@@ -252,20 +256,20 @@ export default class ScientificObjectCSVImporter extends Vue {
         },
         file: this.csvFile
       }
-    );
+    ).then((response) => {
+       this.validationToken = response.result.validationToken;
+    });
   }
 
   importCSV() {
-     this.$opensilex.uploadFileToService(
-      "/core/scientific-object/csv-import",
-      {
-        description: {
-          experiment: this.experimentUri,
-          type: this.scientificObjectType
-        },
-        file: this.csvFile
-      }
-    );
+    this.$opensilex.uploadFileToService("/core/scientific-object/csv-import", {
+      description: {
+        experiment: this.experimentUri,
+        type: this.scientificObjectType,
+        validationToken: this.validationToken
+      },
+      file: this.csvFile
+    });
   }
 }
 </script>

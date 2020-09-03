@@ -584,7 +584,7 @@ export default class OpenSilexVuePlugin {
             if (queryParamString) {
                 url += "?" + queryParamString;
             }
-            window.history.pushState(queryParams.toString(), document.title, url);
+            window.history.replaceState(queryParams.toString(), document.title, url);
         } catch (error) {
             console.error(error);
         }

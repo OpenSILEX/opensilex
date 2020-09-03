@@ -11,6 +11,7 @@
         <b-alert show>
           <div>{{$t('GermplasmTable.infoSynonyms')}}</div>
           <div>{{$t('GermplasmTable.infoAttributes')}}</div>
+          <div>{{$t('GermplasmTable.infoMandatoryFields')}}</div>
         </b-alert>
       </b-collapse>
     </div>
@@ -151,7 +152,7 @@ export default class GermplasmTable extends Vue {
 
     let idCol = {title:"", field:"rowNumber",visible:true,formatter:"rownum"};
 
-    let statusCol ={title:"status", field:"status",visible:true};
+    let statusCol ={title:"status", field:"status",visible:false};
 
     let uriCol = {title:"URI", field:"uri", visible:true, editor:true, minWidth:150};
 
@@ -585,6 +586,7 @@ en:
     checkingStatusMessage: ready
     insertionStatusMessage: created
     filterLines: Filter the lines
+    infoMandatoryFields: It is mandatory to fill the species URI column if you create varieties. If you create Accession or Lot, you have to fill at least one column between Accession URI, Variety URI and Species URI.
 
 fr:
   GermplasmTable:
@@ -625,4 +627,5 @@ fr:
     insertionStatusMessage: créé
     seeErrorLines: See lines
     seeAll : see all 
+    infoMandatoryFields: Il est obligatoire de renseigner au moins une des 3 colonnes URI de l'espèce, URI de la varieté ou URI de l'Accession.
 </i18n>

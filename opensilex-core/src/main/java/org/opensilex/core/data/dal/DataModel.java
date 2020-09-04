@@ -30,7 +30,6 @@ public class DataModel implements NoSQLModel{
     private String[] URICompose;
     
     @Persistent
-    @PrimaryKey
     private URI uri;
     
     @Persistent

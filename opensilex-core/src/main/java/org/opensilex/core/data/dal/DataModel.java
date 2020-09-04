@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.query.BooleanExpression;
 import org.apache.commons.lang3.ArrayUtils;
 import org.opensilex.nosql.model.NoSQLModel;
@@ -29,6 +30,7 @@ public class DataModel implements NoSQLModel{
     private String[] URICompose;
     
     @Persistent
+    @PrimaryKey
     private URI uri;
     
     @Persistent
@@ -208,7 +210,7 @@ public class DataModel implements NoSQLModel{
     }
     
     private String formatDateURI(){
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHms");
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         String sd = dtf.format(date);
         return sd;
     }

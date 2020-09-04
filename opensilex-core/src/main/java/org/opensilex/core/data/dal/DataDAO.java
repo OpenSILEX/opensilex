@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
-import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -17,20 +16,16 @@ import java.util.List;
 import javax.jdo.JDOQLTypedQuery;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
-import javax.jdo.query.BooleanExpression;
-import org.opensilex.nosql.utils.UriGeneratorStrategy;
 import javax.naming.NamingException;
-import org.datanucleus.store.StoreManager;
-import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.datanucleus.DataNucleusService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.OrderBy;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.nosql.exceptions.NoSQLBadPersistenceManagerException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 
 /**
@@ -58,8 +53,8 @@ public class DataDAO {
         return instance;
     }
     
-    public Object update(DataModel instance) throws NamingException, NoSQLInvalidURIException{
-        nosql.update_(instance);
+    public Object update(DataModel instance) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException{
+        nosql.update(instance);
         return instance;
     }
     
@@ -148,12 +143,12 @@ public class DataDAO {
                 if (startDate != null){
                     q.declareParameters("ZonedDateTime dateMin");
                     filter = filter + "date > dateMin && ";
-                    q.setParameters("dateMin",ZonedDateTime.parse(startDate,dtf));
+                    q.setParameters(ZonedDateTime.parse(startDate,dtf));
                 }
                 if(endDate != null){
                     q.declareParameters("ZonedDateTime dateMax");
                     filter = filter + "date < dateMax && ";
-                    q.setParameters("dateMax",ZonedDateTime.parse(endDate,dtf));
+                    q.setParameters(ZonedDateTime.parse(endDate,dtf));
                 }
                 
                 List<DataModel> results = null;

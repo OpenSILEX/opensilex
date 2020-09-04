@@ -44,6 +44,12 @@
             <classifier>tests</classifier>
         </dependency>
         
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-sparql</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        
         <!--DataNucleus - Big data object mapping--> 
         <dependency>
             <groupId>org.datanucleus</groupId>

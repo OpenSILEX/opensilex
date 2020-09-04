@@ -364,12 +364,12 @@ test:alice:deploy:
 ##  ANNE-TEST-SNAPSHOT-DEPLOYMENT
 ###################################
 
-anne:build:
+sammy:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_COMMIT_BRANCH == "anne"
+    - if: $CI_COMMIT_BRANCH == "sammy"
 
-test:anne:deploy:
+test:sammy:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
@@ -379,13 +379,13 @@ test:anne:deploy:
     OPENSILEX_JAR_PORT: 8085
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/anne"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/sammy"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "anne"
+    - if: $CI_COMMIT_BRANCH == "sammy"
       when: on_success
   needs:
-    - anne:build
+    - sammy:build
 
 ###################################
 ##  ARNAUD-TEST-BUILD-DEPLOYMENT

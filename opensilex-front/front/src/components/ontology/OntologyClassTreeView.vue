@@ -2,13 +2,13 @@
   <opensilex-TreeView :nodes.sync="nodes" @select="displayClassDetail($event.data.uri)">
     <template v-slot:node="{ node }">
       <span class="item-icon">
-        <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.uri)" />
+        <opensilex-Icon v-if="classesParametersByURI[node.data.uri]" :icon="classesParametersByURI[node.data.uri].icon" />
       </span>&nbsp;
       <strong v-if="node.data.selected">{{ node.title }}</strong>
       <span v-if="!node.data.selected">{{ node.title }}</span>
     </template>
 
-        <template v-slot:buttons="{ node }">
+    <template v-slot:buttons="{ node }">
       <opensilex-EditButton
         @click="$emit('editClass' ,node.data)"
         label="OntologyClassTreeView.edit"
@@ -61,9 +61,9 @@ export default class OntologyClassTreeView extends Vue {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       lang => {
-          if (this.selected) {
-            this.displayClassDetail(this.selected.uri);
-          }
+        if (this.selected) {
+          this.displayClassDetail(this.selected.uri);
+        }
       }
     );
   }
@@ -85,14 +85,26 @@ export default class OntologyClassTreeView extends Vue {
     return this.resourceTree;
   }
 
+  classesParametersByURI = {};
+
   refresh(selection?) {
-    this.$opensilex.getService(
-      "opensilex-core.OntologyService"
-    ).getSubClassesOf(this.rdfClass, false).then(http => {
+    Promise.all([
+      this.$opensilex
+        .getService("opensilex-core.OntologyService")
+        .getSubClassesOf(this.rdfClass, false),
+      this.$opensilex
+        .getService("opensilex-front.VueJsOntologyExtensionService")
+        .getClassesParameters()
+    ]).then(results => {
+      let classesParameters = results[1].response.result;
+      this.classesParametersByURI = {};
+      for (let i in classesParameters) {
+        this.classesParametersByURI[classesParameters[i].uri] = classesParameters[i];
+      }
       let treeNode = [];
       let first = true;
-      this.resourceTree = http.response.result;
-      for (let i in this.resourceTree[0].children ) {
+      this.resourceTree = results[0].response.result;
+      for (let i in this.resourceTree[0].children) {
         let node = this.dtoToNode(this.resourceTree[0].children[i], selection);
         treeNode.push(node);
 
@@ -106,14 +118,14 @@ export default class OntologyClassTreeView extends Vue {
   }
 
   displayClassDetail(uri) {
-    this.$opensilex.getService(
-      "opensilex-core.VueJsOntologyExtensionService"
-    ).getClassProperties(uri).then(http => {
-      this.selected = http.response.result;
-      this.$emit("selectionChange", this.selected);
-    });
+    this.$opensilex
+      .getService("opensilex-core.VueJsOntologyExtensionService")
+      .getClassProperties(uri)
+      .then(http => {
+        this.selected = http.response.result;
+        this.$emit("selectionChange", this.selected);
+      });
   }
-  
 
   private dtoToNode(dto: ResourceTreeDTO, selection) {
     let isLeaf = dto.children.length == 0;

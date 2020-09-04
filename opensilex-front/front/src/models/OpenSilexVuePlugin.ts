@@ -764,5 +764,30 @@ export default class OpenSilexVuePlugin {
         return this.getDatatype(uri) || this.getObjectType(uri);
     }
 
+    iconIDs = [];
+    selectIconIDs = [];
 
+    public getIconIDs() {
+        return this.iconIDs;
+    }
+
+    public setIconIDs(iconIDs) {
+        this.iconIDs = iconIDs;
+        this.selectIconIDs = [];
+        for (let i in iconIDs) {
+          let iconID = iconIDs[i];
+    
+          this.selectIconIDs.push({
+            id: iconID,
+            label: iconID
+          })
+        }
+
+        console.error(this.selectIconIDs.length);
+    }
+
+    public getSelectIconIDs() {
+        return this.selectIconIDs;
+    }
+    
 }

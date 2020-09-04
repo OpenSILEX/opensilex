@@ -290,4 +290,22 @@ public class VueOwlExtensionAPI {
         }
         return new PaginatedListResponse<VueObjectTypeDTO>(datatypeDTOs).getResponse();
     }
+
+    @GET
+    @Path("get-classes-parameters")
+    @ApiOperation("Return class parameters for Vue.js application")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return class parameters", response = VueClassParameterDTO.class, responseContainer = "List")
+    })
+    public Response getClassesParameters() throws Exception {
+        VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
+
+        List<VueClassExtensionModel> extendedClasses = dao.getExtendedClasses(currentUser.getLanguage());
+
+        List<VueClassParameterDTO> dtoList = extendedClasses.stream().map(VueClassParameterDTO::getDTOFromModel).collect(Collectors.toList());
+
+        return new PaginatedListResponse<VueClassParameterDTO>(dtoList).getResponse();
+    }
 }

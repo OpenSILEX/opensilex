@@ -68,7 +68,9 @@ public class VueOwlExtensionDAO {
         }
     }
 
-    
+    public List<VueClassExtensionModel> getExtendedClasses(String lang) throws Exception {
+        return sparql.search(VueClassExtensionModel.class, lang);
+    }
     
     private static List<VueOntologyDataType> dataTypes;
     private static List<VueOntologyObjectType> objectTypes;
@@ -119,5 +121,4 @@ public class VueOwlExtensionDAO {
 
         return typesByURI.get(SPARQLDeserializers.getExpandedURI(uri));
     }
-
 }

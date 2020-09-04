@@ -103,7 +103,18 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 library.add(fas);
 Vue.component('font-awesome-icon', FontAwesomeIcon)
+let faIconLib: any = library;
+let iconsIDs = [];
+for (let i in faIconLib.definitions) {
+  for (let j in faIconLib.definitions[i]) {
+    iconsIDs.push("fa#" + j);
+  }
+}
 console.debug("FontAwesomeIcon plugin initialized !");
+
+import ikIcons from './models/IkIcons';
+iconsIDs = iconsIDs.concat(ikIcons);
+console.debug("IconKit icons loaded !");
 
 // Initialize Vue wizard form
 import VueFormWizard from 'vue-form-wizard'
@@ -124,6 +135,9 @@ Vue.component('country-flag', CountryFlag);
 // Initialize Tree selector
 import Treeselect from '@riophae/vue-treeselect'
 Vue.component("treeselect", Treeselect);
+
+import vSelect from "vue-select";
+Vue.component("v-select", vSelect);
 
 // Initialize i18n
 import VueI18n from 'vue-i18n'
@@ -281,6 +295,7 @@ Vue.use(DatePicker, datepickerOptions);
 // Enable Vue front plugin manager for OpenSilex API
 console.debug("Enable OpenSilex plugin...");
 let $opensilex = new OpenSilexVuePlugin(baseApi, store, i18n);
+$opensilex.setIconIDs(iconsIDs);
 $opensilex.setCookieSuffix(baseApi);
 Vue.use($opensilex);
 console.debug("OpenSilex plugin enabled !");

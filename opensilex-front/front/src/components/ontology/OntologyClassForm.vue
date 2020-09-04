@@ -48,8 +48,8 @@
       :value.sync="form.isAbstract"
       title="OntologyClassForm.abstract-type"
     ></opensilex-CheckboxForm>
-
-    <opensilex-InputForm :value.sync="form.icon" label="OntologyClassForm.icon" type="text"></opensilex-InputForm>
+    
+    <opensilex-IconForm :value.sync="form.icon" label="OntologyClassForm.icon"></opensilex-IconForm>
   </b-form>
 </template>
 

@@ -118,6 +118,8 @@ import FileInputForm from './common/forms/FileInputForm.vue'
 components["opensilex-FileInputForm"] = FileInputForm;
 import TagInputForm from './common/forms/TagInputForm.vue'
 components["opensilex-TagInputForm"] = TagInputForm;
+import IconForm from './common/forms/IconForm.vue'
+components["opensilex-IconForm"] = IconForm;
 
 import WizardForm from './common/forms/WizardForm.vue'
 components["opensilex-WizardForm"] = WizardForm;

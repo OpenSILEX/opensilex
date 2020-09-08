@@ -6,6 +6,7 @@
 package org.opensilex.core.data.api;
 
 import java.net.URI;
+import java.text.ParseException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import javax.validation.constraints.NotNull;
@@ -16,7 +17,7 @@ import org.opensilex.server.rest.validation.ValidURI;
  *
  * @author sammy
  */
-public class DataGetDTO {
+public class DataUpdateDTO{
     @NotNull
     @ValidURI
     protected URI uri;
@@ -26,6 +27,7 @@ public class DataGetDTO {
     private URI provenance;
     
     private String date;
+    private String timezone;
     
     private Object value;
     private Integer confidence = null;
@@ -55,6 +57,10 @@ public class DataGetDTO {
         this.date = dtf.format(date);
     }
     
+    public void setTimezone(String tz){
+        this.timezone = tz;
+    }
+    
     public void setValue(Object value){
         this.value = value;
     }
@@ -62,7 +68,7 @@ public class DataGetDTO {
     public void setConfidence(Integer c){
         this.confidence = c;
     }
-
+    
     public URI getUri() {
         return uri;
     }
@@ -83,6 +89,10 @@ public class DataGetDTO {
         return date;
     }
     
+    public String getTimezone(){
+        return timezone;
+    }
+    
     public Object getValue(){
         return value;
     }
@@ -91,19 +101,20 @@ public class DataGetDTO {
         return confidence;
     }
     
-    public static DataGetDTO fromModel(DataModel model){
-        DataGetDTO dto = new DataGetDTO();
+    public DataModel newModel() throws ParseException{
+        DataModel model = new DataModel();
+                
+        model.setUri(getUri());
+        model.setObject(getObject());
+        model.setVariable(getVariable());
+        model.setProvenance(getProvenance());
         
-        dto.setUri(model.getUri());
-        dto.setObject(model.getObject());
-        dto.setVariable(model.getVariable());
-        dto.setProvenance(model.getProvenance());
+        model.setDate(getDate());
         
-        dto.setDate(model.getDate());
+        model.setValue(getValue());
         
-        dto.setConfidence(model.getConfidence());
-        dto.setValue(model.getValue());
+        model.setConfidence(getConfidence());
+        return model;
         
-        return dto;
     }
 }

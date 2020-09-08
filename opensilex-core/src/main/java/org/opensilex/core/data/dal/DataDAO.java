@@ -12,8 +12,9 @@ import java.text.ParseException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import javax.jdo.JDOQLTypedQuery;
+import java.util.Map;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.naming.NamingException;
@@ -63,30 +64,34 @@ public class DataDAO {
         boolean exist = false;
         
         exist = sparql.uriExists(RDFTYPE_VARIABLE, data.getVariable());
-        exist = (exist && sparql.uriExists(RDFTYPE_SCIENTIFICOBJECT, data.getObject()));        
+        if(data.getObject() != null)
+            exist = (exist && sparql.uriExists(RDFTYPE_SCIENTIFICOBJECT, data.getObject()));        
         exist = (exist && provenanceDAO.exist(data.getProvenance()));
-        
-        if(exist){
-            String[] URICompose = new String[3];
-            
-            VariableModel var = sparql.getByURI(VariableModel.class, data.getVariable(),null);
-            URICompose[0] = var.getName();
-            if(URICompose[0] == null) URICompose[0] = var.getLongName();
-            
-            URICompose[1] = "Not implemented yet";
-            
-            ProvenanceModel prov = new ProvenanceModel();
-            prov = nosql.findByUri(prov, data.getProvenance());
-            URICompose[2]=prov.getLabel();
-            
-            data.setURICompose(URICompose);
-        }
+       
         return exist;
+    }
+    
+    public void prepareURI(DataModel data) throws Exception{
+        String[] URICompose = new String[3];
+            
+        VariableModel var = sparql.getByURI(VariableModel.class, data.getVariable(),null);
+        URICompose[0] = var.getName();
+        if(URICompose[0] == null) URICompose[0] = var.getLongName();
+
+        if(data.getObject() != null){
+            URICompose[1] = "Not implemented yet";
+        }
+
+        ProvenanceModel prov = new ProvenanceModel();
+        prov = nosql.findByURI(prov, data.getProvenance());
+        URICompose[2]=prov.getLabel();
+
+        data.setURICompose(URICompose);
     }
     
     public ListWithPagination<DataModel> search(
             UserModel user,
-            URI uri,
+            //URI uri,
             URI objectUri,
             URI variableUri,
             URI provenanceUri,
@@ -96,87 +101,87 @@ public class DataDAO {
             Integer pageSize) throws NamingException, IOException, ParseException {
         
         try (PersistenceManager persistenceManager = nosql.getPersistentConnectionManager()) {
-            
-            try (JDOQLTypedQuery<DataModel> tq = persistenceManager.newJDOQLTypedQuery(DataModel.class)) {
-                /*QDataModel cand = QDataModel.candidate();
-                List<BooleanExpression> exprs = new ArrayList<>();
-                BooleanExpression expr = null;
-                
-                if (uri != null) exprs.add(cand.uri.eq(uri));
-                if (objectUri != null) exprs.add(cand.object.eq(objectUri));
-                if (variableUri != null) exprs.add(cand.variable.eq(variableUri));
-                if (provenanceUri != null) exprs.add(cand.provenance.eq(provenanceUri));
-               if (startDate != null) exprs.add(cand.date.gt(startDate));
-                if (endDate != null) exprs.add(cand.date.lt(endDate));
-                
-                if(!exprs.isEmpty()){
-                    expr = exprs.remove(0);
-                    for(BooleanExpression e:exprs)
-                        expr = expr.and(e);
-                }
-                
-                List<DataModel> results = null;
-                if (expr != null) {
-                    results = tq.filter(expr).executeList();
-                } else {
-                    results = tq.executeList();                    
-                }*/
-                
-                Query q = persistenceManager.newQuery(DataModel.class);
-                
-                q.declareImports("import java.time.ZonedDateTime");
-                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXXX");
-                
-                String filter = "";
-                
-                if (uri != null)
-                    filter = filter + "uri == \"" + uri.toString() + "\" && ";
-                
-                if (objectUri != null)
-                    filter = filter + "object == \"" + objectUri.toString() +"\" && ";
-                
-                if (variableUri != null)
-                    filter = filter + "variable == \"" + variableUri.toString() +"\" && ";
-                    
-                if (provenanceUri != null)
-                    filter = filter + "provenance == \""+ provenanceUri.toString() + "\" && ";
-                if (startDate != null){
-                    q.declareParameters("ZonedDateTime dateMin");
-                    filter = filter + "date > dateMin && ";
-                    q.setParameters(ZonedDateTime.parse(startDate,dtf));
-                }
-                if(endDate != null){
-                    q.declareParameters("ZonedDateTime dateMax");
-                    filter = filter + "date < dateMax && ";
-                    q.setParameters(ZonedDateTime.parse(endDate,dtf));
-                }
-                
-                List<DataModel> results = null;
-                
-                if(filter.length() > 4)
-                    filter = filter.substring(0,filter.length() - 4);
-                
-                q.setFilter(filter);
-                results = q.executeList();
-                    
-                List<DataModel> datas = new ArrayList<>();
-                for (DataModel res:results){
-                    DataModel data = new DataModel();
-                    data.setUri(res.getUri());
-                    data.setObject(res.getObject());
-                    data.setProvenance(res.getProvenance());
-                    data.setVariable(res.getVariable());
-                    data.setDate(res.getDate());
-                    data.setValue(res.getValue());
-                    datas.add(data);
-                }
-                
-                ListWithPagination LWPdata = new ListWithPagination<>(datas, page, pageSize, results.size());
-                
-                return LWPdata;
+            nosql.flush();
+            Query q = persistenceManager.newQuery(DataModel.class);
+            Map params = new HashMap();
+
+            q.declareImports("import java.time.ZonedDateTime");
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXXX");
+
+            String filter = "";
+
+            /*if (uri != null)
+                filter = filter + "uri == \"" + uri.toString() + "\" && ";*/
+
+            if (objectUri != null)
+                filter = filter + "object == \"" + objectUri.toString() +"\" && ";
+
+            if (variableUri != null)
+                filter = filter + "variable == \"" + variableUri.toString() +"\" && ";
+
+            if (provenanceUri != null)
+                filter = filter + "provenance == \""+ provenanceUri.toString() + "\" && ";
+            if (startDate != null){
+                filter = filter + "date > :dateMin && ";
+                params.put("dateMin",ZonedDateTime.parse(startDate,dtf));
             }
+            if(endDate != null){
+                filter = filter + "date < :dateMax && ";
+                params.put("dateMax",ZonedDateTime.parse(endDate,dtf));
+            }
+
+            List<DataModel> results = null;
+
+            if(filter.length() > 4)
+                filter = filter.substring(0,filter.length() - 4);
+
+            q.setFilter(filter);
+            q.setNamedParameters(params);
+            results = q.executeList();
+
+            List<DataModel> datas = new ArrayList<>();
+
+            for (DataModel res:results){
+                DataModel data = new DataModel();
+                data.setUri(res.getUri());
+                data.setObject(res.getObject());
+                data.setProvenance(res.getProvenance());
+                data.setVariable(res.getVariable());
+                data.setDate(res.getDate());
+                data.setValue(res.getValue());
+                data.setConfidence(res.getConfidence());
+                datas.add(data);
+            }
+
+            ListWithPagination LWPdata = new ListWithPagination<DataModel>(datas, page, pageSize, results.size());
+
+            return LWPdata;
         }       
     }
     
+    public DataModel get(URI uri) throws NamingException, NoSQLInvalidURIException{
+        try (PersistenceManager persistenceManager = nosql.getPersistentConnectionManager()) {
+            Query q = persistenceManager.newQuery(DataModel.class);
+
+            String filter = "uri == \"" + uri.toString() +"\"";
+            q.setFilter(filter);
+            DataModel res = (DataModel) q.executeUnique();
+            DataModel data = new DataModel();
+            if(res == null)
+                throw new NoSQLInvalidURIException(uri);
+            data.setUri(res.getUri());
+            data.setObject(res.getObject());
+            data.setProvenance(res.getProvenance());
+            data.setVariable(res.getVariable());
+            data.setDate(res.getDate());
+            data.setValue(res.getValue());
+            data.setConfidence(res.getConfidence());
+
+            return data;
+        }
+    }
     
+    public void delete(URI uri) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException{
+        nosql.delete(new DataModel(), uri);
+    }
 }

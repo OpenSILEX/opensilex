@@ -7,8 +7,11 @@ package org.opensilex.core.data.dal;
 
 import java.net.URI;
 import java.text.ParseException;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Objects;
 import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
@@ -30,28 +33,22 @@ public class DataModel implements NoSQLModel{
     private String[] URICompose;
     
     @Persistent
+    @PrimaryKey
     private URI uri;
     
-    @Persistent
     private URI object;
     
-    @Persistent
     private URI variable;
     
-    @Persistent
     private URI provenance;
     
-    @Persistent
     private ZonedDateTime date;
     
-    @Persistent
     private String timezone;
-    
     @Persistent
     private Object value;
     
-    @Persistent
-    private int confidence;
+    private Integer confidence = null;
     
     /*@Persistent
     private Object metaData;*/
@@ -75,14 +72,17 @@ public class DataModel implements NoSQLModel{
     
     public void setDate(String date) throws ParseException{
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXXX");
-        this.date = ZonedDateTime.parse(date,dtf);
-        
-        this.timezone = this.date.getZone().toString();
+        if(date != null){
+            this.date = ZonedDateTime.parse(date,dtf);
+            this.timezone = this.date.getZone().toString();
+        }
     }
     
     public void setDate(ZonedDateTime date){
-        this.date = date;
-        this.timezone = this.date.getZone().toString();
+        if(date != null){   
+            this.date = date;
+            this.timezone = this.date.getZone().toString();
+        }
     }
     
     public void setTimezone(String tz){
@@ -93,7 +93,7 @@ public class DataModel implements NoSQLModel{
         this.value = value;
     }
     
-    public void setConfidence(int c){
+    public void setConfidence(Integer c){
         this.confidence = c;
     }
     
@@ -119,14 +119,17 @@ public class DataModel implements NoSQLModel{
     }
      
     public ZonedDateTime getDate(){
-        return date;
+        if (date == null) return null;
+        
+        ZonedDateTime zdt = date;
+        return zdt.withZoneSameInstant(ZoneId.of(timezone));
     }
     
     public Object getValue(){
         return value;
     }
     
-    public int getConfidence(){
+    public Integer getConfidence(){
         return confidence;
     }
     
@@ -134,7 +137,6 @@ public class DataModel implements NoSQLModel{
         return metaData;
     }
     
-    @Override
     public void setMetaData(Object m){
         this.metaData = m;
     }*/
@@ -188,7 +190,8 @@ public class DataModel implements NoSQLModel{
     }
 
     @Override
-    public String[] getUriSegments(NoSQLModel instance) { 
+    public String[] getUriSegments(NoSQLModel instance) {
+        URICompose = Arrays.stream(URICompose).filter(Objects::nonNull).toArray(String[]::new);
         return ArrayUtils.addAll(URICompose,new String[]{formatDateURI()});
     }
     

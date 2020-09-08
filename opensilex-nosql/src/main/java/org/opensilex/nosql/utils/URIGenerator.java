@@ -16,6 +16,12 @@ import java.util.List;
 /**
  *
  * @author sammy
+ * 
+ * /!\ Class copié-collé
+ * J'ai copié cette class depuis org.opensilex.sparql.utils:
+ *      - la version originale sépare les composants par des #, mais demandé des /
+ *      - la version originale est utilisé dans de nombreux autres services
+ * Peut-être intéressant: uniformiser les URI ou génraliser cette class
  */
 public interface URIGenerator<T> {
      public default URI generateURI(String prefix, T instance, int retryCount) throws Exception {

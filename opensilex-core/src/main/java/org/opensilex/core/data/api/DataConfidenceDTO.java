@@ -13,19 +13,10 @@ import org.opensilex.core.data.dal.DataModel;
  * @author sammy
  */
 public class DataConfidenceDTO{
-    private URI uri;
-    private int confidence;
+    private Integer confidence;
     
-    public void setUri(URI uri){
-        this.uri = uri;
-    }
-    
-    public void setConfidence(int c){
+    public void setConfidence(Integer c){
         this.confidence = c;
-    }
-    
-    public URI getUri(){
-        return uri;
     }
     
     public int getConfidence(){
@@ -34,7 +25,6 @@ public class DataConfidenceDTO{
     
     public DataModel newModel(){
         DataModel model = new DataModel();
-        model.setUri(getUri());
         model.setConfidence(getConfidence());
         return model;
         

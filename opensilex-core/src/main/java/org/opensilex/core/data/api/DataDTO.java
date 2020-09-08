@@ -19,92 +19,39 @@ import org.opensilex.server.rest.validation.ValidURI;
  *
  * @author sammy
  */
-public class DataDTO {
+public interface DataDTO {
     
-    @ValidURI
-    protected URI uri;
+    public void setUri(URI uri);
     
-    private URI provenance;
+    public void setObject(URI object);
     
-    private URI object;
+    public void setVariable(URI variable);
     
-    @NotNull
-    private URI variable;
+    public void setProvenance(URI provenance);
     
-    private String date;
-    private String timezone;
+    public void setDate( String date);
     
-    @NotNull
-    private Object value;
+    public void setDate( ZonedDateTime date);
     
-    private int confidence;
+    public void setTimezone(String tz);
     
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
+    public void setValue(Object value);
     
-    public void setObject(URI object){
-        this.object = object;
-    }
+    public void setConfidence(Integer c);
     
-    public void setVariable(URI variable){
-        this.variable = variable;
-    }
+    public URI getUri();
     
-    public void setProvenance(URI provenance){
-        this.provenance = provenance;
-    }
+    public URI getObject();
     
-    public void setDate( String date){
-        this.date = date;
-    }
+    public URI getVariable();
     
-    public void setDate( ZonedDateTime date){
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXXX");
-        this.date = dtf.format(date);
-    }
+    public URI getProvenance();
     
-    public void setTimezone(String tz){
-        this.timezone = tz;
-    }
+    public String getDate();
     
-    public void setValue(Object value){
-        this.value = value;
-    }
+    public String getTimezone();
     
-    public void setConfidence(int c){
-        this.confidence = c;
-    }
-    
-    public URI getUri() {
-        return uri;
-    }
-    
-    public URI getObject(){
-        return object;
-    }
-    
-    public URI getVariable(){
-        return variable;
-    }
-    
-    public URI getProvenance(){
-        return provenance;
-    }
-    
-    public String getDate(){
-        return date;
-    }
-    
-    public String getTimezone(){
-        return timezone;
-    }
-    
-    public Object getValue(){
-        return value;
-    }
+    public Object getValue();
 
-    public int getConfidence(){
-        return confidence;
-    }
+    public Integer getConfidence();
 }

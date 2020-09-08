@@ -11,7 +11,7 @@
       <!-- Description -->
       <opensilex-TextView label="component.common.comment" :value="selected.comment"></opensilex-TextView>
       <!-- Abstract type -->
-      <opensilex-BooleanView label="OntologyClassForm.abstract-type" :value="selected.isAbstract"></opensilex-BooleanView>
+      <!-- <opensilex-BooleanView label="OntologyClassForm.abstract-type" :value="selected.isAbstract"></opensilex-BooleanView> -->
       <!-- Icon identifier -->
       <opensilex-IconView label="OntologyClassForm.icon" :value="selected.icon"></opensilex-IconView>
 

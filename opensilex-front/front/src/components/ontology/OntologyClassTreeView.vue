@@ -2,7 +2,7 @@
   <opensilex-TreeView :nodes.sync="nodes" @select="displayClassDetail($event.data.uri)">
     <template v-slot:node="{ node }">
       <span class="item-icon">
-        <opensilex-Icon v-if="classesParametersByURI[node.data.uri]" :icon="classesParametersByURI[node.data.uri].icon" />
+        <opensilex-Icon v-if="classesParametersByURI[node.data.uri] && classesParametersByURI[node.data.uri].icon" :icon="classesParametersByURI[node.data.uri].icon" />
       </span>&nbsp;
       <strong v-if="node.data.selected">{{ node.title }}</strong>
       <span v-if="!node.data.selected">{{ node.title }}</span>

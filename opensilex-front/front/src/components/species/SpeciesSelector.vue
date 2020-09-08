@@ -1,5 +1,6 @@
 <template>
-  <opensilex-SelectForm ref="selectForm"
+  <opensilex-SelectForm
+    ref="selectForm"
     :label="label"
     :selected.sync="speciesURI"
     :multiple="multiple"
@@ -49,13 +50,18 @@ export default class SpeciesSelector extends Vue {
 
   @Ref("selectForm") readonly selectForm!: any;
 
+  private langUnwatcher;
   mounted() {
-    this.$store.watch(
+    this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       lang => {
         this.loadSpecies();
       }
     );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
   }
 
   loadSpecies() {
@@ -74,7 +80,6 @@ export default class SpeciesSelector extends Vue {
       label: dto.label
     };
   }
-
 
   select(value) {
     this.$emit("select", value);

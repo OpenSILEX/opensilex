@@ -93,7 +93,12 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
         if (value == null) {
             return true;
         }
-        return XSDDatatype.XSDanyURI.isValid(value);
+        try {
+            URI uri = new URI(value);
+            return uri.isAbsolute();
+        } catch (Exception ex) {
+            return false;
+        }
     }
 
 }

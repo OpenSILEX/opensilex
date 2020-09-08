@@ -896,7 +896,6 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
         <rdfs:label xml:lang="en">Facility</rdfs:label>
         <rdfs:label xml:lang="fr">Installation technique</rdfs:label>
     </owl:Class>

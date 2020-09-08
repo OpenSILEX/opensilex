@@ -137,7 +137,23 @@ import Treeselect from '@riophae/vue-treeselect'
 Vue.component("treeselect", Treeselect);
 
 import vSelect from "vue-select";
+vSelect.props.components.default = () => ({
+  Deselect: {
+    render: createElement => {
+      return createElement('opensilex-Icon', {
+        class: "v-select-unselect",
+        props: {
+          icon: "fa#times"
+        }
+      });
+    }
+  }
+});
+
 Vue.component("v-select", vSelect);
+
+import infiniteScroll from 'vue-infinite-scroll'
+Vue.directive("infinite-scroll", infiniteScroll);
 
 // Initialize i18n
 import VueI18n from 'vue-i18n'

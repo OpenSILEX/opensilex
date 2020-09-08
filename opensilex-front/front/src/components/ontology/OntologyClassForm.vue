@@ -44,10 +44,10 @@
     ></opensilex-TextAreaForm>
 
     <!-- is abstract -->
-    <opensilex-CheckboxForm
+    <!-- <opensilex-CheckboxForm
       :value.sync="form.isAbstract"
       title="OntologyClassForm.abstract-type"
-    ></opensilex-CheckboxForm>
+    ></opensilex-CheckboxForm> -->
     
     <opensilex-IconForm :value.sync="form.icon" label="OntologyClassForm.icon"></opensilex-IconForm>
   </b-form>

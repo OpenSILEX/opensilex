@@ -258,6 +258,9 @@ export default class ScientificObjectCSVImporter extends Vue {
       }
     ).then((response) => {
        this.validationToken = response.result.validationToken;
+       if (!this.validationToken) {
+         // TODO add errors
+       }
     });
   }
 

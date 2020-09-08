@@ -11,6 +11,7 @@
     },
     "dependencies": {
         "@kazupon/vue-i18n-loader": "0.5.0",
+        "@popperjs/core": "^2.4.4",
         "@riophae/vue-treeselect": "^0.4.0",
         "@types/tabulator-tables": "^4.6.0",
         "bootstrap": "^4.5.0",

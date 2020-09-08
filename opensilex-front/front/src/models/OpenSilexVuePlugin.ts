@@ -782,8 +782,6 @@ export default class OpenSilexVuePlugin {
             label: iconID
           })
         }
-
-        console.error(this.selectIconIDs.length);
     }
 
     public getSelectIconIDs() {

@@ -117,7 +117,7 @@ export default class InfrastructureTree extends Vue {
 
   private langUnwatcher;
   mounted() {
-    this.$store.watch(
+    this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       lang => {
         if (this.selected != null) {

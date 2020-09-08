@@ -7,25 +7,37 @@
   >
     <template v-slot:field="field">
       <input :id="field.id" type="hidden" :value="stringValue" />
-      <treeselect
-        valueFormat="node"
+      <v-select
         :options="paginated"
-        :placeholder="$t(placeholder)"
+        :filterable="false"
+        v-model="stringValue"
         @open="onOpen"
         @close="onClose"
+        @search="query => search = query"
+        :reduce="option => option.id"
+        append-to-body
+        :calculate-position="withPopper"
       >
-        <template v-slot:option-label="{node}">
-          <opensilex-Icon :icon="node.label" />&nbsp;
-          <span>({{node.label}})</span>
+        <template #open-indicator="{ attributes }">
+          <span v-bind="attributes" class="open-indicator">
+            <opensilex-Icon icon="fa#caret-down"></opensilex-Icon>
+          </span>
         </template>
-        <template v-slot:value-label="{node}">
-          <opensilex-Icon :icon="node.label" />&nbsp;
-          <span>({{node.label}})</span>
+
+        <template v-slot:option="option">
+          <opensilex-Icon :icon="option.id"></opensilex-Icon>
+          &nbsp;({{option.label}})
         </template>
-        <template v-slot:after-list>
-          <span ref="loadingElement"></span>
+
+        <template v-slot:selected-option="option">
+          <opensilex-Icon v-if="option.id" :icon="option.id"></opensilex-Icon>
+          <opensilex-Icon v-else :icon="stringValue"></opensilex-Icon>
+          &nbsp;({{option.label}})
         </template>
-      </treeselect>
+        <template #list-footer>
+          <li ref="load" class="loader" v-show="hasNextPage">Loading more options...</li>
+        </template>
+      </v-select>
     </template>
   </opensilex-FormField>
 </template>
@@ -40,7 +52,7 @@ import {
   Ref
 } from "vue-property-decorator";
 import Vue from "vue";
-import AsyncComputedProp from "vue-async-computed-decorator";
+import { createPopper } from "@popperjs/core";
 
 @Component
 export default class IconForm extends Vue {
@@ -69,33 +81,34 @@ export default class IconForm extends Vue {
   })
   rules: string | Function;
 
-  @Prop()
-  multiple: boolean;
-
   observer = null;
-  listOffset = 20;
   limit = 20;
   search = "";
 
   icons = [];
 
-  @Ref("loadingElement") readonly loadingElement!: any;
+  @Ref("load") readonly load!: any;
 
   mounted() {
     this.icons = this.$opensilex.getSelectIconIDs();
-
-    this.observer = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        let isVisible = entry.intersectionRatio > 0;
-        if (isVisible) {
-          this.limit += this.listOffset;
-        }
-      });
+    let self = this;
+    this.observer = new IntersectionObserver(function([
+      { isIntersecting, target }
+    ]) {
+      let t: any = target;
+      if (isIntersecting) {
+        const ul = t.offsetParent;
+        const scrollTop = t.offsetParent.scrollTop;
+        self.limit += 10;
+        self.$nextTick().then(() => {
+          ul.scrollTop = scrollTop;
+        });
+      }
     });
   }
 
   get filtered() {
-    return this.icons.filter(icon => icon.id.indexOf(this.search) >= 0 || icon.id == this.stringValue);
+    return this.icons.filter(icon => icon.id.includes(this.search));
   }
 
   get paginated() {
@@ -109,16 +122,88 @@ export default class IconForm extends Vue {
   async onOpen() {
     if (this.hasNextPage) {
       await this.$nextTick();
-      this.observer.observe(this.loadingElement);
+      this.observer.observe(this.load);
     }
   }
 
   onClose() {
     this.observer.disconnect();
   }
+
+  withPopper(dropdownList, component, { width }) {
+    /**
+     * We need to explicitly define the dropdown width since
+     * it is usually inherited from the parent with CSS.
+     */
+    dropdownList.style.width = width;
+
+    /**
+     * Here we position the dropdownList relative to the $refs.toggle Element.
+     *
+     * The 'offset' modifier aligns the dropdown so that the $refs.toggle and
+     * the dropdownList overlap by 1 pixel.
+     *
+     * The 'toggleClass' modifier adds a 'drop-up' class to the Vue Select
+     * wrapper so that we can set some styles for when the dropdown is placed
+     * above.
+     */
+    const popper = createPopper(component.$refs.toggle, dropdownList, {
+      placement: "top",
+      modifiers: [
+        {
+          name: "offset",
+          options: {
+            offset: [0, -1]
+          }
+        },
+        {
+          name: "toggleClass",
+          enabled: true,
+          phase: "write",
+          fn({ state }) {
+            component.$el.classList.toggle(
+              "drop-up",
+              state.placement === "top"
+            );
+          }
+        }
+      ]
+    });
+
+    /**
+     * To prevent memory leaks Popper needs to be destroyed.
+     * If you return function, it will be called just before dropdown is removed from DOM.
+     */
+    return () => popper.destroy();
+  }
 }
 </script>
 
 <style scoped lang="scss">
+::v-deep .vs__selected {
+  white-space: break-spaces;
+}
+
+.open-indicator {
+  color: rgb(204, 204, 204);
+}
+
+.open-indicator:hover {
+  cursor: pointer;
+  color: rgb(97, 97, 97);
+}
+
+::v-deep .open-indicator svg {
+  font-size: 16px;
+}
+
+::v-deep .v-select-unselect {
+  color: rgb(204, 204, 204);
+}
+
+::v-deep .v-select-unselect:hover {
+  color: #e53935;
+  cursor: pointer;
+}
 </style>
 

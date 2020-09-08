@@ -283,7 +283,7 @@ public final class OntologyDAO {
                         URI objectURI = new URI(value);
                         if (checkedURIs.containsKey(objectURI)) {
                             csvValidation.addDuplicateURIError(cell, checkedURIs.get(objectURI));
-                        } else if (!sparql.uriExists(graph, objectURI)) {
+                        } else if (!sparql.uriExists(SPARQLDeserializers.nodeURI(graph), objectURI)) {
                             object.setUri(objectURI);
                         } else {
                             csvValidation.addAlreadyExistingURIError(cell);
@@ -331,7 +331,7 @@ public final class OntologyDAO {
             CSVCell cell = new CSVCell(rowIndex, colIndex, value, header);
             validateCSVSingleValue(graph, model, propertyURI, cell, restriction, csvValidation, checkedClassObjectURIs, customValidator, object);
         } else {
-            String[] multipleValues = value.split("|");
+            String[] multipleValues = value.split("\\|");
             for (String singleValue : multipleValues) {
                 CSVCell cell = new CSVCell(rowIndex, colIndex, singleValue, header);
                 validateCSVSingleValue(graph, model, propertyURI, cell, restriction, csvValidation, checkedClassObjectURIs, customValidator, object);
@@ -375,6 +375,7 @@ public final class OntologyDAO {
                 if (!value.isEmpty()) {
                     if (URIDeserializer.validateURI(value)) {
                         URI objectURI = new URI(value);
+                        
                         URI classURI = restriction.getSubjectURI();
                         boolean doesClassObjectUriExist;
                         if (checkedClassObjectURIs.containsKey(classURI) && checkedClassObjectURIs.get(classURI).containsKey(objectURI)) {

@@ -152,9 +152,6 @@ vSelect.props.components.default = () => ({
 
 Vue.component("v-select", vSelect);
 
-import infiniteScroll from 'vue-infinite-scroll'
-Vue.directive("infinite-scroll", infiniteScroll);
-
 // Initialize i18n
 import VueI18n from 'vue-i18n'
 import en from './lang/message-en.json';

@@ -48,36 +48,40 @@ public class ScientificObjectDAO {
         this.sparql = sparql;
     }
 
-    public SPARQLPartialTreeListModel<ScientificObjectModel> searchTreeByExperiment(URI experimentURI, URI parentURI, int maxChild, int maxDepth, UserModel currentUser) throws Exception {
+    public SPARQLPartialTreeListModel<ExperimentalObjectModel> searchTreeByExperiment(URI experimentURI, URI parentURI, int maxChild, int maxDepth, UserModel currentUser) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(experimentURI, currentUser);
 
         Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
         return sparql.searchPartialResourceTree(
                 experimentGraph,
-                ScientificObjectModel.class,
+                ExperimentalObjectModel.class,
                 currentUser.getLanguage(),
                 ScientificObjectModel.PARENT_FIELD,
                 Oeso.isPartOf,
                 parentURI,
                 maxChild,
                 maxDepth,
-                null);
+                null
+        );
     }
 
-    public List<ScientificObjectModel> searchChildrenByExperiment(URI experimentURI, URI parentURI, UserModel currentUser) throws Exception {
+    public List<ScientificObjectModel> searchChildrenByExperiment(URI experimentURI, URI parentURI, Integer offset, Integer limit,  UserModel currentUser) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(experimentURI, currentUser);
 
         Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
         return sparql.search(experimentGraph, ScientificObjectModel.class, currentUser.getLanguage(), (select) -> {
             if (parentURI != null) {
-                select.addWhere(ScientificObjectModel.URI_FIELD, Oeso.isPartOf, SPARQLDeserializers.nodeURI(parentURI));
+                select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(parentURI));
             } else {
                 Triple parentTriple = new Triple(makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf.asNode(), makeVar("parentURI"));
                 select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
             }
-        });
+        },
+        null,
+        offset,
+        limit);
     }
 
     public CSVValidationModel validateCSV(URI xpURI, URI soType, InputStream file, UserModel currentUser) throws Exception {
@@ -156,11 +160,11 @@ public class ScientificObjectDAO {
         return object.getUri();
     }
 
-    public ScientificObjectModel getByURIAndExperiment(URI xpURI, URI objectURI, UserModel currentUser) throws Exception {
+    public ExperimentalObjectModel getByURIAndExperiment(URI xpURI, URI objectURI, UserModel currentUser) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(xpURI, currentUser);
 
-        return sparql.getByURI(SPARQLDeserializers.nodeURI(xpURI), ScientificObjectModel.class, objectURI, currentUser.getLanguage());
+        return sparql.getByURI(SPARQLDeserializers.nodeURI(xpURI), ExperimentalObjectModel.class, objectURI, currentUser.getLanguage());
     }
 
     private class ScientificObjectExperimentURIGenerator implements URIGenerator<String> {
@@ -201,5 +205,4 @@ public class ScientificObjectDAO {
         return builder.toString().toLowerCase();
     }
 
-   
 }

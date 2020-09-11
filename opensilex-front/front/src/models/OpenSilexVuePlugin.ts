@@ -685,6 +685,11 @@ export default class OpenSilexVuePlugin {
         if (user != User.ANONYMOUS()) {
             headers["Authorization"] = user.getAuthorizationHeader();
         }
+
+        if (user.getLocale() != null) {
+            headers["Accept-Language"] = user.getLocale();
+        }
+
         let options = {
             method: 'POST',
             body: formData,

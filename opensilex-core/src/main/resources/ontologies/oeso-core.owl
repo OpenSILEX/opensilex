@@ -896,6 +896,7 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject"/>
         <rdfs:label xml:lang="en">Facility</rdfs:label>
         <rdfs:label xml:lang="fr">Installation technique</rdfs:label>
     </owl:Class>
@@ -939,16 +940,20 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
     </owl:Class>
     
-
+   <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject">
+               <rdfs:label xml:lang="en">Experimental Object</rdfs:label>
+               <rdfs:label xml:lang="fr">Objet expérimental</rdfs:label>
+    </owl:Class>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ScientificObject -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ScientificObject">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject"/>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#isPartOf"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>

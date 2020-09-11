@@ -202,6 +202,8 @@ import OntologyClassView from './ontology/OntologyClassView.vue'
 components["opensilex-OntologyClassView"] = OntologyClassView;
 import OntologyClassPropertyForm from './ontology/OntologyClassPropertyForm.vue'
 components["opensilex-OntologyClassPropertyForm"] = OntologyClassPropertyForm;
+import OntologyCsvImporter from './ontology/OntologyCsvImporter.vue';
+components["opensilex-OntologyCsvImporter"] = OntologyCsvImporter;
 
 import OntologyPropertyTreeView from './ontology/OntologyPropertyTreeView.vue'
 components["opensilex-OntologyPropertyTreeView"] = OntologyPropertyTreeView;
@@ -299,8 +301,6 @@ import ScientificObjectPropertyList from './scientificObjects/ScientificObjectPr
 components["opensilex-ScientificObjectPropertyList"] = ScientificObjectPropertyList;
 import ScientificObjectPropertyConfiguration from './scientificObjects/ScientificObjectPropertyConfiguration.vue';
 components["opensilex-ScientificObjectPropertyConfiguration"] = ScientificObjectPropertyConfiguration;
-import ScientificObjectCSVImporter from './scientificObjects/ScientificObjectCSVImporter.vue';
-components["opensilex-ScientificObjectCSVImporter"] = ScientificObjectCSVImporter;
 import ScientificObjectForm from './scientificObjects/ScientificObjectForm.vue';
 components["opensilex-ScientificObjectForm"] = ScientificObjectForm;
 import ScientificObjectDetail from './scientificObjects/ScientificObjectDetail.vue';

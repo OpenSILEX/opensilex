@@ -520,6 +520,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             language = lang;
         }
 
+        Var uriVar = makeVar("uri");
         Function<URI, List<T>> searchHandler = (parentSearchURI) -> {
             try {
                 return search(graph, objectClass, language, (select) -> {
@@ -527,7 +528,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                         Triple parentTriple = new Triple(makeVar(parentField), parentProperty.asNode(), makeVar("parentURI"));
                         select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
                     } else {
-                        select.addWhere(makeVar(parentField), parentProperty.asNode(), SPARQLDeserializers.nodeURI(parentSearchURI));
+                        select.addWhere(uriVar, parentProperty.asNode(), SPARQLDeserializers.nodeURI(parentSearchURI));
                     }
                     if (filterHandler != null) {
                         filterHandler.accept(select);
@@ -545,7 +546,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                         Triple parentTriple = new Triple(makeVar(parentField), parentProperty.asNode(), makeVar("parentURI"));
                         select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
                     } else {
-                        select.addWhere(makeVar(parentField), parentProperty.asNode(), SPARQLDeserializers.nodeURI(parentCountURI));
+                        select.addWhere(uriVar, parentProperty.asNode(), SPARQLDeserializers.nodeURI(parentCountURI));
                     }
                     if (filterHandler != null) {
                         filterHandler.accept(select);
@@ -560,10 +561,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         List<T> rootList = search(graph, objectClass, language, (select) -> {
             if (parentURI == null) {
-                Triple parentTriple = new Triple(makeVar(parentField), parentProperty.asNode(), makeVar("parentURI"));
-                select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
+                Triple noParentTriple = new Triple(uriVar, parentProperty.asNode(), makeVar(parentField));
+                select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(noParentTriple)));
             } else {
-                select.addWhere(parentField, parentProperty, SPARQLDeserializers.nodeURI(parentURI));
+                select.addWhere(uriVar, parentProperty, SPARQLDeserializers.nodeURI(parentURI));
             }
             if (filterHandler != null) {
                 filterHandler.accept(select);
@@ -611,7 +612,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return search(graph, objectClass, lang, filterHandler, orderByList, null, null);
     }
 
-    public <T extends SPARQLResourceModel> List<T> search(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public <T extends SPARQLResourceModel> List<T> search(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList, Integer offset, Integer limit) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         String language;
         if (lang == null) {
@@ -636,13 +637,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             });
         }
 
-        if (page == null || page < 0) {
-            page = 0;
-        }
-
-        if (pageSize != null && pageSize > 0) {
-            select.setOffset(page * pageSize);
-            select.setLimit(pageSize);
+        if (offset != null && limit != null) {
+            select.setOffset(offset);
+            select.setLimit(limit);
         }
 
         List<T> resultList = new ArrayList<>();
@@ -708,7 +705,16 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if (pageSize == null || pageSize == 0) {
             list = search(graph, objectClass, lang, filterHandler, orderByList);
         } else if (total > 0 && (page * pageSize) < total) {
-            list = search(graph, objectClass, lang, filterHandler, orderByList, page, pageSize);
+            Integer offset = null;
+            Integer limit = null;
+            if (page == null || page < 0) {
+                page = 0;
+            }
+            if (pageSize != null && pageSize > 0) {
+                offset = page * pageSize;
+                limit = pageSize;
+            }
+            list = search(graph, objectClass, lang, filterHandler, orderByList, offset, limit);
         } else {
             list = new ArrayList<>();
         }

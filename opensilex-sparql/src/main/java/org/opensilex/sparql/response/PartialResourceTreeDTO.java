@@ -63,7 +63,7 @@ public class PartialResourceTreeDTO extends ResourceTreeDTO {
             childrenDTOs.add(childDTO);
         });
         dto.setChildren(childrenDTOs);
-        dto.setChildCount(tree.getChildCount(model));
+        dto.setChildCount(tree.getTotalChildCount(model));
 
         if (handler != null) {
             handler.accept(model, dto);

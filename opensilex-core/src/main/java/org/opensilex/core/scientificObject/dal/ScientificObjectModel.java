@@ -5,7 +5,6 @@ import org.opensilex.core.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLTreeModel;
 
 @SPARQLResource(
         ontology = Oeso.class,
@@ -13,21 +12,7 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
         graph = "scientific-objects",
         prefix = "so"
 )
-public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel> {
-
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "isPartOf"
-    )
-    protected ScientificObjectModel parent;
-
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "isPartOf",
-            inverse = true,
-            ignoreUpdateIfNull = true
-    )
-    protected List<ScientificObjectModel> children;
+public class ScientificObjectModel extends ExperimentalObjectModel {
 
     @SPARQLProperty(
             ontology = Oeso.class,

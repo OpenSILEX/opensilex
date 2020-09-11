@@ -9,11 +9,11 @@
               :uri="uri"
               @facilitiesUpdated="refresh"
             ></opensilex-ExperimentFacilitySelector>
-            <opensilex-ScientificObjectCSVImporter
+            <opensilex-OntologyCsvImporter
               class="btn-group"
               :experimentUri="uri"
               @csvImported="refresh"
-            ></opensilex-ScientificObjectCSVImporter>
+            ></opensilex-OntologyCsvImporter>
           </b-button-group>
           <opensilex-TreeView :nodes.sync="nodes" @select="displayScientificObjectDetails">
             <template v-slot:node="{ node }">
@@ -22,16 +22,17 @@
               </span>&nbsp;
               <strong v-if="node.data.selected">{{ node.title }}</strong>
               <span v-if="!node.data.selected">{{ node.title }}</span>
+              <span class="async-tree-action" v-if="node.data.childCount> 0  && node.data.childCount > node.children.length"> ({{node.children.length}}/{{node.data.childCount}} éléments<span v-if="node.data.childCount > node.children.length"> - <a href="#" @click.prevent="loadMoreChildren(node)">Load more...</a></span>)</span>
             </template>
 
-            <template v-slot:buttons="{ node }">
+            <!-- <template v-slot:buttons="{ node }">
               <opensilex-EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
                 @click="editScientificObject(node.data.uri)"
                 label="ExperimentScientificObjects.edit-scientific-objects"
                 :small="true"
               ></opensilex-EditButton>
-            </template>
+            </template> -->
           </opensilex-TreeView>
           <opensilex-ModalForm
             v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
@@ -106,6 +107,77 @@ export default class ExperimentScientificObjects extends Vue {
     });
   }
 
+  loadAllChildren(node) {
+
+    let nodeURI = node.data.uri;
+
+    let root = this.nodes[node.path[0]]
+    for (let i = 1; i < node.path.length; i++) {
+      root = root.children[node.path[i]];
+    }
+
+    this.soService.getScientificObjectsChildren(this.uri, nodeURI).then(http => {
+      let childrenNodes = [];
+      for (let i in http.response.result) {
+        let soDTO  = http.response.result[i];
+
+         let soNode ={
+            title: soDTO.name,
+            data: soDTO,
+            isLeaf: [],
+            children: [],
+            isExpanded: true,
+            isSelected: false,
+            isDraggable: false,
+            isSelectable: true
+        };
+        childrenNodes.push(soNode);
+
+        
+      }
+
+      root.children= childrenNodes;
+    });
+  }
+
+  loadMoreChildren(node) {
+    let nodeURI = node.data.uri;
+
+    let root = this.nodes[node.path[0]]
+    for (let i = 1; i < node.path.length; i++) {
+      root = root.children[node.path[i]];
+    }
+
+    if (root.children.length < node.data.childCount) {
+      let remainingChildren = node.data.childCount - root.children.length;
+      let offset = root.children.length;
+      let limit = Math.min(remainingChildren, 40);
+      this.soService.getScientificObjectsChildren(this.uri, nodeURI, limit, offset).then(http => {
+        let childrenNodes = [];
+        for (let i in http.response.result) {
+          let soDTO  = http.response.result[i];
+
+          let soNode ={
+              title: soDTO.name,
+              data: soDTO,
+              isLeaf: !soDTO.hasChildren,
+              children: [],
+              isExpanded: false,
+              isSelected: false,
+              isDraggable: false,
+              isSelectable: true
+          };
+          childrenNodes.push(soNode);
+
+          
+        }
+
+        root.children = root.children.concat(childrenNodes);
+
+      });
+    }
+  }
+
   private dtoToNode(dto: PartialResourceTreeDTO) {
     let isLeaf = dto.children.length == 0;
 
@@ -145,6 +217,14 @@ export default class ExperimentScientificObjects extends Vue {
 </script>
 
 <style scoped lang="scss">
+.async-tree-action {
+  font-style: italic;
+}
+
+.async-tree-action a:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
 </style>
 
 <i18n>

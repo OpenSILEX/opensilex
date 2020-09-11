@@ -8,9 +8,7 @@ package org.opensilex.sparql.model;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -19,7 +17,7 @@ import java.util.function.Consumer;
  */
 public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
 
-    private final HashMap<URI, Set<T>> map = new HashMap<URI, Set<T>>();
+    private final HashMap<URI, List<T>> map = new HashMap<URI, List<T>>();
 
     private final List<URI> selectionList;
     private final URI root;
@@ -75,15 +73,15 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
 
             if (parent == null) {
                 if (!map.containsKey(null)) {
-                    map.put(null, new HashSet<T>());
+                    map.put(null, new ArrayList<T>());
                 }
-                map.get(null).add(candidate);
+                addInMapIfExists(null, candidate);
             } else if (candidate.getUri().equals(root)) {
                 if (!excludeRoot) {
                     if (!map.containsKey(null)) {
-                        map.put(null, new HashSet<T>());
+                        map.put(null, new ArrayList<T>());
                     }
-                    map.get(null).add(candidate);
+                    addInMapIfExists(null, candidate);
                 }
             } else {
                 URI parentURI = parent.getUri();
@@ -94,12 +92,18 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
                     if (parentURI != null) {
                         addTree(parent);
                     }
-                    map.put(parentURI, new HashSet<T>());
+                    map.put(parentURI, new ArrayList<T>());
                 }
 
-                map.get(parentURI).add(candidate);
+                addInMapIfExists(parentURI, candidate);
             }
 
+        }
+    }
+    
+    private void addInMapIfExists(URI parentURI, T candidate) {
+        if (!map.get(parentURI).contains(candidate)) {
+            map.get(parentURI).add(candidate);
         }
     }
 

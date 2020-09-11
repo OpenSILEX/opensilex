@@ -30,6 +30,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.jena.ext.com.google.common.cache.Cache;
@@ -37,6 +38,7 @@ import org.apache.jena.ext.com.google.common.cache.CacheBuilder;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.ontology.dal.CSVValidationModel;
+import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -78,7 +80,7 @@ public class ScientificObjectAPI {
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_READ_ID = "scientific-objects-read";
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_READ_LABEL_KEY = "credential.project.read";
 
-    public static final int DEFAULT_CHILDREN_LIMIT = 5;
+    public static final int DEFAULT_CHILDREN_LIMIT = 10;
     public static final int DEFAULT_DEPTH_LIMIT = 3;
 
     @CurrentUser
@@ -108,7 +110,7 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-        SPARQLPartialTreeListModel<ScientificObjectModel> tree = dao.searchTreeByExperiment(experimentURI, null, DEFAULT_CHILDREN_LIMIT, DEFAULT_DEPTH_LIMIT, currentUser);
+        SPARQLPartialTreeListModel<ExperimentalObjectModel> tree = dao.searchTreeByExperiment(experimentURI, null, DEFAULT_CHILDREN_LIMIT, DEFAULT_DEPTH_LIMIT, currentUser);
         return new PartialResourceTreeResponse(PartialResourceTreeDTO.fromResourceTree(tree)).getResponse();
     }
 
@@ -127,10 +129,12 @@ public class ScientificObjectAPI {
     })
     public Response getScientificObjectsChildren(
             @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI,
-            @ApiParam(value = "Parent object URI", example = "http://example.com/", required = true) @PathParam("parenturi") URI parentURI
+            @ApiParam(value = "Parent object URI", example = "http://example.com/", required = true) @PathParam("parenturi") URI parentURI,
+            @ApiParam(value = "Children limit", example = "20") @QueryParam("limit") Integer limit,
+            @ApiParam(value = "Children offset", example = "0") @QueryParam("offset") Integer offset
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-        List<ScientificObjectModel> sientificObjects = dao.searchChildrenByExperiment(experimentURI, parentURI, currentUser);
+        List<ScientificObjectModel> sientificObjects = dao.searchChildrenByExperiment(experimentURI, parentURI, offset, limit, currentUser);
         List<ScientificObjectNodeDTO> dtoList = sientificObjects.stream().map(ScientificObjectNodeDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
     }
@@ -153,7 +157,7 @@ public class ScientificObjectAPI {
             @ApiParam(value = "scientific object URI", example = "http://example.com/", required = true) @PathParam("objuri") URI objectURI
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-        ScientificObjectModel model = dao.getByURIAndExperiment(experimentURI, objectURI, currentUser);
+        ExperimentalObjectModel model = dao.getByURIAndExperiment(experimentURI, objectURI, currentUser);
         return new SingleObjectResponse<ScientificObjectDetailDTO>(ScientificObjectDetailDTO.getDTOFromModel(model)).getResponse();
     }
 
@@ -189,7 +193,7 @@ public class ScientificObjectAPI {
     @Path("csv-import")
     @ApiOperation(value = "Import a CSV file for the given experiement URI and scientific object type.")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data file and metadata saved", response = Boolean.class)
+        @ApiResponse(code = 201, message = "Data file and metadata saved", response = CSVValidationDTO.class)
     })
     @ApiProtected
     @ApiCredential(

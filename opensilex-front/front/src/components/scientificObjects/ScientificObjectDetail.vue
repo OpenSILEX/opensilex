@@ -14,7 +14,7 @@
       <!-- Type -->
       <opensilex-TypeView :type="selected.type" :typeLabel="selected.typeLabel"></opensilex-TypeView>
 
-      {{selected}}
+      <!-- {{selected}} -->
     </div>
   </b-card>
 </template>

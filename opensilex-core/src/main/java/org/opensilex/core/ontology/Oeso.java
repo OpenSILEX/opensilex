@@ -5,10 +5,8 @@
 //******************************************************************************
 package org.opensilex.core.ontology;
 
-import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
 import org.opensilex.sparql.utils.Ontology;
 
 /**
@@ -135,6 +133,7 @@ public class Oeso {
 
     // ---- SCIENTIFIC OBJECTS ----
     public static final Resource ScientificObject = Ontology.resource(NS, "ScientificObject");
+    public static final Resource ExperimentalObject = Ontology.resource(NS, "ExperimentalObject");
     public static final Property isPartOf = Ontology.property(NS, "isPartOf");
     public static final Resource ScientificObjectClass = Ontology.resource(NS, "ScientificObjectClass");
     public static final Property isScientificObjectManagedClass = Ontology.property(NS, "isScientificObjectManagedClass");

@@ -1,45 +1,38 @@
 <template>
-  <div class="container-fluid">
-    <opensilex-PageHeader :icon="icon" :title="$t(title)"></opensilex-PageHeader>
-
-    <opensilex-PageActions>
-      <template v-slot>
-        <opensilex-CreateButton @click="showCreateForm()" label="OntologyClassView.add"></opensilex-CreateButton>
-        <opensilex-ModalForm
-          ref="classForm"
-          component="opensilex-OntologyClassForm"
-          createTitle="OntologyClassView.add"
-          editTitle="OntologyClassView.update"
-          :initForm="initForm"
-          @onCreate="refresh()"
-          @onUpdate="refresh()"
-          modalSize="lg"
-          :icon="icon"
-        ></opensilex-ModalForm>
-      </template>
-    </opensilex-PageActions>
-
-    <opensilex-PageContent>
-      <template v-slot>
-        <div class="row">
-          <div class="col-md-6">
-            <b-card>
-              <opensilex-OntologyClassTreeView
-                ref="classesTree"
-                :rdfClass="rdfClass"
-                @selectionChange="selected = $event"
-                @editClass="showEditForm($event)"
-                @createChildClass="showCreateForm($event)"
-                @deleteClass="deleteClass($event)"
-              ></opensilex-OntologyClassTreeView>
-            </b-card>
-          </div>
-          <div class="col-md-6">
-            <opensilex-OntologyClassDetail :rdfClass="rdfClass" :selected="selected" @onDetailChange="refresh()" />
-          </div>
+  <div class="row">
+    <div class="col-md-6">
+      <b-card>
+        <div class="button-zone">
+          <opensilex-CreateButton @click="showCreateForm()" label="OntologyClassView.add"></opensilex-CreateButton>
+          <opensilex-ModalForm
+            ref="classForm"
+            component="opensilex-OntologyClassForm"
+            createTitle="OntologyClassView.add"
+            editTitle="OntologyClassView.update"
+            :initForm="initForm"
+            @onCreate="refresh()"
+            @onUpdate="refresh()"
+            modalSize="lg"
+            :icon="icon"
+          ></opensilex-ModalForm>
         </div>
-      </template>
-    </opensilex-PageContent>
+        <opensilex-OntologyClassTreeView
+          ref="classesTree"
+          :rdfClass="rdfClass"
+          @selectionChange="selected = $event"
+          @editClass="showEditForm($event)"
+          @createChildClass="showCreateForm($event)"
+          @deleteClass="deleteClass($event)"
+        ></opensilex-OntologyClassTreeView>
+      </b-card>
+    </div>
+    <div class="col-md-6">
+      <opensilex-OntologyClassDetail
+        :rdfClass="rdfClass"
+        :selected="selected"
+        @onDetailChange="refresh()"
+      />
+    </div>
   </div>
 </template>
 
@@ -120,6 +113,9 @@ export default class OntologyClassView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.button-zone {
+  padding-bottom: 20px;
+}
 </style>
 
 

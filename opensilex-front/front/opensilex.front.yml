@@ -128,11 +128,8 @@ menu:
         route:
           path: /scientific-object-types
           component: opensilex-ScientificObjectTypes
-      - id: scientificObjectProperties
-        label: component.menu.scientificObjectProperties 
-        route:
-          path: /scientific-object-properties
-          component: opensilex-ScientificObjectProperties          
+          credentials:
+            - is-admin
 routes:
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView
@@ -142,6 +139,10 @@ routes:
     component: opensilex-ExperimentView
     credentials:
       - experiment-read
+  - path: /scientific-object-types/properties
+    component: opensilex-ScientificObjectTypes
+    credentials:
+      - is-admin
   - path: /VariableCreate
     component: opensilex-VariableCreate
     credentials: []

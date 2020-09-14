@@ -1,9 +1,12 @@
 <template>
-  <opensilex-OntologyClassView
+  <opensilex-OntologyTypesView
     :rdfClass="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
     icon="ik#ik-settings"
-    title="ScientificObjectTypes.title"
-  ></opensilex-OntologyClassView>
+    typeTitle="ScientificObjectTypes.typeTitle"
+    typeURI="/scientific-object-types"
+    propertiesTitle="ScientificObjectTypes.propertiesTitle"
+    propertiesURI="/scientific-object-types/properties"
+  ></opensilex-OntologyTypesView>
 </template>
 
 <script lang="ts">
@@ -22,9 +25,13 @@ export default class ScientificObjectTypes extends Vue {
 <i18n>
 en:
   ScientificObjectTypes:
-    title: Scientific objects types
+    typeTitle: Scientific objects types
+    propertiesTitle: Scientific objects properties
 
 fr:
   ScientificObjectTypes:
-    title: Types d'objets scientifiques
+    typeTitle: Types d'objets scientifiques
+    propertiesTitle: Propriétés des objets scientifiques
 </i18n>
+
+

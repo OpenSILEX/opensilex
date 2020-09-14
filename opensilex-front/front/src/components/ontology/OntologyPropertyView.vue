@@ -1,45 +1,34 @@
 <template>
-  <div class="container-fluid">
-    <opensilex-PageHeader :icon="icon" :title="$t(title)"></opensilex-PageHeader>
-
-    <opensilex-PageActions>
-      <template v-slot>
-        <opensilex-CreateButton @click="showCreateForm()" label="OntologyPropertyView.add"></opensilex-CreateButton>
-        <opensilex-ModalForm
-          ref="propertyForm"
-          component="opensilex-OntologyPropertyForm"
-          createTitle="OntologyPropertyView.add"
-          editTitle="OntologyPropertyView.update"
-          :initForm="initForm"
-          @onCreate="refresh()"
-          @onUpdate="refresh()"
-          modalSize="lg"
-          :icon="icon"
-        ></opensilex-ModalForm>
-      </template>
-    </opensilex-PageActions>
-
-    <opensilex-PageContent>
-      <template v-slot>
-        <div class="row">
-          <div class="col-md-6">
-            <b-card>
-              <opensilex-OntologyPropertyTreeView
-                ref="propertiesTree"
-                :domain="domain"
-                @selectionChange="selected = $event"
-                @editProperty="showEditForm($event)"
-                @createChildProperty="showCreateForm($event)"
-                @deleteProperty="deleteProperty($event)"
-              ></opensilex-OntologyPropertyTreeView>
-            </b-card>
-          </div>
-          <div class="col-md-6">
-            <opensilex-OntologyPropertyDetail :selected="selected" />
-          </div>
+  <div class="row">
+    <div class="col-md-6">
+      <b-card>
+        <div class="button-zone">
+          <opensilex-CreateButton @click="showCreateForm()" label="OntologyPropertyView.add"></opensilex-CreateButton>
+          <opensilex-ModalForm
+            ref="propertyForm"
+            component="opensilex-OntologyPropertyForm"
+            createTitle="OntologyPropertyView.add"
+            editTitle="OntologyPropertyView.update"
+            :initForm="initForm"
+            @onCreate="refresh()"
+            @onUpdate="refresh()"
+            modalSize="lg"
+            :icon="icon"
+          ></opensilex-ModalForm>
         </div>
-      </template>
-    </opensilex-PageContent>
+        <opensilex-OntologyPropertyTreeView
+          ref="propertiesTree"
+          :domain="rdfClass"
+          @selectionChange="selected = $event"
+          @editProperty="showEditForm($event)"
+          @createChildProperty="showCreateForm($event)"
+          @deleteProperty="deleteProperty($event)"
+        ></opensilex-OntologyPropertyTreeView>
+      </b-card>
+    </div>
+    <div class="col-md-6">
+      <opensilex-OntologyPropertyDetail :selected="selected" />
+    </div>
   </div>
 </template>
 
@@ -54,7 +43,7 @@ export default class OntologyPropertyView extends Vue {
   $opensilex: any;
 
   @Prop()
-  domain;
+  rdfClass;
 
   @Prop()
   title;
@@ -94,7 +83,7 @@ export default class OntologyPropertyView extends Vue {
     propertyFormComponent.setParentPropertiesTree(
       this.propertiesTree.getTree()
     );
-    propertyFormComponent.setDomain(this.domain);
+    propertyFormComponent.setDomain(this.rdfClass);
     this.propertyForm.showCreateForm();
   }
 
@@ -104,7 +93,7 @@ export default class OntologyPropertyView extends Vue {
       propertyFormComponent.setParentPropertiesTree(
         this.propertiesTree.getTree()
       );
-      propertyFormComponent.setDomain(this.domain);
+      propertyFormComponent.setDomain(this.rdfClass);
       let form = http.response.result;
       if (OWL.hasParent(form.parent)) {
         form.type = null;
@@ -132,6 +121,9 @@ export default class OntologyPropertyView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.button-zone {
+  padding-bottom: 20px;
+}
 </style>
 
 

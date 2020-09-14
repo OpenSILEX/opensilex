@@ -179,8 +179,7 @@
             },
             "infrastructures": "Infrastructures",
             "configuration": "Administration",
-            "scientificObjectTypes": "Types d'objets scientifiques",
-            "scientificObjectProperties":  "Propriétés des objets scientifiques"
+            "scientificObjectTypes": "Types d'objets scientifiques"
         },
         "login": {
             "input": {

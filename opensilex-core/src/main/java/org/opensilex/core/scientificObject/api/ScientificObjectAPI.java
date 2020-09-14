@@ -228,8 +228,9 @@ public class ScientificObjectAPI {
 
         if (!errors.hasErrors()) {
             sparql.create(SPARQLDeserializers.nodeURI(xpURI), errors.getObjects());
+            csvValidation.setValidationToken(generateCSVValidationToken(xpURI, soType));
         }
-
+        
         return new SingleObjectResponse<CSVValidationDTO>(csvValidation).getResponse();
     }
 

@@ -1,7 +1,8 @@
  <template>
-  <div>
-    <opensilex-CreateButton @click="show" label="OntologyCsvImporter.import"></opensilex-CreateButton>
+  <span>
+   <opensilex-CreateButton @click="show" label="OntologyCsvImporter.import"></opensilex-CreateButton>
     <b-modal ref="OntologyCsvImporter" @ok.prevent="importCSV" size="xl" :static="true" :ok-disabled="!csvFile || !!validationErrors">
+
       <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
       <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
 
@@ -33,7 +34,7 @@
                 accept="text/csv, .csv"
                 @input="csvUploaded"
                 v-model="csvFile"
-                placeholder="Drop or select CSV file here..."
+                placeholder="OntologyCsvImporter.csv-file-placeholder"
                 drop-placeholder="Drop file here..."
               ></b-form-file>
             </div>
@@ -87,7 +88,7 @@
             </div>
 
             <b-table-simple hover small responsive sticky-header>
-               <b-thead head-variant="light">
+              <b-thead head-variant="light">
                 <b-tr>
                   <b-th>Ligne</b-th>
                   <b-th>Type d'erreur</b-th>
@@ -96,40 +97,44 @@
               </b-thead>
               <b-tbody>
                 <slot v-for="(row, index) in validationErrors">
-                <b-tr>
-                  <b-th :rowspan="row.listSize">{{row.index}}</b-th>
-                  <b-td>{{$t("OntologyCsvImporter." + row.firstErrorType.type)}}</b-td>
-                  <b-td
+                  <b-tr>
+                    <b-th :rowspan="row.listSize">{{row.index}}</b-th>
+                    <b-td>{{$t("OntologyCsvImporter." + row.firstErrorType.type)}}</b-td>
+                    <b-td>
+                      <ul>
+                        <li
+                          v-for="validationErr in row.firstErrorType.validationErrors"
+                          v-bind:key="getErrKey(validationErr, row.firstErrorType.type)"
+                        >{{getValidationErrorDetail(validationErr, row.firstErrorType.type)}}</li>
+                      </ul>
+                    </b-td>
+                  </b-tr>
+                  <b-tr
+                    v-for="(validationError, errorType) in row.list"
+                    v-bind:key="index + errorType"
                   >
-                  <ul>
-                    <li v-for="validationErr in row.firstErrorType.validationErrors" v-bind:key="getErrKey(validationErr, row.firstErrorType.type)">
-                      {{getValidationErrorDetail(validationErr, row.firstErrorType.type)}}
-                    </li>
-                  </ul>
-                  </b-td>
-                </b-tr>
-                <b-tr
-                  v-for="(validationError, errorType) in row.list"
-                  v-bind:key="index + errorType">
-                  <b-td
-                  >{{$t("OntologyCsvImporter." + errorType)}}</b-td>
-                  <b-td
-                  >
-                   <ul>
-                    <li v-for="validationErr in validationError" v-bind:key="getErrKey(validationErr, errorType)">
-                      {{getValidationErrorDetail(validationErr, errorType)}}
-                    </li>
-                  </ul>
-                  </b-td>
-                </b-tr>
-               </slot>
+                    <b-td>{{$t("OntologyCsvImporter." + errorType)}}</b-td>
+                    <b-td>
+                      <ul>
+                        <li
+                          v-for="validationErr in validationError"
+                          v-bind:key="getErrKey(validationErr, errorType)"
+                        >{{getValidationErrorDetail(validationErr, errorType)}}</li>
+                      </ul>
+                    </b-td>
+                  </b-tr>
+                </slot>
               </b-tbody>
             </b-table-simple>
           </div>
+          <div
+            class="validation-confirm-container"
+            v-else-if="validationToken"
+          >{{$t("OntologyCsvImporter.CSVIsValid")}}</div>
         </div>
       </ValidationObserver>
     </b-modal>
-  </div>
+  </span>
 </template>
 
 <script lang="ts">
@@ -218,9 +223,16 @@ export default class OntologyCsvImporter extends Vue {
   fields = [];
   rows = [];
 
+  csvFile = null;
+  validationToken = null;
+
   typeSwitch() {
     this.fields = [];
     this.rows = [];
+
+    this.csvFile = null;
+    this.validationToken = null;
+    this.validationErrors = null;
 
     if (this.scientificObjectType != null) {
       return this.$opensilex
@@ -266,9 +278,7 @@ export default class OntologyCsvImporter extends Vue {
           let commentRow = {};
           this.fields.forEach(field => {
             if (field.key == "URI") {
-              nameRow[field.key] = this.$t(
-                "OntologyCsvImporter.objectURI"
-              );
+              nameRow[field.key] = this.$t("OntologyCsvImporter.objectURI");
               commentRow[field.key] = this.$t(
                 "OntologyCsvImporter.objectURIComment"
               );
@@ -286,13 +296,10 @@ export default class OntologyCsvImporter extends Vue {
     }
   }
 
-  csvFile = null;
-
-  validationToken = null;
-
   csvUploaded() {
     this.validationToken = null;
     this.validationErrors = null;
+    
     this.$opensilex
       .uploadFileToService("/core/scientific-object/csv-validate", {
         description: {
@@ -315,7 +322,7 @@ export default class OntologyCsvImporter extends Vue {
         },
         file: this.csvFile
       })
-      .then((response) => {
+      .then(response => {
         this.checkCSVValidation(response);
         if (this.validationToken) {
           this.$emit("csvImported");
@@ -355,7 +362,7 @@ export default class OntologyCsvImporter extends Vue {
 
       if (errors.invalidHeaderURIs.length > 0) {
         generalErrors.list.invalidHeaderURIs = errors.invalidHeaderURIs;
-        generalErrors.listSize =  generalErrors.listSize + 1;
+        generalErrors.listSize = generalErrors.listSize + 1;
         if (!generalErrors.firstErrorType) {
           generalErrors.firstErrorType = "invalidHeaderURIs";
         }
@@ -366,28 +373,25 @@ export default class OntologyCsvImporter extends Vue {
       if (generalErrors.firstErrorType) {
         generalErrors.listSize--;
         let firstErrorType = generalErrors.firstErrorType;
-        generalErrors.firstErrorType =
-        {
+        generalErrors.firstErrorType = {
           type: firstErrorType,
           validationErrors: generalErrors.list[firstErrorType]
-        }
+        };
         delete generalErrors.list[firstErrorType];
         this.validationErrors.push(generalErrors);
       }
 
       for (let i in globalErrors) {
         if (globalErrors[i].firstErrorType) {
-          globalErrors[i].listSize =  globalErrors[i].listSize - 1;
+          globalErrors[i].listSize = globalErrors[i].listSize - 1;
           let firstErrorType = globalErrors[i].firstErrorType;
-          globalErrors[i].firstErrorType =
-          {
+          globalErrors[i].firstErrorType = {
             type: firstErrorType,
             validationErrors: globalErrors[i].list[firstErrorType]
+          };
+          delete globalErrors[i].list[firstErrorType];
+          this.validationErrors.push(globalErrors[i]);
         }
-            delete globalErrors[i].list[firstErrorType];
-            this.validationErrors.push(globalErrors[i]);
-        }
-  
       }
     }
   }
@@ -396,12 +400,21 @@ export default class OntologyCsvImporter extends Vue {
 
   getValidationErrorDetail(validationError, errorType) {
     switch (errorType) {
-      case "missingRequiredValueErrors": 
-        return  this.$t("OntologyCsvImporter.validationErrorMissingRequiredMessage", validationError);
-      case "duplicateURIErrors": 
-        return  this.$t("OntologyCsvImporter.validationErrorDuplicateURIMessage", validationError);
-      default: 
-        return this.$t("OntologyCsvImporter.validationErrorMessage", validationError);
+      case "missingRequiredValueErrors":
+        return this.$t(
+          "OntologyCsvImporter.validationErrorMissingRequiredMessage",
+          validationError
+        );
+      case "duplicateURIErrors":
+        return this.$t(
+          "OntologyCsvImporter.validationErrorDuplicateURIMessage",
+          validationError
+        );
+      default:
+        return this.$t(
+          "OntologyCsvImporter.validationErrorMessage",
+          validationError
+        );
     }
   }
 
@@ -413,37 +426,44 @@ export default class OntologyCsvImporter extends Vue {
       }
       for (let j in errorList) {
         let errorItem = errorList[j];
-  
-      let rowIndex = errorItem.rowIndex;
-      if (!globalErrors[rowIndex]) {
-        globalErrors[rowIndex] = {
-          index: rowIndex,
-          list: {},
-          listSize: 1
-        };
-      }
 
-      if (!globalErrors[rowIndex].list) {
-        globalErrors[rowIndex].list = {};
-      }
+        let rowIndex = errorItem.rowIndex;
+        if (!globalErrors[rowIndex]) {
+          globalErrors[rowIndex] = {
+            index: rowIndex,
+            list: {},
+            listSize: 1
+          };
+        }
 
-      if (!globalErrors[rowIndex].firstErrorType) {
-        globalErrors[rowIndex].firstErrorType = errorType;
-      }
+        if (!globalErrors[rowIndex].list) {
+          globalErrors[rowIndex].list = {};
+        }
 
-      if (!globalErrors[rowIndex].list[errorType]) {
-        globalErrors[rowIndex].list[errorType] = [];
-         globalErrors[rowIndex].listSize = globalErrors[rowIndex].listSize + 1;
-      }
+        if (!globalErrors[rowIndex].firstErrorType) {
+          globalErrors[rowIndex].firstErrorType = errorType;
+        }
 
-      globalErrors[rowIndex].list[errorType].push(errorItem);
-      console.error(rowIndex, errorType, errorItem, globalErrors)
+        if (!globalErrors[rowIndex].list[errorType]) {
+          globalErrors[rowIndex].list[errorType] = [];
+          globalErrors[rowIndex].listSize = globalErrors[rowIndex].listSize + 1;
+        }
+
+        globalErrors[rowIndex].list[errorType].push(errorItem);
+        console.error(rowIndex, errorType, errorItem, globalErrors);
       }
     }
   }
 
   getErrKey(validationError, errorType) {
-    return "validationError-" + errorType + "-" + validationError.rowIndex + "-" + validationError.colIndex;
+    return (
+      "validationError-" +
+      errorType +
+      "-" +
+      validationError.rowIndex +
+      "-" +
+      validationError.colIndex
+    );
   }
 }
 </script>
@@ -457,13 +477,17 @@ export default class OntologyCsvImporter extends Vue {
 }
 
 .csv-format {
-  margin-top:15px;
+  margin-top: 15px;
 }
 
 .error-container .field-view-title {
-  color: red;
+  color: rgb(245, 54, 92);
 }
 
+.validation-confirm-container {
+  color: rgb(40, 167, 69);
+  font-weight: bold;
+}
 </style>
 
 
@@ -492,6 +516,8 @@ en:
     validationErrorMessage: "Column: '{header}' - Value: '{value}'"
     validationErrorMissingRequiredMessage: "Column: '{header}'"
     validationErrorDuplicateURIMessage: "Column: '{header}' - Value: '{value}' - Identical with row: '{previousRow}'"
+    CSVIsValid: Your CSV file has been successfully validated, click OK to import it
+    csv-file-placeholder: Drop or select CSV file here...
 
 fr:
   OntologyCsvImporter:
@@ -517,4 +543,6 @@ fr:
     validationErrorMessage: "Colonne: '{header}' - Valeur: '{value}'"
     validationErrorMissingRequiredMessage: "Colonne: '{header}'"
     validationErrorDuplicateURIMessage: "Colonne: '{header}' - Valeur: '{value}' - Identique à la ligne: '{previousRow}'"
+    CSVIsValid: Votre fichier CSV est valide, cliquer sur OK pour l'importer
+    csv-file-placeholder: Deposer ou choisir un fichier CSV ici...
 </i18n>

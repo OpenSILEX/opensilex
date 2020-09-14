@@ -1,7 +1,7 @@
 import Component from "vue-class-component";
 
  <template>
-  <div>
+  <span>
     <opensilex-CreateButton @click="show" label="ExperimentFacilitySelector.set-facilities"></opensilex-CreateButton>
     <b-modal ref="facilitySelector" @ok.prevent="update" size="md" :static="true">
       <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
@@ -34,7 +34,7 @@ import Component from "vue-class-component";
         </template>
       </opensilex-SelectForm>
     </b-modal>
-  </div>
+  </span>
 </template>
 
 <script lang="ts">

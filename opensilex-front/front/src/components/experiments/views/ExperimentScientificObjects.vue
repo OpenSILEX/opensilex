@@ -3,18 +3,17 @@
     <div class="row">
       <div class="col-md-6">
         <b-card>
-          <b-button-group class="mb-3">
+          <div class="button-zone">
             <opensilex-ExperimentFacilitySelector
-              class="btn-group"
               :uri="uri"
               @facilitiesUpdated="refresh"
             ></opensilex-ExperimentFacilitySelector>
+            &nbsp;
             <opensilex-OntologyCsvImporter
-              class="btn-group"
               :experimentUri="uri"
               @csvImported="refresh"
             ></opensilex-OntologyCsvImporter>
-          </b-button-group>
+          </div>
           <opensilex-TreeView :nodes.sync="nodes" @select="displayScientificObjectDetails">
             <template v-slot:node="{ node }">
               <span class="item-icon">
@@ -68,6 +67,7 @@ export default class ExperimentScientificObjects extends Vue {
   uri: string;
 
   @Ref("soForm") readonly soForm!: any;
+  @Ref("csvImporter") readonly csvImporter!: any;
 
   get user() {
     return this.$store.state.user;

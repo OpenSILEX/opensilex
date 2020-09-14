@@ -113,9 +113,6 @@ export default class OntologyClassView extends Vue {
 </script>
 
 <style scoped lang="scss">
-.button-zone {
-  padding-bottom: 20px;
-}
 </style>
 
 

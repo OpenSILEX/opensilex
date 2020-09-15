@@ -121,7 +121,7 @@ Right-click on opensilex project and select "Open Required Projects" --> "Open A
 
 Then right-click on ```org.opensilex.dev.Install``` class in opensilex-dev-tools projet and select "run" or "debug"
 
-If you want to reset all your database, you can do the same with class ```org.opensilex.dev.InstallRestet```
+If you want to reset all your database, you can do the same with class ```org.opensilex.dev.InstallReset```
 
 ## With command line
 

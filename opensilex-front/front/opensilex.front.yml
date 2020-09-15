@@ -130,6 +130,13 @@ menu:
           component: opensilex-ScientificObjectTypes
           credentials:
             - is-admin
+      - id: facilitiesTypes
+        label: component.menu.facilitiesTypes 
+        route:
+          path: /facilities-types
+          component: opensilex-InfrastructureFacilitiesTypes
+          credentials:
+            - is-admin            
 routes:
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView
@@ -143,6 +150,10 @@ routes:
     component: opensilex-ScientificObjectTypes
     credentials:
       - is-admin
+  - path: /facilities-types/properties
+    component: opensilex-InfrastructureFacilitiesTypes
+    credentials:
+      - is-admin      
   - path: /VariableCreate
     component: opensilex-VariableCreate
     credentials: []

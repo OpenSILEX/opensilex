@@ -179,7 +179,8 @@
             },
             "infrastructures": "Infrastructures",
             "configuration": "Administration",
-            "scientificObjectTypes": "Types d'objets scientifiques"
+            "scientificObjectTypes": "Types d'objets scientifiques",
+            "facilitiesTypes": "Types d'installations techniques"
         },
         "login": {
             "input": {
@@ -416,14 +417,14 @@
             "update": "Modifier l'infrastructure",
             "detail": "Détails",
             "description": "Gérer et configurer les infrastructures",
-            "facilities": "Dispositifs",
+            "facilities": "Installations techniques",
             "list": "Liste",
             "facility": {
-                "facility-uri": "URI du dispositif",
-                "add": "Créer un dispositif",
-                "update": "Modifier le dispositif",
-                "form-name-placeholder": "Saisir le nom du dispositif",
-                "form-type-placeholder": "Saisir le type de dispositif"
+                "facility-uri": "URI de l'installation technique",
+                "add": "Créer une installation technique",
+                "update": "Modifier l'installation technique",
+                "form-name-placeholder": "Saisir le nom de l'installation technique",
+                "form-type-placeholder": "Saisir le type de l'installation technique"
             },
             "errors": {
                 "infrastructure-already-exists": "Une utilisateur existe déjà avec cette URI ou cette adresse email."

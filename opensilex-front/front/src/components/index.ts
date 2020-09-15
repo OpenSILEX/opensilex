@@ -74,6 +74,8 @@ import InfrastructureDetail from './infrastructures/InfrastructureDetail.vue';
 components["opensilex-InfrastructureDetail"] = InfrastructureDetail;
 import InfrastructureSelector from './infrastructures/InfrastructureSelector.vue';
 components["opensilex-InfrastructureSelector"] = InfrastructureSelector;
+import InfrastructureFacilitiesTypes from './infrastructures/InfrastructureFacilitiesTypes.vue';
+components["opensilex-InfrastructureFacilitiesTypes"] = InfrastructureFacilitiesTypes;
 
 // Factors
 import FactorView from './factors/FactorView.vue';

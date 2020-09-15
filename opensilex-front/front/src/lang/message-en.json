@@ -183,7 +183,8 @@
             },
             "infrastructures": "Infrastructures",
             "configuration": "Administration",
-            "scientificObjectTypes": "Scientific object types"
+            "scientificObjectTypes": "Scientific object types",
+            "facilitiesTypes": "Facilities types"
         },
         "login": {
             "input": {
@@ -720,7 +721,8 @@
                     "label": "ik-map"
                 },
                 "configuration": "ik-settings",
-                "scientificObjectTypes": "ik-settings"
+                "scientificObjectTypes": "ik-settings",
+                "facilitiesTypes": "ik-settings"
             }
         }
     },

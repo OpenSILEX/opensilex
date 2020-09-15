@@ -31,6 +31,16 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 )
 public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> implements ClassURIGenerator<GermplasmModel> {
 
+    @SPARQLIgnore
+    protected String name;
+
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "label",
+            required = true
+    )
+    protected SPARQLLabel label;
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasId"
@@ -96,6 +106,18 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
     )
     List<String> synonyms;
     public static final String SYNONYM_VAR = "synonym";
+
+    public SPARQLLabel getLabel() {
+        return label;
+    }
+
+    public void setLabel(SPARQLLabel label) {
+        this.label = label;
+    }
+
+    public String getName() {
+        return getLabel().getDefaultValue();
+    }
 
     public GermplasmModel getSpecies() {
         return species;

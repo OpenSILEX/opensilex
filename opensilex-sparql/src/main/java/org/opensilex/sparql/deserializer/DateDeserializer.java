@@ -33,4 +33,14 @@ public class DateDeserializer implements SPARQLDeserializer<LocalDate> {
         return XSDDatatype.XSDdate;
     }
 
+    @Override
+    public boolean validate(String value) {
+        try {
+            fromString(value);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
 }

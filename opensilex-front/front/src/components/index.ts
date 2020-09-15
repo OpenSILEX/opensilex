@@ -243,6 +243,10 @@ import XSDUriInput from './ontology/XSDUriInput.vue'
 components["opensilex-XSDUriInput"] = XSDUriInput;
 import XSDUriView from './ontology/XSDUriView.vue'
 components["opensilex-XSDUriView"] = XSDUriView;
+import XSDLongStringView from './ontology/XSDLongStringView.vue'
+components["opensilex-XSDLongStringView"] = XSDLongStringView;
+import XSDNumberView from './ontology/XSDNumberView.vue'
+components["opensilex-XSDNumberView"] = XSDNumberView;
 
 // Experiments
 import ExperimentForm from './experiments/form/ExperimentForm.vue';
@@ -283,6 +287,8 @@ import GermplasmModalList from './germplasm/GermplasmModalList.vue';
 components["opensilex-GermplasmModalList"] = GermplasmModalList;
 import GermplasmAttributesTable from './germplasm/GermplasmAttributesTable.vue';
 components["opensilex-GermplasmAttributesTable"] = GermplasmAttributesTable;
+import GermplasmPropertyView from './germplasm/GermplasmPropertyView.vue';
+components["opensilex-GermplasmPropertyView"] = GermplasmPropertyView;
 
 // Projects
 import ProjectForm from './projects/ProjectForm.vue';

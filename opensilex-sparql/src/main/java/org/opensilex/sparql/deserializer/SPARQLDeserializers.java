@@ -93,6 +93,10 @@ public class SPARQLDeserializers {
 
     }
 
+    public static void registerDatatypeClass(Property datatype, Class<?> datatypeClass) {
+        datatypeClassMap.put(URIDeserializer.getExpandedURI(datatype.getURI()), datatypeClass);
+    }
+
     public static boolean existsForDatatype(URI datatypeURI) {
         return existsForDatatype(datatypeURI.toString());
     }

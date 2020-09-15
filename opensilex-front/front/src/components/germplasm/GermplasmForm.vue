@@ -1,5 +1,6 @@
 <template>
-  <ValidationObserver ref="validatorRef">
+  <ValidationObserver ref="validatorRef" v-if="form.rdfType">
+    
     <!-- URI -->
     <opensilex-UriForm
       :uri.sync="form.uri"
@@ -131,7 +132,7 @@ export default class GermplasmForm extends Vue {
 
   uriGenerated = true;
 
-  attributesArray;
+  attributesArray = [];
 
   @Prop()
   editMode;

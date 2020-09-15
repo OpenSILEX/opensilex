@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid">
+  <div class="container-fluid" v-if="germplasm.uri">
     <opensilex-PageHeader
       icon="fa#sun"
       title="GermplasmDetails.title"

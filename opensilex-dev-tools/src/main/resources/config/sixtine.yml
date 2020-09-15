@@ -40,8 +40,6 @@ front:
     menuComponent: inrae-sixtine-SixtineMenuComponent
     headerComponent: inrae-sixtine-SixtineHeaderComponent
     menuExclusions:
-        - factors
-        - germplasm
         - radiometricTargets
         - vectors
         - actuators

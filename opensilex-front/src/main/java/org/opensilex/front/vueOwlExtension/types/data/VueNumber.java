@@ -5,7 +5,6 @@
  */
 package org.opensilex.front.vueOwlExtension.types.data;
 
-import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
@@ -50,7 +49,7 @@ public class VueNumber implements VueOntologyDataType {
 
     @Override
     public String getViewComponent() {
-        return "opensilex-XSDIntegerView";
+        return "opensilex-XSDNumberView";
     }
 
     @Override

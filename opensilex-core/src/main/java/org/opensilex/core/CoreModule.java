@@ -6,22 +6,17 @@
 package org.opensilex.core;
 
 import com.auth0.jwt.JWTCreator;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import java.io.InputStream;
 import org.opensilex.OpenSilexModule;
 
 import java.util.List;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.OA;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.security.extensions.LoginExtension;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.rest.cache.JCSApiCacheExtension;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
@@ -91,6 +86,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
     public void setup() throws Exception {
         SPARQLService.addPrefix(Oeso.PREFIX, Oeso.NS);
         URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), true);
+        SPARQLDeserializers.registerDatatypeClass(Oeso.longString, String.class);
     }
 
 }

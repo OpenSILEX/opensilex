@@ -33,4 +33,13 @@ public class DateTimeDeserializer implements SPARQLDeserializer<OffsetDateTime> 
         return XSDDatatype.XSDdateTime;
     }
 
+    @Override
+    public boolean validate(String value) {
+        try {
+            fromString(value);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
 }

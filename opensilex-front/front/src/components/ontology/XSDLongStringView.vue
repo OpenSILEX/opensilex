@@ -1,16 +1,20 @@
 <template>
-  <span class="static-field-line">{{value}}</span>
+  <span class="static-field-text">{{value}}</span>
 </template>
 
 <script lang="ts">
 import {
   Component,
-  Prop
+  Prop,
+  Model,
+  Provide,
+  PropSync,
+  Watch
 } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
-export default class XSDRawView extends Vue {
+export default class XSDLongStringView extends Vue {
   $opensilex: any;
 
   @Prop()

@@ -26,7 +26,7 @@ public class VueGermplasm implements VueOntologyObjectType {
 
     @Override
     public String getViewComponent() {
-        return "opensilex-GermplasmView";
+        return "opensilex-GermplasmPropertyView";
     }
 
 }

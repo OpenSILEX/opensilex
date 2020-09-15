@@ -89,6 +89,11 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
         return XSDDatatype.XSDanyURI;
     }
 
+    @Override
+    public boolean validate(String value) {
+        return validateURI(value);
+    }
+
     public static boolean validateURI(String value) {
         if (value == null) {
             return true;

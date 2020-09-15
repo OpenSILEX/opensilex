@@ -13,6 +13,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -37,6 +38,7 @@ import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.sparql.utils.URIGenerator;
@@ -192,7 +194,7 @@ public final class OntologyDAO {
 
             csvReader.readNext();
             csvReader.readNext();
-            
+
             if (ids != null) {
 
                 for (int i = 0; i < ids.length; i++) {
@@ -375,7 +377,7 @@ public final class OntologyDAO {
                 if (!value.isEmpty()) {
                     if (URIDeserializer.validateURI(value)) {
                         URI objectURI = new URI(value);
-                        
+
                         URI classURI = restriction.getSubjectURI();
                         boolean doesClassObjectUriExist;
                         if (checkedClassObjectURIs.containsKey(classURI) && checkedClassObjectURIs.get(classURI).containsKey(objectURI)) {
@@ -553,6 +555,26 @@ public final class OntologyDAO {
             sparql.rollbackTransaction(ex);
             throw ex;
         }
+    }
+
+    public String getURILabel(URI uri, String language) throws SPARQLException {
+        SelectBuilder select = new SelectBuilder();
+
+        String nameField = "name";
+        Var nameVar = makeVar(nameField);
+        select.addVar(nameVar);
+        select.addWhere(SPARQLDeserializers.nodeURI(uri), RDFS.label, nameVar);
+        Locale locale = Locale.forLanguageTag(language);
+        select.addFilter(SPARQLQueryHelper.langFilter(nameField, locale.getLanguage()));
+        List<SPARQLResult> results = sparql.executeSelectQuery(select);
+        String name;
+        if (results.size() >= 1) {
+            name = results.get(0).getStringValue(nameField);
+        } else {
+            name = SPARQLDeserializers.formatURI(uri).toString();
+        }
+
+        return name;
     }
 
 }

@@ -24,6 +24,7 @@ label::first-letter {
   min-width: 150px;
   font-weight: bold;
   display: inline-block;
+  float: left;
 }
 
 .field-view-title::first-letter {

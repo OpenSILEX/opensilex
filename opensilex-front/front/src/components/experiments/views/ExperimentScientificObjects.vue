@@ -102,8 +102,8 @@ export default class ExperimentScientificObjects extends Vue {
         let node = this.dtoToNode(resourceTree);
         treeNode.push(node);
 
-        this.nodes = treeNode;
       }
+      this.nodes = treeNode;
     });
   }
 

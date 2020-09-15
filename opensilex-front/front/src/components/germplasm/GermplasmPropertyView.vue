@@ -1,6 +1,11 @@
 <template>
   <span class="static-field-line">
-    <opensilex-UriLink v-if="label" :uri="value" :value="label"></opensilex-UriLink>
+    <opensilex-UriLink
+      v-if="label"
+      :uri="value"
+      :value="label"
+      :to="{path: '/germplasm/'+ encodeURIComponent(value)}"
+    ></opensilex-UriLink>
   </span>
 </template>
 
@@ -16,7 +21,7 @@ import {
 import Vue from "vue";
 
 @Component
-export default class XSDUriView extends Vue {
+export default class GermplasmPropertyView extends Vue {
   $opensilex: any;
 
   @Prop()

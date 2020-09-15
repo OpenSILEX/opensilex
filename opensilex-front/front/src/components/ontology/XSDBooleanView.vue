@@ -1,20 +1,5 @@
 <template>
-  <opensilex-FormField v-if="property"
-    rules="integer"
-    :required="property.required"
-    :label="property.label"
-    :helpMessage="property.comment"
-  >
-    <template v-slot:field="field">
-      <b-form-input
-        :id="field.id"
-        v-model="internalValue"
-        type="text"
-        step="any"
-        :required="property.required"
-      ></b-form-input>
-    </template>
-  </opensilex-FormField>
+  <span class="static-field-line">{{value ? $t("component.common.yes") : $t("component.common.no")}}</span>
 </template>
 
 <script lang="ts">
@@ -23,7 +8,8 @@ import {
   Prop,
   Model,
   Provide,
-  PropSync
+  PropSync,
+  Watch
 } from "vue-property-decorator";
 import Vue from "vue";
 
@@ -32,11 +18,7 @@ export default class XSDBooleanView extends Vue {
   $opensilex: any;
 
   @Prop()
-  property;
-
-  @PropSync("value")
-  internalValue;
-
+  value;
 }
 </script>
 

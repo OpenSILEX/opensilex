@@ -36,7 +36,7 @@ public class VueDecimal implements VueOntologyDataType {
 
     @Override
     public String getViewComponent() {
-        return "opensilex-XSDRawView";
+        return "opensilex-XSDNumberView";
     }
 
     @Override

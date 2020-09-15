@@ -10,6 +10,7 @@
 
     <template v-slot:buttons="{ node }">
       <opensilex-EditButton
+        v-if="isManagedClass(node.data.uri)"
         @click="$emit('editClass' ,node.data)"
         label="OntologyClassTreeView.edit"
         :small="true"
@@ -20,6 +21,7 @@
         :small="true"
       ></opensilex-AddChildButton>
       <opensilex-DeleteButton
+        v-if="isManagedClass(node.data.uri)"
         @click="$emit('deleteClass' ,node.data)"
         label="OntologyClassTreeView.delete"
         :small="true"
@@ -101,6 +103,7 @@ export default class OntologyClassTreeView extends Vue {
       for (let i in classesParameters) {
         this.classesParametersByURI[classesParameters[i].uri] = classesParameters[i];
       }
+
       let treeNode = [];
       let first = true;
       this.resourceTree = results[0].response.result;
@@ -153,6 +156,10 @@ export default class OntologyClassTreeView extends Vue {
       isDraggable: false,
       isSelectable: !dto.disabled
     };
+  }
+
+  isManagedClass(rdfClassURI) {
+    return !!this.classesParametersByURI[rdfClassURI];
   }
 }
 </script>

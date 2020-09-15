@@ -175,8 +175,24 @@ let i18nOptions = {
   silentTranslationWarn: !isDebug,
   silentFallbackWarn: !isDebug,
   messages: {
-    "en": {},
-    "fr": {}
+    "en": {
+      "dateTimeFormat": "MM/DD/YYYY hh:mm:ss A Z"
+    },
+    "fr": {
+      "dateTimeFormat": "DD/MM/YYYY HH:mm:ss Z"
+    }
+  },
+  dateTimeFormats: {
+    "en": {
+      short: {
+        year: 'numeric', month: '2-digit', day: '2-digit'
+      }
+    },
+    "fr": {
+      short: {
+        day: '2-digit', month: '2-digit', year: 'numeric'
+      }
+    }
   }
 }
 const i18n = new VueI18n(i18nOptions);

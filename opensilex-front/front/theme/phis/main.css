@@ -90,6 +90,8 @@
 .card .card-body .static-field .static-field-text {
     text-align: justify;
     line-height: 1.7em;
+    white-space: pre-wrap;
+    display: inline-block;
 }
 
 .card .card-body .static-field .static-field-list {

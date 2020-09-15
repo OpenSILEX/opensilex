@@ -457,6 +457,25 @@ public class OntologyAPI {
         return new ObjectUriResponse(new URI("about:blank")).getResponse();
     }
 
+    @GET
+    @Path("/get-uri-label")
+    @ApiOperation("Return associated rdfs:label of an uri if exists")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return URI label", response = String.class)
+    })
+    public Response getURILabel(
+            @ApiParam(value = "URI to get label from", required = true) @QueryParam("uri") @NotNull @ValidURI URI uri
+    ) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        String uriLabel = dao.getURILabel(uri, currentUser.getLanguage());
+
+        return new SingleObjectResponse<>(uriLabel).getResponse();
+    }
+
     private OwlRestrictionModel restrictionDtoToModel(OntologyDAO dao, OWLClassPropertyRestrictionDTO dto) throws Exception {
         OwlRestrictionModel restriction = new OwlRestrictionModel();
 

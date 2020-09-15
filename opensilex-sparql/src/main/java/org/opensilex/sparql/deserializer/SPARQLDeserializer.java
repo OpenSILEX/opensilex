@@ -20,7 +20,7 @@ public interface SPARQLDeserializer<T> {
 
     public default boolean validate(String value) {
         try {
-            return this.getDataType().isValid(getNodeFromString(value).toString());
+            return this.getDataType().isValid(value);
         } catch (Exception ex) {
             return false;
         }

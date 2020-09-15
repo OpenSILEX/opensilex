@@ -1,20 +1,5 @@
 <template>
-  <opensilex-FormField v-if="property"
-    rules="integer"
-    :required="property.required"
-    :label="property.label"
-    :helpMessage="property.comment"
-  >
-    <template v-slot:field="field">
-      <b-form-input
-        :id="field.id"
-        v-model="internalValue"
-        type="text"
-        step="any"
-        :required="property.required"
-      ></b-form-input>
-    </template>
-  </opensilex-FormField>
+  <span v-if="date" class="static-field-line">{{date }}</span>
 </template>
 
 <script lang="ts">
@@ -23,20 +8,45 @@ import {
   Prop,
   Model,
   Provide,
-  PropSync
+  PropSync,
+  Watch
 } from "vue-property-decorator";
 import Vue from "vue";
+import moment from "moment";
 
 @Component
 export default class XSDDateTimeView extends Vue {
   $opensilex: any;
 
   @Prop()
-  property;
+  value;
 
-  @PropSync("value")
-  internalValue;
+  date = null;
 
+  private langUnwatcher;
+
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        this.onValueChange();
+      }
+    );
+    this.onValueChange();
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
+  }
+
+  @Watch("value")
+  onValueChange() {
+    if (this.value) {
+      this.date = moment
+        .parseZone(this.value)
+        .format(this.$t("dateTimeFormat"));
+    }
+  }
 }
 </script>
 

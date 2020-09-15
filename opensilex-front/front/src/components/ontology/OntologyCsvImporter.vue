@@ -410,6 +410,11 @@ export default class OntologyCsvImporter extends Vue {
           "OntologyCsvImporter.validationErrorDuplicateURIMessage",
           validationError
         );
+      case "datatypeErrors":
+        return this.$t(
+          "OntologyCsvImporter.validationErrorDatatypeMessage",
+          validationError
+        );
       default:
         return this.$t(
           "OntologyCsvImporter.validationErrorMessage",
@@ -516,6 +521,7 @@ en:
     validationErrorMessage: "Column: '{header}' - Value: '{value}'"
     validationErrorMissingRequiredMessage: "Column: '{header}'"
     validationErrorDuplicateURIMessage: "Column: '{header}' - Value: '{value}' - Identical with row: '{previousRow}'"
+    validationErrorDatatypeMessage: "Column: '{header}' - Value: '{value}' ({datatype})"
     CSVIsValid: Your CSV file has been successfully validated, click OK to import it
     csv-file-placeholder: Drop or select CSV file here...
 
@@ -543,6 +549,7 @@ fr:
     validationErrorMessage: "Colonne: '{header}' - Valeur: '{value}'"
     validationErrorMissingRequiredMessage: "Colonne: '{header}'"
     validationErrorDuplicateURIMessage: "Colonne: '{header}' - Valeur: '{value}' - Identique à la ligne: '{previousRow}'"
+    validationErrorDatatypeMessage: "Colonne: '{header}' - Valeur: '{value}' ({datatype})"
     CSVIsValid: Votre fichier CSV est valide, cliquer sur OK pour l'importer
     csv-file-placeholder: Deposer ou choisir un fichier CSV ici...
 </i18n>

@@ -6,7 +6,6 @@
 //******************************************************************************
 package org.opensilex.core.germplasm.dal;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.apache.jena.vocabulary.RDFS;
@@ -40,6 +39,7 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
             required = true
     )
     protected SPARQLLabel label;
+    public static final String LABEL_FIELD = "label";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -117,6 +117,10 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
 
     public String getName() {
         return getLabel().getDefaultValue();
+    }
+
+    public void setName(String name) {
+        super.setName(name);
     }
 
     public GermplasmModel getSpecies() {

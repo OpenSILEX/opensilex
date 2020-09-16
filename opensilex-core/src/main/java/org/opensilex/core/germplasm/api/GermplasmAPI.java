@@ -151,7 +151,7 @@ public class GermplasmAPI {
         if (!checkOnly) {
             germplasmDTO = completeDTO(germplasmDTO, germplasmDAO);
             // create new germplasm
-            GermplasmModel model = germplasmDTO.newModel();
+            GermplasmModel model = germplasmDTO.newModel(currentUser.getLanguage());
             GermplasmModel germplasm = germplasmDAO.create(model, currentUser);
             //return germplasm uri
 
@@ -444,7 +444,7 @@ public class GermplasmAPI {
 
             germplasmDTO = completeDTO(germplasmDTO, germplasmDAO);
 
-            GermplasmModel model = germplasmDTO.newModel();
+            GermplasmModel model = germplasmDTO.newModel(currentUser.getLanguage());
             germplasmDAO.update(model);
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
 

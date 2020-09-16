@@ -176,7 +176,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             break;
         }
 
-        if (locale != null) {
+        if (locale != null && !locale.toString().equals("*")) {
             user.setLocale(locale);
         }
 

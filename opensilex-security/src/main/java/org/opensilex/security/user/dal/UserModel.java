@@ -44,7 +44,7 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
         anonymous.setUserProfiles(new ArrayList<>());
         anonymous.setAdmin(false);
         anonymous.setAnonymous(true);
-        anonymous.setLocale(Locale.forLanguageTag(OpenSilex.DEFAULT_LANGUAGE));
+        anonymous.setLocale(new Locale(OpenSilex.DEFAULT_LANGUAGE));
 
         return anonymous;
     }

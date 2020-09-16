@@ -16,6 +16,7 @@ import javax.validation.constraints.NotNull;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.model.SPARQLLabel;
 
 /**
  * DTO representing JSON for posting germplasm
@@ -190,14 +191,14 @@ public class GermplasmCreationDTO {
         this.attributes = attributes;
     }  
     
-    public GermplasmModel newModel() {
+    public GermplasmModel newModel(String lang) {
         GermplasmModel model = new GermplasmModel();
         
         if (uri != null) {
             model.setUri(uri);
         }
         if (label != null) {
-            model.setName(label);
+            model.setLabel(new SPARQLLabel(label, lang));
         }
         if (rdfType != null) {
             model.setType(rdfType);

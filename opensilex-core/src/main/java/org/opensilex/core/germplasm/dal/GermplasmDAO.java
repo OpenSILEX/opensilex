@@ -214,7 +214,7 @@ public class GermplasmDAO {
 
     private void appendRegexLabelAndSynonymFilter(SelectBuilder select, String label) {
         if (!StringUtils.isEmpty(label)) {
-            select.addFilter(SPARQLQueryHelper.or(SPARQLQueryHelper.regexFilter(GermplasmModel.NAME_FIELD, label), SPARQLQueryHelper.regexFilter(GermplasmModel.SYNONYM_VAR, label)));
+            select.addFilter(SPARQLQueryHelper.or(SPARQLQueryHelper.regexFilter(GermplasmModel.LABEL_FIELD, label), SPARQLQueryHelper.regexFilter(GermplasmModel.SYNONYM_VAR, label)));
         }
     }
 

@@ -48,6 +48,9 @@ export default class SpeciesSelector extends Vue {
   @Prop()
   multiple;
 
+  @Prop()
+  experimentURI;
+
   @Ref("selectForm") readonly selectForm!: any;
 
   private langUnwatcher;
@@ -65,13 +68,23 @@ export default class SpeciesSelector extends Vue {
   }
 
   loadSpecies() {
-    return this.$opensilex
-      .getService("opensilex.SpeciesService")
-      .getAllSpecies()
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) =>
-          http.response.result
-      );
+    if (!this.experimentURI) {
+      return this.$opensilex
+        .getService("opensilex.SpeciesService")
+        .getAllSpecies()
+        .then(
+          (http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) =>
+            http.response.result
+        );
+    } else {
+      return this.$opensilex
+        .getService("opensilex.SpeciesService")
+        .getExperimentSpecies(this.experimentURI)
+        .then(
+          (http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) =>
+            http.response.result
+        );
+    }
   }
 
   speciesToSelectNode(dto: SpeciesDTO) {

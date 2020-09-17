@@ -1,20 +1,12 @@
 <template>
-  <opensilex-FormField v-if="property"
-    rules="integer"
+<div>
+  <opensilex-DateTimeForm
+    :value.sync="internalValue"
+    :label="property.name"
+    :disabled="false"
     :required="property.required"
-    :label="property.label"
-    :helpMessage="property.comment"
-  >
-    <template v-slot:field="field">
-      <b-form-input
-        :id="field.id"
-        v-model="internalValue"
-        type="text"
-        step="any"
-        :required="property.required"
-      ></b-form-input>
-    </template>
-  </opensilex-FormField>
+  ></opensilex-DateTimeForm>
+</div>
 </template>
 
 <script lang="ts">
@@ -36,7 +28,6 @@ export default class XSDDateTimeInput extends Vue {
 
   @PropSync("value")
   internalValue;
-
 }
 </script>
 

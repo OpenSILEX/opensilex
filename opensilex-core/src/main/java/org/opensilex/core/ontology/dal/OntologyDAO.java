@@ -173,7 +173,7 @@ public final class OntologyDAO {
         return model;
     }
 
-    public CSVValidationModel validateCSV(URI graph, URI rdfType, InputStream file, UserModel currentUser, Map<Property, BiConsumer<CSVCell, CSVValidationModel>> customValidators, URIGenerator<String> uriGenerator) throws Exception {
+    public CSVValidationModel validateCSV(URI graph, URI rdfType, InputStream file, UserModel currentUser, Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators, URIGenerator<String> uriGenerator) throws Exception {
         Map<URI, OwlRestrictionModel> restrictionsByID = new HashMap<>();
 
         ClassModel model = getClassModel(rdfType, currentUser.getLanguage());
@@ -256,7 +256,7 @@ public final class OntologyDAO {
             Map<Integer, String> headerByIndex,
             Map<URI, Map<URI, Boolean>> checkedClassObjectURIs,
             Map<URI, Integer> checkedURIs,
-            Map<Property, BiConsumer<CSVCell, CSVValidationModel>> customValidators,
+            Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators,
             URIGenerator<String> uriGenerator
     ) throws Exception {
         SPARQLResourceModel object = new SPARQLResourceModel();
@@ -269,7 +269,7 @@ public final class OntologyDAO {
 
                 BiConsumer<CSVCell, CSVValidationModel> customValidator = null;
                 if (customValidators != null) {
-                    customValidator = customValidators.get(propertyURI);
+                    customValidator = customValidators.get(SPARQLDeserializers.getExpandedURI(propertyURI));
                 }
 
                 if (SPARQLDeserializers.compareURIs(RDFS.label.getURI(), propertyURI.toString())) {

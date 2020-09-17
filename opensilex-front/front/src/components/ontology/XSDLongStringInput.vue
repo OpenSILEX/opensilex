@@ -1,19 +1,9 @@
 <template>
-  <opensilex-FormField v-if="property"
-    :required="property.required"
-    :label="property.label"
-    :helpMessage="property.comment"
-  >
-    <template v-slot:field="field">
-      <b-form-input
-        :id="field.id"
-        v-model="internalValue"
-        type="text"
-        step="any"
-        :required="property.required"
-      ></b-form-input>
-    </template>
-  </opensilex-FormField>
+   <opensilex-TextAreaForm
+      :value.sync="internalValue"
+      :label="property.name"
+      :required="property.required"
+    ></opensilex-TextAreaForm>
 </template>
 
 <script lang="ts">

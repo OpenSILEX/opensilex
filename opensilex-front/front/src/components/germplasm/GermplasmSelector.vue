@@ -1,12 +1,12 @@
 <template>
-    <opensilex-InputForm
-    :value.sync="internalValue"
-    :label="property.name"
-    type="number"
-    rules="decimal"
-    :disabled="false"
-    :required="property.required"
-  ></opensilex-InputForm>
+  <div>
+    <opensilex-SpeciesSelector
+      :required="property.required"
+      :multiple="false"
+      :species.sync="internalValue"
+      :experimentURI="context.experimentURI"
+    ></opensilex-SpeciesSelector>
+  </div>
 </template>
 
 <script lang="ts">
@@ -20,7 +20,7 @@ import {
 import Vue from "vue";
 
 @Component
-export default class XSDDecimalInput extends Vue {
+export default class GermplasmSelector extends Vue {
   $opensilex: any;
 
   @Prop()
@@ -28,6 +28,9 @@ export default class XSDDecimalInput extends Vue {
 
   @PropSync("value")
   internalValue;
+
+  @Prop()
+  context;
 }
 </script>
 

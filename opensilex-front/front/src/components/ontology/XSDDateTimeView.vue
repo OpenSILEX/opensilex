@@ -44,7 +44,7 @@ export default class XSDDateTimeView extends Vue {
     if (this.value) {
       this.date = moment
         .parseZone(this.value)
-        .format(this.$t("dateTimeFormat"));
+        .format("" + this.$t("dateTimeFormat"));
     }
   }
 }

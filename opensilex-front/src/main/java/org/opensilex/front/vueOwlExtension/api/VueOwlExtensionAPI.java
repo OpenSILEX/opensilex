@@ -26,6 +26,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.api.RDFClassDTO;
 import org.opensilex.core.ontology.api.RDFPropertyDTO;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -48,6 +49,7 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 
 /**
@@ -179,26 +181,28 @@ public class VueOwlExtensionAPI {
 
         List<VueClassPropertyDTO> dataProperties = new ArrayList<>(classDescription.getDatatypeProperties().size());
         for (DatatypePropertyModel dt : classDescription.getDatatypeProperties().values()) {
-            VueClassPropertyDTO pDTO = new VueClassPropertyDTO();
-            pDTO.setProperty(dt.getUri());
-            pDTO.setName(dt.getName());
-            if (dt.getComment() != null) {
-                pDTO.setComment(dt.getComment().getDefaultValue());
+            if (!SPARQLDeserializers.compareURIs(dt.getUri().toString(), RDFS.label.toString())) {
+                VueClassPropertyDTO pDTO = new VueClassPropertyDTO();
+                pDTO.setProperty(dt.getUri());
+                pDTO.setName(dt.getName());
+                if (dt.getComment() != null) {
+                    pDTO.setComment(dt.getComment().getDefaultValue());
+                }
+                OwlRestrictionModel restriction = classDescription.getRestrictions().get(dt.getUri());
+                pDTO.setIsList(restriction.isList());
+                pDTO.setIsRequired(restriction.isRequired());
+                VueOntologyType vueType = VueOwlExtensionDAO.getVueType(dt.getTypeRestriction());
+                if (vueType != null) {
+                    pDTO.setInputComponent(vueType.getInputComponent());
+                    pDTO.setViewComponent(vueType.getViewComponent());
+                }
+                if (parentModel.isDatatypePropertyRestriction(dt.getUri())) {
+                    pDTO.setInherited(true);
+                } else {
+                    pDTO.setInherited(false);
+                }
+                dataProperties.add(pDTO);
             }
-            OwlRestrictionModel restriction = classDescription.getRestrictions().get(dt.getUri());
-            pDTO.setIsList(restriction.isList());
-            pDTO.setIsRequired(restriction.isRequired());
-            VueOntologyType vueType = VueOwlExtensionDAO.getVueType(dt.getTypeRestriction());
-            if (vueType != null) {
-                pDTO.setInputComponent(vueType.getInputComponent());
-                pDTO.setViewComponent(vueType.getViewComponent());
-            }
-            if (parentModel.isDatatypePropertyRestriction(dt.getUri())) {
-                pDTO.setInherited(true);
-            } else {
-                pDTO.setInherited(false);
-            }
-            dataProperties.add(pDTO);
         }
         classProperties.setDataProperties(dataProperties);
 

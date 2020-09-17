@@ -4,7 +4,6 @@
 // Copyright © INRAE 2020
 // Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
-
 package org.opensilex.core.species.dal;
 
 import java.net.URI;
@@ -14,10 +13,11 @@ import org.opensilex.sparql.service.SPARQLService;
 import java.util.List;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.utils.OrderBy;
-
 
 /**
  * @author Renaud COLIN
@@ -37,19 +37,32 @@ public class SpeciesDAO {
      */
     public List<SpeciesModel> getAll(String lang) throws Exception {
 
-        List<OrderBy>  orderByList = new ArrayList();
-        orderByList.add(new OrderBy("label=asc"));  
+        List<OrderBy> orderByList = new ArrayList();
+        orderByList.add(new OrderBy("label=asc"));
 
         return sparql.search(
                 SpeciesModel.class,
                 lang,
                 (SelectBuilder select) -> {
-                    select.addFilter(SPARQLQueryHelper.eq
-                    (SPARQLResourceModel.TYPE_FIELD, new URI(Oeso.Species.toString())));                    
+                    select.addFilter(SPARQLQueryHelper.eq(SPARQLResourceModel.TYPE_FIELD, new URI(Oeso.Species.toString())));
                 },
                 orderByList
         );
     }
 
+    public List<SpeciesModel> getByExperiment(URI xpUri, String lang) throws Exception {
+        List<OrderBy> orderByList = new ArrayList();
+        orderByList.add(new OrderBy("label=asc"));
+
+        return sparql.search(
+                SpeciesModel.class,
+                lang,
+                (SelectBuilder select) -> {
+                    select.addFilter(SPARQLQueryHelper.eq(SPARQLResourceModel.TYPE_FIELD, new URI(Oeso.Species.toString())));
+                    select.addWhere(SPARQLDeserializers.nodeURI(xpUri), Oeso.hasSpecies, makeVar(SpeciesModel.URI_FIELD));
+                },
+                orderByList
+        );
+    }
 
 }

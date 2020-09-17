@@ -17,13 +17,23 @@ import org.opensilex.core.ontology.api.RDFObjectDTO;
 public class ScientificObjectDescriptionDTO extends RDFObjectDTO {
 
     private URI experiment;
-    
+
     public URI getExperiment() {
         return experiment;
     }
 
     public void setExperiment(URI experiment) {
         this.experiment = experiment;
+    }
+
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public static ScientificObjectCsvDescriptionDTO fromString(String param) throws IOException {

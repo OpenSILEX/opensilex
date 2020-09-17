@@ -90,12 +90,6 @@ import BootstrapVue from 'bootstrap-vue'
 Vue.use(BootstrapVue);
 console.debug("Bootstrap plugin initialized !");
 
-//Initialise DatePicker 
-//https://www.npmjs.com/package/vuejs-datepicker
-import Datepicker from 'vuejs-datepicker';
-
-Vue.component('datePicker', Datepicker);
-
 // Initialise font awesome
 console.debug("Initialize FontAwesomeIcon plugin...");
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
@@ -234,7 +228,6 @@ extend("emailOrUrl", (value) => {
 });
 
 extend("decimal", (value, { decimals = '*', separator = '.' }: any = {}) => {
-  console.error("Check decimal", value, decimals, separator);
   if (value === null || value === undefined || value === '') {
     return {
       valid: false
@@ -277,7 +270,23 @@ configure({
   }
 });
 
-// Initialize date picker
+
+
+import { Datepicker, Timepicker, DatetimePicker, DateRangePicker } from '@livelybone/vue-datepicker';
+
+// Global register
+Vue.component('datepicker', Datepicker);
+Vue.component('timepicker', Timepicker);
+Vue.component('datetime-picker', DatetimePicker);
+Vue.component('date-range-picker', DateRangePicker);
+
+//Initialise DatePicker - TODO remove it
+//https://www.npmjs.com/package/vuejs-datepicker
+// import Datepicker from 'vuejs-datepicker';
+
+Vue.component('datePicker', Datepicker);
+
+// Initialize date picker - TODO remove it
 import DatePicker from 'vue-airbnb-style-datepicker';
 
 const datepickerOptions = {

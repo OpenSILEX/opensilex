@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.opensilex.core.infrastructure.api.InfrastructureFacilityGetDTO;
 import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
+import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -62,7 +63,7 @@ public class ExperimentAPI {
     public static final String CREDENTIAL_EXPERIMENT_DELETE_ID = "experiment-delete";
     public static final String CREDENTIAL_EXPERIMENT_DELETE_LABEL_KEY = "credential.experiment.delete";
 
-    protected static final String EXPERIMENT_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
+    public static final String EXPERIMENT_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
 
     @CurrentUser
     UserModel currentUser;
@@ -298,7 +299,7 @@ public class ExperimentAPI {
 
     @GET
     @Path("{uri}/get-available-facilities")
-    @ApiOperation("get all facilities available for an experiment (depending of which infrastructures are selected")
+    @ApiOperation("get all facilities available for an experiment (depending of which infrastructures are selected)")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_EXPERIMENT_READ_ID,
@@ -318,6 +319,16 @@ public class ExperimentAPI {
 
         List<InfrastructureFacilityGetDTO> dtoList = facilities.stream().map(InfrastructureFacilityGetDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+    
+
+    public Response getAvailableSpecies(
+            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+    ) throws Exception {
+        ExperimentDAO xpDao = new ExperimentDAO(sparql);
+        ExperimentModel xp = xpDao.get(xpUri, currentUser);
+        
+        return new PaginatedListResponse<>(xp.getSpecies()).getResponse();
     }
 
     /**

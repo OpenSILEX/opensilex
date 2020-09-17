@@ -25,8 +25,10 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -37,6 +39,8 @@ import org.apache.jena.ext.com.google.common.cache.Cache;
 import org.apache.jena.ext.com.google.common.cache.CacheBuilder;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import static org.opensilex.core.infrastructure.api.InfrastructureAPI.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID;
+import static org.opensilex.core.infrastructure.api.InfrastructureAPI.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY;
 import org.opensilex.core.ontology.dal.CSVValidationModel;
 import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
@@ -50,6 +54,7 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
 import org.opensilex.sparql.response.PartialResourceTreeDTO;
@@ -95,7 +100,7 @@ public class ScientificObjectAPI {
      */
     @GET
     @Path("get-tree/{xpuri}")
-    @ApiOperation("Get a project by URI")
+    @ApiOperation("Get scientific objet tree for an experiment")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_READ_ID,
@@ -112,6 +117,28 @@ public class ScientificObjectAPI {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
         SPARQLPartialTreeListModel<ExperimentalObjectModel> tree = dao.searchTreeByExperiment(experimentURI, null, DEFAULT_CHILDREN_LIMIT, DEFAULT_DEPTH_LIMIT, currentUser);
         return new PartialResourceTreeResponse(PartialResourceTreeDTO.fromResourceTree(tree)).getResponse();
+    }
+
+    @GET
+    @Path("get-list/{xpuri}")
+    @ApiOperation("Get scientific objet list for an experiment")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_READ_ID,
+            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return list of scientific objetcs corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+    })
+    public Response getScientificObjectsList(
+            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI
+    ) throws Exception {
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        List<ScientificObjectModel> sientificObjects = dao.searchByExperiment(experimentURI, currentUser);
+        List<ScientificObjectNodeDTO> dtoList = sientificObjects.stream().map(ScientificObjectNodeDTO::getDTOFromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
     }
 
     @GET
@@ -184,9 +211,59 @@ public class ScientificObjectAPI {
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
 
-        URI soURI = dao.create(xpURI, soType, descriptionDto.getUri(), descriptionDto.getRelations(), currentUser);
+        URI soURI = dao.create(xpURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
 
         return new ObjectUriResponse(soURI).getResponse();
+    }
+
+    @PUT
+    @Path("update")
+    @ApiOperation("Update a scientific object for the given experiment")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Scientific object updated", response = ObjectUriResponse.class)
+    })
+    public Response updateScientificObject(
+            @ApiParam(value = "Scientific object description", required = true) @NotNull @Valid ScientificObjectDescriptionDTO descriptionDto
+    ) throws Exception {
+
+        URI xpURI = descriptionDto.getExperiment();
+        URI soType = descriptionDto.getType();
+
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+
+        URI soURI = dao.update(xpURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
+
+        return new ObjectUriResponse(soURI).getResponse();
+    }
+
+    @DELETE
+    @Path("delete/{xpURI}/{objURI}")
+    @ApiOperation("Delete a scientific object")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Infrastructure facility deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 404, message = "Infrastructure facility URI not found", response = ErrorResponse.class)
+    })
+    public Response deleteScientificObject(
+            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpURI") @NotNull @ValidURI URI xpURI,
+            @ApiParam(value = "Scientific object URI", example = "http://example.com/", required = true) @PathParam("objURI") @NotNull @ValidURI URI objURI
+    ) throws Exception {
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        dao.delete(xpURI, objURI, currentUser);
+        return new ObjectUriResponse(Response.Status.OK, objURI).getResponse();
     }
 
     @POST
@@ -230,7 +307,7 @@ public class ScientificObjectAPI {
             sparql.create(SPARQLDeserializers.nodeURI(xpURI), errors.getObjects());
             csvValidation.setValidationToken(generateCSVValidationToken(xpURI, soType));
         }
-        
+
         return new SingleObjectResponse<CSVValidationDTO>(csvValidation).getResponse();
     }
 

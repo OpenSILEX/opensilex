@@ -11,6 +11,7 @@
     },
     "dependencies": {
         "@kazupon/vue-i18n-loader": "0.5.0",
+        "@livelybone/vue-datepicker": "^4.0.2",
         "@popperjs/core": "^2.4.4",
         "@riophae/vue-treeselect": "^0.4.0",
         "@types/tabulator-tables": "^4.6.0",
@@ -33,6 +34,7 @@
         "vue-cookies": "1.7.0",
         "vue-country-flag": "2.0.1",
         "vue-date-fns": "^1.1.0",
+        "vue-datetime": "^1.0.0-beta.14",
         "vue-form-wizard": "0.8.4",
         "vue-i18n": "8.16.0",
         "vue-json-csv": "1.2.11",

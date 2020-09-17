@@ -4,15 +4,8 @@
       <div class="col-md-6">
         <b-card>
           <div class="button-zone">
-            <opensilex-ExperimentFacilitySelector
-              :uri="uri"
-              @facilitiesUpdated="refresh"
-            ></opensilex-ExperimentFacilitySelector>
-            &nbsp;
-            <opensilex-OntologyCsvImporter
-              :experimentUri="uri"
-              @csvImported="refresh"
-            ></opensilex-OntologyCsvImporter>
+            <opensilex-ExperimentFacilitySelector :uri="uri" @facilitiesUpdated="refresh"></opensilex-ExperimentFacilitySelector>&nbsp;
+            <opensilex-OntologyCsvImporter :experimentUri="uri" @csvImported="refresh"></opensilex-OntologyCsvImporter>
           </div>
           <opensilex-TreeView :nodes.sync="nodes" @select="displayScientificObjectDetails">
             <template v-slot:node="{ node }">
@@ -21,32 +14,68 @@
               </span>&nbsp;
               <strong v-if="node.data.selected">{{ node.title }}</strong>
               <span v-if="!node.data.selected">{{ node.title }}</span>
-              <span class="async-tree-action" v-if="node.data.childCount> 0  && node.data.childCount > node.children.length"> ({{node.children.length}}/{{node.data.childCount}} éléments<span v-if="node.data.childCount > node.children.length"> - <a href="#" @click.prevent="loadMoreChildren(node)">Load more...</a></span>)</span>
+              <span
+                class="async-tree-action"
+                v-if="node.data.childCount> 0  && node.data.childCount > node.children.length"
+              >
+                ({{node.children.length}}/{{node.data.childCount}} éléments
+                <span
+                  v-if="node.data.childCount > node.children.length"
+                >
+                  -
+                  <a href="#" @click.prevent="loadMoreChildren(node)">Load more...</a>
+                </span>)
+              </span>
             </template>
 
-            <!-- <template v-slot:buttons="{ node }">
+            <template v-slot:buttons="{ node }">
               <opensilex-EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
                 @click="editScientificObject(node.data.uri)"
-                label="ExperimentScientificObjects.edit-scientific-objects"
+                label="ExperimentScientificObjects.edit-scientific-object"
                 :small="true"
               ></opensilex-EditButton>
-            </template> -->
+              <opensilex-AddChildButton
+                v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+                @click="createScientificObject(node.data.uri)"
+                label="ExperimentScientificObjects.add-scientific-object-child"
+                :small="true"
+              ></opensilex-AddChildButton>
+              <opensilex-DeleteButton
+                v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+                @click="deleteScientificObject(node.data.uri)"
+                label="ExperimentScientificObjects.delete-scientific-object"
+                :small="true"
+              ></opensilex-DeleteButton>
+            </template>
           </opensilex-TreeView>
           <opensilex-ModalForm
             v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
             ref="soForm"
-            component="opensilex-ScientificObjectForm"
-            createTitle="component.group.add"
-            editTitle="component.group.update"
+            component="opensilex-OntologyObjectForm"
+            createTitle="ExperimentScientificObjects.add"
+            editTitle="ExperimentScientificObjects.update"
             modalSize="lg"
+            :initForm="initForm"
+            :createAction="callScientificObjectCreation"
+            :updateAction="callScientificObjectUpdate"
             @onCreate="refresh()"
             @onUpdate="refresh()"
-          ></opensilex-ModalForm>
+          >
+            <template v-slot:customFields="{form, editMode}">
+              <opensilex-SelectForm
+                label="ExperimentScientificObjects.parent-label"
+                :selected.sync="form.parent"
+                :multiple="false"
+                :required="false"
+                :options="getParentOptions(form, editMode)"
+              ></opensilex-SelectForm>
+            </template>
+          </opensilex-ModalForm>
         </b-card>
       </div>
       <div class="col-md-6">
-        <opensilex-ScientificObjectDetail :selected="selected" />
+        <opensilex-ScientificObjectDetail v-if="selected" :selected="selected" />
       </div>
     </div>
   </div>
@@ -101,27 +130,27 @@ export default class ExperimentScientificObjects extends Vue {
         let resourceTree: PartialResourceTreeDTO = http.response.result[i];
         let node = this.dtoToNode(resourceTree);
         treeNode.push(node);
-
       }
       this.nodes = treeNode;
     });
   }
 
   loadAllChildren(node) {
-
     let nodeURI = node.data.uri;
 
-    let root = this.nodes[node.path[0]]
+    let root = this.nodes[node.path[0]];
     for (let i = 1; i < node.path.length; i++) {
       root = root.children[node.path[i]];
     }
 
-    this.soService.getScientificObjectsChildren(this.uri, nodeURI).then(http => {
-      let childrenNodes = [];
-      for (let i in http.response.result) {
-        let soDTO  = http.response.result[i];
+    this.soService
+      .getScientificObjectsChildren(this.uri, nodeURI)
+      .then(http => {
+        let childrenNodes = [];
+        for (let i in http.response.result) {
+          let soDTO = http.response.result[i];
 
-         let soNode ={
+          let soNode = {
             title: soDTO.name,
             data: soDTO,
             isLeaf: [],
@@ -130,20 +159,18 @@ export default class ExperimentScientificObjects extends Vue {
             isSelected: false,
             isDraggable: false,
             isSelectable: true
-        };
-        childrenNodes.push(soNode);
+          };
+          childrenNodes.push(soNode);
+        }
 
-        
-      }
-
-      root.children= childrenNodes;
-    });
+        root.children = childrenNodes;
+      });
   }
 
   loadMoreChildren(node) {
     let nodeURI = node.data.uri;
 
-    let root = this.nodes[node.path[0]]
+    let root = this.nodes[node.path[0]];
     for (let i = 1; i < node.path.length; i++) {
       root = root.children[node.path[i]];
     }
@@ -152,12 +179,14 @@ export default class ExperimentScientificObjects extends Vue {
       let remainingChildren = node.data.childCount - root.children.length;
       let offset = root.children.length;
       let limit = Math.min(remainingChildren, 40);
-      this.soService.getScientificObjectsChildren(this.uri, nodeURI, limit, offset).then(http => {
-        let childrenNodes = [];
-        for (let i in http.response.result) {
-          let soDTO  = http.response.result[i];
+      this.soService
+        .getScientificObjectsChildren(this.uri, nodeURI, limit, offset)
+        .then(http => {
+          let childrenNodes = [];
+          for (let i in http.response.result) {
+            let soDTO = http.response.result[i];
 
-          let soNode ={
+            let soNode = {
               title: soDTO.name,
               data: soDTO,
               isLeaf: !soDTO.hasChildren,
@@ -166,15 +195,12 @@ export default class ExperimentScientificObjects extends Vue {
               isSelected: false,
               isDraggable: false,
               isSelectable: true
-          };
-          childrenNodes.push(soNode);
+            };
+            childrenNodes.push(soNode);
+          }
 
-          
-        }
-
-        root.children = root.children.concat(childrenNodes);
-
-      });
+          root.children = root.children.concat(childrenNodes);
+        });
     }
   }
 
@@ -200,10 +226,66 @@ export default class ExperimentScientificObjects extends Vue {
     };
   }
 
+  getParentOptions(form, editMode) {
+    let parentOptions = [];
+    for (let i in this.availableParents) {
+      let availableParent = this.availableParents[i];
+      if (!editMode || availableParent.uri != form.uri) {
+        parentOptions.push({
+          id: availableParent.uri,
+          label: availableParent.name
+        });
+      } else {
+        parentOptions.push({
+          id: availableParent.uri,
+          label: availableParent.name,
+          isDisabled: true
+        });
+      }
+    }
+    return parentOptions;
+  }
+
+  availableParents = [];
+
   editScientificObject(objectURI) {
-    this.soService.getScientificObjectDetail(this.uri, objectURI).then(http => {
-      this.soForm.showEditForm(http.response.result);
+    this.soForm
+      .getFormRef()
+      .setContext({
+        experimentURI: this.uri
+      })
+      .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
+
+    Promise.all([
+      this.soService.getScientificObjectsList(this.uri),
+      this.soService.getScientificObjectDetail(this.uri, objectURI)
+    ]).then(resultArray => {
+      this.availableParents = resultArray[0].response.result;
+      let form: any = resultArray[1].response.result;
+      this.parentURI = form.parent;
+      this.soForm.showEditForm(form);
     });
+  }
+
+  parentURI;
+  createScientificObject(parentURI?) {
+    this.soForm
+      .getFormRef()
+      .setContext({
+        experimentURI: this.uri
+      })
+      .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
+
+    this.parentURI = parentURI;
+    this.soForm.showCreateForm();
+  }
+
+  initForm(form) {
+    if (this.parentURI) {
+      form.parent = this.parentURI;
+    }
+
+    return form;
   }
 
   public displayScientificObjectDetails(node: any) {
@@ -211,6 +293,63 @@ export default class ExperimentScientificObjects extends Vue {
       .getScientificObjectDetail(this.uri, node.data.uri)
       .then(http => {
         this.selected = http.response.result;
+      });
+  }
+
+  public deleteScientificObject(objectURI: any) {
+    this.soService.deleteScientificObject(this.uri, objectURI).then(http => {
+      if (this.selected.uri == http.response.result) {
+        this.selected = null;
+        this.refresh();
+      }
+    });
+  }
+
+  callScientificObjectCreation(form) {
+    let definedRelations = [];
+    for (let i in form.relations) {
+      let relation = form.relations[i];
+      if (relation.property == "oeso:isPartOf") {
+        relation.value = form.parent;
+      }
+      if (relation.value != null) {
+        definedRelations.push(relation);
+      }
+    }
+    return this.soService
+      .createScientificObject({
+        uri: form.uri,
+        name: form.name,
+        type: form.type,
+        experiment: this.uri,
+        relations: definedRelations
+      })
+      .then(http => {
+        this.refresh();
+      });
+  }
+
+  callScientificObjectUpdate(form) {
+    let definedRelations = [];
+    for (let i in form.relations) {
+      let relation = form.relations[i];
+      if (relation.property == "oeso:isPartOf") {
+        relation.value = form.parent;
+      }
+      if (relation.value != null) {
+        definedRelations.push(relation);
+      }
+    }
+    return this.soService
+      .updateScientificObject({
+        uri: form.uri,
+        name: form.name,
+        type: form.type,
+        experiment: this.uri,
+        relations: definedRelations
+      })
+      .then(http => {
+        this.refresh();
       });
   }
 }
@@ -231,8 +370,20 @@ export default class ExperimentScientificObjects extends Vue {
 en:
   ExperimentScientificObjects:
     import-scientific-objects: Import experiment objets
+    add: Add experiment object
+    update: Update experiment object
+    edit-scientific-object: Edit scientific object
+    delete-scientific-object: Delete scientific object
+    add-scientific-object-child: Add scientific object child
+    parent-label: Parent
 
 fr:
   ExperimentScientificObjects:
     import-scientific-objects:  Importer des objets d'étude
+    add: Ajouter un objet d'étude
+    update: Mettre à jour un objet d'étude 
+    edit-scientific-object:  Mettre à jour l'objet d'étude 
+    delete-scientific-object: Supprimer l'objet d'étude 
+    add-scientific-object-child: Ajouter un objet d'étude enfant
+    parent-label: Parent
 </i18n>

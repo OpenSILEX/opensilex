@@ -22,7 +22,9 @@
     </template>
 
     <ValidationObserver ref="validatorRef">
-      <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form"></component>
+      <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form">
+        <slot name="customFields" v-bind:form="form" v-bind:editMode="editMode"></slot>
+      </component>
     </ValidationObserver>
   </b-modal>
 </template>

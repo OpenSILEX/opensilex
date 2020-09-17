@@ -1,20 +1,9 @@
 <template>
-  <opensilex-FormField v-if="property"
-    rules="integer"
-    :required="property.required"
-    :label="property.label"
-    :helpMessage="property.comment"
-  >
-    <template v-slot:field="field">
-      <b-form-input
-        :id="field.id"
-        v-model="internalValue"
-        type="text"
-        step="any"
-        :required="property.required"
-      ></b-form-input>
-    </template>
-  </opensilex-FormField>
+    <opensilex-CheckboxForm
+      :value.sync="internalValue"
+      :label="property.name"
+      :title="internalValue == 'true' ? $t('component.common.yes') : $t('component.common.no')"
+    ></opensilex-CheckboxForm>
 </template>
 
 <script lang="ts">

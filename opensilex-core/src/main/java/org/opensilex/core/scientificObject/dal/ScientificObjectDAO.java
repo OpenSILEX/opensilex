@@ -16,7 +16,7 @@ import java.util.function.BiConsumer;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.rdf.model.Property;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.factor.dal.FactorLevelModel;
@@ -28,6 +28,7 @@ import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -66,7 +67,15 @@ public class ScientificObjectDAO {
         );
     }
 
-    public List<ScientificObjectModel> searchChildrenByExperiment(URI experimentURI, URI parentURI, Integer offset, Integer limit,  UserModel currentUser) throws Exception {
+    public List<ScientificObjectModel> searchByExperiment(URI experimentURI, UserModel currentUser) throws Exception {
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        xpDAO.validateExperimentAccess(experimentURI, currentUser);
+
+        Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
+        return sparql.search(experimentGraph, ScientificObjectModel.class, currentUser.getLanguage());
+    }
+
+    public List<ScientificObjectModel> searchChildrenByExperiment(URI experimentURI, URI parentURI, Integer offset, Integer limit, UserModel currentUser) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(experimentURI, currentUser);
 
@@ -79,9 +88,9 @@ public class ScientificObjectDAO {
                 select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
             }
         },
-        null,
-        offset,
-        limit);
+                null,
+                offset,
+                limit);
     }
 
     public CSVValidationModel validateCSV(URI xpURI, URI soType, InputStream file, UserModel currentUser) throws Exception {
@@ -90,25 +99,25 @@ public class ScientificObjectDAO {
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
-        HashMap<Property, BiConsumer<CSVCell, CSVValidationModel>> customValidators = new HashMap<>();
+        HashMap<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators = new HashMap<>();
 
         ExperimentModel xp = sparql.getByURI(ExperimentModel.class, xpURI, currentUser.getLanguage());
 
-        List<URI> factorLevelURIs = new ArrayList<>();
+        List<String> factorLevelURIs = new ArrayList<>();
         for (FactorModel factor : xp.getFactors()) {
             for (FactorLevelModel factorLevel : factor.getFactorLevels()) {
-                factorLevelURIs.add(factorLevel.getUri());
+                factorLevelURIs.add(SPARQLDeserializers.getExpandedURI(factorLevel.getUri()));
             }
         }
 
-        List<URI> germplasmURIs = new ArrayList<>();
+        List<String> germplasmURIs = new ArrayList<>();
         for (SpeciesModel germplasm : xp.getSpecies()) {
-            germplasmURIs.add(germplasm.getUri());
+            germplasmURIs.add(SPARQLDeserializers.getExpandedURI(germplasm.getUri()));
         }
 
-        customValidators.put(Oeso.hasFactorLevel, (cell, csvErrors) -> {
+        customValidators.put(Oeso.hasFactorLevel.toString(), (cell, csvErrors) -> {
             try {
-                URI factorLevelURI = new URI(cell.getValue());
+                String factorLevelURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
                 if (!factorLevelURIs.contains(factorLevelURI)) {
                     csvErrors.addInvalidValueError(cell);
                 }
@@ -117,9 +126,9 @@ public class ScientificObjectDAO {
             }
         });
 
-        customValidators.put(Oeso.hasGermplasm, (cell, csvErrors) -> {
+        customValidators.put(Oeso.hasGermplasm.toString(), (cell, csvErrors) -> {
             try {
-                URI germplasmURI = new URI(cell.getValue());
+                String germplasmURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
                 if (!germplasmURIs.contains(germplasmURI)) {
                     csvErrors.addInvalidValueError(cell);
                 }
@@ -131,7 +140,36 @@ public class ScientificObjectDAO {
         return ontologyDAO.validateCSV(xpURI, soType, file, currentUser, customValidators, new ScientificObjectExperimentURIGenerator(xpURI));
     }
 
-    public URI create(URI xpURI, URI soType, URI objectURI, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+    public URI create(URI xpURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+        SPARQLResourceModel object = initObject(xpURI, soType, name, relations, currentUser);
+
+        if (objectURI == null) {
+            ScientificObjectExperimentURIGenerator uriGenerator = new ScientificObjectExperimentURIGenerator(xpURI);
+            int retry = 0;
+            objectURI = uriGenerator.generateURI(xpURI.toString(), name, retry);
+            while (sparql.uriExists(SPARQLDeserializers.nodeURI(xpURI), objectURI)) {
+                retry++;
+                objectURI = uriGenerator.generateURI(xpURI.toString(), name, retry);
+            }
+        }
+        object.setUri(objectURI);
+
+        sparql.create(SPARQLDeserializers.nodeURI(xpURI), object);
+
+        return object.getUri();
+    }
+
+    public URI update(URI xpURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+        SPARQLResourceModel object = initObject(xpURI, soType, name, relations, currentUser);
+        object.setUri(objectURI);
+
+        sparql.delete(SPARQLDeserializers.nodeURI(xpURI), ExperimentalObjectModel.class, objectURI);
+        sparql.create(SPARQLDeserializers.nodeURI(xpURI), object);
+
+        return object.getUri();
+    }
+
+    private SPARQLResourceModel initObject(URI xpURI, URI soType, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(xpURI, currentUser);
 
@@ -140,24 +178,18 @@ public class ScientificObjectDAO {
 
         SPARQLResourceModel object = new SPARQLResourceModel();
         object.setType(soType);
-        object.setUri(objectURI);
 
-        boolean isValid = false;
         if (relations.size() != model.getRestrictions().size()) {
-            isValid = true;
             for (RDFObjectRelationDTO relation : relations) {
-                isValid = isValid && ontologyDAO.validateObjectValue(xpURI, model, relation.getProperty(), relation.getValue(), object);
-                if (!isValid) {
-                    break;
+                if (!ontologyDAO.validateObjectValue(xpURI, model, relation.getProperty(), relation.getValue(), object)) {
+                    throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                 }
             }
         }
 
-        if (isValid) {
-            sparql.create(SPARQLDeserializers.nodeURI(xpURI), object);
-        }
+        object.addRelation(xpURI, new URI(RDFS.label.getURI()), String.class, name);
 
-        return object.getUri();
+        return object;
     }
 
     public ExperimentalObjectModel getByURIAndExperiment(URI xpURI, URI objectURI, UserModel currentUser) throws Exception {
@@ -165,6 +197,13 @@ public class ScientificObjectDAO {
         xpDAO.validateExperimentAccess(xpURI, currentUser);
 
         return sparql.getByURI(SPARQLDeserializers.nodeURI(xpURI), ExperimentalObjectModel.class, objectURI, currentUser.getLanguage());
+    }
+
+    public void delete(URI xpURI, URI objectURI, UserModel currentUser) throws Exception {
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        xpDAO.validateExperimentAccess(xpURI, currentUser);
+
+        sparql.delete(SPARQLDeserializers.nodeURI(xpURI), ExperimentalObjectModel.class, objectURI);
     }
 
     private class ScientificObjectExperimentURIGenerator implements URIGenerator<String> {

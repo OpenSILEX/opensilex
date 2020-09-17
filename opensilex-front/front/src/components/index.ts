@@ -122,6 +122,9 @@ import TagInputForm from './common/forms/TagInputForm.vue'
 components["opensilex-TagInputForm"] = TagInputForm;
 import IconForm from './common/forms/IconForm.vue'
 components["opensilex-IconForm"] = IconForm;
+import DateTimeForm from './common/forms/DateTimeForm.vue'
+components["opensilex-DateTimeForm"] = DateTimeForm;
+
 
 import WizardForm from './common/forms/WizardForm.vue'
 components["opensilex-WizardForm"] = WizardForm;
@@ -214,9 +217,10 @@ import OntologyPropertyForm from './ontology/OntologyPropertyForm.vue'
 components["opensilex-OntologyPropertyForm"] = OntologyPropertyForm;
 import OntologyPropertyView from './ontology/OntologyPropertyView.vue'
 components["opensilex-OntologyPropertyView"] = OntologyPropertyView;
-
 import OntologyTypesView from './ontology/OntologyTypesView.vue'
 components["opensilex-OntologyTypesView"] = OntologyTypesView;
+import OntologyObjectForm from './ontology/OntologyObjectForm.vue'
+components["opensilex-OntologyObjectForm"] = OntologyObjectForm;
 
 
 import XSDBooleanInput from './ontology/XSDBooleanInput.vue'
@@ -239,6 +243,8 @@ import XSDRawView from './ontology/XSDRawView.vue'
 components["opensilex-XSDRawView"] = XSDRawView;
 import XSDStringInput from './ontology/XSDStringInput.vue'
 components["opensilex-XSDStringInput"] = XSDStringInput;
+import XSDLongStringInput from './ontology/XSDLongStringInput.vue'
+components["opensilex-XSDLongStringInput"] = XSDLongStringInput;
 import XSDUriInput from './ontology/XSDUriInput.vue'
 components["opensilex-XSDUriInput"] = XSDUriInput;
 import XSDUriView from './ontology/XSDUriView.vue'
@@ -289,6 +295,8 @@ import GermplasmAttributesTable from './germplasm/GermplasmAttributesTable.vue';
 components["opensilex-GermplasmAttributesTable"] = GermplasmAttributesTable;
 import GermplasmPropertyView from './germplasm/GermplasmPropertyView.vue';
 components["opensilex-GermplasmPropertyView"] = GermplasmPropertyView;
+import GermplasmSelector from './germplasm/GermplasmSelector.vue';
+components["opensilex-GermplasmSelector"] = GermplasmSelector;
 
 // Projects
 import ProjectForm from './projects/ProjectForm.vue';

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.OWL2;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.annotations.SPARQLResourceURI;
@@ -23,8 +24,8 @@ import org.opensilex.sparql.utils.Ontology;
  * @author vidalmor
  */
 @SPARQLResource(
-        ontology = Ontology.class,
-        resource = "SPARQLResourceModel"
+        ontology = OWL2.class,
+        resource = "Class"
 )
 public class SPARQLResourceModel implements SPARQLModel {
 

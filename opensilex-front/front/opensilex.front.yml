@@ -165,6 +165,10 @@ routes:
     component: opensilex-VariableDetails
     credentials:
       - variable-read
+  - path: /project/:uri
+    component: opensilex-ProjectDetails
+    credentials:
+      - project-read
   - path: /factor/details/:uri
     component: opensilex-FactorView
     credentials: []

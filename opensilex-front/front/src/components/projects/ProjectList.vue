@@ -38,7 +38,11 @@
       defaultSortBy="startDate"
     >
       <template v-slot:cell(uri)="{data}">
-        <opensilex-UriLink :uri="data.item.uri"></opensilex-UriLink>
+        <opensilex-UriLink
+          :uri="data.item.uri"
+          :value="data.item.name"
+          :to="{path: '/project/'+ encodeURIComponent(data.item.uri)}"
+        ></opensilex-UriLink>
       </template>
 
       <template v-slot:cell(startDate)="{data}">

@@ -113,10 +113,12 @@ export default class OntologyObjectForm extends Vue {
     if (this.typeModel) {
       for (let i in this.typeModel.dataProperties) {
         let dataProperty = this.typeModel.dataProperties[i];
-        internalTypeProperties.push({
-          definition: dataProperty,
-          property: this.valueByProperties[dataProperty.property]
-        });
+        if (dataProperty.property != "rdfs:label") {
+          internalTypeProperties.push({
+            definition: dataProperty,
+            property: this.valueByProperties[dataProperty.property]
+          });
+        }
       }
 
       for (let i in this.typeModel.objectProperties) {

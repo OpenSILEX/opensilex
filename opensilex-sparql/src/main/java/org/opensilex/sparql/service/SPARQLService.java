@@ -1180,6 +1180,21 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     }
 
+    public void insertPrimitive(Node graph, List<URI> uris, Property property, Object value) throws Exception {
+        UpdateBuilder insertQuery = new UpdateBuilder();
+        Node nodeValue;
+
+        if (SPARQLDeserializers.existsForClass(value.getClass())) {
+            nodeValue = SPARQLDeserializers.getForClass(value.getClass()).getNode(value);
+
+            for (URI subject : uris) {
+                insertQuery.addInsert(graph, SPARQLDeserializers.nodeURI(subject), property, nodeValue);
+            }
+
+            executeUpdateQuery(insertQuery);
+        }
+    }
+
     /**
      * Insert a list of quad (graph,subject,property,object), (graph,subject,property,object_1) ...
      * (graph,subject,property,object_k)
@@ -1512,4 +1527,5 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         executeUpdateQuery(delete);
     }
+
 }

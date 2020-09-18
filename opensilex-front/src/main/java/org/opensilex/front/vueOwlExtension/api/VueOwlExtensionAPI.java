@@ -181,28 +181,26 @@ public class VueOwlExtensionAPI {
 
         List<VueClassPropertyDTO> dataProperties = new ArrayList<>(classDescription.getDatatypeProperties().size());
         for (DatatypePropertyModel dt : classDescription.getDatatypeProperties().values()) {
-            if (!SPARQLDeserializers.compareURIs(dt.getUri().toString(), RDFS.label.toString())) {
-                VueClassPropertyDTO pDTO = new VueClassPropertyDTO();
-                pDTO.setProperty(dt.getUri());
-                pDTO.setName(dt.getName());
-                if (dt.getComment() != null) {
-                    pDTO.setComment(dt.getComment().getDefaultValue());
-                }
-                OwlRestrictionModel restriction = classDescription.getRestrictions().get(dt.getUri());
-                pDTO.setIsList(restriction.isList());
-                pDTO.setIsRequired(restriction.isRequired());
-                VueOntologyType vueType = VueOwlExtensionDAO.getVueType(dt.getTypeRestriction());
-                if (vueType != null) {
-                    pDTO.setInputComponent(vueType.getInputComponent());
-                    pDTO.setViewComponent(vueType.getViewComponent());
-                }
-                if (parentModel.isDatatypePropertyRestriction(dt.getUri())) {
-                    pDTO.setInherited(true);
-                } else {
-                    pDTO.setInherited(false);
-                }
-                dataProperties.add(pDTO);
+            VueClassPropertyDTO pDTO = new VueClassPropertyDTO();
+            pDTO.setProperty(dt.getUri());
+            pDTO.setName(dt.getName());
+            if (dt.getComment() != null) {
+                pDTO.setComment(dt.getComment().getDefaultValue());
             }
+            OwlRestrictionModel restriction = classDescription.getRestrictions().get(dt.getUri());
+            pDTO.setIsList(restriction.isList());
+            pDTO.setIsRequired(restriction.isRequired());
+            VueOntologyType vueType = VueOwlExtensionDAO.getVueType(dt.getTypeRestriction());
+            if (vueType != null) {
+                pDTO.setInputComponent(vueType.getInputComponent());
+                pDTO.setViewComponent(vueType.getViewComponent());
+            }
+            if (parentModel.isDatatypePropertyRestriction(dt.getUri())) {
+                pDTO.setInherited(true);
+            } else {
+                pDTO.setInherited(false);
+            }
+            dataProperties.add(pDTO);
         }
         classProperties.setDataProperties(dataProperties);
 

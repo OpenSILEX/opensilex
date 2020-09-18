@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.util.List;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
-import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -210,8 +209,12 @@ public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> impleme
 
     @Override
     public String[] getUriSegments(ProjectModel instance) {
+        String name =  instance.getShortname();
+        if (name == null || name.trim().isEmpty()) {
+            name = instance.getName();
+        }
         return new String[]{
-            instance.getName()
+            name
         };
     }
 

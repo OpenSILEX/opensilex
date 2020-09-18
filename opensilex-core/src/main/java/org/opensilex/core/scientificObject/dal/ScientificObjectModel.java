@@ -14,18 +14,18 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 )
 public class ScientificObjectModel extends ExperimentalObjectModel {
 
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasFactorLevel"
-    )
-    protected List<FactorLevelModel> factorLevels;
-
-    public List<FactorLevelModel> getFactorLevels() {
-        return factorLevels;
-    }
-
-    public void setFactorLevels(List<FactorLevelModel> factorLevels) {
-        this.factorLevels = factorLevels;
-    }
+//    @SPARQLProperty(
+//            ontology = Oeso.class,
+//            property = "hasFactorLevel"
+//    )
+//    protected List<FactorLevelModel> factorLevels;
+//
+//    public List<FactorLevelModel> getFactorLevels() {
+//        return factorLevels;
+//    }
+//
+//    public void setFactorLevels(List<FactorLevelModel> factorLevels) {
+//        this.factorLevels = factorLevels;
+//    }
 
 }

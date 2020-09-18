@@ -632,6 +632,10 @@
     </owl:DatatypeProperty>
     
 
+    <owl:DatatypeProperty rdf:about="http://www.w3.org/2000/01/rdf-schema#comment">
+        <rdfs:label xml:lang="en">Description</rdfs:label>
+        <rdfs:label xml:lang="fr">Description</rdfs:label>
+    </owl:DatatypeProperty>
 
     <!-- 
    ///////////////////////////////////////////////////////////////////////////////////////
@@ -941,9 +945,9 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
     </owl:Class>
     
-   <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject">
-               <rdfs:label xml:lang="en">Experimental Object</rdfs:label>
-               <rdfs:label xml:lang="fr">Objet expérimental</rdfs:label>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject">
+        <rdfs:label xml:lang="en">Experimental Object</rdfs:label>
+        <rdfs:label xml:lang="fr">Objet expérimental</rdfs:label>
     </owl:Class>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ScientificObject -->
@@ -964,6 +968,13 @@
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#comment"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>        
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasFactorLevel"/>

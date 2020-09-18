@@ -222,6 +222,7 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
     public void rollbackTransaction(Exception ex) throws Exception {
         try {
             rdf4JConnection.rollback();
+            throw ex;
         } catch (RepositoryException e) {
             Throwable cause = e.getCause();
             if (cause instanceof ShaclSailValidationException) {

@@ -80,14 +80,18 @@ public class ScientificObjectDAO {
         xpDAO.validateExperimentAccess(experimentURI, currentUser);
 
         Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
-        return sparql.search(experimentGraph, ScientificObjectModel.class, currentUser.getLanguage(), (select) -> {
-            if (parentURI != null) {
-                select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(parentURI));
-            } else {
-                Triple parentTriple = new Triple(makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf.asNode(), makeVar("parentURI"));
-                select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
-            }
-        },
+        return sparql.search(
+                experimentGraph,
+                ScientificObjectModel.class,
+                currentUser.getLanguage(),
+                (select) -> {
+                    if (parentURI != null) {
+                        select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(parentURI));
+                    } else {
+                        Triple parentTriple = new Triple(makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf.asNode(), makeVar("parentURI"));
+                        select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
+                    }
+                },
                 null,
                 offset,
                 limit);
@@ -164,8 +168,23 @@ public class ScientificObjectDAO {
         object.setUri(objectURI);
 
         Node xpGraphNode = SPARQLDeserializers.nodeURI(xpURI);
-        sparql.deleteByURI(xpGraphNode, objectURI);
-        sparql.create(xpGraphNode, object);
+
+        List<URI> childrenURIs = sparql.searchURIs(
+                xpGraphNode,
+                ScientificObjectModel.class,
+                currentUser.getLanguage(),
+                (select) -> {
+                    select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(objectURI));
+                });
+        try {
+            sparql.startTransaction();
+            sparql.deleteByURI(xpGraphNode, objectURI);
+            sparql.create(xpGraphNode, object);
+            sparql.insertPrimitive(xpGraphNode, childrenURIs, Oeso.isPartOf, objectURI);
+            sparql.commitTransaction();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction(ex);
+        }
 
         return object.getUri();
     }

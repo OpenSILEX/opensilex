@@ -375,9 +375,4 @@ public class ScientificObjectAPI {
      */
     private static final String CLAIM_OBJECT_TYPE_URI = "object_type_uri";
 
-    /**
-     * File Hash claim key
-     */
-    private static final String CLAIM_FILE_HASH_URI = "file_hash";
-
 }

@@ -1,7 +1,7 @@
 <template>
-  <sl-vue-tree v-model="nodeList" @select="selectItem">
+  <sl-vue-tree v-model="nodeList" @select="selectItem" @toggle="$emit('toggle', $event)">
     <template slot="toggle" slot-scope="{ node }">
-      <span v-if="!node.isLeaf">
+      <span class="toggle-icon" v-if="!node.isLeaf">
         <opensilex-Icon v-if="node.isExpanded" icon="fa#chevron-down" />
         <opensilex-Icon v-if="!node.isExpanded" icon="fa#chevron-right" />
       </span>
@@ -49,5 +49,9 @@ export default class TreeView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.toggle-icon {
+  padding-left: 5px;
+  padding-right: 5px;
+}
 </style>
 

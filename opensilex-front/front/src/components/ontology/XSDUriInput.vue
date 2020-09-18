@@ -5,7 +5,7 @@
     type="text"
     rules="url"
     :disabled="false"
-    :required="property.required"
+    :required="property.isRequired"
   ></opensilex-InputForm>
 </template>
 

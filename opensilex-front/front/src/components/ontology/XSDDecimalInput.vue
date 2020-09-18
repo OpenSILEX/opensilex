@@ -5,7 +5,7 @@
     type="number"
     rules="decimal"
     :disabled="false"
-    :required="property.required"
+    :required="property.isRequired"
   ></opensilex-InputForm>
 </template>
 

@@ -24,7 +24,6 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.opensilex.service.Service;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
@@ -60,6 +59,7 @@ import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
+import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.opensilex.OpenSilex;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
@@ -135,7 +135,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 put(FOAF.PREFIX, FOAF.NAMESPACE);
                 put("dc", DCTerms.NS);
                 put(OWL.PREFIX, OWL.NAMESPACE);
-                put(XMLSchema.PREFIX, XMLSchema.NAMESPACE);
+                put(XSD.PREFIX, XSD.NAMESPACE);
             }
         };
     }
@@ -737,7 +737,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist) throws Exception {
         create(graph, instance, checkUriExist, false, null);
     }
-    
+
     public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         try {
@@ -760,7 +760,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         } else {
             instance.setType(rdfType);
         }
-        
+
         if (!blankNode) {
             generateUniqueUriIfNullOrValidateCurrent(graph, mapper, instance, checkUriExist);
         }
@@ -1040,7 +1040,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             }
         }
     }
-    
+
     public <T extends SPARQLResourceModel, U extends SPARQLResourceModel> List<URI> getRelationsURI(Class<T> objectClass, Class<U> relationClass, Field objectField, URI objectURI) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         SPARQLClassObjectMapper<T> objectMapper = mapperIndex.getForClass(objectClass);
@@ -1425,7 +1425,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         delete.addWhere(nodeUri, property, "?value");
         executeDeleteQuery(delete);
     }
-    
+
     public void deletePrimitive(Node graph, URI uri, Property property, Object value) throws Exception {
         UpdateBuilder delete = new UpdateBuilder();
         Node nodeUri = SPARQLDeserializers.nodeURI(uri);
@@ -1486,5 +1486,30 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             }
             executeUpdateQuery(delete);
         }
+    }
+
+    public void deleteByURI(Node graph, URI uri) throws SPARQLException {
+        UpdateBuilder delete = new UpdateBuilder();
+
+        Var s = makeVar("s");
+        Var p = makeVar("p");
+        Var o = makeVar("o");
+
+        Triple triple = new Triple(s, p, o);
+        if (graph != null) {
+            Quad quad = new Quad(graph, triple);
+            delete.addDelete(quad);
+        } else {
+            delete.addDelete(triple);
+        }
+
+        delete.addWhere(triple);
+        Node nodeURI = SPARQLDeserializers.nodeURI(uri);
+        delete.addFilter(SPARQLQueryHelper.or(
+                SPARQLQueryHelper.eq(s.getVarName(), nodeURI),
+                SPARQLQueryHelper.eq(o.getVarName(), nodeURI)
+        ));
+
+        executeUpdateQuery(delete);
     }
 }

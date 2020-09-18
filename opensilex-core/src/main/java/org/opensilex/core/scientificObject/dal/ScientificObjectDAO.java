@@ -163,8 +163,9 @@ public class ScientificObjectDAO {
         SPARQLResourceModel object = initObject(xpURI, soType, name, relations, currentUser);
         object.setUri(objectURI);
 
-        sparql.delete(SPARQLDeserializers.nodeURI(xpURI), ExperimentalObjectModel.class, objectURI);
-        sparql.create(SPARQLDeserializers.nodeURI(xpURI), object);
+        Node xpGraphNode = SPARQLDeserializers.nodeURI(xpURI);
+        sparql.deleteByURI(xpGraphNode, objectURI);
+        sparql.create(xpGraphNode, object);
 
         return object.getUri();
     }
@@ -203,7 +204,7 @@ public class ScientificObjectDAO {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(xpURI, currentUser);
 
-        sparql.delete(SPARQLDeserializers.nodeURI(xpURI), ExperimentalObjectModel.class, objectURI);
+        sparql.deleteByURI(SPARQLDeserializers.nodeURI(xpURI), objectURI);
     }
 
     private class ScientificObjectExperimentURIGenerator implements URIGenerator<String> {

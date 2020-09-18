@@ -25,7 +25,8 @@ import org.opensilex.sparql.utils.Ontology;
  */
 @SPARQLResource(
         ontology = OWL2.class,
-        resource = "Class"
+        resource = "Class",
+        ignoreValidation = true
 )
 public class SPARQLResourceModel implements SPARQLModel {
 

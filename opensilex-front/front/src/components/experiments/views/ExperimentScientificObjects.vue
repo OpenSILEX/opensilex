@@ -4,7 +4,12 @@
       <div class="col-md-6">
         <b-card>
           <div class="button-zone">
-            <opensilex-ExperimentFacilitySelector :uri="uri" @facilitiesUpdated="refresh"></opensilex-ExperimentFacilitySelector>&nbsp;
+            <opensilex-CreateButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+              @click="createScientificObject()"
+              label="ExperimentScientificObjects.create-scientific-object"
+            ></opensilex-CreateButton>&nbsp;
+            <!-- <opensilex-ExperimentFacilitySelector :uri="uri" @facilitiesUpdated="refresh"></opensilex-ExperimentFacilitySelector>&nbsp; -->
             <opensilex-OntologyCsvImporter :experimentUri="uri" @csvImported="refresh"></opensilex-OntologyCsvImporter>
           </div>
           <opensilex-TreeView :nodes.sync="nodes" @select="displayScientificObjectDetails">
@@ -259,9 +264,9 @@ export default class ExperimentScientificObjects extends Vue {
     Promise.all([
       this.soService.getScientificObjectsList(this.uri),
       this.soService.getScientificObjectDetail(this.uri, objectURI)
-    ]).then(resultArray => {
-      this.availableParents = resultArray[0].response.result;
-      let form: any = resultArray[1].response.result;
+    ]).then(resulatArray => {
+      this.availableParents = resulatArray[0].response.result;
+      let form: any = resulatArray[1].response.result;
       this.parentURI = form.parent;
       this.soForm.showEditForm(form);
     });
@@ -277,7 +282,11 @@ export default class ExperimentScientificObjects extends Vue {
       .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
 
     this.parentURI = parentURI;
-    this.soForm.showCreateForm();
+
+    this.soService.getScientificObjectsList(this.uri).then(http => {
+      this.availableParents = http.response.result;
+      this.soForm.showCreateForm();
+    });
   }
 
   initForm(form) {
@@ -331,15 +340,25 @@ export default class ExperimentScientificObjects extends Vue {
 
   callScientificObjectUpdate(form) {
     let definedRelations = [];
+    let parentSet = false;
     for (let i in form.relations) {
       let relation = form.relations[i];
       if (relation.property == "oeso:isPartOf") {
         relation.value = form.parent;
+        parentSet = true;
       }
       if (relation.value != null) {
         definedRelations.push(relation);
       }
     }
+
+    if (!parentSet && form.parent != null) {
+      definedRelations.push({
+        property: "oeso:isPartOf",
+        value: form.parent
+      });
+    }
+
     return this.soService
       .updateScientificObject({
         uri: form.uri,
@@ -372,6 +391,7 @@ en:
     import-scientific-objects: Import experiment objets
     add: Add experiment object
     update: Update experiment object
+    create-scientific-object: Create scientific object
     edit-scientific-object: Edit scientific object
     delete-scientific-object: Delete scientific object
     add-scientific-object-child: Add scientific object child
@@ -379,11 +399,12 @@ en:
 
 fr:
   ExperimentScientificObjects:
-    import-scientific-objects:  Importer des objets d'étude
-    add: Ajouter un objet d'étude
-    update: Mettre à jour un objet d'étude 
-    edit-scientific-object:  Mettre à jour l'objet d'étude 
-    delete-scientific-object: Supprimer l'objet d'étude 
-    add-scientific-object-child: Ajouter un objet d'étude enfant
+    import-scientific-objects:  Importer des objets scientifiques
+    add: Ajouter un objet scientifique
+    update: Mettre à jour un objet scientifiques
+    create-scientific-object: Créer un objet scientifique
+    edit-scientific-object:  Mettre à jour l'objet scientifique
+    delete-scientific-object: Supprimer l'objet scientifique
+    add-scientific-object-child: Ajouter un objet scientifique enfant
     parent-label: Parent
 </i18n>

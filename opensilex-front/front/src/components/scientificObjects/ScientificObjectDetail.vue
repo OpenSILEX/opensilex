@@ -1,5 +1,5 @@
 <template>
-  <b-card v-if="selected">
+  <b-card v-if="selected && selected.uri">
     <template v-slot:header>
       <h3>
         <!-- <opensilex-Icon icon="ik#ik-clipboard" /> -->
@@ -17,7 +17,11 @@
       <div v-for="(v, index) in typeProperties" v-bind:key="index">
         <div class="static-field">
           <span class="field-view-title">{{v.definition.name}}:</span>
-          <component v-if="!v.definition.isList" :is="v.definition.viewComponent" :value="v.property"></component>
+          <component
+            v-if="!v.definition.isList"
+            :is="v.definition.viewComponent"
+            :value="v.property"
+          ></component>
           <ul v-else>
             <li v-for="(prop, propIndex) in v.property" v-bind:key="propIndex">
               <component :is="v.definition.viewComponent" :value="prop"></component>
@@ -41,6 +45,12 @@ export default class ScientificObjectDetail extends Vue {
   selected;
 
   typeProperties = [];
+
+  mounted() {
+    if (this.selected) {
+      this.onSelectionChange();
+    }
+  }
 
   @Watch("selected")
   onSelectionChange() {

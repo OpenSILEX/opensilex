@@ -1,8 +1,12 @@
 <template>
   <div class="static-field">
     <span class="field-view-title">{{$t(label)}}:</span>
-    <span class="static-field-line" v-if="value">
-      <opensilex-Icon :icon="value"></opensilex-Icon>&nbsp;({{value}})
+    <span class="static-field-line">
+      <span v-if="value">
+        <opensilex-Icon :icon="value"></opensilex-Icon>
+        &nbsp;({{value}})
+      </span>
+      <br v-else/> 
     </span>
   </div>
 </template>

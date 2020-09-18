@@ -341,7 +341,7 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
         return resultList;
     }
 
-    private SPARQLValidationException convertRDF4JSHACLException(ShaclSailValidationException validationEx) {
+    private static SPARQLValidationException convertRDF4JSHACLException(ShaclSailValidationException validationEx) {
         SPARQLValidationException exception = new SPARQLValidationException();
         Model model = validationEx.validationReportAsModel();
         Map<Resource, URI> invalidObject = new HashMap<>();
@@ -398,26 +398,34 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
 
     @Override
     public void enableSHACL() throws SPARQLException {
-        rdf4JConnection.begin();
-        clearGraph(RDF4J.SHACL_SHAPE_GRAPH);
+        try {
+            rdf4JConnection.begin();
+            clearGraph(RDF4J.SHACL_SHAPE_GRAPH);
 
-        for (Class<?> c : getMapperIndex().getResourceClasses()) {
-            try {
-                String shaclTTL = SHACL.generateSHACL(c, getMapperIndex());
-                if (shaclTTL != null) {
-                    LOGGER.debug("Generated SHACL for: " + c.getCanonicalName() + "\n" + shaclTTL);
-                    rdf4JConnection.add(new StringReader(shaclTTL), "", RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
-                } else {
-                    LOGGER.debug("No SHACL Validation for: " + c.getCanonicalName() + "\n" + shaclTTL);
+            for (Class<?> c : getMapperIndex().getResourceClasses()) {
+                try {
+                    String shaclTTL = SHACL.generateSHACL(c, getMapperIndex());
+                    if (shaclTTL != null) {
+                        LOGGER.debug("Generated SHACL for: " + c.getCanonicalName() + "\n" + shaclTTL);
+                        rdf4JConnection.add(new StringReader(shaclTTL), "", RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
+                    } else {
+                        LOGGER.debug("No SHACL Validation for: " + c.getCanonicalName() + "\n" + shaclTTL);
+                    }
+                } catch (Exception ex) {
+                    LOGGER.warn("Error while loading SHACL for: " + c.getCanonicalName(), ex);
                 }
-            } catch (Exception ex) {
-                LOGGER.warn("Error while loading SHACL for: " + c.getCanonicalName(), ex);
+            }
+
+            rdf4JConnection.commit();
+            shaclEnabled = true;
+        } catch (RepositoryException ex) {
+            Throwable cause = ex.getCause();
+            if (cause instanceof ShaclSailValidationException) {
+                throw convertRDF4JSHACLException((ShaclSailValidationException) cause);
+            } else {
+                throw new SPARQLException(ex.getMessage());
             }
         }
-
-        rdf4JConnection.commit();
-        shaclEnabled = true;
-
     }
 
     @Override

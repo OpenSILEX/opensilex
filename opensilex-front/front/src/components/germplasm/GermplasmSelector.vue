@@ -1,7 +1,7 @@
 <template>
   <div>
     <opensilex-SpeciesSelector
-      :required="property.required"
+      :required="property.isRequired"
       :multiple="false"
       :species.sync="internalValue"
       :experimentURI="context.experimentURI"

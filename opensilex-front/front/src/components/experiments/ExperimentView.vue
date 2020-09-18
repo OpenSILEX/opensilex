@@ -2,7 +2,7 @@
   <div v-if="uri" class="container-fluid">
     <opensilex-PageHeader icon="ik#ik-layers" title="component.experiment.view.title"></opensilex-PageHeader>
 
-    <opensilex-PageActions :returnButton="true">
+    <opensilex-PageActions :returnButton="true" :returnTo="{path: '/experiments'}">
       <template v-slot>
         <b-nav-item
           :active="isDetailsTab()"

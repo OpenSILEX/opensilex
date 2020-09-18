@@ -11,7 +11,7 @@
         <opensilex-Icon icon="ik#ik-copy" />
       </button>
     </router-link>
-    <a v-if="url" :href="url" class="uri" :title="uri" target="about:blank">
+    <a v-if="computeURL" :href="computeURL" class="uri" :title="uri" target="about:blank">
       <span>{{value || uri}}</span>
       &nbsp;
       <button
@@ -22,7 +22,13 @@
         <opensilex-Icon icon="ik#ik-copy" />
       </button>
     </a>
-    <a v-if="!url && !to" href="#" @click.prevent="$emit('click', uri)" :title="uri" class="uri">
+    <a
+      v-if="!computeURL && !to"
+      href="#"
+      @click.prevent="$emit('click', uri)"
+      :title="uri"
+      class="uri"
+    >
       <span>{{value || uri}}</span>
       &nbsp;
       <button
@@ -57,6 +63,21 @@ export default class UriLink extends Vue {
 
   @Prop()
   to: string;
+
+  get computeURL() {
+    if (this.to) {
+      return null;
+    } else if (this.url) {
+      return this.url;
+    } else if (
+      (this.uri && this.uri.startsWith("http://")) ||
+      this.uri.startsWith("https://")
+    ) {
+      return this.uri;
+    } else {
+      return null;
+    }
+  }
 
   copyURI(address) {
     copy(address);

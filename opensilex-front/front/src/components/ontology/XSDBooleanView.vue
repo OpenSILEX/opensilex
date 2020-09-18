@@ -1,5 +1,6 @@
 <template>
-  <span class="static-field-line">{{value ? $t("component.common.yes") : $t("component.common.no")}}</span>
+
+  <span class="static-field-line">{{value=="true" ? $t("component.common.yes") : $t("component.common.no")}}</span>
 </template>
 
 <script lang="ts">

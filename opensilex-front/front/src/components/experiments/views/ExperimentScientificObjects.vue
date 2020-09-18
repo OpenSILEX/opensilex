@@ -12,7 +12,7 @@
             <!-- <opensilex-ExperimentFacilitySelector :uri="uri" @facilitiesUpdated="refresh"></opensilex-ExperimentFacilitySelector>&nbsp; -->
             <opensilex-OntologyCsvImporter :experimentUri="uri" @csvImported="refresh"></opensilex-OntologyCsvImporter>
           </div>
-          <opensilex-TreeView :nodes.sync="nodes" @select="displayScientificObjectDetails">
+          <opensilex-TreeView :nodes.sync="nodes" @select="displayScientificObjectDetails($event.data.uri)">
             <template v-slot:node="{ node }">
               <span class="item-icon">
                 <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.type)" />
@@ -297,9 +297,9 @@ export default class ExperimentScientificObjects extends Vue {
     return form;
   }
 
-  public displayScientificObjectDetails(node: any) {
+  public displayScientificObjectDetails(nodeUri: any) {
     this.soService
-      .getScientificObjectDetail(this.uri, node.data.uri)
+      .getScientificObjectDetail(this.uri, nodeUri)
       .then(http => {
         this.selected = http.response.result;
       });
@@ -369,6 +369,7 @@ export default class ExperimentScientificObjects extends Vue {
       })
       .then(http => {
         this.refresh();
+        this.displayScientificObjectDetails(form.uri);
       });
   }
 }

@@ -22,8 +22,8 @@
                     <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
                         <template v-slot:body>
                             <opensilex-UriView :uri="project.uri" :url="project.uri"></opensilex-UriView>
-                            <opensilex-StringView label="component.project.shortname" :value="project.name"></opensilex-StringView>
-                            <opensilex-StringView label="component.project.name" :value="project.longName"></opensilex-StringView>
+                            <opensilex-StringView label="component.project.shortname" :value="project.shortname"></opensilex-StringView>
+                            <opensilex-StringView label="component.project.name" :value="project.label"></opensilex-StringView>
                             <opensilex-TextView label="component.common.description" :value="project.comment"></opensilex-TextView>
                         </template>
                     </opensilex-Card>

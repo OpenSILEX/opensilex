@@ -53,6 +53,21 @@
         <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
       </template>
 
+       <template v-slot:cell(state)="{data}">
+            <i
+              v-if="!isEnded(data.item)"
+              class="ik ik-activity badge-icon badge-info-opensilex"
+              :title="$t('component.experiment.common.status.in-progress')"
+            ></i>
+            <i
+              v-else
+              class="ik ik-archive badge-icon badge-light"
+              :title="$t('component.experiment.common.status.finished')"
+            ></i>
+          
+          </template>
+
+
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
           <opensilex-EditButton
@@ -134,6 +149,10 @@ export default class ProjectList extends Vue {
       label: "component.project.financialFunding",
       sortable: true
     },
+     {
+      key: "state",
+      label: "component.experiment.search.column.state"
+    },
     {
       label: "component.common.actions",
       key: "actions"
@@ -162,6 +181,13 @@ export default class ProjectList extends Vue {
       options.currentPage,
       options.pageSize
     );
+  }
+  isEnded(experiment) {
+    if (experiment.endDate) {
+      return moment(experiment.endDate, "YYYY-MM-DD").diff(moment()) < 0;
+    }
+
+    return false;
   }
 
   deleteUser(uri: string) {

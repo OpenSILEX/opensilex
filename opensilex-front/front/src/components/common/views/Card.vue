@@ -6,6 +6,9 @@
         <span class="capitalize-first-letter">{{ $t(label) }}</span>
       </h3>
       <slot name="header"></slot>
+      <div class="card-header-right">
+        <slot name="rightHeader"></slot>
+      </div>
     </div>
     <div class="card-body">
       <slot name="body"></slot>

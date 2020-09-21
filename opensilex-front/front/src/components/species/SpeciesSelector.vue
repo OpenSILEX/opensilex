@@ -8,7 +8,6 @@
     :optionsLoadingMethod="loadSpecies"
     :conversionMethod="speciesToSelectNode"
     :placeholder="placeholder"
-    noResultsText="component.user.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
@@ -78,8 +77,8 @@ export default class SpeciesSelector extends Vue {
         );
     } else {
       return this.$opensilex
-        .getService("opensilex.SpeciesService")
-        .getExperimentSpecies(this.experimentURI)
+        .getService("opensilex.ExperimentsService")
+        .getAvailableSpecies(this.experimentURI)
         .then(
           (http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) =>
             http.response.result

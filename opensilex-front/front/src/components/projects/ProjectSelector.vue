@@ -8,7 +8,6 @@
     :searchMethod="searchProjects"
     :conversionMethod="projectToSelectNode"
     placeholder="component.project.filter-placeholder"
-    noResultsText="component.project.filter-search-no-result"
     @select="select"
     @deselect="deselect"
   ></opensilex-SelectForm>

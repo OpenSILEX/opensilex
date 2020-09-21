@@ -21,12 +21,12 @@ public class VueFactorLevel implements VueOntologyObjectType {
 
     @Override
     public String getInputComponent() {
-        return "opensilex-FactorLevelSelector";
+        return "opensilex-FactorLevelPropertySelector";
     }
 
     @Override
     public String getViewComponent() {
-        return "opensilex-FactorLevelView";
+        return "opensilex-FactorLevelPropertyView";
     }
 
 }

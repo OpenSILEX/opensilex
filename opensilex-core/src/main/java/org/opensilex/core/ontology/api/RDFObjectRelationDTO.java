@@ -8,6 +8,7 @@ package org.opensilex.core.ontology.api;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,16 @@ public class RDFObjectRelationDTO {
         } catch (URISyntaxException ex) {
             LOGGER.error("Invalid object relation property URI (should never happend) : " + relation.getProperty(), ex);
         }
-        dto.setValue(relation.getValue());
+
+        if (URIDeserializer.validateURI(relation.getValue())) {
+            try {
+                dto.setValue(SPARQLDeserializers.formatURI(new URI(relation.getValue())).toString());
+            } catch (URISyntaxException ex) {
+                LOGGER.error("URI considered valid but throw exception (should never happend) : " + relation.getProperty() + " - " + relation.getValue(), ex);
+            }
+        } else {
+            dto.setValue(relation.getValue());
+        }
 
         return dto;
     }

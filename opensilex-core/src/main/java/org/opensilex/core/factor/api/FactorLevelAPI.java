@@ -104,6 +104,45 @@ public class FactorLevelAPI {
         }
     }
 
+    /**
+     * Retreive factor level by uri
+     *
+     * @param factorLevelUri factor uri level
+     * @return Return factor level
+     * @throws Exception in case of server error
+     */
+    @GET
+    @Path("get-details/{uri}")
+    @ApiOperation("Get an factor level")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = FactorAPI.CREDENTIAL_FACTOR_READ_ID,
+            credentialLabelKey = FactorAPI.CREDENTIAL_FACTOR_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Factor level retrieved", response = FactorLevelGetDetailDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 404, message = "Factor level not found", response = ErrorResponse.class)
+    })
+    public Response getFactorLevelDetail(
+            @ApiParam(value = "Factor Level URI", example = "platform-factor:irrigation.ww", required = true) @PathParam("uri") @NotNull URI factorLevelUri
+    ) throws Exception {
+        FactorLevelDAO dao = new FactorLevelDAO(sparql);
+        FactorLevelModel model = dao.get(factorLevelUri);
+
+        if (model != null) {
+            return new SingleObjectResponse<>(
+                    FactorLevelGetDetailDTO.fromModel(model)
+            ).getResponse();
+        } else {
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Factor level not found",
+                    "Unknown factor level URI: " + factorLevelUri.toString()
+            ).getResponse();
+        }
+    }
    
     /**
      * Remove an factor Level

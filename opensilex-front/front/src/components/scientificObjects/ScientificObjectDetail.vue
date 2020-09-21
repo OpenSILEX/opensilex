@@ -23,6 +23,7 @@
             :value="v.property"
           ></component>
           <ul v-else>
+            <br />
             <li v-for="(prop, propIndex) in v.property" v-bind:key="propIndex">
               <component :is="v.definition.viewComponent" :value="prop"></component>
             </li>
@@ -60,7 +61,20 @@ export default class ScientificObjectDetail extends Vue {
 
     for (let i in this.selected.relations) {
       let relation = this.selected.relations[i];
-      valueByProperties[relation.property] = relation.value;
+      if (
+        valueByProperties[relation.property] &&
+        !Array.isArray(valueByProperties[relation.property])
+      ) {
+        valueByProperties[relation.property] = [
+          valueByProperties[relation.property]
+        ];
+      }
+
+      if (Array.isArray(valueByProperties[relation.property])) {
+        valueByProperties[relation.property].push(relation.value);
+      } else {
+        valueByProperties[relation.property] = relation.value;
+      }
     }
 
     return this.$opensilex
@@ -69,26 +83,36 @@ export default class ScientificObjectDetail extends Vue {
       .then(http => {
         let classModel: any = http.response.result;
 
-        for (let i in classModel.dataProperties) {
-          let dataProperty = classModel.dataProperties[i];
-          if (valueByProperties[dataProperty.property]) {
-            this.typeProperties.push({
-              definition: dataProperty,
-              property: valueByProperties[dataProperty.property]
-            });
-          }
-        }
-
-        for (let i in classModel.objectProperties) {
-          let objectProperty = classModel.objectProperties[i];
-          if (valueByProperties[objectProperty.property]) {
-            this.typeProperties.push({
-              definition: objectProperty,
-              property: valueByProperties[objectProperty.property]
-            });
-          }
-        }
+        this.loadProperties(classModel.dataProperties, valueByProperties);
+        this.loadProperties(classModel.objectProperties, valueByProperties);
       });
+  }
+
+  loadProperties(properties, valueByProperties) {
+    for (let i in properties) {
+      let property = properties[i];
+      if (valueByProperties[property.property]) {
+        if (
+          property.isList &&
+          !Array.isArray(valueByProperties[property.property])
+        ) {
+          this.typeProperties.push({
+            definition: property,
+            property: [valueByProperties[property.property]]
+          });
+        } else {
+          this.typeProperties.push({
+            definition: property,
+            property: valueByProperties[property.property]
+          });
+        }
+      } else if (property.isList) {
+        this.typeProperties.push({
+          definition: property,
+          property: []
+        });
+      }
+    }
   }
 }
 </script>

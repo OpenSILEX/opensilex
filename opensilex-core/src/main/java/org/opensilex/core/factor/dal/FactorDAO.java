@@ -21,6 +21,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.factor.api.FactorSearchDTO;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -72,15 +73,14 @@ public class FactorDAO {
     }
 
     /**
-     * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each
-     * non-empty simple attribute ( not a {@link List} from the
-     * {@link FactorSearchDTO}
+     * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty simple attribute ( not a
+     * {@link List} from the {@link FactorSearchDTO}
      *
-     * @param uri           uri factor uri attribute
-     * @param name          name search attribute
-     * @param category      category of the factor
+     * @param uri uri factor uri attribute
+     * @param name name search attribute
+     * @param category category of the factor
      * @param experimentUri experiment uri
-     * @param select        search query
+     * @param select search query
      * @throws java.lang.Exception can throw an exception
      * @see SPARQLQueryHelper the utility class used to build Expr
      */
@@ -120,5 +120,11 @@ public class FactorDAO {
 
     public List<FactorModel> getList(List<URI> uris) throws Exception {
         return sparql.getListByURIs(FactorModel.class, uris, null);
+    }
+
+    public List<FactorModel> getByExperiment(URI xpUri, String lang) throws Exception {
+        return sparql.search(FactorModel.class, lang, (select) -> {
+            select.addWhere(SPARQLDeserializers.nodeURI(xpUri), Oeso.studyEffectOf, makeVar(SpeciesModel.URI_FIELD));
+        });
     }
 }

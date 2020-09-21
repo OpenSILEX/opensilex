@@ -326,13 +326,23 @@ export default class ExperimentScientificObjects extends Vue {
     let definedRelations = [];
     for (let i in form.relations) {
       let relation = form.relations[i];
-      if (relation.property == "oeso:isPartOf") {
+      if (relation.property == "vocabulary:isPartOf") {
         relation.value = form.parent;
       }
       if (relation.value != null) {
-        definedRelations.push(relation);
+        if (Array.isArray(relation.value)) {
+          for (let j in relation.value) {
+            definedRelations.push({
+              property: relation.property,
+              value: relation.value[j]
+            });
+          }
+        } else {
+          definedRelations.push(relation);
+        }
       }
     }
+
     return this.soService
       .createScientificObject({
         uri: form.uri,
@@ -351,18 +361,27 @@ export default class ExperimentScientificObjects extends Vue {
     let parentSet = false;
     for (let i in form.relations) {
       let relation = form.relations[i];
-      if (relation.property == "oeso:isPartOf") {
+      if (relation.property == "vocabulary:isPartOf") {
         relation.value = form.parent;
         parentSet = true;
       }
       if (relation.value != null) {
-        definedRelations.push(relation);
+        if (Array.isArray(relation.value)) {
+          for (let j in relation.value) {
+            definedRelations.push({
+              property: relation.property,
+              value: relation.value[j]
+            });
+          }
+        } else {
+          definedRelations.push(relation);
+        }
       }
     }
 
     if (!parentSet && form.parent != null) {
       definedRelations.push({
-        property: "oeso:isPartOf",
+        property: "vocabulary:isPartOf",
         value: form.parent
       });
     }

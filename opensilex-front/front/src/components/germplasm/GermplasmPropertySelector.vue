@@ -20,7 +20,7 @@ import {
 import Vue from "vue";
 
 @Component
-export default class GermplasmSelector extends Vue {
+export default class GermplasmPropertySelector extends Vue {
   $opensilex: any;
 
   @Prop()

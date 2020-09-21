@@ -71,7 +71,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
                 "http://www.opensilex.org/vocabulary/oeso#",
                 "ontologies/oeso-core.owl",
                 Lang.RDFXML,
-                "oeso"
+                "vocabulary"
         ));
         list.add(new OntologyFileDefinition(
                 "http://www.opensilex.org/vocabulary/oeev#",

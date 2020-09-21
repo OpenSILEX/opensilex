@@ -127,6 +127,7 @@
                 "search-button": "Search",
                 "clear-button": "Reset"
             },
+            "filter-search-no-result": "Sorry, no results match your search.",
             "help-button": "Help",
             "list": {
                 "buttons": {

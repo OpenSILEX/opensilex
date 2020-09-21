@@ -65,25 +65,4 @@ public class SpeciesAPI {
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
     
-    @GET
-    @Path("get-experiment-species/{uri}")
-    @ApiOperation("get all species associated to an experiment")
-    @ApiTranslatable
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return Species list", response = SpeciesDTO.class, responseContainer = "List")
-    })
-    public Response getExperimentSpecies(
-       @ApiParam(value = "Experiment URI", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
-    ) throws Exception {
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        xpDAO.validateExperimentAccess(xpUri, user);
-
-        SpeciesDAO dao = new SpeciesDAO(sparql);
-        List<SpeciesModel> species = dao.getByExperiment(xpUri, user.getLanguage());
-
-        List<SpeciesDTO> dtoList = species.stream().map(SpeciesDTO::fromModel).collect(Collectors.toList());
-        return new PaginatedListResponse<>(dtoList).getResponse();
-    }
 }

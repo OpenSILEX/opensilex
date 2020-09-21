@@ -7,7 +7,6 @@
     :searchMethod="searchGroups"
     :conversionMethod="groupToSelectNode"
     placeholder="component.group.filter-placeholder"
-    noResultsText="component.group.filter-search-no-result"
     @select="select"
     @deselect="deselect"
   ></opensilex-SelectForm>

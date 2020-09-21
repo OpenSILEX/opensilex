@@ -30,12 +30,18 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.opensilex.core.factor.api.FactorDetailsGetDTO;
+import org.opensilex.core.factor.dal.FactorDAO;
+import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.core.infrastructure.api.InfrastructureFacilityGetDTO;
 import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
 import org.opensilex.core.species.api.SpeciesDTO;
+import org.opensilex.core.species.dal.SpeciesDAO;
+import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.ApiTranslatable;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 
@@ -114,8 +120,7 @@ public class ExperimentAPI {
 
     /**
      * @param xpDto the Experiment to update
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing
-     * the updated Experiment {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing the updated Experiment {@link URI}
      */
     @PUT
     @Path("update")
@@ -144,8 +149,7 @@ public class ExperimentAPI {
 
     /**
      * @param xpUri the Experiment URI
-     * @return a {@link Response} with a {@link SingleObjectResponse} containing
-     * the {@link ExperimentGetDTO}
+     * @return a {@link Response} with a {@link SingleObjectResponse} containing the {@link ExperimentGetDTO}
      */
     @GET
     @Path("get/{uri}")
@@ -226,8 +230,7 @@ public class ExperimentAPI {
      * Remove an experiment
      *
      * @param xpUri the experiment URI
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing
-     * the deleted Experiment {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing the deleted Experiment {@link URI}
      */
     @DELETE
     @Path("delete/{uri}")
@@ -320,15 +323,49 @@ public class ExperimentAPI {
         List<InfrastructureFacilityGetDTO> dtoList = facilities.stream().map(InfrastructureFacilityGetDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
-    
 
+    @GET
+    @Path("get-available-species/{uri}")
+    @ApiOperation("get all species associated to an experiment")
+    @ApiTranslatable
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return Species list", response = SpeciesDTO.class, responseContainer = "List")
+    })
     public Response getAvailableSpecies(
-            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+            @ApiParam(value = "Experiment URI", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
-        ExperimentDAO xpDao = new ExperimentDAO(sparql);
-        ExperimentModel xp = xpDao.get(xpUri, currentUser);
-        
-        return new PaginatedListResponse<>(xp.getSpecies()).getResponse();
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        xpDAO.validateExperimentAccess(xpUri, currentUser);
+
+        SpeciesDAO dao = new SpeciesDAO(sparql);
+        List<SpeciesModel> species = dao.getByExperiment(xpUri, currentUser.getLanguage());
+
+        List<SpeciesDTO> dtoList = species.stream().map(SpeciesDTO::fromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    @GET
+    @Path("get-available-factors/{uri}")
+    @ApiOperation("get all factors with their levels associated to an experiment")
+    @ApiTranslatable
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return factors list", response = FactorDetailsGetDTO.class, responseContainer = "List")
+    })
+    public Response getAvailableFactors(
+            @ApiParam(value = "Experiment URI", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+    ) throws Exception {
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        xpDAO.validateExperimentAccess(xpUri, currentUser);
+
+        FactorDAO dao = new FactorDAO(sparql);
+        List<FactorModel> factors = dao.getByExperiment(xpUri, currentUser.getLanguage());
+
+        List<FactorDetailsGetDTO> dtoList = factors.stream().map(FactorDetailsGetDTO::fromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
     /**
@@ -338,11 +375,9 @@ public class ExperimentAPI {
      * @param factors
      * @return the query result
      * @example [ "http://www.phenome-fppn.fr/opensilex/2018/s18001" ]
-     * @example { "metadata": { "pagination": null, "status": [ { "message":
-     * "Resources updated", "exception": { "type": "Info", "href": null,
-     * "details": "The experiment http://www.opensilex.fr/platform/OSL2018-1 has
-     * now 1 linked sensors" } } ], "datafiles": [
-     * "http://www.opensilex.fr/platform/OSL2015-1" ] } }
+     * @example { "metadata": { "pagination": null, "status": [ { "message": "Resources updated", "exception": { "type":
+     * "Info", "href": null, "details": "The experiment http://www.opensilex.fr/platform/OSL2018-1 has now 1 linked
+     * sensors" } } ], "datafiles": [ "http://www.opensilex.fr/platform/OSL2015-1" ] } }
      */
     @PUT
     @Path("{uri}/factors")

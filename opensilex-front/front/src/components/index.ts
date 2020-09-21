@@ -96,6 +96,10 @@ import FactorCategorySelector from './factors/FactorCategorySelector.vue';
 components["opensilex-FactorCategorySelector"] = FactorCategorySelector;
 import FactorsHelp from './factors/FactorsHelp.vue';
 components["opensilex-FactorsHelp"] = FactorsHelp;
+import FactorLevelPropertySelector from './factors/FactorLevelPropertySelector.vue';
+components["opensilex-FactorLevelPropertySelector"] = FactorLevelPropertySelector;
+import FactorLevelPropertyView from './factors/FactorLevelPropertyView.vue';
+components["opensilex-FactorLevelPropertyView"] = FactorLevelPropertyView;
 
 // Common
 import FormInputLabelHelper from './common/forms/FormInputLabelHelper.vue'
@@ -295,8 +299,8 @@ import GermplasmAttributesTable from './germplasm/GermplasmAttributesTable.vue';
 components["opensilex-GermplasmAttributesTable"] = GermplasmAttributesTable;
 import GermplasmPropertyView from './germplasm/GermplasmPropertyView.vue';
 components["opensilex-GermplasmPropertyView"] = GermplasmPropertyView;
-import GermplasmSelector from './germplasm/GermplasmSelector.vue';
-components["opensilex-GermplasmSelector"] = GermplasmSelector;
+import GermplasmPropertySelector from './germplasm/GermplasmPropertySelector.vue';
+components["opensilex-GermplasmPropertySelector"] = GermplasmPropertySelector;
 
 // Projects
 import ProjectForm from './projects/ProjectForm.vue';

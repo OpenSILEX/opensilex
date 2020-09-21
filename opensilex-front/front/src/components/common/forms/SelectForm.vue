@@ -6,7 +6,7 @@
     :helpMessage="helpMessage"
   >
     <template v-slot:field="field">
-      <input :id="field.id" type="hidden" :value="getHiddenValue()" />
+      <input :id="field.id" type="hidden" :value="hiddenValue" />
       <b-input-group class="select-button-container">
         <treeselect
           v-if="isModalSearch"
@@ -42,11 +42,11 @@
           :placeholder="$t(placeholder)"
           :disabled="disabled"
           :clearable="clearable"
+          :defaultExpandLevel="2"
           @deselect="deselect"
           @select="select"
           @input="clearIfNeeded"
           @close="close(field)"
-          @updade="setCurrentSelectedNodes($event)"
           :noResultsText="$t(noResultsText)"
           :searchPromptText="$t('component.common.search-prompt-text')"
           :disable-branch-nodes="disableBranchNodes"
@@ -73,6 +73,7 @@
           :placeholder="$t(placeholder)"
           :disabled="disabled"
           :clearable="clearable"
+          :defaultExpandLevel="2"
           @deselect="deselect"
           @select="select"
           @input="clearIfNeeded"
@@ -176,7 +177,9 @@ export default class SelectForm extends Vue {
   @Prop()
   placeholder: string;
 
-  @Prop()
+  @Prop({
+    default: "component.common.filter-search-no-result"
+  })
   noResultsText: string;
 
   @Prop()
@@ -312,7 +315,7 @@ export default class SelectForm extends Vue {
     return list;
   }
 
-  getHiddenValue() {
+  get hiddenValue() {
     if (this.multiple) {
       if (this.selection.length > 0) {
         return this.selection.join(",");
@@ -332,7 +335,6 @@ export default class SelectForm extends Vue {
     } else {
       this.selection = value.id;
     }
-
     this.$emit("select", value);
   }
 
@@ -345,10 +347,10 @@ export default class SelectForm extends Vue {
     this.$emit("deselect", value);
   }
 
-  close(field){
-      if (field.validator) {
-          this.$nextTick(() => field.validator.validate());
-      }
+  close(field) {
+    if (field.validator) {
+      this.$nextTick(() => field.validator.validate());
+    }
   }
 
   clearIfNeeded(values) {
@@ -356,9 +358,20 @@ export default class SelectForm extends Vue {
       if (values.length == 0) {
         this.selection.splice(0, this.selection.length);
         this.$emit("clear");
+        return;
       }
     } else if (!values) {
       this.selection = null;
+      this.$emit("clear");
+      return;
+    }
+
+    if (this.multiple) {
+      let newValues = [];
+      for (let i in values) {
+        newValues.push(values[i].id);
+      }
+      this.selection = newValues;
     }
   }
 

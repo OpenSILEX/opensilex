@@ -180,7 +180,9 @@ public class ScientificObjectDAO {
             sparql.startTransaction();
             sparql.deleteByURI(xpGraphNode, objectURI);
             sparql.create(xpGraphNode, object);
-            sparql.insertPrimitive(xpGraphNode, childrenURIs, Oeso.isPartOf, objectURI);
+            if (childrenURIs.size() > 0) {
+                sparql.insertPrimitive(xpGraphNode, childrenURIs, Oeso.isPartOf, objectURI);
+            }
             sparql.commitTransaction();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
@@ -199,11 +201,9 @@ public class ScientificObjectDAO {
         SPARQLResourceModel object = new SPARQLResourceModel();
         object.setType(soType);
 
-        if (relations.size() != model.getRestrictions().size()) {
-            for (RDFObjectRelationDTO relation : relations) {
-                if (!ontologyDAO.validateObjectValue(xpURI, model, relation.getProperty(), relation.getValue(), object)) {
-                    throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
-                }
+        for (RDFObjectRelationDTO relation : relations) {
+            if (!ontologyDAO.validateObjectValue(xpURI, model, relation.getProperty(), relation.getValue(), object)) {
+                throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
             }
         }
 

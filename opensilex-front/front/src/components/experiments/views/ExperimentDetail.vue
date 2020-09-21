@@ -98,12 +98,6 @@
             <div class="static-field">
               <span
                 class="static-field-key"
-              >{{ $t('component.experiment.installations') }}{{ $t('component.common.colon') }}</span>
-              <span class="static-field-line"></span>
-            </div>
-            <div class="static-field">
-              <span
-                class="static-field-key"
               >{{ $t('component.experiment.projects') }}{{ $t('component.common.colon') }}</span>
               <span class="static-field-line">
                 <span :key="index" v-for="(project, index) in projectsList">

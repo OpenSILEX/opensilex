@@ -122,6 +122,7 @@
                 "search-button": "Rechercher",
                 "clear-button": "Réinitialiser"
             },
+            "filter-search-no-result": "Désolé, aucun élément ne correspond à votre recherche.",
             "help-button": "Aide",
             "list": {
                 "buttons": {

@@ -52,10 +52,7 @@ public class DataCreationDTO{
     private Float confidence = null;
     
     private Map metadata;
-    
-    @JsonProperty("prov:used")
-    List<EntityModel> provUsed;
-    
+       
     public void setUri(URI uri) {
         this.uri = uri;
     }
@@ -118,10 +115,6 @@ public class DataCreationDTO{
 
     public void setMetadata(Map metadata) {
         this.metadata = metadata;
-    }
-
-    public List<EntityModel> getProvUsed() {
-        return provUsed;
     }
       
     public DataModel newModel() throws ParseException {

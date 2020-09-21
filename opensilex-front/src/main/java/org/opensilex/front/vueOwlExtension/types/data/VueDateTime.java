@@ -11,11 +11,13 @@ import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 
 /**
- *
+ * TODO: 
+ * Activer cette classe une fois que les composant de datetime seront opérationnels dans vue
+ * Il suffit simplement de décommenter l'interface VueOntologyDataType et les méthodes de la classe
  * @author vmigot
  */
-public class VueDateTime implements VueOntologyDataType {
-
+public class VueDateTime /* implements VueOntologyDataType  */ {
+    /*
     @Override
     public String getUri() {
         return XSDDatatype.XSDdateTime.getURI();
@@ -35,5 +37,5 @@ public class VueDateTime implements VueOntologyDataType {
     public String getLabelKey() {
         return "datatypes.datetime";
     }
-
+     */
 }

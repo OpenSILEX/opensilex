@@ -145,6 +145,9 @@ import StringView from './common/views/StringView.vue'
 components["opensilex-StringView"] = StringView;
 import ListView from './common/views/ListView.vue'
 components["opensilex-ListView"] = ListView;
+import ContactListView from './common/views/ContactListView.vue'
+components["opensilex-ContactListView"] = ContactListView;
+
 import TextView from './common/views/TextView.vue'
 components["opensilex-TextView"] = TextView;
 import DateView from './common/views/DateView.vue'

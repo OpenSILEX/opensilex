@@ -57,12 +57,12 @@
             <i
               v-if="!isEnded(data.item)"
               class="ik ik-activity badge-icon badge-info-opensilex"
-              :title="$t('component.experiment.common.status.in-progress')"
+              :title="$t('component.project.common.status.in-progress')"
             ></i>
             <i
               v-else
               class="ik ik-archive badge-icon badge-light"
-              :title="$t('component.experiment.common.status.finished')"
+              :title="$t('component.project.common.status.finished')"
             ></i>
           
           </template>
@@ -182,9 +182,9 @@ export default class ProjectList extends Vue {
       options.pageSize
     );
   }
-  isEnded(experiment) {
-    if (experiment.endDate) {
-      return moment(experiment.endDate, "YYYY-MM-DD").diff(moment()) < 0;
+  isEnded(project) {
+    if (project.endDate) {
+      return moment(project.endDate, "YYYY-MM-DD").diff(moment()) < 0;
     }
 
     return false;

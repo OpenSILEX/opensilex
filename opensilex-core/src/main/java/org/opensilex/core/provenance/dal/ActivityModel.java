@@ -6,26 +6,38 @@
 //******************************************************************************
 package org.opensilex.core.provenance.dal;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.net.URI;
+import java.util.Map;
+import javax.jdo.annotations.Column;
 import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.Persistent;
 
 /**
- *
- * @author boizetal
+ * Activity model
+ * @author Alice Boizet
  */
-@PersistenceCapable(table = "provenance")
-public class ActivityModel {
-    String rdftype;    
+@PersistenceCapable(embeddedOnly="true")
+public class ActivityModel {    
+    @JsonProperty("rdf:type")
+    @Column(name="rdf:type")
+    URI type;   
+
     String startedAtTime;
+    
     String endedAtTime;
+    
+    @Persistent(defaultFetchGroup="true")
+    Map settings; 
 
-    public String getRdftype() {
-        return rdftype;
+    public URI getType() {
+        return type;
     }
 
-    public void setRdftype(String rdftype) {
-        this.rdftype = rdftype;
+    public void setType(URI type) {
+        this.type = type;
     }
-
+    
     public String getStartedAtTime() {
         return startedAtTime;
     }
@@ -41,7 +53,13 @@ public class ActivityModel {
     public void setEndedAtTime(String endedAtTime) {
         this.endedAtTime = endedAtTime;
     }
-    
-    
+
+    public Map getSettings() {
+        return settings;
+    }
+
+    public void setSettings(Map settings) {
+        this.settings = settings;
+    }
     
 }

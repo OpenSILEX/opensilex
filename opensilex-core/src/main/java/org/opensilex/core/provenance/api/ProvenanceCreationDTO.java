@@ -1,31 +1,38 @@
 //******************************************************************************
-//                          provenanceCreationDTO.java
+//                          ProvenanceCreationDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRAE 2020
 // Contact: alice.boizet@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
 package org.opensilex.core.provenance.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.text.ParseException;
 import java.util.List;
-import java.util.Map;
-import javax.jdo.annotations.Embedded;
-import org.bson.Document;
+import javax.validation.constraints.NotNull;
+import org.opensilex.core.provenance.dal.ActivityModel;
 import org.opensilex.core.provenance.dal.AgentModel;
-import org.opensilex.core.provenance.dal.ProvMetadata;
+import org.opensilex.core.provenance.dal.ExperimentProvModel;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.server.rest.validation.ValidURI;
 
 /**
- *
- * @author boizetal
+ * Provenance Creation DTO
+ * @author Alice Boizet
  */
 public class ProvenanceCreationDTO {
     
-    protected String jsonSchema;
+    /**
+     * uri
+     */
+    @ValidURI
+    protected URI uri;
+
     /**
      * label
      */
+    @NotNull
     protected String label;
     
     /**
@@ -34,15 +41,30 @@ public class ProvenanceCreationDTO {
     protected String comment;
     
     /**
-     * experiment
+     * experiments list
      */
-    protected List<URI> experiments;
-    
-    /**
-     * metadata
-     */
-    protected AgentModel agent;
+    protected List<ExperimentProvModel> experiments;
 
+    /**
+     * activity
+     */
+    @JsonProperty("prov:Activity")
+    protected List<ActivityModel> activity;
+       
+    /**
+     * agents
+     */
+    @JsonProperty("prov:Agent")
+    protected List<AgentModel> agents;
+
+    public URI getUri() {
+        return uri;
+    }
+
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
+    
     public String getLabel() {
         return label;
     }
@@ -59,28 +81,40 @@ public class ProvenanceCreationDTO {
         this.comment = comment;
     }
 
-    public List<URI> getExperiments() {
+    public List<ExperimentProvModel> getExperiments() {
         return experiments;
     }
 
-    public void setExperiments(List<URI> experiments) {
+    public void setExperiments(List<ExperimentProvModel> experiments) {
         this.experiments = experiments;
     }   
-
-    public AgentModel getAgent() {
-        return agent;
+    
+    public List<ActivityModel> getActivity() {
+        return activity;
     }
 
-    public void setAgent(AgentModel agent) {
-        this.agent = agent;
+    public void setActivity(List<ActivityModel> activity) {
+        this.activity = activity;
     }
 
-    public String getJsonSchema() {
-        return jsonSchema;
+    public List<AgentModel> getAgents() {
+        return agents;
     }
 
-    public void setJsonSchema(String jsonSchema) {
-        this.jsonSchema = jsonSchema;
+    public void setAgents(List<AgentModel> agents) {
+        this.agents = agents;
     }
 
+    public ProvenanceModel newModel() throws ParseException {
+        ProvenanceModel model = new ProvenanceModel();
+        model.setUri(uri);
+        model.setLabel(label);
+        model.setComment(comment);
+        model.setExperiments(experiments);
+        model.setActivity(activity);
+        model.setAgents(agents);
+
+        return model;
+        
+    }
 }

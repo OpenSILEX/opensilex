@@ -5,13 +5,23 @@
  */
 package org.opensilex.core.data.dal;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.text.ParseException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import javax.jdo.annotations.Cacheable;
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Element;
+import javax.jdo.annotations.Embedded;
+import javax.jdo.annotations.Join;
 import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
@@ -19,6 +29,7 @@ import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.query.BooleanExpression;
 import org.apache.commons.lang3.ArrayUtils;
 import org.opensilex.nosql.model.NoSQLModel;
+import org.opensilex.server.rest.validation.DateFormat;
 
 /**
  *
@@ -40,18 +51,32 @@ public class DataModel implements NoSQLModel{
     
     private URI variable;
     
-    private URI provenance;
+    private URI provenanceURI;
+    
+    @Persistent(defaultFetchGroup="true")    
+    Map provenanceSettings; 
+    
+    @Element(embeddedMapping={
+    @Embedded(members={
+        @Persistent(name="uri", column="uri"),
+        @Persistent(name="type", column="rdf:type")})
+    })
+    @Join(column="uri")
+    @Persistent(defaultFetchGroup="true")
+    @Column(name="prov:used")
+    List<EntityModel> provUsed;
     
     private ZonedDateTime date;
     
     private String timezone;
-    @Persistent
+    
+    @Persistent(defaultFetchGroup="true")
     private Object value;
     
-    private Integer confidence = null;
+    private Float confidence = null;
     
-    /*@Persistent
-    private Object metaData;*/
+    @Persistent(defaultFetchGroup="true")
+    private Map metadata;  
     
     @Override
     public void setUri(URI uri) {
@@ -65,17 +90,23 @@ public class DataModel implements NoSQLModel{
     public void setVariable(URI variable){
         this.variable = variable;
     }
-    
-    public void setProvenance(URI provenance){
-        this.provenance = provenance;
-    }
-    
+        
     public void setDate(String date) throws ParseException{
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXXX");
         if(date != null){
-            this.date = ZonedDateTime.parse(date,dtf);
+            DateFormat[] formats = {DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ};
+            ZonedDateTime zdt = null;
+            for (DateFormat dateCheckFormat : formats) {
+                try { 
+                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern(dateCheckFormat.toString());
+                    zdt = ZonedDateTime.parse(date, dtf);
+                    break;
+                } catch (DateTimeParseException e) {
+                }                    
+            }
+            this.date = zdt;
             this.timezone = this.date.getZone().toString();
-        }
+        }      
+           
     }
     
     public void setDate(ZonedDateTime date){
@@ -93,7 +124,7 @@ public class DataModel implements NoSQLModel{
         this.value = value;
     }
     
-    public void setConfidence(Integer c){
+    public void setConfidence(Float c){
         this.confidence = c;
     }
     
@@ -113,11 +144,7 @@ public class DataModel implements NoSQLModel{
     public URI getVariable(){
         return variable;
     }
-    
-    public URI getProvenance(){
-        return provenance;
-    }
-     
+        
     public ZonedDateTime getDate(){
         if (date == null) return null;
         
@@ -129,17 +156,42 @@ public class DataModel implements NoSQLModel{
         return value;
     }
     
-    public Integer getConfidence(){
+    public Float getConfidence(){
         return confidence;
     }
     
-    /*public Object getMetaData(){
-        return metaData;
+    public Map getMetadata(){
+        return metadata;
     }
     
-    public void setMetaData(Object m){
-        this.metaData = m;
-    }*/
+    public void setMetadata(Map m){
+        this.metadata = m;
+    }
+
+    public URI getProvenanceURI() {
+        return provenanceURI;
+    }
+
+    public void setProvenanceURI(URI provenanceURI) {
+        this.provenanceURI = provenanceURI;
+    }
+
+    public Map getProvenanceSettings() {
+        return provenanceSettings;
+    }
+
+    public void setProvenanceSettings(Map provenanceSettings) {
+        this.provenanceSettings = provenanceSettings;
+    }
+    
+    public List<EntityModel> getProvUsed() {
+        return provUsed;
+    }
+
+    public void setProvUsed(List<EntityModel> provUsed) {
+        this.provUsed = provUsed;
+    }
+    
 
     @Override
     public <T extends NoSQLModel> T update(T instance) {
@@ -158,11 +210,21 @@ public class DataModel implements NoSQLModel{
         else
             newInstance.setVariable(variable);
 
-        if(updateInstance.getProvenance() !=  null)
-            newInstance.setProvenance(updateInstance.getProvenance());
+        if(updateInstance.getProvenanceURI()!=  null)
+            newInstance.setProvenanceURI(updateInstance.getProvenanceURI());
         else
-            newInstance.setProvenance(provenance);
-
+            newInstance.setProvenanceURI(provenanceURI);
+        
+        if(updateInstance.getProvenanceSettings()!=  null)
+            newInstance.setProvenanceSettings(updateInstance.getProvenanceSettings());
+        else
+            newInstance.setProvenanceSettings(provenanceSettings);
+        
+        if(updateInstance.getProvUsed() !=  null)
+            newInstance.setProvUsed(updateInstance.getProvUsed());
+        else
+            newInstance.setProvUsed(provUsed);
+        
         if(updateInstance.getDate() !=  null)
             newInstance.setDate(updateInstance.getDate());
         else
@@ -175,10 +237,10 @@ public class DataModel implements NoSQLModel{
 
         newInstance.setConfidence(updateInstance.getConfidence());
 
-       /* if(updateInstance.getMetaData() !=  null)
-            newInstance.setMetaData(updateInstance.getMetaData());
+        if(updateInstance.getMetadata() !=  null)
+            newInstance.setMetadata(updateInstance.getMetadata());
         else
-            newInstance.setMetaData(metaData);*/
+            newInstance.setMetadata(metadata);  
 
         return (T) newInstance;
         
@@ -200,7 +262,7 @@ public class DataModel implements NoSQLModel{
         String str = "";
         if(object != null) str += object.toString();
         if(variable != null) str += variable.toString();
-        if(provenance != null) str+= provenance.toString();
+        if(provenanceURI != null) str+= provenanceURI.toString();
         if(date != null) str += date.toString();
         return str ;
     }

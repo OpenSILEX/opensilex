@@ -13,13 +13,13 @@ import org.opensilex.core.data.dal.DataModel;
  * @author sammy
  */
 public class DataConfidenceDTO{
-    private Integer confidence;
+    private Float confidence;
     
-    public void setConfidence(Integer c){
+    public void setConfidence(Float c){
         this.confidence = c;
     }
     
-    public int getConfidence(){
+    public Float getConfidence(){
         return confidence;
     }
     

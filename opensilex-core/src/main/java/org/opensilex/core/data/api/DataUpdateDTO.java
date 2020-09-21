@@ -9,8 +9,10 @@ import java.net.URI;
 import java.text.ParseException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**
@@ -24,13 +26,12 @@ public class DataUpdateDTO{
     
     private URI object;
     private URI variable;
-    private URI provenance;
-    
+    private DataProvenanceModel provenance;    
     private String date;
-    private String timezone;
-    
+    private String timezone;    
     private Object value;
-    private Integer confidence = null;
+    private Float confidence = null;    
+    private Map metadata;
     
     public void setUri(URI uri) {
         this.uri = uri;
@@ -44,7 +45,7 @@ public class DataUpdateDTO{
         this.variable = variable;
     }
     
-    public void setProvenance(URI provenance){
+    public void setProvenance(DataProvenanceModel provenance){
         this.provenance = provenance;
     }
     
@@ -65,7 +66,7 @@ public class DataUpdateDTO{
         this.value = value;
     }
     
-    public void setConfidence(Integer c){
+    public void setConfidence(Float c){
         this.confidence = c;
     }
     
@@ -81,7 +82,7 @@ public class DataUpdateDTO{
         return variable;
     }
     
-    public URI getProvenance(){
+    public DataProvenanceModel getProvenance(){
         return provenance;
     }
     
@@ -97,8 +98,16 @@ public class DataUpdateDTO{
         return value;
     }
 
-    public Integer getConfidence(){
+    public Float getConfidence(){
         return confidence;
+    }
+
+    public Map getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map metadata) {
+        this.metadata = metadata;
     }
     
     public DataModel newModel() throws ParseException{
@@ -107,13 +116,13 @@ public class DataUpdateDTO{
         model.setUri(getUri());
         model.setObject(getObject());
         model.setVariable(getVariable());
-        model.setProvenance(getProvenance());
-        
-        model.setDate(getDate());
-        
-        model.setValue(getValue());
-        
+        model.setProvenanceURI(getProvenance().getUri());
+        model.setProvenanceSettings(getProvenance().getSettings());
+        model.setProvUsed(getProvenance().getProvUsed());        
+        model.setDate(getDate());        
+        model.setValue(getValue());        
         model.setConfidence(getConfidence());
+        model.setMetadata(getMetadata());
         return model;
         
     }

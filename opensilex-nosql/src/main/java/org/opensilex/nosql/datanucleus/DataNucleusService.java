@@ -7,8 +7,10 @@
 package org.opensilex.nosql.datanucleus;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.jdo.JDOHelper;
@@ -16,9 +18,11 @@ import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.JDOQLTypedQuery;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
+import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.query.BooleanExpression;
 import javax.naming.NamingException;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.datanucleus.PropertyNames;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.datanucleus.api.jdo.JDOQueryCache;
@@ -32,6 +36,9 @@ import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +87,7 @@ public class DataNucleusService extends BaseService implements NoSQLService {
     public void startup() throws Exception {
         PersistenceUnitMetaData pumd = new PersistenceUnitMetaData("dynamic-unit", "RESOURCE_LOCAL", null);
         pumd.setExcludeUnlistedClasses(false);
+        //pumd.addClassName("org.opensilex.core.provenance.dal.ProvenanceModel");
         PMF_PROPERTIES.forEach((key, value) -> pumd.addProperty((String) key, (String) value));
         Map<String, Object> props = new HashMap<>();
         props.put(PropertyNames.PROPERTY_CLASSLOADER_PRIMARY, OpenSilex.getClassLoader());
@@ -158,7 +166,6 @@ public class DataNucleusService extends BaseService implements NoSQLService {
             }
         }
     }
-    
     
     /**
      * Method to delete already founded instance 
@@ -263,6 +270,7 @@ public class DataNucleusService extends BaseService implements NoSQLService {
                 BooleanExpression expr = null;
                 JDOQLTypedQuery<T> tq = persistenceManager.newJDOQLTypedQuery((Class<T>) instance.getClass());
                 expr = instance.getURIExpr(uri);
+                String exp = expr.toString();
                 T result = null;
                 if (expr != null){
                     result = tq.filter(expr).executeUnique();
@@ -380,7 +388,11 @@ public class DataNucleusService extends BaseService implements NoSQLService {
     public void createAll(Collection instances) throws NamingException {
         try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
             try{
+                Transaction tx1 = persistenceManager.currentTransaction();
+                tx1.begin();
                 persistenceManager.makeTransactionalAll(instances);
+                persistenceManager.makePersistentAll(instances);
+                tx1.commit();
             }finally{
                 persistenceManager.close();
             }
@@ -417,6 +429,57 @@ public class DataNucleusService extends BaseService implements NoSQLService {
         if (PMF != null) {
             PMF.close();
         }
+    }
+
+    public <T extends NoSQLModel> void prepareInstancesListCreation(Collection<T> instances) throws Exception {
+        for (T instance:instances) {
+            generateUniqueUriIfNullOrValidateCurrent(instance, true);
+        }
+        createAll(instances);
+    }
+        
+    public <T extends NoSQLModel> List<T> searchWithPagination(
+            PersistenceManager pm, 
+            Class<T> objectClass, 
+            String filter, 
+            Map params, 
+            Integer page, 
+            Integer pageSize, 
+            int total) throws Exception {
+        
+ 
+        List<T> results;
+        if (pageSize == null || pageSize == 0) {
+            results = new ArrayList<>();                
+        } else if (total > 0 && (page * pageSize) < total) {
+            Integer offset = null;
+            Integer limit = null;
+            if (page == null || page < 0) {
+                page = 0;
+            }
+            if (pageSize != null && pageSize > 0) {
+                offset = page * pageSize;
+                limit = pageSize;
+            }
+            Query selectQuery = pm.newQuery(objectClass);
+            selectQuery.setFilter(filter);
+            selectQuery.setNamedParameters(params);
+            selectQuery.setRange(offset, offset+limit);
+            results = selectQuery.executeList();
+        } else {
+            results = new ArrayList<>();
+        }            
+
+        return results; 
+        
+    } 
+
+    public <T extends Object & NoSQLModel> int countResults(PersistenceManager pm, Class<T> objectClass, String filter, Map params) throws NamingException {
+        Query countQuery = pm.newQuery("SELECT count(uri) FROM " + objectClass.getName());
+        countQuery.setFilter(filter);
+        Object countResult = countQuery.executeWithMap(params);
+        int total = (int) (long) countResult;
+        return total;
     }
 
 }

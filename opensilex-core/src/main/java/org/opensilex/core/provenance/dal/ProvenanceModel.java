@@ -7,38 +7,72 @@
 package org.opensilex.core.provenance.dal;
 
 import java.net.URI;
-import java.util.List;
-import javax.jdo.annotations.Convert;
-import javax.jdo.annotations.Embedded;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Persistent;
 import javax.jdo.query.BooleanExpression;
 import org.opensilex.nosql.model.NoSQLModel;
+import javax.jdo.annotations.NotPersistent;
+import java.util.List;
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Convert;
+import javax.jdo.annotations.Element;
+import javax.jdo.annotations.Embedded;
+import javax.jdo.annotations.Join;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 
 /**
- *
- * @author boizetal
+ * Provenance model
+ * @author Alice Boizet
  */
 @PersistenceCapable(table = "provenance")
 public class ProvenanceModel implements NoSQLModel{
+    @NotPersistent
+    private final String baseURI = "id/provenance";
+    @NotPersistent
+    private String[] URICompose;
     
-    @Convert(URIStringConverter.class)
+    @PrimaryKey
     URI uri;    
     String label;
     String comment;
     
-    @Convert(ListURIStringConverter.class)
+    @Element(embeddedMapping={
+    @Embedded(members={
+        @Persistent(name="uri", column="uri")})
+    })
+    @Join(column="uri")
     @Persistent(defaultFetchGroup="true")
-    List<URI> experiments;
+    List<ExperimentProvModel> experiments;    
     
+    @Element(embeddedMapping={
+    @Embedded(members={
+        @Persistent(name="type", column="rdf:type"),
+        @Persistent(name="startedAtTime", column="startedAtTime"),
+        @Persistent(name="endedAtTime", column="endedAtTime"),
+        @Persistent(name="settings", column="settings")})
+    })
+    @Join(column="uri")
     @Persistent(defaultFetchGroup="true")
-    @Embedded
-    AgentModel agent;
+    @Column(name="prov:Activity")
+    List<ActivityModel> activity;
+    
+    @Element(embeddedMapping={
+    @Embedded(members={
+        @Persistent(name="uri", column="uri"),
+        @Persistent(name="type", column="rdf:type"),
+        @Persistent(name="settings", column="settings")})
+    })
+    @Join(column="uri")
+    @Persistent(defaultFetchGroup="true")
+    @Column(name="prov:Agent")
+    List<AgentModel> agents;
 
+    @Override
     public URI getUri() {
         return uri;
     }
 
+    @Override
     public void setUri(URI uri) {
         this.uri = uri;
     }
@@ -59,30 +93,71 @@ public class ProvenanceModel implements NoSQLModel{
         this.comment = comment;
     }
 
-    public List<URI> getExperiments() {
+    public List<ExperimentProvModel> getExperiments() {
         return experiments;
     }
 
-    public void setExperiments(List<URI> experiments) {
+    public void setExperiments(List<ExperimentProvModel> experiments) {
         this.experiments = experiments;
     }
-
-    public AgentModel getAgent() {
-        return agent;
+    
+    public List<ActivityModel> getActivity() {
+        return activity;
     }
 
-    public void setAgent(AgentModel agent) {
-        this.agent = agent;
+    public void setActivity(List<ActivityModel> activity) {
+        this.activity = activity;
+    }
+        
+    public List<AgentModel> getAgents() {
+        return agents;
     }
 
+    public void setAgents(List<AgentModel> agents) {
+        this.agents = agents;
+    }
+
+    public void setURICompose(String[] elt){
+        this.URICompose = elt;
+    }
+    
     @Override
     public String getGraphPrefix() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return baseURI;
     }
 
     @Override
     public <T extends NoSQLModel> T update(T instance) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ProvenanceModel newInstance =  new ProvenanceModel();
+        ProvenanceModel updateInstance = (ProvenanceModel) instance;
+
+        newInstance.setUri(instance.getUri());
+        if(updateInstance.getLabel() !=  null)
+            newInstance.setLabel(updateInstance.getLabel());
+        else
+            newInstance.setLabel(label);
+
+        if(updateInstance.getComment() != null)
+            newInstance.setComment(updateInstance.getComment());
+        else
+            newInstance.setComment(comment);
+
+        if(updateInstance.getExperiments()!=  null)
+            newInstance.setExperiments(updateInstance.getExperiments());
+        else
+            newInstance.setExperiments(experiments);
+
+        if(updateInstance.getActivity() !=  null)
+            newInstance.setActivity(updateInstance.getActivity());
+        else
+            newInstance.setActivity(activity);
+
+        if(updateInstance.getAgents() !=  null)
+            newInstance.setAgents(updateInstance.getAgents());
+        else
+            newInstance.setAgents(agents);
+
+        return (T) newInstance;
     }
 
     @Override
@@ -93,9 +168,8 @@ public class ProvenanceModel implements NoSQLModel{
 
     @Override
     public String[] getUriSegments(NoSQLModel instance) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        String[] lab = {this.label};
+        return lab;
     }
 
-
-   
 }

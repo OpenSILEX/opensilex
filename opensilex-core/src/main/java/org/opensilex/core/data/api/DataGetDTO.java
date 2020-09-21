@@ -8,8 +8,10 @@ package org.opensilex.core.data.api;
 import java.net.URI;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**
@@ -22,13 +24,18 @@ public class DataGetDTO {
     protected URI uri;
     
     private URI object;
+    
     private URI variable;
-    private URI provenance;
+    
+    private DataProvenanceModel provenance;
     
     private String date;
     
     private Object value;
-    private Integer confidence = null;
+    
+    private Float confidence = null;
+    
+    private Map metadata;
     
     public void setUri(URI uri) {
         this.uri = uri;
@@ -42,7 +49,7 @@ public class DataGetDTO {
         this.variable = variable;
     }
     
-    public void setProvenance(URI provenance){
+    public void setProvenance(DataProvenanceModel provenance){
         this.provenance = provenance;
     }
     
@@ -59,7 +66,7 @@ public class DataGetDTO {
         this.value = value;
     }
     
-    public void setConfidence(Integer c){
+    public void setConfidence(Float c){
         this.confidence = c;
     }
 
@@ -75,7 +82,7 @@ public class DataGetDTO {
         return variable;
     }
     
-    public URI getProvenance(){
+    public DataProvenanceModel getProvenance(){
         return provenance;
     }
     
@@ -87,22 +94,33 @@ public class DataGetDTO {
         return value;
     }
 
-    public Integer getConfidence(){
+    public Float getConfidence(){
         return confidence;
+    }
+
+    public Map getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map metadata) {
+        this.metadata = metadata;
     }
     
     public static DataGetDTO fromModel(DataModel model){
-        DataGetDTO dto = new DataGetDTO();
-        
+        DataGetDTO dto = new DataGetDTO();        
         dto.setUri(model.getUri());
         dto.setObject(model.getObject());
-        dto.setVariable(model.getVariable());
-        dto.setProvenance(model.getProvenance());
-        
-        dto.setDate(model.getDate());
-        
+        dto.setVariable(model.getVariable());      
+        dto.setDate(model.getDate());        
         dto.setConfidence(model.getConfidence());
         dto.setValue(model.getValue());
+        dto.setMetadata(model.getMetadata());   
+        
+        DataProvenanceModel provData = new DataProvenanceModel();
+        provData.setUri(model.getProvenanceURI());
+        provData.setSettings(model.getProvenanceSettings());
+        provData.setProvUsed(model.getProvUsed());
+        dto.setProvenance(provData);
         
         return dto;
     }

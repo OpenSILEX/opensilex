@@ -12,7 +12,9 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -103,14 +105,15 @@ public class DataAPI {
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql);
         DataModel model = dto.newModel();
-        if(! dao.valid(model))
+        if(! dao.valid(model)) {
             throw new Exception("Unknown Variable or Object or Provenance URI");
+        }
         dao.prepareURI(model);
         model = (DataModel) dao.create(model);
         return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
     }
     
-    /*@POST
+    @POST
     @Path("listcreate")
     @ApiProtected
     @ApiOperation("Add list of data")
@@ -126,15 +129,33 @@ public class DataAPI {
             @ApiParam("Data description") @Valid List<DataCreationDTO> dtoList
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql);
+        
+        Set<URI> variablesURI = new HashSet<>();
+        Set<URI> objectsURI = new HashSet<>();
+        Set<String> provenances= new HashSet<>();
         for(DataCreationDTO dto : dtoList ){
-            DataModel model = dto.newModel();
-            if(! dao.valid(model))
-                throw new Exception("Unknown Variable or Object or Provenance URI");
-            dao.prepareURI(model);
-            model = (DataModel) dao.create(model);
+            variablesURI.add(dto.getVariable());
+            if (dto.getObject() != null) {
+                objectsURI.add(dto.getObject());
+            }            
+            provenances.add(dto.getProvenance().getUri().toString());
         }
-        return new ObjectUriResponse().getResponse();
-    }*/
+        
+        ErrorResponse error = dao.validList(variablesURI, objectsURI, provenances);
+        if (error != null) {
+            return error.getResponse();
+        } else {
+            List<DataModel> dataList = new ArrayList();
+            for(DataCreationDTO dto : dtoList ){            
+                DataModel model = dto.newModel();
+                dao.prepareURI(model);
+                dataList.add(model);
+        }
+            dataList = (List<DataModel>) dao.createAll(dataList);
+            return new PaginatedListResponse<>(dataList).getResponse();
+        }
+        
+    }
     
     @GET
     @Path("get/{uri}")
@@ -155,7 +176,7 @@ public class DataAPI {
         if (model != null) {
             return new SingleObjectResponse<>(DataGetDTO.fromModel(model)).getResponse();
         } else {
-            return new ErrorResponse(Response.Status.NOT_FOUND, "Factor not found",
+            return new ErrorResponse(Response.Status.NOT_FOUND, "Data not found",
                     "Unknown data URI: " + uri.toString()).getResponse();
         }
     }

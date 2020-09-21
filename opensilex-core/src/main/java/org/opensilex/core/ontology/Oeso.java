@@ -116,6 +116,7 @@ public class Oeso {
     public static final Property studyEffectOf = Ontology.property(NS, "studyEffectOf");
 
     public static final Resource SensingDevice = Ontology.resource(NS, "SensingDevice");
+    public static final Resource Operator = Ontology.resource(NS, "Operator");
 
     // ---- GERMPLASM ----
     public static final Resource Germplasm = Ontology.resource(NS, "Germplasm");

@@ -6,6 +6,7 @@
 package org.opensilex.nosql.model;
 
 import java.net.URI;
+import java.util.Collection;
 import javax.jdo.query.BooleanExpression;
 import org.opensilex.nosql.utils.ClassURIGenerator;
 
@@ -60,4 +61,5 @@ public interface NoSQLModel extends ClassURIGenerator<NoSQLModel> {
     
     @Override
     public String toString();
+
 }

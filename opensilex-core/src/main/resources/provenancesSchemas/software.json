@@ -1,0 +1,377 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://example.com/example.json",
+    "type": "object",
+    "title": "The root schema",
+    "description": "The root schema comprises the entire JSON document.",
+    "default": {},
+    "examples": [
+        {
+            "jsonSchema": "software",
+            "label": "BinaryImageAcquisition-ZA17-Maize",
+            "comment": "BinaryImageAcquisition-ZA17-Maize",
+            "metadata": {
+                "prov:Activity": [
+                    {
+                        "rdf:type": "oeso:BinaryImageAcquisition",
+                        "prov:startedAtTime": "",
+                        "prov:endedAtTime": ""
+                    }
+                ],
+                "prov:Agent": [
+                    {
+                        "prov:id": "http://lps-scope.supagro.inra.fr",
+                        "rdf:type": "oeso:hardwareAgent"
+                    },
+                    {
+                        "prov:id": "http://lps-scope.supagro.inra.fr/swa",
+                        "rdf:type": "oeso:softwareAgent",
+                        "gitRepository": "https://gforge.inria.fr/anonscm/git/phenoarch/phenoarch.git",
+                        "script": "bin_elcom",
+                        "author": "INRA - LEPSE",
+                        "gitCommit": "59255ffb43cf418c162bb595bd4794f452a7f1e5",
+                        "gitBranch": "elcom_prod_ear_tracking",
+                        "gitDate": "2017-01-20 18:15:07"
+                    }
+                ]
+            }
+        }
+    ],
+    "required": [
+        "jsonSchema",
+        "label",
+        "comment",
+        "metadata"
+    ],
+    "additionalProperties": true,
+    "properties": {
+        "jsonSchema": {
+            "$id": "#/properties/jsonSchema",
+            "type": "string",
+            "title": "The jsonSchema schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "software"
+            ]
+        },
+        "label": {
+            "$id": "#/properties/label",
+            "type": "string",
+            "title": "The label schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "BinaryImageAcquisition-ZA17-Maize"
+            ]
+        },
+        "comment": {
+            "$id": "#/properties/comment",
+            "type": "string",
+            "title": "The comment schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "BinaryImageAcquisition-ZA17-Maize"
+            ]
+        },
+        "metadata": {
+            "$id": "#/properties/metadata",
+            "type": "object",
+            "title": "The metadata schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": {},
+            "examples": [
+                {
+                    "prov:Activity": [
+                        {
+                            "rdf:type": "oeso:BinaryImageAcquisition",
+                            "prov:startedAtTime": "",
+                            "prov:endedAtTime": ""
+                        }
+                    ],
+                    "prov:Agent": [
+                        {
+                            "prov:id": "http://lps-scope.supagro.inra.fr",
+                            "rdf:type": "oeso:hardwareAgent"
+                        },
+                        {
+                            "prov:id": "http://lps-scope.supagro.inra.fr/swa",
+                            "rdf:type": "oeso:softwareAgent",
+                            "gitRepository": "https://gforge.inria.fr/anonscm/git/phenoarch/phenoarch.git",
+                            "script": "bin_elcom",
+                            "author": "INRA - LEPSE",
+                            "gitCommit": "59255ffb43cf418c162bb595bd4794f452a7f1e5",
+                            "gitBranch": "elcom_prod_ear_tracking",
+                            "gitDate": "2017-01-20 18:15:07"
+                        }
+                    ]
+                }
+            ],
+            "required": [
+                "prov:Activity",
+                "prov:Agent"
+            ],
+            "additionalProperties": true,
+            "properties": {
+                "prov:Activity": {
+                    "$id": "#/properties/metadata/properties/prov:Activity",
+                    "type": "array",
+                    "title": "The prov:Activity schema",
+                    "description": "An explanation about the purpose of this instance.",
+                    "default": [],
+                    "examples": [
+                        [
+                            {
+                                "rdf:type": "oeso:BinaryImageAcquisition",
+                                "prov:startedAtTime": "",
+                                "prov:endedAtTime": ""
+                            }
+                        ]
+                    ],
+                    "additionalItems": true,
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$id": "#/properties/metadata/properties/prov:Activity/items/anyOf/0",
+                                "type": "object",
+                                "title": "The first anyOf schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": {},
+                                "examples": [
+                                    {
+                                        "rdf:type": "oeso:BinaryImageAcquisition",
+                                        "prov:startedAtTime": "",
+                                        "prov:endedAtTime": ""
+                                    }
+                                ],
+                                "required": [
+                                    "rdf:type",
+                                    "prov:startedAtTime",
+                                    "prov:endedAtTime"
+                                ],
+                                "additionalProperties": true,
+                                "properties": {
+                                    "rdf:type": {
+                                        "$id": "#/properties/metadata/properties/prov:Activity/items/anyOf/0/properties/rdf:type",
+                                        "type": "string",
+                                        "title": "The rdf:type schema",
+                                        "description": "An explanation about the purpose of this instance.",
+                                        "default": "",
+                                        "examples": [
+                                            "oeso:BinaryImageAcquisition"
+                                        ]
+                                    },
+                                    "prov:startedAtTime": {
+                                        "$id": "#/properties/metadata/properties/prov:Activity/items/anyOf/0/properties/prov:startedAtTime",
+                                        "type": "string",
+                                        "title": "The prov:startedAtTime schema",
+                                        "description": "An explanation about the purpose of this instance.",
+                                        "default": "",
+                                        "examples": [
+                                            ""
+                                        ]
+                                    },
+                                    "prov:endedAtTime": {
+                                        "$id": "#/properties/metadata/properties/prov:Activity/items/anyOf/0/properties/prov:endedAtTime",
+                                        "type": "string",
+                                        "title": "The prov:endedAtTime schema",
+                                        "description": "An explanation about the purpose of this instance.",
+                                        "default": "",
+                                        "examples": [
+                                            ""
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        "$id": "#/properties/metadata/properties/prov:Activity/items"
+                    }
+                },
+                "prov:Agent": {
+                    "$id": "#/properties/metadata/properties/prov:Agent",
+                    "type": "array",
+                    "title": "The prov:Agent schema",
+                    "description": "An explanation about the purpose of this instance.",
+                    "default": [],
+                    "examples": [
+                        [
+                            {
+                                "prov:id": "http://lps-scope.supagro.inra.fr",
+                                "rdf:type": "oeso:hardwareAgent"
+                            },
+                            {
+                                "prov:id": "http://lps-scope.supagro.inra.fr/swa",
+                                "rdf:type": "oeso:softwareAgent",
+                                "gitRepository": "https://gforge.inria.fr/anonscm/git/phenoarch/phenoarch.git",
+                                "script": "bin_elcom",
+                                "author": "INRA - LEPSE",
+                                "gitCommit": "59255ffb43cf418c162bb595bd4794f452a7f1e5",
+                                "gitBranch": "elcom_prod_ear_tracking",
+                                "gitDate": "2017-01-20 18:15:07"
+                            }
+                        ]
+                    ],
+                    "additionalItems": true,
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$id": "#/properties/metadata/properties/prov:Agent/items/anyOf/0",
+                                "type": "object",
+                                "title": "The first anyOf schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": {},
+                                "examples": [
+                                    {
+                                        "prov:id": "http://lps-scope.supagro.inra.fr",
+                                        "rdf:type": "oeso:hardwareAgent"
+                                    }
+                                ],
+                                "required": [
+                                    "prov:id",
+                                    "rdf:type"
+                                ],
+                                "additionalProperties": true,
+                                "properties": {
+                                    "prov:id": {
+                                        "$id": "#/properties/metadata/properties/prov:Agent/items/anyOf/0/properties/prov:id",
+                                        "type": "string",
+                                        "title": "The prov:id schema",
+                                        "description": "An explanation about the purpose of this instance.",
+                                        "default": "",
+                                        "examples": [
+                                            "http://lps-scope.supagro.inra.fr"
+                                        ]
+                                    },
+                                    "rdf:type": {
+                                        "$id": "#/properties/metadata/properties/prov:Agent/items/anyOf/0/properties/rdf:type",
+                                        "type": "string",
+                                        "title": "The rdf:type schema",
+                                        "description": "An explanation about the purpose of this instance.",
+                                        "default": "",
+                                        "examples": [
+                                            "oeso:hardwareAgent"
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "$id": "#/properties/metadata/properties/prov:Agent/items/anyOf/1",
+                                "type": "object",
+                                "title": "The second anyOf schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": {},
+                                "examples": [
+                                    {
+                                        "prov:id": "http://lps-scope.supagro.inra.fr/swa",
+                                        "rdf:type": "oeso:softwareAgent",
+                                        "gitRepository": "https://gforge.inria.fr/anonscm/git/phenoarch/phenoarch.git",
+                                        "script": "bin_elcom",
+                                        "author": "INRA - LEPSE",
+                                        "gitCommit": "59255ffb43cf418c162bb595bd4794f452a7f1e5",
+                                        "gitBranch": "elcom_prod_ear_tracking",
+                                        "gitDate": "2017-01-20 18:15:07"
+                                    }
+                                ],
+                                "required": [
+                                    "prov:id",
+                                    "rdf:type",
+                                    "gitRepository",
+                                    "script",
+                                    "author",
+                                    "gitCommit",
+                                    "gitBranch",
+                                    "gitDate"
+                                ],
+                                "additionalProperties": true,
+                                "properties": {
+                                    "prov:id": {
+                                        "$id": "#/properties/metadata/properties/prov:Agent/items/anyOf/1/properties/prov:id",
+                                        "type": "string",
+                                        "title": "The prov:id schema",
+                                        "description": "An explanation about the purpose of this instance.",
+                                        "default": "",
+                                        "examples": [
+                                            "http://lps-scope.supagro.inra.fr/swa"
+                                        ]
+                                    },
+                                    "rdf:type": {
+                                        "$id": "#/properties/metadata/properties/prov:Agent/items/anyOf/1/properties/rdf:type",
+                                        "type": "string",
+                                        "title": "The rdf:type schema",
+                                        "description": "An explanation about the purpose of this instance.",
+                                        "default": "",
+                                        "examples": [
+                                            "oeso:softwareAgent"
+                                        ]
+                                    },
+                                    "gitRepository": {
+                                        "$id": "#/properties/metadata/properties/prov:Agent/items/anyOf/1/properties/gitRepository",
+                                        "type": "string",
+                                        "title": "The gitRepository schema",
+                                        "description": "An explanation about the purpose of this instance.",
+                                        "default": "",
+                                        "examples": [
+                                            "https://gforge.inria.fr/anonscm/git/phenoarch/phenoarch.git"
+                                        ]
+                                    },
+                                    "script": {
+                                        "$id": "#/properties/metadata/properties/prov:Agent/items/anyOf/1/properties/script",
+                                        "type": "string",
+                                        "title": "The script schema",
+                                        "description": "An explanation about the purpose of this instance.",
+                                        "default": "",
+                                        "examples": [
+                                            "bin_elcom"
+                                        ]
+                                    },
+                                    "author": {
+                                        "$id": "#/properties/metadata/properties/prov:Agent/items/anyOf/1/properties/author",
+                                        "type": "string",
+                                        "title": "The author schema",
+                                        "description": "An explanation about the purpose of this instance.",
+                                        "default": "",
+                                        "examples": [
+                                            "INRA - LEPSE"
+                                        ]
+                                    },
+                                    "gitCommit": {
+                                        "$id": "#/properties/metadata/properties/prov:Agent/items/anyOf/1/properties/gitCommit",
+                                        "type": "string",
+                                        "title": "The gitCommit schema",
+                                        "description": "An explanation about the purpose of this instance.",
+                                        "default": "",
+                                        "examples": [
+                                            "59255ffb43cf418c162bb595bd4794f452a7f1e5"
+                                        ]
+                                    },
+                                    "gitBranch": {
+                                        "$id": "#/properties/metadata/properties/prov:Agent/items/anyOf/1/properties/gitBranch",
+                                        "type": "string",
+                                        "title": "The gitBranch schema",
+                                        "description": "An explanation about the purpose of this instance.",
+                                        "default": "",
+                                        "examples": [
+                                            "elcom_prod_ear_tracking"
+                                        ]
+                                    },
+                                    "gitDate": {
+                                        "$id": "#/properties/metadata/properties/prov:Agent/items/anyOf/1/properties/gitDate",
+                                        "type": "string",
+                                        "title": "The gitDate schema",
+                                        "description": "An explanation about the purpose of this instance.",
+                                        "default": "",
+                                        "examples": [
+                                            "2017-01-20 18:15:07"
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        "$id": "#/properties/metadata/properties/prov:Agent/items"
+                    }
+                }
+            }
+        }
+    }
+}

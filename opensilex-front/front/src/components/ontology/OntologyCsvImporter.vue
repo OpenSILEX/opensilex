@@ -1,8 +1,13 @@
  <template>
   <span>
-   <opensilex-CreateButton @click="show" label="OntologyCsvImporter.import"></opensilex-CreateButton>
-    <b-modal ref="OntologyCsvImporter" @ok.prevent="importCSV" size="xl" :static="true" :ok-disabled="!csvFile || !!validationErrors">
-
+    <opensilex-CreateButton @click="show" label="OntologyCsvImporter.import"></opensilex-CreateButton>
+    <b-modal
+      ref="OntologyCsvImporter"
+      @ok.prevent="importCSV"
+      size="xl"
+      :static="true"
+      :ok-disabled="!csvFile || !!validationErrors"
+    >
       <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
       <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
 
@@ -17,15 +22,15 @@
       <ValidationObserver ref="validatorRef">
         <!-- Type -->
         <opensilex-TypeForm
-          :type.sync="scientificObjectType"
+          :type.sync="objectType"
           @update:type="typeSwitch"
-          :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
+          :baseType="baseType"
           :required="true"
           label="OntologyCsvImporter.object-type"
           placeholder="OntologyCsvImporter.object-type-placeholder"
         ></opensilex-TypeForm>
 
-        <div v-if="scientificObjectType && fields.length > 0">
+        <div v-if="objectType && fields.length > 0">
           <div class="row">
             <div class="col-md-4">
               <b-form-file
@@ -34,12 +39,13 @@
                 accept="text/csv, .csv"
                 @input="csvUploaded"
                 v-model="csvFile"
-                placeholder="OntologyCsvImporter.csv-file-placeholder"
-                drop-placeholder="Drop file here..."
+                :placeholder="$t('OntologyCsvImporter.csv-file-placeholder')"
+                :drop-placeholder="$t('OntologyCsvImporter.csv-file-drop-placeholder')"
+                :browse-text="$t('OntologyCsvImporter.csv-file-select-button')"
               ></b-form-file>
             </div>
             <div class="col">
-              <b-button @click="downloadCSVTemplate">Download CSV template</b-button>
+              <b-button @click="downloadCSVTemplate">{{$t("OntologyCsvImporter.downloadTemplate")}}</b-button>
             </div>
           </div>
           <div class="row">
@@ -62,7 +68,11 @@
                 <b-tbody>
                   <b-tr v-for="(row, index) in rows" v-bind:key="index">
                     <b-th>{{index + 2}}</b-th>
-                    <b-td v-for="cell in row" v-bind:key="cell">{{cell}}</b-td>
+                    <b-td
+                      :class="getCellClass(cellIndex, cell)"
+                      v-for="(cell, cellIndex) in row"
+                      v-bind:key="cell"
+                    >{{cell}}</b-td>
                   </b-tr>
                 </b-tbody>
                 <b-tfoot>
@@ -140,19 +150,12 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import {
-  ExperimentsService,
-  InfrastructuresService,
-  ResourceTreeDTO,
-  OntologyService,
-  RDFClassDTO
-} from "opensilex-core/index";
+import { OntologyService } from "opensilex-core/index";
 
 @Component
 export default class OntologyCsvImporter extends Vue {
   $opensilex: any;
   ontologyService: OntologyService;
-  infraService: InfrastructuresService;
   $t: any;
 
   @Ref("OntologyCsvImporter")
@@ -161,13 +164,19 @@ export default class OntologyCsvImporter extends Vue {
   @Ref("validatorRef") readonly validatorRef!: any;
   @Ref("inputFile") readonly inputFile!: any;
 
-  scientificObjectType = null;
+  objectType = null;
 
   @Prop()
-  experimentUri;
+  baseType;
+
+  @Prop()
+  validateCSV;
+
+  @Prop()
+  uploadCSV;
 
   show() {
-    this.scientificObjectType = null;
+    this.objectType = null;
     this.validatorRef.reset();
     this.OntologyCsvImporter.show();
   }
@@ -180,6 +189,15 @@ export default class OntologyCsvImporter extends Vue {
     this.ontologyService = this.$opensilex.getService(
       "opensilex-core.OntologyService"
     );
+  }
+
+  getCellClass(index, cell) {
+    let classStr = "multi-line-cell";
+    if (index == "URI") {
+      classStr = "uri-cell";
+    }
+
+    return classStr;
   }
 
   downloadCSVTemplate() {
@@ -207,7 +225,7 @@ export default class OntologyCsvImporter extends Vue {
 
     for (let i in rowsValues) {
       let rowValues = rowsValues[i];
-      csvRows.push(rowValues.join(","));
+      csvRows.push("\"" + rowValues.join("\",\"") + "\"");
     }
 
     csvContent += csvRows.join("\r\n");
@@ -218,6 +236,57 @@ export default class OntologyCsvImporter extends Vue {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  getFieldDescription(field, lineSeparator) {
+    let fieldDescription = "";
+    if (field.comment) {
+      fieldDescription +=
+        this.$t("component.common.comment") +
+        ": " +
+        field.comment +
+        lineSeparator;
+    }
+    console.error(
+      field.targetProperty,
+      this.$opensilex.getType(field.targetProperty)
+    );
+    if (field.propertyType == "OBJECT") {
+      let targetName = "URI";
+      fieldDescription +=
+        this.$t("component.common.type") + ": " + targetName + lineSeparator;
+    } else {
+      if (field.targetProperty) {
+        let targetType = this.$opensilex.getType(field.targetProperty);
+        let targetName = "";
+        if (targetType) {
+          targetName = this.$t(targetType.labelKey);
+        }
+        fieldDescription +=
+          this.$t("component.common.type") + ": " + targetName + lineSeparator;
+      }
+    }
+
+    fieldDescription +=
+      this.$t("OntologyClassDetail.required") +
+      ": " +
+      (field.isRequired
+        ? this.$t("component.common.yes")
+        : this.$t("component.common.no")) +
+      lineSeparator;
+
+    fieldDescription +=
+      this.$t("OntologyClassDetail.list") +
+      ": " +
+      (field.isList
+        ? this.$t("component.common.yes") +
+          " (" +
+          this.$t("OntologyCsvImporter.separator") +
+          ": |)"
+        : this.$t("component.common.no")) +
+      lineSeparator;
+
+    return fieldDescription;
   }
 
   fields = [];
@@ -234,10 +303,10 @@ export default class OntologyCsvImporter extends Vue {
     this.validationToken = null;
     this.validationErrors = null;
 
-    if (this.scientificObjectType != null) {
+    if (this.objectType != null) {
       return this.$opensilex
         .getService("opensilex.VueJsOntologyExtensionService")
-        .getClassProperties(this.scientificObjectType)
+        .getClassProperties(this.objectType)
         .then(http => {
           let classModel: any = http.response.result;
 
@@ -258,6 +327,7 @@ export default class OntologyCsvImporter extends Vue {
               label: dataProperty.property
             });
 
+            dataProperty.propertyType = "DATA";
             propertiesByURI[dataProperty.property] = dataProperty;
           }
 
@@ -269,6 +339,7 @@ export default class OntologyCsvImporter extends Vue {
               label: objectProperty.property
             });
 
+            objectProperty.propertyType = "OBJECT";
             propertiesByURI[objectProperty.property] = objectProperty;
           }
 
@@ -281,13 +352,13 @@ export default class OntologyCsvImporter extends Vue {
               nameRow[field.key] = this.$t("OntologyCsvImporter.objectURI");
               commentRow[field.key] = this.$t(
                 "OntologyCsvImporter.objectURIComment"
-              );
+              ).replace("\\n", "\n");
             } else {
               let fieldKey = field.key;
               let property = propertiesByURI[fieldKey];
 
               nameRow[fieldKey] = property.name;
-              commentRow[fieldKey] = property.comment;
+              commentRow[fieldKey] = this.getFieldDescription(property, "\n");
             }
           });
 
@@ -299,36 +370,23 @@ export default class OntologyCsvImporter extends Vue {
   csvUploaded() {
     this.validationToken = null;
     this.validationErrors = null;
-    
-    this.$opensilex
-      .uploadFileToService("/core/scientific-object/csv-validate", {
-        description: {
-          experiment: this.experimentUri,
-          type: this.scientificObjectType
-        },
-        file: this.csvFile
-      })
-      .then(this.checkCSVValidation);
+
+    this.validateCSV(this.objectType, this.csvFile).then(
+      this.checkCSVValidation
+    );
   }
 
   importCSV() {
     this.validationErrors = null;
-    this.$opensilex
-      .uploadFileToService("/core/scientific-object/csv-import", {
-        description: {
-          experiment: this.experimentUri,
-          type: this.scientificObjectType,
-          validationToken: this.validationToken
-        },
-        file: this.csvFile
-      })
-      .then(response => {
+    this.uploadCSV(this.objectType, this.validationToken, this.csvFile).then(
+      response => {
         this.checkCSVValidation(response);
         if (this.validationToken) {
           this.$emit("csvImported");
           this.hide();
         }
-      });
+      }
+    );
   }
 
   checkCSVValidation(response) {
@@ -493,6 +551,14 @@ export default class OntologyCsvImporter extends Vue {
   color: rgb(40, 167, 69);
   font-weight: bold;
 }
+
+.multi-line-cell {
+  white-space: pre;
+}
+
+.uri-cell {
+  white-space: pre-warp;
+}
 </style>
 
 
@@ -524,6 +590,10 @@ en:
     validationErrorDatatypeMessage: "Column: '{header}' - Value: '{value}' ({datatype})"
     CSVIsValid: Your CSV file has been successfully validated, click OK to import it
     csv-file-placeholder: Drop or select CSV file here...
+    csv-file-drop-placeholder: Drop CSV file here...
+    csv-file-select-button: Select
+    downloadTemplate: Download CSV template
+    separator: separator
 
 fr:
   OntologyCsvImporter:
@@ -551,5 +621,9 @@ fr:
     validationErrorDuplicateURIMessage: "Colonne: '{header}' - Valeur: '{value}' - Identique à la ligne: '{previousRow}'"
     validationErrorDatatypeMessage: "Colonne: '{header}' - Valeur: '{value}' ({datatype})"
     CSVIsValid: Votre fichier CSV est valide, cliquer sur OK pour l'importer
-    csv-file-placeholder: Deposer ou choisir un fichier CSV ici...
+    csv-file-placeholder: Déposer ou choisir un fichier CSV ici...
+    csv-file-drop-placeholder: Déposer le fichier CSV ici...
+    csv-file-select-button: Parcourir
+    downloadTemplate: Télécharger le modèle de fichier CSV
+    separator: séparateur
 </i18n>

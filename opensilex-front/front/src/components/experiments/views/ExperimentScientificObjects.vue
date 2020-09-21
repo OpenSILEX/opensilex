@@ -10,7 +10,12 @@
               label="ExperimentScientificObjects.create-scientific-object"
             ></opensilex-CreateButton>&nbsp;
             <!-- <opensilex-ExperimentFacilitySelector :uri="uri" @facilitiesUpdated="refresh"></opensilex-ExperimentFacilitySelector>&nbsp; -->
-            <opensilex-OntologyCsvImporter :experimentUri="uri" @csvImported="refresh"></opensilex-OntologyCsvImporter>
+            <opensilex-OntologyCsvImporter
+              :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
+              :validateCSV="validateCSV"
+              :uploadCSV="uploadCSV"
+              @csvImported="refresh"
+            ></opensilex-OntologyCsvImporter>
           </div>
           <opensilex-TreeView
             :nodes.sync="nodes"
@@ -404,6 +409,33 @@ export default class ExperimentScientificObjects extends Vue {
     if (node.children.length == 0 && node.data.childCount > 0) {
       this.loadMoreChildren(node);
     }
+  }
+
+  validateCSV(objectType, csvFile) {
+    return this.$opensilex.uploadFileToService(
+      "/core/scientific-object/csv-validate",
+      {
+        description: {
+          experiment: this.uri,
+          type: objectType
+        },
+        file: csvFile
+      }
+    );
+  }
+
+  importCSV(objectType, validationToken, csvFile) {
+    return this.$opensilex.uploadFileToService(
+      "/core/scientific-object/csv-import",
+      {
+        description: {
+          experiment: this.uri,
+          type: objectType,
+          validationToken: validationToken
+        },
+        file: csvFile
+      }
+    );
   }
 }
 </script>

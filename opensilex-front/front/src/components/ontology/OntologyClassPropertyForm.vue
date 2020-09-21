@@ -5,7 +5,7 @@
       :selected.sync="form.property"
       :options="propertiesOptions"
       :required="true"
-      label="component.common.parent"
+      label="OntologyClassPropertyForm.property"
     ></opensilex-SelectForm>
 
     <!-- is abstract -->
@@ -156,22 +156,10 @@ export default class OntologyClassPropertyForm extends Vue {
 
 <i18n>
 en:
-    OntologyClassForm:
-        abstract-type: Abstract type
-        labelEN: English name
-        labelFR: French name
-        commentEN: English description
-        commentFR: French description
-        object-type-already-exists: Object type with same URI already exists
-        icon: Icon identifier
+    OntologyClassPropertyForm:
+        property: Property
 
 fr:
-    OntologyClassForm:
-        abstract-type: Type abstrait
-        labelEN: Nom anglais
-        labelFR: Nom français
-        commentEN: Description anglaise
-        commentFR: Description française
-        object-type-already-exists: Un type d'objet existe déjà avec la même URI
-        icon: Identifiant de l'icône
+    OntologyClassPropertyForm:
+        property: Propriété
 </i18n>

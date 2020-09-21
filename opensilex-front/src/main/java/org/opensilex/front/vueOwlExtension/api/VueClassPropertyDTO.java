@@ -15,6 +15,8 @@ public class VueClassPropertyDTO{
 
     protected URI property;
     
+    protected URI targetProperty;
+    
     protected String name;
     
     protected String comment;
@@ -37,6 +39,14 @@ public class VueClassPropertyDTO{
         this.property = property;
     }
 
+    public URI getTargetProperty() {
+        return targetProperty;
+    }
+
+    public void setTargetProperty(URI targetProperty) {
+        this.targetProperty = targetProperty;
+    }
+    
     public String getName() {
         return name;
     }

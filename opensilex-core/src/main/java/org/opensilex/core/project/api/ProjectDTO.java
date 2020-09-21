@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.server.rest.validation.Required;
 
 /**
  * @author Julien BONNEFONT A basic DTO class about an {@link ProjectModel}

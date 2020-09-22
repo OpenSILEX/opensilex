@@ -30,6 +30,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.factor.api.FactorDetailsGetDTO;
 import org.opensilex.core.factor.dal.FactorDAO;
 import org.opensilex.core.factor.dal.FactorModel;
@@ -38,12 +39,14 @@ import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
 import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.core.species.dal.SpeciesDAO;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.nosql.datanucleus.DataNucleusService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.ApiTranslatable;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  * @author Vincent MIGOT
@@ -76,6 +79,9 @@ public class ExperimentAPI {
 
     @Inject
     private SPARQLService sparql;
+
+    @Inject
+    private DataNucleusService nosql;
 
     /**
      * Create an Experiment
@@ -327,7 +333,7 @@ public class ExperimentAPI {
     @GET
     @Path("get-available-species/{uri}")
     @ApiOperation("get all species associated to an experiment")
-    @ApiTranslatable
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -349,7 +355,7 @@ public class ExperimentAPI {
     @GET
     @Path("get-available-factors/{uri}")
     @ApiOperation("get all factors with their levels associated to an experiment")
-    @ApiTranslatable
+    @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -366,6 +372,29 @@ public class ExperimentAPI {
 
         List<FactorDetailsGetDTO> dtoList = factors.stream().map(FactorDetailsGetDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    @GET
+    @Path("get-used-variables/{uri}")
+    @ApiOperation("get all variables related to an experiment")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
+    })
+    public Response getUsedVariables(
+            @ApiParam(value = "Experiment URI", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+    ) throws Exception {
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        xpDAO.validateExperimentAccess(xpUri, currentUser);
+
+        DataDAO dao = new DataDAO(nosql, sparql);
+        List<VariableModel> variables = dao.getVariablesByExperiment(xpUri, currentUser.getLanguage());
+
+        List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
+
     }
 
     /**

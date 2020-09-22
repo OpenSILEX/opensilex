@@ -42,66 +42,69 @@ import org.opensilex.server.rest.validation.DateFormat;
  * @author sammy
  */
 public class DataDAO {
-    
-    protected final URI RDFTYPE_VARIABLE ;
+
+    protected final URI RDFTYPE_VARIABLE;
     private final URI RDFTYPE_SCIENTIFICOBJECT;
-    
+
     protected final DataNucleusService nosql;
     protected final SPARQLService sparql;
-    
-    public DataDAO(DataNucleusService datanucleus,SPARQLService sparql) throws URISyntaxException{
+
+    public DataDAO(DataNucleusService datanucleus, SPARQLService sparql) throws URISyntaxException {
         this.RDFTYPE_VARIABLE = new URI(Oeso.Variable.toString());
-        this.RDFTYPE_SCIENTIFICOBJECT = new  URI(Oeso.ScientificObject.toString());
-        
+        this.RDFTYPE_SCIENTIFICOBJECT = new URI(Oeso.ScientificObject.toString());
+
         this.nosql = datanucleus;
         this.sparql = sparql;
     }
-    
-    public Object create(DataModel instance) throws NamingException, URISyntaxException, Exception{
+
+    public Object create(DataModel instance) throws NamingException, URISyntaxException, Exception {
         nosql.prepareInstanceCreation(instance);
         return instance;
     }
-    
-    public Object createAll(List<DataModel> instances) throws NamingException, URISyntaxException, Exception{
+
+    public Object createAll(List<DataModel> instances) throws NamingException, URISyntaxException, Exception {
         nosql.prepareInstancesListCreation(instances);
         return instances;
     }
-    
-    public Object update(DataModel instance) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException{
+
+    public Object update(DataModel instance) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException {
         nosql.update(instance);
         return instance;
     }
-    
-    public boolean valid(DataModel data) throws SPARQLException, NamingException, IOException, Exception{
+
+    public boolean valid(DataModel data) throws SPARQLException, NamingException, IOException, Exception {
         ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql);
         boolean exist = false;
-        
+
         exist = sparql.uriExists(RDFTYPE_VARIABLE, data.getVariable());
-        if(data.getObject() != null)
-            exist = (exist && sparql.uriExists(RDFTYPE_SCIENTIFICOBJECT, data.getObject()));        
+        if (data.getObject() != null) {
+            exist = (exist && sparql.uriExists(RDFTYPE_SCIENTIFICOBJECT, data.getObject()));
+        }
         exist = (exist && provenanceDAO.provenanceExists(data.getProvenanceURI()));
-        
+
         return exist;
     }
-    
-    public void prepareURI(DataModel data) throws Exception{
-        String[] URICompose = new String[3];
-            
-        VariableModel var = sparql.getByURI(VariableModel.class, data.getVariable(),null);
-        URICompose[0] = var.getName();
-        if(URICompose[0] == null) URICompose[0] = var.getLongName();
 
-        if(data.getObject() != null){
+    public void prepareURI(DataModel data) throws Exception {
+        String[] URICompose = new String[3];
+
+        VariableModel var = sparql.getByURI(VariableModel.class, data.getVariable(), null);
+        URICompose[0] = var.getName();
+        if (URICompose[0] == null) {
+            URICompose[0] = var.getLongName();
+        }
+
+        if (data.getObject() != null) {
             URICompose[1] = "Not implemented yet";
         }
 
         ProvenanceModel prov = new ProvenanceModel();
         prov = nosql.findByURI(prov, data.getProvenanceURI());
-        URICompose[2]=prov.getLabel();
+        URICompose[2] = prov.getLabel();
 
         data.setURICompose(URICompose);
     }
-    
+
     public ListWithPagination<DataModel> search(
             UserModel user,
             //URI uri,
@@ -112,74 +115,75 @@ public class DataDAO {
             String endDate,
             Integer page,
             Integer pageSize) throws NamingException, IOException, ParseException, Exception {
-            
-            //build filter and params
-            DateTimeFormatter simpleDateFormatter = DateTimeFormatter.ofPattern(DateFormat.YMD.toString());        
-        
-            Map params = new HashMap(); 
-            String filter = "";
 
-            /*if (uri != null)
+        //build filter and params
+        DateTimeFormatter simpleDateFormatter = DateTimeFormatter.ofPattern(DateFormat.YMD.toString());
+
+        Map params = new HashMap();
+        String filter = "";
+
+        /*if (uri != null)
                 filter = filter + "uri == \"" + uri.toString() + "\" && ";*/
+        if (objectUri != null) {
+            filter = filter + "object == \"" + objectUri.toString() + "\" && ";
+        }
 
-            if (objectUri != null)
-                filter = filter + "object == \"" + objectUri.toString() +"\" && ";
+        if (variableUri != null) {
+            filter = filter + "variable == \"" + variableUri.toString() + "\" && ";
+        }
 
-            if (variableUri != null)
-                filter = filter + "variable == \"" + variableUri.toString() +"\" && ";
+        if (provenanceUri != null) {
+            filter = filter + "provenanceURI == \"" + provenanceUri.toString() + "\" && ";
+        }
 
-            if (provenanceUri != null)
-                filter = filter + "provenanceURI == \""+ provenanceUri.toString() + "\" && ";
-
-            if (startDate != null){
-                filter = filter + "date > :dateMin && ";
-                try {
-                    LocalDate sdate = LocalDate.parse(startDate,simpleDateFormatter);
-                    startDate += "T00:00:00+0000";
-                } catch (Exception e) {
-                }
-                params.put("dateMin", convertDateTime(startDate));
+        if (startDate != null) {
+            filter = filter + "date > :dateMin && ";
+            try {
+                LocalDate sdate = LocalDate.parse(startDate, simpleDateFormatter);
+                startDate += "T00:00:00+0000";
+            } catch (Exception e) {
             }
-            if(endDate != null){
-                filter = filter + "date < :dateMax && ";
-                try {
-                    LocalDate edate = LocalDate.parse(endDate,simpleDateFormatter);
-                    endDate += "T00:00:00+0000";
-                } catch (Exception e) {
-                }
-                params.put("dateMax", convertDateTime(endDate));
+            params.put("dateMin", convertDateTime(startDate));
+        }
+        if (endDate != null) {
+            filter = filter + "date < :dateMax && ";
+            try {
+                LocalDate edate = LocalDate.parse(endDate, simpleDateFormatter);
+                endDate += "T00:00:00+0000";
+            } catch (Exception e) {
+            }
+            params.put("dateMax", convertDateTime(endDate));
+        }
+
+        if (filter.length() > 4) {
+            filter = filter.substring(0, filter.length() - 4);
+        }
+
+        try (PersistenceManager pm = nosql.getPersistentConnectionManager()) {
+            int total = nosql.countResults(pm, DataModel.class, filter, params);
+
+            List<DataModel> results = nosql.searchWithPagination(pm, DataModel.class, filter, params, page, pageSize, total);
+            List<DataModel> datas = new ArrayList<>();
+
+            for (DataModel res : results) {
+                DataModel data = new DataModel();
+                data.setUri(res.getUri());
+                data.setObject(res.getObject());
+                data.setProvenanceURI(res.getProvenanceURI());
+                data.setProvenanceSettings(res.getProvenanceSettings());
+                data.setProvUsed(res.getProvUsed());
+                data.setVariable(res.getVariable());
+                data.setDate(res.getDate());
+                data.setValue(res.getValue());
+                data.setConfidence(res.getConfidence());
+                data.setMetadata(res.getMetadata());
+                datas.add(data);
             }
 
-            if(filter.length() > 4)
-                    filter = filter.substring(0,filter.length() - 4);         
-            
-            try (PersistenceManager pm = nosql.getPersistentConnectionManager()) {
-                int total = nosql.countResults(pm, DataModel.class, filter, params);
-                
-                List<DataModel> results = nosql.searchWithPagination(pm, DataModel.class, filter, params, page, pageSize, total);
-                List<DataModel> datas = new ArrayList<>();
+            return new ListWithPagination<>(datas, page, pageSize, total);
 
-                for (DataModel res:results){
-                    DataModel data = new DataModel();
-                    data.setUri(res.getUri());
-                    data.setObject(res.getObject());
-                    data.setProvenanceURI(res.getProvenanceURI());
-                    data.setProvenanceSettings(res.getProvenanceSettings());
-                    data.setProvUsed(res.getProvUsed());
-                    data.setVariable(res.getVariable());
-                    data.setDate(res.getDate());
-                    data.setValue(res.getValue());
-                    data.setConfidence(res.getConfidence());
-                    data.setMetadata(res.getMetadata());
-                    datas.add(data);
-                }
-                
-                return new ListWithPagination<>(datas, page, pageSize, total);
-                
-            }
+        }
 
-            
-        
 //        try (PersistenceManager pm = nosql.getPersistentConnectionManager()) {
 //            nosql.flush();
 //            
@@ -232,17 +236,18 @@ public class DataDAO {
 //            return LWPdata;
 //        }       
     }
-    
-    public DataModel get(URI uri) throws NamingException, NoSQLInvalidURIException{
+
+    public DataModel get(URI uri) throws NamingException, NoSQLInvalidURIException {
         try (PersistenceManager persistenceManager = nosql.getPersistentConnectionManager()) {
             Query q = persistenceManager.newQuery(DataModel.class);
 
-            String filter = "uri == \"" + uri.toString() +"\"";
+            String filter = "uri == \"" + uri.toString() + "\"";
             q.setFilter(filter);
             DataModel res = (DataModel) q.executeUnique();
             DataModel data = new DataModel();
-            if(res == null)
+            if (res == null) {
                 throw new NoSQLInvalidURIException(uri);
+            }
             data.setUri(res.getUri());
             data.setObject(res.getObject());
             data.setProvenanceURI(res.getProvenanceURI());
@@ -257,8 +262,8 @@ public class DataDAO {
             return data;
         }
     }
-    
-    public void delete(URI uri) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException{
+
+    public void delete(URI uri) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException {
         nosql.delete(new DataModel(), uri);
     }
 
@@ -267,49 +272,91 @@ public class DataDAO {
         //check variables uri
         if (!sparql.uriListExists(VariableModel.class, variables)) {
             return new ErrorResponse(
-                            Response.Status.BAD_REQUEST,
-                            "wrong variable uri",
-                            "A given variety uri doesn't exist"
-                );
+                    Response.Status.BAD_REQUEST,
+                    "wrong variable uri",
+                    "A given variety uri doesn't exist"
+            );
         }
-        
+
         //check objects uri
         if (!objects.isEmpty()) {
             if (!sparql.uriListExists(ScientificObjectModel.class, objects)) {
                 return new ErrorResponse(
-                                Response.Status.BAD_REQUEST,
-                                "wrong object uri",
-                                "A given object uri doesn't exist"
-                    );
+                        Response.Status.BAD_REQUEST,
+                        "wrong object uri",
+                        "A given object uri doesn't exist"
+                );
             }
         }
-        
+
         //check provenance uri
         ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
         if (!provDAO.provenanceListExists(provenances)) {
             return new ErrorResponse(
-                            Response.Status.BAD_REQUEST,
-                            "wrong provenance uri",
-                            "A given provenance uri doesn't exist"
-                );
+                    Response.Status.BAD_REQUEST,
+                    "wrong provenance uri",
+                    "A given provenance uri doesn't exist"
+            );
         }
-        
+
         return null;
-        
+
     }
 
     public ZonedDateTime convertDateTime(String strDate) {
         DateFormat[] formats = {DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ};
         ZonedDateTime zdt = null;
         for (DateFormat dateCheckFormat : formats) {
-            try { 
+            try {
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern(dateCheckFormat.toString());
                 zdt = ZonedDateTime.parse(strDate, dtf);
                 break;
             } catch (DateTimeParseException e) {
-            }                    
+            }
         }
-        return zdt;        
+        return zdt;
     }
-    
+
+    public List<VariableModel> getVariablesByExperiment(URI xpUri, String language) throws Exception {
+        List<URI> provenances = getProvenancesByExperiment(xpUri);
+        try (PersistenceManager pm = nosql.getPersistentConnectionManager()) {
+            Query<DataModel> query = pm.newQuery(DataModel.class);
+            query.setResult("DISTINCT variable");
+
+            if (provenances.size() > 0) {
+                String filter = "";
+                for (URI provenanceURI : provenances) {
+                    filter = filter + "provenanceURI == \"" + provenanceURI.toString() + "\" || ";
+                }
+                filter = filter.substring(0, filter.length() - 4);
+
+                if (!filter.trim().isEmpty()) {
+                    query.setFilter(filter);
+                }
+//                query.compile();
+//                String s = query.toString();
+                List variableURIs = query.executeResultList();
+
+                return sparql.getListByURIs(VariableModel.class, variableURIs, language);
+            } else {
+                return new ArrayList<>();
+            }
+        }
+
+    }
+
+    public List<URI> getProvenancesByExperiment(URI xpUri) throws Exception {
+        try (PersistenceManager pm = nosql.getPersistentConnectionManager()) {
+            Query<ProvenanceModel> query = pm.newQuery(ProvenanceModel.class);
+            query.setResult("DISTINCT uri");
+
+            String filter = "experiments.contains(exp) && exp.uri == '" + xpUri.toString() + "'";
+
+            query.setFilter(filter);
+            List provenancesURIs = query.executeResultList();
+
+            return provenancesURIs;
+        }
+    }
+
 }

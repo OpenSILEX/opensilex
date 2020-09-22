@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.core.variable.dal;
 
+import java.net.URI;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;

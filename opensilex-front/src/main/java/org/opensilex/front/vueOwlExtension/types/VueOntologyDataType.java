@@ -14,5 +14,4 @@ import java.net.URI;
 public interface VueOntologyDataType extends VueOntologyType {
 
     public String getLabelKey();
-
 }

@@ -24,4 +24,8 @@ public interface VueOntologyType {
 
     public String getViewComponent();
 
+    public default boolean isDisabled() {
+        return false;
+    }
+
 }

@@ -141,9 +141,9 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   refresh() {
-    this.soService.getScientificObjectsList(this.uri).then(http => {
-      this.availableParents = http.response.result;
-    });
+    // this.soService.getScientificObjectsList(this.uri).then(http => {
+    //   this.availableParents = http.response.result;
+    // });
     this.soService.getScientificObjectsTree(this.uri).then(http => {
       let treeNode = [];
       let first = true;

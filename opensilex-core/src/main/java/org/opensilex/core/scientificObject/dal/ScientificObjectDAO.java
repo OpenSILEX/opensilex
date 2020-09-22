@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
@@ -73,6 +74,18 @@ public class ScientificObjectDAO {
 
         Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
         return sparql.search(experimentGraph, ScientificObjectModel.class, currentUser.getLanguage());
+    }
+
+    public List<ScientificObjectModel> searchByURIs(URI experimentURI, List<URI> objectsURI, UserModel currentUser) throws Exception {
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        xpDAO.validateExperimentAccess(experimentURI, currentUser);
+
+        Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
+
+        List<URI> uniqueObjectsUri = objectsURI.stream()
+                .distinct()
+                .collect(Collectors.toList());
+        return sparql.getListByURIs(experimentGraph, ScientificObjectModel.class, uniqueObjectsUri, currentUser.getLanguage());
     }
 
     public List<ScientificObjectModel> searchChildrenByExperiment(URI experimentURI, URI parentURI, Integer offset, Integer limit, UserModel currentUser) throws Exception {

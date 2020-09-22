@@ -57,6 +57,7 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.PartialResourceTreeDTO;
 import org.opensilex.sparql.response.PartialResourceTreeResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -86,7 +87,7 @@ public class ScientificObjectAPI {
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_READ_LABEL_KEY = "credential.project.read";
 
     public static final int DEFAULT_CHILDREN_LIMIT = 10;
-    public static final int DEFAULT_DEPTH_LIMIT = 3;
+    public static final int DEFAULT_DEPTH_LIMIT = 2;
 
     @CurrentUser
     UserModel currentUser;
@@ -130,13 +131,36 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of scientific objetcs corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return list of scientific objetcs corresponding to the given experiment URI", response = NamedResourceDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectsList(
             @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
         List<ScientificObjectModel> sientificObjects = dao.searchByExperiment(experimentURI, currentUser);
+        List<NamedResourceDTO> dtoList = sientificObjects.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<NamedResourceDTO>(dtoList).getResponse();
+    }
+
+    @POST
+    @Path("get-list-by-uris/{xpuri}")
+    @ApiOperation("Get scientific objet list for an experiment")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_READ_ID,
+            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_READ_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return list of scientific objetcs corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+    })
+    public Response getScientificObjectsListByUris(
+            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI,
+            @ApiParam(value = "Scientific object uris", required = true) List<URI> objectsURI
+    ) throws Exception {
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        List<ScientificObjectModel> sientificObjects = dao.searchByURIs(experimentURI, objectsURI, currentUser);
         List<ScientificObjectNodeDTO> dtoList = sientificObjects.stream().map(ScientificObjectNodeDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
     }

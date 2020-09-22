@@ -146,6 +146,10 @@ routes:
     component: opensilex-ExperimentView
     credentials:
       - experiment-read
+  - path: /experiment/data/:uri
+    component: opensilex-ExperimentView
+    credentials:
+      - experiment-read      
   - path: /scientific-object-types/properties
     component: opensilex-ScientificObjectTypes
     credentials:

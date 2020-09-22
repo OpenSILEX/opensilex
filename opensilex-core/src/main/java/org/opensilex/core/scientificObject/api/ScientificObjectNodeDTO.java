@@ -13,37 +13,37 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  * @author vmigot
  */
 public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectModel> {
-    
-    private boolean hasChildren;
-    
-    public boolean isHasChildren() {
-        return hasChildren;
+
+    private Integer childCount;
+
+    public Integer getChildCount() {
+        return childCount;
     }
-    
-    public void setHasChildren(boolean hasChildren) {
-        this.hasChildren = hasChildren;
+
+    public void setChildCount(Integer childCount) {
+        this.childCount = childCount;
     }
-    
+
     @Override
     public void toModel(ScientificObjectModel model) {
         super.toModel(model);
     }
-    
+
     @Override
     public void fromModel(ScientificObjectModel model) {
         super.fromModel(model);
-        this.setHasChildren(model.getChildren().size() > 0);
+        this.setChildCount(model.getChildren().size());
     }
-    
+
     @Override
     public ScientificObjectModel newModelInstance() {
         return new ScientificObjectModel();
     }
-    
+
     public static ScientificObjectNodeDTO getDTOFromModel(ScientificObjectModel model) {
         ScientificObjectNodeDTO dto = new ScientificObjectNodeDTO();
         dto.fromModel(model);
-        
+
         return dto;
     }
 }

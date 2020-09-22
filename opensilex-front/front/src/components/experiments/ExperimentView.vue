@@ -7,11 +7,15 @@
         <b-nav-item
           :active="isDetailsTab()"
           :to="{path: '/experiment/details/' + encodeURIComponent(uri)}"
-        >{{ $t('Details') }}</b-nav-item>
+        >{{ $t('ExperimentView.details') }}</b-nav-item>
         <b-nav-item
           :active="isScientificObjectsTab()"
           :to="{path: '/experiment/scientific-objects/' + encodeURIComponent(uri)}"
-        >{{ $t('Objets scientifiques') }}</b-nav-item>
+        >{{ $t('ExperimentView.scientific-objects') }}</b-nav-item>
+        <b-nav-item
+          :active="isDataTab()"
+          :to="{path: '/experiment/data/' + encodeURIComponent(uri)}"
+        >{{ $t('ExperimentView.data') }}</b-nav-item>
       </template>
     </opensilex-PageActions>
 
@@ -19,6 +23,7 @@
       <template v-slot>
         <opensilex-ExperimentDetail v-if="isDetailsTab()" :uri="uri"></opensilex-ExperimentDetail>
         <opensilex-ExperimentScientificObjects v-else-if="isScientificObjectsTab()" :uri="uri"></opensilex-ExperimentScientificObjects>
+        <opensilex-ExperimentData v-else-if="isDataTab()" :uri="uri"></opensilex-ExperimentData>
       </template>
     </opensilex-PageContent>
   </div>
@@ -45,11 +50,25 @@ export default class ExperimentView extends Vue {
     return this.$route.path.startsWith("/experiment/scientific-objects/");
   }
 
-  goBack() {
-    window.history.back();
+  isDataTab() {
+    return this.$route.path.startsWith("/experiment/data/");
   }
 }
 </script>
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+en:
+  ExperimentView:
+    details: Details
+    scientific-objects: Scientific objects
+    data: Data
+
+fr:
+  ExperimentView:
+    details: Détail
+    scientific-objects: Objets scientifiques
+    data: Data
+</i18n>

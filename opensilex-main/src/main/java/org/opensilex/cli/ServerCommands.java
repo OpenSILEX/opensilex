@@ -48,8 +48,8 @@ public class ServerCommands extends AbstractOpenSilexCommand implements OpenSile
     private final static Logger LOGGER = LoggerFactory.getLogger(ServerCommands.class);
 
     /**
-     * This function start the OpenSilex server with the given host, port and adminPort If the daemon flag is set to true, this command will try to
-     * run the server in another process.
+     * This function start the OpenSilex server with the given host, port and adminPort If the daemon flag is set to
+     * true, this command will try to run the server in another process.
      *
      * @param host Server host name (default: localhost)
      * @param port Server port (default: 8666)
@@ -114,7 +114,6 @@ public class ServerCommands extends AbstractOpenSilexCommand implements OpenSile
                 File jarFile = new File(ServerCommands.class.getProtectionDomain().getCodeSource().getLocation().toURI());
 
                 OpenSilex instance = getOpenSilex();
-                String debug = instance.isDebug() ? "true" : "false";
 
                 List<String> processArgs = new ArrayList<String>() {
                     {
@@ -126,7 +125,9 @@ public class ServerCommands extends AbstractOpenSilexCommand implements OpenSile
                         add("--host=" + host);
                         add("--port=" + port);
                         add("--adminPort=" + adminPort);
-                        add("--DEBUG=" + debug);
+                        if (instance.isDebug()) {
+                            add("--DEBUG");
+                        }
                     }
 
                 };

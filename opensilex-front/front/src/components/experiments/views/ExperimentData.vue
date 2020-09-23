@@ -15,6 +15,7 @@
               :required="true"
               :selected.sync="selectedVariable"
               :options="usedVariables"
+              @select="tableRef.refresh()"
             ></opensilex-SelectForm>
 
             <opensilex-TableAsyncView
@@ -43,7 +44,7 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {
   ExperimentCreationDTO,
@@ -70,6 +71,8 @@ export default class ExperimentData extends Vue {
   $t: any;
 
   uri = null;
+
+  @Ref("tableRef") readonly tableRef!: any;
 
   created() {
     this.uri = this.$route.params.uri;

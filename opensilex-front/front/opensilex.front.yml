@@ -21,11 +21,6 @@ menu:
           path: /images
           component: phis-ImageView
           credentials: []
-      - id: variables
-        label: component.menu.variables
-        route:
-            path: /variables
-            component: opensilex-VariableView
   - id: projects
     label: component.menu.projects
     icon: ik-layers
@@ -81,6 +76,11 @@ menu:
   - id: experimentalDesign
     label: component.menu.experimentalDesign.label
     children:
+      - id: variables
+        label: component.menu.variables
+        route:
+            path: /variables
+            component: opensilex-VariableView      
       - id: factors
         label: component.menu.experimentalDesign.factors
         route:

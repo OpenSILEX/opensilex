@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
-import java.util.List;
 import javax.inject.Inject;
 import javax.naming.NamingException;
 import javax.validation.Valid;
@@ -34,6 +33,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
@@ -56,36 +56,25 @@ import org.opensilex.utils.ListWithPagination;
 
 /**
  * Provenance API
+ *
  * @author Alice Boizet
  */
-@Api(ProvenanceAPI.CREDENTIAL_PROVENANCE_GROUP_ID)
+@Api(DataAPI.CREDENTIAL_DATA_GROUP_ID)
 @Path("/core/provenance")
 @ApiCredentialGroup(
-        groupId = ProvenanceAPI.CREDENTIAL_PROVENANCE_GROUP_ID,
-        groupLabelKey = ProvenanceAPI.CREDENTIAL_PROVENANCE_GROUP_LABEL_KEY
+        groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
+        groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY
 )
 public class ProvenanceAPI {
-    
-    public static final String CREDENTIAL_PROVENANCE_GROUP_ID = "Provenances";
-    public static final String CREDENTIAL_PROVENANCE_GROUP_LABEL_KEY = "credential-groups.provenance";
 
-    public static final String CREDENTIAL_PROVENANCE_MODIFICATION_ID = "provenance-modification";
-    public static final String CREDENTIAL_PROVENANCE_MODIFICATION_LABEL_KEY = "credential.provenance.modification";
-
-    public static final String CREDENTIAL_PROVENANCE_READ_ID = "provenance-read";
-    public static final String CREDENTIAL_PROVENANCE_READ_LABEL_KEY = "credential.provenance.read";
-
-    public static final String CREDENTIAL_PROVENANCE_DELETE_ID = "provenance-delete";
-    public static final String CREDENTIAL_PROVENANCE_DELETE_LABEL_KEY = "credential.provenance.delete";
-    
     public static final String PROVENANCE_EXAMPLE_URI = "http://opensilex.dev/id/provenance/provenancelabel";
 
     @CurrentUser
     UserModel currentUser;
-    
+
     @Inject
-    private DataNucleusService nosql;    
-    
+    private DataNucleusService nosql;
+
     @Inject
     private SPARQLService sparql;
 
@@ -94,8 +83,8 @@ public class ProvenanceAPI {
     @ApiOperation("Create a provenance")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_PROVENANCE_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_PROVENANCE_MODIFICATION_LABEL_KEY
+            credentialId = DataAPI.CREDENTIAL_DATA_MODIFICATION_ID,
+            credentialLabelKey = DataAPI.CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -108,13 +97,13 @@ public class ProvenanceAPI {
             @ApiParam("provenance description") @Valid ProvenanceCreationDTO provDTO
     ) throws Exception {
 
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);   
-        ProvenanceModel model = provDTO.newModel();       
-        ProvenanceModel provenance = provDAO.create(model); 
-        
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+        ProvenanceModel model = provDTO.newModel();
+        ProvenanceModel provenance = provDAO.create(model);
+
         return new ObjectUriResponse(Response.Status.CREATED, provenance.getUri()).getResponse();
     }
-    
+
     /**
      * @param uri
      * @return
@@ -125,8 +114,8 @@ public class ProvenanceAPI {
     @ApiOperation("Get a provenance")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_PROVENANCE_READ_ID,
-            credentialLabelKey = CREDENTIAL_PROVENANCE_READ_LABEL_KEY
+            credentialId = DataAPI.CREDENTIAL_DATA_READ_ID,
+            credentialLabelKey = DataAPI.CREDENTIAL_DATA_READ_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -135,21 +124,21 @@ public class ProvenanceAPI {
         @ApiResponse(code = 404, message = "Provenance not found", response = ErrorDTO.class)
     })
     public Response getProvenance(
-       @ApiParam(value = "Provenance URI", required = true) @PathParam("uri") @NotNull URI uri       
+            @ApiParam(value = "Provenance URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         ProvenanceDAO dao = new ProvenanceDAO(nosql);
         ProvenanceModel provenance = dao.get(uri);
-        
+
         if (provenance != null) {
             return new SingleObjectResponse<>(provenance).getResponse();
         } else {
             return new ErrorResponse(Response.Status.NOT_FOUND, "Provenance not found",
                     "Unknown provenance URI: " + uri.toString()).getResponse();
         }
-        
-    }  
-    
+
+    }
+
     /**
      * @param label
      * @param experiment
@@ -164,8 +153,8 @@ public class ProvenanceAPI {
     @ApiOperation("Get lists of provenances")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_PROVENANCE_READ_ID,
-            credentialLabelKey = CREDENTIAL_PROVENANCE_READ_LABEL_KEY
+            credentialId = DataAPI.CREDENTIAL_DATA_READ_ID,
+            credentialLabelKey = DataAPI.CREDENTIAL_DATA_READ_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -175,26 +164,29 @@ public class ProvenanceAPI {
         @ApiResponse(code = 404, message = "Germplasm not found", response = ErrorDTO.class)
     })
     public Response getProvenance(
-        @ApiParam(value = "label") @QueryParam("label") String label,
-        @ApiParam(value = "experiment URI") @QueryParam("experiment URI") URI experiment,
-        @ApiParam(value = "activity type") @QueryParam("activity type") URI activityType,
-        @ApiParam(value = "agent URI") @QueryParam("agent URI") URI agentURI,
-        @ApiParam(value = "agent type") @QueryParam("agent type") URI agentType,
-        @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-        @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize        
+            @ApiParam(value = "label") @QueryParam("label") String label,
+            @ApiParam(value = "experiment URI") @QueryParam("experiment URI") URI experiment,
+            @ApiParam(value = "activity type") @QueryParam("activity type") URI activityType,
+            @ApiParam(value = "agent URI") @QueryParam("agent URI") URI agentURI,
+            @ApiParam(value = "agent type") @QueryParam("agent type") URI agentType,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         ProvenanceDAO dao = new ProvenanceDAO(nosql);
         ListWithPagination<ProvenanceModel> provenances = dao.search(label, experiment, activityType, agentType, agentURI, page, pageSize);
-        
+
         return new PaginatedListResponse<>(provenances).getResponse();
-    }  
+    }
 
     @DELETE
     @Path("delete/{uri}")
     @ApiOperation("Delete a provenance")
     @ApiProtected
-    @ApiCredential(credentialId = CREDENTIAL_PROVENANCE_DELETE_ID, credentialLabelKey = CREDENTIAL_PROVENANCE_DELETE_LABEL_KEY)
+    @ApiCredential(
+            credentialId = DataAPI.CREDENTIAL_DATA_DELETE_ID,
+            credentialLabelKey = DataAPI.CREDENTIAL_DATA_DELETE_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -204,7 +196,7 @@ public class ProvenanceAPI {
     public Response deleteProvenance(
             @ApiParam(value = "Provenance URI", example = PROVENANCE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) throws URISyntaxException, NamingException, IOException, ParseException, Exception {
         ProvenanceDAO dao = new ProvenanceDAO(nosql);
-        
+
         //check if the provenance can be deleted (not linked to data)
         DataDAO dataDAO = new DataDAO(nosql, sparql);
         ListWithPagination<DataModel> resultList = dataDAO.search(
@@ -217,17 +209,15 @@ public class ProvenanceAPI {
                 0,
                 1
         );
-        
-        if (resultList.getTotal()>0) {
+
+        if (resultList.getTotal() > 0) {
             return new ErrorResponse(
-                        Response.Status.BAD_REQUEST,
-                        "The provenance is linked to some data",
-                        "You can't delete a provenance linked to data"
-                ).getResponse();
-        }
-        
-        else {
-            try {            
+                    Response.Status.BAD_REQUEST,
+                    "The provenance is linked to some data",
+                    "You can't delete a provenance linked to data"
+            ).getResponse();
+        } else {
+            try {
                 dao.delete(uri);
                 return new ObjectUriResponse(uri).getResponse();
 
@@ -239,12 +229,15 @@ public class ProvenanceAPI {
             }
         }
     }
-    
+
     @PUT
     @Path("update")
     @ApiProtected
     @ApiOperation("Update a provenance")
-    @ApiCredential(credentialId = CREDENTIAL_PROVENANCE_MODIFICATION_ID, credentialLabelKey = CREDENTIAL_PROVENANCE_MODIFICATION_LABEL_KEY)
+    @ApiCredential(
+            credentialId = DataAPI.CREDENTIAL_DATA_MODIFICATION_ID,
+            credentialLabelKey = DataAPI.CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -255,12 +248,12 @@ public class ProvenanceAPI {
     public Response update(
             @ApiParam("Provenance description") @Valid ProvenanceUpdateDTO dto
     ) throws Exception {
-        try{
+        try {
             ProvenanceDAO dao = new ProvenanceDAO(nosql);
             ProvenanceModel newProvenance = dto.newModel();
-            
+
             ProvenanceModel storedProvenance = dao.get(dto.getUri());
-            
+
             if (storedProvenance == null) {
                 throw new NoSQLInvalidURIException(dto.getUri());
             } else {
@@ -269,12 +262,12 @@ public class ProvenanceAPI {
                 } else {
                     newProvenance = dao.update(newProvenance);
                 }
-            }            
+            }
             return new ObjectUriResponse(Response.Status.OK, newProvenance.getUri()).getResponse();
-        }catch (NoSQLInvalidURIException | BadRequestException e){
+        } catch (NoSQLInvalidURIException | BadRequestException e) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "wrong provenance json", e.getMessage()).getResponse();
-        }catch (IOException | ParseException | NamingException | NoSQLBadPersistenceManagerException e) {
+        } catch (IOException | ParseException | NamingException | NoSQLBadPersistenceManagerException e) {
             return new ErrorResponse(e).getResponse();
-        }        
+        }
     }
 }

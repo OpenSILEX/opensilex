@@ -31,8 +31,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
-import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.server.response.ErrorResponse;
@@ -43,8 +41,6 @@ import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_READ_ID;
-import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_READ_LABEL_KEY;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
@@ -240,8 +236,8 @@ public class ProjectAPI {
     @ApiOperation("Get a list of projects by their URIs")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_GROUP_READ_ID,
-            credentialLabelKey = CREDENTIAL_GROUP_READ_LABEL_KEY
+            credentialId = CREDENTIAL_PROJECT_READ_ID,
+            credentialLabelKey = CREDENTIAL_PROJECT_READ_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

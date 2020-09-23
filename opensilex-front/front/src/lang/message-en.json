@@ -636,7 +636,9 @@
         "variables": "Variables",
         "factors": "Factors",
         "infrastructures": "Infrastructures",
-        "germplasm": "Germplasm"
+        "germplasm": "Germplasm",
+        "scientific-objects": "Scientific objects",
+        "data": "Data"
     },
     "credential": {
         "experiment": {
@@ -688,6 +690,16 @@
             "modification": "Create / update germplasm",
             "read": "View germplasm",
             "delete": "Delete germplasm"
+        },
+        "scientific-objects": {
+            "modification": "Create / update scientific objects",
+            "read": "View scientific objects",
+            "delete": "Delete scientific objects"
+        },
+        "data": {
+            "modification": "Create / update data",
+            "read": "View data",
+            "delete": "Delete data"
         }
     },
     "validations": {

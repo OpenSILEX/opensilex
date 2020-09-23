@@ -535,7 +535,10 @@
         "users": "Utilisateurs",
         "variables": "Variables",
         "factors": "Facteurs",
-        "infrastructures": "Infrastructures"
+        "infrastructures": "Infrastructures",
+        "germplasm": "Germplasm",
+        "scientific-objects": "Objets scientifiques",
+        "data": "Data"
     },
     "credential": {
         "experiment": {
@@ -586,7 +589,17 @@
         "germplasm": {
             "modification": "Ajout / Modification germplasm",
             "read": "Visualisation des germplasm",
-            "delete": "Suppression des  germplasm"
+            "delete": "Suppression des germplasm"
+        },
+        "scientific-objects": {
+            "modification": "Ajout / Modification des objets scientifiques",
+            "read": "Visualisation des objets scientifiques",
+            "delete": "Suppression des objets scientifiques"
+        },
+        "data": {
+            "modification": "Ajout / Modification des données",
+            "read": "Visualisation des données",
+            "delete": "Suppression des données"
         }
     },
     "validations": {

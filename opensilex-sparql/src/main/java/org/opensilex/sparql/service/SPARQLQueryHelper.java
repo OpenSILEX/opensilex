@@ -81,6 +81,22 @@ public class SPARQLQueryHelper {
         return parentExpr;
     }
 
+    public static Expr or(Collection<Expr> expressions) {
+        Expr parentExpr = null;
+
+        for (Expr expr : expressions) {
+            if (expr != null) {
+                if (parentExpr == null) {
+                    parentExpr = expr;
+                } else {
+                    parentExpr = new E_LogicalOr(parentExpr, expr);
+                }
+            }
+        }
+
+        return parentExpr;
+    }
+
     public static Expr or(Expr[] expressions, Expr... extensions) {
         Expr parentExpr = null;
 

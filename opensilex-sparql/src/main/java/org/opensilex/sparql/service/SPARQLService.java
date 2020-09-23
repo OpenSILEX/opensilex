@@ -57,6 +57,8 @@ import java.util.function.Function;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.path.Path;
+import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
@@ -520,44 +522,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             language = lang;
         }
 
+        SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
+        SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
         Var uriVar = makeVar("uri");
-        Function<URI, List<T>> searchHandler = (parentSearchURI) -> {
-            try {
-                return search(graph, objectClass, language, (select) -> {
-                    if (parentSearchURI == null) {
-                        Triple parentTriple = new Triple(makeVar(parentField), parentProperty.asNode(), makeVar("parentURI"));
-                        select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
-                    } else {
-                        select.addWhere(uriVar, parentProperty.asNode(), SPARQLDeserializers.nodeURI(parentSearchURI));
-                    }
-                    if (filterHandler != null) {
-                        filterHandler.accept(select);
-                    }
-                }, null, 0, maxChild);
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        };
-
-        Function<URI, Integer> countHandler = (parentCountURI) -> {
-            try {
-                int totalSize = count(graph, objectClass, language, (select) -> {
-                    if (parentCountURI == null) {
-                        Triple parentTriple = new Triple(makeVar(parentField), parentProperty.asNode(), makeVar("parentURI"));
-                        select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
-                    } else {
-                        select.addWhere(uriVar, parentProperty.asNode(), SPARQLDeserializers.nodeURI(parentCountURI));
-                    }
-                    if (filterHandler != null) {
-                        filterHandler.accept(select);
-                    }
-                });
-
-                return totalSize;
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        };
 
         List<T> rootList = search(graph, objectClass, language, (select) -> {
             if (parentURI == null) {
@@ -571,10 +538,86 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             }
         });
 
+        List<URI> rootURIs = new ArrayList<>(rootList.size());
+        for (T i : rootList) {
+            rootURIs.add(i.getUri());
+        }
+
+        Map<String, List<T>> objectMapByParent = new HashMap<>();
+        SelectBuilder objectListQuery = mapper.getSelectBuilder(graph, language);
+        if (filterHandler != null) {
+            filterHandler.accept(objectListQuery);
+        }
+
+        if (maxDepth == 2 && parentURI == null) {
+            objectListQuery.addFilter(SPARQLQueryHelper.inURIFilter(parentField, rootURIs));
+        } else {
+            Path propertyPath = PathFactory.pathOneOrMore1(
+                    PathFactory.pathLink(parentProperty.asNode())
+            );
+            if (parentURI == null) {
+                Var rootParentVar = makeVar("__rootParent");
+                objectListQuery.addWhere(uriVar, propertyPath, rootParentVar);
+                objectListQuery.addFilter(SPARQLQueryHelper.inURIFilter("__rootParent", rootURIs));
+            } else {
+                objectListQuery.addWhere(uriVar,
+                        propertyPath,
+                        SPARQLDeserializers.nodeURI(parentURI)
+                );
+            }
+        }
+
+        executeSelectQuery(objectListQuery, ThrowingConsumer.wrap((SPARQLResult result) -> {
+            T instance = mapper.createInstance(graph, result, language, this);
+            String instanceParentURI = SPARQLDeserializers.getExpandedURI(instance.getParent().getUri().toString());
+            if (!objectMapByParent.containsKey(instanceParentURI)) {
+                objectMapByParent.put(instanceParentURI, new ArrayList<>());
+            }
+            objectMapByParent.get(instanceParentURI).add(instance);
+        }, Exception.class));
+
+        Function<URI, List<T>> searchHandler = (parentSearchURI) -> {
+            String expandURI = SPARQLDeserializers.getExpandedURI(parentSearchURI);
+            if (objectMapByParent.containsKey(expandURI)) {
+                return objectMapByParent.get(expandURI);
+            } else {
+                return new ArrayList<>();
+            }
+        };
+
+        SelectBuilder objectCountQuery = mapper.getSelectBuilder(graph, language);
+        Var objectCountUriVar = mapper.getURIFieldVar();
+        objectCountQuery.getVars().clear();
+        objectCountQuery.addVar(objectCountUriVar);
+        Var childVar = makeVar("__child");
+        objectCountQuery.addVar("COUNT(?__child)", "?__childCount");
+        objectCountQuery.addWhere(childVar, parentProperty.asNode(), objectCountUriVar);
+        if (filterHandler != null) {
+            filterHandler.accept(objectCountQuery);
+        }
+        objectCountQuery.addGroupBy(objectCountUriVar);
+
+        Map<String, Integer> countMap = new HashMap<>();
+        executeSelectQuery(objectCountQuery, (result) -> {
+            countMap.put(
+                    result.getStringValue(mapper.getURIFieldName()),
+                    Integer.valueOf(result.getStringValue("__childCount"))
+            );
+        });
+
+        Function<URI, Integer> countHandler = (parentCountURI) -> {
+            String expandURI = SPARQLDeserializers.getExpandedURI(parentCountURI);
+            if (countMap.containsKey(expandURI)) {
+                return countMap.get(expandURI);
+            } else {
+                return 0;
+            }
+        };
+
         SPARQLPartialTreeListModel<T> tree = new SPARQLPartialTreeListModel<T>(parentURI, searchHandler, countHandler);
 
         for (T item : rootList) {
-            tree.loadChildren(item, maxDepth);
+            tree.loadChildren(item, null, maxDepth);
         }
 
         return tree;

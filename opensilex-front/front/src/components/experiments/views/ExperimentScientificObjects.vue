@@ -30,12 +30,10 @@
               <span v-if="!node.data.selected">{{ node.title }}</span>
               <span
                 class="async-tree-action"
-                v-if="node.data.childCount> 0  && node.data.childCount > node.children.length"
+                v-if="node.children.length > 0 && node.data.childCount > 0  && node.data.childCount > node.children.length"
               >
                 ({{node.data.typeLabel}} - {{node.children.length}}/{{node.data.childCount}}
-                <span
-                  v-if="node.children.length > 0 && node.data.childCount > node.children.length"
-                >
+                <span>
                   -
                   <a
                     href="#"
@@ -49,7 +47,7 @@
             <template v-slot:buttons="{ node }">
               <opensilex-EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-                @click="editScientificObject(node.data.uri)"
+                @click="editScientificObject(node)"
                 label="ExperimentScientificObjects.edit-scientific-object"
                 :small="true"
               ></opensilex-EditButton>
@@ -141,9 +139,6 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   refresh() {
-    // this.soService.getScientificObjectsList(this.uri).then(http => {
-    //   this.availableParents = http.response.result;
-    // });
     this.soService.getScientificObjectsTree(this.uri).then(http => {
       let treeNode = [];
       let first = true;
@@ -153,6 +148,10 @@ export default class ExperimentScientificObjects extends Vue {
         treeNode.push(node);
       }
       this.nodes = treeNode;
+    });
+
+    this.soService.getScientificObjectsList(this.uri).then(http => {
+      this.availableParents = http.response.result;
     });
   }
 
@@ -210,7 +209,7 @@ export default class ExperimentScientificObjects extends Vue {
             let soNode = {
               title: soDTO.name,
               data: soDTO,
-              isLeaf: !soDTO.hasChildren,
+              isLeaf: soDTO.childCount == 0,
               children: [],
               isExpanded: false,
               isSelected: false,
@@ -269,7 +268,7 @@ export default class ExperimentScientificObjects extends Vue {
 
   availableParents = [];
 
-  editScientificObject(objectURI) {
+  editScientificObject(node) {
     this.soForm
       .getFormRef()
       .setContext({
@@ -277,11 +276,14 @@ export default class ExperimentScientificObjects extends Vue {
       })
       .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
 
-    this.soService.getScientificObjectDetail(this.uri, objectURI).then(http => {
-      let form: any = http.response.result;
-      this.parentURI = form.parent;
-      this.soForm.showEditForm(form);
-    });
+    this.soService
+      .getScientificObjectDetail(this.uri, node.data.uri)
+      .then(http => {
+        let form: any = http.response.result;
+
+        this.parentURI = form.parent;
+        this.soForm.showEditForm(form);
+      });
   }
 
   parentURI;
@@ -294,7 +296,6 @@ export default class ExperimentScientificObjects extends Vue {
       .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
 
     this.parentURI = parentURI;
-
     this.soForm.showCreateForm();
   }
 
@@ -406,6 +407,7 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   loadChildrenIfRequired(node) {
+    console.error(node);
     if (node.children.length == 0 && node.data.childCount > 0) {
       this.loadMoreChildren(node);
     }
@@ -424,7 +426,7 @@ export default class ExperimentScientificObjects extends Vue {
     );
   }
 
-  importCSV(objectType, validationToken, csvFile) {
+  uploadCSV(objectType, validationToken, csvFile) {
     return this.$opensilex.uploadFileToService(
       "/core/scientific-object/csv-import",
       {

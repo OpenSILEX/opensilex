@@ -67,9 +67,12 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
     }
 
     public void addTree(T candidate) {
-        if (!map.containsKey(candidate.getUri())) {
+        T parent = candidate.getParent();
+        addTreeWithParent(candidate, parent);
+    }
 
-            T parent = candidate.getParent();
+    public void addTreeWithParent(T candidate, T parent) {
+        if (!map.containsKey(candidate.getUri())) {
 
             if (parent == null) {
                 if (!map.containsKey(null)) {
@@ -100,7 +103,7 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
 
         }
     }
-    
+
     private void addInMapIfExists(URI parentURI, T candidate) {
         if (!map.get(parentURI).contains(candidate)) {
             map.get(parentURI).add(candidate);

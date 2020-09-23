@@ -169,10 +169,14 @@ export default class OntologyCsvImporter extends Vue {
   @Prop()
   baseType;
 
-  @Prop()
+  @Prop({
+    default: () => Promise.reject("validateCSV property is mandatory")
+  })
   validateCSV;
 
-  @Prop()
+  @Prop({
+    default: () => Promise.reject("uploadCSV property is mandatory")
+  })
   uploadCSV;
 
   show() {
@@ -247,10 +251,6 @@ export default class OntologyCsvImporter extends Vue {
         field.comment +
         lineSeparator;
     }
-    console.error(
-      field.targetProperty,
-      this.$opensilex.getType(field.targetProperty)
-    );
     if (field.propertyType == "OBJECT") {
       let targetName = "URI";
       fieldDescription +=
@@ -513,7 +513,6 @@ export default class OntologyCsvImporter extends Vue {
         }
 
         globalErrors[rowIndex].list[errorType].push(errorItem);
-        console.error(rowIndex, errorType, errorItem, globalErrors);
       }
     }
   }

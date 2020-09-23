@@ -128,8 +128,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     @SuppressWarnings("unchecked")
     public T createInstance(Node graph, SPARQLResult result, String lang, SPARQLService service) throws Exception {
 
-        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class
-        );
+        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
         URI uri = uriDeserializer.fromString((result.getStringValue(classAnalizer.getURIFieldName())));
 
         T instance = createInstance(uri);
@@ -174,15 +173,15 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                 }
 
                 SPARQLProxyResource<?> proxy;
-                if(SPARQLNamedResourceModel.class.isAssignableFrom(fieldType)){
+                if (SPARQLNamedResourceModel.class.isAssignableFrom(fieldType)) {
                     String fieldNameVar = SPARQLClassQueryBuilder.getObjectNameVarName(field.getName());
                     String name = result.getStringValue(fieldNameVar);
 
-                    if(StringUtils.isEmpty(name)){
+                    if (StringUtils.isEmpty(name)) {
                         name = result.getStringValue(SPARQLClassQueryBuilder.getObjectDefaultNameVarName(field.getName()));
                     }
-                    proxy = new SparqlProxyNamedResource(mapperIndex,propertyGraph,objURI,fieldType,name,lang,service);
-                }else{
+                    proxy = new SparqlProxyNamedResource(mapperIndex, propertyGraph, objURI, fieldType, name, lang, service);
+                } else {
                     proxy = new SPARQLProxyResource<>(mapperIndex, propertyGraph, objURI, fieldType, lang, service);
                 }
                 setter.invoke(instance, proxy.getInstance());
@@ -301,7 +300,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public UpdateBuilder getCreateBuilder(Node graph, T instance) throws Exception {
         return getCreateBuilder(graph, instance, false, null);
     }
-    
+
     public UpdateBuilder getCreateBuilder(Node graph, T instance, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
         return classQueryBuilder.getCreateBuilder(graph, instance, blankNode, createExtension);
     }
@@ -347,7 +346,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
      * @return the name of the SPARQL variable which represent the object field name
      * @see SPARQLClassQueryBuilder#getObjectNameVarName()
      */
-    public static String getObjectNameVarName(String objectFieldName){
+    public static String getObjectNameVarName(String objectFieldName) {
         return SPARQLClassQueryBuilder.getObjectNameVarName(objectFieldName);
     }
 
@@ -392,8 +391,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     /**
      *
      * @param fieldName the var name to put in the {@link Expr}
-     * @return an @{@link Expr} with the {@link Field} corresponding with the given fieldName
-     * in the {@link #classAnalizer}, else return an {@link Expr} with the given fieldName
+     * @return an @{@link Expr} with the {@link Field} corresponding with the given fieldName in the
+     * {@link #classAnalizer}, else return an {@link Expr} with the given fieldName
      * @see ExprVar
      */
     public Expr getFieldOrderExpr(String fieldName) {

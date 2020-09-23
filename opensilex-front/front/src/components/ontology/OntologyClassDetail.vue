@@ -201,7 +201,6 @@ export default class OntologyClassDetail extends Vue {
       formRef.setClassURI(this.selected.uri);
       formRef.setProperties(http.response.result, this.selected.dataProperties);
       formRef.setIsObjectProperty(false);
-      console.error(item);
       this.classPropertyForm.showEditForm(item);
     });
   }

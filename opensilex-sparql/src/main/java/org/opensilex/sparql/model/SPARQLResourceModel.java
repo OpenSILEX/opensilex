@@ -46,6 +46,7 @@ public class SPARQLResourceModel implements SPARQLModel {
             property = "creator"
     )
     protected URI creator;
+    public static final String CREATOR_FIELD = "creator";
 
     protected List<SPARQLModelRelation> relations = new ArrayList<>();
 

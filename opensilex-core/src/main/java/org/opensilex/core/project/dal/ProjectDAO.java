@@ -24,6 +24,8 @@ import java.util.Objects;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.vocabulary.DCTerms;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
@@ -204,6 +206,10 @@ public class ProjectDAO {
 
         AskBuilder ask = sparql.getUriExistsQuery(ProjectModel.class, projectURI);
 
+        Var creatorVar = makeVar(ProjectModel.CREATOR_FIELD);
+        ask.addOptional(new Triple(uriVar, DCTerms.creator.asNode(), creatorVar));
+        Expr isCreator = SPARQLQueryHelper.eq(creatorVar, userNodeURI);
+
         Var coordinatorVar = makeVar(ProjectModel.COORDINATORS_FIELD);
         ask.addOptional(new Triple(uriVar, Oeso.hasCoordinator.asNode(), coordinatorVar));
         Expr hasCoordinator = SPARQLQueryHelper.eq(coordinatorVar, userNodeURI);
@@ -218,6 +224,7 @@ public class ProjectDAO {
 
         ask.addFilter(
                 SPARQLQueryHelper.or(
+                        isCreator,
                         hasCoordinator,
                         hasScientificContact,
                         hasAdministrativeContact
@@ -225,6 +232,20 @@ public class ProjectDAO {
         );
 
         if (!sparql.executeAskQuery(ask)) {
+            // check related project experiment
+            List<URI> xpUris = sparql.searchURIs(ExperimentModel.class, user.getLanguage(), (select) -> {
+                select.addWhere(makeVar(ExperimentModel.URI_FIELD), Oeso.hasProject.asNode(), SPARQLDeserializers.nodeURI(projectURI));
+            });
+
+            ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+            for (URI xpUri : xpUris) {
+                try {
+                    xpDAO.validateExperimentAccess(xpUri, user);
+                    return;
+                } catch (Exception ex) {
+                    // Ignore exception
+                }
+            }
             throw new ForbiddenURIAccessException(projectURI);
         }
     }

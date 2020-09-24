@@ -36,11 +36,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import static org.apache.commons.collections4.CollectionUtils.select;
 
 import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.opensilex.core.factor.dal.FactorLevelModel;
-import org.opensilex.core.factor.dal.FactorModel;
+import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
@@ -428,6 +426,10 @@ public class ExperimentDAO {
         ask.getWhereHandler().getClause().addElement(new ElementOptional(optionals));
         Expr inGroup = SPARQLQueryHelper.eq(userVar, userNodeURI);
 
+        Var creatorVar = makeVar(ExperimentModel.CREATOR_FIELD);
+        ask.addOptional(new Triple(uriVar, DCTerms.creator.asNode(), creatorVar));
+        Expr isCreator = SPARQLQueryHelper.eq(creatorVar, userNodeURI);
+
         Var scientificSupervisorVar = makeVar(ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD);
         ask.addOptional(new Triple(uriVar, Oeso.hasScientificSupervisor.asNode(), scientificSupervisorVar));
         Expr hasScientificSupervisor = SPARQLQueryHelper.eq(scientificSupervisorVar, userNodeURI);
@@ -442,6 +444,7 @@ public class ExperimentDAO {
 
         ask.addFilter(
                 SPARQLQueryHelper.or(
+                        isCreator,
                         inGroup,
                         hasScientificSupervisor,
                         hasTechnicalSupervisor,

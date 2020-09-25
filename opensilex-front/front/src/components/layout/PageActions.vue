@@ -36,7 +36,11 @@
           <slot></slot>
         </b-nav>
       </div>
+       <div class="card-header-right">
+        <slot name="rightHeader"></slot>
+      </div>
     </div>
+     
   </div>
 </template>
 

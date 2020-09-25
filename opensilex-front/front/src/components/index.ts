@@ -145,8 +145,8 @@ import StringView from './common/views/StringView.vue'
 components["opensilex-StringView"] = StringView;
 import ListView from './common/views/ListView.vue'
 components["opensilex-ListView"] = ListView;
-import ContactListView from './common/views/ContactListView.vue'
-components["opensilex-ContactListView"] = ContactListView;
+import NameListView from './common/views/NameListView.vue'
+components["opensilex-NameListView"] = NameListView;
 
 import TextView from './common/views/TextView.vue'
 components["opensilex-TextView"] = TextView;
@@ -310,6 +310,10 @@ components["opensilex-GermplasmPropertySelector"] = GermplasmPropertySelector;
 // Projects
 import ProjectForm from './projects/ProjectForm.vue';
 components["opensilex-ProjectForm"] = ProjectForm;
+import ProjectForm1 from './projects/ProjectForm1.vue';
+components["opensilex-ProjectForm1"] = ProjectForm1;
+import ProjectForm2 from './projects/ProjectForm2.vue';
+components["opensilex-ProjectForm2"] = ProjectForm2;
 import ProjectList from './projects/ProjectList.vue';
 components["opensilex-ProjectList"] = ProjectList;
 import ProjectView from './projects/ProjectView.vue';

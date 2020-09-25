@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.nosql.datanucleus;
 
+import com.mongodb.client.MongoClient;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,7 +23,6 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.query.BooleanExpression;
 import javax.naming.NamingException;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.datanucleus.PropertyNames;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.datanucleus.api.jdo.JDOQueryCache;
@@ -36,9 +36,6 @@ import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +65,7 @@ public class DataNucleusService extends BaseService implements NoSQLService {
     private final DataNucleusServiceConnection connection;
 
     private URI baseURI;
-    
+
     public DataNucleusService(DataNucleusServiceConfig config) {
         super(config);
         this.connection = config.connection();
@@ -92,7 +89,7 @@ public class DataNucleusService extends BaseService implements NoSQLService {
         Map<String, Object> props = new HashMap<>();
         props.put(PropertyNames.PROPERTY_CLASSLOADER_PRIMARY, OpenSilex.getClassLoader());
         PMF = new JDOPersistenceManagerFactory(pumd, props);
-        
+
     }
 
     // convenience methods to get a PersistenceManager 
@@ -106,19 +103,19 @@ public class DataNucleusService extends BaseService implements NoSQLService {
     public PersistenceManager getPersistentConnectionManager() throws NamingException {
         return PMF.getPersistenceManager();
     }
-    
+
     /**
      * Method to generate a valid URI for the instance
-     * 
+     *
      * @param instance will be updated by a new generated URI
      * @param checkUriExist necessary to check if URI already existing
-     * @throws Exception 
+     * @throws Exception
      */
     public <T extends NoSQLModel> void generateUniqueUriIfNullOrValidateCurrent(T instance, boolean checkUriExist) throws Exception {
         URI uri = instance.getUri();
-         
+
         if (uri == null) {
- 
+
             int retry = 0;
             String graphPrefix = baseURI.resolve(instance.getGraphPrefix()).toString();
             uri = instance.generateURI(graphPrefix, instance, retry);
@@ -127,34 +124,34 @@ public class DataNucleusService extends BaseService implements NoSQLService {
             }
 
             instance.setUri(uri);
-       } else if (checkUriExist && (existByURI(instance, uri))) {
+        } else if (checkUriExist && (existByURI(instance, uri))) {
             throw new NoSQLAlreadyExistingUriException(uri);
         }
     }
-    
-     /**
-      * Method to prepare an instance for creation
-      * 
-      * @param instance will be created
-      * @return DBMS Id of instance
-      * @throws Exception 
-      */
+
+    /**
+     * Method to prepare an instance for creation
+     *
+     * @param instance will be created
+     * @return DBMS Id of instance
+     * @throws Exception
+     */
     public <T extends NoSQLModel> Object prepareInstanceCreation(T instance) throws Exception{
         generateUniqueUriIfNullOrValidateCurrent(instance, true);
         return create((Object)instance);
     }
-    
+
     /**
      * Method to create a new data
-     * 
+     *
      * @param instance will be created
      * @return DBMS Id of instance
-     * @throws NamingException 
+     * @throws NamingException
      */
     @Override
     public Object create(Object instance) throws NamingException {
-       
-       try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
+
+        try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
             try{
                 Transaction tx1 = persistenceManager.currentTransaction();
                 tx1.begin();
@@ -166,19 +163,19 @@ public class DataNucleusService extends BaseService implements NoSQLService {
             }
         }
     }
-    
+
     /**
      * Method to delete already founded instance 
      * with an already existing PersistenceManager
-     * 
+     *
      * @param instance document to be deleted
      * @param pm PersistenceManager which has opened instance
      * @throws NamingException
-     * @throws NoSQLBadPersistenceManagerException 
+     * @throws NoSQLBadPersistenceManagerException
      */
     public void delete(Object instance, PersistenceManager pm) throws NamingException, NoSQLBadPersistenceManagerException{
         if (pm == null) throw new NoSQLBadPersistenceManagerException();
-            
+
         if (instance != null) {
             Transaction transaction = pm.currentTransaction();
             transaction.begin();
@@ -186,15 +183,15 @@ public class DataNucleusService extends BaseService implements NoSQLService {
             transaction.commit();
         }
     }
-    
+
     /**
      * Method to find and delete instance from URI
-     * 
+     *
      * @param instance of class implements NoSQLModel, can't be null but can be unused model
      * @param uri document URI
      * @throws NamingException
      * @throws NoSQLInvalidURIException
-     * @throws NoSQLBadPersistenceManagerException 
+     * @throws NoSQLBadPersistenceManagerException
      */
     public <T extends NoSQLModel> void delete(T instance, URI uri) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException{
         try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
@@ -206,16 +203,16 @@ public class DataNucleusService extends BaseService implements NoSQLService {
             }finally{
                 persistenceManager.close();
             }
-        } 
+        }
     }
-    
+
     /**
      * Method to find and delete instance from DBMS key
-     * 
+     *
      * @param cls
      * @param key DBMS Id
-     * @throws NamingException 
-     */    
+     * @throws NamingException
+     */
     @Override
     public void delete(Class cls, Object key) throws NamingException {
         try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
@@ -229,18 +226,18 @@ public class DataNucleusService extends BaseService implements NoSQLService {
                     transaction.commit();
                 }finally {
                     persistenceManager.close();
-                }   
+                }
             }
         }
     }
-  
+
     /**
      * Method to find data by DBMS Id
-     * 
+     *
      * @param cls
      * @param key DBMS Id
      * @return instance of cls
-     * @throws NamingException 
+     * @throws NamingException
      */
     @Override
     public <T> T findById(Class cls, Object key) throws NamingException {
@@ -254,10 +251,10 @@ public class DataNucleusService extends BaseService implements NoSQLService {
             }
         }
     }
-    
+
     /**
      * Method to find data by it URI
-     * 
+     *
      * @param instance of class implements NoSQLModel, can't be null but can be unused model
      * @param uri of reuired data
      * @return <T extends NoSQLModel> required data
@@ -286,18 +283,18 @@ public class DataNucleusService extends BaseService implements NoSQLService {
 
     /**
      * Method to find data by it URI
-     * 
+     *
      * @param instance of class implements NoSQLModel, can't be null but can be unused model
      * @param uri of reuired data
      * @param PM Persistence Manager used to find and open required data
      * @return <T extends NoSQLModel> required data
      * @throws NamingException
      * @throws NoSQLInvalidURIException
-     * @throws NoSQLBadPersistenceManagerException 
+     * @throws NoSQLBadPersistenceManagerException
      */
     public <T extends NoSQLModel> T findByURI(T instance, URI uri, PersistenceManager PM) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException{
         if (PM == null) throw new NoSQLBadPersistenceManagerException();
-        
+
         BooleanExpression expr = null;
         JDOQLTypedQuery<T> tq = PM.newJDOQLTypedQuery((Class<T>) instance.getClass());
         expr = instance.getURIExpr(uri);
@@ -309,21 +306,21 @@ public class DataNucleusService extends BaseService implements NoSQLService {
         }
         return result;
     }
-    
+
     /**
      * Method to test for the existence of URI in he database
-     * 
+     *
      * @param instance of class implements NoSQLModel, can't be null but can be unused model
      * @param uri tested
      * @return boolean, True = uri exist
      * @throws NoSQLInvalidURIException
-     * @throws NamingException 
+     * @throws NamingException
      */
     public <T extends NoSQLModel> boolean existByURI(T instance, URI uri) throws NoSQLInvalidURIException, NamingException{
         T result = findByURI(instance,uri);
         return result!=null;
     }
-    
+
     @Override
     public Long count(JDOQLTypedQuery query) throws NamingException {
         return (Long) query.executeResultUnique();
@@ -331,11 +328,11 @@ public class DataNucleusService extends BaseService implements NoSQLService {
 
     /**
      * Method to update data in database
-     * 
+     *
      * @param instance the new data with an already existing URI in the database
      * @throws NamingException
      * @throws NoSQLInvalidURIException
-     * @throws NoSQLBadPersistenceManagerException 
+     * @throws NoSQLBadPersistenceManagerException
      */
     public <T extends NoSQLModel> void update(T instance) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException{
         try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
@@ -350,31 +347,31 @@ public class DataNucleusService extends BaseService implements NoSQLService {
             }finally{
                 persistenceManager.close();
             }
-        } 
+        }
     }
-    
+
     /**
-     * Method to write update data 
-     * 
+     * Method to write update data
+     *
      * @param instance update data
      * @param pm Persistence Manager
      * @return DBMS Id
      * @throws NamingException
-     * @throws NoSQLBadPersistenceManagerException 
+     * @throws NoSQLBadPersistenceManagerException
      */
     public Object update(Object instance, PersistenceManager pm) throws NamingException, NoSQLBadPersistenceManagerException {
         if(pm == null) throw new NoSQLBadPersistenceManagerException();
-        
+
         Transaction tx1 = pm.currentTransaction();
         tx1.begin();
         pm.makePersistent(instance);
         tx1.commit();
         return JDOHelper.getObjectId(instance);
     }
-    
+
     /**
-     * Method to write update data 
-     * 
+     * Method to write update data
+     *
      * @param instance update data
      * @return DBMS Id
      * @throws NamingException
@@ -415,7 +412,7 @@ public class DataNucleusService extends BaseService implements NoSQLService {
         return (Long) query.deletePersistentAll();
 
     }
-    
+
     /**
      * Erase JDO Cache
      */
@@ -423,7 +420,7 @@ public class DataNucleusService extends BaseService implements NoSQLService {
         JDOQueryCache cache = ((JDOPersistenceManagerFactory)PMF).getQueryCache();
         cache.evictAll();
     }
-    
+
     @Override
     public void shutdown() {
         if (PMF != null) {
@@ -437,20 +434,20 @@ public class DataNucleusService extends BaseService implements NoSQLService {
         }
         createAll(instances);
     }
-        
+
     public <T extends NoSQLModel> List<T> searchWithPagination(
-            PersistenceManager pm, 
-            Class<T> objectClass, 
-            String filter, 
-            Map params, 
-            Integer page, 
-            Integer pageSize, 
+            PersistenceManager pm,
+            Class<T> objectClass,
+            String filter,
+            Map params,
+            Integer page,
+            Integer pageSize,
             int total) throws Exception {
-        
+
  
         List<T> results;
         if (pageSize == null || pageSize == 0) {
-            results = new ArrayList<>();                
+            results = new ArrayList<>();
         } else if (total > 0 && (page * pageSize) < total) {
             Integer offset = null;
             Integer limit = null;
@@ -468,11 +465,11 @@ public class DataNucleusService extends BaseService implements NoSQLService {
             results = selectQuery.executeList();
         } else {
             results = new ArrayList<>();
-        }            
+        }
 
-        return results; 
-        
-    } 
+        return results;
+
+    }
 
     public <T extends Object & NoSQLModel> int countResults(PersistenceManager pm, Class<T> objectClass, String filter, Map params) throws NamingException {
         Query countQuery = pm.newQuery("SELECT count(uri) FROM " + objectClass.getName());
@@ -480,6 +477,11 @@ public class DataNucleusService extends BaseService implements NoSQLService {
         Object countResult = countQuery.executeWithMap(params);
         int total = (int) (long) countResult;
         return total;
+    }
+
+    @Override
+    public MongoClient getMongoDBClient() {
+        return this.connection.getMongoDBClient();
     }
 
 }

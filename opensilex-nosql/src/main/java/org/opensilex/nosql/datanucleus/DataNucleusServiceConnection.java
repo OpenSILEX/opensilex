@@ -5,6 +5,7 @@
  */
 package org.opensilex.nosql.datanucleus;
 
+import com.mongodb.client.MongoClient;
 import java.util.Properties;
 import org.opensilex.nosql.datanucleus.mongo.MongoDBConnection;
 import org.opensilex.service.Service;
@@ -20,4 +21,6 @@ public interface DataNucleusServiceConnection extends Service {
     public void definePersistentManagerProperties(Properties pmfProperties);
 
     public void setDatanucleus(DataNucleusService datanucleus);
+    
+    public MongoClient getMongoDBClient();
 }

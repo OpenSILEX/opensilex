@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.nosql.service;
 
+import com.mongodb.client.MongoClient;
 import java.util.Collection;
 import javax.jdo.JDOQLTypedQuery;
 import javax.jdo.PersistenceManager;
@@ -54,4 +55,5 @@ public interface NoSQLService extends Service {
 
     public PersistenceManager getPersistentConnectionManager() throws NamingException;
 
+    public MongoClient getMongoDBClient();
 }

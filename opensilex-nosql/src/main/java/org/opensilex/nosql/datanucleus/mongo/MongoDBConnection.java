@@ -6,7 +6,18 @@
 //******************************************************************************
 package org.opensilex.nosql.datanucleus.mongo;
 
+import com.mongodb.ConnectionString;
+import com.mongodb.client.MongoClient;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.client.MongoClients;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.PojoCodecProvider;
 import org.opensilex.nosql.datanucleus.DataNucleusService;
 import org.opensilex.nosql.datanucleus.DataNucleusServiceConnection;
 import org.opensilex.service.BaseService;
@@ -49,6 +60,44 @@ public class MongoDBConnection extends BaseService implements DataNucleusService
     @Override
     public void setDatanucleus(DataNucleusService datanucleus) {
         this.datanucleus = datanucleus;
+    }
+
+    @Override
+    public MongoClient getMongoDBClient() {
+        String connectionString = "mongodb://";
+        MongoDBConfig cfg = getImplementedConfig();
+        if (cfg.username() != null && cfg.password() != null && !cfg.username().isEmpty() && !cfg.password().isEmpty()) {
+            connectionString += cfg.username() + ":" + cfg.password() + "@";
+        }
+        connectionString += cfg.host() + ":" + cfg.port();
+        connectionString += "/" + cfg.database();
+
+        Map<String, String> options = new HashMap<>();
+        options.putAll(cfg.options());
+        if (cfg.authDB() != null) {
+            options.put("authSource", cfg.authDB());
+        }
+        if (options.size() > 0) {
+            connectionString += "?";
+            Set<String> keys = options.keySet();
+            int i = 0;
+            for (String key : keys) {
+                String value = options.get(key);
+                connectionString += key + "=" + value;
+                i++;
+                if (i < options.size()) {
+                    connectionString += "&";
+                }
+            }
+        }
+        CodecRegistry pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
+        CodecRegistry codecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
+                pojoCodecRegistry);
+        MongoClientSettings clientSettings = MongoClientSettings.builder()
+                .applyConnectionString(new ConnectionString(connectionString))
+                .codecRegistry(codecRegistry)
+                .build();
+        return MongoClients.create(clientSettings);
     }
 
 }

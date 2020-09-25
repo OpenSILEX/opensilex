@@ -180,11 +180,11 @@ public class ProjectAPI {
     /**
      * Search projects
      *
+     * @param term
      * @param startDate
-     * @param shortname
      * @param endDate
      * @param financial
-     * @param label
+     * @param name
      * @param orderByList
      * @param page
      * @param pageSize
@@ -208,15 +208,17 @@ public class ProjectAPI {
     public Response searchProjects(
             @ApiParam(value = "Search by start date", example = "2017-06-15") @QueryParam("startDate") LocalDate startDate,
             @ApiParam(value = "Search by end date", example = "2018-06-15") @QueryParam("endDate") LocalDate endDate,
-            @ApiParam(value = "Regex pattern for filtering by name or shortname", example = "PJ17") @QueryParam("label") String label,
+            @ApiParam(value = "Regex pattern for filtering on description or objective", example = "climate") @QueryParam("term") String term,
+            @ApiParam(value = "Regex pattern for filtering by name or shortname", example = "PJ17") @QueryParam("name") String name,
             @ApiParam(value = "Regex pattern for filtering by financial funding", example = "ANR") @QueryParam("financial") String financial,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "label=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         ProjectDAO prjctDao = new ProjectDAO(sparql);
         ListWithPagination<ProjectModel> resultList = prjctDao.search(
-                label,
+                name,
+                term,
                 financial,
                 startDate,
                 endDate,

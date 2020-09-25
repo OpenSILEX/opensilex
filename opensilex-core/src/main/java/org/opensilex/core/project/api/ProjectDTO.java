@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.server.rest.validation.Required;
 
 /**
  * @author Julien BONNEFONT A basic DTO class about an {@link ProjectModel}
@@ -20,7 +21,7 @@ public abstract class ProjectDTO {
 
     protected URI uri;
 
-    protected String label;
+    protected String name;
 
     protected String shortname;
 
@@ -57,12 +58,14 @@ public abstract class ProjectDTO {
         return this;
     }
 
-    public String getLabel() {
-        return label;
+     @Required
+    @ApiModelProperty(example = "prject1")
+    public String getName() {
+        return name;
     }
 
-    public ProjectDTO setLabel(String label) {
-        this.label = label;
+    public ProjectDTO setName(String name) {
+        this.name = name;
         return this;
     }
 
@@ -186,23 +189,4 @@ public abstract class ProjectDTO {
         this.relatedProjects = relatedProjects;
         return this;
     }
-
-//    public List<URI> getGroups() {
-//        return groups;
-//    }
-//
-//    public ProjectDTO setGroups(List<URI> groups) {
-//        this.groups = groups;
-//        return this;
-//    }
-//    
-//     @ApiModelProperty(example = "true")
-//    public Boolean getIsPublic() {
-//        return isPublic;
-//    }
-//
-//    public ProjectDTO setIsPublic(Boolean isPublic) {
-//        this.isPublic = isPublic;
-//        return this;
-//    }
 }

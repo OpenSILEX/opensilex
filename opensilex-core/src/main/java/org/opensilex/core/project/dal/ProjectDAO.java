@@ -28,7 +28,6 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
-import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -120,11 +119,15 @@ public class ProjectDAO {
         sparql.create(instances);
     }
 
-    public ListWithPagination<ProjectModel> search(String label, String financialFunding, LocalDate startDate, LocalDate endDate, UserModel user, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+    public ListWithPagination<ProjectModel> search(String name, String term, String financialFunding, LocalDate startDate, LocalDate endDate, UserModel user, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
 
         Expr stringFilter = SPARQLQueryHelper.or(
-                SPARQLQueryHelper.regexFilter(ProjectModel.SHORTNAME_FIELD, label),
-                SPARQLQueryHelper.regexFilter(ProjectModel.NAME_FIELD, label)
+                SPARQLQueryHelper.regexFilter(ProjectModel.SHORTNAME_FIELD, name),
+                SPARQLQueryHelper.regexFilter(ProjectModel.NAME_FIELD, name)
+        );
+         Expr termFilter = SPARQLQueryHelper.or(
+                SPARQLQueryHelper.regexFilter(ProjectModel.DESCRIPTION_FIELD, term),
+                SPARQLQueryHelper.regexFilter(ProjectModel.OBJECTIVE_FIELD, term)
         );
 
         Expr financialFundingFilter = SPARQLQueryHelper.regexFilter(ProjectModel.FINANCIAL_FUNDING_FIELD, financialFunding);
@@ -137,6 +140,10 @@ public class ProjectDAO {
                 (SelectBuilder select) -> {
                     if (stringFilter != null) {
                         select.addFilter(stringFilter);
+                    }
+                    
+                    if (termFilter != null) {
+                        select.addFilter(termFilter);
                     }
 
                     if (financialFundingFilter != null) {

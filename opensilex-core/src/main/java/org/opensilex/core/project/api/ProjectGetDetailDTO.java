@@ -37,7 +37,7 @@ public class ProjectGetDetailDTO extends ProjectDTO {
         ProjectGetDetailDTO dto = new ProjectGetDetailDTO();
 
         dto.setUri(model.getUri())
-                .setLabel(model.getName())
+                .setName(model.getName())
                 .setStartDate(model.getStartDate())
                 .setEndDate(model.getEndDate())
                 .setShortname(model.getShortname())
@@ -51,8 +51,6 @@ public class ProjectGetDetailDTO extends ProjectDTO {
                 .setCoordinators(getUriList(model.getCoordinators()))
                 .setScientificContacts(getUriList(model.getScientificContacts()))
                 .setRelatedProjects(getUriList(model.getRelatedProjects()));
-//                .setExperiments(getUriList(model.getExperiments()));
-//                .setGroups(getUriList(model.getGroups()));
 
         return dto;
     }

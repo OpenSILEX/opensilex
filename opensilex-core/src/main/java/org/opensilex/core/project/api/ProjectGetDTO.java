@@ -37,7 +37,7 @@ public class ProjectGetDTO extends ProjectDTO {
         ProjectGetDTO dto = new ProjectGetDTO();
 
         dto.setUri(model.getUri())
-                .setLabel(model.getName())
+                .setName(model.getName())
                 .setStartDate(model.getStartDate())
                 .setShortname(model.getShortname())
                 .setHasFinancialFunding(model.getHasFinancialFunding())

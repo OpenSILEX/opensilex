@@ -10,7 +10,7 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
     >
       <template v-slot>
-        <opensilex-CreateButton @click="projectForm.showCreateForm()" label="component.project.add"></opensilex-CreateButton>
+        <opensilex-CreateButton @click="projectForm.showCreateForm()" label="component.common.add"></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
 
@@ -19,18 +19,12 @@
         <opensilex-ProjectList ref="projectList" @onEdit="projectForm.showEditForm($event)"></opensilex-ProjectList>
       </template>
     </opensilex-PageContent>
-
-    <opensilex-ModalForm
+    <opensilex-ProjectForm
       v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
       ref="projectForm"
-      component="opensilex-ProjectForm"
-      createTitle="component.project.add"
-      editTitle="component.project.update"
-      modalSize="lg"
-      icon="ik#ik-folder"
       @onCreate="projectList.refresh()"
       @onUpdate="projectList.refresh()"
-    ></opensilex-ModalForm>
+    ></opensilex-ProjectForm>
   </div>
 </template>
 

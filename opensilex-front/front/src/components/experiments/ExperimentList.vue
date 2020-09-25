@@ -17,37 +17,34 @@
       </template>
     </opensilex-PageActions>
 
-    <opensilex-SearchFilterField :withButton="false">
+    <opensilex-SearchFilterField 
+      @clear="resetFilters()"
+      @search="updateFilters()">
       <template v-slot:filters>
           <div class="col col-xl-4 col-sm-6 col-12">
-            <label>{{$t('ExperimentList.filter-label')}}:</label>
+            <label>{{$t('component.common.name')}}</label>
             <opensilex-StringFilter
               :filter.sync="labelFilter"
-              @update="updateLabelFilter()"
               placeholder="ExperimentList.label-filter-placeholder"
             ></opensilex-StringFilter>
           </div>
 
           <div class="col col-xl-4 col-sm-6 col-12">
-            <label>{{$t('ExperimentList.filter-year')}}:</label>
+            <label>{{$t('component.common.year')}}</label>
             <opensilex-StringFilter
               :filter.sync="yearFilter"
               type="number"
               min="1000"
               max="9999"
-              @update="updateYearFilter()"
               placeholder="ExperimentList.year-filter-placeholder"
             ></opensilex-StringFilter>
           </div>
 
           <div class="col col-xl-4 col-sm-6 col-12">
             <opensilex-SpeciesSelector
-              label="ExperimentList.filter-species"
+              label="component.common.species"
               :multiple="true"
               :species.sync="speciesFilter"
-              @clear="updateSpeciesFilter()"
-              @select="updateSpeciesFilter()"
-              @deselect="updateSpeciesFilter()"
             ></opensilex-SpeciesSelector>
           </div>
       </template>
@@ -56,14 +53,14 @@
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-TableAsyncView ref="tableRef" :searchMethod="searchExperiments" :fields="fields">
-          <template v-slot:cell(uri)="{data}">
+          <template v-slot:cell(label)="{data}">
             <opensilex-UriLink
               :uri="data.item.uri"
-              :to="{path: '/experiment/details/'+ encodeURIComponent(data.item.uri)}"
+               :value="data.item.label"
+              :to="{path: '/experiment/details/'+ encodeURIComponent(data.item.uri),query: { name: data.item.label }}"
             ></opensilex-UriLink>
           </template>
 
-          <template v-slot:cell(label)="{data}">{{data.item.label}}</template>
 
           <template v-slot:cell(species)="{data}">
             <span :key="index" v-for="(uri, index) in data.item.species">
@@ -173,19 +170,30 @@ export default class ExperimentList extends Vue {
   private labelFilter: any = "";
   updateLabelFilter() {
     this.$opensilex.updateURLParameter("label", this.labelFilter, "");
-    this.refresh();
   }
 
   private yearFilter: any = "";
   updateYearFilter() {
     this.$opensilex.updateURLParameter("year", this.yearFilter, "");
-    this.refresh();
   }
 
   private speciesFilter: any = [];
   updateSpeciesFilter() {
     this.$opensilex.updateURLParameter("species", this.speciesFilter);
+  }
+
+
+  updateFilters(){
+    this.updateYearFilter();
+    this.updateLabelFilter();
+    this.updateSpeciesFilter();
     this.refresh();
+  }
+  resetFilters() {
+    this.yearFilter="";
+    this.labelFilter="";
+    this.speciesFilter=[];
+    this.updateFilters();
   }
 
   speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
@@ -279,16 +287,11 @@ export default class ExperimentList extends Vue {
     if (experiment.endDate) {
       return moment(experiment.endDate, "YYYY-MM-DD").diff(moment()) < 0;
     }
-
     return false;
   }
 
   fields = [
-    {
-      key: "uri",
-      label: "component.common.uri",
-      sortable: true
-    },
+    
     {
       key: "label",
       label: "component.common.name",

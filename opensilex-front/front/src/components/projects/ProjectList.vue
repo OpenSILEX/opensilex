@@ -1,31 +1,39 @@
 <template>
   <div>
-    <opensilex-SearchFilterField :withButton="false">
+    <opensilex-SearchFilterField @clear="resetFilters()" @search="updateFilters()">
       <template v-slot:filters>
-        <div class="col col-xl-4 col-sm-6 col-12">
-          <label>{{$t('component.project.filter-label')}}:</label>
+
+
+        <div class="col col-xl-3 col-sm-6 col-12">
+          <label>{{$t('component.common.term')}}</label>
+          <opensilex-StringFilter
+            :filter.sync="termFilter"
+            placeholder="component.project.filter-term-placeholder"
+          ></opensilex-StringFilter>
+        </div>
+        
+        <div class="col col-xl-3 col-sm-6 col-12">
+          <label>{{$t('component.common.name')}}</label>
           <opensilex-StringFilter
             :filter.sync="nameFilter"
-            @update="refresh()"
             placeholder="component.project.filter-label-placeholder"
           ></opensilex-StringFilter>
         </div>
 
-        <div class="col col-xl-4 col-sm-6 col-12">
-          <label>{{$t('component.project.filter-year')}}:</label>
+
+        <div class="col col-xl-3 col-sm-6 col-12">
+          <label>{{$t('component.common.year')}}</label>
           <opensilex-StringFilter
             :filter.sync="yearFilter"
-            @update="refresh()"
             type="number"
             placeholder="component.project.filter-year-placeholder"
           ></opensilex-StringFilter>
         </div>
 
-        <div class="col col-xl-4 col-sm-6 col-12">
-          <label>{{$t('component.project.filter-financial')}}:</label>
+        <div class="col col-xl-3 col-sm-6 col-12">
+          <label>{{$t('component.project.financialFunding')}}</label>
           <opensilex-StringFilter
             :filter.sync="financialFilter"
-            @update="refresh()"
             placeholder="component.project.filter-financial-placeholder"
           ></opensilex-StringFilter>
         </div>
@@ -37,7 +45,7 @@
       :fields="fields"
       defaultSortBy="startDate"
     >
-      <template v-slot:cell(uri)="{data}">
+      <template v-slot:cell(name)="{data}">
         <opensilex-UriLink
           :uri="data.item.uri"
           :value="data.item.name"
@@ -53,20 +61,18 @@
         <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
       </template>
 
-       <template v-slot:cell(state)="{data}">
-            <i
-              v-if="!isEnded(data.item)"
-              class="ik ik-activity badge-icon badge-info-opensilex"
-              :title="$t('component.project.common.status.in-progress')"
-            ></i>
-            <i
-              v-else
-              class="ik ik-archive badge-icon badge-light"
-              :title="$t('component.project.common.status.finished')"
-            ></i>
-          
-          </template>
-
+      <template v-slot:cell(state)="{data}">
+        <i
+          v-if="!isEnded(data.item)"
+          class="ik ik-activity badge-icon badge-info-opensilex"
+          :title="$t('component.project.common.status.in-progress')"
+        ></i>
+        <i
+          v-else
+          class="ik ik-archive badge-icon badge-light"
+          :title="$t('component.project.common.status.finished')"
+        ></i>
+      </template>
 
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
@@ -109,23 +115,57 @@ export default class ProjectList extends Vue {
   }
 
   private yearFilter: any = "";
-
+  updateYearFilter() {
+    this.$opensilex.updateURLParameter("year", this.yearFilter, "");
+  }
   private nameFilter: any = "";
-
+  updateNameFilter() {
+    this.$opensilex.updateURLParameter("name", this.nameFilter, "");
+  }
+  private termFilter: any = "";
+  updateTermFilter() {
+    this.$opensilex.updateURLParameter("term", this.termFilter, "");
+  }
   private financialFilter: any = "";
+  updateFinancialFilter() {
+    this.$opensilex.updateURLParameter("financial", this.financialFilter, "");
+  }
+
+  updateFilters() {
+    this.updateYearFilter();
+    this.updateNameFilter();
+    this.updateTermFilter();
+    this.updateFinancialFilter();
+    this.refresh();
+  }
+  resetFilters() {
+    this.yearFilter = "";
+    this.nameFilter = "";
+    this.termFilter = "";
+    this.financialFilter = "";
+    this.updateFilters();
+  }
 
   created() {
     this.service = this.$opensilex.getService("opensilex.ProjectsService");
+    let query: any = this.$route.query;
+    if (query.name) {
+      this.nameFilter = decodeURI(query.name);
+    }
+    if (query.term) {
+      this.termFilter = decodeURI(query.term);
+    }
+    if (query.year) {
+      this.yearFilter = decodeURI(query.year);
+    }
+    if (query.financial) {
+      this.financialFilter = decodeURI(query.financial);
+    }
   }
 
   fields = [
     {
-      key: "uri",
-      label: "component.common.uri",
-      sortable: true
-    },
-    {
-      key: "label",
+      key: "name",
       label: "component.common.name",
       sortable: true
     },
@@ -149,9 +189,9 @@ export default class ProjectList extends Vue {
       label: "component.project.financialFunding",
       sortable: true
     },
-     {
+    {
       key: "state",
-      label: "component.experiment.search.column.state"
+      label: "component.common.state"
     },
     {
       label: "component.common.actions",
@@ -175,18 +215,18 @@ export default class ProjectList extends Vue {
     return this.service.searchProjects(
       startDateFilter,
       endDateFilter,
+      this.termFilter,
       this.nameFilter,
       this.financialFilter,
       options.orderBy,
       options.currentPage,
-      options.pageSize
+      30
     );
   }
   isEnded(project) {
     if (project.endDate) {
       return moment(project.endDate, "YYYY-MM-DD").diff(moment()) < 0;
     }
-
     return false;
   }
 

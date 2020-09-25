@@ -18,9 +18,7 @@
 import { Component, Prop, PropSync } from "vue-property-decorator";
 import Vue, { PropOptions } from "vue";
 import { ProjectsService, ProjectGetDTO } from "opensilex-core/index";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-core/HttpResponse";
+import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
 export default class ProjectSelector extends Vue {
@@ -38,7 +36,16 @@ export default class ProjectSelector extends Vue {
   searchProjects(searchQuery) {
     return this.$opensilex
       .getService("opensilex.ProjectsService")
-      .searchProjects(searchQuery)
+      .searchProjects(
+        undefined,
+        undefined,
+        undefined, 
+        searchQuery, //name
+        undefined,
+        undefined,
+        0,
+        200
+      )
       .then(
         (http: HttpResponse<OpenSilexResponse<Array<ProjectGetDTO>>>) =>
           http.response.result
@@ -57,7 +64,7 @@ export default class ProjectSelector extends Vue {
 
   projectToSelectNode(dto: ProjectGetDTO) {
     return {
-      label: dto.shortname || dto.label,
+      label: dto.shortname || dto.name,
       id: dto.uri
     };
   }

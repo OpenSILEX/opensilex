@@ -1,6 +1,10 @@
 <template>
   <div v-if="uri" class="container-fluid">
-    <opensilex-PageHeader icon="ik#ik-layers" title="component.experiment.view.title"></opensilex-PageHeader>
+    <opensilex-PageHeader
+      icon="ik#ik-layers"
+      title="component.experiment.view.title"
+      :description="name"
+    ></opensilex-PageHeader>
 
     <opensilex-PageActions :returnButton="true" :returnTo="{path: '/experiments'}">
       <template v-slot>
@@ -37,9 +41,14 @@ import VueRouter from "vue-router";
 @Component
 export default class ExperimentView extends Vue {
   uri = null;
+  name: string = "";
 
   created() {
     this.uri = this.$route.params.uri;
+    let query: any = this.$route.query;
+    if (query.name) {
+      this.name = decodeURI(query.name);
+    }
   }
 
   isDetailsTab() {

@@ -1,19 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                          DataDTO.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
 package org.opensilex.core.data.api;
 
 import java.net.URI;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import javax.validation.constraints.NotNull;
-import java.util.Date;
-import java.util.TimeZone;
-import org.eclipse.rdf4j.query.algebra.evaluation.function.datetime.Timezone;
-import org.opensilex.server.rest.validation.ValidURI;
 
 /**
  *

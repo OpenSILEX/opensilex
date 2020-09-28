@@ -1,17 +1,20 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                          DataGetDTO.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
 package org.opensilex.core.data.api;
 
 import java.net.URI;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
+import org.opensilex.core.data.dal.EntityModel;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**
@@ -23,7 +26,7 @@ public class DataGetDTO {
     @ValidURI
     protected URI uri;
     
-    private URI object;
+    private List<EntityModel> scientificObjects;
     
     private URI variable;
     
@@ -41,8 +44,8 @@ public class DataGetDTO {
         this.uri = uri;
     }
     
-    public void setObject(URI object){
-        this.object = object;
+    public void setObject(List<EntityModel> objects){
+        this.scientificObjects = objects;
     }
     
     public void setVariable(URI variable){
@@ -74,8 +77,8 @@ public class DataGetDTO {
         return uri;
     }
     
-    public URI getObject(){
-        return object;
+    public List<EntityModel> getObject(){
+        return scientificObjects;
     }
     
     public URI getVariable(){

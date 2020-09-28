@@ -114,7 +114,7 @@ public class DataNucleusService extends BaseService implements NoSQLService {
      * @param checkUriExist necessary to check if URI already existing
      * @throws Exception 
      */
-    private <T extends NoSQLModel> void generateUniqueUriIfNullOrValidateCurrent(T instance, boolean checkUriExist) throws Exception {
+    public <T extends NoSQLModel> void generateUniqueUriIfNullOrValidateCurrent(T instance, boolean checkUriExist) throws Exception {
         URI uri = instance.getUri();
          
         if (uri == null) {

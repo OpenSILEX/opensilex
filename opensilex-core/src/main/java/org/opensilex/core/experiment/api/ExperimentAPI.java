@@ -40,6 +40,7 @@ import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.core.species.dal.SpeciesDAO;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.datanucleus.DataNucleusService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -82,6 +83,9 @@ public class ExperimentAPI {
 
     @Inject
     private DataNucleusService nosql;
+    
+    @Inject
+    private FileStorageService fs;
 
     /**
      * Create an Experiment
@@ -389,7 +393,7 @@ public class ExperimentAPI {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(xpUri, currentUser);
 
-        DataDAO dao = new DataDAO(nosql, sparql);
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
         List<VariableModel> variables = dao.getVariablesByExperiment(xpUri, currentUser.getLanguage());
 
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());

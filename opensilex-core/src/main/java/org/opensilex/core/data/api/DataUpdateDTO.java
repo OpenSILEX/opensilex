@@ -1,18 +1,21 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                          DataFileCreationDTO.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: alice.boizet@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
 package org.opensilex.core.data.api;
 
 import java.net.URI;
 import java.text.ParseException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
+import org.opensilex.core.data.dal.EntityModel;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**
@@ -24,7 +27,7 @@ public class DataUpdateDTO{
     @ValidURI
     protected URI uri;
     
-    private URI object;
+    private List<EntityModel> scientificObjects;
     private URI variable;
     private DataProvenanceModel provenance;    
     private String date;
@@ -37,8 +40,8 @@ public class DataUpdateDTO{
         this.uri = uri;
     }
     
-    public void setObject(URI object){
-        this.object = object;
+    public void setObject(List<EntityModel> objects){
+        this.scientificObjects = objects;
     }
     
     public void setVariable(URI variable){
@@ -74,8 +77,8 @@ public class DataUpdateDTO{
         return uri;
     }
     
-    public URI getObject(){
-        return object;
+    public List<EntityModel> getObject(){
+        return scientificObjects;
     }
     
     public URI getVariable(){

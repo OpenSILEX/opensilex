@@ -198,7 +198,7 @@ public class ProvenanceAPI {
         ProvenanceDAO dao = new ProvenanceDAO(nosql);
 
         //check if the provenance can be deleted (not linked to data)
-        DataDAO dataDAO = new DataDAO(nosql, sparql);
+        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
         ListWithPagination<DataModel> resultList = dataDAO.search(
                 currentUser,
                 null,

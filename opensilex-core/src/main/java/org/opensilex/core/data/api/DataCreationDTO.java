@@ -1,14 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                          DataCreationDTO.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
 package org.opensilex.core.data.api;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.text.ParseException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.validation.constraints.Max;
@@ -30,8 +29,7 @@ public class DataCreationDTO{
     @ValidURI
     protected URI uri;
     
-    @ValidURI
-    private URI object;
+    private List<EntityModel> scientificObjects;
     
     @NotNull
     @ValidURI
@@ -57,8 +55,8 @@ public class DataCreationDTO{
         this.uri = uri;
     }
     
-    public void setObject(URI object){
-        this.object = object;
+    public void setObject(List<EntityModel> objects){
+        this.scientificObjects = objects;
     }
     
     public void setVariable(URI variable){
@@ -85,8 +83,8 @@ public class DataCreationDTO{
         return uri;
     }
     
-    public URI getObject(){
-        return object;
+    public List<EntityModel> getScientificObjects(){
+        return scientificObjects;
     }
     
     public URI getVariable(){
@@ -121,7 +119,7 @@ public class DataCreationDTO{
         DataModel model = new DataModel();
 
         model.setUri(getUri());        
-        model.setObject(getObject());
+        model.setObject(getScientificObjects());
         model.setVariable(getVariable());
         model.setProvenanceURI(getProvenance().getUri());
         model.setProvenanceSettings(getProvenance().getSettings());

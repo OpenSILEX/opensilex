@@ -1,23 +1,20 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                          DataModel.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
 package org.opensilex.core.data.dal;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import javax.jdo.annotations.Cacheable;
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.Element;
 import javax.jdo.annotations.Embedded;
@@ -27,7 +24,6 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.query.BooleanExpression;
-import org.apache.commons.lang3.ArrayUtils;
 import org.opensilex.nosql.model.NoSQLModel;
 import org.opensilex.server.rest.validation.DateFormat;
 
@@ -47,7 +43,14 @@ public class DataModel implements NoSQLModel{
     @PrimaryKey
     private URI uri;
     
-    private URI object;
+    @Element(embeddedMapping={
+    @Embedded(members={
+        @Persistent(name="uri", column="uri"),
+        @Persistent(name="type", column="rdf:type")})
+    })
+    @Join(column="uri")
+    @Persistent(defaultFetchGroup="true")
+    private List<EntityModel> scientificObjects;
     
     private URI variable;
     
@@ -83,8 +86,8 @@ public class DataModel implements NoSQLModel{
         this.uri = uri;
     }
     
-    public void setObject(URI object){
-        this.object = object;
+    public void setObject(List<EntityModel> objects){
+        this.scientificObjects = objects;
     }
     
     public void setVariable(URI variable){
@@ -137,8 +140,8 @@ public class DataModel implements NoSQLModel{
         return uri;
     }
     
-    public URI getObject(){
-        return object;
+    public List<EntityModel> getObject(){
+        return scientificObjects;
     }
     
     public URI getVariable(){
@@ -203,7 +206,7 @@ public class DataModel implements NoSQLModel{
         if(updateInstance.getObject() !=  null)
             newInstance.setObject(updateInstance.getObject());
         else
-            newInstance.setObject(object);
+            newInstance.setObject(scientificObjects);
 
         if(updateInstance.getVariable() != null)
             newInstance.setVariable(updateInstance.getVariable());
@@ -253,18 +256,12 @@ public class DataModel implements NoSQLModel{
 
     @Override
     public String[] getUriSegments(NoSQLModel instance) {
-        URICompose = Arrays.stream(URICompose).filter(Objects::nonNull).toArray(String[]::new);
-        return ArrayUtils.addAll(URICompose,new String[]{formatDateURI()});
-    }
-    
-    @Override
-    public String toString(){
-        String str = "";
-        if(object != null) str += object.toString();
-        if(variable != null) str += variable.toString();
-        if(provenanceURI != null) str+= provenanceURI.toString();
-        if(date != null) str += date.toString();
-        return str ;
+        /*URICompose = Arrays.stream(URICompose).filter(Objects::nonNull).toArray(String[]::new);
+        return ArrayUtils.addAll(URICompose,new String[]{formatDateURI()});*/
+        return new String[]{
+            Timestamp.from(ZonedDateTime.now().toInstant()).toString(),
+            Timestamp.from(getDate().toInstant()).toString()
+        };
     }
     
     @Override
